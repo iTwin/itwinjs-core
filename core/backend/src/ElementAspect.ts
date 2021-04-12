@@ -12,6 +12,16 @@ import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
 
+export interface OnAspectArg {
+  iModel: IModelDb;
+}
+export interface OnAspectPropsArg extends OnAspectArg {
+  props: Readonly<ElementAspectProps>;
+}
+export interface OnAspectIdArg extends OnAspectArg {
+  aspectId: Id64String;
+}
+
 /** An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element.
  * Semantically, an ElementAspect can be considered part of the Element. Thus, an ElementAspect is deleted if its owning Element is deleted.
  * BIS Guideline: Subclass ElementUniqueAspect or ElementMultiAspect rather than subclassing ElementAspect directly.
@@ -39,32 +49,32 @@ export class ElementAspect extends Entity implements ElementAspectProps {
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onInsert(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
+  protected static onInsert(_arg: OnAspectPropsArg): void { }
   /** Called before an ElementAspect is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onUpdate(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
+  protected static onUpdate(_arg: OnAspectPropsArg): void { }
   /** Called before an ElementAspect is deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onDelete(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
+  protected static onDelete(_arg: OnAspectIdArg): void { }
   /** Called after a new ElementAspect was inserted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onInserted(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
+  protected static onInserted(_arg: OnAspectPropsArg): void { }
   /** Called after an ElementAspect was updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onUpdated(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
+  protected static onUpdated(_arg: OnAspectPropsArg): void { }
   /** Called after an ElementAspect was deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onDeleted(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
+  protected static onDeleted(_arg: OnAspectIdArg): void { }
 }
 
 /** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element.

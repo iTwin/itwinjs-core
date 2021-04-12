@@ -1413,20 +1413,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the model.
      */
     public insertModel(props: ModelProps): Id64String {
-      const json = props instanceof Model ? props.toJSON() : props;
-      if (json.isPrivate === undefined) // temporarily work around bug in addon
-        json.isPrivate = false;
-
-      const jsClass = this._iModel.getJsClass<typeof Model>(json.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onInsert(json, this._iModel);
-
-      const val = this._iModel.nativeDb.insertModel(json);
+      const val = this._iModel.nativeDb.insertModel(props instanceof Model ? props.toJSON() : props);
       if (val.error)
-        throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggerCategory);
+        throw new IModelError(val.error.status, `error inserting model, class=${props.classFullName}`);
 
-      json.id = props.id = Id64.fromJSON(val.result!.id);
-      jsClass.onInserted(json.id, this._iModel);
-      return json.id;
+      props.id = Id64.fromJSON(val.result!.id);
+      return props.id;
     }
 
     /** Update an existing model.
@@ -1434,15 +1426,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the model.
      */
     public updateModel(props: UpdateModelOptions): void {
-      const json = props instanceof Model ? props.toJSON() : props;
-      const jsClass = this._iModel.getJsClass<typeof Model>(json.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onUpdate(json, this._iModel);
-
-      const error = this._iModel.nativeDb.updateModel(json);
+      const error = this._iModel.nativeDb.updateModel(props instanceof Model ? props.toJSON() : props);
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, `updating model id=${json.id}`, Logger.logWarning, loggerCategory);
-
-      jsClass.onUpdated(json, this._iModel);
+        throw new IModelError(error, `updating model id=${props.id}`);
     }
 
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
@@ -1466,15 +1452,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public deleteModel(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
-        const props = this.getModelProps(id);
-        const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-        jsClass.onDelete(props, this._iModel);
-
         const error = this._iModel.nativeDb.deleteModel(id);
         if (error !== IModelStatus.Success)
-          throw new IModelError(error, `deleting model id ${id}`, Logger.logWarning, loggerCategory);
-
-        jsClass.onDeleted(props, this._iModel);
+          throw new IModelError(error, `deleting model id ${id}`);
       });
     }
   }
@@ -1848,15 +1828,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      */
     public insertAspect(aspectProps: ElementAspectProps): void {
-      const iModel = this._iModel;
-      const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onInsert(aspectProps, iModel);
-
-      const status = iModel.nativeDb.insertElementAspect(aspectProps);
+      const status = this._iModel.nativeDb.insertElementAspect(aspectProps);
       if (status !== IModelStatus.Success)
-        throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory, () => ({ classFullName: aspectProps.classFullName }));
-
-      jsClass.onInserted(aspectProps, iModel);
+        throw new IModelError(status, `Error inserting ElementAspect, class: ${aspectProps.classFullName}`);
     }
 
     /** Update an exist ElementAspect within the iModel.
@@ -1864,15 +1838,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the ElementAspect.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
-      const iModel = this._iModel;
-      const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onUpdate(aspectProps, iModel);
-
-      const status = iModel.nativeDb.updateElementAspect(aspectProps as any);
+      const status = this._iModel.nativeDb.updateElementAspect(aspectProps);
       if (status !== IModelStatus.Success)
-        throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory, () => ({ aspectInstanceId: aspectProps.id }));
-
-      jsClass.onUpdated(aspectProps, iModel);
+        throw new IModelError(status, `Error updating ElementAspect, id: ${aspectProps.id}`);
     }
 
     /** Delete one or more ElementAspects from this iModel.
@@ -1882,15 +1850,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public deleteAspect(aspectInstanceIds: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
-        const aspectProps = this._queryAspect(aspectInstanceId, ElementAspect.classFullName);
-        const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
-        jsClass.onDelete(aspectProps, iModel);
-
         const status = iModel.nativeDb.deleteElementAspect(aspectInstanceId);
         if (status !== IModelStatus.Success)
-          throw new IModelError(status, "Error deleting ElementAspect", Logger.logWarning, loggerCategory, () => ({ aspectInstanceId }));
-
-        jsClass.onDeleted(aspectProps, iModel);
+          throw new IModelError(status, `Error deleting ElementAspect, id: ${aspectInstanceId}`);
       });
     }
   }

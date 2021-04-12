@@ -12,7 +12,7 @@ import { assert, DbOpcode, DbResult, GuidString, Id64String, JsonUtils } from "@
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { LockLevel } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps,
+  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps,
   ModelProps, RelatedElement,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -20,6 +20,24 @@ import { DefinitionPartition, DocumentPartition, InformationRecordPartition, Phy
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
+
+export interface OnModelArg {
+  iModel: IModelDb;
+}
+export interface OnModelPropsArg extends OnModelArg {
+  props: Readonly<ModelProps>;
+}
+
+export interface OnModelIdArg extends OnModelArg {
+  id: Id64String;
+}
+export interface OnElementInModelPropsArg extends OnModelIdArg {
+  elementProps: Readonly<ElementProps>;
+}
+
+export interface OnElementInModelIdArg extends OnModelIdArg {
+  elementId: Id64String;
+}
 
 /** A Model is a container for persisting a collection of related elements within an iModel.
  * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDb.
@@ -95,54 +113,98 @@ export class Model extends Entity implements ModelProps {
 
   /** Called before a new model is inserted.
    * @throws [[IModelError]] if there is a problem
+   * @note `this` is the class of the Model to be inserted
    * @beta
    */
-  protected static onInsert(props: Readonly<ModelProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert);
+  protected static onInsert(arg: OnModelPropsArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWrite(this, arg.props, DbOpcode.Insert);
     }
   }
   /** Called after a new model is inserted.
-   * @throws [[IModelError]] if there is a problem
+   * @note `this` is the class of the Model inserted
    * @beta
    */
-  protected static onInserted(id: string, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert);
+  protected static onInserted(arg: OnModelIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWritten(this, arg.id, DbOpcode.Insert);
     }
   }
   /** Called before a model is updated.
    * @throws [[IModelError]] if there is a problem
+   * @note `this` is the class of the Model to be updated
    * @beta
    */
-  protected static onUpdate(props: Readonly<ModelProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update);
+  protected static onUpdate(arg: OnModelPropsArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWrite(this, arg.props, DbOpcode.Update);
     }
   }
   /** Called after a model is updated.
-   * @throws [[IModelError]] if there is a problem
    * @beta
+   * @note `this` is the class of the Model updated.
    */
-  protected static onUpdated(props: Readonly<ModelProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update);
+  protected static onUpdated(arg: OnModelIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWritten(this, arg.id, DbOpcode.Update);
     }
   }
   /** Called before a model is deleted.
    * @throws [[IModelError]] if there is a problem
+   * @note `this` is the class of the Model to be deleted
    * @beta
    */
-  protected static onDelete(props: Readonly<ModelProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete);
+  protected static onDelete(arg: OnModelIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      const props = arg.iModel.models.getModelProps(arg.id);
+      arg.iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete);
     }
   }
+
   /** Called after a model is deleted.
-   * @throws [[IModelError]] if there is a problem
+   * @beta
+   * @note `this` is the class of the Model deleted
+   */
+  protected static onDeleted(_arg: OnModelIdArg): void { }
+
+  /** Called before an Element is to be inserted into the supplied ModelId.
+   * @throws [[IModelError]] to disallow the element to be inserted into the Model
+   * @note `this` is the class of the Model to hold the element
    * @beta
    */
-  protected static onDeleted(_props: Readonly<ModelProps>, _iModel: IModelDb): void { }
+  protected static onInsertElement(_arg: OnElementInModelPropsArg): void { }
+
+  /** Called after an Element has been inserted into the supplied ModelId.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onInsertedElement(_arg: OnElementInModelIdArg): void { }
+
+  /** Called when an Element in the supplied ModelId is about to be updated.
+   * @throws [[IModelError]] to disallow the update
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onUpdateElement(_arg: OnElementInModelPropsArg): void { }
+
+  /** Called after an Element in the supplied ModelId has been updated.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
+
+  /** Called when an Element in the supplied ModelId is about to be deleted.
+   * @throws [[IModelError]] to disallow the delete
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onDeleteElement(_arg: OnElementInModelIdArg): void { }
+
+  /** Called after an Element in the supplied ModelId has been deleted.
+   * @note `this` is the class of the Model that held the element
+   * @beta
+   */
+  protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 

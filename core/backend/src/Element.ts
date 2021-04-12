@@ -23,15 +23,24 @@ import { IModelDb } from "./IModelDb";
 import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
-export interface ElementCallback {
+export interface OnElementArg {
   iModel: IModelDb;
 }
-export interface ElementPropsCallback extends ElementCallback {
+export interface OnElementPropsArg extends OnElementArg {
   props: Readonly<ElementProps>;
 }
 
-export interface ElementIdCallback extends ElementCallback {
+export interface OnElementIdArg extends OnElementArg {
   id: Id64String;
+}
+export interface OnChildElementArg extends OnElementArg {
+  parentId: Id64String;
+}
+export interface OnChildElementPropsArg extends OnChildElementArg {
+  childProps: Readonly<ElementProps>;
+}
+export interface OnChildElementIdArg extends OnChildElementArg {
+  childId: Id64String;
 }
 
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
@@ -136,7 +145,7 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onInsert(arg: ElementPropsCallback): void {
+  protected static onInsert(arg: OnElementPropsArg): void {
     if (arg.iModel.isBriefcaseDb()) {
       arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Insert);
     }
@@ -146,7 +155,7 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onUpdate(arg: ElementPropsCallback): void {
+  protected static onUpdate(arg: OnElementPropsArg): void {
     if (arg.iModel.isBriefcaseDb()) {
       arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Update);
     }
@@ -156,7 +165,7 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onDelete(arg: ElementIdCallback): void {
+  protected static onDelete(arg: OnElementIdArg): void {
     if (arg.iModel.isBriefcaseDb()) {
       const props = arg.iModel.elements.tryGetElementProps(arg.id);
       if (props !== undefined)
@@ -168,7 +177,7 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onInserted(arg: ElementIdCallback): void {
+  protected static onInserted(arg: OnElementIdArg): void {
     if (arg.iModel.isBriefcaseDb()) {
       arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Insert);
     }
@@ -178,7 +187,7 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onUpdated(arg: ElementIdCallback): void {
+  protected static onUpdated(arg: OnElementIdArg): void {
     if (arg.iModel.isBriefcaseDb()) {
       arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Update);
     }
@@ -188,7 +197,30 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onDeleted(_arg: ElementIdCallback): void { }
+  protected static onDeleted(_arg: OnElementIdArg): void { }
+
+  /** Called when an child element of this element is about to be deleted.
+   * Subclasses may override this method to block deletion of their children.
+   * @throws [[IModelError]] if the element should not be deleted
+   * @note implementers should not presume that the element was deleted if this method does not throw,
+   * since the delete may fail for other reasons. Instead, rely on [[onChildDeleted]] for that purpose.
+   * @beta
+   */
+  protected static onChildDelete(_arg: OnChildElementIdArg): void { }
+
+  /** Called after an element, with `parentId` as its parent, was successfully deleted.
+   * @beta
+   */
+  protected static onChildDeleted(_arg: OnChildElementIdArg): void { }
+
+  protected static onChildInsert(_arg: OnChildElementPropsArg): void { }
+  protected static onChildInserted(_arg: OnChildElementIdArg): void { }
+  protected static onChildUpdate(_arg: OnChildElementPropsArg): void { }
+  protected static onChildUpdated(_arg: OnChildElementIdArg): void { }
+  protected static onChildAdd(_arg: OnChildElementPropsArg): void { }
+  protected static onChildAdded(_arg: OnChildElementIdArg): void { }
+  protected static onChildDrop(_arg: OnChildElementIdArg): void { }
+  protected static onChildDropped(_arg: OnChildElementIdArg): void { }
 
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
    * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.

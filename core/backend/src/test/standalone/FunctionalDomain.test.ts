@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import * as path from "path";
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64 } from "@bentley/bentleyjs-core";
 import { Code, CodeScopeSpec, CodeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
 import { BackendRequestContext, FunctionalModel, FunctionalSchema, Schemas, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -54,7 +54,7 @@ describe("Functional Domain", () => {
     iModelDb.codeSpecs.insert(codeSpec);
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 
-    const modelId: Id64String = FunctionalModel.insert(iModelDb, IModel.rootSubjectId, "Test Functional Model");
+    const modelId = FunctionalModel.insert(iModelDb, IModel.rootSubjectId, "Test Functional Model");
     assert.isTrue(Id64.isValidId64(modelId));
 
     const breakdownProps: FunctionalElementProps = {
@@ -62,7 +62,7 @@ describe("Functional Domain", () => {
       model: modelId,
       code: new Code({ spec: codeSpec.id, scope: modelId, value: "Breakdown1" }),
     };
-    const breakdownId: Id64String = iModelDb.elements.insertElement(breakdownProps);
+    const breakdownId = iModelDb.elements.insertElement(breakdownProps);
     assert.isTrue(Id64.isValidId64(breakdownId));
 
     const componentProps: FunctionalElementProps = {
@@ -70,7 +70,7 @@ describe("Functional Domain", () => {
       model: modelId,
       code: new Code({ spec: codeSpec.id, scope: modelId, value: "Component1" }),
     };
-    const componentId: Id64String = iModelDb.elements.insertElement(componentProps);
+    const componentId = iModelDb.elements.insertElement(componentProps);
     assert.isTrue(Id64.isValidId64(componentId));
 
     iModelDb.saveChanges("Insert Functional elements");
@@ -79,6 +79,7 @@ describe("Functional Domain", () => {
     Schemas.unregisterSchema(testSchema.schemaName);
     const errMsg = "Schema [TestFunctional] not registered, but is marked with SchemaHasBehavior";
     expect(() => iModelDb.elements.deleteElement(breakdownId)).to.throw(errMsg);
+    assert.isDefined(iModelDb.elements.getElement(breakdownId), "should not have been deleted");
     expect(() => iModelDb.elements.updateElement(breakdownProps)).to.throw(errMsg);
     breakdownProps.code.value = "Breakdown 2";
     expect(() => iModelDb.elements.insertElement(breakdownProps)).to.throw(errMsg);

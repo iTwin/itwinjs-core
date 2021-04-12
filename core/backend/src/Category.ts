@@ -6,11 +6,11 @@
  * @module Categories
  */
 
-import { DbOpcode, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
 } from "@bentley/imodeljs-common";
-import { DefinitionElement, ElementIdCallback } from "./Element";
+import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
 
@@ -264,8 +264,7 @@ export class SpatialCategory extends Category {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
-    const elements = iModelDb.elements;
-    const categoryId = elements.insertElement(category);
+    const categoryId = iModelDb.elements.insertElement(category);
     category.setDefaultAppearance(defaultAppearance);
     return categoryId;
   }
