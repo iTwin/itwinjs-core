@@ -34,10 +34,10 @@ describe("Sign in (#integration)", () => {
   });
 
   it("failure with invalid url", async () => {
-    const oidcInvalidConfig = { ...oidcConfig, redirectUri: "invalid.com" }
+    const oidcInvalidConfig = { ...oidcConfig, redirectUri: "invalid.com" };
     const validUser = TestUsers.regular;
-    expect(getTestAccessToken(oidcInvalidConfig, validUser))
-      .to.be.rejectedWith(Error, "Failed OIDC signin for ${validUser.email}.\nError:");
+    await expect(getTestAccessToken(oidcInvalidConfig, validUser))
+      .to.be.rejectedWith(Error, `Failed OIDC signin for ${validUser.email}.\nError:`);
   });
 
   it.skip("failure with invalid Bentley federated user", async () => {

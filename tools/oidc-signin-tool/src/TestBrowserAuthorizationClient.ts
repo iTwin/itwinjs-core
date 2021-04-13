@@ -240,7 +240,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   private async handleErrorPage(page: puppeteer.Page): Promise<void> {
     const errMsgText = await page.evaluate(() => {
       const title = document.title;
-      if (title.toLocaleLowerCase() == "error")
+      if (title.toLocaleLowerCase() === "error")
         return document.body.textContent;
       return undefined;
     });
