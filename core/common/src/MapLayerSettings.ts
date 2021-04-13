@@ -8,14 +8,14 @@
 
 import { BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSettings";
 
-/** @alpha */
+/** @beta */
 export type SubLayerId = string | number;
 
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
- * A map sub layer represents a set of objects within the layer that can be controlled seperately.  These
+ * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
  * @see [[MapLayerProps]]
- * @alpha
+ * @beta
  */
 export interface MapSubLayerProps {
   name?: string;
@@ -28,11 +28,11 @@ export interface MapSubLayerProps {
 
 /** Normalized representation of a [[MapSubLayerProps]] for which values
  * have been validated and default values have been applied where explicit values not defined.
- * A map sub layer represents a set of objects within the layer that can be controlled seperately.  These
+ * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
- * [[MapSubLayers]] can represent a hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
+ * This class can represent an hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
  * @see [[MapLayerSettings]]
- * @alpha
+ * @beta
  */
 export class MapSubLayerSettings {
   /** Typically Name is a single word used for machine-to-machine communication while the Title is for the benefit of humans (WMS) */
@@ -106,7 +106,7 @@ export class MapSubLayerSettings {
 
 /** JSON representation of the settings associated with a map layer.  One or more map layers may be included within a [[MapImageryProps]] object.
  * @see [[MapImageryProps]]
- * @alpha
+ * @beta
  */
 export interface MapLayerProps {
   /** Controls visibility of layer */
@@ -142,7 +142,7 @@ export interface MapLayerKey {
 /** Normalized representation of a [[MapLayerProps]] for which values have been  validated and default values have been applied where explicit values not defined.
  * One or more map layers may be included within [[MapImagerySettings]] object.
  * @see [[MapImagerySettings]]
- * @alpha
+ * @beta
  */
 export class MapLayerSettings {
   public readonly visible: boolean;
