@@ -642,11 +642,9 @@ export namespace Id64 {
     export function isValidId64(id: string): boolean;
     export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
     const invalid = "0";
-    // (undocumented)
     export function iterable(ids: Id64Arg): Iterable<Id64String>;
     // @deprecated
     export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean;
-    // (undocumented)
     export function iterator(ids: Id64Arg): Iterator<Id64String>;
     export function sizeOf(arg: Id64Arg): number;
     export function toIdSet(arg: Id64Arg, makeCopy?: boolean): Id64Set;

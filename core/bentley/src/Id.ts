@@ -313,7 +313,7 @@ export namespace Id64 {
    *   public addCategories(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.categories.add(id)); }
    * ```
    *
-   * Alternatively, to avoid allocating a new Id64Set, use [[Id64.forEach]] or [[Id64.iterate]].
+   * Alternatively, to avoid allocating a new Id64Set, use [[Id64.iterable]].
    *
    * @param arg The Ids to convert to an Id64Set.
    * @param makeCopy If true, and the input is already an Id64Set, returns a deep copy of the input.
@@ -336,6 +336,9 @@ export namespace Id64 {
     return ids;
   }
 
+  /** Obtain iterator over the specified Ids.
+   * @see [[Id64.iterable]].
+   */
   export function * iterator(ids: Id64Arg): Iterator<Id64String> {
     if (typeof ids === "string") {
       yield ids;
@@ -345,6 +348,13 @@ export namespace Id64 {
     }
   }
 
+  /** Obtain an iterable over the specified Ids. Example usage:
+   * ```ts
+   *  const ids = ["0x123", "0xfed"];
+   *  for (const id of Id64.iterable(ids))
+   *    console.log(id);
+   * ```
+   */
   export function iterable(ids: Id64Arg): Iterable<Id64String> {
     return {
       [Symbol.iterator]: () => iterator(ids),
@@ -354,8 +364,7 @@ export namespace Id64 {
   /** Execute a function on each [[Id64String]] of an [[Id64Arg]].
    * @param arg The Id(s) to iterate.
    * @param callback The function to invoke on each Id.
-   * @see [[Id64.iterate]] for a similar function which allows iteration to be halted before it completes.
-   * @deprecated use Id64.iterable()
+   * @deprecated use [[Id64.iterable]].
    */
   export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void {
     for (const id of Id64.iterable(arg))
@@ -366,7 +375,7 @@ export namespace Id64 {
    * @param arg The Id(s) to iterate.
    * @param callback The function to invoke on each Id. The function returns false to terminate iteration, or true to continue iteration.
    * @returns True if all Ids were iterated, or false if iteration was terminated due to the callback returning false.
-   * @deprecated use Id64.iterable()
+   * @deprecated use [[Id64.iterable]].
    */
   export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean {
     for (const id of Id64.iterable(arg))

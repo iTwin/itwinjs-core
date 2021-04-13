@@ -737,14 +737,14 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      */
     public filterLoaded(modelIds: Id64Arg): Id64Set | undefined {
       let unloaded: Set<string> | undefined;
-      Id64.forEach(modelIds, (id) => {
+      for (const id of Id64.iterable(modelIds)) {
         if (undefined === this.getLoaded(id)) {
           if (undefined === unloaded)
             unloaded = new Set<string>();
 
           unloaded.add(id);
         }
-      });
+      }
 
       return unloaded;
     }

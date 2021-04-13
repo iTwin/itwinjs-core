@@ -771,13 +771,13 @@ export abstract class Viewport implements IDisposable {
   }
 
   private enableAllSubCategories(categoryIds: Id64Arg): void {
-    Id64.forEach(categoryIds, (categoryId) => {
+    for (const categoryId of Id64.iterable(categoryIds)) {
       const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
       if (undefined !== subCategoryIds) {
         for (const subCategoryId of subCategoryIds)
           this.changeSubCategoryDisplay(subCategoryId, true);
       }
-    });
+    }
   }
 
   /** @internal */
