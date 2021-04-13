@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { PropertyRendererSpecification } from "./PropertyRendererSpecification";
+import { CustomRendererSpecification } from "./CustomRendererSpecification";
 
 /**
  * Specification to define a custom property category.
@@ -34,5 +34,5 @@ export interface PropertyCategorySpecification {
   autoExpand?: boolean;
 
   /** Custom category renderer specification. */
-  renderer?: PropertyRendererSpecification;
+  renderer?: CustomRendererSpecification;
 }

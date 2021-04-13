@@ -7,10 +7,17 @@
  */
 
 /**
- * Specification for custom property renderer.
+ * Specification for custom content renderer.
  * @public
  */
-export interface PropertyRendererSpecification {
+export interface CustomRendererSpecification {
   /** Name of the custom renderer. */
   rendererName: string;
 }
+
+/**
+ * Specification for custom property renderer.
+ * @public
+ * @deprecated Superseded by [[CustomRendererSpecification]].
+ */
+export type PropertyRendererSpecification = CustomRendererSpecification;

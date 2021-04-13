@@ -340,6 +340,11 @@ export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecific
 }
 
 // @public
+export interface CustomRendererSpecification {
+    rendererName: string;
+}
+
+// @public
 export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
 // @public
@@ -1833,7 +1838,7 @@ export interface PropertyCategorySpecification {
     id: string;
     label: string;
     priority?: number;
-    renderer?: PropertyRendererSpecification;
+    renderer?: CustomRendererSpecification;
 }
 
 // @public
@@ -1955,7 +1960,7 @@ export interface PropertyOverrides {
     isDisplayed?: boolean;
     labelOverride?: string;
     overridesPriority?: number;
-    renderer?: PropertyRendererSpecification;
+    renderer?: CustomRendererSpecification;
 }
 
 // @public
@@ -1966,10 +1971,8 @@ export interface PropertyRangeGroupSpecification {
     toValue: string;
 }
 
-// @public
-export interface PropertyRendererSpecification {
-    rendererName: string;
-}
+// @public @deprecated
+export type PropertyRendererSpecification = CustomRendererSpecification;
 
 // @public
 export interface PropertySortingRule extends SortingRuleBase {
