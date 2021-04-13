@@ -47,7 +47,7 @@
     "@bentley/oidc-signin-tool": "2.16.0-dev.5",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/nock": "^11.1.0",
     "chai": "^4.1.2",

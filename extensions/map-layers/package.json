@@ -16,7 +16,7 @@
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
-    "test": "mocha --opts ./mocha.opts \"./lib/test/**/*.test.js\""
+    "test": "mocha --config ./.mocharc.json \"./lib/test/**/*.test.js\""
   },
   "repository": {
     "type": "git",
@@ -55,7 +55,7 @@
     "@types/classnames": "^2.2.3",
     "@types/enzyme": "3.9.3",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/react": "16.9.43",
     "@types/react-beautiful-dnd": "^12.1.2",
@@ -73,7 +73,7 @@
     "eslint": "^6.8.0",
     "jsdom": "^11.12.0",
     "jsdom-global": "3.0.2",
-    "mocha": "^5.2.0",
+    "mocha": "^8.3.2",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",

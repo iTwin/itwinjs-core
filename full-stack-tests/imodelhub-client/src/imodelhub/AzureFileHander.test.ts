@@ -14,7 +14,7 @@ import { workDir } from "./TestConstants";
 
 describe("iModelHub AzureFileHandler", () => {
   before(async function () {
-    this.enableTimeouts(false);
+    this.timeout(0);
   });
 
   it("Check for expired sas url", () => {

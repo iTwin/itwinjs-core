@@ -265,7 +265,8 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js",
       ],
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in core/markup/certa.json
@@ -507,8 +508,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/abstract/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "./mocha.opts",
+        "--config",
+        "./.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -530,8 +531,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -553,8 +554,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/core/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -572,8 +573,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/framework/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -592,8 +593,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/ninezone/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -632,8 +633,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/backend/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -651,8 +652,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -670,8 +671,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/components/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "-r",
         "ignore-styles",
@@ -693,8 +694,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/frontend/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "-r",
         "jsdom-global/register",
@@ -714,8 +715,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "mocha.opts",
+        "--config",
+        ".mocharc.json",
         "-r",
         "jsdom-global/register",
         "-r",
@@ -740,8 +741,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/testing/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "mocha.opts",
+        "--config",
+        ".mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],

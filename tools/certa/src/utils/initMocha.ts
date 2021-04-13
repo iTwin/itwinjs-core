@@ -32,7 +32,8 @@ if (typeof _CertaConsole !== "undefined") {
   mocha.suite.emit("pre-require", typeof (window) === "undefined" ? global : window, null, mocha);
 
   mocha.reporter(mochaOpts.reporter, mochaOpts.reporterOptions);
-  mocha.useColors(true);
+  // TODO: Come back and fix useColors to color
+  (mocha as any).color(true);
   mocha.timeout(mochaOpts.timeout);
   if (mochaOpts.fgrep)
     mocha.fgrep(mochaOpts.fgrep);
@@ -45,5 +46,5 @@ if (typeof _CertaConsole !== "undefined") {
 
   // Disable timeouts when debugging.
   if (config.debug)
-    mocha.enableTimeouts(false);
+    mocha.timeout(0);
 })(_CERTA_CONFIG);
