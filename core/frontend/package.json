@@ -98,7 +98,6 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@azure/storage-blob": "10.4.0",
     "@bentley/context-registry-client": "2.16.0-dev.6",
     "@bentley/extension-client": "2.16.0-dev.6",
     "@bentley/reality-data-client": "2.16.0-dev.6",
