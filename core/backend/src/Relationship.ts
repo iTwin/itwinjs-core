@@ -375,18 +375,23 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * (The ElementDrivesElement.)
  *
  * #Errors
- * Circular dependencies are not permitted. If a cycle is detected, that is treated as a fatal error.
- * A missing dependency handler is treated as a warning.
- * TODO: A dependency handler's onRootChanged method may call TxnSummary::ReportError to reject an invalid change. It can classify the error as fatal or just a warning.
+ * Circular dependencies are not permitted. If a cycle is detected, that is treated as a fatal error. All ElementDrivesElement relationships
+ * involved in a cycle will have their status set to 1, indicating a failure.
+ *
+ * A callback may call txnManager.reportError to reject an invalid change. It can classify the error as fatal or just a warning.
+ * A callback make set the status value of an ElementDrivesElement instance to 1 to indicate a processing falure in that edge.
+ *
+ * After BriefcaseDb.saveChanges is called, an app should check db.txns.validationErrors and db.txns.hasFatalError to find out if graph-evaluation failed.
+ *
  * @beta
  */
 export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
   /** @internal */
   public static get className(): string { return "ElementDrivesElement"; }
   /** Relationship status
-   * * 0 indicates no errors.
-   * * 1 indicates that this driving relationship could not be evaluated, either becuase it reported a failure or because it is part of a circular dependency.
-   * * 0x80 indicates that changes should not be propagated through this relationship.
+   * * 0 indicates no errors. iModel.js sets this after a successful evaluation.
+   * * 1 indicates that this driving relationship could not be evaluated. The callback itself can set this to indicate that it failed to process the input changes. Also, iModel.js sets this if it finds that the relationship is part of a circular dependency.
+   * * 0x80 The app or callback can set this to tell iModel.js not propagate changes through this relationship.
    */
   public status: number;
   /** Affects the order in which relationships are processed in the case where two relationships have the same output. */
