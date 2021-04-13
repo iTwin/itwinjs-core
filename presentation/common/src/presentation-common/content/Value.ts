@@ -207,7 +207,7 @@ export interface NestedContentValueJSON {
 
 /**
  * A group of raw values and their common display value.
- * @alpha
+ * @public
  */
 export interface DisplayValueGroup {
   /** Common display value for all grouped raw values */
@@ -218,14 +218,14 @@ export interface DisplayValueGroup {
 
 /**
  * JSON representation of [[DisplayValueGroup]].
- * @alpha
+ * @public
  */
 export interface DisplayValueGroupJSON {
   displayValue: DisplayValueJSON;
   groupedRawValues: ValueJSON[];
 }
 
-/** @alpha */
+/** @public */
 export namespace DisplayValueGroup {
   /** Serialize [[DisplayValueGroup]] to JSON */
   export function toJSON(group: DisplayValueGroup): DisplayValueGroupJSON {
