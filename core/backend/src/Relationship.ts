@@ -203,8 +203,8 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 
 /** A Relationship indicating that one Element *drives* another Element.
  * An ElementDrivesElement relationship defines a one-way "driving" relationship from the source to the target.
- * When the source of an ElementDrivesElement relationship changes, the ElementDrivesElement itself can get a callback, and both the source and targets elements can get callbacks.
- * By inserting ElementDrivesElements, an app can create and store an acyclic directed graph of dependencies between elements.
+ * When the source of an ElementDrivesElement relationship changes, the ElementDrivesElement itself can get a callback, and both the source and target elements can get callbacks.
+ * By inserting ElementDrivesElement relationships, an app can create and store an acyclic directed graph of dependencies between elements.
  *
  * # Defining dependencies
  * Create an ElementDrivesElement relationship to specify that the source element drives the target element.
@@ -217,7 +217,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  *
  * # Defining dependency graphs
  * When you create multiple ElementDrivesElement relationships, you create a network of dependencies. The target of one may be the source of another.
- * A change in the content of any given DgnElement can therefore trigger changes to many downstream elements.
+ * A change in the content of an DgnElement can therefore trigger changes to many downstream elements.
  *
  * For example, to make element e1 drive element e2 and e2 drive another element, e3, create two relationships like this:
  * ```ts
@@ -233,7 +233,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * Where the "-->" is meant to represent a driving relationship.
  *
  * The order in which you create the relationships does not matter.
- * The graph indicates that e3 depends on e2, and e2 depends on e1.
+ * The graph indicates that e3 depends on e2 and e2 depends on e1.
  *
  * An ElementDrivesElement relationship is between one source element and one target element.
  * Many ElementDrivesElement relationships can point to a given element, and many can point out of it.
@@ -260,14 +260,13 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * e2 depends on both e1 and e11. e2 then drives e3 and e31.
  *
  * In an ElementDrivesElement dependency graph, the relationships are the "edges" and the Elements are the "nodes".
- *
  * The following terms are used when referring to the elements (nodes) in a dependency graph:
  * * Inputs - The sources of all edges that point to the element. This includes all upstream elements that flow into the element.
  * * Outputs - The targets of all edges that point out of the element. This includes all downstream elements.
  *
  * #Subgraph Processing
  * When changes are made, iModel.js finds and processes only the part of the overall graph that is affected. So, for example,
- * Suppose we have this graph:
+ * suppose we have this graph:
  * ```
  * e1 --> e2 --> e3
  * ```
@@ -325,11 +324,11 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  *
  * ## Order
  * Callbacks are invoked by BriefcaseDb.saveChanges.
- * They are invoked in dependency (topological) order.
+ * They are invoked in dependency (topological) order: driving elements first, then driven elements.
  *
  * Each callback is invoked only once. No matter how many times a given element was changed during the transaction,
  * a callback such as ElementDrivesElement.onRootChanged will be invoked only once.
- * In the way, no matter how many of its inputs were changed, a callback such as Element.onAllInputsHandled will be
+ * In the same way, no matter how many of its inputs were changed, a callback such as Element.onAllInputsHandled will be
  * invoked only once.
  *
  * For example, suppose we have a graph:
@@ -357,7 +356,6 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * e11       e31
  * ```
  * If e1 is changed and BriefcaseDb.saveChanges is called, the subgraph is:
- * If e1 is changed, the affected subgraph is:
  * ```
  * e1        e3
  *    \    /
@@ -374,7 +372,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * 1. ElementDrivesElement.onRootChanged e2->e31
  * 1. Element.onAllInputsHandled e31
  *
- * Actually, the order in which the e2->e3 and e2->e31 edges are evaluated is 
+ * (The ElementDrivesElement.)
  *
  * #Errors
  * Circular dependencies are not permitted. If a cycle is detected, that is treated as a fatal error.
@@ -385,7 +383,13 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
   /** @internal */
   public static get className(): string { return "ElementDrivesElement"; }
+  /** Relationship status
+   * * 0 indicates no errors.
+   * * 1 indicates that this driving relationship could not be evaluated, either becuase it reported a failure or because it is part of a circular dependency.
+   * * 0x80 indicates that changes should not be propagated through this relationship.
+   */
   public status: number;
+  /** Affects the order in which relationships are processed in the case where two relationships have the same output. */
   public priority: number;
 
   /** @internal */
