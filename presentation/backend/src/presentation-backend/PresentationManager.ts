@@ -14,9 +14,9 @@ import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
   DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyRequestOptions, InstanceKey,
-  KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification,
-  PresentationDataCompareOptions, PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo,
+  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions,
+  HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse,
+  PartialHierarchyModification, PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo,
   SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
@@ -484,8 +484,9 @@ export class PresentationManager {
    * @param requestOptions Options for the request
    * @param parentKey Key of the parentNode
    * @return A promise object that returns either a node response containing nodes and node count on success or an error string on error
-   * @deprecated Use `getNodes` and `getNodesCount` separately
+   * @deprecated Use [[getNodes]] and [[getNodesCount]] separately
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getNodesAndCount(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey) {
     const options = { ...requestOptions, requestContext, parentKey };
     const [count, nodes] = await Promise.all([
@@ -499,12 +500,14 @@ export class PresentationManager {
    * Retrieves nodes
    * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<Node[]>;
   /**
    * Retrieves nodes
-   * @beta
+   * @public
    */
   public async getNodes(requestOptions: WithClientRequestContext<Paged<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]>;
+  // eslint-disable-next-line deprecation/deprecation
   public async getNodes(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<Paged<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>>>, deprecatedRequestOptions?: Paged<HierarchyRequestOptions<IModelDb>>, deprecatedParentKey?: NodeKey): Promise<Node[]> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.getNodes({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, parentKey: deprecatedParentKey });
@@ -523,12 +526,14 @@ export class PresentationManager {
    * Retrieves nodes count
    * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number>;
   /**
    * Retrieves nodes count
-   * @beta
+   * @public
    */
   public async getNodesCount(requestOptions: WithClientRequestContext<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number>;
+  // eslint-disable-next-line deprecation/deprecation
   public async getNodesCount(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: HierarchyRequestOptions<IModelDb>, deprecatedParentKey?: NodeKey): Promise<number> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.getNodesCount({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, parentKey: deprecatedParentKey });
@@ -547,13 +552,16 @@ export class PresentationManager {
    * Retrieves paths from root nodes to children nodes according to specified instance key paths. Intersecting paths will be merged.
    * @deprecated Use an overload with one argument
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
   /**
    * Retrieves paths from root nodes to children nodes according to specified instance key paths. Intersecting paths will be merged.
    * TODO: Return results in pages
-   * @beta
+   * @public
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getNodePaths(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb> & { paths: InstanceKey[][], markedIndex: number }>): Promise<NodePathElement[]>;
+  // eslint-disable-next-line deprecation/deprecation
   public async getNodePaths(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<HierarchyRequestOptions<IModelDb> & { paths: InstanceKey[][], markedIndex: number }>, deprecatedRequestOptions?: HierarchyRequestOptions<IModelDb>, deprecatedPaths?: InstanceKey[][], deprecatedMarkedIndex?: number): Promise<NodePathElement[]> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.getNodePaths({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, paths: deprecatedPaths!, markedIndex: deprecatedMarkedIndex! });
@@ -572,13 +580,16 @@ export class PresentationManager {
    * Retrieves paths from root nodes to nodes containing filter text in their label.
    * @deprecated Use an overload with one argument
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]>;
   /**
    * Retrieves paths from root nodes to nodes containing filter text in their label.
    * TODO: Return results in pages
-   * @beta
+   * @public
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getFilteredNodePaths(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb> & { filterText: string }>): Promise<NodePathElement[]>;
+  // eslint-disable-next-line deprecation/deprecation
   public async getFilteredNodePaths(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<HierarchyRequestOptions<IModelDb> & { filterText: string }>, deprecatedRequestOptions?: HierarchyRequestOptions<IModelDb>, deprecatedFilterText?: string): Promise<NodePathElement[]> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.getFilteredNodePaths({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, filterText: deprecatedFilterText! });
@@ -598,13 +609,16 @@ export class PresentationManager {
    * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
    * @deprecated Use an overload with one argument
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void>;
   /**
    * Loads the whole hierarchy with the specified parameters
    * @return A promise object that resolves when the hierarchy is fully loaded
    * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async loadHierarchy(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb>>): Promise<void>;
+  // eslint-disable-next-line deprecation/deprecation
   public async loadHierarchy(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<HierarchyRequestOptions<IModelDb>>, deprecatedRequestOptions?: HierarchyRequestOptions<IModelDb>): Promise<void> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.loadHierarchy({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions });
@@ -626,12 +640,14 @@ export class PresentationManager {
    * Retrieves the content descriptor which can be used to get content.
    * @deprecated Use an overload with [[ContentDescriptorRequestOptions]]
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
   /**
    * Retrieves the content descriptor which can be used to get content
-   * @beta
+   * @public
    */
   public async getContentDescriptor(requestOptions: WithClientRequestContext<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined>;
+  // eslint-disable-next-line deprecation/deprecation
   public async getContentDescriptor(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<ContentDescriptorRequestOptions<IModelDb, KeySet>>, deprecatedRequestOptions?: ContentRequestOptions<IModelDb>, deprecatedDisplayType?: string, deprecatedKeys?: KeySet, deprecatedSelection?: SelectionInfo): Promise<Descriptor | undefined> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.getContentDescriptor({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, displayType: deprecatedDisplayType!, keys: deprecatedKeys!, selection: deprecatedSelection });
@@ -650,12 +666,14 @@ export class PresentationManager {
    * Retrieves the content set size based on the supplied content descriptor override
    * @deprecated Use an overload with [[ExtendedContentRequestOptions]]
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
   /**
    * Retrieves the content set size based on the supplied content descriptor override
-   * @beta
+   * @public
    */
   public async getContentSetSize(requestOptions: WithClientRequestContext<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>): Promise<number>;
+  // eslint-disable-next-line deprecation/deprecation
   public async getContentSetSize(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>, deprecatedRequestOptions?: ContentRequestOptions<IModelDb>, deprecatedDescriptorOrOverrides?: Descriptor | DescriptorOverrides, deprecatedKeys?: KeySet): Promise<number> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.getContentSetSize({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, descriptor: deprecatedDescriptorOrOverrides!, keys: deprecatedKeys! });
@@ -675,12 +693,14 @@ export class PresentationManager {
    * Retrieves the content based on the supplied content descriptor override.
    * @deprecated Use an overload with [[ExtendedContentRequestOptions]]
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
   /**
    * Retrieves the content based on the supplied content descriptor override.
-   * @beta
+   * @public
    */
   public async getContent(requestOptions: WithClientRequestContext<Paged<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>>): Promise<Content | undefined>;
+  // eslint-disable-next-line deprecation/deprecation
   public async getContent(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<Paged<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>>, deprecatedRequestOptions?: Paged<ContentRequestOptions<IModelDb>>, deprecatedDescriptorOrOverrides?: Descriptor | DescriptorOverrides, deprecatedKeys?: KeySet): Promise<Content | undefined> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.getContent({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, descriptor: deprecatedDescriptorOrOverrides!, keys: deprecatedKeys! });
@@ -703,8 +723,9 @@ export class PresentationManager {
    * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for
    * @return A promise object that returns either content and content set size on success or an error string on error.
-   * @deprecated Use `getContent` and `getContentSetSize` separately
+   * @deprecated Use [[getContent]] and [[getContentSetSize]] separately
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet) {
     const [size, content] = await Promise.all<number, Content | undefined>([
       this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys), // eslint-disable-line deprecation/deprecation
@@ -722,7 +743,9 @@ export class PresentationManager {
    * @param fieldName            Name of the field from which to take values.
    * @param maximumValueCount    Maximum numbers of values that can be returned. Unlimited if 0.
    * @return A promise object that returns either distinct values on success or an error string on error.
+   * @deprecated Use [[getPagedDistinctValues]]
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const params = {
@@ -743,7 +766,7 @@ export class PresentationManager {
    * @param requestContext      The client request context
    * @param requestOptions      Options for the request
    * @return A promise object that returns either distinct values on success or an error string on error.
-   * @alpha
+   * @public
    */
   public async getPagedDistinctValues(requestOptions: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>>): Promise<PagedResponse<DisplayValueGroup>> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
@@ -768,12 +791,14 @@ export class PresentationManager {
    * Retrieves display label definition of specific item
    * @deprecated Use an overload with [[DisplayLabelRequestOptions]]
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getDisplayLabelDefinition(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<LabelDefinition>;
   /**
    * Retrieves display label definition of specific item
-   * @beta
+   * @public
    */
   public async getDisplayLabelDefinition(requestOptions: WithClientRequestContext<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition>;
+  // eslint-disable-next-line deprecation/deprecation
   public async getDisplayLabelDefinition(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<DisplayLabelRequestOptions<IModelDb, InstanceKey>>, deprecatedRequestOptions?: LabelRequestOptions<IModelDb>, deprecatedKey?: InstanceKey): Promise<LabelDefinition> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.getDisplayLabelDefinition({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, key: deprecatedKey! });
@@ -790,12 +815,14 @@ export class PresentationManager {
    * Retrieves display labels definitions of specific items
    * @deprecated Use an overload with [[DisplayLabelsRequestOptions]]
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getDisplayLabelDefinitions(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<LabelDefinition[]>;
   /**
    * Retrieves display label definitions of specific items
-   * @beta
+   * @public
    */
   public async getDisplayLabelDefinitions(requestOptions: WithClientRequestContext<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]>;
+  // eslint-disable-next-line deprecation/deprecation
   public async getDisplayLabelDefinitions(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>, deprecatedRequestOptions?: LabelRequestOptions<IModelDb>, deprecatedInstanceKeys?: InstanceKey[]): Promise<LabelDefinition[]> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.getDisplayLabelDefinitions({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, keys: deprecatedInstanceKeys! });
@@ -832,7 +859,7 @@ export class PresentationManager {
   public async getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
   /**
    * Retrieves available selection scopes.
-   * @beta
+   * @public
    */
   public async getSelectionScopes(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb>>): Promise<SelectionScope[]>;
   public async getSelectionScopes(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<SelectionScopeRequestOptions<IModelDb>>, deprecatedRequestOptions?: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
@@ -849,7 +876,7 @@ export class PresentationManager {
   public async computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
   /**
    * Computes selection set based on provided selection scope.
-   * @beta
+   * @public
    */
   public async computeSelection(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }>): Promise<KeySet>;
   public async computeSelection(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }>, deprecatedRequestOptions?: SelectionScopeRequestOptions<IModelDb>, deprecatedIds?: Id64String[], deprecatedScopeId?: string): Promise<KeySet> {
@@ -886,14 +913,13 @@ export class PresentationManager {
   }
 
   /** @deprecated Use an overload with one argument */
-  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]>;
+  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]>;
   /**
    * Compares two hierarchies specified in the request options
-   * TODO: Return results in pages
-   * @beta
+   * @public
    */
-  public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo>;
-  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo | PartialHierarchyModification[]> {
+  public async compareHierarchies(requestOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo>;
+  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo | PartialHierarchyModification[]> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return (await this.compareHierarchies({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions })).changes;
     }
