@@ -9,13 +9,13 @@
 import { Capabilities } from "./Capabilities";
 
 /** A type describing either a WebGL 1 or WebGL 2 rendering context.
-  * @public
-  */
+ * @public
+ */
 export type WebGLContext = WebGLRenderingContext | WebGL2RenderingContext;
 
 /** Enumerates the required and optional WebGL features used by the [RenderSystem]($frontend).
-  * @public
-  */
+ * @public
+ */
 export enum WebGLFeature {
   /** This feature allows transparent geometry to be rendered more efficiently, using 1 pass instead of 2. */
   MrtTransparency = "mrt transparency",
@@ -42,58 +42,58 @@ export enum WebGLFeature {
 }
 
 /** An enumeration that describes a general "compatibility rating" based on the contents of a [[WebGLRenderCompatibilityInfo]].
-  * @public
-  */
+ * @public
+ */
 export enum WebGLRenderCompatibilityStatus {
   /**
-    * Signifies that everything is ideal: context created successfully, all required and optional features are available,
-    * and browser did not signal a major performance caveat.
-    */
+   * Signifies that everything is ideal: context created successfully, all required and optional features are available,
+   * and browser did not signal a major performance caveat.
+   */
   AllOkay,
   /**
-    * Signifies that the base requirements of compatibility are met but at least some optional features are missing.
-    * Consult the contents of [[WebGLRenderCompatibilityInfo.missingOptionalFeatures]].
-    */
+   * Signifies that the base requirements of compatibility are met but at least some optional features are missing.
+   * Consult the contents of [[WebGLRenderCompatibilityInfo.missingOptionalFeatures]].
+   */
   MissingOptionalFeatures,
   /**
-    * Signifies that the base requirements of compatibility are met but WebGL reported a major performance caveat.  The browser
-    * has likely fallen back to software rendering due to lack of a usable GPU.
-    * Consult [[WebGLRenderCompatibilityInfo.contextErrorMessage]] for a possible description of what went wrong.
-    * There could also be some missing optional features; consult the contents of [[WebGLRenderCompatibilityInfo.missingOptionalFeatures]].
-    */
+   * Signifies that the base requirements of compatibility are met but WebGL reported a major performance caveat.  The browser
+   * has likely fallen back to software rendering due to lack of a usable GPU.
+   * Consult [[WebGLRenderCompatibilityInfo.contextErrorMessage]] for a possible description of what went wrong.
+   * There could also be some missing optional features; consult the contents of [[WebGLRenderCompatibilityInfo.missingOptionalFeatures]].
+   */
   MajorPerformanceCaveat,
   /**
-    * Signifies that the base requirements of compatibility are not met; rendering cannot occur.
-    * Consult the contents of [[WebGLRenderCompatibilityInfo.missingRequiredFeatures]].
-    */
+   * Signifies that the base requirements of compatibility are not met; rendering cannot occur.
+   * Consult the contents of [[WebGLRenderCompatibilityInfo.missingRequiredFeatures]].
+   */
   MissingRequiredFeatures,
   /**
-    * Signifies an inability to create either a canvas or a WebGL rendering context; rendering cannot occur.  Consult
-    * [[WebGLRenderCompatibilityInfo.contextErrorMessage]] for a possible description of what went wrong.
-    */
+   * Signifies an inability to create either a canvas or a WebGL rendering context; rendering cannot occur.  Consult
+   * [[WebGLRenderCompatibilityInfo.contextErrorMessage]] for a possible description of what went wrong.
+   */
   CannotCreateContext,
 }
 
 /** Known bugs associated with specific graphics drivers for which iTwin.js can apply workarounds to produce correct visualization.
-  * An instance of this object will exist on the [[WebGLRenderCompatibilityInfo]] object returned by [[queryRenderCompatibility]].
-  * @see [[WebGLRenderCompatibilityInfo]]
-  * @public
-  */
+ * An instance of this object will exist on the [[WebGLRenderCompatibilityInfo]] object returned by [[queryRenderCompatibility]].
+ * @see [[WebGLRenderCompatibilityInfo]]
+ * @public
+ */
 export interface GraphicsDriverBugs {
   /** If true, the graphics driver inappropriately applies the "early Z" optimization when a fragment shader writes to the depth buffer.
-    * Early Z elides execution of the fragment shader if the depth test fails; but if the fragment shader contains code that can alter the depth, it
-    * must be executed. The primary symptom of this bug is transparent geometry appearing to be behind opaque geometry despite actually being in front of it.
-    *
-    * Affects Intel HD/UHD Graphics 620/630.
-    *
-    * The workaround for this bug has minimal impact on performance and no impact on visual fidelity.
-    */
+   * Early Z elides execution of the fragment shader if the depth test fails; but if the fragment shader contains code that can alter the depth, it
+   * must be executed. The primary symptom of this bug is transparent geometry appearing to be behind opaque geometry despite actually being in front of it.
+   *
+   * Affects Intel HD/UHD Graphics 620/630.
+   *
+   * The workaround for this bug has minimal impact on performance and no impact on visual fidelity.
+   */
   fragDepthDoesNotDisableEarlyZ?: true;
 }
 
 /** Describes the level of compatibility of a client device/browser with the iTwin.js rendering system.
-  * @public
-  */
+ * @public
+ */
 export interface WebGLRenderCompatibilityInfo {
   /** Describes the overall status of rendering compatibility. */
   status: WebGLRenderCompatibilityStatus;
@@ -116,8 +116,8 @@ export interface WebGLRenderCompatibilityInfo {
 }
 
 /** A function that creates and returns a WebGLContext given an HTMLCanvasElement, a boolean specifying whether to use WebGL2, and a WebGLContextAttributes object describing the desired context attributes.
-  * @public
-  */
+ * @public
+ */
 export type ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes) => WebGLContext | undefined;
 
 function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = true, attributes?: WebGLContextAttributes): WebGLContext | undefined {
@@ -128,12 +128,12 @@ function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = tr
 }
 
 /** This function returns information about the client system's level of compatibility with the iTwin.js rendering system, describing the client system's support for both optional and required features. It will also report if there is a major issue with the client system such as the browser falling back to software rendering or an inability to create a either a canvas or a WebGL rendering context.
-  * @param useWebGL2 A boolean which will be passed to the createContext function in order to create the desired type of context; set this to `true` to use WebGL2, `false` to use WebGL1.
-  * @param createContext A function of type [[ContextCreator]] that returns a WebGLContext. If not specified, this by default uses `canvas.getContext()` to create the WebGLContext.
-  * @returns A [[WebGLRenderCompatibilityInfo]] object which contains a compatibility summary.
-  * @see [[WebGLRenderCompatibilityInfo]]
-  * @public
-  */
+ * @param useWebGL2 A boolean which will be passed to the createContext function in order to create the desired type of context; set this to `true` to use WebGL2, `false` to use WebGL1.
+ * @param createContext A function of type [[ContextCreator]] that returns a WebGLContext. If not specified, this by default uses `canvas.getContext()` to create the WebGLContext.
+ * @returns A [[WebGLRenderCompatibilityInfo]] object which contains a compatibility summary.
+ * @see [[WebGLRenderCompatibilityInfo]]
+ * @public
+ */
 export function queryRenderCompatibility(useWebGL2: boolean, createContext?: ContextCreator): WebGLRenderCompatibilityInfo {
   const canvas = document.createElement("canvas");
   if (null === canvas)
