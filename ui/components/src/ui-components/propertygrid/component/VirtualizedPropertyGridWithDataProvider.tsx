@@ -26,6 +26,8 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
   highlight?: HighlightingComponentProps & {
     filteredTypes?: FilteredType[];
   };
+
+  /** @alpha */
   propertyCategoryRendererManager?: PropertyCategoryRendererManager;
 }
 
