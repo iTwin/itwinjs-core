@@ -2,6 +2,12 @@
   "name": "@bentley/mobile-manager",
   "entries": [
     {
+      "version": "2.14.2",
+      "tag": "@bentley/mobile-manager_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.14.1",
       "tag": "@bentley/mobile-manager_v2.14.1",
       "date": "Mon, 05 Apr 2021 16:28:00 GMT",
