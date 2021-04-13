@@ -181,7 +181,7 @@ export class TxnManager {
   /** @internal */
   protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]) {
     this.onGeometryChanged.raiseEvent(modelProps);
-    IpcHost.notifyEditingSession(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
+    IpcHost.notifyEditingScope(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
   }
 
   /** @internal */

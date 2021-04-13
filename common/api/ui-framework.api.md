@@ -3688,8 +3688,11 @@ export class MessageManager {
     static readonly onInputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent;
     static readonly onMessageAddedEvent: MessageAddedEvent;
     static readonly onMessagesUpdatedEvent: MessagesUpdatedEvent;
+    // (undocumented)
+    static readonly onOpenMessageCenterEvent: OpenMessageCenterEvent;
     static readonly onToolAssistanceChangedEvent: ToolAssistanceChangedEvent;
     static openMessageBox(mbType: MessageBoxType, message: NotifyMessageType, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    static openMessageCenter(): void;
     static openToolTip(htmlElement: HTMLElement, message: NotifyMessageType, location?: XAndY, options?: ToolTipOptions): void;
     static outputActivityMessage(message: NotifyMessageType, percentComplete: number): boolean;
     static outputMessage(message: NotifyMessageDetailsType): void;
@@ -4090,6 +4093,10 @@ export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessage
 
 // @public
 export type NotifyMessageType = MessageType;
+
+// @public
+export class OpenMessageCenterEvent extends UiEvent<{}> {
+}
 
 // @internal
 export function packNineZoneState(state: NineZoneState): SavedNineZoneState;

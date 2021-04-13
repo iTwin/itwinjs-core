@@ -11,19 +11,23 @@ import { BatchType, Feature, GeometryClass, PackedFeatureTable } from "@bentley/
 import { IModelConnection } from "../IModelConnection";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
- * @see [[Viewport.readPixels]]
- * @beta
+ * @see [[Viewport.readPixels]].
+ * @public
  */
 export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
+    /** The feature that produced the pixel. */
     public readonly feature?: Feature;
+    /** The pixel's depth in [[CoordSystem.Npc]] coordinates (0 to 1), or -1 if depth was not written or not requested. */
     public readonly distanceFraction: number;
+    /** The type of geometry that produced the pixel. */
     public readonly type: GeometryType;
+    /** The planarity of the geometry that produced the pixel. */
     public readonly planarity: Planarity;
     /** @internal */
     public readonly featureTable?: PackedFeatureTable;
-    /** @internal */
+    /** The iModel from which the geometry producing the pixel originated. */
     public readonly iModel?: IModelConnection;
     /** @internal */
     public readonly tileId?: string;
@@ -41,12 +45,23 @@ export namespace Pixel {
       this.tileId = tileId;
     }
 
-    public get elementId(): Id64String | undefined { return undefined !== this.feature ? this.feature.elementId : undefined; }
-    public get subCategoryId(): Id64String | undefined { return undefined !== this.feature ? this.feature.subCategoryId : undefined; }
-    public get geometryClass(): GeometryClass | undefined { return undefined !== this.feature ? this.feature.geometryClass : undefined; }
+    /** The Id of the element that produced the pixel. */
+    public get elementId(): Id64String | undefined {
+      return undefined !== this.feature ? this.feature.elementId : undefined;
+    }
+
+    /** The Id of the [SubCategory]($backend) that produced the pixel. */
+    public get subCategoryId(): Id64String | undefined {
+      return undefined !== this.feature ? this.feature.subCategoryId : undefined;
+    }
+
+    /** The class of geometry that produced the pixel. */
+    public get geometryClass(): GeometryClass | undefined {
+      return undefined !== this.feature ? this.feature.geometryClass : undefined;
+    }
   }
 
-  /** Describes the foremost type of geometry which produced the [[Pixel.Data]]. */
+  /** Describes the type of geometry that produced the [[Pixel.Data]]. */
   export enum GeometryType {
     /** [[Pixel.Selector.GeometryAndDistance]] was not specified, or the type could not be determined. */
     Unknown, // Geometry was not selected, or type could not be determined

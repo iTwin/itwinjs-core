@@ -46,9 +46,6 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async getCloudEnv(): Promise<CloudEnvProps> {
     return this.forward(arguments);
   }
-  public async createIModel(_name: string, _contextId: string, _deleteIfExists: boolean): Promise<string> {
-    return this.forward(arguments);
-  }
   public async purgeCheckpoints(_iModelId: string): Promise<void> {
     return this.forward(arguments);
   }

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipPrimitive, ClipShape, ClipVector, Point3d } from "@bentley/geometry-core";
+import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@bentley/geometry-core";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { IModelApp } from "../../../IModelApp";
 
@@ -17,9 +17,14 @@ describe("ClipVolume", async () => {
   });
 
   it("should ignore empty ClipVectors", () => {
-    const clipVector = ClipVector.createEmpty();
-    const clipVolume = ClipVolume.create(clipVector);
-    expect(clipVolume).to.be.undefined;
+    let clipVector = ClipVector.createEmpty();
+    expect(ClipVolume.create(clipVector)).to.be.undefined;
+
+    clipVector = ClipVector.createCapture([]);
+    expect(ClipVolume.create(clipVector)).to.be.undefined;
+
+    clipVector = ClipVector.createCapture([ClipPrimitive.createCapture(UnionOfConvexClipPlaneSets.createEmpty())]);
+    expect(ClipVolume.create(clipVector)).to.be.undefined;
   });
 
   it("should support single-primitive ClipVectors", () => {
@@ -39,11 +44,8 @@ describe("ClipVolume", async () => {
     const clipVolume = ClipVolume.create(clipVector)!;
     expect(clipVolume).to.not.be.undefined;
 
-    const data = clipVolume.getTextureData() as Float32Array;
-    expect(data).not.to.be.undefined;
-    expect(data instanceof Float32Array).to.be.true;
-
-    const expectedData = [0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1, 2];
+    const data = new Float32Array(clipVolume.getData(Transform.createIdentity()).buffer);
+    const expectedData = [0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1, 2, 2, 2, 2, 0];
     expect(data.length).to.equal(expectedData.length);
     for (let i = 0; i < data.length; i++)
       expect(data[i]).to.equal(expectedData[i]);
@@ -55,7 +57,7 @@ describe("ClipVolume", async () => {
     let vol = ClipVolume.create(vec)!;
     expect(vol).not.to.be.undefined;
     expect(vol.clipVector).to.equal(vec);
-    expect(vol.numPlanes).to.equal(6);
+    expect(vol.numRows).to.equal(7); // 6 planes plus a boundary marker
 
     let planes = vec.clips[0].fetchClipPlanesRef()!;
     expect(planes).not.to.be.undefined;
@@ -63,14 +65,13 @@ describe("ClipVolume", async () => {
     vec.appendReference(ClipPrimitive.createCapture(planes));
     vol = ClipVolume.create(vec)!;
     expect(vol).not.to.be.undefined;
-    expect(vol.numPlanes).to.equal(13); // 6 planes per ClipPrimitive, plus a plane in between serving as boundary marker.
+    expect(vol.numRows).to.equal(14); // 6 planes per ClipPrimitive, plus a plane after each serving as boundary marker.
 
     const planesData = [0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1, 2];
     const boundaryData = [2, 2, 2, 0];
-    const expectedData = planesData.concat(boundaryData, planesData);
+    const expectedData = planesData.concat(boundaryData, planesData).concat(boundaryData);
 
-    const data = vol.getTextureData() as Float32Array;
-    expect(data instanceof Float32Array).to.be.true;
+    const data = new Float32Array(vol.getData(Transform.createIdentity()).buffer);
     expect(data.length).to.equal(expectedData.length);
     for (let i = 0; i < data.length; i++)
       expect(data[i]).to.equal(expectedData[i]);

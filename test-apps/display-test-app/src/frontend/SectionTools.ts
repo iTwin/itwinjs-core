@@ -6,7 +6,7 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 import { createButton, createComboBox } from "@bentley/frontend-devtools";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@bentley/geometry-core";
 import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
-import { EditManipulator, IModelApp, ScreenViewport, ViewClipDecorationProvider, Viewport } from "@bentley/imodeljs-frontend";
+import { AccuDrawHintBuilder, IModelApp, ScreenViewport, ViewClipDecorationProvider, Viewport } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 function setFocusToHome(): void {
@@ -117,7 +117,7 @@ class ModelClipTool {
     let point = clipPoint.clone();
     point = vp.viewToWorld(point);
 
-    const boresite = EditManipulator.HandleUtils.getBoresite(point, vp);
+    const boresite = AccuDrawHintBuilder.getBoresite(point, vp);
     const viewY = vp.rotation.rowY();
     let normal = viewY.crossProduct(boresite.direction);
 

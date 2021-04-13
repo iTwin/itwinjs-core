@@ -52,7 +52,15 @@
     },
     {
       "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
+    },
+    {
+      "name": "@bentley/ecschema-rpcinterface-common",
+      "allowedCategories": [ "backend", "common", "integration-testing" ]
+    },
+    {
+      "name": "@bentley/ecschema-rpcinterface-impl",
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/electron-manager",
