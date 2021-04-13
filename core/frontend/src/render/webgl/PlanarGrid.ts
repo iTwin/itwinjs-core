@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Plane3dByOriginAndUnitNormal, Point2d } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@bentley/geometry-core";
 import { Frustum, QPoint2dList, QPoint3dList } from "@bentley/imodeljs-common";
 import { PlanarGridProps } from "../primitives/PlanarGrid";
 import { RenderMemory } from "../RenderMemory";
@@ -18,6 +18,10 @@ import { RenderOrder, RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import assert = require("assert");
+import { RenderGraphic } from "../RenderGraphic";
+import { GraphicBranch } from "../GraphicBranch";
+import { RenderSystem } from "../RenderSystem";
+import { Primitive } from "./Primitive";
 
 class PlanarGridGeometryParams extends IndexedGeometryParams {
 
@@ -46,7 +50,7 @@ export class PlanarGridGeometry extends IndexedGeometry  {
     this.props = params.props;
   }
 
-  public static create(frustum: Frustum, grid: PlanarGridProps): PlanarGridGeometry | undefined {
+  public static create(frustum: Frustum, grid: PlanarGridProps, system: RenderSystem): RenderGraphic | undefined {
     const plane = Plane3dByOriginAndUnitNormal.create(grid.origin, grid.rMatrix.rowZ())!;
     const polygon = frustum.getIntersectionWithPlane(plane);
 
@@ -55,6 +59,7 @@ export class PlanarGridGeometry extends IndexedGeometry  {
 
     const xVector = grid.rMatrix.rowX();
     const yVector = grid.rMatrix.rowY();
+    const gridsPerRef = Math.max(1, grid.gridsPerRef);
     const xOrigin = xVector.dotProduct(grid.origin);
     const yOrigin = yVector.dotProduct(grid.origin);
     const params = [];
@@ -66,6 +71,17 @@ export class PlanarGridGeometry extends IndexedGeometry  {
 
     const qPoints = QPoint3dList.fromPoints(polygon);
     const qParams = QPoint2dList.fromPoints(params);
+
+    qParams.params.origin.x = qParams.params.origin.x % gridsPerRef;
+    qParams.params.origin.y = qParams.params.origin.y % gridsPerRef;
+
+    let transform;
+    // If the grid is far from the origin, create a branch to avoid large coordinate accuracy issues. (Reality models).
+    if (qPoints.params.origin.magnitude() > 1.0E4) {
+      transform = Transform.createTranslationXYZ(qPoints.params.origin.x, qPoints.params.origin.y, qPoints.params.origin.z);
+      qPoints.params.origin.setZero();
+    }
+
     const nTriangles = polygon.length - 2;
     const indices = new Uint32Array(3 * nTriangles);
     for (let i = 0, j = 0; i < nTriangles; i++) {
@@ -83,6 +99,16 @@ export class PlanarGridGeometry extends IndexedGeometry  {
     if (!geomParams)
       return undefined;
 
-    return new PlanarGridGeometry(geomParams);
+    const geom = new PlanarGridGeometry(geomParams);
+    let graphic: RenderGraphic | undefined = Primitive.create(() => geom);
+
+    if (transform && graphic) {
+      const branch = new GraphicBranch(true);
+      branch.add(graphic);
+      graphic = system.createBranch(branch, transform);
+    }
+
+    return graphic;
   }
 }
+

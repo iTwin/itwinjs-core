@@ -14,5 +14,8 @@ export interface PlanarGridProps {
   rMatrix: Matrix3d;
   spacing: XAndY;
   gridsPerRef: number;
-  planeColor: ColorDef;
+  color: ColorDef;
+  planeTransparency: number;
+  refTransparency: number;      // Reference line transparency (0-255)
+  lineTransparency: number;     // Line transparency (0-255)
 }

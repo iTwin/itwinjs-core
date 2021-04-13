@@ -356,6 +356,17 @@ export class DecorateContext extends RenderContext {
     if (vp.viewingGlobe)
       return;
 
+    const color = vp.getContrastToBackgroundColor();
+
+    if (drawRasterGrid) {
+      const { planeTransparency, refTransparency, lineTransparency } = GridDisplaySettings;
+      const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(),  { origin: gridOrigin, rMatrix, spacing, gridsPerRef, color, planeTransparency, refTransparency, lineTransparency } );
+      if (planarGrid) {
+        this.addDecoration(GraphicType.WorldDecoration, planarGrid);
+        if (!drawVectorGrid)
+          return;
+      }
+    }
     const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const eyeDir = Vector3d.createFrom(eyePoint);
     const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
@@ -371,17 +382,7 @@ export class DecorateContext extends RenderContext {
     if (!vp.isCameraOn && Math.abs(eyeDot) < 0.005)
       return;
 
-    const color = vp.getContrastToBackgroundColor();
     const planeColor = (eyeDot < 0.0 ? ColorDef.red : color).withTransparency(GridDisplaySettings.planeTransparency);
-
-    if (drawRasterGrid) {
-      const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(),  { origin: gridOrigin, rMatrix, spacing, gridsPerRef, planeColor } );
-      if (planarGrid) {
-        this.addDecoration(GraphicType.WorldDecoration, planarGrid);
-        if (!drawVectorGrid)
-          return;
-      }
-    }
 
     const plane = Plane3dByOriginAndUnitNormal.create(gridOrigin, zVec);
     if (undefined === plane)
@@ -415,9 +416,9 @@ export class DecorateContext extends RenderContext {
 
       const minDist = Math.abs(startEndDistances.x0 + startEndDistances.x1) / (gridLineIdentifier.stepCount * 2);
       if (minDist < GridDisplaySettings.minFadeSeparation)
-        thisTransparency = Math.ceil(Geometry.interpolate(255, minDist / (GridDisplaySettings.minFadeSeparation + gridOptions.distanceBetweenLines), lineTransparency));
+        thisTransparency = Math.ceil(Geometry.interpolate(255, minDist / (GridDisplaySettings.minFadeSeparation + gridOptions.distanceBetweenLines), currLineTransparency));
       else
-        thisTransparency = lineTransparency;
+        thisTransparency = currLineTransparency;
 
       if (gridLineIdentifier.stepCount > 1 && (skipRefLines || thisTransparency > 240))
         return; // limit number of steps...
@@ -459,7 +460,7 @@ export class DecorateContext extends RenderContext {
     let skipRefLines = false;
     let firstLine: Point3d[] | undefined;
     let linePattern = eyeDot < 0.0 ? LinePixels.Code2 : LinePixels.Solid;
-    let lineTransparency = GridDisplaySettings.refTransparency;
+    let currLineTransparency = GridDisplaySettings.refTransparency;
     let lastTransparency: number;
     let thisTransparency: number;
     const gridInViewContext = GridInViewContext.create(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
@@ -472,7 +473,7 @@ export class DecorateContext extends RenderContext {
       });
     // add first line now if it ended up being the only one in the view due to zoom level...
     if (undefined !== firstLine) {
-      builder.setSymbology(color.withTransparency(lineTransparency), planeColor, 1, linePattern);
+      builder.setSymbology(color.withTransparency(currLineTransparency), planeColor, 1, linePattern);
       builder.addLineString(firstLine);
     }
     // might still need grid lines even if no ref lines are visible in the view due to zoom level...
@@ -480,8 +481,7 @@ export class DecorateContext extends RenderContext {
       drawGridLines = true;
 
     if (drawGridLines) {
-
-      lineTransparency = GridDisplaySettings.lineTransparency;
+      currLineTransparency = GridDisplaySettings.lineTransparency;
       linePattern = LinePixels.Solid;
       skipRefLines = true;
       gridOptions.gridMultiple = 1;

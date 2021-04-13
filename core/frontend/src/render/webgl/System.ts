@@ -511,8 +511,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public createPlanarGrid(frustum: Frustum, grid: PlanarGridProps): RenderGraphic | undefined {
-    const geom = PlanarGridGeometry.create (frustum, grid);
-    return geom ?  Primitive.create(() =>  geom) : undefined;
+    return PlanarGridGeometry.create (frustum, grid, this);
   }
 
   public createRealityMeshFromTerrain(terrainMesh: TerrainMeshPrimitive, transform?: Transform): RealityMeshGeometry | undefined {

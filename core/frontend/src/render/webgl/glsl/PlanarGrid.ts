@@ -22,10 +22,10 @@ const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeTexCoord = "return unquantize2d(a_uvParam, u_qTexCoordParams);";
 
 const computeBaseColor = `
-  vec4 color = u_planeColor;
+  vec4 color = u_gridColor;
   float refsPerGrid = u_gridProps.x;
-  if (0.0 == refsPerGrid || !drawGridLine(color, 1.0 / refsPerGrid, 1.0))
-    drawGridLine(color, 1.0, .5);
+  if (0.0 == refsPerGrid || !drawGridLine(color, 1.0 / refsPerGrid, u_gridProps.z - color.a))
+    drawGridLine(color, 1.0, u_gridProps.y - color.a);
 
   return color;
 `;
@@ -38,8 +38,7 @@ const drawGridLine = `
       vec2 grid = abs(fract(mult * v_texCoord - 0.5) - 0.5) / deriv;
       float line = min(grid.x, grid.y);
       if (line < 1.0) {
-        color.rgb = vec3(1.0);
-        color.a *= (1.0 + alphaScale * (1.0 - min(line, 1.0)));
+        color.a += alphaScale * (1.0 - min(line, 1.0));
         return true;
         }
       }
@@ -74,17 +73,18 @@ export default function createPlanarGridProgram(context: WebGLContext): ShaderPr
       uniform.setUniform4fv(planarGrid.uvParams.params);
     });
   });
-  frag.addUniform("u_planeColor", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_planeColor", (uniform, params) => {
+  frag.addUniform("u_gridColor", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_gridColor", (uniform, params) => {
       const planarGrid = params.geometry.asPlanarGrid!;
-      const planeColor = planarGrid.props.planeColor.colors;
-      uniform.setUniform4fv([planeColor.r / 255, planeColor.g / 255, planeColor.b / 255, 1 - planeColor.t / 255]);
+      const color = planarGrid.props.color.colors;
+      uniform.setUniform4fv([color.r / 255, color.g / 255, color.b / 255, 1 - planarGrid.props.planeTransparency / 255]);
     });
   });
   frag.addUniform("u_gridProps", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_gridProps", (uniform, params) => {
       const planarGridProps = params.geometry.asPlanarGrid!.props;
-      uniform.setUniform4fv([planarGridProps.gridsPerRef, 0.0, 0.0, 0.0]);
+      const planeAlpha = (1 - planarGridProps.planeTransparency / 255);
+      uniform.setUniform4fv([planarGridProps.gridsPerRef,  planeAlpha + 1.0 - planarGridProps.lineTransparency / 255, planeAlpha + 1 - planarGridProps.refTransparency / 255, 0.0]);
     });
   });
 
