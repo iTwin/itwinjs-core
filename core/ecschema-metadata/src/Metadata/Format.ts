@@ -10,10 +10,9 @@ import { FormatProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import {
-  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision, parseFormatTrait, parseFormatType,
-  parsePrecision, parseScientificType, parseShowSignOption, ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
-} from "../utils/FormatEnums";
+import { DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
+  parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption, ScientificType, scientificTypeToString,
+  ShowSignOption, showSignOptionToString} from "@bentley/imodeljs-quantity";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
@@ -76,9 +75,7 @@ export class Format extends SchemaItem {
   private parseFormatTraits(formatTraitsFromJson: string | string[]) {
     const formatTraits = Array.isArray(formatTraitsFromJson) ? formatTraitsFromJson : formatTraitsFromJson.split(/,|;|\|/);
     for (const traitStr of formatTraits) {
-      const formatTrait = parseFormatTrait(traitStr);
-      if (undefined === formatTrait)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'formatTraits' attribute. The string '${traitStr}' is not a valid format trait.`);
+      const formatTrait = parseFormatTrait(traitStr, this.name);
       this._formatTraits = this._formatTraits | formatTrait;
     }
   }
@@ -108,17 +105,13 @@ export class Format extends SchemaItem {
   protected setPrecision(precision: number) { this._precision = precision; }
 
   private typecheck(formatProps: FormatProps) {
-    const formatType = parseFormatType(formatProps.type);
-    if (undefined === formatType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'type' attribute.`);
+    const formatType = parseFormatType(formatProps.type, this.fullName);
     this._type = formatType;
 
     if (undefined !== formatProps.precision) {
       if (!Number.isInteger(formatProps.precision)) // must be an integer
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'precision' attribute. It should be an integer.`);
-      const precision = parsePrecision(formatProps.precision, this._type);
-      if (undefined === precision)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'precision' attribute.`);
+      const precision = parsePrecision(formatProps.precision, this._type, this.fullName);
       this._precision = precision;
     }
 
@@ -131,9 +124,7 @@ export class Format extends SchemaItem {
     if (FormatType.Scientific === this.type) {
       if (undefined === formatProps.scientificType) // if format type is scientific and scientific type is undefined, throw
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} is 'Scientific' type therefore the attribute 'scientificType' is required.`);
-      const scientificType = parseScientificType(formatProps.scientificType);
-      if (undefined === scientificType)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'scientificType' attribute.`);
+      const scientificType = parseScientificType(formatProps.scientificType, this.fullName);
       this._scientificType = scientificType;
     }
 
@@ -146,9 +137,7 @@ export class Format extends SchemaItem {
     }
 
     if (undefined !== formatProps.showSignOption) {
-      const signOption = parseShowSignOption(formatProps.showSignOption);
-      if (undefined === signOption)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'showSignOption' attribute.`);
+      const signOption = parseShowSignOption(formatProps.showSignOption, this.fullName);
       this._showSignOption = signOption;
     }
 
