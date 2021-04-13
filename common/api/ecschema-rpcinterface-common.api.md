@@ -5,8 +5,12 @@
 ```ts
 
 import { IModelRpcProps } from '@bentley/imodeljs-common';
+import { ISchemaLocater } from '@bentley/ecschema-metadata';
 import { RpcInterface } from '@bentley/imodeljs-common';
+import { Schema } from '@bentley/ecschema-metadata';
+import { SchemaContext } from '@bentley/ecschema-metadata';
 import { SchemaKey } from '@bentley/ecschema-metadata';
+import { SchemaMatchType } from '@bentley/ecschema-metadata';
 
 // @internal
 export abstract class ECSchemaRpcInterface extends RpcInterface {
@@ -18,6 +22,15 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
     // (undocumented)
     static interfaceVersion: string;
     static version: string;
+}
+
+// @alpha
+export class ECSchemaRpcLocater implements ISchemaLocater {
+    constructor(token: IModelRpcProps);
+    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
+    // (undocumented)
+    readonly token: IModelRpcProps;
 }
 
 

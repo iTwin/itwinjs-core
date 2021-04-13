@@ -15,7 +15,7 @@
     "extract-api": "betools extract-api --entry=imodeljs-orbitgt",
     "lint": "",
     "test": "betools test",
-    "cover": ""
+    "cover": "nyc npm test"
   },
   "repository": {
     "type": "git",
