@@ -336,10 +336,26 @@ export namespace Id64 {
     return ids;
   }
 
+  export function * iterator(ids: Id64Arg): Iterator<Id64String> {
+    if (typeof ids === "string") {
+      yield ids;
+    } else {
+      for (const id of ids)
+        yield id;
+    }
+  }
+
+  export function iterable(ids: Id64Arg): Iterable<Id64String> {
+    return {
+      [Symbol.iterator]: () => iterator(ids),
+    };
+  }
+
   /** Execute a function on each [[Id64String]] of an [[Id64Arg]].
    * @param arg The Id(s) to iterate.
    * @param callback The function to invoke on each Id.
    * @see [[Id64.iterate]] for a similar function which allows iteration to be halted before it completes.
+   * @deprecated use Id64.iterable()
    */
   export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void {
     Id64.iterate(arg, (id: Id64String) => {
@@ -352,6 +368,7 @@ export namespace Id64 {
    * @param arg The Id(s) to iterate.
    * @param callback The function to invoke on each Id. The function returns false to terminate iteration, or true to continue iteration.
    * @returns True if all Ids were iterated, or false if iteration was terminated due to the callback returning false.
+   * @deprecated use Id64.iterable()
    */
   export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean {
     if (typeof arg === "string")
