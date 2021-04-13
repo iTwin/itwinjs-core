@@ -198,7 +198,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'decimalSeparator' attribute. It must be a one character string.`);
+      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'decimalSeparator' attribute. It should be an empty or one character string.`);
     });
   });
 
@@ -230,7 +230,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'thousandSeparator' attribute. It must be a one character string.`);
+      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'thousandSeparator' attribute. It should be an empty or one character string.`);
     });
   });
 
@@ -261,7 +261,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'uomSeparator' attribute. It must be empty or a string with a single character.`);
+      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'uomSeparator' attribute. It should be an empty or one character string.`);
     });
   });
 
@@ -293,7 +293,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'stationSeparator' attribute. It must be a one character string.`);
+      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'stationSeparator' attribute. It should be an empty or one character string.`);
     });
   });
 
@@ -326,7 +326,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has type 'Scientific' therefore attribute 'scientificType' is required.`);
+      assert.isTrue(err instanceof QuantityError && err.message === `The Format test is 'Scientific' type therefore the attribute 'scientificType' is required.`);
     });
   });
 
@@ -435,7 +435,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has type 'Station' therefore attribute 'stationOffsetSize' is required.`);
+      assert.isTrue(err instanceof QuantityError && err.message === `The Format test is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
     });
   });
 
@@ -482,7 +482,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has a Composite with an invalid 'spacer' attribute. It must be empty or a string with a single character.`);
+      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
     });
   });
 

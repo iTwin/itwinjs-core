@@ -74,16 +74,16 @@ export class BaseFormat {
   public set stationSeparator(stationSeparator: string) { this._stationSeparator = stationSeparator; }
 
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
-  public set stationOffsetSize(stationOffsetSize: number | undefined) { this._stationOffsetSize = stationOffsetSize; }
+  public set stationOffsetSize(stationOffsetSize: number | undefined) {stationOffsetSize =  this._stationOffsetSize = stationOffsetSize; }
 
   public get formatTraits(): FormatTraits { return this._formatTraits; }
   public set formatTraits(formatTraits: FormatTraits) { this._formatTraits = formatTraits; }
 
   public get spacer(): string | undefined { return this._spacer; }
-  public set spacer(spacer: string | undefined) { spacer ?? this._spacer; }
+  public set spacer(spacer: string | undefined) { this._spacer = spacer ?? this._spacer; }
 
   public get includeZero(): boolean | undefined { return this._includeZero; }
-  public set includeZero(includeZero: boolean | undefined) { includeZero ?? this._includeZero; }
+  public set includeZero(includeZero: boolean | undefined) { this._includeZero = includeZero ?? this._includeZero; }
 
   /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid FormatType. Throws exception if not valid. */
   public parseFormatTraits(formatTraitsFromJson: string | string[]) {
@@ -110,7 +110,7 @@ export class BaseFormat {
     }
     if (this.type === FormatType.Scientific) {
       if (undefined === formatProps.scientificType) // if format type is scientific and scientific type is undefined, throw
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has type 'Scientific' therefore attribute 'scientificType' is required.`);
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Scientific' type therefore the attribute 'scientificType' is required.`);
 
       this._scientificType = parseScientificType(formatProps.scientificType, this.name);
     }
@@ -127,6 +127,13 @@ export class BaseFormat {
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'minWidth' attribute. It should be a positive integer.`);
       this._minWidth = formatProps.minWidth;
     }
+    if (FormatType.Station === this.type) {
+      if (undefined === formatProps.stationOffsetSize)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
+      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize < 0) // must be a positive int > 0
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
+      this._stationOffsetSize = formatProps.stationOffsetSize;
+    }
 
     if (undefined !== formatProps.showSignOption) { // optional; default is "onlyNegative"
       this._showSignOption = parseShowSignOption(formatProps.showSignOption, this.name);
@@ -141,16 +148,16 @@ export class BaseFormat {
     if (undefined !== formatProps.decimalSeparator) { // optional
       if (typeof (formatProps.decimalSeparator) !== "string") // not a string or not a one character string
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
-      if (formatProps.decimalSeparator.length !== 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It must be a one character string.`);
+      if (formatProps.decimalSeparator.length > 1)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It should be an empty or one character string.`);
       this._decimalSeparator = formatProps.decimalSeparator;
     }
 
     if (undefined !== formatProps.thousandSeparator) { // optional
       if (typeof (formatProps.thousandSeparator) !== "string")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
-      if (formatProps.thousandSeparator.length !== 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It must be a one character string.`);
+      if (formatProps.thousandSeparator.length > 1)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It should be an empty or one character string.`);
       this._thousandSeparator = formatProps.thousandSeparator;
     }
 
@@ -158,15 +165,15 @@ export class BaseFormat {
       if (typeof (formatProps.uomSeparator) !== "string")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
       if (formatProps.uomSeparator.length < 0 || formatProps.uomSeparator.length > 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It must be empty or a string with a single character.`);
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be an empty or one character string.`);
       this._uomSeparator = formatProps.uomSeparator;
     }
 
     if (undefined !== formatProps.stationSeparator) { // optional; default is "+"
       if (typeof (formatProps.stationSeparator) !== "string")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
-      if (formatProps.stationSeparator.length !== 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It must be a one character string.`);
+      if (formatProps.stationSeparator.length > 1)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be an empty or one character string.`);
       this._stationSeparator = formatProps.stationSeparator;
     }
   }
@@ -229,7 +236,7 @@ export class Format extends BaseFormat {
         if (typeof (jsonObj.composite.spacer) !== "string")
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
         if (jsonObj.composite.spacer.length > 1)
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be empty or a string with a single character.`);
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
         this._spacer = jsonObj.composite.spacer;
       }
       if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
