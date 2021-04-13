@@ -188,18 +188,7 @@ export class Element extends Entity implements ElementProps {
    */
   protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
 
-  /** Called when an element in a graph is changed and none of its inputs were changed.
-   * It is for the special case where:
-   * * the specified element is part of an [[ElementDrivesElement]] graph, and
-   * * the element itself was directly changed, and
-   * * none of its inputs was changed.
-   * @see onBeforeOutputsHandled for the callback made when an input changes.
-   * @see [[ElementDrivesElement]] for more on element dependency graphs.
-   * @beta
-   */
-  protected static onDirectChangeHandled(_id: Id64String, _iModel: IModelDb): void { }
-
-  /** Called when a root element in a graph is changed, before its outputs are processed.
+  /** Called when a *root* element in a subgraph is changed and before its outputs are processed.
    * This special callback is made when:
    * * the element is part of an [[ElementDrivesElement]] graph, and
    * * the element has no inputs, and
@@ -215,7 +204,7 @@ export class Element extends Entity implements ElementProps {
    * * there was a direct change to some element upstream in the dependency graph.
    * * all upstream elements in the graph have been processed.
    * * none of the downstream elements have been processed.
-   * This method is not called if the element itself was directly changed and none of its inputs were changed. @see onDirectChangeHandled.
+   * This method is not called if none of the element's inputs were changed.
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
    */

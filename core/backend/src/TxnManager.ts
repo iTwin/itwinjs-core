@@ -183,6 +183,7 @@ export class TxnManager {
   protected _onEndValidate() {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onEndValidation.raiseEvent();
+    // TODO: if (this.validationErrors.length !== 0) throw new IModelError(validation ...)
   }
 
   /** @internal */
