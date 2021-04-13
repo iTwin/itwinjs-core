@@ -1731,9 +1731,7 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
     static get className(): string;
     // (undocumented)
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
-    // (undocumented)
     priority: number;
-    // (undocumented)
     status: number;
 }
 
