@@ -10,7 +10,7 @@
  * Logger categories used by this package
  * @note All logger categories in this package start with the `presentation-backend` prefix.
  * @see [Logger]($bentley)
- * @beta
+ * @public
  */
 export enum PresentationBackendLoggerCategory {
   Package = "presentation-backend",
@@ -29,7 +29,7 @@ export enum PresentationBackendLoggerCategory {
  * Logger categories used by this package
  * @note Logger categories used by the [[PresentationManager]] native addon.
  * @see [Logger]($bentley)
- * @beta
+ * @public
  */
 export enum PresentationBackendNativeLoggerCategory {
   ECObjects = "ECObjects",

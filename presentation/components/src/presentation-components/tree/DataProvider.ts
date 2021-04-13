@@ -51,22 +51,22 @@ export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
    */
   pagingSize?: number;
 
-  /**
-   * Should grouping nodes have a suffix with grouped nodes count. Defaults to `false`.
-   * @beta
-   */
+  /** Should grouping nodes have a suffix with grouped nodes count. Defaults to `false`. */
   appendChildrenCountForGroupingNodes?: boolean;
 
   /**
-   * By default the provider uses [[PresentationManager]] accessed through `Presentation.presentation` to request
+   * By default the provider uses [PresentationManager]($presentation-frontend) accessed through `Presentation.presentation` to request
    * node counts, nodes and filter them. The overrides allow swapping some or all of the data source entry points thus
    * making the provider request data from custom sources.
-   * @alpha
+   * @beta
    */
   dataSourceOverrides?: Partial<PresentationTreeDataProviderDataSourceEntryPoints>;
 }
 
-/** @alpha */
+/**
+ * Definitions of methods used by [[PresentationTreeDataProvider]] to get nodes' data.
+ * @beta
+ */
 export interface PresentationTreeDataProviderDataSourceEntryPoints {
   getNodesCount: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>) => Promise<number>;
   getNodesAndCount: (requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>) => Promise<{ nodes: Node[], count: number }>;
