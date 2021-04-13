@@ -27,7 +27,6 @@ The following APIs have been promoted to `public`. Public APIs are guaranteed to
 
 * [queryRenderCompatibility]($webgl-compatibility) for querying the client system's compatibility with the iTwin.js rendering system.
 * [WebGLRenderCompatibilityInfo]($webgl-compatibility) for summarizing the client system's compatibility.
-* [WebGLContext]($webgl-compatibility) for describing a WebGL1 or WebGL2 context.
 * [WebGLFeature]($webgl-compatibility) for enumerating the required and optionals features used by the iTwin.js rendering system.
 * [WebGLRenderCompatibilityStatus]($webgl-compatibility) for describing a general compatiblity rating of a client system.
 * [GraphicsDriverBugs]($webgl-compatibility) for describing any known graphics driver bugs for which iTwin.js will apply workarounds.
