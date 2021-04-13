@@ -240,13 +240,15 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   private async handleErrorPage(page: puppeteer.Page): Promise<void> {
     const errMsgText = await page.evaluate(() => {
       const title = document.title;
-      console.log(title);
       if (title.toLocaleLowerCase() == "error")
         return document.body.textContent;
       return undefined;
     });
 
-    if (undefined !== errMsgText && null !== errMsgText)
+    if (null === errMsgText)
+      throw new Error("Unknown error page detected.");
+
+    if (undefined !== errMsgText)
       throw new Error(errMsgText);
   }
 
