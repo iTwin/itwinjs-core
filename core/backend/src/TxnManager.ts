@@ -151,10 +151,6 @@ export class TxnManager {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
   }
   /** @internal */
-  protected _onDirectChange(elClassName: string, elId: Id64String): void {
-    (this._getElementClass(elClassName) as any).onDirectChangeHandled(elId, this._iModel);
-  }
-  /** @internal */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
     (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
   }
@@ -165,10 +161,6 @@ export class TxnManager {
   /** @internal */
   protected _onRootChanged(props: RelationshipProps): void {
     this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel);
-  }
-  /** @internal */
-  protected _onValidateOutput(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onValidateOutput(props, this._iModel);
   }
   /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void {
