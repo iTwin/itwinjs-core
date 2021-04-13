@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Id64, Id64Array, Logger } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
   BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions,
   InformationPartitionElement,
   PhysicalModel, PhysicalPartition, Relationship, SubCategory,
 } from "@bentley/imodeljs-backend";
 import { IModel } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 export const progressLoggerCategory = "Progress";
 
@@ -28,20 +29,10 @@ export class Transformer extends IModelTransformer {
   private _startTime = new Date();
   private _targetPhysicalModelId = Id64.invalid; // will be valid when PhysicalModels are being combined
 
-  public static async transformAll(sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
+  public static async transformAll(requestContext: AuthorizedClientRequestContext | ClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
     const transformer = new Transformer(sourceDb, targetDb, options);
-    if (options?.simplifyElementGeometry) {
-      transformer.importer.simplifyElementGeometry = true;
-    }
-    if (options?.combinePhysicalModels) {
-      transformer._targetPhysicalModelId = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "CombinedPhysicalModel");
-      transformer.importer.doNotUpdateElementIds.add(transformer._targetPhysicalModelId);
-    }
-    if (options?.excludeSubCategories) {
-      transformer.excludeSubCategories(options.excludeSubCategories);
-    }
-    transformer.initialize();
-    await transformer.processSchemas(new BackendRequestContext());
+    transformer.initialize(options);
+    await transformer.processSchemas(requestContext);
     targetDb.saveChanges("processSchemas");
     await transformer.processAll();
     targetDb.saveChanges("processAll");
@@ -53,14 +44,43 @@ export class Transformer extends IModelTransformer {
     transformer.logElapsedTime();
   }
 
-  public constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: IModelTransformOptions) {
+  public static async transformChanges(requestContext: AuthorizedClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangeSetId: string, options?: TransformerOptions): Promise<void> {
+    if ("" === sourceDb.changeSetId) {
+      assert("" === sourceStartChangeSetId);
+      return this.transformAll(requestContext, sourceDb, targetDb, options);
+    }
+    const transformer = new Transformer(sourceDb, targetDb, options);
+    transformer.initialize(options);
+    await transformer.processChanges(requestContext, sourceStartChangeSetId);
+    targetDb.saveChanges("processChanges");
+    if (options?.deleteUnusedGeometryParts) {
+      transformer.deleteUnusedGeometryParts();
+      targetDb.saveChanges("deleteUnusedGeometryParts");
+    }
+    transformer.dispose();
+    transformer.logElapsedTime();
+  }
+
+  private constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: IModelTransformOptions) {
     super(sourceDb, targetDb, options);
   }
 
-  private initialize(): void {
+  private initialize(options?: TransformerOptions): void {
     Logger.logInfo(progressLoggerCategory, `sourceDb=${this.sourceDb.pathName}`);
     Logger.logInfo(progressLoggerCategory, `targetDb=${this.targetDb.pathName}`);
     this.logChangeTrackingMemoryUsed();
+
+    // customize transformer using the specified options
+    if (options?.simplifyElementGeometry) {
+      this.importer.simplifyElementGeometry = true;
+    }
+    if (options?.combinePhysicalModels) {
+      this._targetPhysicalModelId = PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "CombinedPhysicalModel"); // WIP: Id should be passed in, not inserted here
+      this.importer.doNotUpdateElementIds.add(this._targetPhysicalModelId);
+    }
+    if (options?.excludeSubCategories) {
+      this.excludeSubCategories(options.excludeSubCategories);
+    }
 
     // query for and log the number of source Elements that will be processed
     this._numSourceElements = this.sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {

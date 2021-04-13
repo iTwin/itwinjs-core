@@ -7,7 +7,8 @@ import * as path from "path";
 import * as Yargs from "yargs";
 import { assert, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { BackendLoggerCategory, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
+import { BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
+import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelHubUtils } from "./IModelHubUtils";
 import { Transformer } from "./Transformer";
@@ -20,6 +21,8 @@ interface CommandLineArgs {
   sourceContextId?: GuidString;
   sourceIModelId?: GuidString;
   sourceIModelName?: string;
+  sourceStartChangeSetId?: string;
+  sourceEndChangeSetId?: string;
   targetFile: string;
   targetContextId?: GuidString;
   targetIModelId?: GuidString;
@@ -47,8 +50,8 @@ interface CommandLineArgs {
     Yargs.option("sourceContextId", { desc: "The iModelHub context containing the source iModel", type: "string" });
     Yargs.option("sourceIModelId", { desc: "The guid of the source iModel", type: "string", default: undefined });
     Yargs.option("sourceIModelName", { desc: "The name of the source iModel", type: "string", default: undefined });
-    // Yargs.option("sourceStartChangeSetId", { desc: "The starting changeSet of the source iModel to transform", type: "string", default: undefined });
-    // Yargs.option("sourceEndChangeSetId", { desc: "The ending changeSet of the source iModel to transform", type: "string", default: undefined });
+    Yargs.option("sourceStartChangeSetId", { desc: "The starting changeSet of the source iModel to transform", type: "string", default: undefined });
+    Yargs.option("sourceEndChangeSetId", { desc: "The ending changeSet of the source iModel to transform", type: "string", default: undefined });
 
     // used if the target iModel is a snapshot
     Yargs.option("targetFile", { desc: "The full path to the target iModel", type: "string" });
@@ -85,29 +88,40 @@ interface CommandLineArgs {
       Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
 
-    let requestContext: AuthorizedClientRequestContext | undefined;
+    let requestContext: AuthorizedClientRequestContext | BackendRequestContext;
     let contextRegistry: ContextRegistryClient | undefined;
     let sourceDb: IModelDb;
     let targetDb: IModelDb;
+    let processChanges = false;
 
     if (args.sourceContextId || args.targetContextId) {
       requestContext = await IModelHubUtils.getAuthorizedClientRequestContext();
       contextRegistry = new ContextRegistryClient();
+    } else {
+      requestContext = new BackendRequestContext();
     }
 
     if (args.sourceContextId) {
       // source is from iModelHub
-      assert(undefined !== requestContext);
+      assert(requestContext instanceof AuthorizedClientRequestContext);
       assert(undefined !== contextRegistry);
       assert(undefined !== args.sourceIModelId);
       const sourceContextId = Guid.normalize(args.sourceContextId);
       const sourceIModelId = Guid.normalize(args.sourceIModelId);
+      const sourceEndVersion = args.sourceEndChangeSetId ? IModelVersion.asOfChangeSet(args.sourceEndChangeSetId) : IModelVersion.latest();
       const sourceContext = await contextRegistry.getProject(requestContext, {
         $filter: `$id+eq+'${sourceContextId}'`,
       });
       assert(undefined !== sourceContext);
       Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}, name=${sourceContext.name}`);
       Logger.logInfo(loggerCategory, `sourceIModelId=${sourceIModelId}`);
+      if (args.sourceStartChangeSetId) {
+        processChanges = true;
+        Logger.logInfo(loggerCategory, `sourceStartChangeSetId=${args.sourceStartChangeSetId}`);
+      }
+      if (args.sourceEndChangeSetId) {
+        Logger.logInfo(loggerCategory, `sourceEndChangeSetId=${args.sourceEndChangeSetId}`);
+      }
 
       if (args.logChangeSets) {
         await IModelHubUtils.logChangeSets(requestContext, sourceIModelId, loggerCategory);
@@ -117,7 +131,7 @@ interface CommandLineArgs {
         await IModelHubUtils.logNamedVersions(requestContext, sourceIModelId, loggerCategory);
       }
 
-      sourceDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, sourceContextId, sourceIModelId);
+      sourceDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, sourceContextId, sourceIModelId, sourceEndVersion);
     } else {
       // source is a local snapshot file
       assert(undefined !== args.sourceFile);
@@ -128,7 +142,7 @@ interface CommandLineArgs {
 
     if (args.targetContextId) {
       // target is from iModelHub
-      assert(undefined !== requestContext);
+      assert(requestContext instanceof AuthorizedClientRequestContext);
       assert(undefined !== args.targetIModelId || undefined !== args.targetIModelName, "must be able to identify the iModel by either name or id");
       const targetContextId = Guid.normalize(args.targetContextId);
       let targetIModelId = args.targetIModelId ? Guid.normalize(args.targetIModelId) : undefined;
@@ -157,7 +171,7 @@ interface CommandLineArgs {
         await IModelHubUtils.logNamedVersions(requestContext, targetIModelId, loggerCategory);
       }
 
-      targetDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, targetContextId, targetIModelId);
+      targetDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, targetContextId, targetIModelId, IModelVersion.latest());
     } else {
       assert(undefined !== args.targetFile);
       // target is a local snapshot file
@@ -177,12 +191,21 @@ interface CommandLineArgs {
       excludeSubCategories = args.excludeSubCategories.split(",");
     }
 
-    await Transformer.transformAll(sourceDb, targetDb, {
+    const options = {
       simplifyElementGeometry: args.simplifyElementGeometry,
       combinePhysicalModels: args.combinePhysicalModels,
       deleteUnusedGeometryParts: args.deleteUnusedGeometryParts,
       excludeSubCategories,
-    });
+    };
+
+    if (processChanges) {
+      assert(requestContext instanceof AuthorizedClientRequestContext);
+      assert(undefined !== args.sourceStartChangeSetId);
+      await Transformer.transformChanges(requestContext, sourceDb, targetDb, args.sourceStartChangeSetId, options);
+    } else {
+      await Transformer.transformAll(requestContext, sourceDb, targetDb, options);
+    }
+
     sourceDb.close();
     targetDb.close();
     await IModelHost.shutdown();

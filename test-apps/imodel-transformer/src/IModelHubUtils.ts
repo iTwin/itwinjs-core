@@ -82,11 +82,11 @@ export namespace IModelHubUtils {
     }
   }
 
-  export async function downloadAndOpenBriefcase(requestContext: AuthorizedClientRequestContext, sourceContextId: GuidString, sourceIModelId: GuidString): Promise<BriefcaseDb> {
+  export async function downloadAndOpenBriefcase(requestContext: AuthorizedClientRequestContext, sourceContextId: GuidString, sourceIModelId: GuidString, asOfVersion: IModelVersion): Promise<BriefcaseDb> {
     const briefcaseProps = await BriefcaseManager.downloadBriefcase(requestContext, {
       contextId: sourceContextId,
       iModelId: sourceIModelId,
-      asOf: IModelVersion.latest().toJSON(),
+      asOf: asOfVersion.toJSON(),
     });
     const briefcaseDb = await BriefcaseDb.open(requestContext, {
       fileName: briefcaseProps.fileName,
