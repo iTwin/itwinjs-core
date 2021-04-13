@@ -358,10 +358,8 @@ export namespace Id64 {
    * @deprecated use Id64.iterable()
    */
   export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void {
-    Id64.iterate(arg, (id: Id64String) => {
+    for (const id of Id64.iterable(arg))
       callback(id);
-      return true;
-    });
   }
 
   /** Execute a function on each [[Id64String]] of an [[Id64Arg]], optionally terminating before iteration completes.
@@ -371,10 +369,7 @@ export namespace Id64 {
    * @deprecated use Id64.iterable()
    */
   export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean {
-    if (typeof arg === "string")
-      return callback(arg);
-
-    for (const id of arg)
+    for (const id of Id64.iterable(arg))
       if (!callback(id))
         return false;
 
@@ -521,7 +516,8 @@ export namespace Id64 {
 
     /** Add any number of Ids to the set. */
     public addIds(ids: Id64Arg): void {
-      Id64.forEach(ids, (id) => this.addId(id));
+      for (const id of Id64.iterable(ids))
+        this.addId(id);
     }
 
     /** Returns true if the set contains the specified Id. */
@@ -545,7 +541,8 @@ export namespace Id64 {
 
     /** Remove any number of Ids from the set. */
     public deleteIds(ids: Id64Arg): void {
-      Id64.forEach(ids, (id) => this.deleteId(id));
+      for (const id of Id64.iterable(ids))
+        this.deleteId(id);
     }
 
     /** Remove an Id from the set. */
