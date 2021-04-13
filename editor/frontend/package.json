@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-frontend",
-  "version": "2.16.0-dev.1",
+  "version": "2.16.0-dev.6",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-editor-frontend.js",
   "typings": "lib/imodeljs-editor-frontend",
@@ -34,21 +34,21 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.1",
-    "@bentley/imodeljs-common": "^2.16.0-dev.1",
-    "@bentley/imodeljs-i18n": "^2.16.0-dev.1"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.6",
+    "@bentley/imodeljs-common": "^2.16.0-dev.6",
+    "@bentley/imodeljs-i18n": "^2.16.0-dev.6"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.1",
-    "@bentley/build-tools": "2.16.0-dev.1",
-    "@bentley/certa": "2.16.0-dev.1",
-    "@bentley/eslint-plugin": "2.16.0-dev.1",
-    "@bentley/imodeljs-common": "2.16.0-dev.1",
-    "@bentley/imodeljs-i18n": "2.16.0-dev.1",
+    "@bentley/bentleyjs-core": "2.16.0-dev.6",
+    "@bentley/build-tools": "2.16.0-dev.6",
+    "@bentley/certa": "2.16.0-dev.6",
+    "@bentley/eslint-plugin": "2.16.0-dev.6",
+    "@bentley/imodeljs-common": "2.16.0-dev.6",
+    "@bentley/imodeljs-i18n": "2.16.0-dev.6",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -69,10 +69,10 @@
     "NOTE: imodeljs-editor-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/geometry-core": "2.16.0-dev.1",
-    "@bentley/imodeljs-frontend": "2.16.0-dev.1",
-    "@bentley/ui-abstract": "2.16.0-dev.1",
-    "@bentley/imodeljs-editor-common": "2.16.0-dev.1"
+    "@bentley/geometry-core": "2.16.0-dev.6",
+    "@bentley/imodeljs-frontend": "2.16.0-dev.6",
+    "@bentley/ui-abstract": "2.16.0-dev.6",
+    "@bentley/imodeljs-editor-common": "2.16.0-dev.6"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

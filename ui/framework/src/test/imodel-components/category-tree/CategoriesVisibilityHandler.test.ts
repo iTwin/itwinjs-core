@@ -108,7 +108,7 @@ describe("CategoryVisibilityHandler", () => {
     viewManagerMock.reset();
     viewManagerMock.setup((x) => x.selectedView).returns(() => selectedViewMock.object);
     viewManagerMock
-      .setup((x) => x.forEachViewport(moq.It.isAny()))
+      .setup((x) => x.forEachViewport(moq.It.isAny())) // eslint-disable-line deprecation/deprecation
       .callback((action) => action(viewport))
       .verifiable(times);
   };
