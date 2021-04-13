@@ -127,7 +127,7 @@ function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = tr
   return context ?? undefined;
 }
 
-/** This function returns information about the client system's compatibility with the iTwin.js rendering system.
+/** This function returns information about the client system's level of compatibility with the iTwin.js rendering system, describing the client system's support for both optional and required features. It will also report if there is a major issue with the client system such as the browser falling back to software rendering or an inability to create a either a canvas or a WebGL rendering context.
   * @param useWebGL2 A boolean which will be passed to the createContext function in order to create the desired type of context; set this to `true` to use WebGL2, `false` to use WebGL1.
   * @param createContext A function of type [[ContextCreator]] that returns a WebGLContext. If not specified, this by default uses `canvas.getContext()` to create the WebGLContext.
   * @returns A [[WebGLRenderCompatibilityInfo]] object which contains a compatibility summary.

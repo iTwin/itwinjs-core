@@ -23,8 +23,12 @@ Clip volumes now nest. For example, if you define a view clip, a model clip grou
 
 The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
 
-### @bentley/webgl-compatibility
+### [@bentley/webgl-compatibility](https://www.itwinjs.org/reference/webgl-compatibility/)
 
-* The WebGL compatibility module API has been promoted to public. This API allows a user to determine the client system's level of compatibility with the iTwin.js rendering system's requirements for various features, both required and optional.
-* See [queryRenderCompatibility]($webgl-compatibility) for an overview of how to query the client's compatibility.
-* See [WebGLRenderCompatibilityInfo]($webgl-compatibility) for a description of the client's compatibility.
+* [queryRenderCompatibility]($webgl-compatibility) for querying the client system's compatibility with the iTwin.js rendering system.
+* [WebGLRenderCompatibilityInfo]($webgl-compatibility) for summarizing the client system's compatibility.
+* [WebGLContext]($webgl-compatibility) for describing a WebGL1 or WebGL2 context.
+* [WebGLFeature]($webgl-compatibility) for enumerating the required and optionals features used by the iTwin.js rendering system.
+* [WebGLRenderCompatibilityStatus]($webgl-compatibility) for describing a general compatiblity rating of a client system.
+* [GraphicsDriverBugs]($webgl-compatibility) for describing any known graphics driver bugs for which iTwin.js will apply workarounds.
+* [ContextCreator]($webgl-compatibility) for describing a function that creates and returns a WebGLContext for [queryRenderCompatibility]($webgl-compatibility).
