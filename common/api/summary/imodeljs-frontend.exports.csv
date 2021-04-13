@@ -419,7 +419,7 @@ internal;RealityTileTree
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
 deprecated;RemoteBriefcaseConnection 
-beta;class RenderClipVolume 
+public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics
 public;class RenderGraphic 
@@ -606,7 +606,7 @@ internal;ViewHandleArray
 internal;ViewHandleType
 public;ViewingSpace
 internal;class ViewingToolHandle
-public;ViewManager
+public;ViewManager 
 public;class ViewManip 
 public;class Viewport 
 public;ViewportDecorator
