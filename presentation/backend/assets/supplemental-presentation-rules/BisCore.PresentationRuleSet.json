@@ -421,7 +421,7 @@
                 "schemaName": "BisCore",
                 "classNames": [
                   "ElementOwnsMultiAspects",
-                  "ElementOwnsUniqueAspects"
+                  "ElementOwnsUniqueAspect"
                 ]
               },
               "requiredDirection": "Forward",
@@ -461,7 +461,7 @@
                 "schemaName": "BisCore",
                 "classNames": [
                   "ElementOwnsMultiAspects",
-                  "ElementOwnsUniqueAspects"
+                  "ElementOwnsUniqueAspect"
                 ]
               },
               "requiredDirection": "Forward",
