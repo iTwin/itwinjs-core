@@ -133,24 +133,23 @@ export class ElectronHost {
 
   private static _openWindow(options?: ElectronHostWindowOptions) {
     const opts: BrowserWindowConstructorOptions = {
+      ...options,
       autoHideMenuBar: true,
+      icon: this.appIconPath,
       webPreferences: {
+        ...options?.webPreferences,
+
+        // These web preference variables should not be overriden by the ElectronHostWindowOptions
         preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
         experimentalFeatures: false,
+        //nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: true,
+        enableRemoteModule: false,
+        nodeIntegrationInWorker: false,
+        nodeIntegrationInSubFrames: false
       },
-      icon: this.appIconPath,
-      ...options // overrides everything above
     };
-
-    // These web preference variables should not be overriden by the ElectronHostWindowOptions
-    if (opts.webPreferences != null) {
-      opts.webPreferences.nodeIntegration = false;
-      opts.webPreferences.contextIsolation = true;
-      opts.webPreferences.sandbox = true;
-      opts.webPreferences.enableRemoteModule = false;
-      opts.webPreferences.nodeIntegrationInWorker = false;
-      opts.webPreferences.nodeIntegrationInSubFrames = false;
-    }
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);
     ElectronRpcConfiguration.targetWindowId = this._mainWindow.id;
