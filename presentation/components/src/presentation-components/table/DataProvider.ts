@@ -14,7 +14,7 @@ import {
   NestedContentValue,
   PresentationError, PresentationStatus, RelationshipMeaning, Ruleset, SortDirection, Value, ValuesDictionary,
 } from "@bentley/presentation-common";
-import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent} from "@bentley/ui-components";
+import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
 import { HorizontalAlignment, SortDirection as UiSortDirection } from "@bentley/ui-core";
 import { ContentBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";

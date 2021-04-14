@@ -365,7 +365,7 @@ export class NestedContentField extends Field {
    * @param nestedFields Contained nested fields
    * @param editor Property editor used to edit values of this field
    * @param autoExpand Flag specifying whether field should be expanded
-   * @param relationshipMeaning Flstringifying whether field is of sameInstance
+   * @param relationshipMeaning RelationshipMeaning of the field
    * @param renderer Property renderer used to render values of this field
    */
   public constructor(
