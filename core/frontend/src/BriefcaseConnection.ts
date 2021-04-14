@@ -123,7 +123,7 @@ class ModelChangeMonitor {
   }
 
   private invalidateScenes(changedModels: Iterable<Id64String>): void {
-    IModelApp.tileAdmin.forEachViewport((vp) => {
+    for (const vp of IModelApp.tileAdmin.viewports) {
       if (vp.iModel === this._briefcase) {
         for (const modelId of changedModels) {
           if (vp.view.viewsModel(modelId)) {
@@ -133,7 +133,7 @@ class ModelChangeMonitor {
           }
         }
       }
-    });
+    }
   }
 }
 
