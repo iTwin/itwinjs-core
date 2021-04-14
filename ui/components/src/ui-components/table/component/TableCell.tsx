@@ -36,6 +36,8 @@ export interface TableCellProps extends CommonProps {
   onMouseDown?: (e: React.MouseEvent) => void;
   /** Properties for [[EditorContainer]]. Activates cell editing and provides properties to the container */
   cellEditingProps?: Omit<EditorContainerProps, "title">;
+  /** Used to set a specific cell width */
+  cellWidth?: number;
 }
 
 /**
@@ -50,7 +52,7 @@ export class TableCell extends React.PureComponent<TableCellProps> {
       return (
         <div
           className={classnames("components-table-cell", this.props.className)}
-          style={this.props.style}
+          style={style}
         >
           <EditorContainer
             title={this.props.title}
@@ -63,7 +65,7 @@ export class TableCell extends React.PureComponent<TableCellProps> {
     return (
       <div
         className={classnames("components-table-cell", this.props.className)}
-        style={this.props.style}
+        style={style}
         title={this.props.title}
         onClick={this.props.onClick}
         onMouseMove={this.props.onMouseMove}
@@ -90,6 +92,8 @@ export interface TableCellContentProps extends CommonProps {
   onDialogOpen?: (state: PropertyDialogState) => void;
   /** Property value renderer manager */
   propertyValueRendererManager: PropertyValueRendererManager;
+  /** zIndex of the component */
+  zIndex?: number;
 }
 
 /** State of the [[TableCellContent]] React component
@@ -117,6 +121,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
       textAlign: cellItem.alignment,
       height,
       lineHeight: `${height}px`, // Centers text vertically
+      zIndex: this.props.zIndex,
       ...this.props.style,
     };
   }

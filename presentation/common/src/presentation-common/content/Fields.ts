@@ -380,6 +380,7 @@ export class NestedContentField extends Field {
     nestedFields: Field[],
     editor?: EditorDescription,
     autoExpand?: boolean,
+    relationshipMeaning?: string,
     renderer?: RendererDescription,
   ) {
     super(category, name, label, description, isReadonly, priority, editor, renderer);
@@ -388,6 +389,7 @@ export class NestedContentField extends Field {
     this.relationshipMeaning = RelationshipMeaning.RelatedInstance;
     this.nestedFields = nestedFields;
     this.autoExpand = autoExpand;
+    this.relationshipMeaning = relationshipMeaning;
     this.actualPrimaryClassIds = [];
   }
 
@@ -404,6 +406,7 @@ export class NestedContentField extends Field {
       this.nestedFields,
       this.editor,
       this.autoExpand,
+      this.relationshipMeaning,
       this.renderer,
     );
     clone.actualPrimaryClassIds = this.actualPrimaryClassIds;
@@ -431,6 +434,7 @@ export class NestedContentField extends Field {
       actualPrimaryClassIds: this.actualPrimaryClassIds,
       nestedFields: this.nestedFields.map((field: Field) => field.toJSON()),
       autoExpand: this.autoExpand,
+      relationshipMeaning: this.relationshipMeaning,
     };
   }
 
@@ -458,6 +462,7 @@ export class NestedContentField extends Field {
       relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
       actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
       autoExpand: json.autoExpand,
+      relationshipMeaning: json.relationshipMeaning,
     });
   }
 

@@ -356,6 +356,51 @@ const extractNestedContentValue = (values: ValuesDictionary<Value>, nestedConten
   }
 };
 
+const extractSameInstanceFields = (fields: Field[]) => {
+  const foundFields: { [field: string]: Field } = {};
+  for (let i = 0; i < fields.length; i++) {
+    const field = fields[i];
+    if (field.isNestedContentField() && field.relationshipMeaning === RelationshipMeaning.SameInstance) {
+      const nestedFields = field.nestedFields.map((nestedField: Field): Field => (
+        new Field(
+          nestedField.category,
+          nestedField.name,
+          nestedField.label,
+          nestedField.type,
+          nestedField.isReadonly,
+          nestedField.priority,
+          nestedField.editor,
+          nestedField.renderer
+        ))
+      );
+      const deletedField = fields.splice(i, 1, ...nestedFields)[0];
+      foundFields[field.nestedFields[0].name] = deletedField;
+    }
+  }
+  return foundFields;
+};
+
+const extractValues = (values: ValuesDictionary<Value>, fields: string[]) => {
+  const mergedFieldsCounts: { [field: string]: number } = {};
+  for (const field of fields) {
+    const value = values[field]! as NestedContentValue[];
+    if (value.length === 1) {
+      const valueMap = value[0].values;
+      // eslint-disable-next-line guard-for-in
+      for (const valueMapKey in valueMap)
+        values[valueMapKey] = valueMap[valueMapKey];
+    }
+    if (value.length > 1) {
+      const keys = Object.keys(value[0].values);
+      const valueMapKey = keys[0];
+      values[valueMapKey] = values[field];
+      mergedFieldsCounts[valueMapKey] = keys.length;
+    }
+    delete values[field];
+  }
+  return mergedFieldsCounts;
+};
+
 const createColumn = (field: Readonly<Field>): ColumnDescription => {
   return {
     key: field.name,
