@@ -74,6 +74,7 @@ export class BackendDefaultsPlugin {
         "node-report/api",
         "applicationinsights-native-metrics",
         "@opentelemetry/tracing",
+        "@azure-tools/azcopy-node",
       ]),
     ];
     plugins.forEach((p) => p.apply(compiler));
