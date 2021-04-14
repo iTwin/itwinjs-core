@@ -2097,7 +2097,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersecctions?: boolean): boolean;
+    run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersections?: boolean, showGrid?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }

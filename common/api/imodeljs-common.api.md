@@ -51,6 +51,7 @@ import { Matrix3d } from '@bentley/geometry-core';
 import { Matrix4dProps } from '@bentley/geometry-core';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { OrderedId64Iterable } from '@bentley/bentleyjs-core';
+import { Plane3dByOriginAndUnitNormal } from '@bentley/geometry-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PolyfaceVisitor } from '@bentley/geometry-core';
@@ -2749,6 +2750,7 @@ export class Frustum {
     getCorner(i: number): Point3d;
     getEyePoint(result?: Point3d): Point3d | undefined;
     getFraction(): number;
+    getIntersectionWithPlane(plane: Plane3dByOriginAndUnitNormal): Point3d[] | undefined;
     getRangePlanes(clipFront: boolean, clipBack: boolean, expandPlaneDistance: number): ConvexClipPlaneSet;
     getRotation(result?: Matrix3d): Matrix3d | undefined;
     get hasMirror(): boolean;
