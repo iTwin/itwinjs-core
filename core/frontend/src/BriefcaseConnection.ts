@@ -16,6 +16,7 @@ import { IpcApp } from "./IpcApp";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { IModelApp } from "./IModelApp";
+import { disposeTileTreesForGeometricModels } from "./tile/internal";
 
 /** Keeps track of changes to models, buffering them until synchronization points.
  * While a GraphicalEditingScope is open, the changes are buffered until the scope exits, at which point they are processed.
@@ -114,12 +115,16 @@ class ModelChangeMonitor {
         model.geometryGuid = guid;
     }
 
-    this.invalidateScenes(this._modelIdToGuid.keys());
-    this._modelIdToGuid.clear();
-
-    for (const deleted of this._deletedModels)
+    const modelIds = new Set<string>(this._modelIdToGuid.keys());
+    for (const deleted of this._deletedModels) {
+      modelIds.add(deleted);
       models.unload(deleted);
+    }
 
+    this.invalidateScenes(modelIds);
+    disposeTileTreesForGeometricModels(modelIds, this._briefcase);
+
+    this._modelIdToGuid.clear();
     this._deletedModels.clear();
   }
 
