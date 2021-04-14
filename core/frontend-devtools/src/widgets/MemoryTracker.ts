@@ -97,7 +97,9 @@ const calcMem: CalcMem[] = [
   },
   (stats, vp) => {
     vp.target.renderSystem.collectStatistics(stats);
-    IModelApp.viewManager.forEachViewport((x) => x.target.collectStatistics(stats));
+    for (const x of IModelApp.viewManager)
+      x.target.collectStatistics(stats);
+
     return collectStatisticsForAllTileTrees(vp, stats);
   },
 ];

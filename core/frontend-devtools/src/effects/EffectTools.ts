@@ -71,12 +71,12 @@ export class ClearEffectsTool extends Tool {
  * @beta
  */
 export function refreshViewportsForEffect(effectName: string): void {
-  IModelApp.viewManager.forEachViewport((vp) => {
+  for (const vp of IModelApp.viewManager) {
     for (const vpEffectName of vp.screenSpaceEffects) {
       if (vpEffectName === effectName) {
         vp.requestRedraw();
         break;
       }
     }
-  });
+  }
 }

@@ -163,10 +163,6 @@ export class TxnManager {
     this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel);
   }
   /** @internal */
-  protected _onValidateOutput(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onValidateOutput(props, this._iModel);
-  }
-  /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void {
     this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel);
   }
@@ -179,6 +175,7 @@ export class TxnManager {
   protected _onEndValidate() {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onEndValidation.raiseEvent();
+    // TODO: if (this.validationErrors.length !== 0) throw new IModelError(validation ...)
   }
 
   /** @internal */

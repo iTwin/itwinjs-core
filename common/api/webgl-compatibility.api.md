@@ -85,7 +85,7 @@ export class Capabilities {
     get supportsVertexArrayObjects(): boolean;
 }
 
-// @beta
+// @public
 export type ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes) => WebGLContext | undefined;
 
 // @internal
@@ -98,12 +98,12 @@ export enum DepthType {
     TextureUnsignedInt32 = 2
 }
 
-// @beta
+// @public
 export interface GraphicsDriverBugs {
     fragDepthDoesNotDisableEarlyZ?: true;
 }
 
-// @beta
+// @public
 export function queryRenderCompatibility(useWebGL2: boolean, createContext?: ContextCreator): WebGLRenderCompatibilityInfo;
 
 // @internal
@@ -122,7 +122,7 @@ export type WebGLContext = WebGLRenderingContext | WebGL2RenderingContext;
 // @internal (undocumented)
 export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" | "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2" | "OES_standard_derivatives" | "EXT_float_blend";
 
-// @beta
+// @public
 export enum WebGLFeature {
     AntiAliasing = "anti-aliasing",
     DepthTexture = "depth texture",
@@ -137,7 +137,7 @@ export enum WebGLFeature {
     UintElementIndex = "uint element index"
 }
 
-// @beta
+// @public
 export interface WebGLRenderCompatibilityInfo {
     contextErrorMessage?: string;
     createdContext?: WebGLContext;
@@ -150,7 +150,7 @@ export interface WebGLRenderCompatibilityInfo {
     userAgent: string;
 }
 
-// @beta
+// @public
 export enum WebGLRenderCompatibilityStatus {
     AllOkay = 0,
     CannotCreateContext = 4,

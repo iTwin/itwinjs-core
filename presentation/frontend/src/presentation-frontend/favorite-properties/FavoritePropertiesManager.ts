@@ -13,7 +13,7 @@ import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
 
 /**
  * Scopes that favorite properties can be stored in.
- * @beta
+ * @public
  */
 export enum FavoritePropertiesScope {
   Global,
@@ -26,13 +26,13 @@ export enum FavoritePropertiesScope {
  * Regular property - [{path from parent class}-]{schema name}:{class name}:{property name}.
  * Nested property - [{path from parent class}-]{content class schema name}:{content class name}.
  * Primitive property - {field name}.
- * @beta
+ * @public
  */
 export type PropertyFullName = string;
 
 /**
  * Holds the information of favorite properties ordering.
- * @beta
+ * @public
  */
 export interface FavoritePropertiesOrderInfo {
   parentClassName: string | undefined;
@@ -43,12 +43,12 @@ export interface FavoritePropertiesOrderInfo {
 
 /**
  * Properties for initializing [[FavoritePropertiesManager]]
- * @beta
+ * @public
  */
 export interface FavoritePropertiesManagerProps {
   /**
    * Implementation of a persistence layer for storing favorite properties and their order.
-   * @beta
+   * @public
    */
   storage: IFavoritePropertiesStorage;
 }
@@ -57,7 +57,7 @@ export interface FavoritePropertiesManagerProps {
  * The favorite property manager which lets to store favorite properties
  * and check if field contains favorite properties.
  *
- * @beta
+ * @public
  */
 export class FavoritePropertiesManager implements IDisposable {
   /**

@@ -402,10 +402,10 @@ export namespace Base64EncodedString {
     replacer: (_name: string, value: any) => any;
 }
 
-// @alpha
+// @beta
 export type BaseLayerProps = MapLayerProps | ColorDefProps;
 
-// @alpha
+// @beta
 export type BaseLayerSettings = MapLayerSettings | ColorDef;
 
 // @public
@@ -865,12 +865,14 @@ export interface ClassifierTileTreeId {
 
 // @public
 export class ClipStyle {
-    static create(produceCutGeometry: boolean, cutStyle: CutStyle): ClipStyle;
+    static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle;
     readonly cutStyle: CutStyle;
     static readonly defaults: ClipStyle;
     // (undocumented)
     static fromJSON(props?: ClipStyleProps): ClipStyle;
+    readonly insideColor?: RgbColor;
     get matchesDefaults(): boolean;
+    readonly outsideColor?: RgbColor;
     readonly produceCutGeometry: boolean;
     toJSON(): ClipStyleProps | undefined;
 }
@@ -878,6 +880,8 @@ export class ClipStyle {
 // @public
 export interface ClipStyleProps {
     cutStyle?: CutStyleProps;
+    insideColor?: RgbColorProps;
+    outsideColor?: RgbColorProps;
     produceCutGeometry?: boolean;
 }
 
@@ -4372,7 +4376,7 @@ export interface LocalBriefcaseProps {
 
 export { LogFunction }
 
-// @alpha
+// @beta
 export interface MapImageryProps {
     // (undocumented)
     backgroundBase?: BaseLayerProps;
@@ -4382,7 +4386,7 @@ export interface MapImageryProps {
     overlayLayers?: MapLayerProps[];
 }
 
-// @alpha
+// @beta
 export class MapImagerySettings {
     // (undocumented)
     get backgroundBase(): BaseLayerSettings;
@@ -4406,7 +4410,7 @@ export interface MapLayerKey {
     value: string;
 }
 
-// @alpha
+// @beta
 export interface MapLayerProps {
     accessKey?: MapLayerKey;
     formatId?: string;
@@ -4420,7 +4424,7 @@ export interface MapLayerProps {
     visible?: boolean;
 }
 
-// @alpha
+// @beta
 export class MapLayerSettings {
     // (undocumented)
     readonly accessKey?: MapLayerKey;
@@ -4460,7 +4464,7 @@ export class MapLayerSettings {
     readonly visible: boolean;
 }
 
-// @alpha
+// @beta
 export interface MapSubLayerProps {
     // (undocumented)
     children?: SubLayerId[];
@@ -4476,7 +4480,7 @@ export interface MapSubLayerProps {
     visible?: boolean;
 }
 
-// @alpha
+// @beta
 export class MapSubLayerSettings {
     constructor(name: string, title?: string, visible?: boolean, id?: SubLayerId, parent?: SubLayerId, children?: SubLayerId[]);
     readonly children?: SubLayerId[];
@@ -4604,7 +4608,7 @@ export class MeshPolylineList extends Array<MeshPolyline> {
     constructor(...args: MeshPolyline[]);
 }
 
-// @beta
+// @public
 export class ModelClipGroup {
     readonly clip?: ClipVector;
     clone(): ModelClipGroup;
@@ -4615,13 +4619,13 @@ export class ModelClipGroup {
     toJSON(): ModelClipGroupProps;
 }
 
-// @beta
+// @public
 export interface ModelClipGroupProps {
     clip?: ClipVectorProps;
     models?: Id64Array;
 }
 
-// @beta
+// @public
 export class ModelClipGroups {
     constructor(groups?: ModelClipGroup[]);
     clone(): ModelClipGroups;
@@ -7045,7 +7049,7 @@ export interface SubjectProps extends ElementProps {
     description?: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export type SubLayerId = string | number;
 
 // @beta
@@ -7823,17 +7827,14 @@ export class ViewDetails3d extends ViewDetails {
     set allow3dManipulations(allow: boolean);
     // @internal
     getJSON(): Readonly<ViewDetails3dProps>;
-    // @beta
     get modelClipGroups(): ModelClipGroups;
     set modelClipGroups(groups: ModelClipGroups);
-    // @beta
     readonly onModelClipGroupsChanged: BeEvent<(newGroups: ModelClipGroups) => void>;
 }
 
 // @public
 export interface ViewDetails3dProps extends ViewDetailsProps {
     disable3dManipulations?: boolean;
-    // @beta
     modelClipGroups?: ModelClipGroupProps[];
 }
 
