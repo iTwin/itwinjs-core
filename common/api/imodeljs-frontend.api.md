@@ -3516,7 +3516,7 @@ export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64
 // @public
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
 
-// @public (undocumented)
+// @internal (undocumented)
 export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d;
 
 // @internal

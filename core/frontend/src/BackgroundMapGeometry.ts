@@ -54,6 +54,7 @@ function accumulateFrustumPlaneDepthRange(frustum: Frustum, plane: Plane3dByOrig
   }
 }
 
+/** @internal */
 export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d {
   const eyePoint = frustum.getEyePoint(scratchEyePoint);
   const viewRotation = frustum.getRotation(scratchViewRotation)!;
