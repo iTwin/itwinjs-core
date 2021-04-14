@@ -62,12 +62,28 @@ export interface OnChildElementPropsArg extends OnChildElementArg {
   childProps: Readonly<ElementProps>;
 }
 
-/** Arguments for the `Element.onChildXxx` static methods that only supply the Id of the child Element.
+/** Argument for the `Element.onChildXxx` static methods that only supply the Id of the child Element.
  * @beta
  */
 export interface OnChildElementIdArg extends OnChildElementArg {
   /** The Id of the child element for this method */
   childId: Id64String;
+}
+
+/** Argument for the `Element.onSubModelInsert` static method
+ * @beta
+ */
+export interface OnSubModelPropsArg extends OnElementArg {
+  /** The properties of the prospective sub-model */
+  subModelProps: ModelProps;
+}
+
+/** Argument for several `Element.onSubModelXxx` static methods
+ * @beta
+ */
+export interface OnSubModelIdArg extends OnElementArg {
+  /** The modelId of the sub Model */
+  subModelId: Id64String;
 }
 
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
@@ -295,11 +311,33 @@ export class Element extends Entity implements ElementProps {
    */
   protected static onChildDrop(_arg: OnChildElementIdArg): void { }
 
-  /** Called after an element with an instance of this class is its previous parent was updated to have a new parent.
+  /** Called after an element with an instance of this class as its previous parent was updated to have a new parent.
    * @note `this` is the class of the previous parent Element.
    * @beta
    */
   protected static onChildDropped(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an instance of this class is being *sub-modeled* by a new Model.
+   * @note throw an exception if model should not be inserted
+   * @note `this` is the class of Element to be sub-modeled.
+   */
+  protected static onSubModelInsert(_arg: OnSubModelPropsArg): void { }
+
+  /** Called after an instance of this class was *sub-modeled* by a new Model.
+   * @note `this` is the class of Element that is now sub-modeled.
+   */
+  protected static onSubModelInserted(_arg: OnSubModelIdArg): void { }
+
+  /** Called when a sub-model of an instance of this class is being deleted.
+   * @note throw an exception if model should not be deleted
+   * @note `this` is the class of Element that is sub-modeled.
+   */
+  protected static onSubModelDelete(_arg: OnSubModelIdArg): void { }
+
+  /** Called after a sub-model of an instance of this class was deleted.
+   * @note `this` is the class of Element that was sub-modeled.
+   */
+  protected static onSubModelDeleted(_arg: OnSubModelIdArg): void { }
 
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
    * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.

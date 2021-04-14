@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="TestFunctional" alias="testFunc" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
 
+    <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
     <ECSchemaReference name="Functional" version="1.0" alias="func" />
 
     <ECCustomAttributes>
@@ -26,6 +27,11 @@
         <BaseClass>func:FunctionalType</BaseClass>
         <ECProperty propertyName="StringProperty" typeName="string" />
         <ECProperty propertyName="IntProperty" typeName="int" />
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestFuncAspect">
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+        <ECProperty propertyName="StringProperty" typeName="string"/>
     </ECEntityClass>
 
 </ECSchema>

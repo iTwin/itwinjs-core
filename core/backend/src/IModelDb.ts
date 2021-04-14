@@ -1797,7 +1797,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]]
      */
     public getAspect(aspectInstanceId: Id64String): ElementAspect {
-      const sql = `SELECT ECClassId FROM ${ElementAspect.classFullName} WHERE ECInstanceId=:aspectInstanceId`;
+      const sql = "SELECT ECClassId FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
       const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
         statement.bindId("aspectInstanceId", aspectInstanceId);
         return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getClassNameForClassId().replace(".", ":") : undefined;

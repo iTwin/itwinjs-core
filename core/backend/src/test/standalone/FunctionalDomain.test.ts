@@ -7,10 +7,15 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Code, CodeScopeSpec, CodeSpec, ElementProps, FunctionalElementProps, IModel, IModelError } from "@bentley/imodeljs-common";
-import { BackendRequestContext, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalSchema, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, Schemas, StandaloneDb } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { ClassRegistry } from "../../ClassRegistry";
-import { ElementOwnsChildElements } from "../../NavigationRelationship";
+import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
+import {
+  BackendRequestContext, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalSchema, OnChildElementIdArg,
+  OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, Schemas,
+  StandaloneDb,
+} from "../../imodeljs-backend";
+import { ElementOwnsChildElements, ElementOwnsUniqueAspect } from "../../NavigationRelationship";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 class TestSchema extends FunctionalSchema {
   public static get schemaName(): string { return "TestFunctional"; }
@@ -196,6 +201,54 @@ class Component extends FunctionalComponentElement {
 
 }
 
+class TestFuncAspect extends ElementUniqueAspect {
+  public static get className(): string { return "TestFuncAspect"; }
+  public static expectedVal = "";
+  public static elemId: Id64String;
+  public static aspectId: Id64String;
+  public static nInsert = 0;
+  public static nInserted = 0;
+  public static nUpdate = 0;
+  public static nUpdated = 0;
+  public static nDelete = 0;
+  public static nDeleted = 0;
+
+  protected static onInsert(_arg: OnAspectPropsArg): void {
+    assert.equal(_arg.iModel, iModelDb);
+    assert.equal((_arg.props as any).StringProperty, this.expectedVal);
+    this.elemId = _arg.props.element.id;
+    this.nInsert++;
+  }
+  protected static onInserted(_arg: OnAspectPropsArg): void {
+    assert.equal(_arg.iModel, iModelDb);
+    assert.equal((_arg.props as any).StringProperty, this.expectedVal);
+    assert.equal(this.elemId, _arg.props.element.id);
+    this.nInserted++;
+  }
+  protected static onUpdate(_arg: OnAspectPropsArg): void {
+    assert.equal(_arg.iModel, iModelDb);
+    assert.equal((_arg.props as any).StringProperty, this.expectedVal);
+    this.elemId = _arg.props.element.id;
+    this.nUpdate++;
+  }
+  protected static onUpdated(_arg: OnAspectPropsArg): void {
+    assert.equal(_arg.iModel, iModelDb);
+    assert.equal((_arg.props as any).StringProperty, this.expectedVal);
+    assert.equal(this.elemId, _arg.props.element.id);
+    this.nUpdated++;
+  }
+  protected static onDelete(_arg: OnAspectIdArg): void {
+    assert.equal(_arg.iModel, iModelDb);
+    this.aspectId = _arg.aspectId;
+    this.nDelete++;
+  }
+  protected static onDeleted(_arg: OnAspectIdArg): void {
+    assert.equal(_arg.iModel, iModelDb);
+    assert.equal(_arg.aspectId, this.aspectId);
+    this.nDeleted++;
+  }
+}
+
 describe("Functional Domain", () => {
   const requestContext = new BackendRequestContext();
 
@@ -215,12 +268,13 @@ describe("Functional Domain", () => {
     Schemas.registerSchema(TestSchema);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    ClassRegistry.registerModule({ TestFuncModel, Breakdown, Component }, TestSchema);
+    ClassRegistry.registerModule({ TestFuncModel, Breakdown, Component, TestFuncAspect }, TestSchema);
 
     await FunctionalSchema.importSchema(requestContext, iModelDb); // eslint-disable-line deprecation/deprecation
 
     let commits = 0;
     let committed = 0;
+    const elements = iModelDb.elements;
     const dropCommit = iModelDb.txns.onCommit.addListener(() => commits++);
     const dropCommitted = iModelDb.txns.onCommitted.addListener(() => committed++);
     iModelDb.saveChanges("Import Functional schema");
@@ -268,7 +322,7 @@ describe("Functional Domain", () => {
       model: modelId,
       code: new Code({ spec: codeSpec.id, scope: modelId, value: "Breakdown1" }),
     };
-    const breakdownId = iModelDb.elements.insertElement(breakdownProps);
+    const breakdownId = elements.insertElement(breakdownProps);
     assert.isTrue(Id64.isValidId64(breakdownId));
     assert.equal(TestFuncModel.insertedId, breakdownId, "from Model.onElementInserted");
     assert.equal(Breakdown.elemId, breakdownId, "from Element.onInserted");
@@ -280,12 +334,39 @@ describe("Functional Domain", () => {
       code: new Code({ spec: codeSpec.id, scope: modelId, value: "badval" }),
     };
     // TestFuncModel.onInsertElement throws for this code.value
-    expect(() => iModelDb.elements.insertElement(breakdown2Props)).to.throw("bad element");
+    expect(() => elements.insertElement(breakdown2Props)).to.throw("bad element");
 
     breakdown2Props.code.value = "Breakdown2";
     Breakdown.props = undefined;
-    const bd2 = iModelDb.elements.insertElement(breakdown2Props);
-    const bd2el = iModelDb.elements.getElement(bd2);
+    const bd2 = elements.insertElement(breakdown2Props);
+
+    const aspect = {
+      classFullName: TestFuncAspect.classFullName,
+      element: new ElementOwnsUniqueAspect(bd2),
+      StringProperty: "prop 1", // eslint-disable-line @typescript-eslint/naming-convention
+    };
+
+    TestFuncAspect.expectedVal = aspect.StringProperty;
+    elements.insertAspect(aspect);
+    assert.equal(TestFuncAspect.elemId, bd2);
+    assert.equal(TestFuncAspect.nInsert, 1);
+    assert.equal(TestFuncAspect.nInserted, 1);
+
+    aspect.StringProperty = "prop 2";
+    TestFuncAspect.expectedVal = aspect.StringProperty;
+    elements.updateAspect(aspect);
+    assert.equal(TestFuncAspect.elemId, bd2);
+    assert.equal(TestFuncAspect.nInsert, 1);
+    assert.equal(TestFuncAspect.nInserted, 1);
+    const aspects = elements.getAspects(bd2, TestFuncAspect.classFullName);
+    assert.equal(aspects.length, 1);
+    elements.deleteAspect(aspects[0].id);
+    assert.equal(TestFuncAspect.aspectId, aspects[0].id);
+    assert.equal(TestFuncAspect.nDelete, 1);
+    assert.equal(TestFuncAspect.nDeleted, 1);
+
+    const bd2el = elements.getElement(bd2);
+    Breakdown.nUpdated = 0;
     bd2el.update();
     assert.equal(Breakdown.nUpdate, 1, "Element.onUpdate should be called once");
     assert.equal(Breakdown.nUpdated, 1, "Element.onUpdated should be called once");
@@ -300,7 +381,7 @@ describe("Functional Domain", () => {
       model: modelId,
       code: new Code({ spec: codeSpec.id, scope: modelId, value: "bd3" }),
     };
-    const bd3 = iModelDb.elements.insertElement(breakdown3Props);
+    const bd3 = elements.insertElement(breakdown3Props);
 
     const componentProps: FunctionalElementProps = {
       classFullName: Component.classFullName,
@@ -308,7 +389,7 @@ describe("Functional Domain", () => {
       parent: { id: breakdownId, relClassName: ElementOwnsChildElements.classFullName },
       code: new Code({ spec: codeSpec.id, scope: modelId, value: "Component1" }),
     };
-    const componentId = iModelDb.elements.insertElement(componentProps);
+    const componentId = elements.insertElement(componentProps);
     assert.isTrue(Id64.isValidId64(componentId));
     assert.equal(Breakdown.childId, componentId, "Element.onChildInserted should set childId");
 
@@ -316,7 +397,7 @@ describe("Functional Domain", () => {
     Breakdown.childId = "";
     Breakdown.elemId = "";
     TestFuncModel.nElemUpdate = 0;
-    const compponent1 = iModelDb.elements.getElement(componentId);
+    const compponent1 = elements.getElement(componentId);
     compponent1.update();
     assert.equal(TestFuncModel.nElemUpdate, 1, "Model.onUpdateElement should be called");
     assert.equal(TestFuncModel.updatedId, componentId, "from Model.onUpdatedElement");
@@ -324,9 +405,9 @@ describe("Functional Domain", () => {
     assert.equal(Breakdown.childId, componentId, "from Element.onChildUpdated");
 
     componentProps.code.value = "comp2";
-    const comp2 = iModelDb.elements.insertElement(componentProps);
+    const comp2 = elements.insertElement(componentProps);
     assert.equal(Breakdown.childId, comp2, "from Element.onChildInserted");
-    const el2 = iModelDb.elements.getElement(comp2);
+    const el2 = elements.getElement(comp2);
 
     TestFuncModel.nElemDelete = 0;
     TestFuncModel.deletedId = "";
@@ -346,10 +427,10 @@ describe("Functional Domain", () => {
     // next we make sure that changing the parent of an element calls the "onChildAdd/Drop/Added/Dropped" callbacks.
     // To do this we switch a component's parent from "breakDownId" to "bc3"
     componentProps.parent!.id = bd3;
-    const comp3 = iModelDb.elements.insertElement(componentProps);
-    const compEl3 = iModelDb.elements.getElementProps(comp3);
+    const comp3 = elements.insertElement(componentProps);
+    const compEl3 = elements.getElementProps(comp3);
     compEl3.parent!.id = breakdownId;
-    iModelDb.elements.updateElement(compEl3);
+    elements.updateElement(compEl3);
     assert.equal(Breakdown.addParent, breakdownId, "get parent from Element.onChildAdd");
     assert.equal(Breakdown.dropParent, bd3, "get parent from Element.onChildDrop");
     assert.equal(Breakdown.childAdd, comp3, "get child from Element.onChildAdd");
@@ -364,11 +445,11 @@ describe("Functional Domain", () => {
     // unregister test schema to make sure it will throw exceptions if it is not present (since it has the "SchemaHasBehavior" custom attribute)
     Schemas.unregisterSchema(TestSchema.schemaName);
     const errMsg = "Schema [TestFunctional] not registered, but is marked with SchemaHasBehavior";
-    expect(() => iModelDb.elements.deleteElement(breakdownId)).to.throw(errMsg);
-    assert.isDefined(iModelDb.elements.getElement(breakdownId), "should not have been deleted");
-    expect(() => iModelDb.elements.updateElement(breakdownProps)).to.throw(errMsg);
+    expect(() => elements.deleteElement(breakdownId)).to.throw(errMsg);
+    assert.isDefined(elements.getElement(breakdownId), "should not have been deleted");
+    expect(() => elements.updateElement(breakdownProps)).to.throw(errMsg);
     breakdownProps.code.value = "Breakdown 2";
-    expect(() => iModelDb.elements.insertElement(breakdownProps)).to.throw(errMsg);
+    expect(() => elements.insertElement(breakdownProps)).to.throw(errMsg);
 
     iModelDb.close();
   });
