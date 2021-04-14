@@ -5,7 +5,6 @@
 import { assert, expect } from "chai";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
-import { RenderSystem } from "../../../render/RenderSystem";
 import { AttributeMap } from "../../../render/webgl/AttributeMap";
 import { CompileStatus } from "../../../render/webgl/ShaderProgram";
 import { DrawParams, ShaderProgramParams } from "../../../render/webgl/DrawCommand";
