@@ -64,7 +64,8 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public async pullAndMergeChanges(_tokenProps: IModelRpcProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
   public async pushChanges(_tokenProps: IModelRpcProps, _description: string): Promise<IModelConnectionProps> { return this.forward(arguments); }
 
-  public async getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]> { return this.forward(arguments); }
+  /** @deprecated monitor BriefcaseTxns events. */
+  public async getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]> { return []; }
 
   /** @deprecated use BriefcaseConnection with IpcHost/IpcApp */
   public async deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void> { return this.forward(arguments); }

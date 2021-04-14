@@ -38,7 +38,6 @@ export class ConcurrencyControl {
   private _policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
   private _bulkMode: boolean = false;
   private _cache: ConcurrencyControl.StateCache;
-  private _modelsAffectedByWrites = new Set<Id64String>(); // TODO: Remove this when we get tile healing
   private _channel: ConcurrencyControl.Channel;
 
   constructor(private _iModel: BriefcaseDb) {
@@ -57,9 +56,6 @@ export class ConcurrencyControl {
 
   /** @internal */
   public get iModel(): BriefcaseDb { return this._iModel; }
-
-  /** @internal */
-  public get modelsAffectedByWrites(): Id64String[] { return Array.from(this._modelsAffectedByWrites); }
 
   /** @internal */
   public getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy { return this._policy; }
@@ -117,24 +113,9 @@ export class ConcurrencyControl {
   }
 
   /** @internal */
-  public onSavedChanges() {
-    if (this._modelsAffectedByWrites.size !== 0) { // TODO: Remove this when we get tile healing
-      this._iModel.nativeDb.purgeTileTrees(Array.from(this._modelsAffectedByWrites)); // TODO: Remove this when we get tile healing
-      this._modelsAffectedByWrites.clear(); // TODO: Remove this when we get tile healing
-    }
-  }
-
-  /** @internal */
   public onMergeChanges() {
     if (this.hasPendingRequests)
       throw new IModelError(IModelStatus.TransactionActive, "Call BriefcaseDb.concurrencyControl.request and BriefcaseDb.saveChanges before applying changesets", Logger.logError, loggerCategory);
-  }
-
-  /** @internal */
-  public onMergedChanges() {
-    this._iModel.nativeDb.purgeTileTrees(undefined); // TODO: Remove this when we get tile healing
-    const data = { parentChangeSetId: this.iModel.changeSetId };
-    IpcHost.notifyPushAndPull(this._iModel, "notifyPulledChanges", data);
   }
 
   /** You must call this if you use classes other than ConcurrencyControl to manage locks and codes.
@@ -211,9 +192,6 @@ export class ConcurrencyControl {
     this._channel.checkCanWriteElementToCurrentChannel(this._iModel.elements.getElement(model.modeledElement), resourcesNeeded, opcode);  // do this first! It may change resourcesNeeded
     this.applyPolicyBeforeWrite(resourcesNeeded);
     this.addToPendingRequestIfNotHeld(resourcesNeeded);
-
-    if (DbOpcode.Delete === opcode) // TODO: Remove this when we get tile healing
-      this._modelsAffectedByWrites.add(model.id!); // TODO: Remove this when we get tile healing
   }
 
   /*
@@ -257,7 +235,6 @@ export class ConcurrencyControl {
     this._channel.checkCanWriteElementToCurrentChannel(element, resourcesNeeded, opcode); // do this first! It may change resourcesNeeded
     this.applyPolicyBeforeWrite(resourcesNeeded);
     this.addToPendingRequestIfNotHeld(resourcesNeeded);
-    this._modelsAffectedByWrites.add(element.model);  // TODO: Remove this when we get tile healing
   }
 
   /*
@@ -499,16 +476,7 @@ export class ConcurrencyControl {
   /** @internal */
   public async onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
-
-    const data = { parentChangeSetId: this.iModel.changeSetId };
-    IpcHost.notifyPushAndPull(this._iModel, "notifyPushedChanges", data);
     return this.openOrCreateCache(requestContext); // re-create after we know that push has succeeded
-  }
-
-  /** @internal */
-  private emitOnSavedChangesEvent() {
-    const data = { hasPendingTxns: this.iModel.txns.hasPendingTxns, time: Date.now() }; // Note that not all calls to saveChanges create a txn. For example, an update to be_local does not.
-    IpcHost.notifyPushAndPull(this._iModel, "notifySavedChanges", data);
   }
 
   /** @internal */
@@ -518,14 +486,11 @@ export class ConcurrencyControl {
 
     assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseDb.onOpened should be raised only once");
 
-    this._iModel.txns.onCommitted.addListener(this.emitOnSavedChangesEvent, this); // eslint-disable-line @typescript-eslint/unbound-method
-
     return this.openOrCreateCache(requestContext);
   }
 
   /** @internal */
   public onClose() {
-    this._iModel.txns.onCommitted.removeListener(this.emitOnSavedChangesEvent, this); // eslint-disable-line @typescript-eslint/unbound-method
     this._cache.close(true);
   }
 

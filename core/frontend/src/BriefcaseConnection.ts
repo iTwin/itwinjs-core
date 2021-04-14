@@ -60,9 +60,9 @@ class ModelChangeMonitor {
       this.processBuffered();
     };
 
-    this._removals.push(briefcase.txns.onCommitted.addListener(() => maybeProcess()));
-    this._removals.push(briefcase.txns.onAfterUndoRedo.addListener(() => maybeProcess()));
-    // ###TODO onChangesPulledAndMerged
+    this._removals.push(briefcase.txns.onCommitted.addListener(maybeProcess));
+    this._removals.push(briefcase.txns.onAfterUndoRedo.addListener(maybeProcess));
+    this._removals.push(briefcase.txns.onChangesPulled.addListener(maybeProcess));
   }
 
   public async close(): Promise<void> {
@@ -220,6 +220,7 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
    * @param version The version to pull changes to. If `undefined`, pull all changes.
+   * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
   public async pullAndMergeChanges(version?: IModelVersionProps): Promise<void> {
     this.requireTimeline();
@@ -229,6 +230,7 @@ export class BriefcaseConnection extends IModelConnection {
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
    * @param description The description for the changeset
    * @returns the changesetId of the pushed changes
+   * @see [[BriefcaseTxns.onChangesPushed]] for the event dispatched after changes are pushed.
    */
   public async pushChanges(description: string): Promise<string> {
     this.requireTimeline();

@@ -202,7 +202,7 @@ export class TxnManager {
   /** @internal */
   protected _onCommitted() {
     this.onCommitted.raiseEvent();
-    IpcHost.notifyTxns(this._iModel, "notifyCommitted");
+    IpcHost.notifyTxns(this._iModel, "notifyCommitted", this.hasPendingTxns, Date.now());
   }
 
   /** @internal */
