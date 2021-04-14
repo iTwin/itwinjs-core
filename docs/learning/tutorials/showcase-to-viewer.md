@@ -13,7 +13,7 @@ This tutorial assumes that you already have:
 
 ### Goal
 
-This tutorial will take widgets from the sample showcase and add them into your iTwin Viewer using the ```uiProvider``` prop.
+This tutorial will take widgets from the sample showcase and add them into your iTwin Viewer using the ```uiProviders``` prop.
 
 ### Understanding the Sample Showcase
 
@@ -82,7 +82,7 @@ Running our iTwin Viewer now, you'll notice the exact same fully functional widg
 
 Feel free to customize these widgets to your liking.
 
-### Multiple ways to extend uiProvider
+### Multiple ways to extend uiProviders
 
 If you already have a ```uiProviders``` prop passed in or would like to add more widgets from the sample showcase, the  ```uiProviders``` prop takes in an array of providers. Extending the widget is as simple as appending to your array.
 

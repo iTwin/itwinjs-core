@@ -67,19 +67,19 @@ Result:
 
 ### Your first UI Widget
 
-So far, we haven't done anything to change the way the viewer works.  We've only just added a new ```span``` element *above* the viewer. To add our "Hello World" ```span``` into the viewer, we need to pass the ```uiProvider``` prop to the ```Viewer```  component, like this:
+So far, we haven't done anything to change the way the viewer works.  We've only just added a new ```span``` element *above* the viewer. To add our "Hello World" ```span``` into the viewer, we need to pass the ```uiProviders``` prop to the ```Viewer```  component, like this:
 
 ``` HTML
       <Viewer
         contextId={process.env.IMJS_CONTEXT_ID ?? ""}
         iModelId={process.env.IMJS_IMODEL_ID ?? ""}
         authConfig={{ oidcClient: AuthorizationClient.oidcClient }}
-        uiProvider={[new MyFirstUiProvider()]}
+        uiProviders={[new MyFirstUiProvider()]}
       />
   );
 ```
 
-The ```uiProvider``` prop is typed to require an object that implements the [UIItemsProvider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/) interface.  Passing in this object will allow us to extend the ```Viewer``` with custom UI components. To do that, we need to define our ```MyFirstUiProvider``` class so that it implements the ```UiItemsProvider``` interface.  Our new provider will tell the ```Viewer``` to include our "Hello world" ```span``` within the view.
+The ```uiProviders``` prop is typed to require an array of objects that implements the [UIItemsProvider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/) interface.  Passing in the array will allow us to extend the ```Viewer``` with custom UI components. To do that, we need to define our ```MyFirstUiProvider``` class so that it implements the ```UiItemsProvider``` interface.  Our new provider will tell the ```Viewer``` to include our "Hello world" ```span``` within the view.
 
 Create a new file called ```MyFirstUiProvider.tsx``` with the following contents:
 
@@ -159,7 +159,13 @@ Now we have our "Hello World" ```span``` displaying in a panel within the ```Vie
 
 Saying hello to the world can be fun but we need to get past that.  For this next step we'll swap out our trivial ```helloWidget``` with something a little more interactive: a [Toggle](https://www.itwinjs.org/reference/ui-core/toggle/toggle/).  Eventually this toggle will control the background color, so we'll name our new widget ```backgroundColorWidget```.  Instead of returning a ```span``` we'll return a ```Toggle```.
 
-Start by navigating back to ```MyFirstUiProvider.tsx```.  Next switch out the ```helloWidget``` with the new ```backgroundColorWidget``` here:
+Start by navigating back to ```MyFirstUiProvider.tsx``` and adding an import for ```Toggle``` at the top of the file:
+
+``` typescript
+import { Toggle } from "@bentley/ui-core";
+```
+
+Next switch out the ```helloWidget``` with the new ```backgroundColorWidget``` here:
 
 ``` typescript
     if (location === StagePanelLocation.Right) {
