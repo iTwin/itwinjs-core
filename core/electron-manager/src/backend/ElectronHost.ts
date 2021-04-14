@@ -136,15 +136,21 @@ export class ElectronHost {
       autoHideMenuBar: true,
       webPreferences: {
         preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
-        nodeIntegration: false,
         experimentalFeatures: false,
-        enableRemoteModule: false,
-        contextIsolation: true,
-        sandbox: true,
       },
       icon: this.appIconPath,
-      ...options, // overrides everything above
+      ...options // overrides everything above
     };
+
+    // These web preference variables should not be overriden by the ElectronHostWindowOptions
+    if (opts.webPreferences != null) {
+      opts.webPreferences.nodeIntegration = false;
+      opts.webPreferences.contextIsolation = true;
+      opts.webPreferences.sandbox = true;
+      opts.webPreferences.enableRemoteModule = false;
+      opts.webPreferences.nodeIntegrationInWorker = false;
+      opts.webPreferences.nodeIntegrationInSubFrames = false;
+    }
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);
     ElectronRpcConfiguration.targetWindowId = this._mainWindow.id;
