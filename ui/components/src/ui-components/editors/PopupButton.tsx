@@ -17,9 +17,14 @@ import { Button, ButtonType, CommonDivProps, CommonProps, Div, Icon, Popup, UiCo
  */
 export interface PopupButtonProps extends CommonProps {
   /** Label to display in click area. */
-  label: string | React.ReactNode;
+  label?: string | React.ReactNode;
+  /* Placeholder text used when there is no label yet */
+  placeholder?: string;
   /** Contents of the popup */
   children: React.ReactNode;
+
+  /** Set focus to popup - default is to set focus */
+  moveFocus?: boolean;
   /** Element to receive focus, specified by React.RefObject or CSS selector string. If undefined and moveFocus is true then focus is moved to first focusable element. */
   focusTarget?: React.RefObject<HTMLElement> | string;
 
@@ -76,6 +81,10 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
       () => this.props.onClick && this.props.onClick(event));
   };
 
+  public closePopup() {
+    this._closePopup();
+  }
+
   private _closePopup = () => {
     this.setState(
       { showPopup: false },
@@ -104,10 +113,17 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
   public render(): React.ReactNode {
     const showArrow = this.props.showArrow ?? false;
     const showShadow = this.props.showShadow ?? false;
+    const moveFocus = this.props.moveFocus ?? true;
+    const showPlaceholder = this.props.label === undefined && this.props.placeholder !== undefined;
 
     const classNames = classnames(
       "components-popup-button",
       this.state.showPopup && "components-popup-expanded",
+    );
+
+    const valueClassNames = classnames(
+      "components-popup-button-value",
+      showPlaceholder && "components-popup-button-placeholder",
     );
 
     return (
@@ -120,8 +136,8 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
           ref={this._buttonRef}
           role="button"
         >
-          <div className="components-popup-button-value">
-            {this.props.label}
+          <div className={valueClassNames}>
+            {this.props.label || this.props.placeholder}
           </div>
           <div className={"components-popup-button-arrow"}>
             <div className={classnames("components-popup-button-arrow-icon", "icon", "icon-chevron-down")} />
@@ -130,7 +146,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
         <Popup className="components-popup-button-popup" isOpen={this.state.showPopup} position={RelativePosition.Bottom}
           onClose={this._closePopup} onEnter={this.props.onEnter} closeOnEnter={this.props.closeOnEnter} target={this._buttonRef.current}
           showArrow={showArrow} showShadow={showShadow}
-          focusTarget={this.props.focusTarget} moveFocus={true}
+          moveFocus={moveFocus} focusTarget={this.props.focusTarget}
         >
           {this.props.children}
         </Popup>

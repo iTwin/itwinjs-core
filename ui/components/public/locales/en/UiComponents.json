@@ -12,7 +12,8 @@
     "label": {
       "search": "Search",
       "cancel": "Cancel",
-      "settings": "Settings"
+      "settings": "Settings",
+      "filter": "Filter"
     }
   },
   "breadcrumb": {
