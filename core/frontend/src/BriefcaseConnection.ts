@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import {
   IModelConnectionProps, IModelError, IModelVersionProps, OpenBriefcaseProps,
   StandaloneOpenOptions,
@@ -15,14 +15,82 @@ import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { BriefcaseTxns } from "./BriefcaseTxns";
+import { IModelApp } from "./IModelApp";
+
+class ModelChangeMonitor {
+  private _editingScope?: GraphicalEditingScope;
+  private readonly _briefcase: BriefcaseConnection;
+
+  public constructor(briefcase: BriefcaseConnection) {
+    this._briefcase = briefcase;
+  }
+
+  public async close(): Promise<void> {
+    if (this._editingScope) {
+      await this._editingScope.exit();
+      this._editingScope = undefined;
+    }
+  }
+
+  public get editingScope(): GraphicalEditingScope | undefined {
+    return this._editingScope;
+  }
+
+  public async enterEditingScope(): Promise<GraphicalEditingScope> {
+    if (this._editingScope)
+      throw new Error("Cannot create an editing scope for an iModel that already has one");
+
+    this._editingScope = await GraphicalEditingScope.enter(this._briefcase);
+
+    const removeGeomListener = this._editingScope.onGeometryChanges.addListener((changes) => {
+      const modelIds = [];
+      for (const change of changes)
+        modelIds.push(change.id);
+
+      this.invalidateScenes(modelIds);
+    });
+
+    this._editingScope.onExited.addOnce((scope) => {
+      assert(scope === this._editingScope);
+      this._editingScope = undefined;
+      removeGeomListener();
+      this.processBuffered();
+    });
+
+    return this._editingScope;
+  }
+
+  private processBuffered(): void {
+  }
+
+  private async purgeAndProcessBuffered(): Promise<void> {
+    // ###TODO purgeTileTrees
+    this.processBuffered();
+  }
+
+  private invalidateScenes(changedModels: Iterable<Id64String>): void {
+    IModelApp.tileAdmin.forEachViewport((vp) => {
+      if (vp.iModel === this._briefcase) {
+        for (const modelId of changedModels) {
+          if (vp.view.viewsModel(modelId)) {
+            vp.invalidateScene();
+            vp.setFeatureOverrideProviderChanged();
+            break;
+          }
+        }
+      }
+    });
+  }
+}
 
 /** A connection to an editable briefcase on the backend. This class uses [Ipc]($docs/learning/IpcInterface.md) to communicate
  * to the backend and may only be used by [[IpcApp]]s.
  * @public
  */
 export class BriefcaseConnection extends IModelConnection {
-  private _editingScope?: GraphicalEditingScope;
   protected _isClosed?: boolean;
+  private readonly _modelsMonitor: ModelChangeMonitor;
+
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
 
@@ -38,6 +106,7 @@ export class BriefcaseConnection extends IModelConnection {
   protected constructor(props: IModelConnectionProps) {
     super(props);
     this.txns = new BriefcaseTxns(this);
+    this._modelsMonitor = new ModelChangeMonitor(this);
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
@@ -69,10 +138,7 @@ export class BriefcaseConnection extends IModelConnection {
     if (this.isClosed)
       return;
 
-    if (this._editingScope) {
-      await this._editingScope.exit();
-      this._editingScope = undefined;
-    }
+    await this._modelsMonitor.close();
 
     this.beforeClose();
     this.txns.dispose();
@@ -119,7 +185,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @see [[enterEditingScope]] to begin graphical editing.
    */
   public get editingScope(): GraphicalEditingScope | undefined {
-    return this._editingScope;
+    return this._modelsMonitor.editingScope;
   }
 
   /** Return whether graphical editing is supported for this briefcase. It is not supported if the briefcase is read-only, or the briefcase contains a version of
@@ -137,11 +203,6 @@ export class BriefcaseConnection extends IModelConnection {
    * @see [[editingScope]] to obtain the current editing scope, if one is in progress.
    */
   public async enterEditingScope(): Promise<GraphicalEditingScope> {
-    if (this.editingScope)
-      throw new Error("Cannot create an editing scope for an iModel that already has one");
-
-    this._editingScope = await GraphicalEditingScope.enter(this);
-    this._editingScope.onExited.addOnce(() => this._editingScope = undefined);
-    return this._editingScope;
+    return this._modelsMonitor.enterEditingScope();
   }
 }
