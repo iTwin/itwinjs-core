@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { Map4d, Point3d } from "@bentley/geometry-core";
 import { ColorByName, ColorDef, Frustum, LinePixels, Npc } from "@bentley/imodeljs-common";
 import {
   CoordSystem, DecorateContext, Decorator, GraphicBuilder, GraphicType, IModelApp, Tool, Viewport, ViewState, ViewState3d,
@@ -17,7 +17,6 @@ import { parseToggle } from "./parseToggle";
 interface FrustumDecorationOptions {
   showPreloadFrustum?: boolean;
   showBackgroundIntersecctions?: boolean;
-  showGrid?: boolean;
 }
 
 /**
@@ -66,29 +65,12 @@ class FrustumDecoration {
       if (options.showPreloadFrustum)
         FrustumDecoration.drawPreloadFrustum(builder, this._preloadFrustum);
 
-      if (options.showBackgroundIntersecctions) {
+      if (options?.showBackgroundIntersecctions) {
         const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
         if (backgroundMapGeometry)
           backgroundMapGeometry.addFrustumDecorations(builder, this._adjustedWorldFrustum);
       }
-      if (options.showGrid) {
-        const gridsPerRef = context.viewport.view.getGridsPerRef();
-        const spacing = Point2d.createFrom(context.viewport.view.getGridSpacing());
-        const planarGrid = context.viewport.target.renderSystem.createPlanarGrid(this._adjustedWorldFrustum,  { origin: Point3d.createZero(),  rMatrix: Matrix3d.createIdentity(), spacing, gridsPerRef, color: ColorDef.white } );
-        if (planarGrid)
-          context.addDecoration(GraphicType.WorldDecoration, planarGrid);
-
-        const gridColor = ColorDef.red;
-        const gridPlane = Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.create(0.0, 0.0, 1.0))!;
-        const gridShape = this._adjustedWorldFrustum.getIntersectionWithPlane(gridPlane);
-        builder.setSymbology(gridColor, gridColor, 4);
-        if (gridShape) {
-          gridShape.push(gridShape[0]);     // SCP
-          builder.addLineString(gridShape);
-        }
-      }
     }
-
     context.addDecorationFromBuilder(builder);
   }
 
@@ -223,7 +205,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 2; }
 
-  public run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersections?: boolean, showGrid?: boolean): boolean {
+  public run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersecctions?: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -233,7 +215,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
 
     if (enable !== FrustumDecorator.isEnabled) {
       if (enable) {
-        FrustumDecorator.enable(vp, { showPreloadFrustum, showBackgroundIntersecctions: showBackgroundIntersections, showGrid });
+        FrustumDecorator.enable(vp, { showPreloadFrustum, showBackgroundIntersecctions });
         vp.onChangeView.addOnce(() => FrustumDecorator.disable());
       } else {
         FrustumDecorator.disable();
@@ -244,20 +226,18 @@ export class ToggleFrustumSnapshotTool extends Tool {
   }
 
   public parseAndRun(...args: string[]): boolean {
-    let showPreload, showBackgroundIntersections, showGrid, enable;
+    let showPreload, showBackgroundIntersections, enable;
     for (const arg of args) {
       if (arg === "preload")
         showPreload = true;
       else if (arg === "background")
         showBackgroundIntersections = true;
-      else if (arg === "grid")
-        showGrid = true;
       else
         enable = parseToggle(arg);
     }
 
     if (typeof enable !== "string")
-      this.run(enable, showPreload, showBackgroundIntersections, showGrid);
+      this.run(enable, showPreload, showBackgroundIntersections);
 
     return true;
   }
