@@ -78,16 +78,35 @@ It was, however, confusing from a usage and documentation perspective and needed
 ## Promoted APIs
 
 The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
+
 ### @bentley/bentleyjs-core
-  * [assert]($bentleyjs-core) for asserting logic invariants.
-  * [ProcessDetector]($bentleyjs-core) for querying the type of executing Javascript process.
-  * [ObservableSet]($bentleyjs-core) for a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents are modified.
-  * [ByteStream]($bentleyjs-core) for extracting data from binary streams.
-  * Types related to collections of [Id64String]($bentleyjs-core)s
-    * [OrderedId64Iterable]($bentleyjs-core) and [OrderedId64Array]($bentleyjs-core)
-    * [CompressedId64Set]($bentleyjs-core) and [MutableCompressedId64Set]($bentleyjs-core)
+
+* [assert]($bentleyjs-core) for asserting logic invariants.
+* [ProcessDetector]($bentleyjs-core) for querying the type of executing Javascript process.
+* [ObservableSet]($bentleyjs-core) for a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents are modified.
+* [ByteStream]($bentleyjs-core) for extracting data from binary streams.
+* Types related to collections of [Id64String]($bentleyjs-core)s
+  * [OrderedId64Iterable]($bentleyjs-core) and [OrderedId64Array]($bentleyjs-core)
+  * [CompressedId64Set]($bentleyjs-core) and [MutableCompressedId64Set]($bentleyjs-core)
 
 ## Breaking API changes
+
+### @bentley/imodeljs-backend package
+
+The arguments for the protected static methods called during modifications:
+
+  [Element]($backend)[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]
+  [Model]($backend)[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]
+  [ElementAspect]($backend)[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]
+
+Have been changed to be more consistent and extensible.
+
+In addition, new protected static methods were added:
+
+  [Element]($backend)[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]
+  [Model]($backend)[onInsertElement, onInsertedElement, onUpdateElement, onUpdatedElement, onDeleteElement, onDeletedElement]
+
+These changes only affect implementers of [Schema]($backend) classes. See documentation for details.
 
 ### @bentley/ui-core package
 

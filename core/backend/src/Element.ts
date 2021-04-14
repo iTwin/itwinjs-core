@@ -23,45 +23,45 @@ import { IModelDb } from "./IModelDb";
 import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
-/** Argument for the `Element.onXxx` events
+/** Argument for the `Element.onXxx` static methods
  * @beta
  */
 export interface OnElementArg {
-  /** The iModel for the Element affected by this event. */
+  /** The iModel for the Element affected by this method. */
   iModel: IModelDb;
 }
-/** Argument for the `Element.onXxx` events that supply the properties of an Element to be inserted or updated.
+/** Argument for the `Element.onXxx` static methods that supply the properties of an Element to be inserted or updated.
  * @beta
  */
 export interface OnElementPropsArg extends OnElementArg {
-  /** The new properties of the Element affected by this event. */
+  /** The new properties of the Element affected by this method. */
   props: Readonly<ElementProps>;
 }
-/** Argument for the `Element.onXxx` events that only supply the Id of the affected Element.
+/** Argument for the `Element.onXxx` static methods that only supply the Id of the affected Element.
  * @beta
  */
 export interface OnElementIdArg extends OnElementArg {
-  /** The Id of the Element affected by this event */
+  /** The Id of the Element affected by this method */
   id: Id64String;
 }
-/** Argument for the `Element.onChildXxx` events
+/** Argument for the `Element.onChildXxx` static methods
  * @beta
  */
 export interface OnChildElementArg extends OnElementArg {
   parentId: Id64String;
 }
-/** Argument for the `Element.onChildXxx` events that supply the properties of the child Element to be inserted or updated.
+/** Argument for the `Element.onChildXxx` static methods that supply the properties of the child Element to be inserted or updated.
  * @beta
  */
 export interface OnChildElementPropsArg extends OnChildElementArg {
-  /** The new properties of the child Element for this event. */
+  /** The new properties of the child Element for this method. */
   childProps: Readonly<ElementProps>;
 }
-/** Arguments for the `Element.onChildXxx` events that only supply the Id of the child Element.
+/** Arguments for the `Element.onChildXxx` static methods that only supply the Id of the child Element.
  * @beta
  */
 export interface OnChildElementIdArg extends OnChildElementArg {
-  /** The Id of the child element for this event */
+  /** The Id of the child element for this method */
   childId: Id64String;
 }
 
@@ -163,7 +163,7 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Called before a new Element is inserted.
-   * @throws [[IModelError]] if there is a problem
+   * @note throw an exception to disallow the insert
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Element to be inserted
    * @beta
@@ -173,8 +173,20 @@ export class Element extends Entity implements ElementProps {
       arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Insert);
     }
   }
+
+  /** Called after a new Element was inserted.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was inserted
+   * @beta
+   */
+  protected static onInserted(arg: OnElementIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Insert);
+    }
+  }
+
   /** Called before an Element is updated.
-   * @throws [[IModelError]] if there is a problem
+   * @note throw an exception to disallow the update
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Element to be updated
    * @beta
@@ -184,8 +196,20 @@ export class Element extends Entity implements ElementProps {
       arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Update);
     }
   }
+
+  /** Called after an Element was updated.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was updated
+   * @beta
+   */
+  protected static onUpdated(arg: OnElementIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Update);
+    }
+  }
+
   /** Called before an Element is deleted.
-   * @throws [[IModelError]] if there is a problem
+   * @note throw an exception to disallow the delete
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Element to be deleted
    * @beta
@@ -197,26 +221,7 @@ export class Element extends Entity implements ElementProps {
         arg.iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
     }
   }
-  /** Called after a new Element was inserted.
-   * @note If you override this method, you must call super.
-   * @note `this` is the class of the Element that was inserted
-   * @beta
-   */
-  protected static onInserted(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Insert);
-    }
-  }
-  /** Called after an Element was updated.
-   * @note If you override this method, you must call super.
-   * @note `this` is the class of the Element that was updated
-   * @beta
-   */
-  protected static onUpdated(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Update);
-    }
-  }
+
   /** Called after an Element was deleted.
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Element that was deleted
@@ -225,7 +230,7 @@ export class Element extends Entity implements ElementProps {
   protected static onDeleted(_arg: OnElementIdArg): void { }
 
   /** Called when an element with an instance of this class as its parent is about to be deleted.
-   * @throws [[IModelError]] if the element should not be deleted
+   * @note throw an exception if the element should not be deleted
    * @note implementers should not presume that the element was deleted if this method does not throw,
    * since the delete may fail for other reasons. Instead, rely on [[onChildDeleted]] for that purpose.
    * @note `this` is the class of the parent Element whose child will be deleted
@@ -240,7 +245,7 @@ export class Element extends Entity implements ElementProps {
   protected static onChildDeleted(_arg: OnChildElementIdArg): void { }
 
   /** Called when a *new element* with an instance of this class as its parent is about to be inserted.
-   * @throws [[IModelError]] if the element should not be inserted
+   * @note throw an exception if the element should not be inserted
    * @note `this` is the class of the prospective parent Element.
    * @beta
    */
@@ -253,7 +258,7 @@ export class Element extends Entity implements ElementProps {
   protected static onChildInserted(_arg: OnChildElementIdArg): void { }
 
   /** Called when an element with an instance of this class as its parent is about to be updated.
-   * @throws [[IModelError]] if the element should not be updated
+   * @note throw an exception if the element should not be updated
    * @note `this` is the class of the parent Element.
    * @beta
    */
@@ -266,26 +271,26 @@ export class Element extends Entity implements ElementProps {
   protected static onChildUpdated(_arg: OnChildElementIdArg): void { }
 
   /** Called when an *existing element* is about to be updated so that an instance of this class will become its new parent.
-   * @throws [[IModelError]] if the element should not be updated
-   * @note `this` is the class of the parent Element.
+   * @note throw an exception if the element should not be added
+   * @note `this` is the class of the prospective parent Element.
    * @beta
    */
   protected static onChildAdd(_arg: OnChildElementPropsArg): void { }
 
   /** Called after an *existing element* has been updated so that an instance of this class is its new parent.
-   * @note `this` is the class of the prospective parent Element.
+   * @note `this` is the class of the new parent Element.
    * @beta
    */
   protected static onChildAdded(_arg: OnChildElementIdArg): void { }
 
-  /** Called when an element with an instance of this class as its parent is about to be updated change its parent.
-   * @throws [[IModelError]] if the element should not be updated
+  /** Called when an element with an instance of this class as its parent is about to be updated change to a different parent.
+   * @note throw an exception if the element should not be dropped
    * @note `this` is the class of the parent Element.
    * @beta
    */
   protected static onChildDrop(_arg: OnChildElementIdArg): void { }
 
-  /** Called after an element with an instance of this class is its parent was updated to have a new parent.
+  /** Called after an element with an instance of this class is its previous parent was updated to have a new parent.
    * @note `this` is the class of the previous parent Element.
    * @beta
    */
@@ -297,7 +302,7 @@ export class Element extends Entity implements ElementProps {
    * @param _context The context that persists any remapping between the source iModel and target iModel.
    * @param _sourceProps The ElementProps for the source Element that was cloned.
    * @param _targetProps The ElementProps that are a result of the clone. These can be further modified.
-   * @throws [[IModelError]] if there is a problem
+   * @note throw an exception to disallow
    * @note If you override this method, you must call super.
    * @alpha
    */
