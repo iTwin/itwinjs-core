@@ -5,11 +5,10 @@
 
 import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
-  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions,
-  InformationPartitionElement,
+  ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions, InformationPartitionElement,
   PhysicalModel, PhysicalPartition, Relationship, SubCategory,
 } from "@bentley/imodeljs-backend";
-import { IModel } from "@bentley/imodeljs-common";
+import { ElementProps, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 export const progressLoggerCategory = "Progress";
@@ -133,12 +132,13 @@ export class Transformer extends IModelTransformer {
     return super.shouldExportElement(sourceElement);
   }
 
-  // protected onTransformElement(sourceElement: Element): ElementProps {
-  //   if (sourceElement.getDisplayLabel() === "L1.DS1-DC1-010-V-0001.ifc") {
-  //     Logger.logInfo(progressLoggerCategory, "Found problem element");
-  //   }
-  //   return super.onTransformElement(sourceElement);
-  // }
+  /** This override of IModelTransformer.onTransformElement exists for debugging purposes */
+  protected onTransformElement(sourceElement: Element): ElementProps {
+    // if (sourceElement.getDisplayLabel() === "xxx") { // use logging to find something unique about the problem element
+    //   Logger.logInfo(progressLoggerCategory, "Found problem element"); // set breakpoint here
+    // }
+    return super.onTransformElement(sourceElement);
+  }
 
   protected shouldExportRelationship(relationship: Relationship): boolean {
     if (this._numSourceRelationshipsProcessed < this._numSourceRelationships) {
