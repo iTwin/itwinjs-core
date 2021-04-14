@@ -676,4 +676,32 @@ describe("ContentDataProvider", () => {
 
   });
 
+  describe("diagnostics", () => {
+
+    it("passes diagnostics options to presentation manager", async () => {
+      const diagnosticsHandler = sinon.stub();
+
+      provider.dispose();
+      provider = new Provider({
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+        displayType,
+        ruleDiagnostics: { severity: "error", handler: diagnosticsHandler },
+      });
+      sinon.stub(provider, "shouldRequestContentForEmptyKeyset").returns(true);
+
+      const descriptor = createRandomDescriptor();
+      const content = new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]);
+      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isObjectWith<Paged<ContentDescriptorRequestOptions<IModelConnection, KeySet>>>({ diagnostics: { editor: "error", handler: diagnosticsHandler } })))
+        .returns(async () => descriptor)
+        .verifiable(moq.Times.once());
+      presentationManagerMock.setup((x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ diagnostics: { editor: "error", handler: diagnosticsHandler } })))
+        .returns(async () => content)
+        .verifiable(moq.Times.once());
+      await provider.getContentSetSize();
+      presentationManagerMock.verifyAll();
+    });
+
+  });
+
 });

@@ -300,8 +300,12 @@ class SelectedViewFrustumDecoration {
     if (targetVp !== this._targetVp)
       return;
     const decorator = SelectedViewFrustumDecoration._decorator;
-    if (undefined !== decorator)
-      IModelApp.viewManager.forEachViewport((vp) => { if (vp !== this._targetVp) vp.invalidateCachedDecorations(decorator); });
+    if (undefined !== decorator) {
+      for (const vp of IModelApp.viewManager) {
+        if (vp !== this._targetVp)
+          vp.invalidateCachedDecorations(decorator);
+      }
+    }
   }
 
   public decorate(context: DecorateContext): void {
@@ -407,8 +411,12 @@ class ShadowFrustumDecoration {
 
   public onRender(): void {
     const decorator = ShadowFrustumDecoration._instance;
-    if (undefined !== decorator)
-      IModelApp.viewManager.forEachViewport((vp) => { if (vp !== this._targetVp) vp.invalidateCachedDecorations(decorator); });
+    if (undefined !== decorator) {
+      for (const vp of IModelApp.viewManager) {
+        if (vp !== this._targetVp)
+          vp.invalidateCachedDecorations(decorator);
+      }
+    }
   }
 
   public decorate(context: DecorateContext): void {

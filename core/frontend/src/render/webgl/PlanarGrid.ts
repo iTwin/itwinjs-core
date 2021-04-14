@@ -8,7 +8,6 @@
 
 import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@bentley/geometry-core";
 import { Frustum, QPoint2dList, QPoint3dList } from "@bentley/imodeljs-common";
-import { PlanarGridProps } from "../primitives/PlanarGrid";
 import { RenderMemory } from "../RenderMemory";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
@@ -20,7 +19,7 @@ import { TechniqueId } from "./TechniqueId";
 import assert = require("assert");
 import { RenderGraphic } from "../RenderGraphic";
 import { GraphicBranch } from "../GraphicBranch";
-import { RenderSystem } from "../RenderSystem";
+import { PlanarGridProps, RenderSystem } from "../RenderSystem";
 import { Primitive } from "./Primitive";
 
 class PlanarGridGeometryParams extends IndexedGeometryParams {

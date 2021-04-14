@@ -15,6 +15,7 @@ export * from "./render/webgl/BranchStack";
 export * from "./render/webgl/BranchState";
 export * from "./render/webgl/CachedGeometry";
 export * from "./render/webgl/ClippingProgram";
+export * from "./render/webgl/ClipStack";
 export * from "./render/webgl/ClipVolume";
 export * from "./render/webgl/ColorInfo";
 export * from "./render/webgl/Diagnostics";

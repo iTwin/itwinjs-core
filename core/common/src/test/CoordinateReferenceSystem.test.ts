@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, CLRK, Benoit, NAVD, NADCON, Xfrm, prvi, stgeorge, stlrnc, stpaul
+// cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, CLRK, Benoit, NAVD, NADCON, Xfrm, prvi, stgeorge, stlrnc, stpaul, helmert
 
 import { expect } from "chai";
 import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem";
@@ -490,6 +490,7 @@ describe("Geodetic Settings", () => {
     roundTrip({ horizontalCRS: { id: "LL83" }, verticalCRS: { id: "NAVD88" } }, "input");
     roundTrip({ horizontalCRS: { id: "ETRF89" }, verticalCRS: { id: "ELLIPSOID" } }, "input");
     roundTrip({ horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" } }, "input");
+    roundTrip({ horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" }, additionalTransform: { helmert2DWithZOffset: {translationX: 10.0, translationY: 15.0, translationZ: 0.02, rotDeg: 1.2, scale: 1.0001 } } }, "input");
 
     roundTrip({
       horizontalCRS: {
@@ -557,5 +558,71 @@ describe("Geodetic Settings", () => {
       },
       verticalCRS: { id: "GEOID" },
     }, "input");
+
+    roundTrip({
+      horizontalCRS: {
+        id: "10TM115-27",
+        description: "",
+        source: "Mentor Software Client",
+        deprecated: false,
+        datumId: "NAD27",
+        datum: {
+          id: "NAD27",
+          description: "North American Datum of 1927 (US48, AK, HI, and Canada)",
+          deprecated: false,
+          source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+          epsg: 6267,
+          ellipsoidId: "CLRK66",
+          ellipsoid: {
+            id: "CLRK66",
+            epsg: 7008,
+            description: "Clarke 1866, Benoit Ratio",
+            source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+            equatorialRadius: 6378160.0,
+            polarRadius: 6356774.719195305951,
+          },
+          transforms: [
+            {
+              method: "GridFiles",
+              gridFile: {
+                files: [
+                  { fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/prvi.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/hawaii.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/stgeorge.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/stlrnc.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/stpaul.l?s", format: "NADCON", direction: "Direct" },
+                ],
+              },
+            },
+          ],
+        },
+        unit: "Meter",
+        projection: {
+          method: "TransverseMercator",
+          centralMeridian: -115,
+          latitudeOfOrigin: 0,
+          scaleFactor: 0.9992,
+          falseEasting: 1.0,
+          falseNorthing: 2.0,
+        },
+        area: {
+          latitude: { min: 48, max: 84 },
+          longitude: { min: -120.5, max: -109.5 },
+        },
+      },
+      verticalCRS: { id: "GEOID" },
+      additionalTransform: {
+        helmert2DWithZOffset: {
+          translationX: 10.0,
+          translationY: 15.0,
+          translationZ: 0.02,
+          rotDeg: 1.2,
+          scale: 1.0001,
+        },
+      },
+    }, "input");
+
   });
 });

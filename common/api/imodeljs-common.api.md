@@ -402,10 +402,10 @@ export namespace Base64EncodedString {
     replacer: (_name: string, value: any) => any;
 }
 
-// @alpha
+// @beta
 export type BaseLayerProps = MapLayerProps | ColorDefProps;
 
-// @alpha
+// @beta
 export type BaseLayerSettings = MapLayerSettings | ColorDef;
 
 // @public
@@ -523,7 +523,7 @@ export interface BRepCutProps {
     distance?: number;
 }
 
-// @beta (undocumented)
+// @public
 export namespace BRepEntity {
     export interface DataProps {
         data?: Base64EncodedString;
@@ -865,12 +865,14 @@ export interface ClassifierTileTreeId {
 
 // @public
 export class ClipStyle {
-    static create(produceCutGeometry: boolean, cutStyle: CutStyle): ClipStyle;
+    static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle;
     readonly cutStyle: CutStyle;
     static readonly defaults: ClipStyle;
     // (undocumented)
     static fromJSON(props?: ClipStyleProps): ClipStyle;
+    readonly insideColor?: RgbColor;
     get matchesDefaults(): boolean;
+    readonly outsideColor?: RgbColor;
     readonly produceCutGeometry: boolean;
     toJSON(): ClipStyleProps | undefined;
 }
@@ -878,6 +880,8 @@ export class ClipStyle {
 // @public
 export interface ClipStyleProps {
     cutStyle?: CutStyleProps;
+    insideColor?: RgbColorProps;
+    outsideColor?: RgbColorProps;
     produceCutGeometry?: boolean;
 }
 
@@ -1603,7 +1607,7 @@ export interface CutStyleProps {
 
 export { DbResult }
 
-// @beta
+// @internal
 export interface DecorationGeometryProps {
     // (undocumented)
     readonly geometryStream: GeometryStreamProps;
@@ -2903,7 +2907,7 @@ export enum GeometryClass {
     Primary = 0
 }
 
-// @beta
+// @public
 export interface GeometryContainmentRequestProps {
     // (undocumented)
     allowOverlaps?: boolean;
@@ -2917,7 +2921,7 @@ export interface GeometryContainmentRequestProps {
     viewFlags?: ViewFlagProps;
 }
 
-// @beta
+// @public
 export interface GeometryContainmentResponseProps {
     // (undocumented)
     candidatesContainment?: ClipPlaneContainment[];
@@ -3012,7 +3016,7 @@ export class GeometryStreamBuilder {
 export interface GeometryStreamEntryProps extends IModelJson.GeometryProps {
     // (undocumented)
     appearance?: GeometryAppearanceProps;
-    // @beta (undocumented)
+    // (undocumented)
     brep?: BRepEntity.DataProps;
     // (undocumented)
     fill?: AreaFillProps;
@@ -3020,7 +3024,7 @@ export interface GeometryStreamEntryProps extends IModelJson.GeometryProps {
     geomPart?: GeometryPartInstanceProps;
     // (undocumented)
     header?: GeometryStreamHeaderProps;
-    // @beta (undocumented)
+    // (undocumented)
     image?: ImageGraphicProps;
     // (undocumented)
     material?: MaterialProps;
@@ -3628,7 +3632,7 @@ export enum ImageBufferFormat {
     Rgba = 0
 }
 
-// @beta
+// @public
 export class ImageGraphic {
     constructor(corners: ImageGraphicCorners, textureId: Id64String, hasBorder?: boolean);
     // (undocumented)
@@ -3646,7 +3650,7 @@ export class ImageGraphic {
     transformInPlace(transform: Transform): void;
 }
 
-// @beta
+// @public
 export class ImageGraphicCorners {
     // (undocumented)
     readonly 0: Point3d;
@@ -3667,10 +3671,10 @@ export class ImageGraphicCorners {
     toJSON(): ImageGraphicCornersProps;
 }
 
-// @beta
+// @public
 export type ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps];
 
-// @beta
+// @public
 export interface ImageGraphicProps {
     corners: ImageGraphicCornersProps;
     hasBorder: boolean;
@@ -3826,7 +3830,7 @@ export interface IModelProps {
 
 // @internal
 export abstract class IModelReadRpcInterface extends RpcInterface {
-    // @beta (undocumented)
+    // (undocumented)
     cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void>;
     // (undocumented)
     close(_iModelToken: IModelRpcProps): Promise<boolean>;
@@ -3842,13 +3846,13 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
     // @beta (undocumented)
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps>;
-    // @beta (undocumented)
+    // (undocumented)
     getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta (undocumented)
     getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string>;
     // @beta (undocumented)
     getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps>;
-    // @beta (undocumented)
+    // (undocumented)
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
@@ -3876,7 +3880,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
     // (undocumented)
     readFontJson(_iModelToken: IModelRpcProps): Promise<any>;
-    // @beta (undocumented)
+    // (undocumented)
     requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
 }
 
@@ -4350,9 +4354,8 @@ export namespace LineStyle {
     }
 }
 
-// @beta
+// @public
 export interface LineStyleProps extends DefinitionElementProps {
-    // (undocumented)
     data: string;
     // (undocumented)
     description?: string;
@@ -4373,7 +4376,7 @@ export interface LocalBriefcaseProps {
 
 export { LogFunction }
 
-// @alpha
+// @beta
 export interface MapImageryProps {
     // (undocumented)
     backgroundBase?: BaseLayerProps;
@@ -4383,7 +4386,7 @@ export interface MapImageryProps {
     overlayLayers?: MapLayerProps[];
 }
 
-// @alpha
+// @beta
 export class MapImagerySettings {
     // (undocumented)
     get backgroundBase(): BaseLayerSettings;
@@ -4407,7 +4410,7 @@ export interface MapLayerKey {
     value: string;
 }
 
-// @alpha
+// @beta
 export interface MapLayerProps {
     accessKey?: MapLayerKey;
     formatId?: string;
@@ -4421,7 +4424,7 @@ export interface MapLayerProps {
     visible?: boolean;
 }
 
-// @alpha
+// @beta
 export class MapLayerSettings {
     // (undocumented)
     readonly accessKey?: MapLayerKey;
@@ -4461,7 +4464,7 @@ export class MapLayerSettings {
     readonly visible: boolean;
 }
 
-// @alpha
+// @beta
 export interface MapSubLayerProps {
     // (undocumented)
     children?: SubLayerId[];
@@ -4477,7 +4480,7 @@ export interface MapSubLayerProps {
     visible?: boolean;
 }
 
-// @alpha
+// @beta
 export class MapSubLayerSettings {
     constructor(name: string, title?: string, visible?: boolean, id?: SubLayerId, parent?: SubLayerId, children?: SubLayerId[]);
     readonly children?: SubLayerId[];
@@ -4519,14 +4522,14 @@ export namespace MarshalingBinaryMarker {
     export function createDefault(): MarshalingBinaryMarker;
 }
 
-// @beta
+// @public
 export enum MassPropertiesOperation {
     AccumulateAreas = 1,
     AccumulateLengths = 0,
     AccumulateVolumes = 2
 }
 
-// @beta
+// @public
 export interface MassPropertiesRequestProps {
     // (undocumented)
     candidates?: Id64Array;
@@ -4534,7 +4537,7 @@ export interface MassPropertiesRequestProps {
     operation: MassPropertiesOperation;
 }
 
-// @beta
+// @public
 export interface MassPropertiesResponseProps {
     // (undocumented)
     area?: number;
@@ -4605,7 +4608,7 @@ export class MeshPolylineList extends Array<MeshPolyline> {
     constructor(...args: MeshPolyline[]);
 }
 
-// @beta
+// @public
 export class ModelClipGroup {
     readonly clip?: ClipVector;
     clone(): ModelClipGroup;
@@ -4616,13 +4619,13 @@ export class ModelClipGroup {
     toJSON(): ModelClipGroupProps;
 }
 
-// @beta
+// @public
 export interface ModelClipGroupProps {
     clip?: ClipVectorProps;
     models?: Id64Array;
 }
 
-// @beta
+// @public
 export class ModelClipGroups {
     constructor(groups?: ModelClipGroup[]);
     clone(): ModelClipGroups;
@@ -6776,7 +6779,7 @@ export interface SkyCubeProps {
     top?: Id64String;
 }
 
-// @beta
+// @internal
 export interface SnapRequestProps {
     // (undocumented)
     closePoint: XYZProps;
@@ -6804,7 +6807,7 @@ export interface SnapRequestProps {
     worldToView: Matrix4dProps;
 }
 
-// @beta
+// @internal
 export interface SnapResponseProps {
     // (undocumented)
     curve?: any;
@@ -7046,7 +7049,7 @@ export interface SubjectProps extends ElementProps {
     description?: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export type SubLayerId = string | number;
 
 // @beta
@@ -7824,17 +7827,14 @@ export class ViewDetails3d extends ViewDetails {
     set allow3dManipulations(allow: boolean);
     // @internal
     getJSON(): Readonly<ViewDetails3dProps>;
-    // @beta
     get modelClipGroups(): ModelClipGroups;
     set modelClipGroups(groups: ModelClipGroups);
-    // @beta
     readonly onModelClipGroupsChanged: BeEvent<(newGroups: ModelClipGroups) => void>;
 }
 
 // @public
 export interface ViewDetails3dProps extends ViewDetailsProps {
     disable3dManipulations?: boolean;
-    // @beta
     modelClipGroups?: ModelClipGroupProps[];
 }
 

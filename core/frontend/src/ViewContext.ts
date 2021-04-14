@@ -8,7 +8,7 @@
 
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
-  ClipPlane, ClipUtilities, ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
+  Matrix3d, Point2d,
   Point3d, Range1d, Transform, XAndY,
 } from "@bentley/geometry-core";
 import { Frustum, FrustumPlanes, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
@@ -275,41 +275,6 @@ export class DecorateContext extends RenderContext {
     // eslint-disable-next-line deprecation/deprecation
       this.screenViewport.decorationDiv.appendChild(decoration);
     }
-  }
-
-  private getClippedGridPlanePoints(vp: Viewport, plane: Plane3dByOriginAndUnitNormal, loopPt: Point3d): Point3d[] | undefined {
-    const frust = vp.getFrustum();
-    const geom = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([ClipPlane.createPlane(plane)]), frust.toRange(), true, false, true);
-    if (undefined === geom || 1 !== geom.length)
-      return undefined;
-    const loop = geom[0];
-    if (!(loop instanceof Loop) || 1 !== loop.children.length)
-      return undefined;
-    const child = loop.getChild(0);
-    if (!(child instanceof LineString3d))
-      return undefined;
-
-    const work = new GrowableXYZArray();
-    const finalPoints = new GrowableXYZArray();
-    const convexSet = frust.getRangePlanes(false, false, 0);
-    convexSet.polygonClip(child.points, finalPoints, work);
-    if (finalPoints.length < 4)
-      return undefined;
-
-    const shapePoints = finalPoints.getPoint3dArray();
-    let closeIndex = 0;
-    if (vp.isCameraOn) {
-      let lastZ = 0.0;
-      for (let i = 0; i < shapePoints.length; ++i) {
-        vp.worldToView(shapePoints[i], loopPt);
-        if (i === 0 || loopPt.z > lastZ) {
-          lastZ = loopPt.z;
-          closeIndex = i;
-        }
-      }
-    }
-    loopPt.setFrom(shapePoints[closeIndex]);
-    return shapePoints;
   }
 
   /** @internal */
