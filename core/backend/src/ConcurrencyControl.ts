@@ -118,8 +118,6 @@ export class ConcurrencyControl {
 
   /** @internal */
   public onSavedChanges() {
-    this.applyTransactionOptions();
-
     if (this._modelsAffectedByWrites.size !== 0) { // TODO: Remove this when we get tile healing
       this._iModel.nativeDb.purgeTileTrees(Array.from(this._modelsAffectedByWrites)); // TODO: Remove this when we get tile healing
       this._modelsAffectedByWrites.clear(); // TODO: Remove this when we get tile healing
@@ -134,16 +132,10 @@ export class ConcurrencyControl {
 
   /** @internal */
   public onMergedChanges() {
-    this.applyTransactionOptions();
     this._iModel.nativeDb.purgeTileTrees(undefined); // TODO: Remove this when we get tile healing
     const data = { parentChangeSetId: this.iModel.changeSetId };
     IpcHost.notifyPushAndPull(this._iModel, "notifyPulledChanges", data);
   }
-
-  /** @internal */
-  public onUndoRedo() { this.applyTransactionOptions(); }
-
-  private applyTransactionOptions() { }
 
   /** You must call this if you use classes other than ConcurrencyControl to manage locks and codes.
    * For example, if you call IModelHost.imodelClient to call IModelClient functions directly to
@@ -844,6 +836,7 @@ export class ConcurrencyControl {
     this._policy = policy;
     if (!this._iModel.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
+
     let rc: RepositoryStatus;
     if (policy instanceof ConcurrencyControl.OptimisticPolicy) {
       const oc: ConcurrencyControl.OptimisticPolicy = policy;
@@ -851,10 +844,10 @@ export class ConcurrencyControl {
     } else {
       rc = this._iModel.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
     }
+
     if (RepositoryStatus.Success !== rc) {
       throw new IModelError(rc, "Error setting concurrency control policy", Logger.logError, loggerCategory);
     }
-    this.applyTransactionOptions();
   }
 
   /** API to reserve Codes and to query the status of Codes */

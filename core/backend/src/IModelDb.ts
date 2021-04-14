@@ -2186,25 +2186,10 @@ export class BriefcaseDb extends IModelDb {
     return db?.isBriefcaseDb() ? db : undefined;
   }
 
-  /** @internal */
-  public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
-    const status = super.reverseTxns(numOperations, allowCrossSessions);
-    if (status === IModelStatus.Success && this.allowLocalChanges)
-      this.concurrencyControl.onUndoRedo();
-    return status;
-  }
-
-  /** @internal */
-  public reinstateTxn(): IModelStatus {
-    const status = super.reinstateTxn();
-    if (status === IModelStatus.Success && this.allowLocalChanges)
-      this.concurrencyControl.onUndoRedo();
-    return status;
-  }
-
   public abandonChanges(): void {
     if (this.allowLocalChanges)
       this.concurrencyControl.abandonRequest();
+
     super.abandonChanges();
   }
 
