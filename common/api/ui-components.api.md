@@ -803,6 +803,7 @@ export interface CellItem {
     alignment?: HorizontalAlignment;
     isDisabled?: boolean;
     key: string;
+    mergedCellsCount?: number;
     record?: PropertyRecord;
     style?: ItemStyle;
 }
