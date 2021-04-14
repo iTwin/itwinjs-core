@@ -769,6 +769,13 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       }
     }
 
+    /** Remove a model from the set of loaded models. Used internally by BriefcaseConnection in response to txn events.
+     * @internal
+     */
+    public unload(modelId: Id64String): void {
+      this._loaded.delete(modelId);
+    }
+
     /** Query for a set of model ranges by ModelIds. */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
       const iModel = this._iModel;

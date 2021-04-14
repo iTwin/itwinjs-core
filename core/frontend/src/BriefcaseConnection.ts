@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { assert, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import {
   IModelConnectionProps, IModelError, IModelVersionProps, OpenBriefcaseProps,
   StandaloneOpenOptions,
@@ -17,15 +17,60 @@ import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { IModelApp } from "./IModelApp";
 
+/** Keeps track of changes to models, buffering them until synchronization points.
+ * While a GraphicalEditingScope is open, the changes are buffered until the scope exits, at which point they are processed.
+ * Otherwise, the buffered changes are processed after undo/redo, commit, or pull+merge changes.
+ */
 class ModelChangeMonitor {
   private _editingScope?: GraphicalEditingScope;
   private readonly _briefcase: BriefcaseConnection;
+  private readonly _deletedModels = new Set<string>();
+  private readonly _modelIdToGuid = new Map<string, string>();
+  private readonly _removals: VoidFunction[] = [];
 
   public constructor(briefcase: BriefcaseConnection) {
     this._briefcase = briefcase;
+
+    // Buffer updated geometry guids.
+    this._removals.push(briefcase.txns.onModelGeometryChanged.addListener((changes) => {
+      for (const change of changes) {
+        this._deletedModels.delete(change.id);
+        this._modelIdToGuid.set(change.id, change.guid);
+      }
+    }));
+
+    // Buffer deletions of models.
+    this._removals.push(briefcase.txns.onModelsChanged.addListener((changes) => {
+      if (changes.deleted) {
+        for (const id of CompressedId64Set.iterable(changes.deleted)) {
+          this._modelIdToGuid.delete(id);
+          this._deletedModels.add(id);
+        }
+      }
+    }));
+
+    // Outside of an editing scope, we want to update viewport contents after commit, undo/redo, or merging changes.
+    const maybeProcess = async () => {
+      if (this.editingScope)
+        return;
+
+      const modelIds = Array.from(this._modelIdToGuid.keys());
+      await IModelApp.tileAdmin.purgeTileTrees(this._briefcase, modelIds);
+
+      this.processBuffered();
+    };
+
+    this._removals.push(briefcase.txns.onCommitted.addListener(() => maybeProcess()));
+    this._removals.push(briefcase.txns.onAfterUndoRedo.addListener(() => maybeProcess()));
+    // ###TODO onChangesPulledAndMerged
   }
 
   public async close(): Promise<void> {
+    for (const removal of this._removals)
+      removal();
+
+    this._removals.length = 0;
+
     if (this._editingScope) {
       await this._editingScope.exit();
       this._editingScope = undefined;
@@ -61,11 +106,20 @@ class ModelChangeMonitor {
   }
 
   private processBuffered(): void {
-  }
+    const models = this._briefcase.models;
+    for (const [id, guid] of this._modelIdToGuid) {
+      const model = models.getLoaded(id)?.asGeometricModel;
+      if (model)
+        model.geometryGuid = guid;
+    }
 
-  private async purgeAndProcessBuffered(): Promise<void> {
-    // ###TODO purgeTileTrees
-    this.processBuffered();
+    this.invalidateScenes(this._modelIdToGuid.keys());
+    this._modelIdToGuid.clear();
+
+    for (const deleted of this._deletedModels)
+      models.unload(deleted);
+
+    this._deletedModels.clear();
   }
 
   private invalidateScenes(changedModels: Iterable<Id64String>): void {
