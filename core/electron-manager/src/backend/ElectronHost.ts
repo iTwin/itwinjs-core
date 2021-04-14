@@ -142,12 +142,12 @@ export class ElectronHost {
         // These web preference variables should not be overriden by the ElectronHostWindowOptions
         preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
         experimentalFeatures: false,
-        //nodeIntegration: false,
+        nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
         enableRemoteModule: false,
         nodeIntegrationInWorker: false,
-        nodeIntegrationInSubFrames: false
+        nodeIntegrationInSubFrames: false,
       },
     };
 
