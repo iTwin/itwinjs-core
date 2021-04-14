@@ -2,6 +2,63 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.14.2",
+      "tag": "@bentley/ui-components_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/ui-components_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/ui-components_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Lower coverage to 99.98 to avoid CI breaks."
+          },
+          {
+            "comment": "Added handling for windows which don't open."
+          },
+          {
+            "comment": "Added `UrlPropertyValueRenderer` renders values for properties of `StandardTypeNames.URL` type as URLs without looking at the value"
+          },
+          {
+            "comment": "Deprecated `onPropertyLinkClick` prop used by `VirtualizedPropertyGridWithDataProvider` and `PropertyGrid`. Behavior of clicks on `PropertyRecord` links should be customized by assigning the `links` attribute."
+          },
+          {
+            "comment": "update FormatPanel to ensure state was not set on unmounted component."
+          },
+          {
+            "comment": "Fix bug in TimelineComponent's componentDidUpdate method that caused and infinite loop."
+          },
+          {
+            "comment": "Support for AccuDraw Ui Settings"
+          },
+          {
+            "comment": "`TreeModelSource`: Fix `onModelChanged` event sometimes listing same node id multiple times."
+          },
+          {
+            "comment": "Improved ui-components test coverage to 100%"
+          },
+          {
+            "comment": "`TreeModel`: Expose `getChildOffset` method."
+          },
+          {
+            "comment": "`MutableTreeModel`: Add `moveNode` method."
+          },
+          {
+            "comment": "Better support for Escape key to Home position"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.13.0",
       "tag": "@bentley/ui-components_v2.13.0",
       "date": "Tue, 09 Mar 2021 20:28:13 GMT",

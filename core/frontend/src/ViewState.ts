@@ -1173,9 +1173,6 @@ export abstract class ViewState3d extends ViewState {
   }
 
   private updateModelClips(groups: ModelClipGroups): void {
-    for (const clip of this._modelClips)
-      clip?.dispose();
-
     this._modelClips.length = 0;
     for (const group of groups.groups) {
       const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;
@@ -1185,10 +1182,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** @internal */
   public getModelClip(modelId: Id64String): RenderClipVolume | undefined {
-    // If the view has a clip, or clipping is turned off, the model clips are ignored.
-    if (undefined !== this.getViewClip() || !this.viewFlags.clipVolume)
-      return undefined;
-
+    // ###TODO: ViewFlags.clipVolume is for the *view clip* only. Some tiles will want to ignore *all* clips (i.e., section-cut tiles).
     const index = this.details.modelClipGroups.findGroupIndex(modelId);
     return -1 !== index ? this._modelClips[index] : undefined;
   }

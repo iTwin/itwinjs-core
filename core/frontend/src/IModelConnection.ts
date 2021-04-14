@@ -416,6 +416,7 @@ export abstract class IModelConnection extends IModel {
   private _snapRpc = new OneAtATimeAction<SnapResponseProps>(async (props: SnapRequestProps) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props));
   /** Request a snap from the backend.
    * @note callers must gracefully handle Promise rejected with AbandonedError
+   * @internal
    */
   public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
     return this.isOpen ? this._snapRpc.request(props) : { status: 2 };
@@ -429,9 +430,7 @@ export abstract class IModelConnection extends IModel {
     return this.isOpen ? this._toolTipRpc.request(id) : [];
   }
 
-  /** Request element clip containment status from the backend.
-   * @beta
-   */
+  /** Request element clip containment status from the backend. */
   public async getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getGeometryContainment(this.getRpcProps(), requestProps); }
 
   /** Obtain a summary of the geometry belonging to one or more [GeometricElement]($backend)s suitable for debugging and diagnostics.
@@ -458,9 +457,7 @@ export abstract class IModelConnection extends IModel {
     return undefined;
   }
 
-  /** Request element mass properties from the backend.
-   * @beta
-   */
+  /** Request element mass properties from the backend. */
   public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps); }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
@@ -544,10 +541,10 @@ export abstract class IModelConnection extends IModel {
    */
   public expandDisplayedExtents(range: Range3d): void {
     this.displayedExtents.extendRange(range);
-    IModelApp.viewManager.forEachViewport((vp) => {
+    for (const vp of IModelApp.viewManager) {
       if (vp.view.isSpatialView() && vp.iModel === this)
         vp.invalidateController();
-    });
+    }
   }
 
   /** @internal */

@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipPlaneContainment, ClipUtilities, Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
 import { AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
@@ -29,7 +29,6 @@ import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { Scene } from "../Scene";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
-import { ClipVolume } from "./ClipVolume";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -186,10 +185,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   private disposeAnimationBranches(): void {
-    if (this._animationBranches)
-      for (const branch of this._animationBranches.values())
-        branch.dispose();
-
     this._animationBranches = undefined;
   }
 
@@ -229,7 +224,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get currentBranch(): BranchState { return this.uniforms.branch.top; }
   public get currentViewFlags(): ViewFlags { return this.currentBranch.viewFlags; }
   public get currentTransform(): Transform { return this.currentBranch.transform; }
-  public get currentClipVolume(): ClipVolume | undefined { return this.uniforms.branch.clipVolume; }
   public get currentTransparencyThreshold(): number { return this.currentEdgeSettings.transparencyThreshold; }
   public get currentEdgeSettings(): EdgeSettings { return this.currentBranch.edgeSettings; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.currentBranch.symbologyOverrides; }
@@ -322,48 +316,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.uniforms.branch.popViewClip();
   }
 
-  private _scratchRangeCorners: Point3d[] = [
-    new Point3d(), new Point3d(), new Point3d(), new Point3d(),
-    new Point3d(), new Point3d(), new Point3d(), new Point3d(),
-  ];
-
-  private _getRangeCorners(r: Range3d): Point3d[] {
-    const p = this._scratchRangeCorners;
-    p[0].setFromPoint3d(r.low);
-    p[1].set(r.high.x, r.low.y, r.low.z);
-    p[2].set(r.low.x, r.high.y, r.low.z);
-    p[3].set(r.high.x, r.high.y, r.low.z);
-    p[4].set(r.low.x, r.low.y, r.high.z);
-    p[5].set(r.high.x, r.low.y, r.high.z);
-    p[6].set(r.low.x, r.high.y, r.high.z);
-    p[7].setFromPoint3d(r.high);
-    return p;
-  }
-
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
-    const clip = this.uniforms.branch.clipVolume;
-    if (!clip || clip.hasOutsideClipColor)
-      return false;
-
-    range = this.currentTransform.multiplyRange(range, range);
-
-    const testIntersection = false;
-    if (testIntersection) {
-      // ###TODO: Avoid allocation of Range3d inside called function...
-      // ###TODO: Use some not-yet-existent API which will return as soon as it determines ANY intersection (we don't care about the actual intersection range).
-      const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip.clipVector, range);
-      return clippedRange.isNull;
-    } else {
-      // Do the cheap, imprecise check. The above is far too slow and allocates way too many objects, especially for clips produced from non-convex shapes.
-      return ClipPlaneContainment.StronglyOutside === clip.clipVector.classifyPointContainment(this._getRangeCorners(range));
-    }
+    return this.uniforms.branch.clipStack.isRangeClipped(range, this.currentTransform);
   }
 
   private readonly _scratchRange = new Range3d();
+
   /** @internal */
   public isGeometryOutsideActiveVolume(geom: CachedGeometry): boolean {
-    if (!this.uniforms.branch.clipVolume)
+    if (!this.uniforms.branch.clipStack.hasClip || this.uniforms.branch.clipStack.hasOutsideColor)
       return false;
 
     const range = geom.computeRange(this._scratchRange);
@@ -510,7 +472,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
 
-    this.uniforms.branch.updateViewClip(plan.activeClipSettings);
+    this.uniforms.branch.updateViewClip(plan.clip, plan.clipStyle);
 
     const vf = ViewFlags.createFrom(plan.viewFlags, this._scratchViewFlags);
     if (!plan.is3d)
@@ -1069,6 +1031,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     const thematicBytes = this.uniforms.thematic.bytesUsed;
     if (0 < thematicBytes)
       stats.addThematicTexture(thematicBytes);
+
+    const clipBytes = this.uniforms.branch.clipStack.bytesUsed;
+    if (clipBytes)
+      stats.addClipVolume(clipBytes);
   }
 
   protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect {

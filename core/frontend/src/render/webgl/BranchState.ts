@@ -6,12 +6,11 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import {
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags,
+} from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
-import { ViewClipSettings } from "../ViewClipSettings";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { ClipVolume } from "./ClipVolume";
 import { Branch } from "./Graphic";
@@ -61,7 +60,6 @@ export class BranchState {
   public get is3d() { return this._opts.is3d; }
   public get frustumScale() { return this._opts.frustumScale!; }
   public get appearanceProvider() { return this._opts.appearanceProvider; }
-  public get showClipVolume(): boolean { return this.viewFlags.clipVolume; }
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -77,22 +75,6 @@ export class BranchState {
     this.edgeSettings.init(hline);
   }
 
-  public setViewClip(settings: ViewClipSettings | undefined): void {
-    if (undefined === settings) {
-      this._opts.clipVolume = dispose(this._opts.clipVolume);
-      return;
-    }
-
-    // ###TODO We currently assume that the active view's ClipVector is never mutated in place, so if we are given the same object, we assume our RenderClipVolume remains valid.
-    if (!this._opts.clipVolume || this._opts.clipVolume.clipVector !== settings.clipVector) {
-      dispose(this._opts.clipVolume);
-      this._opts.clipVolume = IModelApp.renderSystem.createClipVolume(settings.clipVector) as ClipVolume | undefined;
-    }
-
-    if (this._opts.clipVolume)
-      this._opts.clipVolume.setClipColors(settings.outsideColor, settings.insideColor);
-  }
-
   /** Create a BranchState from a Branch. Any properties not explicitly specified by the new Branch are inherited from the previous BranchState. */
   public static fromBranch(prev: BranchState, branch: Branch): BranchState {
     const viewFlags = branch.branch.getViewFlags(prev.viewFlags);
@@ -101,7 +83,7 @@ export class BranchState {
     const iModel = branch.iModel ?? prev.iModel;
     const planarClassifier = (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier;
     const textureDrape = branch.textureDrape ?? prev.textureDrape;
-    const clipVolume = viewFlags.clipVolume ? (branch.clips ?? prev.clipVolume) : undefined;
+    const clipVolume = branch.clips;
     const edgeSettings = branch.edgeSettings ?? prev.edgeSettings;
     const is3d = branch.frustum?.is3d ?? prev.is3d;
     const frustumScale = branch.frustum?.scale ?? prev.frustumScale;

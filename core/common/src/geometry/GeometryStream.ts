@@ -77,7 +77,9 @@ export interface MaterialProps {
   rotation?: YawPitchRollProps;
 }
 
-/** @beta */
+/** JSON representation of a brep GeometryStream entry.
+ * @public
+ */
 export namespace BRepEntity {
   /** Enum for type of solid kernel entity this represents */
   export enum Type {
@@ -164,9 +166,7 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   material?: MaterialProps;
   geomPart?: GeometryPartInstanceProps;
   textString?: TextStringProps;
-  /** @beta */
   brep?: BRepEntity.DataProps;
-  /** @beta */
   image?: ImageGraphicProps;
   subRange?: LowAndHighXYZ;
 }

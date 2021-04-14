@@ -12,7 +12,7 @@ import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { GeometryClass } from "./GeometryParams";
 
 /** Information required to request a *snap* to a pickable decoration from the front end to the back end.
- * @beta
+ * @internal
  */
 export interface DecorationGeometryProps {
   readonly id: Id64String;
@@ -21,7 +21,7 @@ export interface DecorationGeometryProps {
 
 /** Information required to request a *snap* to an element from the front end to the back end.
  * Includes the viewing parameters so that snap can be relative to the view direction, viewing mode, etc.
- * @beta
+ * @internal
  */
 export interface SnapRequestProps {
   id: Id64String;
@@ -39,7 +39,7 @@ export interface SnapRequestProps {
 }
 
 /** Information returned from the back end to the front end holding the result of a *snap* operation.
- * @beta
+ * @internal
  */
 export interface SnapResponseProps {
   status: number;
