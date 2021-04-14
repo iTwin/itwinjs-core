@@ -74,7 +74,7 @@ class FrustumDecoration {
       if (options.showGrid) {
         const gridsPerRef = context.viewport.view.getGridsPerRef();
         const spacing = Point2d.createFrom(context.viewport.view.getGridSpacing());
-        const planarGrid = context.viewport.target.renderSystem.createPlanarGrid(this._adjustedWorldFrustum,  { origin: Point3d.createZero(),  rMatrix: Matrix3d.createIdentity(), spacing, gridsPerRef, color: ColorDef.white.withTransparency(125), planeTransparency: 200, lineTransparency: 220, refTransparency: 150 } );
+        const planarGrid = context.viewport.target.renderSystem.createPlanarGrid(this._adjustedWorldFrustum,  { origin: Point3d.createZero(),  rMatrix: Matrix3d.createIdentity(), spacing, gridsPerRef, color: ColorDef.white } );
         if (planarGrid)
           context.addDecoration(GraphicType.WorldDecoration, planarGrid);
 

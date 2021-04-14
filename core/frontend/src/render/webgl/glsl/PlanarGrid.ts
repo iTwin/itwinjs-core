@@ -7,6 +7,7 @@
  */
 
 import { WebGLContext } from "@bentley/webgl-compatibility";
+import { PlanarGridTransparency } from "../../RenderSystem";
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
@@ -22,10 +23,11 @@ const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeTexCoord = "return unquantize2d(a_uvParam, u_qTexCoordParams);";
 
 const computeBaseColor = `
-  vec4 color = u_gridColor;
+  // u_gridProps - x = gridsPerRef, y - planeAlpha, z = line alpha, w = ref alpha.
+  vec4 color = vec4(u_gridColor, u_gridProps.y);
   float refsPerGrid = u_gridProps.x;
-  if (0.0 == refsPerGrid || !drawGridLine(color, 1.0 / refsPerGrid, u_gridProps.z - color.a))
-    drawGridLine(color, 1.0, u_gridProps.y - color.a);
+  if (0.0 == refsPerGrid || !drawGridLine(color, 1.0 / refsPerGrid, u_gridProps.w - color.a))
+    drawGridLine(color, 1.0, u_gridProps.z - color.a);
 
   return color;
 `;
@@ -38,7 +40,7 @@ const drawGridLine = `
       vec2 grid = abs(fract(mult * v_texCoord - 0.5) - 0.5) / deriv;
       float line = min(grid.x, grid.y);
       if (line < 1.0) {
-        color.a += alphaScale * (1.0 - min(line, 1.0));
+        color.a += alphaScale * (1.0 - min(line, 1.0)) / max(1.0, length(deriv));
         return true;
         }
       }
@@ -46,6 +48,7 @@ const drawGridLine = `
    }
 `;
 
+const defaultTransparency = new PlanarGridTransparency();
 /** @internal */
 export default function createPlanarGridProgram(context: WebGLContext): ShaderProgram {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.PlanarGrid, false));
@@ -73,18 +76,18 @@ export default function createPlanarGridProgram(context: WebGLContext): ShaderPr
       uniform.setUniform4fv(planarGrid.uvParams.params);
     });
   });
-  frag.addUniform("u_gridColor", VariableType.Vec4, (prog) => {
+  frag.addUniform("u_gridColor", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_gridColor", (uniform, params) => {
       const planarGrid = params.geometry.asPlanarGrid!;
       const color = planarGrid.props.color.colors;
-      uniform.setUniform4fv([color.r / 255, color.g / 255, color.b / 255, 1 - planarGrid.props.planeTransparency / 255]);
+      uniform.setUniform3fv([color.r / 255, color.g / 255, color.b / 255]);
     });
   });
   frag.addUniform("u_gridProps", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_gridProps", (uniform, params) => {
       const planarGridProps = params.geometry.asPlanarGrid!.props;
-      const planeAlpha = (1 - planarGridProps.planeTransparency / 255);
-      uniform.setUniform4fv([planarGridProps.gridsPerRef,  planeAlpha + 1.0 - planarGridProps.lineTransparency / 255, planeAlpha + 1 - planarGridProps.refTransparency / 255, 0.0]);
+      const transparency = planarGridProps.transparency ? planarGridProps.transparency : defaultTransparency;
+      uniform.setUniform4fv([planarGridProps.gridsPerRef,  1.0 - transparency.planeTransparency, 1.0 - transparency.lineTransparency, 1.0 - transparency.refTransparency]);
     });
   });
 
