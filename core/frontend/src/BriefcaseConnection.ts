@@ -55,7 +55,8 @@ class ModelChangeMonitor {
         return;
 
       const modelIds = Array.from(this._modelIdToGuid.keys());
-      await IModelApp.tileAdmin.purgeTileTrees(this._briefcase, modelIds);
+      if (modelIds.length > 0)
+        await IModelApp.tileAdmin.purgeTileTrees(this._briefcase, modelIds);
 
       this.processBuffered();
     };
