@@ -30,7 +30,7 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, TerrainTexture } from "../RenderSystem";
+import { DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, TerrainTexture } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
@@ -59,7 +59,6 @@ import { Techniques } from "./Technique";
 import { RealityMeshGeometry } from "./RealityMesh";
 import { Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
-import { PlanarGridProps } from "../primitives/PlanarGrid";
 import { PlanarGridGeometry } from "./PlanarGrid";
 
 /* eslint-disable no-restricted-syntax */
