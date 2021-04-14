@@ -47,6 +47,7 @@ import ReactDataGrid = require("react-data-grid");
 
 const TABLE_ROW_HEIGHT = 27;
 const TABLE_FILTER_ROW_HEIGHT = 32;
+const TABLE_MIN_COLUMN_WIDTH = 80;
 
 /**
  * Specifies table selection target.
@@ -924,6 +925,7 @@ export class Table extends React.Component<TableProps, TableState> {
         propertyValueRendererManager={this.props.propertyValueRendererManager
           ? this.props.propertyValueRendererManager
           : PropertyValueRendererManager.defaultManager}
+        zIndex={((cellItem.mergedCellsCount ?? 1) > 1) ? 1 : undefined}
       />
     );
   }
@@ -1088,6 +1090,32 @@ export class Table extends React.Component<TableProps, TableState> {
       }
 
       className = classnames(className, this.getCellBorderStyle(cellKey));
+      const columnsNumber = cellProps.item.mergedCellsCount;
+      let cellWidth = 0;
+
+      if (columnsNumber && columnsNumber > 1) {
+        for (let i = 0; i < columnsNumber; i++) {
+          const col = this.state.columns[index + i];
+          if (this.state.hiddenColumns.indexOf(col.key) === -1) {
+            const colWidth = col.reactDataGridColumn.width;
+            cellWidth += (colWidth && colWidth > TABLE_MIN_COLUMN_WIDTH) ? colWidth : TABLE_MIN_COLUMN_WIDTH;
+          }
+
+          if (i > 0)
+            cells[col.key] = (
+              <TableCell
+                className={className}
+                title={"empty-cell"}
+                onClick={onClick}
+                onMouseMove={onMouseMove}
+                onMouseDown={onMouseDown}
+              >
+              </TableCell>
+            );
+        }
+        index += columnsNumber - 1;
+      }
+
       cells[column.key] = (
         <TableCell
           className={className}
@@ -1101,6 +1129,7 @@ export class Table extends React.Component<TableProps, TableState> {
             propertyRecord: cellProps.item.record!,
             setFocus: true,
           } : undefined}
+          cellWidth={(columnsNumber && columnsNumber > 1) ? cellWidth : undefined }
         >
           <CellContent isSelected={isSelected} />
         </TableCell>
@@ -1438,6 +1467,14 @@ export class Table extends React.Component<TableProps, TableState> {
     this._applyFilter();  // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
+  private _handleColumnResize = (index: number, columnWidth: number) => {
+    this.setState((prevState) => {
+      prevState.columns
+        .filter((tableColumn: TableColumn) => prevState.hiddenColumns.indexOf(tableColumn.key) === -1)[index].reactDataGridColumn.width = columnWidth;
+      return { columns: prevState.columns };
+    });
+  };
+
   private _applyFilter = async (): Promise<void> => {
     // istanbul ignore else
     if (this.props.dataProvider.applyFilterDescriptors) {
@@ -1671,6 +1708,7 @@ export class Table extends React.Component<TableProps, TableState> {
                 minWidth={width}
                 headerRowHeight={TABLE_ROW_HEIGHT}
                 rowHeight={TABLE_ROW_HEIGHT}
+                minColumnWidth={TABLE_MIN_COLUMN_WIDTH}
                 onGridSort={this._handleGridSort}
                 enableRowSelect={null}  // Prevent deprecation warning
                 onAddFilter={this._handleFilterChange}
@@ -1678,6 +1716,7 @@ export class Table extends React.Component<TableProps, TableState> {
                 headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
                 getValidFilterValues={this._getValidFilterValues}
                 onScroll={this._onScroll}
+                onColumnResize={this._handleColumnResize}
               />
             )}
           />

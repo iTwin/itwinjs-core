@@ -10,11 +10,12 @@ import { sort } from "fast-sort";
 import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item, PresentationError,
-  PresentationStatus, Ruleset, SortDirection,
+  Content, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item,
+  NestedContentValue,
+  PresentationError, PresentationStatus, RelationshipMeaning, Ruleset, SortDirection, Value, ValuesDictionary,
 } from "@bentley/presentation-common";
-import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
-import { SortDirection as UiSortDirection } from "@bentley/ui-core";
+import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent} from "@bentley/ui-components";
+import { HorizontalAlignment, SortDirection as UiSortDirection } from "@bentley/ui-core";
 import { ContentBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
@@ -256,10 +257,59 @@ const createColumns = (descriptor: Readonly<Descriptor> | undefined): ColumnDesc
   if (descriptor.displayType === DefaultContentDisplayTypes.List)
     return [createLabelColumn()];
 
-  return sort(descriptor.fields).by([
+  const sortedFields = sort(descriptor.fields).by([
     { desc: (f) => f.priority },
     { asc: (f) => f.label },
   ]).map((f) => createColumn(f));
+
+  extractSameInstanceFields(sortedFields);
+
+  return sortedFields;
+};
+
+const extractSameInstanceFields = (fields: Field[]) => {
+  const foundFields: { [field: string]: Field } = {};
+  for (let i = 0; i < fields.length; i++) {
+    const field = fields[i];
+    if (field.isNestedContentField() && field.relationshipMeaning === RelationshipMeaning.SameInstance) {
+      const nestedFields = field.nestedFields.map((nestedField: Field): Field => (
+        new Field(
+          nestedField.category,
+          nestedField.name,
+          nestedField.label,
+          nestedField.type,
+          nestedField.isReadonly,
+          nestedField.priority,
+          nestedField.editor,
+          nestedField.renderer
+        ))
+      );
+      const deletedField = fields.splice(i, 1, ...nestedFields)[0];
+      foundFields[field.nestedFields[0].name] = deletedField;
+    }
+  }
+  return foundFields;
+};
+
+const extractValues = (values: ValuesDictionary<Value>, fields: string[]) => {
+  const mergedFieldsCounts: { [field: string]: number } = {};
+  for (const field of fields) {
+    const value = values[field]! as NestedContentValue[];
+    if (value.length === 1) {
+      const valueMap = value[0].values;
+      // eslint-disable-next-line guard-for-in
+      for (const valueMapKey in valueMap)
+        values[valueMapKey] = valueMap[valueMapKey];
+    }
+    if (value.length > 1) {
+      const keys = Object.keys(value[0].values);
+      const valueMapKey = keys[0];
+      values[valueMapKey] = values[field];
+      mergedFieldsCounts[valueMapKey] = keys.length;
+    }
+    delete values[field];
+  }
+  return mergedFieldsCounts;
 };
 
 const createColumn = (field: Readonly<Field>): ColumnDescription => {
@@ -295,6 +345,8 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>): RowI
     // note: for table view we expect the record to always have only 1 primary key
     throw new PresentationError(PresentationStatus.InvalidArgument, "item.primaryKeys");
   }
+  const sameInstanceFields = extractSameInstanceFields(descriptor.fields);
+  const mergedCellsCounts = extractValues(item.values, Object.values(sameInstanceFields).map((field) => (field.name)));
 
   const key = JSON.stringify(item.primaryKeys[0]);
   if (descriptor.displayType === DefaultContentDisplayTypes.List) {
@@ -309,9 +361,19 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>): RowI
 
   return {
     key,
-    cells: descriptor.fields.map((field): CellItem => ({
-      key: field.name,
-      record: ContentBuilder.createPropertyRecord({ field }, item).record,
-    })),
+    cells: descriptor.fields.map((field: Field): CellItem => {
+      const mergedCellsCount = mergedCellsCounts[field.name];
+      let nestedField: Field|undefined;
+      if ((mergedCellsCount ?? 0) > 1) {
+        nestedField = sameInstanceFields[field.name] ;
+        nestedField.name = field.name;
+      }
+      return {
+        key: field.name,
+        record: ContentBuilder.createPropertyRecord({field: nestedField ?? field}, item).record,
+        mergedCellsCount,
+        alignment: mergedCellsCount ? HorizontalAlignment.Center : undefined,
+      };
+    }),
   };
 };

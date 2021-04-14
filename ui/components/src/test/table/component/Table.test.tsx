@@ -24,6 +24,7 @@ import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTabl
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
+import ReactDataGrid from "react-data-grid";
 
 describe("Table", () => {
 
@@ -36,6 +37,7 @@ describe("Table", () => {
   const selectedRowClassName = "div.react-grid-Row.row-selected";
   const cellClassName = "div.components-table-cell";
   const selectedCellClassName = "div.components-table-cell.is-selected";
+  const gridCellClassName = "div.react-grid-Cell";
 
   const borderTopClassName = "border-top";
   const borderRightClassName = "border-right";
@@ -181,25 +183,25 @@ describe("Table", () => {
   });
 
   describe("rendering", () => {
+    const testRecord = (): PropertyRecord => {
+      const value: PropertyValue = {
+        value: 123,
+        displayValue: "123",
+        valueFormat: PropertyValueFormat.Primitive,
+      };
+      const description: PropertyDescription = {
+        name: "1",
+        typename: "int",
+        displayLabel: "column",
+      };
+      return new PropertyRecord(value, description);
+    };
+
+    let rowData: RowItem[];
 
     describe("with cell styles", () => {
 
       const toColor = (hex: string): number => parseInt(hex, 16);
-      const testRecord = (): PropertyRecord => {
-        const value: PropertyValue = {
-          value: 123,
-          displayValue: "123",
-          valueFormat: PropertyValueFormat.Primitive,
-        };
-        const description: PropertyDescription = {
-          name: "1",
-          typename: "int",
-          displayLabel: "column",
-        };
-        return new PropertyRecord(value, description);
-      };
-
-      let rowData: RowItem[];
 
       beforeEach(async () => {
         rowData = [{
@@ -321,6 +323,90 @@ describe("Table", () => {
         expect(withRowAndCellStyling.cell.textAlign).to.eq("justify");
         expect(withRowAndCellStyling.cell.backgroundColor).to.eq("#aa0000");
         expect(withRowAndCellStyling.cell.color).to.eq("#00aa00");
+      });
+
+    });
+
+    describe("without cell styles", () => {
+
+      beforeEach(async () => {
+        rowData = [{
+          key: "no_overrides",
+          cells: [
+            { key: "1", record: testRecord(), mergedCellsCount: 3  },
+            { key: "2", record: testRecord() },
+            { key: "3", record: testRecord() }],
+        }];
+        const onColumnsChanged = new TableDataChangeEvent();
+        const onRowsChanged = new TableDataChangeEvent();
+        const dataProvider: TableDataProvider = {
+          getColumns: async (): Promise<ColumnDescription[]> => [
+            { key: "1", label: "Column1" },
+            { key: "2", label: "Column2", width: 90, resizable: true },
+            { key: "3", label: "Column3" }],
+          getRowsCount: async () => rowData.length,
+          getRow: async (index: number) => rowData[index],
+          sort: async () => { },
+          onColumnsChanged,
+          onRowsChanged,
+        };
+        table = enzyme.mount(<Table
+          dataProvider={dataProvider}
+          onRowsLoaded={onRowsLoaded}
+        />);
+        await waitForSpy(onRowsLoaded);
+        table.update();
+      });
+
+      const cellWidth = (cellContainer: enzyme.ReactWrapper<enzyme.HTMLAttributes, any, React.Component<{}, {}, any>>, index: number) => (cellContainer.at(index).prop("style")?.width as number);
+
+      it("renders cells which have mergedCells specified", async () => {
+        const rows = table.find(rowClassName);
+        expect(rows.length).to.eq(1);
+
+        const cells = table.find(cellClassName);
+        const gridCells = table.find(gridCellClassName);
+        expect(cells.length).to.eq(3);
+        expect(gridCells.length).to.eq(3);
+
+        expect(cellWidth(cells, 0)).to.be.eq(`${cellWidth(gridCells, 0) + cellWidth(gridCells, 1) + cellWidth(gridCells, 2)}px`);
+        expect(cells.at(0).prop("title")).to.be.eq("123");
+        expect(cells.at(1).prop("title")).to.be.eq("empty-cell");
+        expect(cells.at(2).prop("title")).to.be.eq("empty-cell");
+      });
+
+      it("renders cells which have mergedCells specified and doesn't count cells, which are hidden", async () => {
+        table.setState({ hiddenColumns: ["2"] });
+
+        const rows = table.find(rowClassName);
+        expect(rows.length).to.eq(1);
+
+        const cells = table.find(cellClassName);
+        const gridCells = table.find(gridCellClassName);
+        expect(cells.length).to.eq(2);
+        expect(gridCells.length).to.eq(2);
+
+        expect(cellWidth(cells, 0)).to.be.eq(`${cellWidth(gridCells, 0) + cellWidth(gridCells, 1)}px`);
+
+        expect(cells.at(0).prop("title")).to.be.eq("123");
+        expect(cells.at(1).prop("title")).to.be.eq("empty-cell");
+      });
+
+      it("renders cells which have mergedCells specified and changes its width, when one of the merged cells width is changed", async () => {
+        const rows = table.find(rowClassName);
+        expect(rows.length).to.eq(1);
+
+        let cells = table.find(cellClassName);
+        const gridCells = table.find(gridCellClassName);
+        expect(cells.length).to.eq(3);
+        expect(gridCells.length).to.eq(3);
+
+        expect(cellWidth(cells, 0)).to.be.eq(`${cellWidth(gridCells, 0) + 90 + cellWidth(gridCells, 2)}px`);
+        // Resize one of the merged columns.
+        table.find(ReactDataGrid).props().onColumnResize!(1, 100);
+        cells = table.update().find(cellClassName);
+
+        expect(cellWidth(cells, 0)).to.eq(`${cellWidth(gridCells, 0) + 100 + cellWidth(gridCells, 2)}px`);
       });
 
     });

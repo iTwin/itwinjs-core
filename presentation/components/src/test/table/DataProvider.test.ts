@@ -11,16 +11,16 @@ import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, FieldDescriptorType, Item, KeySet, PresentationError, SortDirection as PresentationSortDirection,
+  Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, FieldDescriptorType, Item, KeySet, NestedContentField, NestedContentValue, PresentationError, SortDirection as PresentationSortDirection, RelationshipMeaning,
   ValuesDictionary,
 } from "@bentley/presentation-common";
 import { createTestContentDescriptor, createTestSimpleContentField } from "@bentley/presentation-common/lib/test/_helpers/Content";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomCategory, createRandomDescriptor, createRandomECInstanceKey, createRandomNestedContentField, createRandomNestedFieldJSON, createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { RowItem } from "@bentley/ui-components";
-import { SortDirection } from "@bentley/ui-core";
+import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { PresentationTableDataProvider, TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE } from "../../presentation-components/table/DataProvider";
@@ -332,6 +332,18 @@ describe("TableDataProvider", () => {
       expect(cols).to.matchSnapshot();
     });
 
+    it("extracts nested fields of sameInstance", async () => {
+      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
+      const nestedField = createRandomNestedContentField(fields);
+      nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
+      const descriptor = createRandomDescriptor(undefined, [nestedField]);
+      (provider as any).getContentDescriptor = () => descriptor;
+      const cols = await provider.getColumns();
+      expect(cols.length).to.be.eq(2);
+      expect(cols[0].label).to.be.eq(fields[0].label);
+      expect(cols[1].label).to.be.eq(fields[1].label);
+    });
+
     it("memoizes result", async () => {
       const descriptor = createRandomDescriptor();
       const resultPromiseContainer = new PromiseContainer<Descriptor>();
@@ -422,6 +434,118 @@ describe("TableDataProvider", () => {
       (provider as any).getContent = async () => new Content(descriptor, [record]);
       const row = await provider.getRow(0);
       expect(row).to.matchSnapshot();
+    });
+
+    it("extracts rows with nested sameInstace field and sets mergedFieldsCount if there was more than one value in the nestedField", async () => {
+      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
+      const nestedField = createRandomNestedContentField(fields);
+      nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
+      const descriptor = createRandomDescriptor(undefined, [nestedField]);
+      const values = {
+        [nestedField.name]: [{
+          primaryKeys: [createRandomECInstanceKey()],
+          values: {
+            [nestedField.nestedFields[0].name]: faker.random.word(),
+            [nestedField.nestedFields[1].name]: faker.random.word(),
+          },
+          displayValues: {
+            [nestedField.nestedFields[0].name]: faker.random.words(),
+            [nestedField.nestedFields[1].name]: faker.random.words(),
+          },
+          mergedFieldNames: [],
+        }, {
+          primaryKeys: [createRandomECInstanceKey()],
+          values: {
+            [nestedField.nestedFields[0].name]: faker.random.word(),
+            [nestedField.nestedFields[1].name]: faker.random.word(),
+          },
+          displayValues: {
+            [nestedField.nestedFields[0].name]: faker.random.words(),
+            [nestedField.nestedFields[1].name]: faker.random.words(),
+          },
+          mergedFieldNames: [],
+        }] as NestedContentValue[],
+      };
+      const displayValues = {
+        [nestedField.name]: [{
+          primaryKeys: [createRandomECInstanceKey()],
+          values: {
+            [nestedField.nestedFields[0].name]: faker.random.word(),
+            [nestedField.nestedFields[1].name]: faker.random.word(),
+          },
+          displayValues: {
+            [nestedField.nestedFields[0].name]: faker.random.words(),
+            [nestedField.nestedFields[1].name]: faker.random.words(),
+          },
+          mergedFieldNames: [],
+        }, {
+          primaryKeys: [createRandomECInstanceKey()],
+          values: {
+            [nestedField.nestedFields[0].name]: faker.random.word(),
+            [nestedField.nestedFields[1].name]: faker.random.word(),
+          },
+          displayValues: {
+            [nestedField.nestedFields[0].name]: faker.random.words(),
+            [nestedField.nestedFields[1].name]: faker.random.words(),
+          },
+          mergedFieldNames: [],
+        }] as DisplayValue[],
+      };
+      const record = new Item([createRandomECInstanceKey()],
+        faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
+      const row = await provider.getRow(0);
+      expect(row.cells.length).to.eq(2);
+
+      expect(row.cells[0].mergedCellsCount).to.eq(2);
+      expect(row.cells[0].alignment).to.eq(HorizontalAlignment.Center);
+      expect(row.cells[1].mergedCellsCount).to.be.undefined;
+      expect(row.cells[1].alignment).to.be.undefined;
+    });
+
+    it("extracts rows with nested sameInstace field and doesn't set mergedFieldsCount if there is only one value in the nestedField", async () => {
+      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
+      const nestedField = createRandomNestedContentField(fields);
+      nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
+      const descriptor = createRandomDescriptor(undefined, [nestedField]);
+      const values = {
+        [nestedField.name]: [{
+          primaryKeys: [createRandomECInstanceKey()],
+          values: {
+            [nestedField.nestedFields[0].name]: faker.random.word(),
+            [nestedField.nestedFields[1].name]: faker.random.word(),
+          },
+          displayValues: {
+            [nestedField.nestedFields[0].name]: faker.random.words(),
+            [nestedField.nestedFields[1].name]: faker.random.words(),
+          },
+          mergedFieldNames: [],
+        }] as NestedContentValue[],
+      };
+      const displayValues = {
+        [nestedField.name]: [{
+          primaryKeys: [createRandomECInstanceKey()],
+          values: {
+            [nestedField.nestedFields[0].name]: faker.random.word(),
+            [nestedField.nestedFields[1].name]: faker.random.word(),
+          },
+          displayValues: {
+            [nestedField.nestedFields[0].name]: faker.random.words(),
+            [nestedField.nestedFields[1].name]: faker.random.words(),
+          },
+          mergedFieldNames: [],
+        }] as DisplayValue[],
+      };
+      const record = new Item([createRandomECInstanceKey()],
+        faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
+      const row = await provider.getRow(0);
+      expect(row.cells.length).to.eq(2);
+
+      expect(row.cells[0].mergedCellsCount).to.be.undefined;
+      expect(row.cells[0].alignment).to.be.undefined;
+      expect(row.cells[1].mergedCellsCount).to.be.undefined;
+      expect(row.cells[1].alignment).to.be.undefined;
     });
 
     it("returns valid row when display type is list", async () => {

@@ -131,6 +131,7 @@
 
   .react-grid-Cell__value {
     // Remove transformations that center the content vertically in order to make cell borders fit
+    overflow: visible !important;
     > div {
       top: 0 !important;
       transform: none !important;

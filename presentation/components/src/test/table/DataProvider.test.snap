@@ -38,11 +38,62 @@ Array [
 ]
 `;
 
+exports[`TableDataProvider getRow extracts rows of sameInstace field 1`] = `
+Object {
+  "cells": Array [
+    Object {
+      "key": "support",
+      "record": PropertyRecord {
+        "property": Object {
+          "displayLabel": "navigating",
+          "editor": Object {
+            "name": "e-enable",
+            "params": Array [],
+          },
+          "name": "support",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
+          "typename": "enum",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    },
+    Object {
+      "key": "Walks",
+      "record": PropertyRecord {
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "impactful Liechtenstein",
+          "name": "Walks",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
+          "typename": "time",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    },
+  ],
+  "key": "{\\"className\\":\\"withdrawal\\",\\"id\\":\\"0x1388d0000013076\\"}",
+}
+`;
+
 exports[`TableDataProvider getRow returns valid row item 1`] = `
 Object {
   "cells": Array [
     Object {
+      "alignment": undefined,
       "key": "Home Loan Account",
+      "mergedCellsCount": undefined,
       "record": PropertyRecord {
         "description": "Bike array Guatemala",
         "isReadonly": true,
@@ -66,7 +117,9 @@ Object {
       },
     },
     Object {
+      "alignment": undefined,
       "key": "Dynamic",
+      "mergedCellsCount": undefined,
       "record": PropertyRecord {
         "description": "Unbranded Optimized",
         "isReadonly": true,
@@ -90,7 +143,9 @@ Object {
       },
     },
     Object {
+      "alignment": undefined,
       "key": "SAS",
+      "mergedCellsCount": undefined,
       "record": PropertyRecord {
         "description": "system engine Indonesia",
         "property": Object {
