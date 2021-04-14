@@ -30,6 +30,7 @@ export interface OnElementArg {
   /** The iModel for the Element affected by this method. */
   iModel: IModelDb;
 }
+
 /** Argument for the `Element.onXxx` static methods that supply the properties of an Element to be inserted or updated.
  * @beta
  */
@@ -37,6 +38,7 @@ export interface OnElementPropsArg extends OnElementArg {
   /** The new properties of the Element affected by this method. */
   props: Readonly<ElementProps>;
 }
+
 /** Argument for the `Element.onXxx` static methods that only supply the Id of the affected Element.
  * @beta
  */
@@ -44,12 +46,14 @@ export interface OnElementIdArg extends OnElementArg {
   /** The Id of the Element affected by this method */
   id: Id64String;
 }
+
 /** Argument for the `Element.onChildXxx` static methods
  * @beta
  */
 export interface OnChildElementArg extends OnElementArg {
   parentId: Id64String;
 }
+
 /** Argument for the `Element.onChildXxx` static methods that supply the properties of the child Element to be inserted or updated.
  * @beta
  */
@@ -57,6 +61,7 @@ export interface OnChildElementPropsArg extends OnChildElementArg {
   /** The new properties of the child Element for this method. */
   childProps: Readonly<ElementProps>;
 }
+
 /** Arguments for the `Element.onChildXxx` static methods that only supply the Id of the child Element.
  * @beta
  */
@@ -302,7 +307,6 @@ export class Element extends Entity implements ElementProps {
    * @param _context The context that persists any remapping between the source iModel and target iModel.
    * @param _sourceProps The ElementProps for the source Element that was cloned.
    * @param _targetProps The ElementProps that are a result of the clone. These can be further modified.
-   * @note throw an exception to disallow
    * @note If you override this method, you must call super.
    * @alpha
    */

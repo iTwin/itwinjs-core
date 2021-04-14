@@ -28,6 +28,7 @@ export interface OnModelArg {
   /** The iModel for the Model affected. */
   iModel: IModelDb;
 }
+
 /** Argument for the `Model.onXxx` static methods that supply the properties of a Model to be inserted or updated.
  * @beta
  */
@@ -35,6 +36,7 @@ export interface OnModelPropsArg extends OnModelArg {
   /** The new properties of the Model affected. */
   props: Readonly<ModelProps>;
 }
+
 /** Argument for the `Model.onXxx` static methods that only supply the Id of the affected Model.
  * @beta
  */
@@ -42,14 +44,16 @@ export interface OnModelIdArg extends OnModelArg {
   /** The Id of the Model affected */
   id: Id64String;
 }
-/** Argument for the `Model.onElementXxx` static methods that supply the properties of an Element to be inserted or updated in the Model.
+
+/** Argument for the `Model.onXxxElement` static methods that supply the properties of an Element for a Model.
  * @beta
  */
 export interface OnElementInModelPropsArg extends OnModelIdArg {
   /** The new properties of an Element for the affected Model */
   elementProps: Readonly<ElementProps>;
 }
-/** Argument for the `Model.onElementXxx` static methods that supply the properties of an Element for the Model.
+
+/** Argument for the `Model.onXxxElement` static methods that supply the Id of an Element for a Model.
  * @beta
  */
 export interface OnElementInModelIdArg extends OnModelIdArg {
@@ -140,9 +144,10 @@ export class Model extends Entity implements ModelProps {
       arg.iModel.concurrencyControl.onModelWrite(this, arg.props, DbOpcode.Insert);
     }
   }
+
   /** Called after a new Model is inserted.
    * @note If you override this method, you must call super.
-   * @note `this` is the class of the Model inserted
+   * @note `this` is the class of the Model that was inserted
    * @beta
    */
   protected static onInserted(arg: OnModelIdArg): void {
@@ -150,6 +155,7 @@ export class Model extends Entity implements ModelProps {
       arg.iModel.concurrencyControl.onModelWritten(this, arg.id, DbOpcode.Insert);
     }
   }
+
   /** Called before a Model is updated.
    * @note throw an exception to disallow the update
    * @note If you override this method, you must call super.
@@ -161,9 +167,10 @@ export class Model extends Entity implements ModelProps {
       arg.iModel.concurrencyControl.onModelWrite(this, arg.props, DbOpcode.Update);
     }
   }
+
   /** Called after a Model is updated.
    * @note If you override this method, you must call super.
-   * @note `this` is the class of the Model updated.
+   * @note `this` is the class of the Model that was updated.
    * @beta
    */
   protected static onUpdated(arg: OnModelIdArg): void {
@@ -171,6 +178,7 @@ export class Model extends Entity implements ModelProps {
       arg.iModel.concurrencyControl.onModelWritten(this, arg.id, DbOpcode.Update);
     }
   }
+
   /** Called before a Model is deleted.
    * @note throw an exception to disallow the delete
    * @note If you override this method, you must call super.
@@ -184,15 +192,15 @@ export class Model extends Entity implements ModelProps {
     }
   }
 
-  /** Called after a Model is deleted.
+  /** Called after a Model was deleted.
    * @note If you override this method, you must call super.
-   * @note `this` is the class of the Model deleted
+   * @note `this` is the class of the Model that was deleted
    * @beta
    */
   protected static onDeleted(_arg: OnModelIdArg): void { }
 
-  /** Called before an Element is to be inserted into an instance of a Model of this class.
-   * @note throw an exception to disallow the element to be inserted into the Model
+  /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
+   * @note throw an exception to disallow the insert
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Model to hold the element
    * @beta
