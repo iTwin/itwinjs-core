@@ -53,10 +53,6 @@
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0"
   },
-  "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
-    "all": true
-  },
   "eslintConfig": {
     "plugins": [
       "@bentley"

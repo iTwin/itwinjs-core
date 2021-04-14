@@ -16,8 +16,8 @@
     "docs": "npm run extract",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "cross-env NODE_ENV=development mocha --config ./.mocharc.json \"./lib/**/*.js\" --grep \"#with-services\" --invert",
-    "test:integration": "mocha --config ./.mocharc.json \"./lib/**/*.js\" --grep \"#with-services\"",
+    "test": "cross-env NODE_ENV=development mocha \"./lib/**/*.js\" --grep \"#with-services\" --invert",
+    "test:integration": "mocha \"./lib/**/*.js\" --grep \"#with-services\"",
     "copy:config": "internal-tools copy-config",
     "cover": "npm run test"
   },
@@ -90,5 +90,24 @@
       "@bentley"
     ],
     "extends": "plugin:@bentley/imodeljs-recommended"
+  },
+  "mocha": {
+    "require": [
+      "scripts/copy-test-setup.js",
+      "source-map-support/register",
+      "jsdom-global/register",
+      "ignore-styles"
+    ],
+    "checkLeaks": true,
+    "timeout": 60000,
+    "file": [
+      "lib/setup.js"
+    ],
+    "reporter": [
+      "node_modules/@bentley/build-tools/mocha-reporter"
+    ],
+    "reporterOptions": [
+      "mochaFile=lib/test/junit_results.xml"
+    ]
   }
 }

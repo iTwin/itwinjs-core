@@ -526,7 +526,7 @@
       "program": "${workspaceFolder}/ui/abstract/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "./.mocharc.json",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -732,8 +732,6 @@
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
-        "--config",
-        ".mocharc.json",
         "-r",
         "jsdom-global/register",
         "-r",

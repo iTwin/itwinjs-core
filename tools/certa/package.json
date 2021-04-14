@@ -37,7 +37,6 @@
     "jsonc-parser": "~2.0.3",
     "lodash": "^4.17.10",
     "mocha": "^8.3.2",
-    "nyc": "^14.0.0",
     "puppeteer": "chrome-86",
     "source-map-support": "^0.5.6",
     "uuid": "^7.0.3",

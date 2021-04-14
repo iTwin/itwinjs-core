@@ -86,7 +86,7 @@
     "eslint": "^6.8.0",
     "glob": "^7.1.2",
     "mocha": "^8.3.2",
-    "nyc": "^14.0.0",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "source-map-loader": "^1.0.0",
@@ -111,7 +111,7 @@
     "wms-capabilities": "0.4.0"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

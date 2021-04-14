@@ -61,12 +61,12 @@
     "eslint": "^6.8.0",
     "js-base64": "^2.4.5",
     "mocha": "^8.3.2",
-    "nyc": "^14.0.0",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@bentley/build-tools/.nycrc",
     "all": true
   },
   "eslintConfig": {
