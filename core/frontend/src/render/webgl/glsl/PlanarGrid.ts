@@ -35,7 +35,7 @@ const computeBaseColor = `
 const drawGridLine = `
   bool drawGridLine(inout vec4 color, float mult, float alphaScale) {
     vec2 scaledTexCoord = v_texCoord * mult;
-    vec2 deriv = mult * fwidth(v_texCoord);
+    vec2 deriv = mult * screenSpaceDeriv(v_texCoord);
     if (deriv.x != 0.0 && deriv.y != 0.0) {
       vec2 grid = abs(fract(mult * v_texCoord - 0.5) - 0.5) / deriv;
       float line = min(grid.x, grid.y);
@@ -48,6 +48,9 @@ const drawGridLine = `
    }
 `;
 
+const fwidth2dWhenAvailable =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return fwidth(screenXY); }\n`;
+const fwidth2dWhenNotAvailable =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return vec2(1.0, 1.0); }\n`;
+
 const defaultTransparency = new PlanarGridTransparency();
 /** @internal */
 export default function createPlanarGridProgram(context: WebGLContext): ShaderProgram {
@@ -57,12 +60,22 @@ export default function createPlanarGridProgram(context: WebGLContext): ShaderPr
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
   addShaderFlags(builder);
+
   addTranslucency(builder);
+  if (System.instance.capabilities.isWebGL2) {
+    frag.addFunction(fwidth2dWhenAvailable);
+  } else if (System.instance.capabilities.supportsStandardDerivatives) {
+    frag.addExtension("GL_OES_standard_derivatives");
+    frag.addFunction(fwidth2dWhenAvailable);
+  } else {
+    frag.addFunction(fwidth2dWhenNotAvailable);
+  }
 
   if (System.instance.supportsLogZBuffer)
     addLogDepth(builder);
 
   frag.addFunction(drawGridLine);
+
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 
   vert.headerComment = `//!V! PlanarGrid"}`;
