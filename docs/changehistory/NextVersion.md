@@ -93,22 +93,18 @@ The following APIs have been promoted to `public`. Public APIs are guaranteed to
 
 ### @bentley/imodeljs-backend package
 
-The arguments for the protected static methods called during modifications:
+The arguments for the @beta protected static methods called during modifications:
 
-  [Element]($backend)[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]
-  [Model]($backend)[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]
-  [ElementAspect]($backend)[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]
+  [Element]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
+  [Model]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
+  [ElementAspect]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
 
 Have been changed to be more consistent and extensible.
 
 In addition, new protected static methods were added:
 
-  [Element]($backend)[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]
-  [Model]($backend)[onInsertElement, onInsertedElement, onUpdateElement, onUpdatedElement, onDeleteElement, onDeletedElement]
-
-These changes only affect implementers of [Schema]($backend) classes. See documentation for details.
-
-### @bentley/ui-core package
+  [Element]($backend) `[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]`
+  [Model]($backend) `[onInsertElement, onInsertedElement, onUpdateElement, onUpdatedElement, onDeleteElement, onDeletedElement]`
 
 The beta class `SettingsProvider` was renamed to `SettingsTabsProvider`.
 
