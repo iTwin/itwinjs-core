@@ -1,0 +1,21 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added `mergedCellsCount` property to [CellItem]. It is used for determining width of the cell.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added `zIndex` property to [TableCellContentProps]. It is used to set z-index for the [TableCellContent].",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Updated [Table] component so that it would be possible to merge cells in it",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}
