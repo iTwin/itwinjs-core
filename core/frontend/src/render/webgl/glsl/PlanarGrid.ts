@@ -49,7 +49,7 @@ const drawGridLine = `
 `;
 
 const fwidth2dWhenAvailable =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return fwidth(screenXY); }\n`;
-const fwidth2dWhenNotAvailable =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return vec2(1.0, 1.0); }\n`;
+const fwidth2dWhenNotAvailable =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return vec2(0.25, 0.25); }\n`;
 
 const defaultTransparency = new PlanarGridTransparency();
 /** @internal */
