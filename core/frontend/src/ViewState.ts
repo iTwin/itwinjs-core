@@ -411,6 +411,7 @@ export abstract class ViewState extends ElementState {
   /** @internal */
   public createScene(context: SceneContext): void {
     this.forEachTileTreeRef((ref: TileTreeReference) => ref.addToScene(context));
+    context.viewport.forEachMapTreeRef((ref: TileTreeReference) => ref.addToScene(context));
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()

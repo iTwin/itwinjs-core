@@ -17,7 +17,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
+  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, MapLayerSettings, NpcCenter, Placement2d,
   Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
   SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -25,6 +25,7 @@ import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
 import { CoordSystem } from "./CoordSystem";
+import { DecorationsCache } from "./DecorationsCache";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
@@ -48,6 +49,7 @@ import { SheetViewState } from "./SheetViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { DisclosedTileTreeSet, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
+import { MapTiledGraphicsProvider } from "./tile/map/MapTiledGraphicsProvider";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
@@ -58,7 +60,6 @@ import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
-import { DecorationsCache } from "./DecorationsCache";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -414,6 +415,7 @@ export abstract class Viewport implements IDisposable {
   private _alwaysDrawnExclusive: boolean = false;
   private readonly _featureOverrideProviders: FeatureOverrideProvider[] = [];
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
+  private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
 
@@ -1007,6 +1009,7 @@ export abstract class Viewport implements IDisposable {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
     this.view.attachToViewport();
+    this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
   }
 
   private registerViewListeners(): void {
@@ -1126,6 +1129,8 @@ export abstract class Viewport implements IDisposable {
 
     if (this._view)
       this._view.detachFromViewport();
+
+    this._mapTiledGraphicsProvider = undefined;
   }
 
   private detachFromDisplayStyle(): void {
@@ -1353,10 +1358,16 @@ export abstract class Viewport implements IDisposable {
       provider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
+  public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
+    if (this._mapTiledGraphicsProvider)
+      this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
+  }
+
   /** @internal */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.view.forEachTileTreeRef(func);
     this.forEachTiledGraphicsProviderTree(func);
+    this.forEachMapTreeRef(func);
   }
 
   /** Disclose *all* TileTrees currently in use by this Viewport. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
@@ -1364,6 +1375,7 @@ export abstract class Viewport implements IDisposable {
    */
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     this.forEachTiledGraphicsProviderTree((ref) => trees.disclose(ref));
+    this.forEachMapTreeRef((ref) => trees.disclose(ref));
     trees.disclose(this.view);
   }
 
@@ -1391,10 +1403,23 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @internal */
+  public mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined {
+    return undefined === hit.modelId ? undefined : this.mapLayerFromIds(hit.modelId, hit.sourceId);
+  }
+
+  /** @internal */
+  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
+    return this._mapTiledGraphicsProvider?.mapLayerFromIds(mapTreeId, layerTreeId);
+  }
+
+  /** @internal */
   public getTerrainHeightRange(): Range1d {
     const heightRange = Range1d.createNull();
     this.forEachTileTreeRef((ref) => ref.getTerrainHeight(heightRange));
     return heightRange;
+  }
+  public get backgroundMapElevationBias(): number {
+    return this._mapTiledGraphicsProvider ? this._mapTiledGraphicsProvider.backgroundMapElevationBias : 0;
   }
 
   /** @internal */
@@ -2282,7 +2307,7 @@ export abstract class Viewport implements IDisposable {
     if (pixel.featureTable.modelId === pixel.elementId)
       return false;    // Reality Models not selectable
 
-    return undefined === this.displayStyle.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
+    return undefined === this.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
   }
 
   /** Read the current image from this viewport from the rendering system. If a view rectangle outside the actual view is specified, the entire view is captured.
