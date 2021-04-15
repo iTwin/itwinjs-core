@@ -27,6 +27,10 @@
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/backend-webpack-tools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/bentleyjs-core",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
