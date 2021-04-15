@@ -65,8 +65,10 @@ const applyClipPlanesPrelude = `
 `;
 
 const applyClipPlanesLoopWebGL1 = `
-  for (int i = u_clipParams[0]; i < MAX_CLIPPING_PLANES; i++) {
-    if (i >= u_clipParams[1])
+  for (int i = 0; i < MAX_CLIPPING_PLANES; i++) {
+    if (i < u_clipParams[0])
+      continue;
+    else if (i >= u_clipParams[1])
       break;
 `;
 

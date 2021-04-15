@@ -8,9 +8,11 @@
 
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
-  Geometry, GridInViewContext, Matrix3d, Point2d,
-  Point3d, Range1d, Range3d, Segment1d, Transform, Vector2d, Vector3d, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+  Matrix3d, Point2d,
+  Point3d, Range1d, Transform, XAndY,
+} from "@bentley/geometry-core";
+import { Frustum, FrustumPlanes, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
@@ -25,39 +27,6 @@ import { Scene } from "./render/Scene";
 import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
 import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
-import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
-
-/** @internal */
-export class GridDisplaySettings {
-  /** Grid plane fill transparency */
-  public static planeTransparency = 225;
-  /** Grid reference line transparency */
-  public static refTransparency = 150;
-  /** Grid line transparency */
-  public static lineTransparency = 220;
-  /** Distance between grid lines in pixels to use for culling/clipping when grid is unaffected by perspective */
-  public static minSeparation = 10.0;
-  /** Distance between grid lines in pixels to use for culling/clipping when grid is affected by perspective */
-  public static minPerspectiveSeparation = 3.0;
-  /** Distance between grid lines in pixels to use for fading lines before they are culled */
-  public static minFadeSeparation = 20.0;
-  /** Culling option based on distance to neighbor when camera is off. 0 for none, 1 for previous neighbor, 2 for previous displayed neighbor */
-  public static cullingOption: 0 | 1 | 2 = 2;
-  /** Culling option based on distance to neighbor when camera is on. 0 for none, 1 for previous neighbor, 2 for previous displayed neighbor */
-  public static cullingPerspectiveOption: 0 | 1 | 2 = 2;
-  /** Clipping option based on distance to neighbor. 0 for none */
-  public static clippingOption: 0 | 1 = 0;
-  /** crude upper limit on lines to draw.
-   * This is applied symmetrically above and below the limits at "frontMost" points of the grid plane intersection with the frustum
-  */
-  public static lineLimiter: number = 2000;
-  /**
-   * GridInViewContext optionally limits grid lines to size of view frustum.
-   * * This clip may be compute intensive
-   * * But if it is skipped, the logic for "nearby neighbor culling"  may not work
-   */
-  public static clipToViewFrustum: boolean = true;
-}
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -311,125 +280,15 @@ export class DecorateContext extends RenderContext {
   /** @internal */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
+
     if (vp.viewingGlobe)
       return;
-    const eyePoint = vp.worldToViewMap.transform1.columnZ();
-    const eyeDir = Vector3d.createFrom(eyePoint);
-    const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
-    if (aa !== undefined) {
-      const xyzEye = eyeDir.scale(aa);
-      eyeDir.setFrom(gridOrigin.vectorTo(xyzEye));
-    }
-    const normResult = eyeDir.normalize(eyeDir);
-    if (!normResult)
-      return;
-    const zVec = rMatrix.rowZ();
-    const eyeDot = eyeDir.dotProduct(zVec);
-    if (!vp.isCameraOn && Math.abs(eyeDot) < 0.005)
-      return;
 
-    const refSpacing = Vector2d.create(spacing.x, spacing.y);
-    const builder = this.createGraphicBuilder(GraphicType.WorldDecoration);
     const color = vp.getContrastToBackgroundColor();
-    const planeColor = (eyeDot < 0.0 ? ColorDef.red : color).withTransparency(GridDisplaySettings.planeTransparency);
-
-    const addGridLine = (pointA: Point3d, pointB: Point3d, startEndDistances: Segment1d | undefined, gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
-      if (skipRefLines && (0 === gridLineIdentifier.index % gridsPerRef)) {
-        return; // skip reference lines when drawing grid lines...
-      }
-
-      if (undefined === startEndDistances || 0 === gridLineIdentifier.stepCount) {
-        noOutput = false;
-        firstLine = [pointA, pointB];
-        return; // defer output of 1st direction line until minDist can be evaluated...
-      }
-
-      const minDist = Math.abs(startEndDistances.x0 + startEndDistances.x1) / (gridLineIdentifier.stepCount * 2);
-      if (minDist < GridDisplaySettings.minFadeSeparation)
-        thisTransparency = Math.ceil(Geometry.interpolate(255, minDist / (GridDisplaySettings.minFadeSeparation + gridOptions.distanceBetweenLines), lineTransparency));
-      else
-        thisTransparency = lineTransparency;
-
-      if (gridLineIdentifier.stepCount > 1 && (skipRefLines || thisTransparency > 240))
-        return; // limit number of steps...
-
-      if (undefined === lastTransparency || (Math.abs(thisTransparency - lastTransparency) > 5)) {
-        builder.setSymbology(color.withTransparency(thisTransparency), planeColor, 1, linePattern);
-        lastTransparency = thisTransparency;
-      }
-
-      if (undefined !== firstLine) {
-        builder.addLineString(firstLine);
-        firstLine = undefined;
-        if (1 === gridLineIdentifier.stepCount)
-          drawGridLines = true; // Only need to draw grid lines when ref lines aren't being skipped...
-      }
-
-      builder.addLineString([pointA, pointB]);
-    };
-
-    const _world000 = vp.worldToNpcMap.transform1.multiplyXYZW(0, 0, 0, 1);
-    const _world111 = vp.worldToNpcMap.transform1.multiplyXYZW(1, 1, 1, 1);
-    const _view000 = vp.worldToViewMap.transform0.multiplyPoint4d(_world000);
-    const _view111 = vp.worldToViewMap.transform0.multiplyPoint4d(_world111);
-    const npcRange = Range3d.createXYZXYZ(_view000.x, _view000.y, _view000.z, _view111.x, _view111.y, _view111.z);
-
-    const gridOptions = ViewportGraphicsGridSpacingOptions.create(
-      (vp.isCameraOn && Math.abs(zVec.dotProduct(vp.rotation.getRow(2))) < 0.9) ? GridDisplaySettings.minPerspectiveSeparation : GridDisplaySettings.minSeparation,
-      (vp.isCameraOn ? GridDisplaySettings.cullingPerspectiveOption : GridDisplaySettings.cullingOption),
-      GridDisplaySettings.clippingOption,
-      10,      // first pass only gets major block lines !!!
-      GridDisplaySettings.clipToViewFrustum
-    );
-
-    const gridRefXStep = rMatrix.rowX().scale(refSpacing.x);
-    const gridRefYStep = rMatrix.rowY().scale(refSpacing.y);
-
-    let noOutput = true;
-    let drawGridLines = false;
-    let skipRefLines = false;
-    let firstLine: Point3d[] | undefined;
-    let linePattern = eyeDot < 0.0 ? LinePixels.Code2 : LinePixels.Solid;
-    let lineTransparency = GridDisplaySettings.refTransparency;
-    let lastTransparency: number;
-    let thisTransparency: number;
-    const gridInViewContext = GridInViewContext.create(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
-    gridOptions.gridMultiple = gridsPerRef > 0 ? gridsPerRef: 1;
-    gridInViewContext?.processGrid (gridOptions,
-      (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
-        startEndDistances: Segment1d | undefined,
-        gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
-        addGridLine(pointA, pointB, startEndDistances, gridLineIdentifier);
-      });
-
-    // add first line now if it ended up being the only one in the view due to zoom level...
-    if (undefined !== firstLine) {
-      builder.setSymbology(color.withTransparency(lineTransparency), planeColor, 1, linePattern);
-      builder.addLineString(firstLine);
+    const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(),  { origin: gridOrigin, rMatrix, spacing, gridsPerRef, color } );
+    if (planarGrid) {
+      this.addDecoration(GraphicType.WorldDecoration, planarGrid);
     }
-
-    if (undefined !== gridInViewContext && gridInViewContext.xyzLoop.length > 2) {
-      builder.setBlankingFill(planeColor);
-      builder.addShape(gridInViewContext.xyzLoop);
-    }
-
-    // might still need grid lines even if no ref lines are visible in the view due to zoom level...
-    if (noOutput || undefined !== firstLine)
-      drawGridLines = true;
-
-    if (drawGridLines) {
-      lineTransparency = GridDisplaySettings.lineTransparency;
-      linePattern = LinePixels.Solid;
-      skipRefLines = true;
-      gridOptions.gridMultiple = 1;
-      gridInViewContext?.processGrid (gridOptions,
-        (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
-          startEndDistances: Segment1d | undefined,
-          gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
-          addGridLine(pointA, pointB, startEndDistances, gridLineIdentifier);
-        });
-    }
-    this.addDecorationFromBuilder(builder);
   }
 
   /** Display skyBox graphic that encompasses entire scene and rotates with camera.
