@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { Guid, IModelStatus, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import { BriefcaseConnection, EditingFunctions, GeometricModelState } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { deleteElements, initializeEditTools, insertLineElement, transformElements } from "../Editing";
+import { initializeEditTools, insertLineElement, transformElements } from "../Editing";
 
 if (ProcessDetector.isElectronAppFrontend) {
   describe.only("Model change monitoring", () => {
@@ -48,6 +48,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       let elemId: string;
 
       beforeEach(async () => {
+        // eslint-disable-next-line deprecation/deprecation
         const editing = new EditingFunctions(imodel);
         const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
         const dictId = await imodel.models.getDictionaryModel();
@@ -80,12 +81,12 @@ if (ProcessDetector.isElectronAppFrontend) {
         const newGuid = model.geometryGuid!;
         expect(newGuid).not.to.equal(prevGuid);
 
-        modelIds = await getBufferedChanges(async () =>  { imodel.txns.reverseSingleTxn(); });
+        modelIds = await getBufferedChanges(async () =>  { await imodel.txns.reverseSingleTxn(); });
         expect(modelIds.size).to.equal(1);
         expect(modelIds.has(model.id)).to.be.true;
         expect(model.geometryGuid).to.equal(prevGuid);
 
-        modelIds = await getBufferedChanges(async () => { imodel.txns.reinstateTxn(); });
+        modelIds = await getBufferedChanges(async () => { await imodel.txns.reinstateTxn(); });
         expect(modelIds.size).to.equal(1);
         expect(modelIds.has(model.id)).to.be.true;
         expect(model.geometryGuid).to.equal(newGuid);
@@ -117,45 +118,6 @@ if (ProcessDetector.isElectronAppFrontend) {
         expect(model.geometryGuid).not.to.equal(prevGuid);
         expect(model.geometryGuid).not.to.be.undefined;
       });
-    });
-
-    // deleteModel() is not exposed to frontend. Trying to delete via deleteElements() will produce foreign key constraint violation.
-    it.skip("removes models from the loaded map after deletion", async () => {
-      const editing = new EditingFunctions(imodel);
-      const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
-      await imodel.saveChanges();
-
-      expect(imodel.models.getLoaded(modelId)).to.be.undefined;
-
-      await imodel.models.load(modelId);
-      expect(imodel.models.getLoaded(modelId)).not.to.be.undefined;
-
-      let modelIds = await getBufferedChanges(async () => {
-        const status = await deleteElements(imodel, [modelId]);
-        await imodel.saveChanges();
-        expect(status).to.equal(IModelStatus.Success);
-      });
-
-      expect(modelIds.size).to.equal(1);
-      expect(modelIds.has(modelId)).to.be.true;
-      expect(imodel.models.getLoaded(modelId)).to.be.undefined;
-
-      modelIds = await getBufferedChanges(async () => {
-        const status = await imodel.txns.reverseSingleTxn();
-        expect(status).to.equal(IModelStatus.Success);
-      });
-
-      await imodel.models.load(modelId);
-      expect(imodel.models.getLoaded(modelId)).not.to.be.undefined;
-
-      modelIds = await getBufferedChanges(async () => {
-        const status = await imodel.txns.reinstateTxn();
-        expect(status).to.equal(IModelStatus.Success);
-      });
-
-      expect(modelIds.size).to.equal(1);
-      expect(modelIds.has(modelId)).to.be.true;
-      expect(imodel.models.getLoaded(modelId)).to.be.undefined;
     });
   });
 }
