@@ -11,7 +11,7 @@ import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { initializeEditTools, insertLineElement, transformElements } from "../Editing";
 
 if (ProcessDetector.isElectronAppFrontend) {
-  describe.only("Model change monitoring", () => {
+  describe("Model change monitoring", () => {
     let imodel: BriefcaseConnection;
 
     before(async () => {
