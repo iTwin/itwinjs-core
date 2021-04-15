@@ -83,14 +83,24 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
     continue
   fi
 
-  log "  Last updated at $(_jq ${pr} '.updated_at')."
-
   ## Check if the PR is even 3 hours old. If so, no reason to check statuses.
-  lastUpdatedTime=$(_jq ${pr} '.updated_at')
+  prCreationTime=$(_jq ${pr} '.created_at')
+  branch=$(_jq ${pr} '.head.ref')
+  branchLatest=$(curl -s \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token $oauth" \
+              https://api.github.com/repos/imodeljs/imodeljs/branches/${branch})
+  branchLatestCommit=$(echo ${branchLatest} | jq -r '. | @base64')
+  lastPushedTime=$(_jq ${branchLatestCommit} '.commit.commit.author.date')
+
+  log "  PR created at ${prCreationTime}."
+  log "  Last pushed at ${lastPushedTime}."
+
   currentTime=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  tooOld=$(node -e "const lutPlus3=new Date('$lastUpdatedTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
-  if [[ $tooOld == false ]]; then
-    log "  Skipping since it has been updated within the past 3 hours."
+  createdTooOld=$(node -e "const lutPlus3=new Date('$prCreationTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
+  pushedTooOld=$(node -e "const lutPlus3=new Date('$lastPushedTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
+  if [[ $createdTooOld == false || $pushedTooOld == false ]]; then
+    log "  Skipping since this PR has been created or last pushed within the past 3 hours."
     continue
   fi
 
@@ -107,8 +117,8 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
       continue
     fi
 
-    prUpdatedTime=$(_jq  ${status} '.updated_at')
-    tooOld=$(node -e "const lutPlus3=new Date('$prUpdatedTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
+    buildUpdatedTime=$(_jq  ${status} '.updated_at')
+    tooOld=$(node -e "const lutPlus3=new Date('$buildUpdatedTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
     if [[ $tooOld == false ]]; then
       log "  Skipping $(_jq  ${status} '.context') it was updated within the past 3 hours."
       continue
