@@ -8,6 +8,10 @@
         <SchemaHasBehavior xmlns="BisCore.1.0"/>
     </ECCustomAttributes>
 
+    <ECEntityClass typeName="TestFuncPartition">
+        <BaseClass>bis:InformationPartitionElement</BaseClass>
+    </ECEntityClass>
+
     <ECEntityClass typeName="TestFuncModel" displayLabel="Test Functional Model">
         <BaseClass>func:FunctionalModel</BaseClass>
         <ECProperty propertyName="StringProperty" typeName="string"/>
@@ -31,7 +35,7 @@
 
     <ECEntityClass typeName="TestFuncAspect">
         <BaseClass>bis:ElementUniqueAspect</BaseClass>
-        <ECProperty propertyName="StringProperty" typeName="string"/>
+        <ECProperty propertyName="strProp" typeName="string"/>
     </ECEntityClass>
 
 </ECSchema>
