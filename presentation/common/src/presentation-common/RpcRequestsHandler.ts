@@ -8,7 +8,7 @@
 
 import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
-import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
+import { DescriptorJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { DiagnosticsScopeLogs } from "./Diagnostics";
@@ -20,9 +20,8 @@ import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
-  ContentDescriptorRequestOptions, ContentRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyRequestOptions, Paged, PresentationDataCompareOptions, RequestOptions,
-  SelectionScopeRequestOptions,
+  ContentDescriptorRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
+  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, Paged, RequestOptions, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -134,12 +133,12 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient.getPagedNodes.bind(this.rpcClient), options);
   }
 
-  public async getNodePaths(options: HierarchyRequestOptions<IModelRpcProps>, paths: InstanceKeyJSON[][], markedIndex: number): Promise<NodePathElementJSON[]> {
-    return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelRpcProps>>(
+  public async getNodePaths(options: ExtendedHierarchyRequestOptions<IModelRpcProps, never>, paths: InstanceKeyJSON[][], markedIndex: number): Promise<NodePathElementJSON[]> {
+    return this.request<NodePathElementJSON[], ExtendedHierarchyRequestOptions<IModelRpcProps, never>>(
       this.rpcClient.getNodePaths.bind(this.rpcClient), options, paths, markedIndex);
   }
-  public async getFilteredNodePaths(options: HierarchyRequestOptions<IModelRpcProps>, filterText: string): Promise<NodePathElementJSON[]> {
-    return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelRpcProps>>(
+  public async getFilteredNodePaths(options: ExtendedHierarchyRequestOptions<IModelRpcProps, never>, filterText: string): Promise<NodePathElementJSON[]> {
+    return this.request<NodePathElementJSON[], ExtendedHierarchyRequestOptions<IModelRpcProps, never>>(
       this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options, filterText);
   }
 
@@ -160,10 +159,6 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient.getPagedContentSet.bind(this.rpcClient), options);
   }
 
-  public async getDistinctValues(options: ContentRequestOptions<IModelRpcProps>, descriptor: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]> {
-    return this.request<string[], ContentRequestOptions<IModelRpcProps>>(
-      this.rpcClient.getDistinctValues.bind(this.rpcClient), options, descriptor, keys, fieldName, maximumValueCount);
-  }
   public async getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>): Promise<PagedResponse<DisplayValueGroupJSON>> {
     return this.request<PagedResponse<DisplayValueGroupJSON>, DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>(
       this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
@@ -186,12 +181,12 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId);
   }
-  public async compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<PartialHierarchyModificationJSON[]> {
-    return this.request<PartialHierarchyModificationJSON[], PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>>(
+  public async compareHierarchies(options: HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<PartialHierarchyModificationJSON[]> {
+    return this.request<PartialHierarchyModificationJSON[], HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON>>(
       this.rpcClient.compareHierarchies.bind(this.rpcClient), options); // eslint-disable-line deprecation/deprecation
   }
-  public async compareHierarchiesPaged(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<HierarchyCompareInfoJSON> {
-    return this.request<HierarchyCompareInfoJSON, PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>>(
+  public async compareHierarchiesPaged(options: HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<HierarchyCompareInfoJSON> {
+    return this.request<HierarchyCompareInfoJSON, HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON>>(
       this.rpcClient.compareHierarchiesPaged.bind(this.rpcClient), options);
   }
 }

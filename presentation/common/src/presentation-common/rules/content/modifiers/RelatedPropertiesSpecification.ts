@@ -59,7 +59,7 @@ export type RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecifi
 /**
  * Sub-specification to include additional related instance properties.
  * @public
- * @deprecated Use `RelatedPropertiesSpecificationNew`. Will be removed in iModel.js 3.0
+ * @deprecated Use [[RelatedPropertiesSpecificationNew]]. Will be removed in iModel.js 3.0
  */
 export interface DEPRECATED_RelatedPropertiesSpecification { // eslint-disable-line @typescript-eslint/naming-convention
   /**
@@ -80,7 +80,7 @@ export interface DEPRECATED_RelatedPropertiesSpecification { // eslint-disable-l
 
   /**
    * Should [[relationships]] and [[relatedClasses]] be handled polymorphically.
-   * @deprecated Use `handleTargetClassPolymorphically`.
+   * @deprecated Use [[handleTargetClassPolymorphically]].
    */
   isPolymorphic?: boolean;
 
@@ -109,7 +109,7 @@ export interface DEPRECATED_RelatedPropertiesSpecification { // eslint-disable-l
   /**
    * List of names of related class properties that should be included in the content.
    * All properties are included if not specified.
-   * @deprecated Use `properties` attribute instead
+   * @deprecated Use [[properties]] attribute instead
    */
   propertyNames?: string[] | RelatedPropertiesSpecialValues;
 
