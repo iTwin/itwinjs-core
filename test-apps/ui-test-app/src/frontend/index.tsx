@@ -388,6 +388,10 @@ export class SampleAppIModelApp {
       FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
         // Frontstage & ScreenViewports are ready
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
+        if (ProcessDetector.isElectronAppFrontend) {
+          // delay 5 seconds to see if window opens - since web browser will block pop-out if we wait. Also web browser will not allow multiple pop-outs.
+          setTimeout(() => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
+        }
       });
     } else {
       throw new Error(`Frontstage with id "${stageId}" does not exist`);

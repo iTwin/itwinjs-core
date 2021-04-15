@@ -24,6 +24,7 @@ export class ModelessDialogChangedEvent extends DialogChangedEvent { }
 interface ModelessDialogInfo {
   reactNode: React.ReactNode;
   zIndex: number;
+  parentDocument: Document;
 }
 
 /** Used if the 'dialog' z-index CSS variable cannot be read */
@@ -76,7 +77,7 @@ export class ModelessDialogManager {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, message, undefined, OutputMessageType.Toast));
       return;
     }
-    ModelessDialogManager._dialogMap.set(id, { reactNode: dialog, zIndex: ++ModelessDialogManager._topZIndex });
+    ModelessDialogManager._dialogMap.set(id, { reactNode: dialog, zIndex: ++ModelessDialogManager._topZIndex, parentDocument });
     ModelessDialogManager._idArray.push(id);
     ModelessDialogManager.dialogManager.openDialog(dialog, id, parentDocument);
   }

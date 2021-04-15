@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ModelessDialog } from "@bentley/ui-framework";
+import { ModelessDialog, ModelessDialogManager } from "@bentley/ui-framework";
 
 export interface SampleModelessDialogProps {
   opened: boolean;
   dialogId: string;
   onClose?: () => void;
+  movable?: boolean;
 }
 
 export interface SampleModelessDialogState {
@@ -35,6 +36,7 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
         dialogId={this.props.dialogId}
         width={450}
         height={300}
+        movable={this.props.movable}
         onClose={this._handleCancel}
         onEscape={this._handleCancel}
         onOutsideClick={this._handleCancel}
@@ -55,7 +57,12 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
   private _closeDialog = () => {
     this.setState(
       { opened: false },
-      () => this.props.onClose && this.props.onClose()
+      () => {
+        if (this.props.onClose)
+          this.props.onClose();
+        else
+          ModelessDialogManager.closeDialog(this.props.dialogId);
+      }
     );
   };
 }

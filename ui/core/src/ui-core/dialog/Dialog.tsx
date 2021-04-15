@@ -158,6 +158,7 @@ interface DialogState {
   width?: number;
   height?: number;
   positionSet: boolean;
+  parentDocument?: Document;
 }
 
 /**
@@ -181,6 +182,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
   /** @internal */
   public readonly state: Readonly<DialogState>;
+
   constructor(props: DialogProps) {
     super(props);
     this.state = {
@@ -190,8 +192,38 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       grabOffsetX: 0,
       grabOffsetY: 0,
       positionSet: props.x !== undefined || props.y !== undefined,
+      parentDocument: undefined,
     };
   }
+
+  private _bindWindowEvents = () => {
+    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
+    if (parentWindow) {
+      parentWindow.addEventListener("pointerup", this._handlePointerUp, true);
+      this.state.parentDocument!.addEventListener("keyup", this._handleKeyUp, true);
+    }
+  };
+
+  private _unBindWindowEvents = () => {
+    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
+    if (parentWindow) {
+      parentWindow.removeEventListener("pointerup", this._handlePointerUp, true);
+      parentWindow.removeEventListener("pointermove", this._handlePointerMove, true);
+      this.state.parentDocument!.removeEventListener("keyup", this._handleKeyUp, true);
+    }
+  };
+
+  public componentWillUnmount(): void {
+    this._unBindWindowEvents();
+  }
+
+  public handleRefSet = (containerDiv: HTMLDivElement | null) => {
+    if (containerDiv) {
+      this._unBindWindowEvents();
+      const parentDocument = containerDiv.ownerDocument;
+      this.setState({ parentDocument }, () => this._bindWindowEvents());
+    }
+  };
 
   public render(): JSX.Element {
     const {
@@ -267,7 +299,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     );
 
     return (
-      <div
+      <div ref={this.handleRefSet}
         className={classnames(
           "core-dialog",
           !modal && "core-dialog-hidden",
@@ -278,7 +310,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         data-testid="core-dialog-root"
         {...props}
       >
-        {opened &&
+        {this.state.parentDocument && opened &&
           <DivWithOutsideClick onOutsideClick={onOutsideClick}>
             <FocusTrap active={trapFocus && modal} returnFocusOnDeactivate={true}>
               <div
@@ -423,19 +455,6 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     return buttons;
   }
 
-  public componentDidMount(): void {
-    window.addEventListener("pointerup", this._handlePointerUp, true);
-
-    document.addEventListener("keyup", this._handleKeyUp, true);
-  }
-
-  public componentWillUnmount(): void {
-    window.removeEventListener("pointerup", this._handlePointerUp, true);
-    window.removeEventListener("pointermove", this._handlePointerMove, true);
-
-    document.removeEventListener("keyup", this._handleKeyUp, true);
-  }
-
   private _handleKeyUp = (event: KeyboardEvent) => {
     if (event.key === SpecialKey.Escape && this.props.opened && this.props.onEscape) {
       this.props.onEscape();
@@ -452,19 +471,28 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   private _handleStartResizeRight = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ rightResizing: true });
-    window.addEventListener("pointermove", this._handlePointerMove, true);
+    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
+    if (parentWindow) {
+      parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
+    }
   };
 
   private _handleStartResizeDown = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ downResizing: true });
-    window.addEventListener("pointermove", this._handlePointerMove, true);
+    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
+    if (parentWindow) {
+      parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
+    }
   };
 
   private _handleStartResizeDownRight = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ downResizing: true, rightResizing: true });
-    window.addEventListener("pointermove", this._handlePointerMove, true);
+    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
+    if (parentWindow) {
+      parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
+    }
   };
 
   private _handleStartMove = (event: React.PointerEvent): void => {
@@ -482,9 +510,12 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         grabOffsetY,
         moving: true,
       });
-    }
 
-    window.addEventListener("pointermove", this._handlePointerMove, true);
+      const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
+      if (parentWindow) {
+        parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
+      }
+    }
   };
 
   private _handlePointerMove = (event: PointerEvent): void => {
@@ -535,15 +566,20 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     if (!this.props.movable && !this.props.resizable)
       return;
 
-    this.setState({
-      rightResizing: false,
-      downResizing: false,
-      moving: false,
-      grabOffsetX: 0,
-      grabOffsetY: 0,
-    });
+    if (this._containerRef.current) {
+      this.setState({
+        rightResizing: false,
+        downResizing: false,
+        moving: false,
+        grabOffsetX: 0,
+        grabOffsetY: 0,
+      });
+    }
 
-    window.removeEventListener("pointermove", this._handlePointerMove, true);
+    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
+    if (parentWindow) {
+      parentWindow.removeEventListener("pointermove", this._handlePointerMove, true);
+    }
   };
 }
 

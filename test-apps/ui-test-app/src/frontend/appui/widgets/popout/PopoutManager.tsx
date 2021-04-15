@@ -8,7 +8,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { copyStyles } from "./CopyStyles";
 import { Provider } from "react-redux";
-import { ModalDialogRenderer, PopupRenderer, StateManager, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
+import { ModalDialogRenderer, ModelessDialogRenderer, PopupRenderer, StateManager, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
 
 export interface OpenPopoutWindow {
   contentId: string;
@@ -38,6 +38,7 @@ export class PopoutManager {
             <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
               <PopupRenderer />
               <ModalDialogRenderer />
+              <ModelessDialogRenderer />
               <div className="widget-popout-container nz-widget-widget">
                 {content}
               </div>

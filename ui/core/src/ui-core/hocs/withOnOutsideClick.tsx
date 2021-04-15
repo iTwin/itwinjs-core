@@ -18,6 +18,12 @@ export interface WithOnOutsideClickProps {
   closeOnNestedPopupOutsideClick?: boolean;
 }
 
+/** State of component that defines parentDocument. This allows support for pop-out widows
+ *  @internal */
+export interface WithOnOutsideClickState {
+  parentDocument: Document | null;
+}
+
 /** withOnOutsideClick is a React higher-order component that adds outside click support.
  * @public
  */
@@ -28,28 +34,41 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
   useCapture: boolean = true,
   usePointerEvents: boolean = true,
 ) => {
-  return class WithOnOutsideClick extends React.PureComponent<ComponentProps & WithOnOutsideClickProps> {
+  return class WithOnOutsideClick extends React.PureComponent<ComponentProps & WithOnOutsideClickProps, WithOnOutsideClickState> {
+    public readonly state: WithOnOutsideClickState = {
+      parentDocument: null,
+    };
+
     /** @internal */
-    public ref = React.createRef<HTMLDivElement>();
+    public containerDiv?: HTMLDivElement;
     /** @internal */
     public isDownOutside = false;
 
-    /** @internal */
-    public componentDidMount() {
-      if (usePointerEvents) {
-        document.addEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
-        document.addEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
-      } else
-        document.addEventListener("click", this.handleDocumentClick, useCapture);
-    }
+    public _bindDocumentEvents = () => {
+      if (this.state.parentDocument) {
+        const parentDocument = this.state.parentDocument;
+        if (usePointerEvents) {
+          parentDocument.addEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
+          parentDocument.addEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
+        } else
+          parentDocument.addEventListener("click", this.handleDocumentClick, useCapture);
+      }
+    };
+
+    public _unBindDocumentEvents = () => {
+      if (this.state.parentDocument) {
+        const parentDocument = this.state.parentDocument;
+        if (usePointerEvents) {
+          parentDocument.removeEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
+          parentDocument.removeEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
+        } else
+          parentDocument.removeEventListener("click", this.handleDocumentClick, useCapture);
+      }
+    };
 
     /** @internal */
     public componentWillUnmount() {
-      if (usePointerEvents) {
-        document.removeEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
-        document.removeEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
-      } else
-        document.removeEventListener("click", this.handleDocumentClick, useCapture);
+      this._unBindDocumentEvents();
     }
 
     /** @internal */
@@ -84,7 +103,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
 
     /** @internal */
     public handleDocumentClick = (e: MouseEvent) => {
-      if (!this.ref.current || !(e.target instanceof Node) || this.ref.current.contains(e.target))
+      if (!this.containerDiv || !(e.target instanceof Node) || this.containerDiv.contains(e.target))
         return;
 
       return this.onOutsideClick(e);
@@ -92,21 +111,33 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
 
     /** @internal */
     public handleDocumentPointerDown = (e: PointerEvent) => {
-      this.isDownOutside = !!this.ref.current && (e.target instanceof Node) && !this.ref.current.contains(e.target);
+      this.isDownOutside = !!this.containerDiv && (e.target instanceof Node) && !this.containerDiv.contains(e.target);
     };
 
     /** @internal */
     public handleDocumentPointerUp = (e: PointerEvent) => {
-      const isOutsideClick = this.ref.current && e.target instanceof Node && !this.ref.current.contains(e.target) && this.isDownOutside;
+      const isOutsideClick = this.containerDiv && e.target instanceof Node && !this.containerDiv.contains(e.target) && this.isDownOutside;
       this.isDownOutside = false;
       return isOutsideClick ? this.onOutsideClick(e) : 0;
+    };
+
+    public handleRefSet = (containerDiv: HTMLDivElement | null) => {
+      if (containerDiv) {
+        this.containerDiv = containerDiv;
+        this._unBindDocumentEvents();
+        this.setState({ parentDocument: containerDiv?.ownerDocument ?? null }, () => this._bindDocumentEvents());
+      } else {
+        this.containerDiv = undefined;
+      }
     };
 
     public render() {
       const { onOutsideClick, closeOnNestedPopupOutsideClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
-        <div ref={this.ref}>
-          <Component {...props as ComponentProps} />
+        <div ref={this.handleRefSet}>
+          { this.state.parentDocument &&
+            <Component {...props as ComponentProps} />
+          }
         </div>
       );
     }
