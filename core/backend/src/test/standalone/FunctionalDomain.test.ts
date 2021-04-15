@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { join } from "path";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Code, CodeScopeSpec, CodeSpec, ElementProps, FunctionalElementProps, IModel, IModelError } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { ClassRegistry } from "../../ClassRegistry";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
 import {
@@ -34,28 +34,28 @@ class TestFuncPartition extends InformationPartitionElement {
   public static nDelete = 0;
   public static nDeleted = 0;
 
-  protected static onSubModelInsert(_arg: OnSubModelPropsArg): void {
-    super.onSubModelInsert(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal(_arg.subModelProps.classFullName, TestFuncModel.classFullName);
+  protected static onSubModelInsert(arg: OnSubModelPropsArg): void {
+    super.onSubModelInsert(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal(arg.subModelProps.classFullName, TestFuncModel.classFullName);
     this.nInsert++;
   }
-  protected static onSubModelInserted(_arg: OnSubModelIdArg): void {
-    super.onSubModelInserted(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.modelId = _arg.subModelId;
+  protected static onSubModelInserted(arg: OnSubModelIdArg): void {
+    super.onSubModelInserted(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.modelId = arg.subModelId;
     this.nInserted++;
   }
-  protected static onSubModelDelete(_arg: OnSubModelIdArg): void {
-    super.onSubModelDelete(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.modelId = _arg.subModelId;
+  protected static onSubModelDelete(arg: OnSubModelIdArg): void {
+    super.onSubModelDelete(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.modelId = arg.subModelId;
     this.nDelete++;
   }
-  protected static onSubModelDeleted(_arg: OnSubModelIdArg): void {
-    super.onSubModelDeleted(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal(this.modelId, _arg.subModelId);
+  protected static onSubModelDeleted(arg: OnSubModelIdArg): void {
+    super.onSubModelDeleted(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal(this.modelId, arg.subModelId);
     this.nDeleted++;
   }
 }
@@ -78,72 +78,72 @@ class TestFuncModel extends FunctionalModel {
   public static nElemInsert = 0;
   public static nElemUpdate = 0;
   public static nElemDelete = 0;
-  protected static onInsert(_arg: OnModelPropsArg): void {
-    super.onInsert(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal(_arg.props.classFullName, this.classFullName);
+  protected static onInsert(arg: OnModelPropsArg): void {
+    super.onInsert(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal(arg.props.classFullName, this.classFullName);
     this.nModelInsert++;
   }
-  protected static onInserted(_arg: OnModelIdArg): void {
-    super.onInserted(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.insertModelId = _arg.id;
+  protected static onInserted(arg: OnModelIdArg): void {
+    super.onInserted(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.insertModelId = arg.id;
   }
-  protected static onUpdate(_arg: OnModelPropsArg): void {
-    super.onUpdate(_arg);
-    assert.equal(_arg.iModel, iModelDb);
+  protected static onUpdate(arg: OnModelPropsArg): void {
+    super.onUpdate(arg);
+    assert.equal(arg.iModel, iModelDb);
     this.nModelUpdate++;
   }
-  protected static onUpdated(_arg: OnModelIdArg): void {
-    super.onUpdated(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.updateModelId = _arg.id;
+  protected static onUpdated(arg: OnModelIdArg): void {
+    super.onUpdated(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.updateModelId = arg.id;
     this.nModelUpdated++;
   }
-  protected static onDelete(_arg: OnModelIdArg): void {
-    super.onDelete(_arg);
-    assert.equal(_arg.iModel, iModelDb);
+  protected static onDelete(arg: OnModelIdArg): void {
+    super.onDelete(arg);
+    assert.equal(arg.iModel, iModelDb);
     this.nModelDelete++;
   }
-  protected static onDeleted(_arg: OnModelIdArg): void {
-    super.onDeleted(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.deleteModelId = _arg.id;
+  protected static onDeleted(arg: OnModelIdArg): void {
+    super.onDeleted(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.deleteModelId = arg.id;
     this.nModelDeleted++;
   }
-  protected static onInsertElement(_arg: OnElementInModelPropsArg): void {
-    super.onInsertElement(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    if (_arg.elementProps.code.value === "badval")
+  protected static onInsertElement(arg: OnElementInModelPropsArg): void {
+    super.onInsertElement(arg);
+    assert.equal(arg.iModel, iModelDb);
+    if (arg.elementProps.code.value === "badval")
       throw new IModelError(100, "bad element");
   }
-  protected static onInsertedElement(_arg: OnElementInModelIdArg): void {
-    super.onInsertedElement(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.insertedId = _arg.elementId;
+  protected static onInsertedElement(arg: OnElementInModelIdArg): void {
+    super.onInsertedElement(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.insertedId = arg.elementId;
   }
-  protected static onUpdateElement(_arg: OnElementInModelPropsArg): void {
-    super.onUpdateElement(_arg);
-    assert.equal(_arg.iModel, iModelDb);
+  protected static onUpdateElement(arg: OnElementInModelPropsArg): void {
+    super.onUpdateElement(arg);
+    assert.equal(arg.iModel, iModelDb);
     this.nElemUpdate++;
   }
-  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void {
-    super.onUpdatedElement(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.updatedId = _arg.elementId;
+  protected static onUpdatedElement(arg: OnElementInModelIdArg): void {
+    super.onUpdatedElement(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.updatedId = arg.elementId;
   }
-  protected static onDeleteElement(_arg: OnElementInModelIdArg): void {
-    super.onDeleteElement(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    if (_arg.elementId === this.dontDelete)
+  protected static onDeleteElement(arg: OnElementInModelIdArg): void {
+    super.onDeleteElement(arg);
+    assert.equal(arg.iModel, iModelDb);
+    if (arg.elementId === this.dontDelete)
       throw new Error("dont delete my element");
 
     this.nElemDelete++;
   }
-  protected static onDeletedElement(_arg: OnElementInModelIdArg): void {
-    super.onDeletedElement(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.deletedId = _arg.elementId;
+  protected static onDeletedElement(arg: OnElementInModelIdArg): void {
+    super.onDeletedElement(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.deletedId = arg.elementId;
   }
 }
 
@@ -168,98 +168,98 @@ class Breakdown extends FunctionalBreakdownElement {
   public static nDelete = 0;
   public static nDeleted = 0;
 
-  protected static onInsert(_arg: OnElementPropsArg): void {
-    super.onInsert(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal(_arg.props.classFullName, this.classFullName);
-    this.props = _arg.props;
+  protected static onInsert(arg: OnElementPropsArg): void {
+    super.onInsert(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal(arg.props.classFullName, this.classFullName);
+    this.props = arg.props;
   }
-  protected static onInserted(_arg: OnElementIdArg): void {
-    super.onInserted(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.elemId = _arg.id;
+  protected static onInserted(arg: OnElementIdArg): void {
+    super.onInserted(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.elemId = arg.id;
   }
-  protected static onUpdate(_arg: OnElementPropsArg): void {
-    super.onUpdate(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal(_arg.props.classFullName, this.classFullName);
+  protected static onUpdate(arg: OnElementPropsArg): void {
+    super.onUpdate(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal(arg.props.classFullName, this.classFullName);
     this.nUpdate++;
   }
-  protected static onUpdated(_arg: OnElementIdArg): void {
-    super.onUpdated(_arg);
-    assert.equal(_arg.iModel, iModelDb);
+  protected static onUpdated(arg: OnElementIdArg): void {
+    super.onUpdated(arg);
+    assert.equal(arg.iModel, iModelDb);
     this.nUpdated++;
   }
-  protected static onDelete(_arg: OnElementIdArg): void {
-    super.onDelete(_arg);
-    assert.equal(_arg.iModel, iModelDb);
+  protected static onDelete(arg: OnElementIdArg): void {
+    super.onDelete(arg);
+    assert.equal(arg.iModel, iModelDb);
     this.nDelete++;
   }
-  protected static onDeleted(_arg: OnElementIdArg): void {
-    super.onDeleted(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.elemId = _arg.id;
+  protected static onDeleted(arg: OnElementIdArg): void {
+    super.onDeleted(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.elemId = arg.id;
     this.nDeleted++;
   }
-  protected static onChildDelete(_arg: OnChildElementIdArg): void {
-    super.onChildDelete(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    if (_arg.childId === this.dontDeleteChild)
+  protected static onChildDelete(arg: OnChildElementIdArg): void {
+    super.onChildDelete(arg);
+    assert.equal(arg.iModel, iModelDb);
+    if (arg.childId === this.dontDeleteChild)
       throw new Error("dont delete my child");
     this.childId = this.childId;
-    this.parentId = _arg.parentId;
+    this.parentId = arg.parentId;
   }
-  protected static onChildDeleted(_arg: OnChildElementIdArg): void {
-    super.onChildDeleted(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal(this.childId, _arg.childId);
-    assert.equal(_arg.parentId, this.parentId);
+  protected static onChildDeleted(arg: OnChildElementIdArg): void {
+    super.onChildDeleted(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal(this.childId, arg.childId);
+    assert.equal(arg.parentId, this.parentId);
   }
-  protected static onChildInsert(_arg: OnChildElementPropsArg): void {
-    super.onChildInsert(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.parentId = _arg.parentId;
+  protected static onChildInsert(arg: OnChildElementPropsArg): void {
+    super.onChildInsert(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.parentId = arg.parentId;
   }
-  protected static onChildInserted(_arg: OnChildElementIdArg): void {
-    super.onChildInserted(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal(_arg.parentId, this.parentId);
-    this.childId = _arg.childId;
+  protected static onChildInserted(arg: OnChildElementIdArg): void {
+    super.onChildInserted(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal(arg.parentId, this.parentId);
+    this.childId = arg.childId;
   }
-  protected static onChildUpdate(_arg: OnChildElementPropsArg): void {
-    super.onChildUpdate(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.parentId = _arg.parentId;
+  protected static onChildUpdate(arg: OnChildElementPropsArg): void {
+    super.onChildUpdate(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.parentId = arg.parentId;
   }
-  protected static onChildUpdated(_arg: OnChildElementIdArg): void {
-    super.onChildUpdated(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal(_arg.parentId, this.parentId);
-    this.childId = _arg.childId;
+  protected static onChildUpdated(arg: OnChildElementIdArg): void {
+    super.onChildUpdated(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal(arg.parentId, this.parentId);
+    this.childId = arg.childId;
   }
-  protected static onChildAdd(_arg: OnChildElementPropsArg): void {
-    super.onChildAdd(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.childAdd = _arg.childProps.id;
-    this.addParent = _arg.parentId;
+  protected static onChildAdd(arg: OnChildElementPropsArg): void {
+    super.onChildAdd(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.childAdd = arg.childProps.id;
+    this.addParent = arg.parentId;
   }
-  protected static onChildAdded(_arg: OnChildElementIdArg): void {
-    super.onChildAdded(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.childAdded = _arg.childId;
-    this.addedParent = _arg.parentId;
+  protected static onChildAdded(arg: OnChildElementIdArg): void {
+    super.onChildAdded(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.childAdded = arg.childId;
+    this.addedParent = arg.parentId;
   }
-  protected static onChildDrop(_arg: OnChildElementIdArg): void {
-    super.onChildDrop(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.childDrop = _arg.childId;
-    this.dropParent = _arg.parentId;
+  protected static onChildDrop(arg: OnChildElementIdArg): void {
+    super.onChildDrop(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.childDrop = arg.childId;
+    this.dropParent = arg.parentId;
   }
-  protected static onChildDropped(_arg: OnChildElementIdArg): void {
-    super.onChildDropped(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.childDropped = _arg.childId;
-    this.droppedParent = _arg.parentId;
+  protected static onChildDropped(arg: OnChildElementIdArg): void {
+    super.onChildDropped(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.childDropped = arg.childId;
+    this.droppedParent = arg.parentId;
   }
 }
 
@@ -276,44 +276,44 @@ class TestFuncAspect extends ElementUniqueAspect {
   public static nDelete = 0;
   public static nDeleted = 0;
 
-  protected static onInsert(_arg: OnAspectPropsArg): void {
-    super.onInsert(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal((_arg.props as any).strProp, this.expectedVal);
-    this.elemId = _arg.props.element.id;
+  protected static onInsert(arg: OnAspectPropsArg): void {
+    super.onInsert(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal((arg.props as any).strProp, this.expectedVal);
+    this.elemId = arg.props.element.id;
     this.nInsert++;
   }
-  protected static onInserted(_arg: OnAspectPropsArg): void {
-    super.onInserted(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal((_arg.props as any).strProp, this.expectedVal);
-    assert.equal(this.elemId, _arg.props.element.id);
+  protected static onInserted(arg: OnAspectPropsArg): void {
+    super.onInserted(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal((arg.props as any).strProp, this.expectedVal);
+    assert.equal(this.elemId, arg.props.element.id);
     this.nInserted++;
   }
-  protected static onUpdate(_arg: OnAspectPropsArg): void {
-    super.onUpdate(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal((_arg.props as any).strProp, this.expectedVal);
-    this.elemId = _arg.props.element.id;
+  protected static onUpdate(arg: OnAspectPropsArg): void {
+    super.onUpdate(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal((arg.props as any).strProp, this.expectedVal);
+    this.elemId = arg.props.element.id;
     this.nUpdate++;
   }
-  protected static onUpdated(_arg: OnAspectPropsArg): void {
-    super.onUpdated(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal((_arg.props as any).strProp, this.expectedVal);
-    assert.equal(this.elemId, _arg.props.element.id);
+  protected static onUpdated(arg: OnAspectPropsArg): void {
+    super.onUpdated(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal((arg.props as any).strProp, this.expectedVal);
+    assert.equal(this.elemId, arg.props.element.id);
     this.nUpdated++;
   }
-  protected static onDelete(_arg: OnAspectIdArg): void {
-    super.onDelete(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    this.aspectId = _arg.aspectId;
+  protected static onDelete(arg: OnAspectIdArg): void {
+    super.onDelete(arg);
+    assert.equal(arg.iModel, iModelDb);
+    this.aspectId = arg.aspectId;
     this.nDelete++;
   }
-  protected static onDeleted(_arg: OnAspectIdArg): void {
-    super.onDeleted(_arg);
-    assert.equal(_arg.iModel, iModelDb);
-    assert.equal(_arg.aspectId, this.aspectId);
+  protected static onDeleted(arg: OnAspectIdArg): void {
+    super.onDeleted(arg);
+    assert.equal(arg.iModel, iModelDb);
+    assert.equal(arg.aspectId, this.aspectId);
     this.nDeleted++;
   }
 }
@@ -432,22 +432,24 @@ describe("Functional Domain", () => {
 
     TestFuncAspect.expectedVal = aspect.strProp;
     elements.insertAspect(aspect);
-    assert.equal(TestFuncAspect.elemId, bd2);
-    assert.equal(TestFuncAspect.nInsert, 1);
-    assert.equal(TestFuncAspect.nInserted, 1);
+    assert.equal(TestFuncAspect.elemId, bd2, "elemId from ElementAspect.onInserted");
+    assert.equal(TestFuncAspect.nInsert, 1, "ElementAspect.onInsert should be called once");
+    assert.equal(TestFuncAspect.nInserted, 1, "ElementAspect.onInserted should be called once");
 
     aspect.strProp = "prop 2";
     TestFuncAspect.expectedVal = aspect.strProp;
     elements.updateAspect(aspect);
-    assert.equal(TestFuncAspect.elemId, bd2);
-    assert.equal(TestFuncAspect.nInsert, 1);
-    assert.equal(TestFuncAspect.nInserted, 1);
+    assert.equal(TestFuncAspect.elemId, bd2, "from ElementAspect.onUpdated");
+    assert.equal(TestFuncAspect.nInsert, 1, "ElementAspect.onInsert should not be called on update");
+    assert.equal(TestFuncAspect.nInserted, 1, "ElementAspect.onInserted should should not be called on update");
+    assert.equal(TestFuncAspect.nUpdate, 1, "ElementAspect.onUpdate should be called");
+    assert.equal(TestFuncAspect.nUpdated, 1, "ElementAspect.onUpdated should should be called");
     const aspects = elements.getAspects(bd2, TestFuncAspect.classFullName);
     assert.equal(aspects.length, 1);
     elements.deleteAspect(aspects[0].id);
     assert.equal(TestFuncAspect.aspectId, aspects[0].id);
-    assert.equal(TestFuncAspect.nDelete, 1);
-    assert.equal(TestFuncAspect.nDeleted, 1);
+    assert.equal(TestFuncAspect.nDelete, 1, "ElementAspect.onDelete should be called");
+    assert.equal(TestFuncAspect.nDeleted, 1, "ElementAspect.onDeleted should be called");
 
     const bd2el = elements.getElement(bd2);
     Breakdown.nUpdated = 0;
@@ -460,18 +462,18 @@ describe("Functional Domain", () => {
     assert.equal(Breakdown.nDelete, 1, "Element.onDelete should be called once");
     assert.equal(Breakdown.nDeleted, 1, "Element.onDeleted should be called once");
 
-    const breakdown3Props: FunctionalElementProps = {
+    const breakdown3Props = {
       classFullName: Breakdown.classFullName,
       model: modelId,
-      code: new Code({ spec: codeSpec.id, scope: modelId, value: "bd3" }),
+      code: { spec: codeSpec.id, scope: modelId, value: "bd3" },
     };
     const bd3 = elements.insertElement(breakdown3Props);
 
-    const componentProps: FunctionalElementProps = {
+    const componentProps = {
       classFullName: Component.classFullName,
       model: modelId,
       parent: { id: breakdownId, relClassName: ElementOwnsChildElements.classFullName },
-      code: new Code({ spec: codeSpec.id, scope: modelId, value: "Component1" }),
+      code: { spec: codeSpec.id, scope: modelId, value: "Component1" },
     };
     const componentId = elements.insertElement(componentProps);
     assert.isTrue(Id64.isValidId64(componentId));
@@ -510,7 +512,7 @@ describe("Functional Domain", () => {
 
     // next we make sure that changing the parent of an element calls the "onChildAdd/Drop/Added/Dropped" callbacks.
     // To do this we switch a component's parent from "breakDownId" to "bc3"
-    componentProps.parent!.id = bd3;
+    componentProps.parent.id = bd3;
     const comp3 = elements.insertElement(componentProps);
     const compEl3 = elements.getElementProps(comp3);
     compEl3.parent!.id = breakdownId;
