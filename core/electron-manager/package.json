@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "2.14.2",
+  "version": "2.14.3",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
@@ -30,21 +30,21 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.14.2",
-    "@bentley/imodeljs-common": "^2.14.2",
-    "@bentley/imodeljs-frontend": "^2.14.2",
-    "@bentley/imodeljs-backend": "^2.14.2",
-    "@bentley/itwin-client": "^2.14.2",
+    "@bentley/bentleyjs-core": "^2.14.3",
+    "@bentley/imodeljs-common": "^2.14.3",
+    "@bentley/imodeljs-frontend": "^2.14.3",
+    "@bentley/imodeljs-backend": "^2.14.3",
+    "@bentley/itwin-client": "^2.14.3",
     "electron": "^11.1.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.14.2",
-    "@bentley/build-tools": "2.14.2",
-    "@bentley/eslint-plugin": "2.14.2",
-    "@bentley/imodeljs-backend": "2.14.2",
-    "@bentley/imodeljs-frontend": "2.14.2",
-    "@bentley/imodeljs-common": "2.14.2",
-    "@bentley/itwin-client": "2.14.2",
+    "@bentley/bentleyjs-core": "2.14.3",
+    "@bentley/build-tools": "2.14.3",
+    "@bentley/eslint-plugin": "2.14.3",
+    "@bentley/imodeljs-backend": "2.14.3",
+    "@bentley/imodeljs-frontend": "2.14.3",
+    "@bentley/imodeljs-common": "2.14.3",
+    "@bentley/itwin-client": "2.14.3",
     "@types/node": "10.14.1",
     "electron": "^11.1.0",
     "eslint": "^6.8.0",

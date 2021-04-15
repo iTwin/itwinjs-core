@@ -1,6 +1,6 @@
 {
   "name": "@bentley/orbitgt-core",
-  "version": "2.14.2",
+  "version": "2.14.3",
   "description": "",
   "main": "lib/imodeljs-orbitgt.js",
   "typings": "lib/imodeljs-orbitgt",
@@ -29,9 +29,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.14.2",
-    "@bentley/build-tools": "2.14.2",
-    "@bentley/eslint-plugin": "2.14.2",
+    "@bentley/bentleyjs-core": "2.14.3",
+    "@bentley/build-tools": "2.14.3",
+    "@bentley/eslint-plugin": "2.14.3",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

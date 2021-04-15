@@ -2,6 +2,18 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.14.3",
+      "tag": "@bentley/ui-framework_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Cleanup statusbar styling to ensure items are centered and do not overflow area."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.14.2",
       "tag": "@bentley/ui-framework_v2.14.2",
       "date": "Thu, 08 Apr 2021 14:30:09 GMT",
