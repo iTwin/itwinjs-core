@@ -201,6 +201,7 @@ public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string
 internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise
 public;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
+internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
@@ -225,7 +226,6 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
-internal;GridDisplaySettings
 alpha;GroupMark
 internal;Hilites
 beta;HiliteSet
@@ -388,6 +388,8 @@ public;Pixel
 internal;PlanarClassifierMap = Map
 internal;PlanarClassifierTarget
 beta;PlanarClipMaskState
+alpha;PlanarGridProps
+alpha;PlanarGridTransparency
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
