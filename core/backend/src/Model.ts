@@ -12,7 +12,7 @@ import { assert, DbOpcode, DbResult, GuidString, Id64String, JsonUtils } from "@
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { LockLevel } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps,
+  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps,
   ModelProps, RelatedElement,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -20,6 +20,46 @@ import { DefinitionPartition, DocumentPartition, InformationRecordPartition, Phy
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
+
+/** Argument for the `Model.onXxx` static methods
+ * @beta
+ */
+export interface OnModelArg {
+  /** The iModel for the Model affected. */
+  iModel: IModelDb;
+}
+
+/** Argument for the `Model.onXxx` static methods that supply the properties of a Model to be inserted or updated.
+ * @beta
+ */
+export interface OnModelPropsArg extends OnModelArg {
+  /** The new properties of the Model affected. */
+  props: Readonly<ModelProps>;
+}
+
+/** Argument for the `Model.onXxx` static methods that only supply the Id of the affected Model.
+ * @beta
+ */
+export interface OnModelIdArg extends OnModelArg {
+  /** The Id of the Model affected */
+  id: Id64String;
+}
+
+/** Argument for the `Model.onXxxElement` static methods that supply the properties of an Element for a Model.
+ * @beta
+ */
+export interface OnElementInModelPropsArg extends OnModelIdArg {
+  /** The new properties of an Element for the affected Model */
+  elementProps: Readonly<ElementProps>;
+}
+
+/** Argument for the `Model.onXxxElement` static methods that supply the Id of an Element for a Model.
+ * @beta
+ */
+export interface OnElementInModelIdArg extends OnModelIdArg {
+  /** The Id of the Element for the affected Model */
+  elementId: Id64String;
+}
 
 /** A Model is a container for persisting a collection of related elements within an iModel.
  * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDb.
@@ -93,56 +133,116 @@ export class Model extends Entity implements ModelProps {
     }
   }
 
-  /** Called before a new model is inserted.
-   * @throws [[IModelError]] if there is a problem
+  /** Called before a new Model is inserted.
+   * @note throw an exception to disallow the insert
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model to be inserted
    * @beta
    */
-  protected static onInsert(props: Readonly<ModelProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert);
+  protected static onInsert(arg: OnModelPropsArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWrite(this, arg.props, DbOpcode.Insert);
     }
   }
-  /** Called after a new model is inserted.
-   * @throws [[IModelError]] if there is a problem
+
+  /** Called after a new Model is inserted.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model that was inserted
    * @beta
    */
-  protected static onInserted(id: string, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert);
+  protected static onInserted(arg: OnModelIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWritten(this, arg.id, DbOpcode.Insert);
     }
   }
-  /** Called before a model is updated.
-   * @throws [[IModelError]] if there is a problem
+
+  /** Called before a Model is updated.
+   * @note throw an exception to disallow the update
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model to be updated
    * @beta
    */
-  protected static onUpdate(props: Readonly<ModelProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update);
+  protected static onUpdate(arg: OnModelPropsArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWrite(this, arg.props, DbOpcode.Update);
     }
   }
-  /** Called after a model is updated.
-   * @throws [[IModelError]] if there is a problem
+
+  /** Called after a Model is updated.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model that was updated.
    * @beta
    */
-  protected static onUpdated(props: Readonly<ModelProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update);
+  protected static onUpdated(arg: OnModelIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWritten(this, arg.id, DbOpcode.Update);
     }
   }
-  /** Called before a model is deleted.
-   * @throws [[IModelError]] if there is a problem
+
+  /** Called before a Model is deleted.
+   * @note throw an exception to disallow the delete
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model to be deleted
    * @beta
    */
-  protected static onDelete(props: Readonly<ModelProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete);
+  protected static onDelete(arg: OnModelIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      const props = arg.iModel.models.getModelProps(arg.id);
+      arg.iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete);
     }
   }
-  /** Called after a model is deleted.
-   * @throws [[IModelError]] if there is a problem
+
+  /** Called after a Model was deleted.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model that was deleted
    * @beta
    */
-  protected static onDeleted(_props: Readonly<ModelProps>, _iModel: IModelDb): void { }
+  protected static onDeleted(_arg: OnModelIdArg): void { }
+
+  /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
+   * @note throw an exception to disallow the insert
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model to hold the element
+   * @beta
+   */
+  protected static onInsertElement(_arg: OnElementInModelPropsArg): void { }
+
+  /** Called after an Element has been inserted into an instance of a Model of this class.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onInsertedElement(_arg: OnElementInModelIdArg): void { }
+
+  /** Called when an Element in an instance of a Model of this class is about to be updated.
+   * @note throw an exception to disallow the update
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onUpdateElement(_arg: OnElementInModelPropsArg): void { }
+
+  /** Called after an Element in an instance of a Model of this class has been updated.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
+
+  /** Called when an Element in an instance of a Model of this class is about to be deleted.
+   * @note throw an exception to disallow the delete
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onDeleteElement(_arg: OnElementInModelIdArg): void { }
+
+  /** Called after an Element in an instance of a Model of this class has been deleted.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model that held the element
+   * @beta
+   */
+  protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 
