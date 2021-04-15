@@ -233,4 +233,41 @@ describe("MultiValueFilter", () => {
 
     spy.calledOnce.should.false;
   });
+
+  it("clicking SelectAll will select all checkboxes", async () => {
+    const spy = sinon.spy();
+    const component = render(<MultiValueFilter onChange={spy} column={reactDataGridColumns[0]} getValidFilterValues={getValidFilterValues} />);
+    expect(component.getByTestId("components-multi-value-filter")).to.exist;
+
+    const button = component.container.querySelector(".components-popup-button");
+    expect(button).to.exist;
+    fireEvent.click(button!);
+
+    const checkboxes = component.queryAllByTestId("core-chk-listboxitem-checkbox") as HTMLInputElement[];
+    expect(checkboxes.length).to.eq(5);
+    testChecked(checkboxes, 0);
+
+    const selectAllButton = component.getByTestId("components-multi-value-filter-selectAll");
+    fireEvent.click(selectAllButton);
+    testChecked(checkboxes, 5);
+
+    fireEvent.click(checkboxes[0]);
+    testChecked(checkboxes, 4);
+
+    fireEvent.click(selectAllButton);
+    testChecked(checkboxes, 5);
+
+    fireEvent.click(checkboxes[0]);
+    testChecked(checkboxes, 4);
+    fireEvent.click(checkboxes[0]);
+    testChecked(checkboxes, 5);
+
+    fireEvent.click(selectAllButton);
+    testChecked(checkboxes, 0);
+
+    fireEvent.click(checkboxes[0]);
+    testChecked(checkboxes, 1);
+    fireEvent.click(checkboxes[0]);
+    testChecked(checkboxes, 0);
+  });
 });

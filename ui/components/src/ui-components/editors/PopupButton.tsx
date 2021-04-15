@@ -22,6 +22,8 @@ export interface PopupButtonProps extends CommonProps {
   placeholder?: string;
   /** Contents of the popup */
   children: React.ReactNode;
+  /** Title to display as tooltip. */
+  title?: string;
 
   /** Set focus to popup - default is to set focus */
   moveFocus?: boolean;
@@ -134,6 +136,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
           data-testid="components-popup-button"
           tabIndex={0}
           ref={this._buttonRef}
+          title={this.props.title}
           role="button"
         >
           <div className={valueClassNames}>

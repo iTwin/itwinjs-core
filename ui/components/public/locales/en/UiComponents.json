@@ -13,7 +13,8 @@
       "search": "Search",
       "cancel": "Cancel",
       "settings": "Settings",
-      "filter": "Filter"
+      "filter": "Filter",
+      "selectAll": "Select All"
     }
   },
   "breadcrumb": {

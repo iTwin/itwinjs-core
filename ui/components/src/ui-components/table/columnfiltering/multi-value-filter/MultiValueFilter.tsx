@@ -8,7 +8,7 @@
 
 import "./MultiValueFilter.scss";
 import React from "react";
-import { Button, ButtonType, CheckListBox, CheckListBoxItem, SearchBox, UiCore } from "@bentley/ui-core";
+import { Button, ButtonType, Checkbox, CheckBoxState, CheckListBox, CheckListBoxItem, SearchBox, UiCore } from "@bentley/ui-core";
 import { PopupButton, PopupContent } from "../../../editors/PopupButton";
 import { ReactDataGridColumn } from "../../component/TableColumn";
 import { UiComponents } from "../../../UiComponents";
@@ -40,9 +40,11 @@ export function MultiValueFilter(props: MultiValueFilterProps) {
   const [filterLabel] = React.useState(() => UiComponents.translate("button.label.filter"));
   const [cancelLabel] = React.useState(() => UiCore.translate("dialog.cancel"));
   const [searchLabel] = React.useState(() => UiComponents.translate("button.label.search"));
+  const [selectAllLabel] = React.useState(() => UiComponents.translate("button.label.selectAll"));
   const [distinctFilter] = React.useState(() => props.column.filterableColumn!.columnFilterDescriptor.distinctFilter);
   const [buttonLabel, setButtonLabel] = React.useState<string | undefined>(undefined);
   const [searchText, setSearchText] = React.useState("");
+  const [selectAllState, setSelectAllState] = React.useState(CheckBoxState.Off);
   const [filterCaseSensitive] = React.useState(() => !!props.column.filterableColumn!.filterCaseSensitive);
   const [showDistinctValueFilters] = React.useState(() => !!props.column.filterableColumn!.showDistinctValueFilters);
   const popupButtonRef = React.useRef<PopupButton>(null);
@@ -78,6 +80,7 @@ export function MultiValueFilter(props: MultiValueFilterProps) {
     checkedDistinctValues.length = 0;
     const newValues = checkedDistinctValues.slice();
     setCheckedDistinctValues(newValues);
+    setSelectAllState(CheckBoxState.Off);
   }, [checkedDistinctValues]);
 
   const closePopup = () => {
@@ -119,24 +122,42 @@ export function MultiValueFilter(props: MultiValueFilterProps) {
     setSearchText(value);
   }, []);
 
+  const handleSelectAllChanged = React.useCallback((_e: React.ChangeEvent<HTMLInputElement>) => {
+    let newState = CheckBoxState.On;
+    if (selectAllState === CheckBoxState.Off || selectAllState === CheckBoxState.Partial) {
+      const newValues = distinctValues.slice();
+      setCheckedDistinctValues(newValues);
+      newState = CheckBoxState.On;
+    } else {
+      checkedDistinctValues.length = 0;
+      const newValues = checkedDistinctValues.slice();
+      setCheckedDistinctValues(newValues);
+      newState = CheckBoxState.Off;
+    }
+    setSelectAllState(newState);
+  }, [checkedDistinctValues, distinctValues, selectAllState]);
+
   const handleCheckboxChanged = React.useCallback((e: React.ChangeEvent<HTMLInputElement>, distinctValue: TableDistinctValue) => {
     const index = checkedDistinctValues.indexOf(distinctValue);
+    const newCheckedValues = checkedDistinctValues.slice();
     if (e.target.checked) {
       // istanbul ignore else
-      if (index === -1) {
-        checkedDistinctValues.push(distinctValue);
-        const newValues = checkedDistinctValues.slice();
-        setCheckedDistinctValues(newValues);
-      }
+      if (index === -1)
+        newCheckedValues.push(distinctValue);
     } else {
       // istanbul ignore else
-      if (index !== -1) {
-        checkedDistinctValues.splice(index, 1);
-        const newValues = checkedDistinctValues.slice();
-        setCheckedDistinctValues(newValues);
-      }
+      if (index !== -1)
+        newCheckedValues.splice(index, 1);
     }
-  }, [checkedDistinctValues]);
+    setCheckedDistinctValues(newCheckedValues);
+
+    let newSelectAllState = CheckBoxState.Partial;
+    if (newCheckedValues.length === distinctValues.length)
+      newSelectAllState = CheckBoxState.On;
+    else if (newCheckedValues.length === 0)
+      newSelectAllState = CheckBoxState.Off;
+    setSelectAllState(newSelectAllState);
+  }, [checkedDistinctValues, distinctValues]);
 
   const checkBoxItems = React.useMemo((): JSX.Element[] => {
     const items = distinctValues
@@ -153,6 +174,8 @@ export function MultiValueFilter(props: MultiValueFilterProps) {
     return items;
   }, [checkedDistinctValues, distinctValues, handleCheckboxChanged, searchText, filterCaseSensitive]);
 
+  const disableSelectAll = checkBoxItems.length !== distinctValues.length;
+
   return (
     <div data-testid="components-multi-value-filter">
       <PopupButton placeholder={props.placeholder || filterLabel}
@@ -167,6 +190,12 @@ export function MultiValueFilter(props: MultiValueFilterProps) {
             <div>
               <div className="components-multi-value-filter-searchbox">
                 <SearchBox placeholder={searchLabel} onValueChanged={handleSearchValueChanged} valueChangedDelay={250} />
+              </div>
+              <div className="components-multi-value-filter-selectAll">
+                <Checkbox
+                  label={selectAllLabel} checked={selectAllState === CheckBoxState.On} indeterminate={selectAllState === CheckBoxState.Partial}
+                  onChange={handleSelectAllChanged} disabled={disableSelectAll}
+                  data-testid="components-multi-value-filter-selectAll" />
               </div>
               <div className="components-multi-value-filter-distinct-values">
                 <CheckListBox>
