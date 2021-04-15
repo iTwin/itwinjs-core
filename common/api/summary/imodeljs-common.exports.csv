@@ -21,8 +21,8 @@ public;BackgroundMapSettings
 public;BackgroundMapType
 public;Base64EncodedString = string
 public;Base64EncodedString
-alpha;BaseLayerProps = MapLayerProps | ColorDefProps
-alpha;BaseLayerSettings = MapLayerSettings | ColorDef
+beta;BaseLayerProps = MapLayerProps | ColorDefProps
+beta;BaseLayerSettings = MapLayerSettings | ColorDef
 public;BatchType
 public;class BentleyCloudRpcConfiguration 
 public;BentleyCloudRpcManager 
@@ -304,13 +304,13 @@ public;LineStyle
 public;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
 beta;LocalBriefcaseProps
-alpha;MapImageryProps
-alpha;MapImagerySettings
+beta;MapImageryProps
+beta;MapImagerySettings
 beta;MapLayerKey
-alpha;MapLayerProps
-alpha;MapLayerSettings
-alpha;MapSubLayerProps
-alpha;MapSubLayerSettings
+beta;MapLayerProps
+beta;MapLayerSettings
+beta;MapSubLayerProps
+beta;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
@@ -527,7 +527,7 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
-alpha;SubLayerId = string | number
+beta;SubLayerId = string | number
 beta;SynchronizationConfigLinkProps 
 public;SyncMode
 public;TerrainHeightOriginMode

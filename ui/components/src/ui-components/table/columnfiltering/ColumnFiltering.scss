@@ -62,5 +62,12 @@
         padding: 0 2px;
       }
     }
+
+    .components-popup-button {
+      min-height: $filter-height;
+      max-height: $filter-height;
+      min-width: calc(100% - 10px);
+      max-width: calc(100% - 10px);
+    }
   }
 }
