@@ -213,7 +213,7 @@ describe("AzureFileHandler", async () => {
     assert.fail("Expected an error to be thrown!");
   });
 
-  it("should return false for cancel request after disk error", async () => {
+  it.skip("should return false for cancel request after disk error", async () => {
     const handler = new AzureFileHandler();
     const signal = createCancellation();
     const promise = handler.downloadFile(ctx, testValidUrl, targetFile, undefined, undefined, signal);
