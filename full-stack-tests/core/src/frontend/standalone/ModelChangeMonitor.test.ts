@@ -92,6 +92,30 @@ if (ProcessDetector.isElectronAppFrontend) {
       });
 
       it("after exiting a graphical editing scope", async () => {
+        let numBufferedChanges = 0;
+        imodel.onBufferedModelChanges.addListener(() => ++numBufferedChanges);
+
+        const prevGuid = model.geometryGuid;
+        expect(prevGuid).not.to.be.undefined;
+
+        const scope = await imodel.enterEditingScope();
+        await moveElement();
+        expect(model.geometryGuid).to.equal(prevGuid);
+
+        await imodel.txns.reverseSingleTxn();
+        expect(model.geometryGuid).to.equal(prevGuid);
+
+        await imodel.txns.reinstateTxn();
+        expect(model.geometryGuid).to.equal(prevGuid);
+
+        expect(numBufferedChanges).to.equal(0);
+
+        const modelIds = await getBufferedChanges(async () => scope.exit());
+        expect(numBufferedChanges).to.equal(1);
+        expect(modelIds.size).to.equal(1);
+        expect(modelIds.has(model.id)).to.be.true;
+        expect(model.geometryGuid).not.to.equal(prevGuid);
+        expect(model.geometryGuid).not.to.be.undefined;
       });
     });
 
