@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { assert, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import {
   IModelConnectionProps, IModelError, IModelVersionProps, OpenBriefcaseProps,
   StandaloneOpenOptions,
@@ -123,6 +123,8 @@ class ModelChangeMonitor {
 
     this.invalidateScenes(modelIds);
     disposeTileTreesForGeometricModels(modelIds, this._briefcase);
+
+    this._briefcase.onBufferedModelChanges.raiseEvent(modelIds);
 
     this._modelIdToGuid.clear();
     this._deletedModels.clear();
@@ -267,4 +269,9 @@ export class BriefcaseConnection extends IModelConnection {
   public async enterEditingScope(): Promise<GraphicalEditingScope> {
     return this._modelsMonitor.enterEditingScope();
   }
+
+  /** Strictly for tests - dispatched from ModelChangeMonitor.processBuffered.
+   * @internal
+   */
+  public readonly onBufferedModelChanges = new BeEvent<(changedModelIds: Set<string>) => void>();
 }
