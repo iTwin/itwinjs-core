@@ -1348,7 +1348,7 @@ export class BackgroundMapGeometry {
     // (undocumented)
     getEarthEllipsoid(radiusOffset?: number): Ellipsoid;
     // (undocumented)
-    getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, doGlobalScope?: boolean): Range1d;
+    getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d;
     // (undocumented)
     getPlane(offset?: number): Plane3dByOriginAndUnitNormal;
     // (undocumented)
@@ -3527,6 +3527,9 @@ export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64
 // @public
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
 
+// @internal (undocumented)
+export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d;
+
 // @internal
 export function getGcsConverterAvailable(iModel: IModelConnection): Promise<boolean>;
 
@@ -3920,21 +3923,6 @@ export enum GraphicType {
     ViewOverlay = 4,
     WorldDecoration = 2,
     WorldOverlay = 3
-}
-
-// @internal (undocumented)
-export class GridDisplaySettings {
-    static clippingOption: 0 | 1;
-    static clipToViewFrustum: boolean;
-    static cullingOption: 0 | 1 | 2;
-    static cullingPerspectiveOption: 0 | 1 | 2;
-    static lineLimiter: number;
-    static lineTransparency: number;
-    static minFadeSeparation: number;
-    static minPerspectiveSeparation: number;
-    static minSeparation: number;
-    static planeTransparency: number;
-    static refTransparency: number;
 }
 
 // @alpha (undocumented)
@@ -7041,6 +7029,23 @@ export class PlanarClipMaskState {
     readonly settings: PlanarClipMaskSettings;
     }
 
+// @alpha
+export interface PlanarGridProps {
+    color: ColorDef;
+    gridsPerRef: number;
+    origin: Point3d;
+    rMatrix: Matrix3d;
+    spacing: XAndY;
+    transparency?: PlanarGridTransparency;
+}
+
+// @alpha
+export class PlanarGridTransparency {
+    readonly lineTransparency = 0.75;
+    readonly planeTransparency = 0.9;
+    readonly refTransparency = 0.5;
+}
+
 // @internal (undocumented)
 export class PlanarTilePatch {
     constructor(corners: Point3d[], normal: Vector3d, _chordHeight: number);
@@ -8067,6 +8072,8 @@ export abstract class RenderSystem implements IDisposable {
     createMesh(_params: MeshParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
+    // @internal (undocumented)
+    createPlanarGrid(_frustum: Frustum, _grid: PlanarGridProps): RenderGraphic | undefined;
     // @internal (undocumented)
     createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
     // @internal (undocumented)

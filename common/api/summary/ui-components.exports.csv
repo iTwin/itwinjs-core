@@ -95,11 +95,11 @@ beta;ColorPropertyEditor
 beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
 beta;ColorSwatchProps 
 public;ColumnDescription
-beta;ColumnFilterDescriptor 
+public;ColumnFilterDescriptor 
 public;CommonPropertyGridProps 
 public;CompletionObserver
-beta;CompositeFilterDescriptor 
-beta;CompositeFilterDescriptorCollection
+public;CompositeFilterDescriptor 
+public;CompositeFilterDescriptorCollection
 beta;CompositeFilterType
 alpha;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
@@ -145,8 +145,8 @@ deprecated;DEPRECATED_withTreeDragDrop
 beta;Direction
 internal;DirectionHelpers
 alpha;DisplayValuePropertyDataFilterer 
-beta;DistinctValueCollection
-beta;DistinctValuesFilterDescriptor 
+public;DistinctValueCollection
+public;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
 internal;DragAction
 beta;DragDropArguments
@@ -190,21 +190,21 @@ internal;FaceCellProps
 beta;FavoritePropertiesRenderer
 alpha;FavoritePropertyList 
 alpha;FavoritePropertyListProps
-beta;FieldFilterDescriptor 
-beta;FilterableColumn
-beta;FilterableTable
-beta;FilterCompositionLogicalOperator
-beta;FilterDescriptor
-beta;FilterDescriptorCollection 
-beta;class FilterDescriptorCollectionBase
+public;FieldFilterDescriptor 
+public;FilterableColumn
+public;FilterableTable
+public;FilterCompositionLogicalOperator
+public;FilterDescriptor
+public;FilterDescriptorCollection 
+public;class FilterDescriptorCollectionBase
 beta;FilteredPropertyData 
 beta;FilteredType
 public;FilteringInput 
 public;FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps
 beta;FilteringInputStatus
 alpha;FilteringPropertyDataProvider 
-beta;FilterOperator
-beta;FilterRenderer
+public;FilterOperator
+public;FilterRenderer
 alpha;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
 alpha;FlatGridItemBase
 alpha;FlatGridItemType
@@ -345,8 +345,8 @@ public;OnItemsDeselectedCallback
 public;OnItemsSelectedCallback
 public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
-beta;OperatorValueFilterDescriptor 
-beta;OperatorValueFilterDescriptorCollection 
+public;OperatorValueFilterDescriptor 
+public;OperatorValueFilterDescriptorCollection 
 alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 beta;PagedTreeNodeLoader
@@ -482,7 +482,7 @@ internal;TableColumn
 public;TableDataChangeEvent 
 public;TableDataChangesListener = () => void
 public;TableDataProvider
-beta;TableDistinctValue
+public;TableDistinctValue
 beta;TableDragDropProps
 deprecated;TableDragDropProps
 beta;TableDragDropType = {} | RowItem | TableDataProvider

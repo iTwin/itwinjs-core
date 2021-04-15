@@ -29,6 +29,7 @@ import { TableRowStyleProvider } from "../../properties/ItemStyle";
 import { PropertyDialogState, PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
 import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
+import { MultiValueFilter } from "../columnfiltering/multi-value-filter/MultiValueFilter";
 import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
 import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
 import { DataGridFilterParser, ReactDataGridFilter } from "../columnfiltering/DataGridFilterParser";
@@ -153,6 +154,8 @@ export interface TableProps extends CommonProps {
 
   /** Called to show a context menu when a cell is right-clicked. @beta */
   onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
+  /** Maximum number of distinct values for filtering */
+  maximumDistinctValues?: number;
 }
 
 /** Properties for a Table cell
@@ -525,6 +528,8 @@ export class Table extends React.Component<TableProps, TableState> {
       tableColumn.dataProvider = this.props.dataProvider;
       if (!keyboardEditorCellKey && tableColumn.columnDescription.editable)
         keyboardEditorCellKey = tableColumn.key;
+      if (tableColumn.filterable)
+        dataGridColumn.filterableColumn = tableColumn;
       return tableColumn;
     });
 
@@ -664,6 +669,9 @@ export class Table extends React.Component<TableProps, TableState> {
           break;
         case FilterRenderer.MultiSelect:
           column.filterRenderer = MultiSelectFilter;
+          break;
+        case FilterRenderer.MultiValue:
+          column.filterRenderer = MultiValueFilter;
           break;
         case FilterRenderer.SingleSelect:
           column.filterRenderer = SingleSelectFilter;
@@ -1407,7 +1415,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private async loadDistinctValues(): Promise<void> {
     await Promise.all(this.state.columns.map(async (tableColumn: TableColumn) => {
       if (tableColumn.filterable)
-        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(1000);
+        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(this.props.maximumDistinctValues);
     }));
   }
 
