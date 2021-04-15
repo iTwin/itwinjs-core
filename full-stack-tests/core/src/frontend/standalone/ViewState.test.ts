@@ -466,7 +466,7 @@ describe("ViewState", () => {
 
     const sheet = await imodel3.views.load("0x1000000002e");
     const drawing = await imodel3.views.load("0x10000000020") as DrawingViewState;
-    const spatial = viewState;
+    const spatial = viewState.clone();
     const spatialNoModels = viewState.clone();
     spatialNoModels.modelSelector.models.clear();
     const spatialOtherIModel = await imodel2.views.load("0x46") as SpatialViewState;
