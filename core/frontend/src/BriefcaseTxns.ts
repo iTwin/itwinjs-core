@@ -62,6 +62,9 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   public readonly onCommit = new BeEvent<() => void>();
 
   /** Event raised after a commit operation is performed. Initiated by a call to [[BriefcaseConnection.saveChanges]], even if there were no changes to save.
+   * The event supplies the following information:
+   *  - `hasPendingTxns`: true if the briefcase has local changes not yet pushed to the server.
+   *  - `time`: the time at which changes were saved on the backend (obtained via `Date.now()`).
    * @see [[onCommit]] for the event raised before the operation.
    */
   public readonly onCommitted = new BeEvent<(hasPendingTxns: boolean, time: number) => void>();
