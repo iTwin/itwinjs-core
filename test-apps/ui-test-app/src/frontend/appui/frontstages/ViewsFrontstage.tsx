@@ -48,7 +48,7 @@ import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
-import { OpenPopoutTool } from "../../tools/UiProviderTool";
+import { OpenCustomPopoutTool, OpenWidgetPopoutTool } from "../../tools/UiProviderTool";
 
 /* eslint-disable react/jsx-key */
 
@@ -813,5 +813,5 @@ class AdditionalTools {
       ],
       badgeType: BadgeType.TechnicalPreview,
     }),
-  ], 100, { groupPriority: 20 }), this.getMiscGroupItem(), OpenPopoutTool.getActionButtonDef(400, 30)];
+  ], 100, { groupPriority: 20 }), this.getMiscGroupItem(), OpenWidgetPopoutTool.getActionButtonDef(400, 40), OpenCustomPopoutTool.getActionButtonDef(410, 40)];
 }

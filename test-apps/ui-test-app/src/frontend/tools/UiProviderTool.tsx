@@ -22,7 +22,9 @@ import {
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
+import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
 import { PopoutWindowLocationProps } from "../appui/widgets/popout/PopoutManager";
+import { PopupTestPanel } from "./PopupTestPanel";
 
 // Simulate redux state being added via a extension
 interface SampleExtensionState {
@@ -196,8 +198,7 @@ export class UiProviderTool extends Tool {
   }
 }
 
-/** If an editing scope is currently in progress, end it; otherwise, begin a new one. */
-export class OpenPopoutTool extends Tool {
+export class OpenWidgetPopoutTool extends Tool {
   public static toolId = "OpenPopout";
   public static iconSpec = IconSpecUtilities.createSvgIconSpec(toolIconSvg);
 
@@ -223,7 +224,7 @@ export class OpenPopoutTool extends Tool {
   }
 
   public static get flyover(): string {
-    return "open popout";
+    return "open widget popout";
   }
 
   // if supporting localized key-ins return a localized string
@@ -239,7 +240,51 @@ export class OpenPopoutTool extends Tool {
     const overrides = {
       groupPriority,
     };
-    return ToolbarItemUtilities.createActionButton(OpenPopoutTool.toolId, itemPriority, OpenPopoutTool.iconSpec, OpenPopoutTool.flyover,
-      () => { IModelApp.tools.run(OpenPopoutTool.toolId); }, overrides);
+    return ToolbarItemUtilities.createActionButton(OpenWidgetPopoutTool.toolId, itemPriority, OpenWidgetPopoutTool.iconSpec, OpenWidgetPopoutTool.flyover,
+      () => { IModelApp.tools.run(OpenWidgetPopoutTool.toolId); }, overrides);
+  }
+}
+export class OpenCustomPopoutTool extends Tool {
+  public static toolId = "OpenCustomPopout";
+  public static iconSpec = IconSpecUtilities.createSvgIconSpec(tool2IconSvg);
+
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 0; }
+
+  public run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
+    const location: PopoutWindowLocationProps = {
+      width: 800,
+      height: 600,
+      left: 0,
+      top: 0,
+    };
+    SampleAppIModelApp.popoutManager.openPopout("CustomPopout", "Custom Popout", <PopupTestPanel />, location);
+  }
+
+  public static get flyover(): string {
+    return "open custom popout";
+  }
+
+  // if supporting localized key-ins return a localized string
+  public static get keyin(): string {
+    return "open custom popout";
+  }
+
+  public static get englishKeyin(): string {
+    return "open custom popout";
+  }
+
+  public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
+    const overrides = {
+      groupPriority,
+    };
+    return ToolbarItemUtilities.createActionButton(OpenCustomPopoutTool.toolId, itemPriority, OpenCustomPopoutTool.iconSpec, OpenCustomPopoutTool.flyover,
+      () => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); }, overrides);
   }
 }

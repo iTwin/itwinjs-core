@@ -46,6 +46,7 @@ export interface ContextMenuProps extends CommonProps {
   parentSubmenu?: ContextSubMenu;
   /** @internal */
   ignoreNextKeyUp?: boolean;
+  sourceDocument?: Document | null;
 }
 
 /** @internal */
@@ -71,6 +72,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   private _lastDirection: ContextMenuDirection | undefined = ContextMenuDirection.BottomRight;
   private _lastSelectedIndex: number = 0;
   private _injectedChildren: React.ReactNode;
+  private _sourceWindow: Window;
 
   public static defaultProps: Partial<ContextMenuProps> = {
     direction: ContextMenuDirection.BottomRight,
@@ -83,8 +85,12 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   /** @internal */
   public readonly state: Readonly<ContextMenuState>;
+
   constructor(props: ContextMenuProps) {
     super(props);
+
+    this._sourceWindow = this.props.sourceDocument?.defaultView ?? window;
+
     this.state = {
       selectedIndex: this.props.selectedIndex!,
       direction: props.direction!,
@@ -291,8 +297,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   /** @internal */
   public componentDidMount() {
-    window.addEventListener("focus", this._handleFocusChange);
-    window.addEventListener("mouseup", this._handleFocusChange);
+    this._sourceWindow.addEventListener("focus", this._handleFocusChange);
+    this._sourceWindow.addEventListener("mouseup", this._handleFocusChange);
 
     this.checkRenderDirection();
 
@@ -302,8 +308,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   /** @internal */
   public componentWillUnmount() {
-    window.removeEventListener("focus", this._handleFocusChange);
-    window.removeEventListener("mouseup", this._handleFocusChange);
+    this._sourceWindow.removeEventListener("focus", this._handleFocusChange);
+    this._sourceWindow.removeEventListener("mouseup", this._handleFocusChange);
   }
 
   private checkRenderDirection() {
@@ -314,7 +320,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     // check if menu should flip
     if (autoflip && parentMenu === undefined) {
       const menuRect = this.getRect();
-      renderDirection = ContextMenu.autoFlip(renderDirection!, menuRect, window.innerWidth, window.innerHeight);
+      renderDirection = ContextMenu.autoFlip(renderDirection!, menuRect, this._sourceWindow.innerWidth, this._sourceWindow.innerHeight);
       // istanbul ignore next
       if (renderDirection !== this.state.direction)
         this.setState({ direction: renderDirection });
@@ -356,7 +362,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>): void => {
     if (this.state.ignoreNextKeyUp) {
-      this.setState({ignoreNextKeyUp: false});
+      this.setState({ ignoreNextKeyUp: false });
       return;
     }
 

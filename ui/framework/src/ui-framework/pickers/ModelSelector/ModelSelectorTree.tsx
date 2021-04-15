@@ -339,6 +339,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
             opened={this.state.isOptionsOpened}
             x={this._getOptionsX()}
             y={this._getOptionsY()}
+            sourceDocument={this._optionsElement?.ownerDocument}
           >
             <ContextMenuItem
               key={0}
