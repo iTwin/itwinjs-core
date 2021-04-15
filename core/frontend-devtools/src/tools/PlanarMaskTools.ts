@@ -339,7 +339,7 @@ export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
 
   public parseAndRun(...args: string[]): boolean {
     super.parseAndRun(...args);
-    const priority = parseInt(args[1], 10);
+    const priority = parseInt(args[0], 10);
     this._priority = (priority === undefined || isNaN(priority)) ? 0 : priority;
     return this.run();
   }

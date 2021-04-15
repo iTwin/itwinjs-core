@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AccuDraw, AccuDrawFlags, AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
+import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
 import { ColorDef, Frustum, IModelStatus, LinePixels, Placement2d, Placement2dProps, Placement3d } from "@bentley/imodeljs-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
@@ -97,8 +97,12 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // Update anchor point to support creating additional copies (repeat vs. restart)...
     if (undefined === this.anchorPoint)
       return;
+
     transform.multiplyPoint3d(this.anchorPoint, this.anchorPoint);
-    IModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin, this.anchorPoint);
+
+    const hints = new AccuDrawHintBuilder();
+    hints.setOrigin(this.anchorPoint);
+    hints.sendHints();
   }
 
   protected async startCommand(): Promise<string> {
@@ -139,6 +143,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
 /** @alpha Move elements by applying translation to placement. */
 export class MoveElementsTool extends TransformElementsTool {
   public static toolId = "MoveElements";
+  public static iconSpec = "icon-move";
 
   protected calculateTransform(ev: BeButtonEvent): Transform | undefined {
     if (undefined === this.anchorPoint)
@@ -176,6 +181,8 @@ export enum RotateAbout {
 /** @alpha Rotate elements by applying transform to placement. */
 export class RotateElementsTool extends TransformElementsTool {
   public static toolId = "RotateElements";
+  public static iconSpec = "icon-rotate";
+
   protected xAxisPoint?: Point3d;
   protected havePivotPoint = false;
   protected haveFinalPoint = false;
@@ -243,7 +250,7 @@ export class RotateElementsTool extends TransformElementsTool {
       return undefined;
 
     if (RotateMethod.ByAngle === this.rotateMethod) {
-      const rotMatrix = AccuDraw.getCurrentOrientation(ev.viewport, true, true);
+      const rotMatrix = AccuDrawHintBuilder.getCurrentRotation(ev.viewport, true, true);
       if (undefined === rotMatrix)
         return undefined;
 
@@ -255,8 +262,8 @@ export class RotateElementsTool extends TransformElementsTool {
       if (undefined === angMatrix)
         return undefined;
 
-      angMatrix.multiplyMatrixMatrix(rotMatrix, rotMatrix);
-      invMatrix.multiplyMatrixMatrix(rotMatrix, rotMatrix);
+      angMatrix.multiplyMatrixMatrix(invMatrix, invMatrix);
+      rotMatrix.multiplyMatrixMatrix(invMatrix, rotMatrix);
 
       return Transform.createFixedPointAndMatrix(ev.point, rotMatrix);
     }
@@ -275,7 +282,7 @@ export class RotateElementsTool extends TransformElementsTool {
       return undefined;
 
     if (dot < (-1.0 + Geometry.smallAngleRadians)) {
-      const rotMatrix = AccuDraw.getCurrentOrientation(ev.viewport, true, true);
+      const rotMatrix = AccuDrawHintBuilder.getCurrentRotation(ev.viewport, true, true);
       if (undefined === rotMatrix)
         return undefined;
 
@@ -287,8 +294,8 @@ export class RotateElementsTool extends TransformElementsTool {
       if (undefined === angMatrix)
         return undefined;
 
-      angMatrix.multiplyMatrixMatrix(rotMatrix, rotMatrix);
-      invMatrix.multiplyMatrixMatrix(rotMatrix, rotMatrix);
+      angMatrix.multiplyMatrixMatrix(invMatrix, invMatrix);
+      rotMatrix.multiplyMatrixMatrix(invMatrix, rotMatrix);
 
       return Transform.createFixedPointAndMatrix(this.anchorPoint, rotMatrix);
     }
@@ -442,7 +449,8 @@ export class RotateElementsTool extends TransformElementsTool {
     const toolSettings = new Array<DialogItem>();
     toolSettings.push({ value: this._rotateMethodValue, property: this._getMethodDescription(), isDisabled: false, editorPosition: { rowPriority: 1, columnIndex: 2 } });
     toolSettings.push({ value: this._rotateAboutValue, property: this._getAboutDescription(), isDisabled: false, editorPosition: { rowPriority: 2, columnIndex: 2 } });
-    toolSettings.push({ value: this._rotateAngleValue, property: this._getAngleDescription(), isDisabled: false, editorPosition: { rowPriority: 3, columnIndex: 2 } });
+    if (RotateMethod.ByAngle === this.rotateMethod)
+      toolSettings.push({ value: this._rotateAngleValue, property: this._getAngleDescription(), isDisabled: false, editorPosition: { rowPriority: 3, columnIndex: 2 } });
     return toolSettings;
   }
 

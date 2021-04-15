@@ -1,0 +1,63 @@
+{
+  "name": "@bentley/ecschema-rpcinterface-impl",
+  "version": "2.16.0-dev.8",
+  "description": "Schema RPC Interface backend implementation",
+  "main": "lib/ecschema-rpc-impl.js",
+  "typings": "lib/ecschema-rpc-impl",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-rpc/impl"
+  },
+  "scripts": {
+    "compile": "npm run build",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "cover": "",
+    "docs": "",
+    "extract-api": "betools extract-api --entry=ecschema-rpc-impl",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": ""
+  },
+  "keywords": [
+    "iModel",
+    "BIS",
+    "EC",
+    "Schema"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "2.16.0-dev.8",
+    "@bentley/ecschema-metadata": "2.16.0-dev.8",
+    "@bentley/geometry-core": "2.16.0-dev.8",
+    "@bentley/imodelhub-client": "2.16.0-dev.8",
+    "@bentley/imodeljs-backend": "2.16.0-dev.8",
+    "@bentley/imodeljs-common": "2.16.0-dev.8",
+    "@bentley/itwin-client": "2.16.0-dev.8",
+    "@bentley/ecschema-rpcinterface-common": "2.16.0-dev.8"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "2.16.0-dev.8",
+    "@bentley/build-tools": "2.16.0-dev.8",
+    "@bentley/ecschema-metadata": "2.16.0-dev.8",
+    "@bentley/eslint-plugin": "2.16.0-dev.8",
+    "@bentley/geometry-core": "2.16.0-dev.8",
+    "@bentley/imodelhub-client": "2.16.0-dev.8",
+    "@bentley/imodeljs-backend": "2.16.0-dev.8",
+    "@bentley/imodeljs-common": "2.16.0-dev.8",
+    "@bentley/itwin-client": "2.16.0-dev.8",
+    "@bentley/ecschema-rpcinterface-common": "2.16.0-dev.8",
+    "eslint": "^6.8.0",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.1.0"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
+  }
+}

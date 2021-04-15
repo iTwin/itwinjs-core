@@ -80,6 +80,11 @@ describe("<ColorPickerButton/>", () => {
       expect(spyOnColorPick).to.be.calledOnce;
       expect(button.getAttribute("data-value")).to.eq("rgb(255,0,0)"); // red
     }
+
+    // ensure update prop is handled
+    const newColorDef = ColorDef.create(ColorByName.green); // green = 0x008000,
+    renderedComponent.rerender(<ColorPickerButton initialColor={newColorDef} onColorPick={handleColorPick} dropDownTitle="test-title" showCaret />);
+    expect(button.getAttribute("data-value")).to.eq("rgb(0,128,0)");  // green
   });
 
   it("readonly - button press should not open popup", async () => {

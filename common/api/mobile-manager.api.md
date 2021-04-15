@@ -74,15 +74,19 @@ export class IOSApp {
     // (undocumented)
     static get isValid(): boolean;
     // (undocumented)
-    static startup(opts?: {
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(opts?: IOSAppOpts): Promise<void>;
 }
 
 // @beta (undocumented)
+export type IOSAppOpts = NativeAppOpts;
+
+// @beta (undocumented)
 export class IOSHost extends MobileHost {
-    static startup(opt?: MobileHostOpts): Promise<void>;
+    static startup(opt?: IOSHostOpts): Promise<void>;
 }
+
+// @beta (undocumented)
+export type IOSHostOpts = MobileHostOpts;
 
 // @beta (undocumented)
 export class MobileApp {
@@ -172,6 +176,8 @@ export interface MobileHostOpts extends NativeHostOpts {
     // (undocumented)
     mobileHost?: {
         device?: MobileDevice;
+        rpcInterfaces?: RpcInterfaceDefinition[];
+        authConfig?: NativeAppAuthorizationConfiguration;
     };
 }
 

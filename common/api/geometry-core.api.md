@@ -2593,6 +2593,17 @@ export namespace IModelJson {
     }
 }
 
+// @internal
+export class ImplicitLineXY {
+    constructor(a: number, ax: number, ay: number);
+    a: number;
+    addScaledCoefficientsInPlace(a: number, ax: number, ay: number, scale: number): void;
+    ax: number;
+    ay: number;
+    convertToSegmentPoints(b: number): Point3d[] | undefined;
+    evaluatePoint(xy: XAndY): number;
+}
+
 // @public
 export class IndexedCollectionInterval<T extends CollectionWithLength> {
     protected constructor(points: T, base: number, limit: number);
@@ -5560,34 +5571,6 @@ export class Vector3d extends XYZ {
 export class Vector3dArray {
     static cloneVector3dArray(data: XYAndZ[]): Vector3d[];
     static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean;
-}
-
-// @internal
-export class ViewGraphicsOps {
-    static announceGridLinesInView(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, options: ViewportGraphicsGridSpacingOptions, announceLine: (
-    pointA: Point3d,
-    pointB: Point3d,
-    perspectiveZA: number | undefined,
-    perspectiveZB: number | undefined,
-    startEndDistance: Segment1d | undefined,
-    gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => void): boolean;
-    static gridRangeMaxXY: number;
-    static gridRangeMaxZ: number;
-    }
-
-// @internal
-export interface ViewportGraphicsGridLineIdentifier {
-    direction: 0 | 1;
-    index: number;
-    stepCount: number;
-}
-
-// @internal
-export class ViewportGraphicsGridSpacingOptions {
-    clippingOption: 0 | 1;
-    static create(distanceBetweenLines: number, cullingOption?: 0 | 1 | 2, clippingOption?: 0 | 1): ViewportGraphicsGridSpacingOptions;
-    cullingOption: 0 | 1 | 2;
-    distanceBetweenLines: number;
 }
 
 // @public

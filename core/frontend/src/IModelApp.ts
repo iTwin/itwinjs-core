@@ -30,7 +30,6 @@ import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
 import { ExtensionAdmin } from "./extension/ExtensionAdmin";
-import { FeatureToggleClient } from "./FeatureToggleClient";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { FrontendRequestContext } from "./FrontendRequestContext";
 import * as modelselector from "./ModelSelectorState";
@@ -129,10 +128,6 @@ export interface IModelAppOptions {
   extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
-  /** if present, supplies the [[FeatureToggleClient]] for this session
-   * @internal
-   */
-  featureToggles?: FeatureToggleClient;
   rpcInterfaces?: RpcInterfaceDefinition[];
 }
 
@@ -199,7 +194,6 @@ export class IModelApp {
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
   private static _animationIntervalId?: number;
-  private static _featureToggles: FeatureToggleClient;
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
 
@@ -269,11 +263,6 @@ export class IModelApp {
    * @internal
    */
   public static readonly telemetry: TelemetryManager = new TelemetryManager();
-
-  /** The [[FeatureToggleClient]] for this session
-   * @internal
-   */
-  public static get featureToggles() { return this._featureToggles; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -424,7 +413,6 @@ export class IModelApp {
     this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
-    this._featureToggles = (opts.featureToggles !== undefined) ? opts.featureToggles : new FeatureToggleClient();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
 
     [

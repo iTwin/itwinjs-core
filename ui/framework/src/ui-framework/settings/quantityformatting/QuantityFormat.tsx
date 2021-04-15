@@ -50,7 +50,7 @@ export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opt
     itemPriority, tabId: "uifw:Quantity",
     label: UiFramework.translate("settings.quantity-formatting.label"),
     subLabel: UiFramework.translate("settings.quantity-formatting.subLabel"),
-    page: <QuantityFormatSettingsPanel initialQuantityType={initialQuantityType??QuantityType.Length}
+    page: <QuantityFormatSettingsPage initialQuantityType={initialQuantityType??QuantityType.Length}
       availableUnitSystems={availableUnitSystems??new Set(["metric","imperial","usCustomary","usSurvey"])} />,
     isDisabled: false,
     icon: "icon-measure",
@@ -62,7 +62,7 @@ export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opt
 /** UI Component shown in settings page to set the active Presentation Unit System and to set format overrides.
  * @beta
  */
-export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitSystems}: QuantityFormatterSettingsOptions) {
+export function QuantityFormatSettingsPage({initialQuantityType, availableUnitSystems}: QuantityFormatterSettingsOptions) {
   const [activeUnitSystemKey, setActiveUnitSystemKey] = React.useState(IModelApp.quantityFormatter.activeUnitSystem);
   const [activeQuantityType, setActiveQuantityType] = React.useState(getQuantityTypeKey(initialQuantityType));
   const [activeFormatterSpec, setActiveFormatterSpec] =

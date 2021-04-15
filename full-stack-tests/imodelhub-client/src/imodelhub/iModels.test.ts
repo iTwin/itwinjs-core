@@ -247,7 +247,7 @@ describe("iModelHub iModelsHandler", () => {
   const createimodelName = utils.getUniqueIModelName("imodeljs-client iModels Create test");
   const updatedimodelName = utils.getUniqueIModelName(`${imodelName}_updated`);
   const imodelNameWithSpecialChars = utils.getUniqueIModelName("Д");
-  const imodelClient: IModelClient = utils.getDefaultClient();
+  let imodelClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
 
@@ -265,6 +265,7 @@ describe("iModelHub iModelsHandler", () => {
     (requestContext as any).activityId = "iModelHub iModelsHandler";
     projectId = await utils.getProjectId(requestContext);
     assetId = await utils.getAssetId(requestContext);
+    imodelClient = utils.getDefaultClient();
 
     await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, projectId);

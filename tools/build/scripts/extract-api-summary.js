@@ -28,47 +28,64 @@ if (undefined === argv.outDir) {
 
 fs.ensureDir(path.normalize(argv.outDir));
 
+let shouldGenerateFullReport = false;
+if (undefined !== argv.gatherFullReport)
+  shouldGenerateFullReport = true;
+
 // create output file
 const trimmedApiSignature = (argv.apiSignature.split('.'))[0];
-const sigFileName = path.basename(path.normalize(trimmedApiSignature))
-const sigFilePath = path.join(argv.outDir, "summary4.exports.csv")
-if (!fs.existsSync(sigFilePath))
-  fs.createFileSync(sigFilePath);
+const sigFileName = path.basename(path.normalize(trimmedApiSignature));
+const sigFilePath = path.join(argv.outDir, `${shouldGenerateFullReport ? "summary" : sigFileName}.exports.csv`);
 
 const outputLines = [];
-console.log(sigFileName)
-outputLines.push(`\n${sigFileName}`);
-outputLines.push("Release Tag;API Item");
+if (shouldGenerateFullReport) {
+  if (fs.existsSync(sigFilePath))
+    outputLines.push("");
+  else {
+    outputLines.push("sep=;");
+    outputLines.push("Package Name;Release Tag;API Item");
+  }
+} else {
+  fs.createFileSync(sigFilePath);
+  outputLines.push("sep=;");
+  outputLines.push("Release Tag;API Item");
+}
 
 // Open up the signature file
-
 fs.readFile(argv.apiSignature, function (error, data) {
   if (error) { throw error; }
 
-  let previousLine = undefined;
+  let previousLines = [];
   data.toString().split("\n").forEach(function (line, index, arr) {
     if (index === arr.length - 1 && line === "") { return; }
 
-    if (undefined !== previousLine) {
+    if (previousLines.length !== 0) {
       const matches = line.match(/export \S*\s(.*)(\s{|;)/);
       if (null !== matches) {
         const split = matches[1].split(/(<|extends|implements)/);
-        outputLines.push(`${previousLine};${split[0]}`);
+        for (const previousLine of previousLines)
+          outputLines.push(shouldGenerateFullReport ? `${sigFileName};${previousLine};${split[0]}` : `${previousLine};${split[0]}`);
       }
 
-      previousLine = undefined;
+      previousLines = [];
       return;
     }
 
-    const matches = line.match(/\s@(beta|alpha|public|internal|deprecated)/);
-
-    if (null === matches || 2 > matches.length) {
-      previousLine = undefined;
+    let match = line.match(/\s@(beta|alpha|public|internal)/);
+    if (null === match) {
+      previousLines = [];
       return;
     }
 
-    previousLine = matches[1];
+    previousLines.push(match[1]);
+
+    // handle deprecated separate since it can be used together with the other release tags
+    match = line.match(/\s@(deprecated)/);
+    if (null !== match) {
+      previousLines.push(match[1]);
+      return;
+    }
   });
 
-  fs.appendFileSync(sigFilePath, outputLines.join("\n"));
+  shouldGenerateFullReport ? fs.appendFileSync(sigFilePath, outputLines.join("\n")) : fs.writeFileSync(sigFilePath, outputLines.join("\n"));
 });

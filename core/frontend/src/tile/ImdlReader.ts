@@ -35,6 +35,19 @@ export interface ImdlReaderResult extends IModelTileContent {
   readStatus: TileReadStatus;
 }
 
+/** Convert the byte array returned by [[TileAdmin.requestElementGraphics]] into a [[RenderGraphic]].
+ * @public
+ */
+export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise<RenderGraphic | undefined> {
+  const stream = new ByteStream(bytes.buffer);
+  const reader = ImdlReader.create(stream, iModel, modelId, is3d, IModelApp.renderSystem);
+  if (!reader)
+    return undefined;
+
+  const result = await reader.read();
+  return result.graphic;
+}
+
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */

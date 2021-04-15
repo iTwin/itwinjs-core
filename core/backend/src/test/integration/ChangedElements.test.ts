@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, GuidString } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
+import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import { ChangedElementsManager } from "../../ChangedElementsManager";
@@ -11,7 +11,7 @@ import { AuthorizedBackendRequestContext, BriefcaseManager, ChangedElementsDb, I
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
-describe.skip("ChangedElements (#integration)", () => {
+describe("ChangedElements (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testContextId: GuidString;
   let testIModelId: GuidString;
@@ -34,7 +34,7 @@ describe.skip("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
     const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, testIModelId);
     assert.exists(iModel);
 

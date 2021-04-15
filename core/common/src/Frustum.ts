@@ -7,7 +7,7 @@
  */
 
 import {
-  AxisOrder, ClipPlane, ConvexClipPlaneSet, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Point3d, Range3d, Transform, Vector3d, XYAndZ,
+  AxisOrder, ClipPlane, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Vector3d, XYAndZ,
 } from "@bentley/geometry-core";
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
@@ -248,5 +248,21 @@ export class Frustum {
         convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[4]) - expandPlaneDistance));
     }
     return convexSet;
+  }
+
+  /** Get a (convex) polygon that represents the intersection of this frustum with a plane, or undefined if no intersection exists */
+  public getIntersectionWithPlane(plane: Plane3dByOriginAndUnitNormal): Point3d[] | undefined {
+    const clipPlane = ClipPlane.createPlane(plane);
+    const loopPoints = clipPlane.intersectRange(this.toRange(), true);
+    if (undefined === loopPoints)
+      return undefined;
+
+    const convexSet = this.getRangePlanes(false, false, 0);
+    const workPoints = new GrowableXYZArray();
+    const outPoints = new GrowableXYZArray();
+    convexSet.polygonClip(loopPoints, outPoints, workPoints);
+
+    return outPoints.length < 4 ? undefined : outPoints.getPoint3dArray();
+
   }
 }

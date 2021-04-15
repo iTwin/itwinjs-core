@@ -10,8 +10,8 @@
   height: 100%;
   color: $buic-foreground-body;
   padding: {
-    top: $nz-footer-indicator-vertical-padding;
-    bottom: $nz-footer-indicator-vertical-padding;
+    top: 0;
+    bottom: 0;
     left: $nz-footer-indicator-horizontal-padding;
     right: $nz-footer-indicator-horizontal-padding;
   }
@@ -31,9 +31,7 @@
 
   > .nz-indicator {
     height: 100%;
-    display: grid;
-    grid-auto-flow: column;
-    grid-gap: $space-between-text-and-icon;
+    display: flex;
     cursor: pointer;
     align-items: center;
 
@@ -54,6 +52,7 @@
       position: relative;
       display: grid;
       align-items: center;
+      margin-left: 8px;
 
       > .nz-balloon {
         background-color: $buic-foreground-body;

@@ -14,7 +14,7 @@ import {
   AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldLockEventArgs, AccuDrawSetModeEventArgs,
   AccuDrawUiAdmin, IconSpecUtilities,
 } from "@bentley/ui-abstract";
-import { CommonProps, IconSpec, Orientation, UiSettings } from "@bentley/ui-core";
+import { CommonProps, IconSpec, Orientation, UiSettingsStorage } from "@bentley/ui-core";
 import { AccuDrawInputField } from "./AccuDrawInputField";
 import { CompassMode, IModelApp, ItemField, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
@@ -30,8 +30,8 @@ import { ColorDef } from "@bentley/imodeljs-common";
 export interface AccuDrawFieldContainerProps extends CommonProps {
   /** Orientation of the fields */
   orientation: Orientation;
-  /** Optional parameter for persistent UI settings. Defaults to LocalUiSettings. */
-  uiSettings?: UiSettings;
+  /** Optional parameter for persistent UI settings. Defaults to LocalSettingsStorage. */
+  uiSettingsStorage?: UiSettingsStorage;
   /** @internal */
   showZOverride?: boolean;
 }
@@ -52,7 +52,7 @@ const defaultDistanceIcon = IconSpecUtilities.createSvgIconSpec(distanceIconSvg)
 /** @alpha */
 export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { className, style, orientation, uiSettings, showZOverride, ...otherProps } = props;
+  const { className, style, orientation, uiSettingsStorage, showZOverride, ...otherProps } = props;
 
   const [containerIndex] = React.useState(() => ++AccuDrawContainerIndex);
   const xInputRef = React.useRef<HTMLInputElement>(null);

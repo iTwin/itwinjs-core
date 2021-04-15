@@ -13,9 +13,9 @@ import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet } from "../ViewportSet";
 import { Tile, TileRequestChannel, TileTree } from "./internal";
 
-/** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile]] to execute the request for tile content and
- * convert the result into a renderable graphic. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
- * @beta
+/** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile.requestContent]] to obtain the raw content and
+ * [[Tile.readContent]] to convert the result into a [[RenderGraphic]]. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
+ * @public
  */
 export class TileRequest {
   /** The requested tile. While the request is pending or active, `tile.request` points back to this TileRequest. */
@@ -36,10 +36,10 @@ export class TileRequest {
     this.viewports = IModelApp.tileAdmin.getViewportSetForRequest(vp);
   }
 
-  /** @internal */
+  /** The request's current state. */
   public get state(): TileRequest.State { return this._state; }
 
-  /** @internal */
+  /** True if the request has been enqueued but not yet dispatched. */
   public get isQueued() { return TileRequest.State.Queued === this._state; }
 
   /** True if the request has been canceled. */
@@ -56,16 +56,19 @@ export class TileRequest {
     return this.viewports.isEmpty;
   }
 
-  /** @internal */
+  /** The tile tree to which the requested [[Tile]] belongs. */
   public get tree(): TileTree { return this.tile.tree; }
 
-  /** Indicate that the specified viewport is awaiting the result of this request. */
+  /** Indicate that the specified viewport is awaiting the result of this request.
+   * @internal
+   */
   public addViewport(vp: Viewport): void {
     this.viewports = IModelApp.tileAdmin.getViewportSetForRequest(vp, this.viewports);
   }
 
   /** Transition the request from "queued" to "active", kicking off a series of asynchronous operations usually beginning with an http request, and -
    * if the request is not subsequently canceled - resulting in either a successfully-loaded Tile, or a failed ("not found") Tile.
+   * @internal
    */
   public async dispatch(onHttpResponse: () => void): Promise<void> {
     if (this.isCanceled)
@@ -109,7 +112,9 @@ export class TileRequest {
     return this.handleResponse(response);
   }
 
-  /** Cancels this request. This leaves the associated Tile's state untouched. */
+  /** Cancels this request. This leaves the associated Tile's state untouched.
+   * @internal
+   */
   public cancel(): void {
     this.notifyAndClear();
     if (TileRequest.State.Dispatched === this._state)
@@ -169,28 +174,30 @@ export class TileRequest {
   }
 }
 
-/** @beta */
+/** @public */
 export namespace TileRequest { // eslint-disable-line no-redeclare
   /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type.
-   * @see [[Tile.requestContent]]
-   * @beta
+   * [[Tile.requestContent]] produces a response of this type; it is then converted to a [[Tile.ResponseData]] from which [[Tile.readContent]]
+   * can produce a [[RenderGraphic]].
+   * @public
    */
   export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
-  /** The input to [[Tile.readContent]], to be converted into a [[Tile.Content]].
-   * @see [[Tile.readContent]]
-   * @beta
+
+  /** The input to [[Tile.readContent]], to be converted into a [[RenderGraphic]].
+   * @public
    */
   export type ResponseData = Uint8Array | ImageSource;
 
-  /** The states through which a TileRequest proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined, and its [[Tile.LoadStatus]] is computed based on the state of its request.
-   * @internal
+  /** The states through which a [[TileRequest]] proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined,
+   * and its [[Tile.LoadStatus]] is computed based on the state of its request.
+   *@ public
    */
   export enum State {
     /** Initial state. Request is pending but not yet dispatched. */
     Queued,
     /** Follows `Queued` when request begins to be actively processed. */
     Dispatched,
-    /** Follows `Dispatched` when tile content is being converted into tile graphics. */
+    /** Follows `Dispatched` when the response to the request is being converted into tile graphics. */
     Loading,
     /** Follows `Loading` when tile graphic has successfully been produced. */
     Completed,

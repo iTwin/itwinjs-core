@@ -123,6 +123,7 @@ export interface ClassKeyMapInfo {
 export abstract class Client {
     protected constructor();
     protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void;
+    protected baseUrl?: string;
     protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
     getUrl(requestContext: ClientRequestContext): Promise<string>;
     protected abstract getUrlSearchKey(): string;
@@ -145,6 +146,11 @@ export class DefaultRequestOptionsProvider {
 // @internal
 export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvider {
     constructor();
+}
+
+// @internal
+export class DownloadError extends BentleyError {
+    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @internal
@@ -418,6 +424,11 @@ export class SasUrlExpired extends BentleyError {
 
 // @internal
 export function TokenPrefix(prefix: string): (constructor: any) => void;
+
+// @internal
+export class UploadError extends BentleyError {
+    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+}
 
 // @internal
 export class UrlDiscoveryClient extends Client {

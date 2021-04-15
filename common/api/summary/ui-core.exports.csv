@@ -15,6 +15,7 @@ internal;BetaBadge(props: CommonProps): JSX.Element
 public;BlockText(props: TextProps): JSX.Element
 public;BodyText(props: TextProps): JSX.Element
 beta;BoundsFunctionProp = number | (() => number | undefined)
+deprecated;BoundsFunctionProp = number | (() => number | undefined)
 public;Button 
 public;ButtonProps 
 public;ButtonSize
@@ -155,7 +156,9 @@ public;LoadingSpinner
 public;LoadingSpinnerProps 
 public;LoadingStatus 
 public;LoadingStatusProps 
+public;LocalSettingsStorage 
 beta;LocalUiSettings 
+deprecated;LocalUiSettings 
 public;MainTabsProps 
 internal;mergeRefs
 public;MessageBox 
@@ -178,8 +181,11 @@ beta;NodeCheckboxRenderProps = Omit
 beta;NumberInput: (props: NumberInputProps) => JSX.Element | null
 beta;NumberInputProps 
 beta;NumericInput 
+deprecated;NumericInput 
 internal;NumericInputDefaultProps = Pick
+deprecated;NumericInputDefaultProps = Pick
 beta;NumericInputProps 
+deprecated;NumericInputProps 
 public;Omit
 public;OmitChildrenProp
 beta;OptionsType = Array
@@ -212,8 +218,11 @@ public;RadioProps
 public;RatioChangeResult
 public;ReactMessage
 internal;ReactNumericInput 
+deprecated;ReactNumericInput 
 beta;ReactNumericInputProps 
+deprecated;ReactNumericInputProps 
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
+deprecated;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
 internal;Rectangle 
 public;RectangleProps
 internal;ResizeObserver: ResizeObserverType
@@ -225,14 +234,16 @@ public;SearchBoxProps
 public;Select: (props: SelectProps) => JSX.Element | null
 public;SelectOption
 public;SelectProps 
+public;SessionSettingsStorage 
 beta;SessionUiSettings 
+deprecated;SessionUiSettings 
 beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element
 beta;SettingsContainerProps
 beta;SettingsManager
-beta;SettingsProvider
 beta;SettingsProvidersChangedEvent 
 beta;SettingsProvidersChangedEventArgs
 beta;SettingsTabEntry
+beta;SettingsTabsProvider
 internal;shallowDiffers: (a:
 internal;Size 
 public;SizeProps
@@ -289,10 +300,11 @@ public;TreeNodeProps
 public;TreeProps 
 public;UiCore
 public;UiEvent
-beta;UiSetting
-public;UiSettings
+public;UiSetting
+public;UiSettings = UiSettingsStorage
 public;UiSettingsResult
 public;UiSettingsStatus
+public;UiSettingsStorage
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable

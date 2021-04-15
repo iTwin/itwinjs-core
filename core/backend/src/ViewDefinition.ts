@@ -493,9 +493,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   /** Load this view's CategorySelector from the IModelDb. */
   public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement<CategorySelector>(this.categorySelectorId); }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public abstract get details(): ViewDetails;
 
   /** The Id of the AuxiliaryCoordinateSystem for this ViewDefinition, or an invalid Id if no ACS is defined. */
@@ -561,9 +559,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     return val;
   }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public get details(): ViewDetails3d { return this._details; }
 
   /** Load this view's DisplayStyle3d from the IModelDb. */
@@ -772,9 +768,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     predecessorIds.add(this.baseModelId);
   }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public get details(): ViewDetails { return this._details; }
 
   /** Load this view's DisplayStyle2d from the IModelDb. */

@@ -12,7 +12,9 @@
     "label": {
       "search": "Search",
       "cancel": "Cancel",
-      "settings": "Settings"
+      "settings": "Settings",
+      "filter": "Filter",
+      "selectAll": "Select All"
     }
   },
   "breadcrumb": {

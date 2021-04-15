@@ -14,16 +14,16 @@ import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, P
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
-import {
-  BrowserAuthorizationClientConfiguration, isFrontendAuthorizationClient,
-} from "@bentley/frontend-authorization-client";
+import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcParams, IModelVersion, NativeAppAuthorizationConfiguration, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp,
-  NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOpts,
+  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection,
+  LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
+  WebViewerApp, WebViewerAppOpts,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
@@ -35,12 +35,12 @@ import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
-import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
+import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
 import {
-  ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw, FrameworkReducer,
-  FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
-  IModelAppUiSettings, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager,
-  ToolbarDragInteractionContext, UiFramework, UiSettingsProvider,
+  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw,
+  FrameworkReducer, FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
+  FrontstageManager, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME,
+  ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import { getSupportedRpcs } from "../common/rpcs";
@@ -54,15 +54,13 @@ import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
 import { EditFrontstage } from "./appui/frontstages/editing/EditFrontstage";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
-import { AppSettingsProvider } from "./appui/uiproviders/AppSettingsProvider";
-import { AppUiSettings } from "./AppUiSettings";
+import { AppSettingsTabsProvider } from "./appui/uiproviders/AppSettingsTabsProvider";
 import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Properties Support
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
-import { DeleteElementTool } from "./tools/editing/DeleteElementTool";
-import { MoveElementTool } from "./tools/editing/MoveElementTool";
 import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
 import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
+import { EditingScopeTool } from "./tools/editing/PrimitiveToolEx";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
@@ -73,7 +71,7 @@ import { UiProviderTool } from "./tools/UiProviderTool";
 RpcConfiguration.developmentMode = true;
 
 // cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise mobx hypermodeling testapp urlps
-// cSpell:ignore toggledraginteraction toggleframeworkversion setdraginteraction setframeworkversion
+// cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
 
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
@@ -82,25 +80,17 @@ export enum SampleAppUiActionId {
   setTestProperty = "sampleapp:settestproperty",
   setAnimationViewId = "sampleapp:setAnimationViewId",
   setIsIModelLocal = "sampleapp:setisimodellocal",
-  toggleDragInteraction = "sampleapp:toggledraginteraction",
-  toggleFrameworkVersion = "sampleapp:toggleframeworkversion",
-  setDragInteraction = "sampleapp:setdraginteraction",
-  setFrameworkVersion = "sampleapp:setframeworkversion",
 }
 
 export interface SampleAppState {
   testProperty: string;
   animationViewId: string;
-  dragInteraction: boolean;
-  frameworkVersion: string;
   isIModelLocal: boolean;
 }
 
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
-  dragInteraction: true,
-  frameworkVersion: "1",
   isIModelLocal: false,
 };
 
@@ -109,10 +99,6 @@ export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
   setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
-  toggleDragInteraction: () => createAction(SampleAppUiActionId.toggleDragInteraction),
-  toggleFrameworkVersion: () => createAction(SampleAppUiActionId.toggleFrameworkVersion),
-  setDragInteraction: (dragInteraction: boolean) => createAction(SampleAppUiActionId.setDragInteraction, dragInteraction),
-  setFrameworkVersion: (frameworkVersion: string) => createAction(SampleAppUiActionId.setFrameworkVersion, frameworkVersion),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -147,18 +133,6 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     case SampleAppUiActionId.setIsIModelLocal: {
       return { ...state, isIModelLocal: action.payload };
     }
-    case SampleAppUiActionId.toggleDragInteraction: {
-      return { ...state, dragInteraction: !state.dragInteraction };
-    }
-    case SampleAppUiActionId.toggleFrameworkVersion: {
-      return { ...state, frameworkVersion: state.frameworkVersion === "1" ? "2" : "1" };
-    }
-    case SampleAppUiActionId.setDragInteraction: {
-      return { ...state, dragInteraction: action.payload };
-    }
-    case SampleAppUiActionId.setFrameworkVersion: {
-      return { ...state, frameworkVersion: action.payload };
-    }
   }
   return state;
 }
@@ -180,7 +154,8 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
-  private static _appUiSettings = new AppUiSettings();
+  private static _localUiSettings = new LocalSettingsStorage();
+  private static _UserUiSettingsStorage = new UserSettingsStorage();
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
@@ -189,16 +164,13 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
-  public static get uiSettings(): UiSettings {
-    return UiFramework.getUiSettings();
+  public static getUiSettingsStorage(): UiSettings {
+    const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
+      return SampleAppIModelApp._localUiSettings;
+    }
+    return SampleAppIModelApp._UserUiSettingsStorage;
   }
-
-  public static set uiSettings(v: UiSettings) {
-    UiFramework.setUiSettings(v);
-    SampleAppIModelApp._appUiSettings.apply(v);  // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
-
-  public static get appUiSettings(): AppUiSettings { return SampleAppIModelApp._appUiSettings; }
 
   public static async startup(opts: WebViewerAppOpts & NativeAppOpts): Promise<void> {
     if (ProcessDetector.isElectronAppFrontend) {
@@ -257,10 +229,9 @@ export class SampleAppIModelApp {
 
     // Register editing tools
     if (this.allowWrite) {
-      MoveElementTool.register(this.sampleAppNamespace);
-      DeleteElementTool.register(this.sampleAppNamespace);
-      PlaceLineStringTool.register(this.sampleAppNamespace);
+      EditingScopeTool.register(this.sampleAppNamespace);
       PlaceBlockTool.register(this.sampleAppNamespace);
+      PlaceLineStringTool.register(this.sampleAppNamespace);
     }
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
@@ -271,6 +242,8 @@ export class SampleAppIModelApp {
 
     await MarkupApp.initialize();
     await FrontendDevTools.initialize();
+    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true });
+
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
 
@@ -284,7 +257,23 @@ export class SampleAppIModelApp {
     // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
     await MapLayersUI.initialize(false); // if false then add widget in FrontstageDef
 
-    AppSettingsProvider.initializeAppSettingProvider();
+    AppSettingsTabsProvider.initializeAppSettingProvider();
+
+    // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
+    const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
+    const defaults = {
+      colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
+      dragInteraction: false,
+      frameworkVersion: "2",
+      widgetOpacity: 0.8,
+    };
+
+    // initialize any settings providers that may need to have defaults set by iModelApp
+    UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+
+    // go ahead and initialize settings before login or in case login is by-passed
+    await UiFramework.setUiSettingsStorage(SampleAppIModelApp.getUiSettingsStorage());
+
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
   }
@@ -520,7 +509,7 @@ export class SampleAppIModelApp {
   }
 
   public static getUiFrameworkProperty(): string {
-    return SampleAppIModelApp.store.getState().sampleAppState.frameworkVersion;
+    return SampleAppIModelApp.store.getState().frameworkState.configurableUiState.frameworkVersion;
   }
 
   public static saveAnimationViewId(value: string, immediateSync = false) {
@@ -564,17 +553,17 @@ function AppFrameworkVersionComponent(props: { frameworkVersion: string, childre
 }
 
 function mapDragInteractionStateToProps(state: RootState) {
-  return { dragInteraction: state.sampleAppState.dragInteraction };
+  return { dragInteraction: state.frameworkState.configurableUiState.useDragInteraction };
 }
 
 function mapFrameworkVersionStateToProps(state: RootState) {
-  return { frameworkVersion: state.sampleAppState.frameworkVersion };
+  return { frameworkVersion: state.frameworkState.configurableUiState.frameworkVersion };
 }
 
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
-class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSettings: UiSettings }> {
+class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSettingsStorage: UiSettings }> {
   constructor(props: any) {
     super(props);
 
@@ -585,7 +574,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
     this.state = {
       authorized,
-      uiSettings: this.getUiSettings(authorized),
+      uiSettingsStorage: SampleAppIModelApp.getUiSettingsStorage(),
     };
   }
 
@@ -593,21 +582,13 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
 
-  private _onUserStateChanged = (_accessToken: AccessToken | undefined) => {
+  private _onUserStateChanged = async (_accessToken: AccessToken | undefined) => {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-    this.setState({ authorized, uiSettings: this.getUiSettings(authorized) });
+    const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
+    await UiFramework.setUiSettingsStorage(uiSettingsStorage);
+    this.setState({ authorized, uiSettingsStorage });
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
-
-  private getUiSettings(authorized: boolean): UiSettings {
-    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
-      SampleAppIModelApp.uiSettings = new LocalUiSettings();
-    } else {
-      SampleAppIModelApp.uiSettings = new IModelAppUiSettings();
-    }
-
-    return SampleAppIModelApp.uiSettings;
-  }
 
   private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage exit: id=${args.deactivatedFrontstageDef.id} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
@@ -642,7 +623,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
               <AppDragInteraction>
                 <AppFrameworkVersion>
                   {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                  <UiSettingsProvider uiSettings={this.state.uiSettings}>
+                  <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
                     <ConfigurableUiContent
                       appBackstage={<AppBackstageComposer />}
                     />
@@ -663,37 +644,18 @@ window.addEventListener("beforeunload", async () => { // eslint-disable-line @ty
   await SampleAppIModelApp.closeCurrentIModel();
 });
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | NativeAppAuthorizationConfiguration {
-  let redirectUri = "http://localhost:3000/signin-callback";
-  if (ProcessDetector.isMobileAppFrontend) {
-    redirectUri = "imodeljs://app/signin-callback";
-  }
-  const baseOidcScopes = [
-    "openid",
-    "email",
-    "profile",
-    "organization",
-    "imodelhub",
-    "context-registry-service:read-only",
-    "product-settings-service",
-    "projectwise-share",
-    "urlps-third-party",
-    "imodel-extension-service-api",
-  ];
-
-  return ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend
-    ? {
-      clientId: "imodeljs-electron-test",
-      redirectUri,
-      scope: baseOidcScopes.concat(["offline_access"]).join(" "),
-    }
-    : {
-      clientId: "imodeljs-spa-test",
-      redirectUri,
-      scope: baseOidcScopes.concat("imodeljs-router").join(" "),
-      responseType: "code",
-    };
-}
+const baseOidcScopes = [
+  "openid",
+  "email",
+  "profile",
+  "organization",
+  "imodelhub",
+  "context-registry-service:read-only",
+  "product-settings-service",
+  "projectwise-share",
+  "urlps-third-party",
+  "imodel-extension-service-api",
+];
 
 // main entry point.
 async function main() {
@@ -728,7 +690,6 @@ async function main() {
     rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
   }
 
-  const authConfig = getOidcConfiguration();
   const opts: WebViewerAppOpts & NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
@@ -742,10 +703,19 @@ async function main() {
     },
     webViewerApp: {
       rpcParams,
-      authConfig,
+      authConfig: {
+        clientId: "imodeljs-spa-test",
+        redirectUri: "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.concat("imodeljs-router").join(" "),
+        responseType: "code",
+      },
     },
     nativeApp: {
-      authConfig,
+      authConfig: {
+        clientId: "imodeljs-electron-test",
+        redirectUri: ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.concat(["offline_access"]).join(" "),
+      },
     },
   };
 
@@ -759,7 +729,6 @@ async function main() {
     IModelApp.telemetry.addClient(applicationInsightsClient);
   }
 
-  // wait for both our i18n namespaces to be read.
   await SampleAppIModelApp.initialize();
 
   // register new QuantityType

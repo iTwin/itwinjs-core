@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="MetricUnits" alias="MU" version="01.00.05" description="Subset of Unit definitions for Metric UnitSystem" displayLabel="Units" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="SIUnits" version="01.00.05" alias="SIU"/>
+    <UnitSystem typeName="METRIC" />
+
+    <Unit typeName="MM" phenomenon="SIU:LENGTH" unitSystem="METRIC" definition="[SIUnits:MILLI]*SIUnits:M" displayLabel="mm" />
+    <Unit typeName="CM" phenomenon="SIU:LENGTH" unitSystem="METRIC" definition="[SIUnits:CENTI]*SIUnits:M" displayLabel="cm" />
+    <Unit typeName="DM" phenomenon="SIU:LENGTH" unitSystem="METRIC" definition="[SIUnits:DECI]*SIUnits:M" displayLabel="dm" />
+    <Unit typeName="KM" phenomenon="SIU:LENGTH" unitSystem="METRIC" definition="[SIU:KILO]*SIUnits:M" displayLabel="km" />
+    <Unit typeName="UM" phenomenon="SIU:LENGTH" unitSystem="METRIC" definition="[SIU:MICRO]*SIUnits:M" displayLabel="µm" />
+
+    <Unit typeName="SQ_UM" phenomenon="SIU:AREA" unitSystem="METRIC" definition="MetricUnits:UM(2)" displayLabel="um²" />
+    <Unit typeName="SQ_MM" phenomenon="SIU:AREA" unitSystem="METRIC" definition="MU:MM(2)" displayLabel="mm²" />
+    <Unit typeName="SQ_CM" phenomenon="SIU:AREA" unitSystem="METRIC" definition="CM(2)" displayLabel="cm²" />
+    <Unit typeName="SQ_DM" phenomenon="SIU:AREA" unitSystem="METRIC" definition="DM(2)" displayLabel="dm²" />
+    <Unit typeName="SQ_KM" phenomenon="SIU:AREA" unitSystem="METRIC" definition="KM(2)" displayLabel="km²" />
+    <Unit typeName="ARE" phenomenon="SIU:AREA" unitSystem="METRIC" definition="[SIU:HECTO]*SIUnits:M(2)" displayLabel="are" />
+
+    <Unit typeName="CM_PER_M" phenomenon="SIU:SLOPE" unitSystem="METRIC" definition="MetricUnits:CM*SIU:M(-1)" displayLabel="cm/m" />
+    <Unit typeName="MM_PER_M" phenomenon="SIU:SLOPE" unitSystem="METRIC" definition="MU:MM*SIU:M(-1)" displayLabel="mm/m" />
+    <Unit typeName="M_PER_KM" phenomenon="SIU:SLOPE" unitSystem="METRIC" definition="SIU:M*KM(-1)" displayLabel="m/km" />
+
+    <Unit typeName="CELSIUS" phenomenon="SIU:TEMPERATURE" unitSystem="METRIC" definition="SIU:K" offset="273.15" displayLabel="°C" />
+</ECSchema>

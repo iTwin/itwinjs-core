@@ -6,5 +6,4 @@ beta;BrowserAuthorizationClient
 beta;BrowserAuthorizationClientConfiguration
 beta;FrontendAuthorizationClient 
 beta;isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient
-internal;Ntlm
 beta;OidcCallbackResponseMode

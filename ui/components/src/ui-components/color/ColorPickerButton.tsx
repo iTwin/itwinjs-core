@@ -63,14 +63,9 @@ const ForwardRefColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPic
     const refs = useRefs(target, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
     const [showPopup, setShowPopup] = React.useState(false);
     const [colorDef, setColorDef] = React.useState(initialColor);
-    const initialColorRef = React.useRef(initialColor);
 
     // See if new initialColor props have changed since component mounted
     React.useEffect(() => {
-      // istanbul ignore else
-      if (initialColor !== initialColorRef.current) {
-        initialColorRef.current = initialColor;
-      }
       setColorDef(initialColor);
     }, [initialColor]);
 

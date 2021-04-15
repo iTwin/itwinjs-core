@@ -13,7 +13,7 @@ import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionLocationProps, SectionType,
+  Placement3d, RelatedElement, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -188,9 +188,26 @@ export class Element extends Entity implements ElementProps {
    */
   protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
 
-  /** @beta */
+  /** Called when a *root* element in a subgraph is changed and before its outputs are processed.
+   * This special callback is made when:
+   * * the element is part of an [[ElementDrivesElement]] graph, and
+   * * the element has no inputs, and
+   * * none of the element's outputs have been processed.
+   * @see [[ElementDrivesElement]] for more on element dependency graphs.
+   * @beta
+   */
   protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
-  /** @beta */
+
+  /** Called on an element in a graph after all of its inputs have been processed and before its outputs are processed.
+   * This callback is made when:
+   * * the specified element is part of an [[ElementDrivesElement]] graph, and
+   * * there was a direct change to some element upstream in the dependency graph.
+   * * all upstream elements in the graph have been processed.
+   * * none of the downstream elements have been processed.
+   * This method is not called if none of the element's inputs were changed.
+   * @see [[ElementDrivesElement]] for more on element dependency graphs.
+   * @beta
+   */
   protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
   /** Save this Element's properties to an object for serializing to JSON.
@@ -510,33 +527,6 @@ export class VolumeElement extends SpatialLocationElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** A SectionLocation element defines how a section drawing should be generated in a 3d view.
- * @note The associated ECClass was added to the BisCore schema in version 1.0.6
- * @alpha
- * @deprecated use [[SectionDrawingLocation]].
- */
-export class SectionLocation extends SpatialLocationElement implements SectionLocationProps { // eslint-disable-line deprecation/deprecation
-  /** Section type */
-  public sectionType: SectionType;
-
-  /** @internal */
-  public static get className(): string { return "SectionLocation"; }
-
-  /** @internal */
-  public constructor(props: SectionLocationProps, iModel: IModelDb) { // eslint-disable-line deprecation/deprecation
-    super(props, iModel);
-    this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
-  }
-
-  /** @internal */
-  public toJSON(): SectionLocationProps { // eslint-disable-line deprecation/deprecation
-    return {
-      ...super.toJSON(),
-      sectionType: this.sectionType,
-    };
-  }
-}
-
 /** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]].
  * @note The associated ECClass was added to the BisCore schema in version 1.0.11.
  * @beta
@@ -605,6 +595,10 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   public description?: string;
   /** @internal */
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
+  /** @internal */
+  public toJSON(): SubjectProps { // This override only specializes the return type
+    return super.toJSON() as SubjectProps; // Entity.toJSON takes care of auto-handled properties
+  }
   /** Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
    * @param iModelDb The IModelDb
    * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child Subjects.
@@ -1286,12 +1280,13 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
   }
 }
 
-/** An information element that links to an embedded file.
- * @public
+/** Represents a folder-like structure that organizes repositories (typically files) in an external system.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @alpha
  */
-export class EmbeddedFileLink extends LinkElement {
+export class FolderLink extends UrlLink {
   /** @internal */
-  public static get className(): string { return "EmbeddedFileLink"; }
+  public static get className(): string { return "FolderLink"; }
 }
 
 /** An information element that links to a repository.
@@ -1301,19 +1296,31 @@ export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
   /** @internal */
   public static get className(): string { return "RepositoryLink"; }
   public repositoryGuid?: GuidString;
+  /** @note This property was added to the BisCore schema in version 1.0.13 */
+  public format?: string;
 
   /** @internal */
   public constructor(props: RepositoryLinkProps, iModel: IModelDb) {
     super(props, iModel);
     this.repositoryGuid = props.repositoryGuid;
+    this.format = props.format;
   }
 
   /** @internal */
   public toJSON(): RepositoryLinkProps {
     const val = super.toJSON() as RepositoryLinkProps;
     val.repositoryGuid = this.repositoryGuid;
+    val.format = this.format;
     return val;
   }
+}
+
+/** An information element that links to an embedded file.
+ * @public
+ */
+export class EmbeddedFileLink extends LinkElement {
+  /** @internal */
+  public static get className(): string { return "EmbeddedFileLink"; }
 }
 
 /** A real world entity is modeled as a Role Element when a set of external circumstances define an important

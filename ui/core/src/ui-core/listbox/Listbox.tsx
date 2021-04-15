@@ -115,21 +115,16 @@ function processKeyboardNavigation(optionValues: ListboxItemProps[], itemIndex: 
 export function Listbox(props: ListboxProps) {
   const { ariaLabel, ariaLabelledBy, id, children, selectedValue, className, onListboxValueChange, onKeyPress, ...otherProps } = props;
   const listRef = React.useRef<HTMLUListElement>(null);
-  const [listId] = React.useState(id ?? Guid.createValue());
+  const [listId] = React.useState(()=>{return id ?? Guid.createValue();});
   const optionValues = React.useMemo(() => getOptionValueArray(children), [children]);
   const classes = React.useMemo(() => classnames("core-listbox", className), [className]);
   const [currentValue, setCurrentValue] = React.useState<ListboxValue | undefined>(selectedValue);
   const [focusValue, setFocusValue] = React.useState<ListboxValue | undefined>(currentValue);
-  const initialSelectedValueRef = React.useRef(selectedValue);
 
   React.useEffect(() => {
-    // istanbul ignore else
-    if (initialSelectedValueRef.current !== selectedValue) {
-      initialSelectedValueRef.current = selectedValue;
-      setCurrentValue(selectedValue);
-      setFocusValue(selectedValue);
-    }
-  }, [currentValue, selectedValue]);
+    setCurrentValue(selectedValue);
+    setFocusValue(selectedValue);
+  }, [selectedValue]);
 
   const scrollTopRef = React.useRef(0);
   const handleValueChange = React.useCallback((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => {

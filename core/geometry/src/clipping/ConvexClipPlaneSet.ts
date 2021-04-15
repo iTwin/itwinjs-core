@@ -172,7 +172,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
       perp.z = 0.0;
 
       if (!leftIsInside)
-        perp.negate();
+        perp.scaleInPlace(-1.0);
 
       const perpNormalized = perp.normalize();
       if (perpNormalized) {

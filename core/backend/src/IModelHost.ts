@@ -30,10 +30,8 @@ import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, 
 import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
-import { IElementEditor } from "./ElementEditor";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
@@ -247,11 +245,6 @@ export class IModelHost {
   /** Root of the directory holding all the files that iModel.js caches */
   public static get cacheDir(): string { return this._cacheDir; }
 
-  /** Active element editors. Each editor is identified by a GUID.
-   * @internal
-   */
-  public static elementEditors = new Map<GuidString, IElementEditor>();
-
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
 
@@ -264,10 +257,6 @@ export class IModelHost {
   /** @internal */
   public static async getAuthorizedContext() {
     return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, this.applicationId, this.applicationVersion, this.sessionId);
-  }
-
-  private static get _isNativePlatformLoaded(): boolean {
-    return this._platform !== undefined;
   }
 
   /** @internal */
@@ -379,8 +368,8 @@ export class IModelHost {
     this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
 
-    const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
-    if (!this._isNativePlatformLoaded) {
+    if (this._platform === undefined) {
+      const region = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
       try {
         this.loadNative(region, configuration.applicationType, configuration.imodelClient);
       } catch (error) {
@@ -389,8 +378,8 @@ export class IModelHost {
       }
     }
 
-    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
-      this._platform.setCrashReporting(configuration.crashReportingConfig);
+    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
+      this.platform.setCrashReporting(configuration.crashReportingConfig);
 
       Logger.logTrace(loggerCategory, "Configured crash reporting", () => ({
         enableCrashDumps: configuration.crashReportingConfig?.enableCrashDumps,
@@ -426,7 +415,6 @@ export class IModelHost {
       SnapshotIModelRpcImpl,
       WipRpcImpl,
       DevToolsRpcImpl,
-      Editor3dRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 
     [
@@ -438,9 +426,7 @@ export class IModelHost {
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
 
-    if (undefined !== this._platform) {
-      this._platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
-    }
+    this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
 
     const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
     const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
@@ -456,6 +442,7 @@ export class IModelHost {
 
     UsageLoggingUtilities.configure({ hostApplicationId: IModelHost.applicationId, hostApplicationVersion: IModelHost.applicationVersion, clientAuthManager: this._clientAuthIntrospectionManager });
     process.once("beforeExit", IModelHost.shutdown);
+    IModelHost.onAfterStartup.raiseEvent();
   }
 
   private static _briefcaseCacheDir: string;
@@ -495,10 +482,11 @@ export class IModelHost {
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
-    if (!this._isValid)
+    // NB: This method is set as a node listener where `this` is unbound
+    if (!IModelHost._isValid)
       return;
 
-    this._isValid = false;
+    IModelHost._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;

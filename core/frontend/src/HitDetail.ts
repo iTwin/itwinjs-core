@@ -213,7 +213,7 @@ export class SnapDetail extends HitDetail {
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
   public getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
-  /** Return true if the pick point was closer than [SnapRequestProps.snapAperture]($common) from the generated snap point. */
+  /** Return true if the pick point was closer than the snap aperture from the generated snap point. */
   public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }

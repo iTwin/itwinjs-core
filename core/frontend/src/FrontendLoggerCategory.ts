@@ -32,15 +32,6 @@ export enum FrontendLoggerCategory {
   /** The logger category used for NativeApp */
   NativeApp = "imodeljs-frontend.NativeApp",
 
-  /** The logger category used by feature-flag-related functions */
-  FeatureToggle = "imodeljs-frontend.FeatureToggles",
-
-  /**
-   * The logger category used by EditorConnection functions
-   * @alpha
-   */
-  EditorConnection = "imodeljs-frontend.EditorConnection",
-
   /**
    * The logger category used by FeatureTrackingManager
    * @alpha

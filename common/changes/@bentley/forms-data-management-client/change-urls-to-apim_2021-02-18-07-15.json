@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/forms-data-management-client",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/forms-data-management-client",
+  "email": "laurynasr@users.noreply.github.com"
+}

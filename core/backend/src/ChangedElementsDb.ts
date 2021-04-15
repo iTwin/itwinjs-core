@@ -7,7 +7,7 @@
  */
 
 import * as path from "path";
-import { DbResult, GuidString, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -144,7 +144,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed elements between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangedElements(startChangesetId: GuidString, endChangesetId: GuidString): ChangedElements | undefined {
+  public getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined {
     const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error || !result.result)
       throw new IModelError(result.error ? result.error.status : -1, result.error ? result.error.message : "Problem getting changed elements");
@@ -157,7 +157,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed models between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangedModels(startChangesetId: GuidString, endChangesetId: GuidString): ChangedModels | undefined {
+  public getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined {
     const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error || !result.result)
       throw new IModelError(result.error ? result.error.status : -1, result.error ? result.error.message : "Problem getting changed models");
@@ -170,7 +170,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed models between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangeData(startChangesetId: GuidString, endChangesetId: GuidString): ChangeData | undefined {
+  public getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined {
     const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error)
       throw new IModelError(result.error.status, result.error.message);
@@ -181,7 +181,7 @@ export class ChangedElementsDb implements IDisposable {
   public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Returns true if the cache already contains this changeset Id */
-  public isProcessed(changesetId: GuidString): boolean { return this.nativeDb.isProcessed(changesetId); }
+  public isProcessed(changesetId: string): boolean { return this.nativeDb.isProcessed(changesetId); }
 
   /** Close the Db after saving any uncommitted changes.
    * @throws [IModelError]($common) if the database is not open.

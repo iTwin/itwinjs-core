@@ -7,6 +7,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@azure-tools/azcopy-node",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@azure/storage-blob",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -21,6 +25,10 @@
     {
       "name": "@bentley/backend-itwin-client",
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@bentley/backend-webpack-tools",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/bentleyjs-core",
@@ -48,7 +56,15 @@
     },
     {
       "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
+    },
+    {
+      "name": "@bentley/ecschema-rpcinterface-common",
+      "allowedCategories": [ "backend", "common", "integration-testing" ]
+    },
+    {
+      "name": "@bentley/ecschema-rpcinterface-impl",
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/electron-manager",
@@ -239,6 +255,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@bentley/units-schema",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "@bentley/usage-logging-client",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -291,6 +311,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "almost-equal",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "applicationinsights",
       "allowedCategories": [ "backend" ]
     },
@@ -313,6 +337,10 @@
     {
       "name": "babel-preset-react-app",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "benchmark",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "body-parser",
@@ -571,6 +599,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "i18next-node-fs-backend",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "i18next-xhr-backend",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -625,10 +657,6 @@
     {
       "name": "jsonwebtoken",
       "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "ldclient-js",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "linkify-it",
@@ -984,7 +1012,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tsconfig-paths",

@@ -83,11 +83,16 @@ export class AttributeMap {
       ["a_pos", 0, VariableType.Vec3],
       ["a_color", 1, VariableType.Vec3],
     ]);
-    const terrainMesh = new AttributeMapEntry([
+    const realityMesh = new AttributeMapEntry([
       ["a_pos", 0, VariableType.Vec3],
       ["a_norm", 1, VariableType.Vec2],
       ["a_uvParam", 2, VariableType.Vec2],
     ]);
+    const planarGrid = new AttributeMapEntry([
+      ["a_pos", 0, VariableType.Vec3],
+      ["a_uvParam", 1, VariableType.Vec2],
+    ]);
+
     const screenPoints = new AttributeMapEntry([
       ["a_pos", 0, VariableType.Vec2],
     ]);
@@ -101,7 +106,8 @@ export class AttributeMap {
       [TechniqueId.SilhouetteEdge, silhouette],
       [TechniqueId.PointCloud, pointCloud],
       [TechniqueId.VolClassCopyZ, screenPoints],
-      [TechniqueId.TerrainMesh, terrainMesh],
+      [TechniqueId.RealityMesh, realityMesh],
+      [TechniqueId.PlanarGrid, planarGrid],
     ]);
   }
 

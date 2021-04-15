@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Widget
@@ -17,7 +17,7 @@ import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 /** Properties for the [[BackstageAppButton]] React component
- * @beta
+ * @public
  */
 export interface BackstageAppButtonProps {
   /** Icon specification for the App button */
@@ -26,7 +26,7 @@ export interface BackstageAppButtonProps {
 
 /**
  * BackstageAppButton used to toggle display of Backstage.
- * @beta
+ * @public
  */
 export function BackstageAppButton(props: BackstageAppButtonProps) {
   const backstageLabel = React.useRef(UiFramework.translate("buttons.openBackstageMenu"));
@@ -69,7 +69,7 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
 }
 
 /** Properties for the [[ToolbarComposer]] React components
- * @beta
+ * @public
  */
 export interface ToolWidgetComposerProps extends CommonProps {
   /** Optional Corner Item which for most stages is the [[BackstageAppButton]] used to toggle the display of the backstage menu. */
@@ -84,7 +84,7 @@ export interface ToolWidgetComposerProps extends CommonProps {
  * ToolWidget component that supports use of ToolbarComposer-based Toolbars. The ToolWidget is shown in the top left of the content area
  * and typically holds tools to manipulate or interrogate content. The horizontal toolbar often includes context specific tools based on
  * selected items. The vertical toolbar typically contains a more fixed list of tools.
- * @beta
+ * @public
  */
 export function ToolWidgetComposer(props: ToolWidgetComposerProps) {
   const { cornerItem, horizontalToolbar, verticalToolbar, ...otherProps } = props;

@@ -5,9 +5,11 @@
 
 import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
-import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, NativeAppAuthorizationConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
+import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationBackend } from "../MobileBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 
@@ -77,6 +79,10 @@ class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
 export interface MobileHostOpts extends NativeHostOpts {
   mobileHost?: {
     device?: MobileDevice;
+    /** list of RPC interface definitions to register */
+    rpcInterfaces?: RpcInterfaceDefinition[];
+    /** Authorization configuration */
+    authConfig?: NativeAppAuthorizationConfiguration;
   };
 }
 
@@ -145,6 +151,15 @@ export class MobileHost {
     await NativeHost.startup(opt);
     if (IpcHost.isValid)
       MobileAppHandler.register();
-    IModelHost.authorizationClient = new MobileAuthorizationBackend();
+    IModelHost.authorizationClient = new MobileAuthorizationBackend(opt?.mobileHost?.authConfig);
+
+    const rpcInterfaces = opt?.mobileHost?.rpcInterfaces ?? [
+      IModelReadRpcInterface,
+      IModelTileRpcInterface,
+      SnapshotIModelRpcInterface,
+      PresentationRpcInterface,
+    ];
+
+    MobileRpcManager.initializeImpl(rpcInterfaces);
   }
 }

@@ -13,14 +13,14 @@ import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 
 /** Describes a rectangular area of the earth using cartographic data structures.
- * @alpha
+ * @public
  */
 export interface GlobalLocationArea { southwest: Cartographic, northeast: Cartographic }
 
 /** Describes a location on the earth using cartographic data structures.
  * The viewed area of the location can be optionally specified.
  * The center of the location is specified with the center position.
- * @alpha
+ * @public
  */
 export interface GlobalLocation { center: Cartographic, area?: GlobalLocationArea }
 
@@ -55,8 +55,8 @@ export function metersToRange(inputMeters: number, minimumOutput: number = 500, 
   return output;
 }
 
-/** Queries the actual elevation of a cartographic point on the globe.
- * @internal
+/** Queries the actual elevation of a cartographic point on the globe (using Bing elevation services)
+ * @public
  */
 export async function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number> {
   const bingElevationProvider = new BingElevationProvider();

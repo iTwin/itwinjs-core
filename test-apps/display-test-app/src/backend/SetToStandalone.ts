@@ -40,7 +40,7 @@ async function setToStandalone() {
     nativeDb.deleteAllTxns();
   }
 
-  nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+  nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
   nativeDb.saveChanges();
   nativeDb.closeIModel();
 

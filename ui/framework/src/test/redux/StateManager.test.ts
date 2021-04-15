@@ -5,8 +5,10 @@
 
 import { expect } from "chai";
 import { UiError } from "@bentley/ui-abstract";
-import { ActionCreatorsObject, ActionsUnion, createAction, FrameworkReducer, ReducerRegistryInstance } from "../../ui-framework";
+import { ActionCreatorsObject, ActionsUnion, createAction, FrameworkReducer, ReducerRegistryInstance, SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../../ui-framework";
 import { StateManager } from "../../ui-framework/redux/StateManager";
+import { ConfigurableUiActions, ConfigurableUiReducer, ConfigurableUiState } from "../../ui-framework/configurableui/state";
+import { SnapMode } from "@bentley/imodeljs-frontend";
 
 // Fake state for the host app
 interface IAppState {
@@ -178,4 +180,36 @@ describe("StateManager", () => {
     expect(currentState.hasOwnProperty("extension_state")).to.be.true;
   });
 
+});
+
+describe("ConfigurableUiReducer", () => {
+  it("should process actions", () => {
+    // exercise the ConfigurableUiActions
+    const initialState: ConfigurableUiState = {
+      snapMode: SnapMode.NearestKeypoint as number,
+      toolPrompt: "",
+      theme: SYSTEM_PREFERRED_COLOR_THEME,
+      widgetOpacity: WIDGET_OPACITY_DEFAULT,
+      useDragInteraction: false,
+      frameworkVersion: "2",
+    };
+
+    let outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setDragInteraction(true));
+    expect(outState.useDragInteraction).to.be.true;
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setToolPrompt("Hello-From-Tool"));
+    expect(outState.toolPrompt).to.be.eql("Hello-From-Tool");
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setTheme("dark"));
+    expect(outState.theme).to.be.eql("dark");
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setWidgetOpacity(.75));
+    expect(outState.widgetOpacity).to.be.eql(.75);
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setSnapMode(SnapMode.Center));
+    expect(outState.snapMode).to.be.eql(SnapMode.Center);
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setFrameworkVersion("1"));
+    expect(outState.frameworkVersion).to.be.eql("1");
+  });
 });

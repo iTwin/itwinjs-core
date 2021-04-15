@@ -395,10 +395,10 @@ describe("BriefcaseManager (#integration)", () => {
   it("should set appropriate briefcase ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
     const args = { requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, deleteFirst: true };
     const iModel1 = await IModelTestUtils.openCheckpointUsingRpc(args);
-    assert.equal(BriefcaseIdValue.Standalone, iModel1.nativeDb.getBriefcaseId(), "checkpoint should be 0");
+    assert.equal(BriefcaseIdValue.Unassigned, iModel1.nativeDb.getBriefcaseId(), "checkpoint should be 0");
 
     const iModel2 = await IModelTestUtils.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
-    assert.equal(BriefcaseIdValue.Standalone, iModel2.briefcaseId, "pullOnly should be 0");
+    assert.equal(BriefcaseIdValue.Unassigned, iModel2.briefcaseId, "pullOnly should be 0");
 
     const iModel3 = await IModelTestUtils.openBriefcaseUsingRpc(args);
     assert.isTrue(iModel3.briefcaseId >= BriefcaseIdValue.FirstValid && iModel3.briefcaseId <= BriefcaseIdValue.LastValid, "valid briefcaseId");
@@ -631,7 +631,7 @@ describe("BriefcaseManager (#integration)", () => {
     requestContext.enter();
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-    assert.isTrue(numProgressCalls > 19000);
+    assert(numProgressCalls > 200);
   });
 
   it("Should be able to cancel an in progress download (#integration)", async () => {

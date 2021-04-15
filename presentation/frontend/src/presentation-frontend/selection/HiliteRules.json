@@ -149,6 +149,7 @@
     {
       "ruleType": "Content",
       "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Element\", \"BisCore\")",
+      "priority": 0,
       "onlyIfNotHandled": true,
       "specifications": [
         {

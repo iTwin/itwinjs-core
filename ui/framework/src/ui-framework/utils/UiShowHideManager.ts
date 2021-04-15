@@ -6,7 +6,50 @@
  * @module Utilities
  */
 
-import { UiFramework } from "../UiFramework";
+import { UiSettings, UiSettingsStatus } from "@bentley/ui-core";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework, UserSettingsProvider } from "../UiFramework";
+
+/** Class that maintain UiShowHide user settings between sessions
+ * @internal
+ */
+export class UiShowHideSettingsProvider implements UserSettingsProvider {
+  private static _settingsNamespace = "AppUiSettings";
+  private static _autoHideUiKey = "AutoHideUi";
+  private static _useProximityOpacityKey = "UseProximityOpacity";
+  private static _snapWidgetOpacityKey = "SnapWidgetOpacity";
+  public readonly providerId = "UiShowHideSettingsProvider";
+
+  public static initialize() {
+    UiFramework.registerUserSettingsProvider(new UiShowHideSettingsProvider());
+  }
+
+  public async loadUserSettings(storage: UiSettings): Promise<void> {
+    let result = await storage.getSetting (UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._autoHideUiKey);
+    if (result.status === UiSettingsStatus.Success)
+      UiShowHideManager.setAutoHideUi (result.setting);
+
+    result = await storage.getSetting (UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._useProximityOpacityKey);
+    if (result.status === UiSettingsStatus.Success)
+      UiShowHideManager.setUseProximityOpacity (result.setting);
+
+    result = await storage.getSetting (UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._snapWidgetOpacityKey);
+    if (result.status === UiSettingsStatus.Success)
+      UiShowHideManager.setSnapWidgetOpacity (result.setting);
+  }
+
+  public static async storeAutoHideUi(v: boolean, storage?: UiSettings) {
+    void (storage??UiFramework.getUiSettingsStorage()).saveSetting (this._settingsNamespace, this._autoHideUiKey, v);
+  }
+
+  public static async storeUseProximityOpacity(v: boolean, storage?: UiSettings) {
+    void (storage??UiFramework.getUiSettingsStorage()).saveSetting (this._settingsNamespace, this._useProximityOpacityKey, v);
+  }
+
+  public static async storeSnapWidgetOpacity(v: boolean, storage?: UiSettings) {
+    void (storage??UiFramework.getUiSettingsStorage()).saveSetting (this._settingsNamespace, this._snapWidgetOpacityKey, v);
+  }
+}
 
 /** The default inactivity time.
  * @internal
@@ -34,16 +77,33 @@ export class UiShowHideManager {
     UiShowHideManager._isUiVisible = visible;
   }
 
+  /** @internal */
+  public static setAutoHideUi(value: boolean) {
+    UiShowHideManager._autoHideUi = value;
+  }
+
+  /** @internal */
+  public static setUseProximityOpacity(value: boolean) {
+    UiShowHideManager._useProximityOpacity = value;
+  }
+
+  /** @internal */
+  public static setSnapWidgetOpacity(value: boolean) {
+    UiShowHideManager._snapWidgetOpacity = value;
+  }
+
   /** Determines whether the `auto-hide Ui` feature is on. Defaults to false.
    * When true, the Ui automatically hides after a few seconds of inactivity.
    */
   public static get autoHideUi(): boolean {
     return UiShowHideManager._autoHideUi;
   }
-  public static set autoHideUi(autoHide: boolean) {
-    UiShowHideManager._autoHideUi = autoHide;
-  }
 
+  public static set autoHideUi(autoHide: boolean) {
+    void UiShowHideSettingsProvider.storeAutoHideUi (autoHide);
+    UiShowHideManager._autoHideUi = autoHide;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
+  }
   /** Determines whether the widget panels are shown and hidden. Defaults to false. */
   public static get showHidePanels(): boolean {
     return UiShowHideManager._showHidePanels;
@@ -76,6 +136,8 @@ export class UiShowHideManager {
   }
   public static set useProximityOpacity(value: boolean) {
     UiShowHideManager._useProximityOpacity = value;
+    void UiShowHideSettingsProvider.storeUseProximityOpacity(value);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
     UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
   }
 
@@ -85,6 +147,8 @@ export class UiShowHideManager {
   }
   public static set snapWidgetOpacity(value: boolean) {
     UiShowHideManager._snapWidgetOpacity = value;
+    void UiShowHideSettingsProvider.storeSnapWidgetOpacity(value);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
     UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
   }
 

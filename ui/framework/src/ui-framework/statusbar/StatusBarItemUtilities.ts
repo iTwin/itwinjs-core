@@ -11,7 +11,7 @@ import { StatusBarSection } from "@bentley/ui-abstract";
 import { StatusBarItem } from "./StatusBarItem";
 
 /** Utility methods for creating and maintaining StatusBar items.
- * @beta
+ * @public
  */
 export class StatusBarItemUtilities {
 

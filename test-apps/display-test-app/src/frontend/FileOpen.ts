@@ -16,6 +16,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
   if (ProcessDetector.isElectronAppFrontend) {
     const opts: OpenDialogOptions = {
       properties: ["openFile"],
+      title: "Open iModel",
       filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
 
     };

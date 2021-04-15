@@ -17,8 +17,8 @@
     "LayerWithUrlExistsAsProjectSetting": "Map Layer with URL: {{url}} already exists as a project setting under name {{name}}. Cannot overwrite with a model setting!",
     "LayerExistsOverwriting": "Map layer {{layer}} already exists, overwriting info for that layer.",
     "LayerExistsAsProjectSetting": "Map layer {{layer}} already exists as a project setting. Cannot overwrite with a model setting!",
+    "AddCustomLayerButtonLabel": "Add Layer",
     "AttachCustomLayer": "Attach New Layer",
-    "AttachError": "Error occurred attaching MapLayer from URL:",
     "AttacheInfo": "Map layer attached from URL:",
     "Custom": "New",
     "LoadingMapSources": "Loading Map Sources",
@@ -31,17 +31,26 @@
     "InvalidCredentials": "Invalid credentials provided",
     "MissingCredentials": "This layer requires credentials to be provided",
     "Name": "Name",
+    "NameInputPlaceHolder": "Enter Map Name",
+    "RemoveLayerDefButtonTitle": "Delete layer definition",
+    "RemoveLayerDefDialogMessage": "Are you sure you want to delete {{layerName}} ?",
+    "RemoveLayerDefDialogTitle": "Delete layer definition",
+    "RemoveLayerDefError": "Could not delete map layer definition: {{layerName}}",
+    "RemoveLayerDefSuccess": "Successfully deleted map layer definition: {{layerName}}",
     "SearchPlaceholder": "Search...",
     "StoreOnModelSettings": "Store on Model Settings",
     "StoreOnProjectSettings": "Store on Project Settings",
     "Type": "Type",
     "URL": "URL",
+    "UrlInputPlaceHolder": "Enter Map Source URL",
     "ValidationError": "Map layer validation failed for URL:",
     "NoSaveSettingsWarning": "Layer settings cannot saved in the actual configuration"
   },
   "AuthenticationInputs": {
     "Password": "Password",
-    "Username": "Username"
+    "PasswordRequired": "Password required",
+    "Username": "Username",
+    "UsernameRequired": "Username required"
   },
   "Messages": {
     "NotSupported": "No active viewport or geo-located Imodel available.",
@@ -49,8 +58,10 @@
     "Start": "Map Layers Extension Loaded",
     "MapLayerAttached": "Map layer {{sourceName}} attached from URL: {{sourceUrl}}",
     "MapLayerAttachedRequiresAuth": "Map layer {{sourceName}} attached, but requires credentials to be provided",
-    "MapLayerValidationFailed": "Map layer validation failed for URL: {{sourceUrl}}",
-    "MapLayerAttachError": "Error '{{error}}' occurred attaching MapLayer from URL: {{sourceUrl}}"
+    "MapLayerAttachError": "Error '{{error}}' occurred attaching MapLayer from URL: {{sourceUrl}}",
+    "MapLayerLayerSettingsConversionError": "Conversion to layer settings failed",
+    "MapLayerLayerSourceCreationFailed": "Map Layer Source creation failed",
+    "MapLayerValidationFailed": "Map layer validation failed for URL: {{sourceUrl}}"
   },
   "Widget": {
     "BackgroundLayers": "Background",

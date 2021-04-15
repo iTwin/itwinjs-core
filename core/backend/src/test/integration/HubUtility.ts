@@ -529,7 +529,7 @@ export class HubUtility {
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, "Could not open iModel");
     nativeDb.deleteAllTxns();
-    nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     if (nativeDb.queryLocalValue("StandaloneEdit"))
       nativeDb.deleteLocalValue("StandaloneEdit");
     nativeDb.saveChanges();

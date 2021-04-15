@@ -17,7 +17,7 @@ describe("IModelOpen (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
   let testContextId: GuidString;
-  let testChangeSetId: GuidString;
+  let testChangeSetId: string;
 
   before(async () => {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);

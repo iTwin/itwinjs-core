@@ -155,7 +155,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     if (!IModelJsFs.existsSync(seedName)) {
       const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
       await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-      const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+      const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
       assert.equal(DbResult.BE_SQLITE_OK, result);
       // first create Elements and then Relationship
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);

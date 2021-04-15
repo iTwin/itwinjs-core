@@ -1,0 +1,322 @@
+[
+  {
+    "fromSchema": "USUnits",
+    "from": "YRD",
+    "toSchema": "USUnits",
+    "to": "FT",
+    "input": 42.42,
+    "expect": 127.26
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "FT",
+    "toSchema": "USUnits",
+    "to": "YRD",
+    "input": 42.42,
+    "expect": 14.14
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "KM",
+    "toSchema": "MetricUnits",
+    "to": "CM",
+    "input": 42.42,
+    "expect": 4242000
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "CM",
+    "toSchema": "MetricUnits",
+    "to": "KM",
+    "input": 42.42,
+    "expect": 0.0004242
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "MILE",
+    "toSchema": "MetricUnits",
+    "to": "DM",
+    "input": 42.42,
+    "expect": 682683.7248000001
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "DM",
+    "toSchema": "USUnits",
+    "to": "MILE",
+    "input": 42.42,
+    "expect": 0.0026358565974707706
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "US_SURVEY_MILE",
+    "toSchema": "SIUnits",
+    "to": "M",
+    "input": 42.42,
+    "expect": 68268.50901701803
+  },
+  {
+    "fromSchema": "SIUnits",
+    "from": "M",
+    "toSchema": "USUnits",
+    "to": "US_SURVEY_MILE",
+    "input": 42.42,
+    "expect": 0.026358513257575752
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "SQ_MILE",
+    "toSchema": "USUnits",
+    "to": "SQ_FT",
+    "input": 42.42,
+    "expect": 1182601728.0000005
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "SQ_FT",
+    "toSchema": "USUnits",
+    "to": "SQ_MILE",
+    "input": 42.42,
+    "expect": 0.0000015216081267217627
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "SQ_UM",
+    "toSchema": "MetricUnits",
+    "to": "SQ_MM",
+    "input": 42.42,
+    "expect": 4.242e-5
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "SQ_MM",
+    "toSchema": "MetricUnits",
+    "to": "SQ_UM",
+    "input": 42.42,
+    "expect": 42420000
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "SQ_US_SURVEY_YRD",
+    "toSchema": "SIUnits",
+    "to": "SQ_M",
+    "input": 42.42,
+    "expect": 35.46866448571609
+  },
+  {
+    "fromSchema": "SIUnits",
+    "from": "SQ_M",
+    "toSchema": "USUnits",
+    "to": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "expect": 50.733694828703676
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "SQ_MILE",
+    "toSchema": "MetricUnits",
+    "to": "SQ_KM",
+    "input": 42.42,
+    "expect": 109.86729564045314
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "SQ_KM",
+    "toSchema": "USUnits",
+    "to": "SQ_MILE",
+    "input": 42.42,
+    "expect": 16.378453565370553
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "FT_PER_THOUSAND_FOOT",
+    "toSchema": "USUnits",
+    "to": "FT_PER_FT",
+    "input": 42.42,
+    "expect": 0.04242
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "FT_PER_FT",
+    "toSchema": "USUnits",
+    "to": "FT_PER_THOUSAND_FOOT",
+    "input": 42.42,
+    "expect": 42420
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "FT_PER_FT",
+    "toSchema": "USUnits",
+    "to": "IN_PER_FT",
+    "input": 42.42,
+    "expect": 509.04
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "IN_PER_FT",
+    "toSchema": "USUnits",
+    "to": "FT_PER_FT",
+    "input": 42.42,
+    "expect": 3.535
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "FT_PER_MILE",
+    "toSchema": "USUnits",
+    "to": "IN_PER_FT",
+    "input": 42.42,
+    "expect": 0.09640909090909093
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "IN_PER_FT",
+    "toSchema": "USUnits",
+    "to": "FT_PER_MILE",
+    "input": 42.42,
+    "expect": 18664.8
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "CM_PER_M",
+    "toSchema": "MetricUnits",
+    "to": "M_PER_KM",
+    "input": 42.42,
+    "expect": 424.2
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "M_PER_KM",
+    "toSchema": "MetricUnits",
+    "to": "CM_PER_M",
+    "input": 42.42,
+    "expect": 4.242
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "FT_PER_IN",
+    "toSchema": "MetricUnits",
+    "to": "M_PER_KM",
+    "input": 42.42,
+    "expect": 509040
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "M_PER_KM",
+    "toSchema": "USUnits",
+    "to": "FT_PER_IN",
+    "input": 42.42,
+    "expect": 0.003535
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "FT_PER_IN",
+    "toSchema": "SIUnits",
+    "to": "M_PER_M",
+    "input": 42.42,
+    "expect": 509.04
+  },
+  {
+    "fromSchema": "SIUnits",
+    "from": "M_PER_M",
+    "toSchema": "USUnits",
+    "to": "FT_PER_IN",
+    "input": 42.42,
+    "expect": 3.535
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "MM_PER_M",
+    "toSchema": "SIUnits",
+    "to": "M_PER_M",
+    "input": 42.42,
+    "expect": 0.04242
+  },
+  {
+    "fromSchema": "SIUnits",
+    "from": "M_PER_M",
+    "toSchema": "MetricUnits",
+    "to": "MM_PER_M",
+    "input": 42.42,
+    "expect": 42420
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "FAHRENHEIT",
+    "toSchema": "USUnits",
+    "to": "RANKINE",
+    "input": 42.42,
+    "expect": 502.09
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "RANKINE",
+    "toSchema": "USUnits",
+    "to": "FAHRENHEIT",
+    "input": 42.42,
+    "expect": -417.24999999999994
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "FAHRENHEIT",
+    "toSchema": "MetricUnits",
+    "to": "CELSIUS",
+    "input": 42.42,
+    "expect": 5.7888888888888985
+  },
+  {
+    "fromSchema": "MetricUnits",
+    "from": "CELSIUS",
+    "toSchema": "USUnits",
+    "to": "FAHRENHEIT",
+    "input": 42.42,
+    "expect": 108.35600000000001
+  },
+  {
+    "fromSchema": "USUnits",
+    "from": "FAHRENHEIT",
+    "toSchema": "SIUnits",
+    "to": "K",
+    "input": 42.42,
+    "expect": 278.93888888888887
+  },
+  {
+    "fromSchema": "SIUnits",
+    "from": "K",
+    "toSchema": "USUnits",
+    "to": "FAHRENHEIT",
+    "input": 42.42,
+    "expect": -383.31399999999996
+  },
+  {
+    "fromSchema": "SIUnits",
+    "from": "TWO_PI",
+    "toSchema": "SIUnits",
+    "to": "QUARTER_PI",
+    "input": 42.42,
+    "expect": 339.36
+  },
+  {
+    "fromSchema": "SIUnits",
+    "from": "QUARTER_PI",
+    "toSchema": "SIUnits",
+    "to": "TWO_PI",
+    "input": 42.42,
+    "expect": 5.3025
+  },
+  {
+    "fromSchema": "SIUnits",
+    "from": "HALF_PI",
+    "toSchema": "SIUnits",
+    "to": "PI",
+    "input": 42.42,
+    "expect": 21.21
+  },
+  {
+    "fromSchema": "SIUnits",
+    "from": "PI",
+    "toSchema": "SIUnits",
+    "to": "HALF_PI",
+    "input": 42.42,
+    "expect": 84.84
+  }
+]

@@ -28,26 +28,10 @@
     "loading": "Loading..."
   },
   "settingsStage": {
-    "settings": "Settings",
-    "light": "Light",
-    "dark": "Dark",
-    "systemPreferred": "System preferred",
-    "themeTitle": "Theme",
-    "themeDescription": "Toggle the theme between light and dark",
-    "autoHideTitle": "Auto-Hide UI",
-    "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
-    "dragInteractionTitle": "Drag Interaction",
-    "dragInteractionDescription": "Toggle the toolbar interaction between click and drag",
-    "newUiTitle": "Use 2.0 Ui",
-    "newUiDescription": "Use new 2.0 UI layout",
-    "useProximityOpacityTitle": "Change Toolbar Opacity",
-    "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away",
-    "snapWidgetOpacityTitle": "Snap Widget Opacity",
-    "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close",
     "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
     "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
-    "widgetOpacityTitle": "Widget Opacity",
-    "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets"
+    "dark": "Dark",
+    "light": "Light"
   },
   "QuantityFormatModalFrontstage": {
     "QuantityFormatStage": "Quantity Format Overrides"
@@ -212,7 +196,8 @@
         "Coordinate": "Coordinate",
         "Length": "Length",
         "Angle": "Angle",
-        "ImageCheckBox": "Image Check Box"
+        "ImageCheckBox": "Image Check Box",
+        "Number": "Number"
       },
       "Options": {
         "Red": "Red",
@@ -314,10 +299,13 @@
         "stop": "Stop"
       }
     },
+    "EditingSession": {
+      "keyin": "test edit"
+    },
     "PlaceBlock": {
-      "keyin": "place block",
-      "description": "Place block",
-      "flyover": "Place block",
+      "keyin": "test place block",
+      "description": "Place Block",
+      "flyover": "Place Block",
       "prompts": {
         "firstPoint": "First point",
         "nextPoint": "Next point (Ctrl for polygon)",
@@ -327,19 +315,9 @@
         "heigh": "Height"
       }
     },
-    "DeleteElement": {
-      "keyin": "Test DeleteElementTool",
-      "description": "Delete element tool",
-      "flyover": "Delete Element"
-    },
-    "MoveElement": {
-      "keyin": "Test MoveElementTool",
-      "description": "Move element tool",
-      "flyover": "Move Element"
-    },
-    "PlaceLineString": {
-      "keyin": "Test PlaceLineString Tool",
-      "description": "Place Line-string tool",
+    "PlaceLinestring": {
+      "keyin": "test place linestring",
+      "description": "Place Line-string",
       "flyover": "Place Line-string"
     }
   },

@@ -383,6 +383,7 @@ export class RealityDataClient extends WsgClient {
    */
   public constructor() {
     super("v2.5");
+    // this.baseUrl = "https://api.bentley.com/contextshare";
   }
 
   /**

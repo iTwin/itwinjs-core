@@ -97,10 +97,8 @@ export class TestElementDrivesElement extends ElementDrivesElement implements Te
   public static get className(): string { return "TestElementDrivesElement"; }
   public property1!: string;
   public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
-  public static validateOutput = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
   public static deletedDependency = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
   public static onRootChanged(props: RelationshipProps, imodel: IModelDb): void { this.rootChanged.raiseEvent(props, imodel); }
-  public static onValidateOutput(props: RelationshipProps, imodel: IModelDb): void { this.validateOutput.raiseEvent(props, imodel); }
   public static onDeletedDependency(props: RelationshipProps, imodel: IModelDb): void { this.deletedDependency.raiseEvent(props, imodel); }
 }
 export interface TestPhysicalObjectProps extends PhysicalElementProps {
@@ -260,6 +258,14 @@ export class IModelTestUtils {
       newModelCode = newModelCodeBase + iter;
       ++iter;
     }
+  }
+
+  public static generateChangeSetId(): string {
+    let result = "";
+    for (let i = 0; i < 20; ++i) {
+      result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
+    }
+    return result;
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */

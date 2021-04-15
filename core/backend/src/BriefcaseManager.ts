@@ -86,7 +86,7 @@ export class BriefcaseManager {
   }
 
   /** @internal */
-  public static getChangeSetFolderNameFromId(changeSetId: GuidString): string {
+  public static getChangeSetFolderNameFromId(changeSetId: string): string {
     return changeSetId || this._firstChangeSetDir;
   }
 
@@ -155,8 +155,9 @@ export class BriefcaseManager {
         if (briefcaseName.endsWith(".bim")) {
           try {
             const fileName = path.join(bcPath, briefcaseName);
+            const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
-            briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeSetId: db.getParentChangeSetId() });
+            briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeSetId: db.getParentChangeSetId(), fileSize });
             db.closeIModel();
           } catch (_err) {
           }
@@ -171,7 +172,7 @@ export class BriefcaseManager {
   public static get cacheDir() { return this._cacheDir; }
 
   /** Get the index of the change set from its id */
-  private static async getChangeSetIndexFromId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString): Promise<number> {
+  private static async getChangeSetIndexFromId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string): Promise<number> {
     requestContext.enter();
     if (changeSetId === "")
       return 0; // the first version
@@ -185,7 +186,7 @@ export class BriefcaseManager {
   /** Determine whether the supplied briefcaseId is a standalone briefcase */
   public static isStandaloneBriefcaseId(id: BriefcaseId) {
     // eslint-disable-next-line deprecation/deprecation
-    return id === BriefcaseIdValue.Standalone || id === BriefcaseIdValue.DeprecatedStandalone;
+    return id === BriefcaseIdValue.Unassigned || id === BriefcaseIdValue.DeprecatedStandalone;
   }
 
   /** Determine whether the supplied briefcaseId is in the range of BriefcaseIds issued by iModelHub
@@ -229,7 +230,7 @@ export class BriefcaseManager {
    * a filename, the local briefcase cache is used by creating a file with the briefcaseId as its name in the `briefcases` folder below the folder named
    * for the IModelId.
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
-   * @note The special briefcaseId [[BriefcaseIdValue.Standalone]] (0) can be used for a local briefcase that can accept changesets but may not be changed locally.
+   * @note The special briefcaseId [[BriefcaseIdValue.Unassigned]] (0) can be used for a local briefcase that can accept changesets but may not be changed locally.
    * @see CheckpointManager.downloadCheckpoint
    */
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
@@ -249,12 +250,14 @@ export class BriefcaseManager {
     };
 
     await CheckpointManager.downloadCheckpoint(args);
+    const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
     const response: LocalBriefcaseProps = {
       fileName,
       briefcaseId,
       iModelId: request.iModelId,
       contextId: request.contextId,
       changeSetId: args.checkpoint.changeSetId,
+      fileSize,
     };
 
     // now open the downloaded checkpoint and reset its BriefcaseId

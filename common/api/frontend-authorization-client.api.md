@@ -91,12 +91,6 @@ export interface FrontendAuthorizationClient extends AuthorizationClient {
 // @beta
 export const isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient;
 
-// @internal
-export class Ntlm {
-    static authenticate(url: string): Promise<void>;
-    static setCredentials(domain: string, username: string, password: string): void;
-    }
-
 // @beta (undocumented)
 export enum OidcCallbackResponseMode {
     // (undocumented)

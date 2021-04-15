@@ -103,8 +103,8 @@ describe("TableFilterDescriptorCollection", () => {
     filterableColumn0 = new TableColumn(testTable, columnDescription0, reactDataGridColumn0);
     columnDescription1 = columnDescriptions[1];
     const reactDataGridColumn1: ReactDataGridColumn = {
-      key: columnDescription0.key,
-      name: columnDescription0.label,
+      key: columnDescription1.key,
+      name: columnDescription1.label,
     };
     filterableColumn1 = new TableColumn(testTable, columnDescription1, reactDataGridColumn1);
 
