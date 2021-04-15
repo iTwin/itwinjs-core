@@ -46,7 +46,6 @@ if (ProcessDetector.isElectronAppFrontend) {
     describe("updates state", () => {
       let model: GeometricModelState;
       let elemId: string;
-      // ###TODO let viewport: Viewport;
 
       beforeEach(async () => {
         const editing = new EditingFunctions(imodel);
@@ -78,7 +77,18 @@ if (ProcessDetector.isElectronAppFrontend) {
 
         expect(imodel.models.getLoaded(model.id)).to.equal(model);
         expect(model.geometryGuid).not.to.be.undefined;
-        expect(model.geometryGuid).not.to.equal(prevGuid);
+        const newGuid = model.geometryGuid!;
+        expect(newGuid).not.to.equal(prevGuid);
+
+        modelIds = await getBufferedChanges(async () =>  { imodel.txns.reverseSingleTxn(); });
+        expect(modelIds.size).to.equal(1);
+        expect(modelIds.has(model.id)).to.be.true;
+        expect(model.geometryGuid).to.equal(prevGuid);
+
+        modelIds = await getBufferedChanges(async () => { imodel.txns.reinstateTxn(); });
+        expect(modelIds.size).to.equal(1);
+        expect(modelIds.has(model.id)).to.be.true;
+        expect(model.geometryGuid).to.equal(newGuid);
       });
 
       it("after exiting a graphical editing scope", async () => {
