@@ -20,7 +20,6 @@ import { ChannelRootAspect } from "./ElementAspect";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
 

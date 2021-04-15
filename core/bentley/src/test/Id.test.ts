@@ -187,7 +187,7 @@ describe("Ids", () => {
 
         // While we're here, test Id64.has()
         expect(Id64.has(arg, id)).to.be.true;
-      };
+      }
     };
 
     test("0x123");

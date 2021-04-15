@@ -7,18 +7,17 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, ProcessDetector,
+  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, ProcessDetector,
 } from "@bentley/bentleyjs-core";
 import {
   CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface,
-  IModelTileTreeProps, ModelGeometryChanges, RpcOperation, RpcResponseCacheControl, ServerTimeoutError,
+  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
-import { GeometricModelState } from "../ModelState";
 import {
   DisclosedTileTreeSet, IModelTile, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
 } from "./internal";
