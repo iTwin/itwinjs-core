@@ -105,16 +105,7 @@
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",
-    "require": [
-      "ignore-styles",
-      "jsdom-global/register",
-      "source-map-support/register"
-    ],
-    "check-coverage": false,
-    "statements": 60,
-    "branches": 25,
-    "functions": 60,
-    "lines": 60
+    "check-coverage": false
   },
   "eslintConfig": {
     "plugins": [
