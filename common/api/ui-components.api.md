@@ -4518,7 +4518,7 @@ export interface TableProps extends CommonProps {
     hideHeader?: boolean;
     isCellSelected?: (rowIndex: number, cell: CellItem) => boolean;
     isRowSelected?: (row: RowItem) => boolean;
-    maximumDistinctValue?: number;
+    maximumDistinctValues?: number;
     // @internal (undocumented)
     onApplyFilter?: () => void;
     // @beta

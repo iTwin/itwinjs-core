@@ -155,7 +155,7 @@ export interface TableProps extends CommonProps {
   /** Called to show a context menu when a cell is right-clicked. @beta */
   onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
   /** Maximum number of distinct values for filtering */
-  maximumDistinctValue?: number;
+  maximumDistinctValues?: number;
 }
 
 /** Properties for a Table cell
@@ -1415,7 +1415,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private async loadDistinctValues(): Promise<void> {
     await Promise.all(this.state.columns.map(async (tableColumn: TableColumn) => {
       if (tableColumn.filterable)
-        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(this.props.maximumDistinctValue);
+        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(this.props.maximumDistinctValues);
     }));
   }
 
