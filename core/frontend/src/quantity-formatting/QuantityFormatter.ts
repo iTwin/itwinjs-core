@@ -10,7 +10,8 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import {
   Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
-import { SchemaContext } from "@bentley/ecschema-metadata";
+import { SchemaContext, SchemaMatchType } from "@bentley/ecschema-metadata";
+import { ECSchemaRpcInterface, ECSchemaRpcLocater } from "@bentley/ecschema-rpcinterface-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../imodeljs-frontend";
 import { NewUnitsProvider } from "./NewUnitsProvider";
@@ -567,6 +568,15 @@ export class QuantityFormatter implements UnitsProvider {
     IModelApp.toolAdmin && startDefaultTool && IModelApp.toolAdmin.startDefaultTool();
   }
 
+  public async addSchemasToContext(iModel: IModelConnection) {
+    const rpcClient = ECSchemaRpcInterface.getClient();
+    const rpcLocater = new ECSchemaRpcLocater(iModel.getRpcProps());
+    const schemaKeys = await rpcClient.getSchemaKeys(iModel.getRpcProps());
+    for (const schemaKey of schemaKeys) {
+      await rpcLocater.getSchema(schemaKey, SchemaMatchType.Identical, this._context);
+    }
+  }
+
   /** Set the Active unit system to one of the supported types. This will asynchronously load the formatter and parser specs for the activated system. */
   public async setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void> {
     let systemType: UnitSystemKey;
@@ -814,8 +824,8 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   // keep following to maintain existing API of implementing UnitsProvider
-  public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
-    return this._unitsProvider.findUnit(unitLabel, phenomenon, unitSystem);
+  public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
+    return this._unitsProvider.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
   }
 
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {

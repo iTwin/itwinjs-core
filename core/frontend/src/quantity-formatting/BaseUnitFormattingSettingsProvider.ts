@@ -78,6 +78,9 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
   protected applyQuantityFormattingSettingsForIModel = async (imodel?: IModelConnection) => {
     if (this._maintainOverridesPerIModel)
       this._imodelConnection = imodel;
+    if (this._imodelConnection) {
+      this._quantityFormatter.addSchemasToContext(this._imodelConnection);
+    }
     const overrideFormatProps = await this.buildQuantityFormatOverridesMap();
     const unitSystemKey = await this.retrieveUnitSystem (this._quantityFormatter.activeUnitSystem);
     await this._quantityFormatter.reinitializeFormatAndParsingsMaps(overrideFormatProps, unitSystemKey, true, true);
