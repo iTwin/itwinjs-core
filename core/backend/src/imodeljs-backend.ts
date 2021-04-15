@@ -125,6 +125,10 @@ export * from "./IModelDb"; // must be last
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md)
  */
 /**
+ * @docs-group-description SQLite
+ * Classes for working directly with SQLite
+ */
+/**
  * @docs-group-description Portability
  * Classes to help write [portable apps]($docs/learning/Portability.md) and libraries that will run on any platform, including web apps, node services, Electron desktops apps, and mobile apps.
  */

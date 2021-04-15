@@ -143,7 +143,7 @@ export interface DescriptorOverrides {
   hiddenFieldNames?: string[];
   /**
    * Fields selector that allows excluding or including only specified fields
-   * @beta
+   * @public
    */
   fieldsSelector?: {
     /** Should the specified fields be included or excluded */
@@ -164,7 +164,7 @@ export interface DescriptorOverrides {
   sortDirection?: SortDirection;
   /**
    * Specification for sorting data
-   * @beta
+   * @public
    */
   sorting?: {
     /** Identifier of the field to use for sorting */

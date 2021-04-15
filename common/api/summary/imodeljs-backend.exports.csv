@@ -23,8 +23,6 @@ public;BriefcaseId = number
 public;BriefcaseIdValue
 deprecated;BriefcaseIdValue
 beta;BriefcaseManager
-public;CachedECSqlStatement
-internal;CachedSqliteStatement
 public;class Callout 
 public;Category 
 public;CategoryOwnsSubCategories 
@@ -99,7 +97,6 @@ public;ECSqlBinder
 public;ECSqlColumnInfo
 public;ECSqlInsertResult
 public;ECSqlStatement 
-public;ECSqlStatementCache
 public;ECSqlValue
 public;ECSqlValueIterator 
 public;Element 
@@ -281,8 +278,6 @@ public;SectionCallout
 public;SectionDrawing 
 beta;SectionDrawingLocation 
 public;SectionDrawingModel 
-alpha;SectionLocation 
-deprecated;SectionLocation 
 internal;setMaxEntitiesPerEvent(max: number): number
 public;Sheet 
 public;SheetBorderTemplate 
@@ -300,11 +295,11 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
-internal;SqliteStatement 
-internal;SqliteStatementCache
-internal;SqliteValue
-internal;SqliteValueType
+public;SqliteStatement 
+public;SqliteValue
+public;SqliteValueType
 public;StandaloneDb 
+internal;StatementCache
 internal;StringParam
 public;SubCategory 
 public;Subject 

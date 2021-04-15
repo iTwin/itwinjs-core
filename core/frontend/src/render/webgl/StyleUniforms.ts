@@ -35,16 +35,13 @@ export class StyleUniforms {
     this._monoColor = plan.monoColor;
     this._monoRgb.setColorDef(plan.monoColor);
 
-    this.updateBackgroundColor(plan.bgColor, true);
+    this.updateBackgroundColor(plan.bgColor);
   }
 
-  private updateBackgroundColor(bgColor: ColorDef, blackIfTransparent: boolean): void {
+  private updateBackgroundColor(bgColor: ColorDef): void {
     this._bgColor = bgColor;
     this._bgRgba.setColorDef(bgColor);
-
-    // When rendering 3d view attachments, we set alpha to 0 to allow us to discard background pixels.
-    // When rendering planar classifiers or texture drapes, we set background color to fully-transparent black - a 0 in alpha channel indicates unclassified regions.
-    this._bgRgb.setColorDef((blackIfTransparent && this._bgRgba.alpha === 0) ? ColorDef.black : bgColor);
+    this._bgRgb.setColorDef(bgColor);
     this._isWhiteBackground = this._bgRgb.isWhite;
   }
 
@@ -53,7 +50,7 @@ export class StyleUniforms {
       return;
 
     desync(this);
-    this.updateBackgroundColor(bgColor, false);
+    this.updateBackgroundColor(bgColor);
   }
 
   // vec4

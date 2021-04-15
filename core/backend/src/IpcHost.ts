@@ -8,7 +8,7 @@
 
 import { ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import {
-  BriefcasePushAndPullNotifications, EditingSessionNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, IModelVersionProps,
+  BriefcasePushAndPullNotifications, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, IModelVersionProps,
   IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
   RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@bentley/imodeljs-common";
@@ -99,8 +99,8 @@ export class IpcHost {
   }
 
   /** @internal */
-  public static notifyEditingSession<T extends keyof EditingSessionNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingSessionNotifications[T]>) {
-    this.notify(IpcAppChannel.EditingSession, briefcase, methodName, ...args);
+  public static notifyEditingScope<T extends keyof EditingScopeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingScopeNotifications[T]>) {
+    this.notify(IpcAppChannel.EditingScope, briefcase, methodName, ...args);
   }
 
   /** @internal */
@@ -231,14 +231,14 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return iModelDb.changeSetId;
   }
 
-  public async toggleInteractiveEditingSession(key: string, startSession: boolean): Promise<boolean> {
+  public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {
     const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key).nativeDb.setGeometricModelTrackingEnabled(startSession);
     if (val.error)
-      throw new IModelError(val.error.status, "Failed to toggle interactive editing session");
+      throw new IModelError(val.error.status, "Failed to toggle graphical editing scope");
 
     return val.result!;
   }
-  public async isInteractiveEditingSupported(key: string): Promise<boolean> {
+  public async isGraphicalEditingSupported(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
   }
 

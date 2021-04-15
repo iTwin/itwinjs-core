@@ -7,8 +7,8 @@
  */
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@bentley/geometry-core";
+import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -148,6 +148,35 @@ export class DebugShaderFile {
   public constructor(public readonly filename: string, public readonly src: string, public isVS: boolean, public isGL: boolean, public isUsed: boolean) {
   }
 }
+/** Transparency settings for planar grid display.
+ * @alpha
+ */
+export class PlanarGridTransparency {
+  /** Transparency for the grid plane.   This should generally be fairly high to avoid obscuring other geometry */
+  public readonly planeTransparency = .9;
+  /** Transparency of the grid lines.  This should be higher than the plane, but less than reference line transparency */
+  public readonly lineTransparency = .75;
+  /** Transparency of the reference lines.   This should be less than plane or line transparency so that reference lines are more prominent */
+  public readonly refTransparency = .5;
+}
+
+/** Settings for planar grid display.
+ * @alpha
+ */
+export interface PlanarGridProps {
+  /**  The grid origin */
+  origin: Point3d;
+  /** The grid orientation. The grid X and Y direction are the first and second matrix rows */
+  rMatrix: Matrix3d;
+  /** The spacing between grid liens in the X and Y direction */
+  spacing: XAndY;
+  /** Grid lines per reference. If zero no reference lines are displayed. */
+  gridsPerRef: number;
+  /** Grid color.   [[Use Viewport.getContrastToBackgroundColor]] to get best constrast color based on current background. */
+  color: ColorDef;
+  /** Transparency settings.  If omitted then the [[PlanarGridTransparency]] defaults are used. */
+  transparency?: PlanarGridTransparency;
+}
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
@@ -279,8 +308,16 @@ export abstract class RenderSystem implements IDisposable {
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
-  /** @internal */
+
+  /** Create a clip volume to clip geometry.
+   * @note The clip volume takes ownership of the ClipVector, which must not be subsequently mutated.
+   * @param _clipVector Defines how the volume clips geometry.
+   * @returns A clip volume, or undefined if, e.g., the clip vector does not clip anything.
+   */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
+
+  /** @internal */
+  public createPlanarGrid(_frustum: Frustum,_grid: PlanarGridProps): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
@@ -500,15 +537,15 @@ export abstract class RenderSystem implements IDisposable {
 export namespace RenderSystem { // eslint-disable-line no-redeclare
   /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup. Many of these options serve as "feature flags" used to enable newer, experimental features. As such they typically begin life tagged as "alpha" or "beta" and are subsequently deprecated when the feature is declared stable.
    *
-   * @beta
+   * @public
    */
   export interface Options {
     /** WebGL extensions to be explicitly disabled, regardless of whether or not the WebGL implementation supports them.
-     * This is chiefly useful for testing code which only executes in the absence of particular extensions.
+     * This is chiefly useful for testing code that only executes in the absence of particular extensions, while running on a system that supports those extensions.
      *
      * Default value: undefined
      *
-     * @internal
+     * @public
      */
     disabledExtensions?: WebGLExtensionName[];
 
@@ -516,7 +553,7 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: false
      *
-     * @internal
+     * @public
      */
     preserveShaderSourceCode?: boolean;
 
@@ -532,24 +569,13 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: true
      *
-     * @beta
+     * @public
      */
     logarithmicDepthBuffer?: boolean;
 
-    /** If true anisotropic filtering is applied to map tile textures.
-     *
-     * Default value: false
-     *
-     * @internal
-     */
+    /** ###TODO this appears to do nothing. @internal */
     filterMapTextures?: boolean;
-
-    /** If true anisotropic filtering is not applied to draped map tile textures.
-     *
-     * Default value: true
-     *
-     * @internal
-     */
+    /** ###TODO this appears to do nothing. @internal */
     filterMapDrapeTextures?: boolean;
 
     /** If true, [[ScreenViewport]]s will respect the DPI of the display.  See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
@@ -559,7 +585,7 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: true
      *
-     * @beta
+     * @public
      */
     dpiAwareViewports?: boolean;
 
@@ -571,7 +597,7 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: undefined
      *
-     * @beta
+     * @public
      */
     devicePixelRatioOverride?: number;
 
@@ -582,32 +608,33 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: false
      *
-     * @beta
+     * @public
      */
     dpiAwareLOD?: boolean;
 
-    /** If true will attempt to create a WebGL2 context.
+    /** If true will attempt to create a WebGL2 context, falling back to WebGL1 if WebGL2 is not supported.
      *
      * Default value: true
      *
-     * @internal
+     * @public
      */
     useWebGL2?: boolean;
 
     /** If true, plan projection models will be rendered using [PlanProjectionSettings]($common) defined by the [[DisplayStyle3dState]].
      * Default value: true
-     * @internal
+     * @public
      */
     planProjections?: boolean;
 
-    /** To help prevent delays when a user interacts with a [[Viewport]], the WebGL render system precompiles shader programs before any Viewport is opened.
+    /** To help prevent delays when a user interacts with a [[Viewport]], the WebGL render system can precompile shader programs before any Viewport is opened.
      * This particularly helps applications when they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and a view through the user interface.
      * Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [[ViewManager]]).
-     * To disable this feature, set this to `false`.
+     * @note Enabling this feature can slow UI interactions before a [[Viewport]] is opened.
+     * To enable this feature, set this to `true`.
      *
-     * Default value: true
+     * Default value: false
      *
-     * @public
+     * @beta
      */
     doIdleWork?: boolean;
 
@@ -627,7 +654,7 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
     /** Initial antialias setting
      * If > 1, and a WebGL2 context is being used, will turn on antialiasing using that many samples.
      * Default value: 1
-     * @beta
+     * @public
      */
     antialiasSamples?: number;
   }

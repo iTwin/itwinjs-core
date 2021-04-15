@@ -10,7 +10,7 @@ import { BentleyStatus, Id64Array } from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";
 
 /** Specify whether to accumulate volumes, areas, or lengths for the supplied elements.
- * @beta
+ * @public
  */
 export enum MassPropertiesOperation {
   /** Return lengths for open paths and planar regions. */
@@ -22,7 +22,7 @@ export enum MassPropertiesOperation {
 }
 
 /** Information required to request mass properties for elements from the front end to the back end.
- * @beta
+ * @public
  */
 export interface MassPropertiesRequestProps {
   operation: MassPropertiesOperation;
@@ -30,7 +30,7 @@ export interface MassPropertiesRequestProps {
 }
 
 /** Information returned from the back end to the front end holding the result of the mass properties calculation.
- * @beta
+ * @public
  */
 export interface MassPropertiesResponseProps {
   status: BentleyStatus;

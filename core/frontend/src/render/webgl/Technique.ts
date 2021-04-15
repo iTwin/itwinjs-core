@@ -31,6 +31,7 @@ import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSym
 import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
 import { addLogDepth } from "./glsl/LogarithmicDepthBuffer";
 import { addUnlitMonochrome } from "./glsl/Monochrome";
+import createPlanarGridProgram from "./glsl/PlanarGrid";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
@@ -752,6 +753,7 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.VolClassSetBlend },
   { techniqueId: TechniqueId.VolClassBlend },
   { techniqueId: TechniqueId.Combine3Textures },
+  { techniqueId: TechniqueId.PlanarGrid },
 ];
 const numTechniquesByPriority = techniquesByPriority.length;
 
@@ -918,6 +920,7 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
+    this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
     if (System.instance.capabilities.supportsFragDepth)
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     else

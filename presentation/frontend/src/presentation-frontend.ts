@@ -20,6 +20,7 @@ export {
 } from "./presentation-frontend/favorite-properties/FavoritePropertiesManager";
 export { IFavoritePropertiesStorage } from "./presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 export { NodeIdentifier, StateTracker } from "./presentation-frontend/StateTracker";
+export * from "./presentation-frontend/Diagnostics";
 
 /**
  * @module Logging

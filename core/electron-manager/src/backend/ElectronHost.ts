@@ -13,7 +13,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
-import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelError, IpcListener, IpcSocketBackend, NativeAppAuthorizationConfiguration, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
@@ -57,8 +57,9 @@ export interface ElectronHostOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** list of [IpcHandler]($common) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
-  /** name of application. Used for naming settings file. */
-  applicationName?: string;
+  /** Authorization configuration */
+  authConfig?: NativeAppAuthorizationConfiguration;
+  applicationName?: never; // this should be supplied in NativeHostOpts
 }
 
 /** @beta */
@@ -113,7 +114,6 @@ export class ElectronHost {
     let assetPath = requestedUrl.substr(this._electronFrontend.length);
     if (assetPath.length === 0)
       assetPath = "index.html";
-    assetPath = assetPath.replace(/(#|\?).*$/, "");
 
     // NEEDS_WORK: Remove this after migration to DesktopAuthorizationClient
     assetPath = assetPath.replace("signin-callback", "index.html");
@@ -127,22 +127,29 @@ export class ElectronHost {
       // eslint-disable-next-line no-console
       // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }
+    if (!assetPath.startsWith(this.webResourcesPath))
+      throw new Error(`Access to files outside installation directory (${this.webResourcesPath}) is prohibited`);
     return assetPath;
   }
 
   private static _openWindow(options?: ElectronHostWindowOptions) {
     const opts: BrowserWindowConstructorOptions = {
+      ...options,
       autoHideMenuBar: true,
+      icon: this.appIconPath,
       webPreferences: {
+        ...options?.webPreferences,
+
+        // These web preference variables should not be overriden by the ElectronHostWindowOptions
         preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
-        nodeIntegration: false,
         experimentalFeatures: false,
-        enableRemoteModule: false,
+        nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
+        enableRemoteModule: false,
+        nodeIntegrationInWorker: false,
+        nodeIntegrationInSubFrames: false,
       },
-      icon: this.appIconPath,
-      ...options, // overrides everything above
     };
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);
@@ -271,7 +278,7 @@ export class ElectronHost {
       ElectronAppHandler.register();
       opts.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
-    IModelHost.authorizationClient = new ElectronAuthorizationBackend();
+    IModelHost.authorizationClient = new ElectronAuthorizationBackend(opts.electronHost?.authConfig);
   }
 }
 
