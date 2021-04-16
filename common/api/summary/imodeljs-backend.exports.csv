@@ -243,11 +243,8 @@ beta;OnElementPropsArg
 beta;OnModelArg
 beta;OnModelIdArg 
 beta;OnModelPropsArg 
-<<<<<<< HEAD
-=======
 beta;OnSubModelIdArg 
 beta;OnSubModelPropsArg 
->>>>>>> master
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 

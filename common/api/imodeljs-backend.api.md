@@ -1645,7 +1645,7 @@ export class Element extends Entity implements ElementProps {
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @beta
-    protected static onInsert(props: Readonly<ElementProps>, iModel: IModelDb): void;
+    protected static onInserted(arg: OnElementIdArg): void;
     // @beta
     protected static onSubModelDelete(_arg: OnSubModelIdArg): void;
     // @beta
@@ -1653,7 +1653,7 @@ export class Element extends Entity implements ElementProps {
     // @beta
     protected static onSubModelInsert(_arg: OnSubModelPropsArg): void;
     // @beta
-    protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void;
+    protected static onSubModelInserted(_arg: OnSubModelIdArg): void;
     // @beta
     protected static onUpdate(arg: OnElementPropsArg): void;
     // @beta
@@ -3562,77 +3562,6 @@ export interface OnSubModelIdArg extends OnElementArg {
 // @beta
 export interface OnSubModelPropsArg extends OnElementArg {
     subModelProps: ModelProps;
-}
-
-// @beta
-export interface OnAspectArg {
-    iModel: IModelDb;
-}
-
-// @beta
-export interface OnAspectIdArg extends OnAspectArg {
-    aspectId: Id64String;
-}
-
-// @beta
-export interface OnAspectPropsArg extends OnAspectArg {
-    props: Readonly<ElementAspectProps>;
-}
-
-// @beta
-export interface OnChildElementArg extends OnElementArg {
-    // (undocumented)
-    parentId: Id64String;
-}
-
-// @beta
-export interface OnChildElementIdArg extends OnChildElementArg {
-    childId: Id64String;
-}
-
-// @beta
-export interface OnChildElementPropsArg extends OnChildElementArg {
-    childProps: Readonly<ElementProps>;
-}
-
-// @beta
-export interface OnElementArg {
-    iModel: IModelDb;
-}
-
-// @beta
-export interface OnElementIdArg extends OnElementArg {
-    id: Id64String;
-}
-
-// @beta
-export interface OnElementInModelIdArg extends OnModelIdArg {
-    elementId: Id64String;
-}
-
-// @beta
-export interface OnElementInModelPropsArg extends OnModelIdArg {
-    elementProps: Readonly<ElementProps>;
-}
-
-// @beta
-export interface OnElementPropsArg extends OnElementArg {
-    props: Readonly<ElementProps>;
-}
-
-// @beta
-export interface OnModelArg {
-    iModel: IModelDb;
-}
-
-// @beta
-export interface OnModelIdArg extends OnModelArg {
-    id: Id64String;
-}
-
-// @beta
-export interface OnModelPropsArg extends OnModelArg {
-    props: Readonly<ModelProps>;
 }
 
 // @public
