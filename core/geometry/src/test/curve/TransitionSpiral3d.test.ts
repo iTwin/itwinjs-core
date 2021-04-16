@@ -811,6 +811,22 @@ describe("TransitionSpiral3d", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "AlexGStroking");
   });
+  it("AlexGSamples", () => {
+    const ck = new Checker();
+    const directoryPath = "./src/test/testInputs/curve/AlexGSpiral/AlexG0421";
+    const fileList = fs.readdirSync(directoryPath);
+    if (fileList) {
+      for (const fileName of fileList) {
+        console.log(fileName);
+        const fullPath = `${directoryPath}/${fileName}`;
+        console.log(fullPath);
+        const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(fullPath, "utf8")));
+        const outputFileName = `AlexG0421${fileName}`;
+        GeometryCoreTestIO.saveGeometry(alignment, "TransitionSpiral3d", outputFileName);
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 
   it("spiralStroking", () => {
     // const ck = new Checker();

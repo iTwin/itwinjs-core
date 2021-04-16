@@ -40,7 +40,7 @@ export type DirectSpiralTypeName = "Arema"
   | "ChineseCubic"  // Identical to Arema!
   | "HalfCosine"  // high continuity cosine variation from quadratic.
   | "AustralianRailCorp" // cubic with high accuracy distance series
-  | "WesterAustralian"  // simple cubic
+  | "WesternAustralian"  // simple cubic.
   | "Czech"  // simple cubic with two term distance approximation
   ;
 

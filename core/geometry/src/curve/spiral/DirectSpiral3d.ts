@@ -339,7 +339,10 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       return this.createCzechCubic(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "AustralianRailCorp"))
       return this.createAustralianRail(localToWorld, arcLength, radius1, activeInterval);
-    return undefined;
+    if (Geometry.equalStringNoCase(spiralType, "WesternAustralian")) {
+        return this.createWesternAustralian(localToWorld, arcLength, radius1, activeInterval);
+      }
+        return undefined;
   }
   /** Deep clone of this spiral */
   public clone(): DirectSpiral3d {
