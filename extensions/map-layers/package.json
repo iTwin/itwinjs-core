@@ -82,7 +82,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "dependencies": {
-    "classnames": "^2.2.5",
+    "classnames": "2.2.6",
     "react-beautiful-dnd": "^13.0.0",
     "react-compound-slider": "^2.5.0",
     "react-select": "3.1.0"

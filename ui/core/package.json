@@ -104,7 +104,7 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "classnames": "^2.2.5",
+    "classnames": "2.2.6",
     "dompurify": "^2.0.12",
     "lodash": "^4.17.10",
     "react-autosuggest": "^10.0.2",

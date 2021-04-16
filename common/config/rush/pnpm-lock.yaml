@@ -212,7 +212,7 @@ dependencies:
   chalk: 3.0.0
   child_process: 1.0.2
   chrome-launcher: 0.10.7
-  classnames: 2.3.1
+  classnames: 2.2.6
   commander: 2.20.3
   concurrently: 3.6.1
   cpx: 1.5.0
@@ -5728,10 +5728,10 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-qOhPa/Fj7s6TY8H8esGu5QNpMMQxz79h+urzrNYN6mn+9BnxlDGf5QZ+XeCDsxSjPqsSR56XOZOJmpeurnLMeg==
-  /classnames/2.3.1:
+  /classnames/2.2.6:
     dev: false
     resolution:
-      integrity: sha512-OlQdbZ7gLfGarSqxesMesDa5uz7KFbID8Kpq/SxIoNGDqY8lSYs0D+hhtBXhcdB3rcbXArFr7vlHheLk1voeNA==
+      integrity: sha512-JR/iSQOSt+LQIWwrwEzJ9uk0xfN3mTVYMwt1Ir5mUcSN6pU+V4zQFFaJsclJbPuAUQH+yfWef6tm7l1quW3C8Q==
   /clean-css/4.2.3:
     dependencies:
       source-map: 0.6.1
@@ -20954,7 +20954,7 @@ packages:
     dependencies:
       '@types/classnames': 2.2.11
       '@types/react': 16.9.43
-      classnames: 2.3.1
+      classnames: 2.2.6
       cpx: 1.5.0
       eslint: 6.8.0
       react: 16.14.0
@@ -20967,7 +20967,7 @@ packages:
     peerDependencies:
       webpack: '*'
     resolution:
-      integrity: sha512-q3JLj4FpQSIG0sa+dhS/rG8zwdF7Pa4jxP4m3S49KI2IRiEUFi2fElpWvOBNVADAA4Rl5jpfNqPQUPM7WgJknQ==
+      integrity: sha512-9lepDRLkrJiCPF4GB1UTGB+QAsUIq5iYbTTU8Qg2no84+BYK1557xpS6BdRxd9eqqRzF2D/a8OLyQV6yVYfY4A==
       tarball: 'file:projects/iot-demo.tgz'
     version: 0.0.0
   'file:projects/itwin-client.tgz':
@@ -21076,7 +21076,7 @@ packages:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
-      classnames: 2.3.1
+      classnames: 2.2.6
       cpx: 1.5.0
       enzyme: 3.11.0
       enzyme-adapter-react-16: 1.15.6_4f82faf5e8cab057bc46d4d95079ec42
@@ -21104,7 +21104,7 @@ packages:
       sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-wVHHKOQfAZD1pM2jRKhlrw+8nwVOyQ/pO+xMFfmslNYT7NNwLS+DchoMZF6hPzApKYMxEq4EfVUMrGHvOcWUvA==
+      integrity: sha512-nHGt0jlzsbKA1FtFMyfHm8QRs/hIQLk4Gt4QL6p/DRO4CpEEex093oaWGCm9uUVPVARMfZFJdWKjCNDp7fd9lA==
       tarball: 'file:projects/map-layers.tgz'
     version: 0.0.0
   'file:projects/mobile-manager.tgz':
@@ -21165,7 +21165,7 @@ packages:
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.12
       '@types/react-router-dom': 5.1.7
-      classnames: 2.3.1
+      classnames: 2.2.6
       highlight.js: 10.6.0
       raf-schd: 4.0.3
       react: 16.14.0
@@ -21180,7 +21180,7 @@ packages:
       sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-9ZWvXN3z3BmgW1ch41YA5eY43zDZ90O1usyPDPnCDLRXYVwifUqqJhyW3XS6HUq5jJNN1T1dU5SbyvqjsVEP1Q==
+      integrity: sha512-TKUGAdz3RZ0+++51cfNwetJRYfaa+p13NsAer3Dn565USxL0xCllEkw6b8+Uk1MJhC4n3y0s5ALQdOVpDkdLmQ==
       tarball: 'file:projects/ninezone-test-app.tgz'
     version: 0.0.0
   'file:projects/oidc-signin-tool.tgz':
@@ -21798,7 +21798,7 @@ packages:
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
       chai-string: 1.5.0_chai@4.3.4
-      classnames: 2.3.1
+      classnames: 2.2.6
       cpx: 1.5.0
       enzyme: 3.11.0
       enzyme-adapter-react-16: 1.15.6_4f82faf5e8cab057bc46d4d95079ec42
@@ -21847,7 +21847,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-components'
     resolution:
-      integrity: sha512-9WT9K40BUugvFSXGHQ6rSHFP7C3RP4hFbzI5E3n6bQptM8EeUiAx1OepJMGVV6qnHfCsoMXafdyFvDl9vKQRIA==
+      integrity: sha512-jsx6OA4ACgd7iVxS0XKic3JB5IaH9Sli51lUXYuyrZy7nYCqMdLRFOVH2C44x6vesqhgSTkdMJn0HE0KVin76A==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz_2f645c1465aea7f802b6a9a8594dc28f':
@@ -21877,7 +21877,7 @@ packages:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
-      classnames: 2.3.1
+      classnames: 2.2.6
       cpx: 1.5.0
       dompurify: 2.2.7
       enzyme: 3.11.0
@@ -21915,7 +21915,7 @@ packages:
       webpack: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-YZINpdE7G2HbkAuvLsCLQ75sbm3mhBUbwtw/u8krDW30MIxlvs0bEfHHiaXuiGlI2sXCeigLACKJxlX8O/CYzA==
+      integrity: sha512-XGfUNBXaosY6UWnwu6lkakmSyDVjtOkP9aDZFDgzVxeAb0XxpYmbD+GVHiHoqJ9wpWBYV1V8IJZh71DB604qaQ==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz_2f645c1465aea7f802b6a9a8594dc28f':
@@ -21947,7 +21947,7 @@ packages:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
-      classnames: 2.3.1
+      classnames: 2.2.6
       cpx: 1.5.0
       enzyme: 3.11.0
       enzyme-adapter-react-16: 1.15.6_4f82faf5e8cab057bc46d4d95079ec42
@@ -21989,7 +21989,7 @@ packages:
       webpack: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-orputXw/xhL3xFlTksKCeq8IrCxTvD1ympJSpAZZUPvhEpUPjlj5YXlVQbyHhGzkjh7JizTxDWyamq8lUznBsw==
+      integrity: sha512-wlnQPsgXzPNES/O72ZpehVGQCBDoAj4UeOQnGFnZJTnwC9Jjt0KCoMJTPucv/wvUJOz8xlTZ/k1Pt8Byg6IrpA==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz_react-test-renderer@16.14.0':
@@ -22012,7 +22012,7 @@ packages:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
-      classnames: 2.3.1
+      classnames: 2.2.6
       cpx: 1.5.0
       enzyme: 3.11.0
       enzyme-adapter-react-16: 1.15.6_4f82faf5e8cab057bc46d4d95079ec42
@@ -22040,7 +22040,7 @@ packages:
     peerDependencies:
       react-test-renderer: '*'
     resolution:
-      integrity: sha512-kTvmJUsZ3Bh7uh5oizhrbpv0qLyz+6xvjkI4aBlHmuphG4/5GwxIbIuxegadMQhTp2ZJTb3QlpHalANL15YDnA==
+      integrity: sha512-wYrXquxNwI4CPRNgK7l+X/foy+fRkkHLHcII5pbCkIpIi1gKxp8X4BsyEoJ3V9WzpIyz1tbnUgbXeBFvT/+bIw==
       tarball: 'file:projects/ui-ninezone.tgz'
     version: 0.0.0
   'file:projects/ui-test-app.tgz_webpack-cli@3.3.12':
@@ -22058,7 +22058,7 @@ packages:
       '@types/react-redux': 7.1.16
       '@types/react-select': 3.0.26
       '@types/semver': 5.5.0
-      classnames: 2.3.1
+      classnames: 2.2.6
       cpx: 1.5.0
       cross-env: 5.2.1
       dotenv: 8.2.0
@@ -22089,7 +22089,7 @@ packages:
     peerDependencies:
       webpack-cli: '*'
     resolution:
-      integrity: sha512-5sZoNYUIDxZRXz1C8xiMVORf+1kXoSo7ROxcbbDe9ANc2c30VJb+YKtRAuI3+jWhciA+O3NroXaPeCGFWYWUqQ==
+      integrity: sha512-BOTa+ChTzfD3k5jHy0nq57J+m/Wet+QN/YlIoqOo0KhXI4dZqVOc62oKIk3HpvNg7D+O+vH4PN1hm+4E5M+VKw==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/ui-test-extension.tgz_webpack@4.42.0':
@@ -22097,7 +22097,7 @@ packages:
       '@types/classnames': 2.2.11
       '@types/react': 16.9.43
       '@types/react-select': 3.0.26
-      classnames: 2.3.1
+      classnames: 2.2.6
       cpx: 1.5.0
       eslint: 6.8.0
       react: 16.14.0
@@ -22113,7 +22113,7 @@ packages:
     peerDependencies:
       webpack: '*'
     resolution:
-      integrity: sha512-eugu/cfF2lPFoXXWor0XxViQj5UHw2nuPUOQVFa8ULyJuHpZ/sGxxbIRSEHxsRJml9au5eKn5IJaTu3lUp+1VQ==
+      integrity: sha512-xUzLwGks3BOgK3hx4bH5l6R2iEZHKOTX27DcAJkRIzkJQlDrwmoMVVzLgXbcHbr8qqfegwQQ/QMLHqylBky3PQ==
       tarball: 'file:projects/ui-test-extension.tgz'
     version: 0.0.0
   'file:projects/usage-logging-client.tgz':
@@ -22397,7 +22397,7 @@ specifiers:
   chalk: ^3.0.0
   child_process: ^1.0.2
   chrome-launcher: ^0.10.5
-  classnames: ^2.2.5
+  classnames: 2.2.6
   commander: ^2.14.1
   concurrently: ^3.6.1
   cpx: ^1.5.0

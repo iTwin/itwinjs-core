@@ -50,7 +50,7 @@
     "@bentley/ui-core": "2.16.0-dev.9",
     "@bentley/ui-framework": "2.16.0-dev.9",
     "@bentley/ui-ninezone": "2.16.0-dev.9",
-    "classnames": "^2.2.5",
+    "classnames": "2.2.6",
     "react": "^16.8.0",
     "svg-sprite-loader": "4.2.1"
   },
