@@ -3,6 +3,22 @@ publish: false
 ---
 # NextVersion
 
+## Obtaining element geometry on the frontend
+
+Until now, an element's [GeometryStreamProps]($common) was only available on the backend - [IModelConnection.Elements.getProps]($frontend) always omits the geometry. [IModelConnection.Elements.loadProps]($frontend) has been introduced to provide greater control over which properties are returned. It accepts the Id, federation Guid, or [Code]($common) of the element of interest, and optionally an [ElementLoadOptions]($common) specifying which properties to include or exclude. For example, the following code queries for and iterates over the geometry of a [GeometricElement3d]($backend):
+
+```ts
+  function printGeometryStream(elementId: Id64String, iModel: IModelConnection): void {
+    const props = await iModel.elements.loadProps(elementId, { wantGeometry: true }) as GeometricElement3dProps;
+    assert(undefined !== props, `Element ${elementId} does not exist`);
+    const iterator = GeometryStreamIterator.fromGeometricElement3d(props);
+    for (const entry of iterator)
+      console.log(JSON.stringify(entry));
+  }
+```
+
+Keep in mind that geometry streams can be extremely large. They may also contain data like [BRepEntity.DataProps]($common) that cannot be interpreted on the frontend; for this reason BRep data is omitted from the geometry stream, unless explicitly requested via [ElementLoadOptions.wantBRepData]($common).
+
 ## Clipping enhancements
 
 The contents of a [ViewState]($frontend) can be clipped by applying a [ClipVector]($geometry-core) to the view via [ViewState.setViewClip]($frontend). Several enhancements have been made to this feature:
