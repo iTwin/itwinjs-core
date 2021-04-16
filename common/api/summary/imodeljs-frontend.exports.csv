@@ -124,6 +124,7 @@ public;DisclosedTileTreeSet
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
+internal;disposeTileTreesForGeometricModels(modelIds: Set
 beta;DownloadBriefcaseId =
 beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
 internal;DrawClipOptions

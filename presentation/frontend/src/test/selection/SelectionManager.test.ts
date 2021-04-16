@@ -495,7 +495,12 @@ describe("SelectionManager", () => {
       const equalId64Arg = (lhs: Id64Arg, rhs: Id64Arg) => {
         if (Id64.sizeOf(lhs) !== Id64.sizeOf(rhs))
           return false;
-        return Id64.iterate(lhs, (lhsId) => Id64.has(rhs, lhsId));
+
+        for (const lhsId of Id64.iterable(lhs))
+          if (!Id64.has(rhs, lhsId))
+            return false;
+
+        return true;
       };
 
       beforeEach(() => {

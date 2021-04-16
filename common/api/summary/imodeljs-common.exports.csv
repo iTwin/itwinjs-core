@@ -45,7 +45,6 @@ alpha;BRepThickenProps
 beta;BriefcaseDownloader
 public;BriefcaseIdValue
 beta;BriefcaseProps
-internal;BriefcasePushAndPullNotifications
 public;calculateSolarAngles(date: Date, location: Cartographic):
 public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 public;calculateSolarDirectionFromAngles(azimuthElevation:
@@ -148,7 +147,8 @@ alpha;ElementGeometryRequest
 alpha;ElementGeometryUpdate
 beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
-public;ElementLoadProps
+public;ElementLoadOptions
+public;ElementLoadProps 
 public;ElementProps 
 beta;EntityMetaData 
 beta;EntityMetaDataProps
