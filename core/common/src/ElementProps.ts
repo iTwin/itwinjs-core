@@ -300,8 +300,8 @@ export interface DisplayStyleLoadProps {
   compressExcludedElementIds?: boolean;
 }
 
-/** Options used to specify properties to include or exclude when querying [[ElementProps]].
- * @see [IModelDb.getElementProps]($backend) and [IModelConnection.getElementProps]($frontend) for examples.
+/** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
+ * [IModelDb.Elements.getElementProps]($backend) and [IModelConnection.Elements.loadProps]($frontend).
  * @public
  */
 export interface ElementLoadOptions {
