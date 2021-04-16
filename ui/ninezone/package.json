@@ -90,7 +90,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "classnames": "^2.2.5",
+    "classnames": "2.2.6",
     "immer": "^9.0.1",
     "uuid": "^7.0.3"
   },

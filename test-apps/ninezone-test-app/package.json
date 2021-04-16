@@ -34,7 +34,7 @@
     "@bentley/ui-components": "2.16.0-dev.9",
     "@bentley/ui-core": "2.16.0-dev.9",
     "@bentley/ui-ninezone": "2.16.0-dev.9",
-    "classnames": "^2.2.5",
+    "classnames": "2.2.6",
     "highlight.js": "~10.6.0",
     "raf-schd": "^4.0.0",
     "react": "^16.8.0",
