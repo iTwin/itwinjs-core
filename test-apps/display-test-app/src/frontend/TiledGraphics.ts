@@ -49,8 +49,8 @@ class Provider implements TiledGraphicsProvider {
 
   private constructor(vp: Viewport, iModel: IModelConnection, ovrs: FeatureSymbology.Overrides) {
     this.iModel = iModel;
-    for (const kvp of iModel.models.loaded) {
-      const spatial = kvp[1].asSpatialModel;
+    for (const model of iModel.models) {
+      const spatial = model.asSpatialModel;
       if (undefined !== spatial) {
         const ref = spatial.createTileTreeReference(vp.view);
         this._refs.push(new ExternalTreeRef(ref, ovrs));

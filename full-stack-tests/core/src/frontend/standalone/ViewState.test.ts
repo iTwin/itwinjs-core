@@ -10,13 +10,14 @@ import {
 import {
   AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, MarginPercent,
   MockRender, ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
-  StandardViewId, ViewState3d, ViewStatus,
+  StandardViewId, ViewState, ViewState3d, ViewStatus,
 } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 
 describe("ViewState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
+  let imodel3: IModelConnection;
   let viewState: SpatialViewState;
   let unitTestRpcImp: TestRpcInterface;
 
@@ -28,6 +29,7 @@ describe("ViewState", () => {
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
 
     imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel3 = await SnapshotConnection.openFile("ReadWriteTest.bim");
 
     unitTestRpcImp = TestRpcInterface.getClient();
   });
@@ -35,6 +37,7 @@ describe("ViewState", () => {
   after(async () => {
     if (imodel) await imodel.close();
     if (imodel2) await imodel2.close();
+    if (imodel3) await imodel3.close();
     await MockRender.App.shutdown();
   });
 
@@ -362,7 +365,9 @@ describe("ViewState", () => {
     // Add 2d models to selector
     view.modelSelector.addModels(["0x24", "0x28"]);
     await imodel2.models.load(view.modelSelector.models);
+    // eslint-disable-next-line deprecation/deprecation
     assert.instanceOf(imodel2.models.loaded.get("0x24"), DrawingModelState);
+    // eslint-disable-next-line deprecation/deprecation
     assert.instanceOf(imodel2.models.loaded.get("0x28"), SheetModelState);
     expect(view.modelSelector.models.size).to.equal(numSpatialModels + 2);
 
@@ -449,6 +454,43 @@ describe("ViewState", () => {
 
     const fromJSON = new SpatialViewState(view.toJSON(), view.iModel, view.categorySelector, view.getDisplayStyle3d(), view.modelSelector);
     expect(fromJSON.allow3dManipulations()).to.be.false;
+  });
+
+  it("detects if two views share a coordinate system", async () => {
+    function expectCompatibility(view1: ViewState, view2: ViewState, expectCompatible: boolean): void {
+      expect(view1.hasSameCoordinates(view1)).to.be.true;
+      expect(view2.hasSameCoordinates(view2)).to.be.true;
+      expect(view1.hasSameCoordinates(view1.clone())).to.be.true;
+      expect(view2.hasSameCoordinates(view2.clone())).to.be.true;
+      expect(view1.hasSameCoordinates(view2)).to.equal(expectCompatible);
+      expect(view2.hasSameCoordinates(view1)).to.equal(expectCompatible);
+    }
+
+    const sheet = await imodel3.views.load("0x1000000002e");
+    const drawing = await imodel3.views.load("0x10000000020") as DrawingViewState;
+    const spatial = viewState.clone();
+    const spatialNoModels = viewState.clone();
+    spatialNoModels.modelSelector.models.clear();
+    const spatialOtherIModel = await imodel2.views.load("0x46") as SpatialViewState;
+
+    expectCompatibility(sheet, drawing, false);
+    expectCompatibility(sheet, spatial, false);
+    expectCompatibility(drawing, spatial, false);
+    expectCompatibility(spatial, spatialNoModels, true);
+    expectCompatibility(spatial, spatialOtherIModel, false);
+
+    spatialOtherIModel.modelSelector.models.clear();
+    expectCompatibility(spatial, spatialOtherIModel, false);
+
+    spatialOtherIModel.modelSelector.models = spatial.modelSelector.models;
+    expectCompatibility(spatial, spatialOtherIModel, false);
+
+    spatial.modelSelector.models.add(drawing.baseModelId);
+    expectCompatibility(spatial, drawing, false);
+
+    const blank = SpatialViewState.createBlank(imodel3, new Point3d(0, 0, 0), new Point3d(1, 1, 1));
+    blank.modelSelector.models.add(drawing.baseModelId);
+    expectCompatibility(blank, drawing, false);
   });
 });
 

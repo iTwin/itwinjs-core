@@ -2,6 +2,48 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.14.3",
+      "tag": "@bentley/presentation-components_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/presentation-components_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/presentation-components_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/presentation-components_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Apply unified selection on newly created viewports"
+          },
+          {
+            "comment": "Added expanded nodes tracking in trees using usePresentationTreeNodeLoader with enabled hierarchy auto update"
+          },
+          {
+            "comment": "Changed `PresentationManager` to **not** set link information on created `PropertyRecords`. Default behavior should be handled by UI components. Custom behavior can be injected by overriding data providers that return the records."
+          },
+          {
+            "comment": "Always set `PropertyDescription.typename` to lowercase when creating content."
+          },
+          {
+            "comment": " Handle partial hierarchy updates without loosing tree state."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.13.0",
       "tag": "@bentley/presentation-components_v2.13.0",
       "date": "Tue, 09 Mar 2021 20:28:13 GMT",

@@ -16,7 +16,6 @@ function countTileTrees(view: ViewState): number {
 // eslint-disable-file deprecation/deprecation
 
 describe("Animated tile trees (#integration)", () => {
-  const projectName = "iModelJsIntegrationTest";
   const viewId = "0x100000004d9";
   const styleId = "0x100000004d8";
   const modelId = "0x10000000001";
@@ -25,13 +24,13 @@ describe("Animated tile trees (#integration)", () => {
   before(async () => {
     await IModelApp.shutdown();
     await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
-    const projectId = await TestUtility.getTestProjectId(projectName);
-    const iModelId = await TestUtility.getTestIModelId(projectId, "SYNCHRO.UTK");
-    imodel = await CheckpointConnection.openRemote(projectId, iModelId);
+    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);
+    imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
   after(async () => {
@@ -92,6 +91,18 @@ describe("Animated tile trees (#integration)", () => {
     const view = await imodel.views.load(viewId);
     expect(view.displayStyle.id).to.equal(styleId);
     expect(hasNonEmptyElementIds(view.displayStyle.toJSON())).to.be.false;
+
+    let style = await imodel.elements.loadProps(styleId, { displayStyle: { omitScheduleScriptElementIds: true } });
+    expect(style).not.to.be.undefined;
+    expect(hasNonEmptyElementIds(style!)).to.be.false;
+
+    style = await imodel.elements.loadProps(styleId, { displayStyle: { omitScheduleScriptElementIds: false } });
+    expect(style).not.to.be.undefined;
+    expect(hasNonEmptyElementIds(style!)).to.be.true;
+
+    style = await imodel.elements.loadProps(styleId);
+    expect(style).not.to.be.undefined;
+    expect(hasNonEmptyElementIds(style!)).to.be.true;
   });
 
   it("creates an additional tile tree per animation transform node", async () => {

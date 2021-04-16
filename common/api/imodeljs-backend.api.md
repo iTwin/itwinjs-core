@@ -16,7 +16,6 @@ import { Base64EncodedString } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BRepGeometryCreate } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
-import { BriefcasePushAndPullNotifications } from '@bentley/imodeljs-common';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
 import { CategoryProps } from '@bentley/imodeljs-common';
@@ -55,7 +54,7 @@ import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
-import { EditingSessionNotifications } from '@bentley/imodeljs-common';
+import { EditingScopeNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementAspectProps } from '@bentley/imodeljs-common';
 import { ElementGeometryRequest } from '@bentley/imodeljs-common';
@@ -167,7 +166,6 @@ import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
 import { SchemaState } from '@bentley/imodeljs-common';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
-import { SectionLocationProps } from '@bentley/imodeljs-common';
 import { SectionType } from '@bentley/imodeljs-common';
 import { SessionProps } from '@bentley/bentleyjs-core';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
@@ -439,11 +437,7 @@ export class BriefcaseDb extends IModelDb {
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // @internal (undocumented)
-    reinstateTxn(): IModelStatus;
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // @internal (undocumented)
-    reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus;
     saveChanges(description?: string): void;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
@@ -517,25 +511,6 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static reverseChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reverseToVersion: IModelVersion): Promise<void>;
     }
-
-// @public
-export class CachedECSqlStatement {
-    // @internal
-    constructor(stmt: ECSqlStatement);
-    // (undocumented)
-    statement: ECSqlStatement;
-    // (undocumented)
-    useCount: number;
-}
-
-// @internal
-export class CachedSqliteStatement {
-    constructor(stmt: SqliteStatement);
-    // (undocumented)
-    statement: SqliteStatement;
-    // (undocumented)
-    useCount: number;
-}
 
 // @public
 export abstract class Callout extends DetailingSymbol implements CalloutProps {
@@ -861,8 +836,6 @@ export class ConcurrencyControl {
     // @internal (undocumented)
     lockSchema0(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     // @internal (undocumented)
-    get modelsAffectedByWrites(): Id64String[];
-    // @internal (undocumented)
     get needLocks(): boolean;
     // @internal (undocumented)
     onClose(): void;
@@ -872,8 +845,6 @@ export class ConcurrencyControl {
     onElementWritten(_elementClass: typeof Element, id: Id64String, opcode: DbOpcode): void;
     // @internal (undocumented)
     onMergeChanges(): void;
-    // @internal (undocumented)
-    onMergedChanges(): void;
     // (undocumented)
     onModelWrite(modelClass: typeof Model, model: ModelProps, opcode: DbOpcode): void;
     // (undocumented)
@@ -888,10 +859,6 @@ export class ConcurrencyControl {
     onPushEmpty(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
     onSaveChanges(): void;
-    // @internal (undocumented)
-    onSavedChanges(): void;
-    // @internal (undocumented)
-    onUndoRedo(): void;
     // @internal (undocumented)
     get pendingRequest(): ConcurrencyControl.Request;
     // @internal @deprecated (undocumented)
@@ -1448,11 +1415,14 @@ export class ECDb implements IDisposable {
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
     queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
+    // @internal
+    resetSqliteCache(size: number): void;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     saveChanges(changeSetName?: string): void;
-    // @internal
-    withPreparedSqliteStatement<T>(sql: string, cb: (stmt: SqliteStatement) => T): T;
-    withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T;
+    withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+    withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T;
+    withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+    withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T;
 }
 
 // @public
@@ -1567,14 +1537,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     getRow(): any;
     getValue(columnIx: number): ECSqlValue;
     get isPrepared(): boolean;
-    // @internal
-    get isShared(): boolean;
     next(): IteratorResult<any>;
     // @internal
     prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string): void;
     reset(): void;
-    // @internal
-    setIsShared(b: boolean): void;
+    // (undocumented)
+    get sql(): string;
     step(): DbResult;
     // @internal
     stepAsync(): Promise<DbResult>;
@@ -1582,27 +1550,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     // @internal
     tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string): StatusCodeWithMessage<DbResult>;
 }
-
-// @public
-export class ECSqlStatementCache {
-    constructor(maxCount?: number);
-    // (undocumented)
-    add(str: string, stmt: ECSqlStatement): void;
-    // (undocumented)
-    clear(): void;
-    // (undocumented)
-    find(str: string): CachedECSqlStatement | undefined;
-    // (undocumented)
-    getCount(): number;
-    // (undocumented)
-    readonly maxCount: number;
-    // (undocumented)
-    release(stmt: ECSqlStatement): void;
-    // (undocumented)
-    removeUnusedStatementsIfNecessary(): void;
-    // (undocumented)
-    replace(str: string, stmt: ECSqlStatement): void;
-    }
 
 // @public
 export class ECSqlValue {
@@ -1665,9 +1612,9 @@ export class Element extends Entity implements ElementProps {
         [key: string]: any;
     };
     readonly model: Id64String;
-    // @beta (undocumented)
+    // @beta
     protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void;
-    // @beta (undocumented)
+    // @beta
     protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void;
     // @beta
     protected static onChildAdd(_arg: OnChildElementPropsArg): void;
@@ -1699,6 +1646,14 @@ export class Element extends Entity implements ElementProps {
     protected static onInsert(arg: OnElementPropsArg): void;
     // @beta
     protected static onInserted(arg: OnElementIdArg): void;
+    // @beta
+    protected static onSubModelDelete(_arg: OnSubModelIdArg): void;
+    // @beta
+    protected static onSubModelDeleted(_arg: OnSubModelIdArg): void;
+    // @beta
+    protected static onSubModelInsert(_arg: OnSubModelPropsArg): void;
+    // @beta
+    protected static onSubModelInserted(_arg: OnSubModelIdArg): void;
     // @beta
     protected static onUpdate(arg: OnElementPropsArg): void;
     // @beta
@@ -1750,9 +1705,7 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
     static get className(): string;
     // (undocumented)
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
-    // (undocumented)
     priority: number;
-    // (undocumented)
     status: number;
 }
 
@@ -2638,9 +2591,10 @@ export abstract class IModelDb extends IModel {
     static validateSchemas(filePath: string, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
-    // @internal
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T;
+    withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+    withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T;
 }
 
 // @public (undocumented)
@@ -3131,11 +3085,9 @@ export class IpcHost {
     // (undocumented)
     static noStack: boolean;
     // @internal (undocumented)
-    static notifyEditingSession<T extends keyof EditingSessionNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingSessionNotifications[T]>): void;
+    static notifyEditingScope<T extends keyof EditingScopeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingScopeNotifications[T]>): void;
     // @internal (undocumented)
     static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>): void;
-    // @internal (undocumented)
-    static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>): void;
     // @internal (undocumented)
     static notifyTxns<T extends keyof TxnNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<TxnNotifications[T]>): void;
     static removeListener(channel: string, listener: IpcListener): void;
@@ -3456,17 +3408,15 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     protected _accessToken?: AccessToken;
     // (undocumented)
-    get config(): NativeAppAuthorizationConfiguration;
+    config: NativeAppAuthorizationConfiguration;
     // (undocumented)
-    protected _config?: NativeAppAuthorizationConfiguration;
-    // (undocumented)
-    protected _expireSafety: number;
+    expireSafety: number;
     // (undocumented)
     getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
-    initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void>;
+    initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
     get isAuthorized(): boolean;
     // (undocumented)
@@ -3503,6 +3453,8 @@ export class NativeAppStorage {
 
 // @beta
 export class NativeHost {
+    // (undocumented)
+    static get applicationName(): string;
     static get appSettingsCacheDir(): string;
     // @internal (undocumented)
     static get authorization(): NativeAppAuthorizationBackend;
@@ -3600,6 +3552,16 @@ export interface OnModelIdArg extends OnModelArg {
 // @beta
 export interface OnModelPropsArg extends OnModelArg {
     props: Readonly<ModelProps>;
+}
+
+// @beta
+export interface OnSubModelIdArg extends OnElementArg {
+    subModelId: Id64String;
+}
+
+// @beta
+export interface OnSubModelPropsArg extends OnElementArg {
+    subModelProps: ModelProps;
 }
 
 // @public
@@ -3761,12 +3723,8 @@ export class Relationship extends Entity implements RelationshipProps {
     // (undocumented)
     static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T;
     insert(): Id64String;
-    // (undocumented)
     static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void;
-    // (undocumented)
     static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void;
-    // (undocumented)
-    static onValidateOutput(_props: RelationshipProps, _iModel: IModelDb): void;
     // (undocumented)
     readonly sourceId: Id64String;
     // (undocumented)
@@ -3926,17 +3884,6 @@ export class SectionDrawingLocation extends SpatialLocationElement {
 export class SectionDrawingModel extends DrawingModel {
     // @internal (undocumented)
     static get className(): string;
-}
-
-// @alpha @deprecated
-export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
-    // @internal
-    constructor(props: SectionLocationProps, iModel: IModelDb);
-    // @internal (undocumented)
-    static get className(): string;
-    sectionType: SectionType;
-    // @internal (undocumented)
-    toJSON(): SectionLocationProps;
 }
 
 // @internal
@@ -4115,9 +4062,10 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     toJSON(): SpatialViewDefinitionProps;
 }
 
-// @internal
+// @public
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
     [Symbol.iterator](): IterableIterator<any>;
+    constructor(_sql: string);
     bindValue(parameter: number | string, value: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;
@@ -4127,38 +4075,17 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     getValue(columnIx: number): SqliteValue;
     get isPrepared(): boolean;
     get isReadonly(): boolean;
-    get isShared(): boolean;
     next(): IteratorResult<any>;
-    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, sql: string): void;
+    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb): void;
     reset(): void;
-    setIsShared(b: boolean): void;
+    // (undocumented)
+    get sql(): string;
     step(): DbResult;
     // (undocumented)
     get stmt(): IModelJsNative.SqliteStatement | undefined;
     }
 
-// @internal
-export class SqliteStatementCache {
-    constructor(maxCount?: number);
-    // (undocumented)
-    add(str: string, stmt: SqliteStatement): void;
-    // (undocumented)
-    clear(): void;
-    // (undocumented)
-    find(str: string): CachedSqliteStatement | undefined;
-    // (undocumented)
-    getCount(): number;
-    // (undocumented)
-    readonly maxCount: number;
-    // (undocumented)
-    release(stmt: SqliteStatement): void;
-    // (undocumented)
-    removeUnusedStatementsIfNecessary(): void;
-    // (undocumented)
-    replace(str: string, stmt: SqliteStatement): void;
-    }
-
-// @internal
+// @public
 export class SqliteValue {
     constructor(stmt: IModelJsNative.SqliteStatement, colIndex: number);
     get columnName(): string;
@@ -4173,7 +4100,7 @@ export class SqliteValue {
     get value(): any;
 }
 
-// @internal
+// @public
 export enum SqliteValueType {
     // (undocumented)
     Blob = 4,
@@ -4203,6 +4130,19 @@ export class StandaloneDb extends IModelDb {
     // @beta (undocumented)
     readonly txns: TxnManager;
     static upgradeSchemas(filePath: string): void;
+}
+
+// @internal
+export class StatementCache<Stmt extends Statement> {
+    constructor(maxCount?: number);
+    // (undocumented)
+    addOrDispose(stmt: Stmt): void;
+    // (undocumented)
+    clear(): void;
+    // (undocumented)
+    findAndRemove(sql: string): Stmt | undefined;
+    // (undocumented)
+    get size(): number;
 }
 
 // @internal
@@ -4469,8 +4409,6 @@ export class TxnManager {
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
-    // @internal (undocumented)
-    protected _onValidateOutput(props: RelationshipProps): void;
     queryFirstTxnId(allowCrossSessions?: boolean): TxnIdString;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
@@ -4595,7 +4533,6 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @beta
     abstract get details(): ViewDetails;
     displayStyleId: Id64String;
     getAuxiliaryCoordinateSystemId(): Id64String;
@@ -4623,7 +4560,6 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     delta: Point2d;
-    // @beta
     get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;
     origin: Point2d;
@@ -4640,7 +4576,6 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     cameraOn: boolean;
     // @internal (undocumented)
     static get className(): string;
-    // @beta
     get details(): ViewDetails3d;
     extents: Vector3d;
     loadDisplayStyle3d(): DisplayStyle3d;

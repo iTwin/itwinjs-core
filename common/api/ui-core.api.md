@@ -262,6 +262,7 @@ export interface CheckListBoxItemProps extends CommonProps {
     checked?: boolean;
     disabled?: boolean;
     label: string;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => any;
     onClick?: () => any;
 }
 

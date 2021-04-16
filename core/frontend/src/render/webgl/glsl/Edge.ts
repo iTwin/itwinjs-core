@@ -35,15 +35,16 @@ const checkForSilhouetteDiscard = `
   vec3 n0 = MAT_NORM * octDecodeNormal(a_normals.xy);
   vec3 n1 = MAT_NORM * octDecodeNormal(a_normals.zw);
 
+  float perpTol = 2.5e-4;
   if (0.0 == MAT_MVP[0].w) {
-    return n0.z * n1.z > 0.0;           // orthographic.
+    return n0.z * n1.z > perpTol;        // orthographic.
   } else {
     vec4  viewPos = MAT_MV * rawPos;     // perspective
     vec3  toEye = normalize(viewPos.xyz);
     float dot0 = dot(n0, toEye);
     float dot1 = dot(n1, toEye);
 
-    if (dot0 * dot1 > 0.0)
+    if (dot0 * dot1 > perpTol)
       return true;
 
     // Need to discard if either is non-silhouette.
@@ -53,7 +54,7 @@ const checkForSilhouetteDiscard = `
     dot0 = dot(n0, toEye);
     dot1 = dot(n1, toEye);
 
-    return dot0 * dot1 > 0.0;
+    return dot0 * dot1 > perpTol;
   }
 `;
 
@@ -130,7 +131,7 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   addLineWeight(vert);
 
   if (isSilhouette) {
-    addNormalMatrix(vert);
+    addNormalMatrix(vert, instanced);
     addModelViewProjectionMatrix(vert);
     vert.set(VertexShaderComponent.CheckForEarlyDiscard, checkForSilhouetteDiscard);
     vert.addFunction(octDecodeNormal);

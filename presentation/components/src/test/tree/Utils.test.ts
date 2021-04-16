@@ -8,12 +8,10 @@ import * as faker from "faker";
 import { GroupingNodeKey, LabelDefinition, Node } from "@bentley/presentation-common";
 import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PageOptions } from "@bentley/ui-components";
-import { createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
+import { createPartialTreeNodeItem, createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
 
 describe("Utils", () => {
-
   describe("createTreeNodeItem", () => {
-
     it("creates tree node", () => {
       const node = createRandomECInstancesNode();
       const treeNode = createTreeNodeItem(node);
@@ -51,7 +49,13 @@ describe("Utils", () => {
       const treeNode = createTreeNodeItem(node, undefined, { appendChildrenCountForGroupingNodes: true });
       expect(treeNode).to.matchSnapshot();
     });
+  });
 
+  describe("createPartialTreeNodeItem", () => {
+    it("does not set a presentation tree node key when input does not have a key", () => {
+      const node = createPartialTreeNodeItem({}, undefined, {});
+      expect(PRESENTATION_TREE_NODE_KEY in node).to.be.false;
+    });
   });
 
   describe("createTreeNodeItems", () => {
@@ -86,7 +90,5 @@ describe("Utils", () => {
       expect(result!.size).to.be.equal(size);
       expect(result!.start).to.be.equal(start);
     });
-
   });
-
 });
