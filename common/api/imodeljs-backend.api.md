@@ -1613,9 +1613,9 @@ export class Element extends Entity implements ElementProps {
         [key: string]: any;
     };
     readonly model: Id64String;
-    // @beta (undocumented)
+    // @beta
     protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void;
-    // @beta (undocumented)
+    // @beta
     protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void;
     // @alpha
     protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void;
@@ -1678,9 +1678,7 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
     static get className(): string;
     // (undocumented)
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
-    // (undocumented)
     priority: number;
-    // (undocumented)
     status: number;
 }
 
@@ -3605,12 +3603,8 @@ export class Relationship extends Entity implements RelationshipProps {
     // (undocumented)
     static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T;
     insert(): Id64String;
-    // (undocumented)
     static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void;
-    // (undocumented)
     static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void;
-    // (undocumented)
-    static onValidateOutput(_props: RelationshipProps, _iModel: IModelDb): void;
     // (undocumented)
     readonly sourceId: Id64String;
     // (undocumented)
@@ -4296,8 +4290,6 @@ export class TxnManager {
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
-    // @internal (undocumented)
-    protected _onValidateOutput(props: RelationshipProps): void;
     queryFirstTxnId(allowCrossSessions?: boolean): TxnIdString;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;

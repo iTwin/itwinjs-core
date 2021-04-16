@@ -939,9 +939,7 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
 export interface ColumnDescription {
     editable?: boolean;
     filterable?: boolean;
-    // (undocumented)
     filterCaseSensitive?: boolean;
-    // @beta
     filterRenderer?: FilterRenderer;
     icon?: boolean;
     key: string;
@@ -949,16 +947,14 @@ export interface ColumnDescription {
     propertyDescription?: PropertyDescription;
     resizable?: boolean;
     secondarySortColumn?: number;
-    // (undocumented)
     showDistinctValueFilters?: boolean;
-    // (undocumented)
     showFieldFilters?: boolean;
     sortable?: boolean;
     sortIgnoreCase?: boolean;
     width?: number;
 }
 
-// @beta
+// @public
 export interface ColumnFilterDescriptor extends FilterDescriptor {
     distinctFilter: DistinctValuesFilterDescriptor;
     fieldFilter: FieldFilterDescriptor;
@@ -1004,19 +1000,20 @@ export interface CompletionObserver<T> {
     next?: (value: T) => void;
 }
 
-// @beta
+// @public
 export interface CompositeFilterDescriptor extends FilterDescriptor {
     filterDescriptorCollection: FilterDescriptorCollection;
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
-// @beta
+// @public
 export interface CompositeFilterDescriptorCollection {
     add(item: FilterDescriptor): void;
     clear(): void;
     count: number;
     evaluateRow(row: RowItem): boolean;
     getColumnFilterDescriptor(columnKey: string): ColumnFilterDescriptor | undefined;
+    // @alpha
     getFilterExpression(): string;
     isColumnFilterActive(columnKey: string): boolean;
     logicalOperator: FilterCompositionLogicalOperator;
@@ -1429,15 +1426,15 @@ export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFilterer
     recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult>;
 }
 
-// @beta
+// @public
 export class DistinctValueCollection {
     constructor();
     // (undocumented)
-    get values(): any[];
-    set values(values: any[]);
+    get values(): TableDistinctValue[];
+    set values(values: TableDistinctValue[]);
     }
 
-// @beta
+// @public
 export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
     addDistinctValue(distinctValue: any): void;
     distinctValues: DistinctValueCollection;
@@ -1812,7 +1809,7 @@ export interface FavoritePropertyListProps {
     propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
-// @beta
+// @public
 export interface FieldFilterDescriptor extends FilterDescriptor {
     addFieldValue(fieldValue: any, operator: FilterOperator, isCaseSensitive?: boolean): void;
     filterDescriptorCollection: OperatorValueFilterDescriptorCollection;
@@ -1821,11 +1818,12 @@ export interface FieldFilterDescriptor extends FilterDescriptor {
     tryFindDescriptor(fieldValue: any, operator: FilterOperator): FilterDescriptor | undefined;
 }
 
-// @beta
+// @public
 export interface FilterableColumn {
     columnFilterDescriptor: ColumnFilterDescriptor;
     createSimpleFilterDescriptor(value: any, filterOperator: FilterOperator): OperatorValueFilterDescriptor;
     filterableTable: FilterableTable;
+    filterCaseSensitive: boolean;
     filterMemberKey: string;
     filterMemberType: string;
     getDistinctValues(maximumValueCount?: number): Promise<DistinctValueCollection>;
@@ -1834,13 +1832,13 @@ export interface FilterableColumn {
     showFieldFilters: boolean;
 }
 
-// @beta
+// @public
 export interface FilterableTable {
     filterDescriptors: CompositeFilterDescriptorCollection;
     getPropertyDisplayValueExpression(property: string): string;
 }
 
-// @beta
+// @public
 export enum FilterCompositionLogicalOperator {
     // (undocumented)
     And = 0,
@@ -1848,20 +1846,21 @@ export enum FilterCompositionLogicalOperator {
     Or = 1
 }
 
-// @beta
+// @public
 export interface FilterDescriptor {
     clear(): void;
     evaluateRow(row: RowItem): boolean;
+    // @alpha
     getFilterExpression(): string;
     isActive: boolean;
     isFilterForColumn(columnKey: string): boolean;
 }
 
-// @beta
+// @public
 export class FilterDescriptorCollection extends FilterDescriptorCollectionBase<FilterDescriptor> {
 }
 
-// @beta
+// @public
 export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterDescriptor> {
     constructor();
     add(item: TDescriptor): void;
@@ -1927,7 +1926,7 @@ export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDi
     onDataChanged: PropertyDataChangeEvent;
 }
 
-// @beta
+// @public
 export enum FilterOperator {
     // (undocumented)
     Contains = 9,
@@ -1965,10 +1964,12 @@ export enum FilterOperator {
     StartsWith = 7
 }
 
-// @beta
+// @public
 export enum FilterRenderer {
     // (undocumented)
     MultiSelect = 2,
+    // (undocumented)
+    MultiValue = 5,
     // (undocumented)
     Numeric = 1,
     // (undocumented)
@@ -3163,7 +3164,7 @@ export interface OperatorProcessor {
     isNotEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
-// @beta
+// @public
 export interface OperatorValueFilterDescriptor extends FilterDescriptor {
     isCaseSensitive: boolean;
     memberKey: string;
@@ -3172,7 +3173,7 @@ export interface OperatorValueFilterDescriptor extends FilterDescriptor {
     value: any;
 }
 
-// @beta
+// @public
 export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {
 }
 
@@ -3738,6 +3739,8 @@ export interface QuantityProps extends CommonProps {
 
 // @public
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
+    // (undocumented)
+    filterableColumn?: FilterableColumn;
     icon?: boolean;
 }
 
@@ -4460,10 +4463,8 @@ export type TableDataChangesListener = () => void;
 
 // @public
 export interface TableDataProvider {
-    // @beta
     applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
     getColumns(): Promise<ColumnDescription[]>;
-    // @beta
     getDistinctValues?: (columnKey: string, maximumValueCount?: number) => Promise<DistinctValueCollection>;
     // @alpha
     getPropertyDisplayValueExpression?: (property: string) => string;
@@ -4474,7 +4475,7 @@ export interface TableDataProvider {
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
 }
 
-// @beta
+// @public
 export interface TableDistinctValue {
     // (undocumented)
     label: string;
@@ -4517,6 +4518,7 @@ export interface TableProps extends CommonProps {
     hideHeader?: boolean;
     isCellSelected?: (rowIndex: number, cell: CellItem) => boolean;
     isRowSelected?: (row: RowItem) => boolean;
+    maximumDistinctValues?: number;
     // @internal (undocumented)
     onApplyFilter?: () => void;
     // @beta
