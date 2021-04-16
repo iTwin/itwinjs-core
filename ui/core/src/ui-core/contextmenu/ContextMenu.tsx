@@ -46,7 +46,6 @@ export interface ContextMenuProps extends CommonProps {
   parentSubmenu?: ContextSubMenu;
   /** @internal */
   ignoreNextKeyUp?: boolean;
-  sourceDocument?: Document | null;
 }
 
 /** @internal */
@@ -54,6 +53,7 @@ interface ContextMenuState {
   selectedIndex: number;
   direction: ContextMenuDirection;
   ignoreNextKeyUp: boolean;
+  parentDocument: Document | null;
 }
 
 /**
@@ -67,12 +67,6 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   private _selectedElement: ContextMenuItem | ContextSubMenu | null = null;
   private _length: number = 0;
   private _hotKeyMap: Map<number, string> = new Map();
-
-  private _lastChildren: React.ReactNode;
-  private _lastDirection: ContextMenuDirection | undefined = ContextMenuDirection.BottomRight;
-  private _lastSelectedIndex: number = 0;
-  private _injectedChildren: React.ReactNode;
-  private _sourceWindow: Window;
 
   public static defaultProps: Partial<ContextMenuProps> = {
     direction: ContextMenuDirection.BottomRight,
@@ -89,12 +83,11 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   constructor(props: ContextMenuProps) {
     super(props);
 
-    this._sourceWindow = this.props.sourceDocument?.defaultView ?? window;
-
     this.state = {
       selectedIndex: this.props.selectedIndex!,
-      direction: props.direction!,
+      direction: props.direction ?? ContextMenuDirection.BottomRight,
       ignoreNextKeyUp: props.ignoreNextKeyUp!,
+      parentDocument: null,
     };
   }
 
@@ -170,14 +163,9 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, // eslint-disable-line @typescript-eslint/no-unused-vars
       selectedIndex, floating, parentMenu, parentSubmenu, children, className, ignoreNextKeyUp, // eslint-disable-line @typescript-eslint/no-unused-vars
       ...props } = this.props;
-    const renderDirection = parentMenu === undefined ? this.state.direction : direction;
+    // const renderDirection = parentMenu === undefined ? this.state.direction : direction;
 
-    if (this._lastChildren !== children || this._lastDirection !== renderDirection || this._lastSelectedIndex !== this.state.selectedIndex) {
-      this._injectedChildren = this._injectMenuItemProps(children, renderDirection, this.state.selectedIndex);
-      this._lastChildren = children;
-      this._lastDirection = renderDirection;
-      this._lastSelectedIndex = this.state.selectedIndex;
-    }
+    const injectedChildren = this._injectMenuItemProps(children, this.state.direction, this.state.selectedIndex);
 
     const classNames = classnames("core-context-menu", className);
 
@@ -189,21 +177,23 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
         onClick={this._handleClick}
         data-testid="core-context-menu-root"
         {...props}
-        ref={this._rootRef}>
-        <DivWithOutsideClick onOutsideClick={this._handleOnOutsideClick}>
-          <div
-            ref={this._menuRef}
-            role="menu"
-            tabIndex={0}
-            data-testid="core-context-menu-container"
-            className={classnames("core-context-menu-container",
-              opened && "core-context-menu-opened",
-              floating && "core-context-menu-floating",
-              ContextMenu.getCSSClassNameFromDirection(renderDirection),
-            )}>
-            {this._injectedChildren}
-          </div>
-        </DivWithOutsideClick>
+        ref={this._setRootDivRef}>
+        { this.state.parentDocument &&
+          <DivWithOutsideClick onOutsideClick={this._handleOnOutsideClick}>
+            <div
+              ref={this._menuRef}
+              role="menu"
+              tabIndex={0}
+              data-testid="core-context-menu-container"
+              className={classnames("core-context-menu-container",
+                opened && "core-context-menu-opened",
+                floating && "core-context-menu-floating",
+                ContextMenu.getCSSClassNameFromDirection(this.state.direction),
+              )}>
+              {injectedChildren}
+            </div>
+          </DivWithOutsideClick>
+        }
       </div>
     );
   }
@@ -287,45 +277,51 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     return ch;
   };
 
-  private _rootRef = (el: HTMLDivElement | null) => {
+  private _setRootDivRef = (el: HTMLDivElement | null) => {
     this._rootElement = el;
+    const parentDocument = el?.ownerDocument ?? null;
+    if (parentDocument) {
+      this.setState({ parentDocument }, () => {
+        const parentWindow = parentDocument.defaultView;
+        if (parentWindow) {
+          parentWindow.addEventListener("focus", this._handleFocusChange);
+          parentWindow.addEventListener("mouseup", this._handleFocusChange);
+          this.checkRenderDirection();
+        }
+      });
+    }
   };
 
   private _menuRef = (el: HTMLDivElement | null) => {
     this._menuElement = el;
+    this.checkRenderDirection();
   };
 
   /** @internal */
-  public componentDidMount() {
-    this._sourceWindow.addEventListener("focus", this._handleFocusChange);
-    this._sourceWindow.addEventListener("mouseup", this._handleFocusChange);
-
-    this.checkRenderDirection();
-
-    if (this.props.opened)
-      this.focus();
-  }
-
-  /** @internal */
   public componentWillUnmount() {
-    this._sourceWindow.removeEventListener("focus", this._handleFocusChange);
-    this._sourceWindow.removeEventListener("mouseup", this._handleFocusChange);
+    const parentWindow = this.state.parentDocument?.defaultView;
+    if (parentWindow) {
+      parentWindow.removeEventListener("focus", this._handleFocusChange);
+      parentWindow.removeEventListener("mouseup", this._handleFocusChange);
+    }
   }
 
-  private checkRenderDirection() {
+  private checkRenderDirection = () => {
     const { direction, autoflip, parentMenu } = this.props;
 
     let renderDirection = parentMenu === undefined ? this.state.direction : direction;
-
-    // check if menu should flip
-    if (autoflip && parentMenu === undefined) {
-      const menuRect = this.getRect();
-      renderDirection = ContextMenu.autoFlip(renderDirection!, menuRect, this._sourceWindow.innerWidth, this._sourceWindow.innerHeight);
-      // istanbul ignore next
-      if (renderDirection !== this.state.direction)
-        this.setState({ direction: renderDirection });
+    const parentWindow = this.state.parentDocument?.defaultView;
+    if (parentWindow) {
+      // check if menu should flip
+      if (autoflip && parentMenu === undefined) {
+        const menuRect = this.getRect();
+        renderDirection = ContextMenu.autoFlip(renderDirection!, menuRect, parentWindow.innerWidth, parentWindow.innerHeight);
+        // istanbul ignore next
+        if (renderDirection !== this.state.direction)
+          this.setState({ direction: renderDirection });
+      }
     }
-  }
+  };
 
   public focus = () => {
     // istanbul ignore else
@@ -384,6 +380,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
             }
           });
           event.stopPropagation();
+          event.preventDefault();
           return;
         }
       }
@@ -407,6 +404,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
     if ((event.key === SpecialKey.Enter || event.key === SpecialKey.ArrowRight) && this._selectedElement) {
       event.stopPropagation();
+      event.preventDefault();
 
       // istanbul ignore else
       if (event.key === SpecialKey.Enter || /* istanbul ignore next */ this._selectedElement instanceof ContextSubMenu) {
@@ -419,6 +417,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     let { selectedIndex } = this.state;
     if (event.key === SpecialKey.ArrowUp || event.key === SpecialKey.ArrowDown) {
       event.stopPropagation();
+      event.preventDefault();
       if (selectedIndex === -1) {
         selectedIndex = 0;
       } else {

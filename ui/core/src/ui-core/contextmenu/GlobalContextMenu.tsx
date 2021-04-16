@@ -22,18 +22,51 @@ export interface GlobalContextMenuProps extends ContextMenuProps {
   y: number | string;
   /** Context menu element. Default: ContextMenu */
   contextMenuComponent?: React.ComponentType<ContextMenuProps>;
-  /** required when context menu can be shown in a pop-out window. */
-  sourceDocument?: Document;
+}
+
+/** @internal */
+interface GlobalContextMenuState {
+  parentDocument: Document | null;
 }
 
 /** GlobalContextMenu React component used to display a [[ContextMenu]] at the cursor
  * @public
  */
-export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps> {
+export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps, GlobalContextMenuState> {
+  private _container?: HTMLDivElement;
+
+  public readonly state: GlobalContextMenuState = {
+    parentDocument: null,
+  };
 
   constructor(props: GlobalContextMenuProps) {
     super(props);
   }
+
+  public componentWillUnmount() {
+    // istanbul ignore else
+    if (this._container && this._container.parentElement) { // cleanup
+      this._container.parentElement.removeChild(this._container);
+    }
+  }
+
+  private _handleRefSet = (popupDiv: HTMLElement | null) => {
+    const parentDocument = popupDiv?.ownerDocument ?? null;
+    if (parentDocument) {
+      this._container = parentDocument.createElement("div");
+      this._container.id = this.props.identifier !== undefined ? `dialog-${this.props.identifier}` : "core-dialog";
+      let rt = parentDocument.getElementById("core-dialog-root") as HTMLDivElement;
+      if (!rt) {
+        rt = parentDocument.createElement("div");
+        rt.id = "core-dialog-root";
+        parentDocument.body.appendChild(rt);
+      }
+      rt.appendChild(this._container);
+
+      // used to support component rendering in pop-out window
+      this.setState({ parentDocument });
+    }
+  };
 
   public render(): React.ReactNode {
     const { x, y, identifier, contextMenuComponent, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -43,13 +76,17 @@ export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProp
     };
 
     const CtxMenu = contextMenuComponent || ContextMenu; // eslint-disable-line @typescript-eslint/naming-convention
-    const parentDocument = this.props.sourceDocument ?? document;
 
-    return ReactDOM.createPortal(
-      <div className="core-context-menu-global" style={positioningStyle}>
-        <CtxMenu
-          {...props} />
-      </div >
-      , parentDocument.body);
+    return (
+      <div ref={this._handleRefSet}>
+        {this.state.parentDocument &&
+          ReactDOM.createPortal(
+            <div className="core-context-menu-global" style={positioningStyle}>
+              <CtxMenu
+                {...props} />
+            </div >, this.state.parentDocument.body)
+        }
+      </div>
+    );
   }
 }

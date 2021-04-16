@@ -590,33 +590,57 @@ export interface GlobalDialogProps extends DialogProps {
   identifier?: string;
 }
 
+/** @internal */
+interface GlobalDialogState {
+  parentDocument: Document | null;
+}
+
 /** GlobalDialog React component used to display a [[Dialog]] on the top of screen
  * @public
  */
-export class GlobalDialog extends React.Component<GlobalDialogProps> {
-  private _container: HTMLDivElement;
+export class GlobalDialog extends React.Component<GlobalDialogProps, GlobalDialogState> {
+  private _container?: HTMLDivElement;
+
+  public readonly state: GlobalDialogState = {
+    parentDocument: null,
+  };
+
   constructor(props: GlobalDialogProps) {
     super(props);
-    this._container = document.createElement("div");
-    this._container.id = props.identifier !== undefined ? `dialog-${props.identifier}` : "core-dialog";
-    let rt = document.getElementById("core-dialog-root") as HTMLDivElement;
-    if (!rt) {
-      rt = document.createElement("div");
-      rt.id = "core-dialog-root";
-      document.body.appendChild(rt);
-    }
-    rt.appendChild(this._container);
   }
+
+  private _handleRefSet = (popupDiv: HTMLElement | null) => {
+    const parentDocument = popupDiv?.ownerDocument ?? null;
+    if (parentDocument) {
+      this._container = parentDocument.createElement("div");
+      this._container.id = this.props.identifier !== undefined ? `dialog-${this.props.identifier}` : "core-dialog";
+      let rt = parentDocument.getElementById("core-dialog-root") as HTMLDivElement;
+      if (!rt) {
+        rt = parentDocument.createElement("div");
+        rt.id = "core-dialog-root";
+        parentDocument.body.appendChild(rt);
+      }
+      rt.appendChild(this._container);
+
+      // used to support component rendering in pop-out window
+      this.setState({ parentDocument });
+    }
+  };
+
   public componentWillUnmount() {
     // istanbul ignore else
-    if (this._container.parentElement) { // cleanup
+    if (this._container && this._container.parentElement) { // cleanup
       this._container.parentElement.removeChild(this._container);
     }
   }
+
   public render(): React.ReactNode {
     const { identifier, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
-    return ReactDOM.createPortal(
-      <Dialog {...props} />
-      , this._container);
+    return (
+      <div ref={this._handleRefSet}>
+        {this.state.parentDocument &&
+          ReactDOM.createPortal(<Dialog {...props} />, this.state.parentDocument.body)}
+      </div>
+    );
   }
 }
