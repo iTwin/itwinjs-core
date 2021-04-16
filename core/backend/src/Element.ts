@@ -320,22 +320,26 @@ export class Element extends Entity implements ElementProps {
   /** Called when an instance of this class is being *sub-modeled* by a new Model.
    * @note throw an exception if model should not be inserted
    * @note `this` is the class of Element to be sub-modeled.
+   * @beta
    */
   protected static onSubModelInsert(_arg: OnSubModelPropsArg): void { }
 
   /** Called after an instance of this class was *sub-modeled* by a new Model.
    * @note `this` is the class of Element that is now sub-modeled.
+   * @beta
    */
   protected static onSubModelInserted(_arg: OnSubModelIdArg): void { }
 
   /** Called when a sub-model of an instance of this class is being deleted.
    * @note throw an exception if model should not be deleted
    * @note `this` is the class of Element that is sub-modeled.
+   * @beta
    */
   protected static onSubModelDelete(_arg: OnSubModelIdArg): void { }
 
   /** Called after a sub-model of an instance of this class was deleted.
    * @note `this` is the class of Element that was sub-modeled.
+   * @beta
    */
   protected static onSubModelDeleted(_arg: OnSubModelIdArg): void { }
 

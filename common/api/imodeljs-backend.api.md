@@ -1647,6 +1647,14 @@ export class Element extends Entity implements ElementProps {
     // @beta
     protected static onInserted(arg: OnElementIdArg): void;
     // @beta
+    protected static onSubModelDelete(_arg: OnSubModelIdArg): void;
+    // @beta
+    protected static onSubModelDeleted(_arg: OnSubModelIdArg): void;
+    // @beta
+    protected static onSubModelInsert(_arg: OnSubModelPropsArg): void;
+    // @beta
+    protected static onSubModelInserted(_arg: OnSubModelIdArg): void;
+    // @beta
     protected static onUpdate(arg: OnElementPropsArg): void;
     // @beta
     protected static onUpdated(arg: OnElementIdArg): void;
@@ -3544,6 +3552,16 @@ export interface OnModelIdArg extends OnModelArg {
 // @beta
 export interface OnModelPropsArg extends OnModelArg {
     props: Readonly<ModelProps>;
+}
+
+// @beta
+export interface OnSubModelIdArg extends OnElementArg {
+    subModelId: Id64String;
+}
+
+// @beta
+export interface OnSubModelPropsArg extends OnElementArg {
+    subModelProps: ModelProps;
 }
 
 // @public
