@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, CLRK, Benoit, NAVD, NADCON, Xfrm, prvi, stgeorge, stlrnc, stpaul, helmert
+// cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, CLRK, Benoit, NAVD, NADCON, Xfrm, prvi, stgeorge, stlrnc, stpaul, helmert, NSRS
 
 import { expect } from "chai";
 import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem";
@@ -26,12 +26,30 @@ describe("Geodetic Settings", () => {
       const outTransform = GeodeticTransform.fromJSON(output);
 
       expect(output.method === expected.method).to.be.true;
+      expect(output.sourceDatumId === expected.sourceDatumId).to.be.true;
+      expect(output.sourceEllipsoidId === expected.sourceEllipsoidId).to.be.true;
+      expect(output.targetDatumId === expected.targetDatumId).to.be.true;
+      expect(output.targetEllipsoidId === expected.targetEllipsoidId).to.be.true;
+      expect((output.sourceEllipsoid === undefined) === (expected.sourceEllipsoid === undefined)).to.be.true;
+      // No need to verify the ellipsoid content as they were verified in another test.
+      expect((output.targetEllipsoid === undefined) === (expected.targetEllipsoid === undefined)).to.be.true;
+      // No need to verify the ellipsoid content as they were verified in another test.
+
       expect((output.geocentric === undefined) === (expected.geocentric === undefined)).to.be.true;
       if (output.geocentric) {
         expect(output.geocentric.delta.x === expected.geocentric!.delta.x);
       }
       expect((output.gridFile === undefined) === (expected.gridFile === undefined)).to.be.true;
       if (output.gridFile) {
+        expect((output.gridFile.fallback === undefined) === (expected.gridFile!.fallback === undefined)).to.be.true;
+        if (output.gridFile.fallback) {
+          expect(output.gridFile.fallback.delta.x === expected.gridFile!.fallback!.delta.x).to.be.true;
+          expect(output.gridFile.fallback.delta.y === expected.gridFile!.fallback!.delta.y).to.be.true;
+          expect(output.gridFile.fallback.delta.z === expected.gridFile!.fallback!.delta.z).to.be.true;
+          expect(output.gridFile.fallback.rotation.x === expected.gridFile!.fallback!.rotation.x).to.be.true;
+          expect(output.gridFile.fallback.rotation.y === expected.gridFile!.fallback!.rotation.y).to.be.true;
+          expect(output.gridFile.fallback.rotation.z === expected.gridFile!.fallback!.rotation.z).to.be.true;
+        }
         expect(output.gridFile.files.length === expected.gridFile?.files.length);
         for (let index = 0; index < output.gridFile.files.length; ++index) {
           expect(output.gridFile.files[index].direction === expected.gridFile?.files[index].direction).to.be.true;
@@ -67,6 +85,8 @@ describe("Geodetic Settings", () => {
     roundTrip({ method: "Geocentric", geocentric: { delta: { x: 12.0, y: 32.3, z: 54.1 } } }, "input");
     roundTrip({
       method: "PositionalVector",
+      sourceDatumId: "NAD27",
+      targetDatumId: "WGS84",
       positionalVector: {
         delta: { x: 12.0, y: 32.3, z: 54.1 },
         rotation: { x: 12.1, y: 21.1, z: 23.4 },
@@ -76,7 +96,32 @@ describe("Geodetic Settings", () => {
 
     roundTrip({
       method: "GridFiles",
+      sourceDatumId: "NAD27",
+      sourceEllipsoidId: "CLRK66",
+      sourceEllipsoid: {
+        id: "CLRK66",
+        epsg: 7008,
+        description: "Clarke 1866, Benoit Ratio",
+        source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+        equatorialRadius: 6378160.0,
+        polarRadius: 6356774.719195305951,
+      },
+      targetDatumId: "WGS84",
+      targetEllipsoidId: "WGS84",
+      targetEllipsoid: {
+        id: "WGS84",
+        epsg: 6326,
+        description: "Clarke 1866, Benoit Ratio",
+        source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+        equatorialRadius: 6378160.0,
+        polarRadius: 6356774.719195305951,
+      },
       gridFile: {
+        fallback: {
+          scalePPM: -0.191,
+          delta: { x: -117.763, y: -51.51, z: 139.061 },
+          rotation: { x: -0.292, y: -0.443, z: -0.277 },
+        },
         files: [
           { fileName: "toto.tat", format: "NADCON", direction: "Direct" },
           { fileName: "foo.foo", format: "NTv1", direction: "Inverse" },
@@ -288,7 +333,32 @@ describe("Geodetic Settings", () => {
       transforms: [
         {
           method: "GridFiles",
+          sourceDatumId: "NAD27",
+          sourceEllipsoidId: "CLRK66",
+          sourceEllipsoid: {
+            id: "CLRK66",
+            epsg: 7008,
+            description: "Clarke 1866, Benoit Ratio",
+            source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+            equatorialRadius: 6378160.0,
+            polarRadius: 6356774.719195305951,
+          },
+          targetDatumId: "WGS84",
+          targetEllipsoidId: "WGS84",
+          targetEllipsoid: {
+            id: "WGS84",
+            epsg: 6326,
+            description: "Clarke 1866, Benoit Ratio",
+            source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+            equatorialRadius: 6378160.0,
+            polarRadius: 6356774.719195305951,
+          },
           gridFile: {
+            fallback: {
+              scalePPM: -0.191,
+              delta: { x: -117.763, y: -51.51, z: 139.061 },
+              rotation: { x: -0.292, y: -0.443, z: -0.277 },
+            },
             files: [
               { fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON", direction: "Direct" },
               { fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON", direction: "Direct" },
@@ -423,7 +493,32 @@ describe("Geodetic Settings", () => {
         transforms: [
           {
             method: "GridFiles",
+            sourceDatumId: "NAD27",
+            sourceEllipsoidId: "CLRK66",
+            sourceEllipsoid: {
+              id: "CLRK66",
+              epsg: 7008,
+              description: "Clarke 1866, Benoit Ratio",
+              source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+              equatorialRadius: 6378160.0,
+              polarRadius: 6356774.719195305951,
+            },
+            targetDatumId: "WGS84",
+            targetEllipsoidId: "WGS84",
+            targetEllipsoid: {
+              id: "WGS84",
+              epsg: 6326,
+              description: "Clarke 1866, Benoit Ratio",
+              source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+              equatorialRadius: 6378160.0,
+              polarRadius: 6356774.719195305951,
+            },
             gridFile: {
+              fallback: {
+                scalePPM: -0.191,
+                delta: { x: -117.763, y: -51.51, z: 139.061 },
+                rotation: { x: -0.292, y: -0.443, z: -0.277 },
+              },
               files: [
                 { fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON", direction: "Direct" },
                 { fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON", direction: "Direct" },
@@ -528,7 +623,32 @@ describe("Geodetic Settings", () => {
           transforms: [
             {
               method: "GridFiles",
+              sourceDatumId: "NAD27",
+              sourceEllipsoidId: "CLRK66",
+              sourceEllipsoid: {
+                id: "CLRK66",
+                epsg: 7008,
+                description: "Clarke 1866, Benoit Ratio",
+                source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+                equatorialRadius: 6378160.0,
+                polarRadius: 6356774.719195305951,
+              },
+              targetDatumId: "WGS84",
+              targetEllipsoidId: "WGS84",
+              targetEllipsoid: {
+                id: "WGS84",
+                epsg: 6326,
+                description: "Clarke 1866, Benoit Ratio",
+                source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
+                equatorialRadius: 6378160.0,
+                polarRadius: 6356774.719195305951,
+              },
               gridFile: {
+                fallback: {
+                  scalePPM: -0.191,
+                  delta: { x: -117.763, y: -51.51, z: 139.061 },
+                  rotation: { x: -0.292, y: -0.443, z: -0.277 },
+                },
                 files: [
                   { fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON", direction: "Direct" },
                   { fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON", direction: "Direct" },
@@ -584,7 +704,51 @@ describe("Geodetic Settings", () => {
           transforms: [
             {
               method: "GridFiles",
+              sourceEllipsoid: {
+                id: "CLRK66",
+                equatorialRadius: 6378160.0,
+                polarRadius: 6356774.719195305951,
+              },
+              targetEllipsoid: {
+                id: "WGS84-2",
+                equatorialRadius: 6378160.0,
+                polarRadius: 6356774.719195305951,
+              },
               gridFile: {
+                fallback: {
+                  scalePPM: -0.191,
+                  delta: { x: -117.763, y: -51.51, z: 139.061 },
+                  rotation: { x: -0.292, y: -0.443, z: -0.277 },
+                },
+                files: [
+                  { fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/prvi.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/hawaii.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/stgeorge.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/stlrnc.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/stpaul.l?s", format: "NADCON", direction: "Direct" },
+                ],
+              },
+            },
+            {
+              method: "GridFiles",
+              sourceEllipsoid: {
+                id: "WGS84-2",
+                equatorialRadius: 6378160.0,
+                polarRadius: 6356774.719195305951,
+              },
+              targetEllipsoid: {
+                id: "NSRS98",
+                equatorialRadius: 6378160.1,
+                polarRadius: 6356774.719195,
+              },
+              gridFile: {
+                fallback: {
+                  scalePPM: -0.191,
+                  delta: { x: -117.763, y: -51.51, z: 139.061 },
+                  rotation: { x: -0.292, y: -0.443, z: -0.277 },
+                },
                 files: [
                   { fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON", direction: "Direct" },
                   { fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON", direction: "Direct" },
