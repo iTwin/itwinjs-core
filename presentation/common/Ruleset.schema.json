@@ -1680,6 +1680,9 @@
               },
               {
                 "$ref": "#/definitions/InstanceLabelOverrideStringValueSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideRelatedInstanceLabelSpecification"
               }
             ]
           },
@@ -1782,6 +1785,9 @@
                   },
                   {
                     "$ref": "#/definitions/InstanceLabelOverrideStringValueSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideRelatedInstanceLabelSpecification"
                   }
                 ],
                 "description": "Specification to define how the label for `InstanceLabelOverride` should be created."
@@ -1837,6 +1843,20 @@
           "description": "Name of the property whose value should be used.",
           "type": "string"
         },
+        "propertySource": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RelationshipStepSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/RelationshipStepSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Path from `InstanceLabelOverride.class` to the property class. If omitted,\n`InstanceLabelOverride.class` is used as property class."
+        },
         "specType": {
           "description": "Type of the specification",
           "enum": [
@@ -1847,6 +1867,38 @@
       },
       "required": [
         "propertyName",
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideRelatedInstanceLabelSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that uses label of a related instance as the label content.",
+      "properties": {
+        "pathToRelatedInstance": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RelationshipStepSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/RelationshipStepSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Path from `InstanceLabelOverride.class` to the class of related instance whose label\nshould be returned."
+        },
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "RelatedInstanceLabel"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "pathToRelatedInstance",
         "specType"
       ],
       "type": "object"

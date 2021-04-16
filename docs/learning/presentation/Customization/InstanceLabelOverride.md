@@ -35,6 +35,7 @@ Name | Required? | Type | Default | Meaning
 Name | Required? | Type | Default | Meaning
 -|-|-|-|-
 `propertyName` | Yes | `string` | | Name of the property whose value should be used.
+`propertySource` | No | `RelationshipPathSpecification` | Empty path | [Specification of the relationship path](./RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the property.
 
 ### String
 
@@ -63,6 +64,14 @@ Name | Required? | Type | Default | Meaning
 ### LocalId
 
 `InstanceLabelOverrideLocalIdSpecification` returns ECInstance's local ID in base36 format. It has no additional attributes.
+
+### RelatedInstanceLabel
+
+`InstanceLabelOverrideRelatedInstanceLabelSpecification` uses label of another related instance as the label content.
+
+Name | Required? | Type | Default | Meaning
+-|-|-|-|-
+`pathToRelatedInstance` | Yes | `RelationshipPathSpecification` | | [Specification of the relationship path](./RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the related instance.
 
 ## Example
 

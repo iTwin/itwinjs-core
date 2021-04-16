@@ -993,8 +993,17 @@ export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabel
 // @public
 export interface InstanceLabelOverridePropertyValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
     propertyName: string;
+    // @beta
+    propertySource?: RelationshipPathSpecification;
     // (undocumented)
     specType: InstanceLabelOverrideValueSpecificationType.Property;
+}
+
+// @public
+export interface InstanceLabelOverrideRelatedInstanceLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
+    pathToRelatedInstance: RelationshipPathSpecification;
+    // (undocumented)
+    specType: InstanceLabelOverrideValueSpecificationType.RelatedInstanceLabel;
 }
 
 // @public
@@ -1005,7 +1014,7 @@ export interface InstanceLabelOverrideStringValueSpecification extends InstanceL
 }
 
 // @public
-export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification;
+export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification | InstanceLabelOverrideRelatedInstanceLabelSpecification;
 
 // @public
 export interface InstanceLabelOverrideValueSpecificationBase {
@@ -1026,6 +1035,8 @@ export enum InstanceLabelOverrideValueSpecificationType {
     LocalId = "LocalId",
     // (undocumented)
     Property = "Property",
+    // (undocumented)
+    RelatedInstanceLabel = "RelatedInstanceLabel",
     // (undocumented)
     String = "String"
 }
@@ -1211,7 +1222,7 @@ export interface LabelGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.DisplayLabelGroupingNode;
 }
 
-// @public
+// @public @deprecated
 export interface LabelOverride extends RuleBase, ConditionContainer {
     condition?: string;
     description?: string;

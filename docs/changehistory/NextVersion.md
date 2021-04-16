@@ -75,6 +75,18 @@ A *changeSetId* is a string hash value based on the ChangeSet contents and paren
 This is not a breaking change because `GuidString` is just a type alias for `string`.
 It was, however, confusing from a usage and documentation perspective and needed to be corrected.
 
+## Presentation changes
+
+### InstanceLabelOverride enhancements
+
+The [InstanceLabelOverride]($presentation-common) rule was enhanced with abilities to compose label using related instance values:
+
+* A `propertySource` attribute was added to [InstanceLabelOverridePropertyValueSpecification]($presentation-common) to allow picking a
+property value from a related instance.
+
+* A new [InstanceLabelOverrideRelatedInstanceLabelSpecification]($presentation-common) was added to allow taking label of a related
+instance. The related instance, possibly being a of a different ECClass, might have some different label overrides of its own.
+
 ## Promoted APIs
 
 The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
