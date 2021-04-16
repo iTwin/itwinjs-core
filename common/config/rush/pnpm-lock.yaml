@@ -152,7 +152,7 @@ dependencies:
   '@types/puppeteer': 2.0.1
   '@types/qs': 6.9.6
   '@types/react': 16.9.43
-  '@types/react-autosuggest': 10.1.4
+  '@types/react-autosuggest': 10.1.2
   '@types/react-beautiful-dnd': 12.1.3
   '@types/react-data-grid': 4.0.2
   '@types/react-dom': 16.9.12
@@ -3134,12 +3134,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-ewFXqrQHlFsgc09MK5jP5iR7vumV/BYayNC6PgJO2LPe8vrnNFyjQjSppfEngITi0qvfKtzFvgKymGheFM9UOA==
-  /@types/react-autosuggest/10.1.4:
+  /@types/react-autosuggest/10.1.2:
     dependencies:
       '@types/react': 16.9.43
     dev: false
     resolution:
-      integrity: sha512-NdSUpRX6u1VsLpF63ss3yBGGcTFDJZg35D9XPTOgXPaUXZTJcfglcjyYgQwiMYRsbnz438dWt2gff/qIb7sWcw==
+      integrity: sha512-K23lmXhC3Bbd8y/jm5+wYrw/NAeN4U/wlHTgAEBIwLOyQKFCFYA3ONKte9P21L+RGIXRP8UlzHOSRtmIZw5Nqw==
   /@types/react-beautiful-dnd/12.1.3:
     dependencies:
       '@types/react': 16.9.43
@@ -21867,7 +21867,7 @@ packages:
       '@types/mocha': 5.2.7
       '@types/node': 10.14.1
       '@types/react': 16.9.43
-      '@types/react-autosuggest': 10.1.4
+      '@types/react-autosuggest': 10.1.2
       '@types/react-dom': 16.9.12
       '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
@@ -21915,7 +21915,7 @@ packages:
       webpack: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-NcD1p4tysla1/PTw190NxlqQu/aBKlSsGCqLlvquIfNvBD8zAMMJs9G63JSrJwExL9PEPcvxxzfEmXSw6l4oQQ==
+      integrity: sha512-YZINpdE7G2HbkAuvLsCLQ75sbm3mhBUbwtw/u8krDW30MIxlvs0bEfHHiaXuiGlI2sXCeigLACKJxlX8O/CYzA==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz_2f645c1465aea7f802b6a9a8594dc28f':
@@ -22182,6 +22182,7 @@ packages:
       integrity: sha512-0zfyKsag4+z/EaegqPdcRp0tESWbZnAJw48HZSxL1fiv9q7mY5IixXS4MPhNfKGHOIvbCImH6R3dcXknwgpTGA==
       tarball: 'file:projects/webpack-tools-core.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@axe-core/react': ^4.1.1
   '@azure-tools/azcopy-node': ^2.0.0
@@ -22336,7 +22337,7 @@ specifiers:
   '@types/puppeteer': 2.0.1
   '@types/qs': ^6.5.0
   '@types/react': 16.9.43
-  '@types/react-autosuggest': ^10.0.0
+  '@types/react-autosuggest': 10.1.2
   '@types/react-beautiful-dnd': ^12.1.2
   '@types/react-data-grid': 4.0.2
   '@types/react-dom': ^16.8.0
