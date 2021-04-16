@@ -46,6 +46,7 @@ import { Relationships } from "./Relationship";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { IpcHost } from "./IpcHost";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -2186,25 +2187,10 @@ export class BriefcaseDb extends IModelDb {
     return db?.isBriefcaseDb() ? db : undefined;
   }
 
-  /** @internal */
-  public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
-    const status = super.reverseTxns(numOperations, allowCrossSessions);
-    if (status === IModelStatus.Success && this.allowLocalChanges)
-      this.concurrencyControl.onUndoRedo();
-    return status;
-  }
-
-  /** @internal */
-  public reinstateTxn(): IModelStatus {
-    const status = super.reinstateTxn();
-    if (status === IModelStatus.Success && this.allowLocalChanges)
-      this.concurrencyControl.onUndoRedo();
-    return status;
-  }
-
   public abandonChanges(): void {
     if (this.allowLocalChanges)
       this.concurrencyControl.abandonRequest();
+
     super.abandonChanges();
   }
 
@@ -2241,9 +2227,6 @@ export class BriefcaseDb extends IModelDb {
       this.concurrencyControl.onSaveChanges();
 
     super.saveChanges(description);
-
-    if (this.allowLocalChanges)
-      this.concurrencyControl.onSavedChanges();
   }
 
   private static async lockSchema(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, briefcaseId: number): Promise<void> {
@@ -2401,8 +2384,7 @@ export class BriefcaseDb extends IModelDb {
         this.closeAndReopen(OpenMode.Readonly);
     }
 
-    if (this.allowLocalChanges)
-      this.concurrencyControl.onMergedChanges();
+    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeSetId);
 
     this.changeSetId = this.nativeDb.getParentChangeSetId();
     this.initializeIModelDb();
@@ -2433,6 +2415,7 @@ export class BriefcaseDb extends IModelDb {
     this.changeSetId = this.nativeDb.getParentChangeSetId();
     this.initializeIModelDb();
 
+    IpcHost.notifyTxns(this, "notifyPushedChanges", this.changeSetId);
     return this.concurrencyControl.onPushedChanges(requestContext);
   }
 

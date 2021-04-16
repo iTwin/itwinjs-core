@@ -45,7 +45,6 @@ alpha;BRepThickenProps
 beta;BriefcaseDownloader
 public;BriefcaseIdValue
 beta;BriefcaseProps
-internal;BriefcasePushAndPullNotifications
 public;calculateSolarAngles(date: Date, location: Cartographic):
 public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 public;calculateSolarDirectionFromAngles(azimuthElevation:

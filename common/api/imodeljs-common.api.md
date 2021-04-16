@@ -627,23 +627,6 @@ export interface BriefcaseProps {
     iModelId: GuidString;
 }
 
-// @internal (undocumented)
-export interface BriefcasePushAndPullNotifications {
-    // (undocumented)
-    notifyPulledChanges: (arg: {
-        parentChangeSetId: string;
-    }) => void;
-    // (undocumented)
-    notifyPushedChanges: (arg: {
-        parentChangeSetId: string;
-    }) => void;
-    // (undocumented)
-    notifySavedChanges: (arg: {
-        hasPendingTxns: boolean;
-        time: number;
-    }) => void;
-}
-
 export { BriefcaseStatus }
 
 // @public
@@ -3998,7 +3981,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void>;
     static getClient(): IModelWriteRpcInterface;
     static getClientForRouting(token: RpcRoutingToken): IModelWriteRpcInterface;
-    // (undocumented)
+    // @deprecated (undocumented)
     getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]>;
     // @deprecated (undocumented)
     getParentChangeset(_iModelToken: IModelRpcProps): Promise<string>;
@@ -4076,8 +4059,6 @@ export enum IpcAppChannel {
     EditingScope = "editing-scope",
     // (undocumented)
     Functions = "ipc-app",
-    // (undocumented)
-    PushPull = "push-pull",
     // (undocumented)
     Txns = "txns"
 }
@@ -7689,13 +7670,17 @@ export interface TxnNotifications {
     // (undocumented)
     notifyCommit: () => void;
     // (undocumented)
-    notifyCommitted: () => void;
+    notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
     // (undocumented)
     notifyElementsChanged: (changes: ChangedEntities) => void;
     // (undocumented)
     notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
     // (undocumented)
     notifyModelsChanged: (changes: ChangedEntities) => void;
+    // (undocumented)
+    notifyPulledChanges: (parentChangeSetId: string) => void;
+    // (undocumented)
+    notifyPushedChanges: (parentChangeSetId: string) => void;
 }
 
 // @public

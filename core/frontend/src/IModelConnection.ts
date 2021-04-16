@@ -689,9 +689,22 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   }
 
   /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
-  export class Models {
-    /** The set of loaded models for this IModelConnection, indexed by Id. */
-    public loaded = new Map<string, ModelState>();
+  export class Models implements Iterable<ModelState> {
+    private _loaded = new Map<string, ModelState>();
+
+    /** The set of loaded models for this IModelConnection, indexed by Id.
+     * @deprecated Use `for..of` to iterate and getLoaded() to look up by Id.
+     */
+    public get loaded(): Map<string, ModelState> { return this._loaded; }
+    public set loaded(loaded: Map<string, ModelState>) {
+      this._loaded = loaded;
+      assert(false, "there is no reason to replace the map of loaded models");
+    }
+
+    /** An iterator over all currently-loaded models. */
+    public [Symbol.iterator](): Iterator<ModelState> {
+      return this._loaded.values()[Symbol.iterator]();
+    }
 
     /** @internal */
     constructor(private _iModel: IModelConnection) { }
@@ -714,7 +727,9 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     }
 
     /** Find a ModelState in the set of loaded Models by ModelId. */
-    public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
+    public getLoaded(id: string): ModelState | undefined {
+      return this._loaded.get(id);
+    }
 
     /** Given a set of modelIds, return the subset of corresponding models that are not currently loaded.
      * @param modelIds The set of model Ids
@@ -722,14 +737,14 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      */
     public filterLoaded(modelIds: Id64Arg): Id64Set | undefined {
       let unloaded: Set<string> | undefined;
-      Id64.forEach(modelIds, (id) => {
+      for (const id of Id64.iterable(modelIds)) {
         if (undefined === this.getLoaded(id)) {
           if (undefined === unloaded)
             unloaded = new Set<string>();
 
           unloaded.add(id);
         }
-      });
+      }
 
       return unloaded;
     }
@@ -746,12 +761,19 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
           if (undefined === this.getLoaded(props.id!)) { // do not overwrite if someone else loads it while we await
             const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
-            this.loaded.set(modelState.id, modelState); // save it in loaded set
+            this._loaded.set(modelState.id, modelState); // save it in loaded set
           }
         }
       } catch (err) {
         // ignore error, we had nothing to do.
       }
+    }
+
+    /** Remove a model from the set of loaded models. Used internally by BriefcaseConnection in response to txn events.
+     * @internal
+     */
+    public unload(modelId: Id64String): void {
+      this._loaded.delete(modelId);
     }
 
     /** Query for a set of model ranges by ModelIds. */

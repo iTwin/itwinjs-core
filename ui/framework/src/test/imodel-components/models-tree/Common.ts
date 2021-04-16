@@ -67,7 +67,9 @@ export const createKey = (type: "subject" | "model" | "category" | "element", id
     default: className = "MyDomain:SomeElementType";
   }
   const instanceKeys = new Array<InstanceKey>();
-  Id64.forEach(ids, (id) => instanceKeys.push({ className, id }));
+  for (const id of Id64.iterable(ids))
+    instanceKeys.push({ className, id });
+
   return {
     type: StandardNodeTypes.ECInstancesNode,
     instanceKeys,
