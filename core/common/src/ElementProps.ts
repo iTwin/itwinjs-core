@@ -305,12 +305,12 @@ export interface DisplayStyleLoadProps {
  * @public
  */
 export interface ElementLoadOptions {
-  /** If true, include the [[GeometryStream]] for [[GeometricElementProps]] and [[GeometryPartProps]].
+  /** If true, include the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
    * Geometry streams can consist of many megabytes worth of JSON, so they are omitted by default.
    */
   wantGeometry?: boolean;
   /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */
-  /** If true, include [[BRepEntity.DataProps.data]] in the [[GeometryStream]] for [[GeometricElementProps]] and [[GeometryPartProps]].
+  /** If true, include [[BRepEntity.DataProps.data]] in the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
    * The data is a potentially large base-64-encoded opaque binary blob that cannot be directly inspected or manipulated on the frontend, so it is omitted by default.
    */
   wantBRepData?: boolean;

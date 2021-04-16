@@ -810,7 +810,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     }
 
     /** Obtain the properties of a single element, optionally specifying specific properties to include or exclude.
-     * For example, [[getProps]] and [[queryProps]] omit the [GeometryStream]($common) property of [GeometricElementProps]($common) and [GeometryPartProps]($common)
+     * For example, [[getProps]] and [[queryProps]] omit the [GeometryStreamProps]($common) property of [GeometricElementProps]($common) and [GeometryPartProps]($common)
      * because it can be quite large and is generally not useful to frontend code. The following code requests that the geometry stream be included:
      * ```ts
      *  const props = await iModel.elements.loadProps(elementId, { wantGeometry: true });
