@@ -11,7 +11,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
@@ -807,6 +807,22 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getElementProps(this._iModel.getRpcProps(), [...Id64.toIdSet(arg)]) : [];
+    }
+
+    /** Obtain the properties of a single element, optionally specifying specific properties to include or exclude.
+     * For example, [[getProps]] and [[queryProps]] omit the [GeometryStream]($common) property of [GeometricElementProps]($common) and [GeometryPartProps]($common)
+     * because it can be quite large and is generally not useful to frontend code. The following code requests that the geometry stream be included:
+     * ```ts
+     *  const props = await iModel.elements.loadProps(elementId, { wantGeometry: true });
+     * ```
+     * @param identifier Identifies the element by its Id, federation Guid, or [Code]($common).
+     * @param options Optionally includes or excludes specific properties.
+     * @returns The properties of the requested element; or `undefined` if no element exists with the specified identifier or the iModel is not open.
+     * @throws [IModelError]($common) if the element exists but could not be loaded.
+     */
+    public async loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined> {
+      const imodel = this._iModel;
+      return imodel.isOpen ? IModelReadRpcInterface.getClientForRouting(imodel.routingContext.token).loadElementProps(imodel.getRpcProps(), identifier, options) : undefined;
     }
 
     /** Get an array  of [[ElementProps]] that satisfy a query
