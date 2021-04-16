@@ -54,7 +54,9 @@ if (ProcessDetector.isElectronAppFrontend) {
         const dictId = await imodel.models.getDictionaryModel();
         const categoryId = await editing.categories.createAndInsertSpatialCategory(dictId, Guid.createValue(), { color: 0 });
         elemId = await insertLineElement(imodel, modelId, categoryId);
-        await imodel.saveChanges();
+
+        // Make sure the event produced by saveChanges doesn't pollute our tests.
+        await getBufferedChanges(async () => imodel.saveChanges());
 
         await imodel.models.load(modelId);
         model = imodel.models.getLoaded(modelId) as GeometricModelState;
