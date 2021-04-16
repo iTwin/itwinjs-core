@@ -10,21 +10,20 @@
 
 import {
   assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus,
-  JsonUtils, Logger, OpenMode,
+  IModelStatus, JsonUtils, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
-  CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
-  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
-  IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelTileTreeProps, IModelVersion, LocalBriefcaseProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
-  PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState, SheetProps, SnapRequestProps,
-  SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps, UpgradeOptions,
-  ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
+  CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps,
+  ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps,
+  EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps,
+  IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
+  ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
+  SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
+  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -34,18 +33,20 @@ import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./Check
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrencyControl } from "./ConcurrencyControl";
-import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
+import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
+import { generateElementGraphics } from "./ElementGraphics";
 import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
-import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
+import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { IpcHost } from "./IpcHost";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -101,13 +102,14 @@ export abstract class IModelDb extends IModel {
   public readonly tiles = new IModelDb.Tiles(this);
   private _relationships?: Relationships;
   private _concurrentQueryInitialized: boolean = false;
-  private readonly _statementCache = new ECSqlStatementCache();
-  private readonly _sqliteStatementCache = new SqliteStatementCache();
+  private readonly _statementCache = new StatementCache<ECSqlStatement>();
+  private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
   protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
+  private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
@@ -143,14 +145,17 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
-    IModelHost.onBeforeShutdown.addListener(() => {
-      if (this.isOpen) {
-        try {
-          this.abandonChanges();
-          this.close();
-        } catch { }
-      }
-    });
+
+    if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
+      IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
+        IModelDb._openDbs.forEach((db) => { // N.B.: db.close() removes from _openedDbs
+          try {
+            db.abandonChanges();
+            db.close();
+          } catch { }
+        });
+      });
+    }
   }
 
   /** Close this IModel, if it is currently open. */
@@ -215,52 +220,23 @@ export abstract class IModelDb extends IModel {
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return this.isOpen ? this.nativeDb.getBriefcaseId() : BriefcaseIdValue.Illegal; }
 
-  /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
-   * @param ecsql The ECSQL statement to prepare
-   * @returns the prepared statement
-   * @throws [[IModelError]] if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
-   */
-  private getPreparedStatement(ecsql: string): ECSqlStatement {
-    const cachedStatement = this._statementCache.find(ecsql);
-    if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      cachedStatement.useCount++;
-      return cachedStatement.statement;
-    }
-
-    this._statementCache.removeUnusedStatementsIfNecessary();
-    const stmt = this.prepareStatement(ecsql);
-    if (cachedStatement)
-      this._statementCache.replace(ecsql, stmt);
-    else
-      this._statementCache.add(ecsql, stmt);
-
-    return stmt;
-  }
-
-  /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
-   *
-   * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
-   * the already prepared statement from the cache will be reused.
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
+  /**
+   * Use a prepared ECSQL statement, potentially from the statement cache. If the requested statement doesn't exist
+   * in the statement cache, a new statement is prepared. After the callback completes, the statement is reset and saved
+   * in the statement cache so it can be reused in the future. Use this method for ECSQL statements that will be
+   * reused often and are expensive to prepare. The statement cache holds the most recently used statements, discarding
+   * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withStatement]].
+   * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
-   * @returns the value returned by cb
+   * @returns the value returned by `callback`.
+   * @see [[withStatement]]
+   * @public
    */
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
-    const stmt = this.getPreparedStatement(ecsql);
-    const release = () => {
-      if (stmt.isShared)
-        this._statementCache.release(stmt);
-      else
-        stmt.dispose();
-    };
-
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql);
+    const release = () => this._statementCache.addOrDispose(stmt);
     try {
-      const val: T = callback(stmt);
+      const val = callback(stmt);
       if (val instanceof Promise) {
         val.then(release, release);
       } else {
@@ -269,10 +245,37 @@ export abstract class IModelDb extends IModel {
       return val;
     } catch (err) {
       release();
-      Logger.logError(loggerCategory, err.toString());
       throw err;
     }
   }
+
+  /**
+   * Prepared and execute a callback on an ECSQL statement. After the callback completes the statement is disposed.
+   * Use this method for ECSQL statements are either not expected to be reused, or are not expensive to prepare.
+   * For statements that will be reused often, instead use [[withPreparedStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by `callback`.
+   * @see [[withPreparedStatement]]
+   * @public
+   */
+  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
+    const stmt = this.prepareStatement(ecsql);
+    const release = () => stmt.dispose();
+    try {
+      const val = callback(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err) {
+      release();
+      throw err;
+    }
+  }
+
   /** Compute number of rows that would be returned by the ECSQL.
    *
    * See also:
@@ -520,22 +523,21 @@ export abstract class IModelDb extends IModel {
     } while (result.status !== QueryResponseStatus.Done);
   }
 
-  /** Use a prepared SQLite SQL statement. This function takes care of preparing the statement and then releasing it.
-   * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
-   * the already prepared statement from the cache will be reused.
+  /**
+   * Use a prepared SQL statement, potentially from the statement cache. If the requested statement doesn't exist
+   * in the statement cache, a new statement is prepared. After the callback completes, the statement is reset and saved
+   * in the statement cache so it can be reused in the future. Use this method for SQL statements that will be
+   * reused often and are expensive to prepare. The statement cache holds the most recently used statements, discarding
+   * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withSqliteStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
-   * @returns the value returned by cb
-   * @internal
+   * @returns the value returned by `callback`.
+   * @see [[withPreparedStatement]]
+   * @public
    */
   public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
-    const stmt = this.getPreparedSqlStatement(sql);
-    const release = () => {
-      if (stmt.isShared)
-        this._sqliteStatementCache.release(stmt);
-      else
-        stmt.dispose();
-    };
+    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
+    const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
       const val: T = callback(stmt);
       if (val instanceof Promise) {
@@ -546,40 +548,44 @@ export abstract class IModelDb extends IModel {
       return val;
     } catch (err) {
       release();
-      Logger.logError(loggerCategory, err.toString());
       throw err;
     }
   }
 
-  /** Prepare an SQLite SQL statement.
-   * @param sql The SQLite SQL statement to prepare
+  /**
+   * Prepared and execute a callback on a SQL statement. After the callback completes the statement is disposed.
+   * Use this method for SQL statements are either not expected to be reused, or are not expensive to prepare.
+   * For statements that will be reused often, instead use [[withPreparedSqliteStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by `callback`.
+   * @public
+   */
+  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
+    const stmt = this.prepareSqliteStatement(sql);
+    const release = () => stmt.dispose();
+    try {
+      const val: T = callback(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err) {
+      release();
+      throw err;
+    }
+  }
+
+  /** Prepare an SQL statement.
+   * @param sql The SQL statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
    * @internal
    */
   public prepareSqliteStatement(sql: string): SqliteStatement {
-    const stmt = new SqliteStatement();
-    stmt.prepare(this.nativeDb, sql);
-    return stmt;
-  }
-
-  /** Get a prepared SQLite SQL statement - may require preparing the statement, if not found in the cache.
-   * @param sql The SQLite SQL statement to prepare
-   * @returns the prepared statement
-   * @throws [[IModelError]] if the statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
-   */
-  private getPreparedSqlStatement(sql: string): SqliteStatement {
-    const cachedStatement: CachedSqliteStatement | undefined = this._sqliteStatementCache.find(sql);
-    if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      cachedStatement.useCount++;
-      return cachedStatement.statement;
-    }
-
-    this._sqliteStatementCache.removeUnusedStatementsIfNecessary();
-    const stmt: SqliteStatement = this.prepareSqliteStatement(sql);
-    if (cachedStatement)
-      this._sqliteStatementCache.replace(sql, stmt);
-    else
-      this._sqliteStatementCache.add(sql, stmt);
+    const stmt = new SqliteStatement(sql);
+    stmt.prepare(this.nativeDb);
     return stmt;
   }
 
@@ -619,20 +625,17 @@ export abstract class IModelDb extends IModel {
     return ids;
   }
 
-  /** Empty the [ECSqlStatementCache]($backend) for this iModel.
+  /** Empty the ECSqlStatementCache for this iModel.
    * @deprecated use clearCaches
    */
   public clearStatementCache(): void { this._statementCache.clear(); }
 
-  /** Empty the [SqliteStatementCache]($backend) for this iModel.
+  /** Empty the SqliteStatementCache for this iModel.
    * @deprecated use clearCaches
    */
   public clearSqliteStatementCache(): void { this._sqliteStatementCache.clear(); }
 
-  /** Clear all in-memory caches held in this IModelDb.
-   * @see [ECSqlStatementCache]($backend)
-   * @see [SqliteStatementCache]($backend)
-   */
+  /** Clear all in-memory caches held in this IModelDb. */
   public clearCaches() {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
@@ -689,15 +692,12 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
   public saveChanges(description?: string): void {
-    if (this.openMode === OpenMode.Readonly) {
-      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError, loggerCategory);
-    }
+    if (this.openMode === OpenMode.Readonly)
+      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
     const stat = this.nativeDb.saveChanges(description);
-
-    if (DbResult.BE_SQLITE_OK !== stat) {
-      throw new IModelError(stat, "Problem saving changes", Logger.logError, loggerCategory);
-    }
+    if (DbResult.BE_SQLITE_OK !== stat)
+      throw new IModelError(stat, `Could not save changes (${description})`);
   }
 
   /** Abandon pending changes in this iModel. You might also want to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase and you want to relinquish locks or codes that you acquired preemptively. */
@@ -727,16 +727,15 @@ export abstract class IModelDb extends IModel {
     requestContext.enter();
     if (this.isSnapshot || this.isStandalone) {
       const status = this.nativeDb.importSchemas(schemaFileNames);
-      if (DbResult.BE_SQLITE_OK !== status) {
+      if (DbResult.BE_SQLITE_OK !== status)
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
-      }
       this.clearCaches();
       return;
     }
 
-    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
+    if (!(requestContext instanceof AuthorizedClientRequestContext))
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
-    }
+
     if (this.isBriefcaseDb() && this.allowLocalChanges) {
       await this.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
@@ -1249,6 +1248,14 @@ export abstract class IModelDb extends IModel {
   public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
     return this.nativeDb.createBRepGeometry(createProps);
   }
+
+  /** Generate graphics for an element or geometry stream.
+   * @see [readElementGraphics]($frontend) to convert the result to a [RenderGraphic]($frontend) for display.
+   * @beta
+   */
+  public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
+    return generateElementGraphics(request, this);
+  }
 }
 
 /** @public */
@@ -1438,7 +1445,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
-     * explicitly updating it is occassionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
+     * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws IModelError if unable to update the geometry guid.
@@ -1486,9 +1493,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
       const elementProps: T | undefined = this.tryGetElementJson(elementId);
-      if (undefined === elementProps) {
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
-      }
+      if (undefined === elementProps)
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
       return elementProps;
     }
 
@@ -1501,10 +1507,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getElement(loadProps);
       if (undefined !== val.error) {
-        if (IModelStatus.NotFound === val.error.status) {
+        if (IModelStatus.NotFound === val.error.status)
           return undefined;
-        }
-        throw new IModelError(IModelStatus.NotFound, `reading element=${loadProps}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${loadProps}`);
       }
       return val.result as T;
     }
@@ -1515,9 +1520,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
       const elementProps = this.tryGetElementProps<T>(elementId);
-      if (undefined === elementProps) {
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
-      }
+      if (undefined === elementProps)
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
       return elementProps;
     }
 
@@ -1544,9 +1548,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
       const element = this.tryGetElement<T>(elementId, elementClass);
-      if (undefined === element) {
-        throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`, Logger.logWarning, loggerCategory);
-      }
+      if (undefined === element)
+        throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
       return element;
     }
 
@@ -1611,10 +1614,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const sql = `SELECT LastMod FROM ${Element.classFullName} WHERE ECInstanceId=:elementId`;
       return this._iModel.withPreparedStatement<string>(sql, (statement: ECSqlStatement): string => {
         statement.bindId("elementId", elementId);
-        if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        if (DbResult.BE_SQLITE_ROW === statement.step())
           return statement.getValue(0).getDateTime();
-        }
-        throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`);
       });
     }
 
@@ -2185,25 +2187,10 @@ export class BriefcaseDb extends IModelDb {
     return db?.isBriefcaseDb() ? db : undefined;
   }
 
-  /** @internal */
-  public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
-    const status = super.reverseTxns(numOperations, allowCrossSessions);
-    if (status === IModelStatus.Success && this.allowLocalChanges)
-      this.concurrencyControl.onUndoRedo();
-    return status;
-  }
-
-  /** @internal */
-  public reinstateTxn(): IModelStatus {
-    const status = super.reinstateTxn();
-    if (status === IModelStatus.Success && this.allowLocalChanges)
-      this.concurrencyControl.onUndoRedo();
-    return status;
-  }
-
   public abandonChanges(): void {
     if (this.allowLocalChanges)
       this.concurrencyControl.abandonRequest();
+
     super.abandonChanges();
   }
 
@@ -2240,9 +2227,6 @@ export class BriefcaseDb extends IModelDb {
       this.concurrencyControl.onSaveChanges();
 
     super.saveChanges(description);
-
-    if (this.allowLocalChanges)
-      this.concurrencyControl.onSavedChanges();
   }
 
   private static async lockSchema(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, briefcaseId: number): Promise<void> {
@@ -2400,8 +2384,7 @@ export class BriefcaseDb extends IModelDb {
         this.closeAndReopen(OpenMode.Readonly);
     }
 
-    if (this.allowLocalChanges)
-      this.concurrencyControl.onMergedChanges();
+    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeSetId);
 
     this.changeSetId = this.nativeDb.getParentChangeSetId();
     this.initializeIModelDb();
@@ -2432,6 +2415,7 @@ export class BriefcaseDb extends IModelDb {
     this.changeSetId = this.nativeDb.getParentChangeSetId();
     this.initializeIModelDb();
 
+    IpcHost.notifyTxns(this, "notifyPushedChanges", this.changeSetId);
     return this.concurrencyControl.onPushedChanges(requestContext);
   }
 
@@ -2639,21 +2623,21 @@ export class SnapshotDb extends IModelDb {
 }
 
 /** Standalone iModels are read/write files that are not managed by iModelHub.
- * They are relevant only for single-practitioner scenarios where team collaboration is necessary.
- * However, Standalone iModels are designed such that the API interaction between Standalone iModels and Briefcase
+ * They are relevant only for small-scale single-user scenarios.
+ * Standalone iModels are designed such that the API for Standalone iModels and Briefcase
  * iModels (those synchronized with iModelHub) are as similar and consistent as possible.
- * This leads to a straightforward process where the practitioner can optionally choose to upgrade to iModelHub.
+ * This leads to a straightforward process where the a user starts with StandaloneDb and can
+ * optionally choose to upgrade to iModelHub.
  *
  * Some additional details. Standalone iModels:
  * - always have [Guid.empty]($bentley) for their contextId (they are "unassociated" files)
- * - always have BriefcaseId === [BriefcaseIdValue.Unassigned]($backend)
+ * - always have BriefcaseId === [BriefcaseIdValue.Unassigned]($common)
  * - are connected to the frontend via [BriefcaseConnection.openStandalone]($frontend)
  * - may be opened without supplying any user credentials
  * - may be opened read/write
- * - may optionally support undo/redo via [[TxmManager]]
- * - cannot apply a changeset to nor generate a changesets
- * - are only available to authorized applications
- * @internal
+ * - may optionally support undo/redo via [[TxnManager]]
+ * - cannot apply a changeset to nor generate a changesets (since there is no timeline from which to get/push changesets)
+ * @public
  */
 export class StandaloneDb extends IModelDb {
   public get isStandalone(): boolean { return true; }
@@ -2729,6 +2713,7 @@ export class StandaloneDb extends IModelDb {
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
    * @returns a new StandaloneDb if the file is not currently open, and the existing StandaloneDb if it is already
    * @throws [[IModelError]] if the file is not a standalone iModel.
+   * @see [BriefcaseConnection.openStandalone]($frontend) to open a StandaloneDb from the frontend
    */
   public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
     const file = { path: filePath, key: options?.key };

@@ -13,34 +13,36 @@ import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider"
 export interface UseExpandedNodesTrackingProps {
   modelSource: TreeModelSource;
   dataProvider: IPresentationTreeDataProvider;
-  enableAutoUpdate: boolean;
+  enableNodesTracking: boolean;
 }
 
 /** @internal */
 export function useExpandedNodesTracking(props: UseExpandedNodesTrackingProps) {
-  const { modelSource, dataProvider, enableAutoUpdate } = props;
+  const { modelSource, dataProvider } = props;
   const componentId = useRef(Guid.createValue());
 
   useEffect(() => {
-    if (!enableAutoUpdate)
+    if (!props.enableNodesTracking)
       return;
-
     const sourceId = componentId.current;
-    const removeModelChangeListener = modelSource.onModelChanged.addListener(() => {
+
+    const updateExpandedNodes = () => {
       if (!Presentation.presentation.stateTracker)
         return;
 
       const expandedNodes = getExpandedNodeItems(modelSource).map((item) => ({ id: item.id, key: dataProvider.getNodeKey(item) }));
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       Presentation.presentation.stateTracker.onExpandedNodesChanged(dataProvider.imodel, dataProvider.rulesetId, sourceId, expandedNodes);
-    });
+    };
+    const removeModelChangeListener = modelSource.onModelChanged.addListener(updateExpandedNodes);
+    updateExpandedNodes();
 
     return () => {
       removeModelChangeListener();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       Presentation.presentation.stateTracker?.onHierarchyClosed(dataProvider.imodel, dataProvider.rulesetId, sourceId);
     };
-  }, [modelSource, dataProvider, enableAutoUpdate]);
+  }, [modelSource, dataProvider, props.enableNodesTracking]);
 }
 
 /** @internal */

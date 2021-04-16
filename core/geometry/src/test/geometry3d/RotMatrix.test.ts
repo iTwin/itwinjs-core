@@ -27,8 +27,15 @@ function verifyInverseGo(ck: Checker, matrixA: Matrix3d) {
     if (ck.testPointer(matrixB, "matrix has inverse") && matrixB) {
       const matrixAB = matrixA.multiplyMatrixMatrix(matrixB);
       ck.testTrue(matrixAB.isIdentity, "verify A*A^inverse is identity");
-    }
+    // verify in-place inverse
+    let matrixE = matrixA.clone();
+    matrixE.inverse(matrixE);
+    if (!ck.testMatrix3d(matrixB, matrixE, "in-place inverse")) {
+      matrixE = matrixA.clone();
+      matrixE.inverse(matrixE);
+      }
 
+    }
   }
 }
 // input a newly created Matrix3d.

@@ -119,4 +119,12 @@ describe("MessageManager", () => {
     expect(MessageManager.messages.length).to.eq(1);
   });
 
+  it("openMessageCenter raises OpenMessageCenterEvent", () => {
+    const onOpenMessageCenterEventSpy = sinon.spy();
+    MessageManager.onOpenMessageCenterEvent.addOnce(onOpenMessageCenterEventSpy);
+
+    MessageManager.openMessageCenter();
+    expect(onOpenMessageCenterEventSpy.callCount).to.eq(1);
+  });
+
 });

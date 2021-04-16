@@ -5,7 +5,6 @@ public;AmbientLightProps
 public;AmbientOcclusion
 alpha;AnalysisStyle
 alpha;AnalysisStyleProps
-internal;AntiAliasPref
 public;AreaFillProps
 public;AreaPattern
 public;AuxCoordSystem2dProps 
@@ -22,8 +21,8 @@ public;BackgroundMapSettings
 public;BackgroundMapType
 public;Base64EncodedString = string
 public;Base64EncodedString
-alpha;BaseLayerProps = MapLayerProps | ColorDefProps
-alpha;BaseLayerSettings = MapLayerSettings | ColorDef
+beta;BaseLayerProps = MapLayerProps | ColorDefProps
+beta;BaseLayerSettings = MapLayerSettings | ColorDef
 public;BatchType
 public;class BentleyCloudRpcConfiguration 
 public;BentleyCloudRpcManager 
@@ -32,9 +31,9 @@ public;class BentleyCloudRpcProtocol
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
-internal;BoundingSphere
+public;BoundingSphere
 alpha;BRepCutProps
-beta;BRepEntity
+public;BRepEntity
 alpha;BRepGeometryCreate
 alpha;BRepGeometryFunction = (info: BRepGeometryInfo) => void
 alpha;BRepGeometryInfo
@@ -46,11 +45,10 @@ alpha;BRepThickenProps
 beta;BriefcaseDownloader
 public;BriefcaseIdValue
 beta;BriefcaseProps
-internal;BriefcasePushAndPullNotifications
-beta;calculateSolarAngles(date: Date, location: Cartographic):
-beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
-beta;calculateSolarDirectionFromAngles(azimuthElevation:
-beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
+public;calculateSolarAngles(date: Date, location: Cartographic):
+public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
+public;calculateSolarDirectionFromAngles(azimuthElevation:
+public;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
 public;CalloutProps 
 public;Camera 
 public;CameraProps
@@ -67,8 +65,8 @@ public;ChangeOpCode
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
-beta;ClipStyle
-beta;ClipStyleProps
+public;ClipStyle
+public;ClipStyleProps
 beta;class CloudStorageCache
 beta;CloudStorageContainerDescriptor
 beta;CloudStorageContainerUrl
@@ -89,7 +87,7 @@ internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId):
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
-internal;ContentFlags
+alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModelProps
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
@@ -101,12 +99,12 @@ internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
 beta;CustomAttribute
-beta;CutStyle
-beta;CutStyleProps
-beta;DecorationGeometryProps
+public;CutStyle
+public;CutStyleProps
+internal;DecorationGeometryProps
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
-alpha;DeletedElementGeometryChange
+public;DeletedElementGeometryChange
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
@@ -114,7 +112,7 @@ public;DisplayStyle3dSettings
 public;DisplayStyle3dSettingsProps 
 public;DisplayStyleLoadProps
 beta;DisplayStyleModelAppearanceProps 
-beta;DisplayStyleOverridesOptions
+public;DisplayStyleOverridesOptions
 public;DisplayStyleProps 
 beta;DisplayStyleRealityModelPlanarClipMaskProps 
 public;DisplayStyleSettings
@@ -123,37 +121,41 @@ public;DisplayStyleSubCategoryProps
 beta;DomainOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
-beta;Easing:
-beta;EasingFunction = (k: number) => number
+beta;DynamicGraphicsRequest2dProps 
+beta;DynamicGraphicsRequest3dProps 
+beta;DynamicGraphicsRequestProps 
+public;Easing:
+public;EasingFunction = (k: number) => number
 public;EcefLocation 
 public;EcefLocationProps
 public;ECJsNames
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
-internal;EditingSessionNotifications
+internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
 alpha;ElementGeometry
-alpha;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
-alpha;ElementGeometryChange
+public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
+public;ElementGeometryChange
 alpha;ElementGeometryDataEntry
 alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
 alpha;ElementGeometryInfo
 alpha;ElementGeometryOpcode
 alpha;ElementGeometryRequest
 alpha;ElementGeometryUpdate
-internal;ElementGraphicsRequestProps
-alpha;ElementIdsAndRangesProps
-public;ElementLoadProps
+beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
+public;ElementIdsAndRangesProps
+public;ElementLoadOptions
+public;ElementLoadProps 
 public;ElementProps 
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
 public;EnvironmentProps
-alpha;ExtantElementGeometryChange
+public;ExtantElementGeometryChange
 public;ExternalSourceAspectProps 
 beta;ExternalSourceAttachmentProps 
 beta;ExternalSourceAttachmentRole
@@ -161,14 +163,14 @@ beta;ExternalSourceProps
 public;Feature
 public;FeatureAppearance 
 public;FeatureAppearanceProps
-beta;FeatureAppearanceProvider
-beta;FeatureAppearanceProvider
+public;FeatureAppearanceProvider
+public;FeatureAppearanceProvider
 public;FeatureAppearanceSource
 internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
 public;FeatureOverrides 
-beta;FeatureTable 
+public;FeatureTable 
 internal;FeatureTableHeader
 public;FilePropertyProps
 public;FillDisplay
@@ -194,8 +196,8 @@ public;GeometricModel3dProps
 public;GeometricModelProps 
 public;GeometryAppearanceProps
 public;GeometryClass
-beta;GeometryContainmentRequestProps
-beta;GeometryContainmentResponseProps
+public;GeometryContainmentRequestProps
+public;GeometryContainmentResponseProps
 public;GeometryParams
 public;GeometryPartInstanceProps
 public;GeometryPartProps 
@@ -208,9 +210,9 @@ public;GeometryStreamIterator
 public;GeometryStreamIteratorEntry
 public;GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive
 public;GeometryStreamProps = GeometryStreamEntryProps[]
-beta;GeometrySummaryOptions
-beta;GeometrySummaryRequestProps
-beta;GeometrySummaryVerbosity
+public;GeometrySummaryOptions
+public;GeometrySummaryRequestProps
+public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
 public;GlobeMode
 internal;GltfBufferData
@@ -224,6 +226,7 @@ internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
 public;GraphicParams
+beta;GraphicsRequestProps
 public;GridOrientationType
 public;GroundPlane
 public;GroundPlaneProps
@@ -240,17 +243,17 @@ public;HttpServerResponse
 internal;I3dmHeader 
 public;ImageBuffer
 public;ImageBufferFormat
-beta;ImageGraphic
-beta;ImageGraphicCorners
-beta;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
-beta;ImageGraphicProps
+public;ImageGraphic
+public;ImageGraphicCorners
+public;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
+public;ImageGraphicProps
 public;ImagePrimitive
 public;ImageSource
 public;ImageSourceFormat
 internal;ImdlFlags
 internal;ImdlHeader 
 public;class IModel 
-alpha;IModelConnectionProps = IModelProps & IModelRpcProps
+public;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
 public;IModelEncryptionProps
@@ -271,8 +274,8 @@ public;InformationPartitionElementProps
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
 beta;InternetConnectivityStatus
-beta;Interpolation:
-beta;InterpolationFunction = (v: any, k: number) => number
+public;Interpolation:
+public;InterpolationFunction = (v: any, k: number) => number
 internal;IpcAppChannel
 internal;IpcAppFunctions
 internal;IpcAppNotifications
@@ -298,33 +301,33 @@ public;LightSettings
 public;LightSettingsProps
 public;LinePixels
 public;LineStyle
-beta;LineStyleProps 
+public;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
 beta;LocalBriefcaseProps
-alpha;MapImageryProps
-alpha;MapImagerySettings
+beta;MapImageryProps
+beta;MapImagerySettings
 beta;MapLayerKey
-alpha;MapLayerProps
-alpha;MapLayerSettings
-alpha;MapSubLayerProps
-alpha;MapSubLayerSettings
+beta;MapLayerProps
+beta;MapLayerSettings
+beta;MapSubLayerProps
+beta;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
-beta;MassPropertiesOperation
-beta;MassPropertiesRequestProps
-beta;MassPropertiesResponseProps
+public;MassPropertiesOperation
+public;MassPropertiesRequestProps
+public;MassPropertiesResponseProps
 public;MaterialProps
 internal;MeshEdge
 internal;MeshEdges
 internal;MeshPolyline
 internal;MeshPolylineList 
-alpha;ModelClipGroup
-internal;ModelClipGroupProps
-alpha;ModelClipGroups
-alpha;ModelGeometryChanges
-alpha;ModelGeometryChanges
-alpha;ModelGeometryChangesProps
+public;ModelClipGroup
+public;ModelClipGroupProps
+public;ModelClipGroups
+public;ModelGeometryChanges
+public;ModelGeometryChanges
+public;ModelGeometryChangesProps
 beta;ModelIdAndGeometryGuid
 public;ModelLoadProps
 public;ModelProps 
@@ -345,7 +348,7 @@ internal;NonUniformColor
 public;Npc
 public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]
-internal;OctEncodedNormal
+public;OctEncodedNormal
 internal;OctEncodedNormalPair
 internal;OpenAPIContentMap
 internal;OpenAPIDocument
@@ -369,6 +372,7 @@ beta;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PartReference
+beta;PersistentGraphicsRequestProps 
 public;PhysicalElementProps 
 public;PhysicalTypeProps 
 public;Placement2d 
@@ -380,8 +384,8 @@ beta;PlanarClipMaskMode
 beta;PlanarClipMaskPriority
 beta;PlanarClipMaskProps
 beta;PlanarClipMaskSettings
-beta;PlanProjectionSettings
-beta;PlanProjectionSettingsProps
+public;PlanProjectionSettings
+public;PlanProjectionSettingsProps
 internal;PntsHeader 
 beta;PointWithStatus
 internal;POLICY: unique symbol
@@ -395,13 +399,16 @@ beta;ProfileOptions
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataProps
-internal;QParams2d
-internal;QParams3d
-internal;QPoint2d
-internal;QPoint2dList
-internal;QPoint3d
-internal;QPoint3dList
-internal;Quantization
+public;QParams2d
+public;QParams3d
+public;QPoint2d
+public;QPoint2dList
+public;QPoint3d
+public;QPoint3dList
+public;Quantization
+internal;isInRange(qpos: number, rangeScale?: number): boolean
+internal;isQuantizable(pos: number, origin: number, scale: number, rangeScale?: number): boolean
+internal;isQuantized(qpos: number): boolean
 public;QueryLimit
 public;QueryPriority
 public;QueryQuota
@@ -414,7 +421,7 @@ internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
 public;RelationshipProps 
-beta;RemoveFunction = () => void
+public;RemoveFunction = () => void
 beta;class RenderMaterial
 beta;RenderMaterial
 beta;RenderMaterialProps 
@@ -486,26 +493,24 @@ public;RpcRoutingToken
 public;RpcSerializedValue
 public;RpcSerializedValue
 beta;SchemaState
-beta;SectionDrawingLocationProps 
-beta;SectionDrawingProps 
-beta;SectionDrawingViewProps
-alpha;SectionLocationProps 
-deprecated;SectionLocationProps 
+public;SectionDrawingLocationProps 
+public;SectionDrawingProps 
+public;SectionDrawingViewProps
 public;SectionType
 public;SerializedRpcOperation
 public;SerializedRpcRequest 
 public;ServerError 
 public;ServerTimeoutError 
 beta;SheetBorderTemplateProps 
-beta;SheetProps 
+public;SheetProps 
 beta;SheetTemplateProps 
 internal;SilhouetteEdgeArgs 
 public;SkyBoxImageProps
 public;SkyBoxImageType
 public;SkyBoxProps
 public;SkyCubeProps
-beta;SnapRequestProps
-beta;SnapResponseProps
+internal;SnapRequestProps
+internal;SnapResponseProps
 internal;class SnapshotIModelRpcInterface 
 public;SnapshotOpenOptions 
 public;SolarLight
@@ -515,14 +520,14 @@ public;SolarShadowSettingsProps
 public;SourceAndTarget
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
-beta;StandaloneOpenOptions = OpenDbKey
+public;StandaloneOpenOptions = OpenDbKey
 beta;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
-alpha;SubLayerId = string | number
+beta;SubLayerId = string | number
 beta;SynchronizationConfigLinkProps 
 public;SyncMode
 public;TerrainHeightOriginMode
@@ -540,17 +545,17 @@ beta;TextureMapping
 beta;TextureMapProps
 beta;TextureMapUnits
 beta;TextureProps 
-beta;ThematicDisplay
-beta;ThematicDisplayMode
-beta;ThematicDisplayProps
-alpha;ThematicDisplaySensor
-alpha;ThematicDisplaySensorProps
-alpha;ThematicDisplaySensorSettings
-alpha;ThematicDisplaySensorSettingsProps
-beta;ThematicGradientColorScheme
-beta;ThematicGradientMode
-beta;ThematicGradientSettings
-beta;ThematicGradientSettingsProps
+public;ThematicDisplay
+public;ThematicDisplayMode
+public;ThematicDisplayProps
+public;ThematicDisplaySensor
+public;ThematicDisplaySensorProps
+public;ThematicDisplaySensorSettings
+public;ThematicDisplaySensorSettingsProps
+public;ThematicGradientColorScheme
+public;ThematicGradientMode
+public;ThematicGradientSettings
+public;ThematicGradientSettingsProps
 alpha;ThumbnailFormatProps
 alpha;ThumbnailProps 
 internal;TileContentDescription 
@@ -569,16 +574,16 @@ internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
 alpha;TileVersionInfo
-internal;TreeFlags
-beta;Tween
-beta;TweenCallback = (obj: any) => void
-beta;Tweens
+alpha;TreeFlags
+public;Tween
+public;TweenCallback = (obj: any) => void
+public;Tweens
 public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
 internal;TypeOfChange
-beta;UpdateCallback = (obj: any, t: number) => void
+public;UpdateCallback = (obj: any, t: number) => void
 beta;UpgradeOptions
 public;UrlLinkProps 
 public;ViewAttachmentLabelProps 
@@ -586,10 +591,10 @@ public;ViewAttachmentProps
 public;ViewDefinition2dProps 
 public;ViewDefinition3dProps 
 public;ViewDefinitionProps 
-beta;ViewDetails
-beta;ViewDetails3d 
-internal;ViewDetails3dProps 
-internal;ViewDetailsProps
+public;ViewDetails
+public;ViewDetails3d 
+public;ViewDetails3dProps 
+public;ViewDetailsProps
 public;ViewFlagOverrides
 public;ViewFlagOverridesProps
 public;ViewFlagPresence

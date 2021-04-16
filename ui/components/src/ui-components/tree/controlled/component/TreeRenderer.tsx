@@ -9,7 +9,7 @@
 import "./ControlledTree.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { areEqual, ListChildComponentProps } from "react-window";
+import { areEqual, ListChildComponentProps, ListOnItemsRenderedProps } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { timer } from "rxjs/internal/observable/timer";
@@ -26,6 +26,17 @@ import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
 
 const NODE_LOAD_DELAY = 500;
+
+/**
+ * Data structure that describes range of rendered items in the tree.
+ * @alpha
+ */
+export interface RenderedItemsRange {
+  overscanStartIndex: number;
+  overscanStopIndex: number;
+  visibleStartIndex: number;
+  visibleStopIndex: number;
+}
 
 /**
  * Properties for [[TreeRenderer]] component.
@@ -46,6 +57,12 @@ export interface TreeRendererProps {
 
   /** Properties used to highlight nodes and scroll to active match while filtering. */
   nodeHighlightingProps?: HighlightableTreeProps;
+
+  /**
+   * Callback that is called when rendered items range changes.
+   * @alpha
+   */
+  onItemsRendered?: (renderedItems: RenderedItemsRange) => void;
 
   /**
    * Callback used when an editor closes
@@ -247,6 +264,11 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
     props.treeActions.onTreeKeyUp(e);
   }, [props.treeActions]);
 
+  const onItemsRendered = props.onItemsRendered;
+  const handleRenderedItemsChange = React.useCallback((onItemsRenderedProps: ListOnItemsRenderedProps) => {
+    onItemsRendered && onItemsRendered({ ...onItemsRenderedProps });
+  }, [onItemsRendered]);
+
   return (
     <TreeRendererContextProvider value={rendererContext}>
       <CoreTree ref={coreTreeRef} className="components-controlledTree" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
@@ -260,6 +282,7 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
           overscanCount={10}
           itemKey={itemKey}
           innerElementType={innerElementType}
+          onItemsRendered={handleRenderedItemsChange}
         >
           {Node}
         </VirtualizedList>

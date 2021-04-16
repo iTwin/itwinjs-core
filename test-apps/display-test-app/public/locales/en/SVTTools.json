@@ -117,6 +117,9 @@
     },
     "PlaceLineString": {
       "keyin": "dta place line string"
+    },
+    "SyncViewports": {
+      "keyin": "dta viewport sync"
     }
   }
 }

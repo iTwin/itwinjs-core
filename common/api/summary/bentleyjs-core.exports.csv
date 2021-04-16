@@ -4,21 +4,21 @@ beta;AbandonedError
 internal;addClientRequestContext: (metaData: any) => void
 public;areEqualPossiblyUndefined
 public;asInstanceOf
-beta;assert(condition: boolean, msg?: string): asserts condition
+public;assert(condition: boolean, msg?: string): asserts condition
 alpha;AsyncMutex
 alpha;AsyncMutexUnlockFnType = () => void
 beta;AuthStatus
 public;base64StringToUint8Array(base64: string): Uint8Array
 public;BeDuration
 public;BeEvent
-beta;BeEventList
+public;BeEventList
 public;BentleyError 
 public;BentleyLoggerCategory
 public;BentleyStatus
 public;BeTimePoint
 beta;BeUiEvent
 beta;BriefcaseStatus
-beta;ByteStream
+public;ByteStream
 public;ChangeSetApplyOption
 beta;ChangeSetStatus
 public;ClientRequestContext
@@ -32,10 +32,8 @@ public;comparePossiblyUndefined
 public;compareStrings(a: string, b: string): number
 public;compareStringsOrUndefined(lhs?: string, rhs?: string): number
 public;compareWithTolerance(a: number, b: number, tolerance?: number): number
-beta;CompressedId64Set = string
-beta;CompressedId64Set
-alpha;iterable(ids: CompressedId64Set): OrderedId64Iterable
-alpha;iterator(ids: CompressedId64Set): Iterator
+public;CompressedId64Set = string
+public;CompressedId64Set
 public;ComputePriorityFunction
 public;Config
 public;Constructor
@@ -84,19 +82,19 @@ public;lowerBound
 public;LRUCache
 public;LRUDictionary
 public;LRUMap
-alpha;MutableCompressedId64Set 
-beta;ObservableSet
+public;MutableCompressedId64Set 
+public;ObservableSet
 beta;OneAtATimeAction
 public;OpenMode
 public;OrderedComparator
-alpha;OrderedId64Array 
-beta;OrderedId64Iterable = Iterable
-beta;OrderedId64Iterable
+public;OrderedId64Array 
+public;OrderedId64Iterable = Iterable
+public;OrderedId64Iterable
 public;OrderedSet
-beta;partitionArray
+public;partitionArray
 public;PerfLogger 
 public;PriorityQueue
-beta;ProcessDetector
+public;ProcessDetector
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 beta;RepositoryStatus

@@ -8,8 +8,8 @@ import { RpcManager } from "@bentley/imodeljs-common";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import {
-  ContentRpcRequestOptions, Descriptor, DistinctValuesRpcRequestOptions, FieldDescriptorType, HierarchyRpcRequestOptions, InstanceKey, KeySet, Paged,
-  PresentationDataCompareRpcOptions, PresentationRpcInterface, PresentationStatus, RegisteredRuleset, Ruleset,
+  ContentRpcRequestOptions, Descriptor, DistinctValuesRpcRequestOptions, FieldDescriptorType, HierarchyCompareRpcOptions, HierarchyRpcRequestOptions,
+  InstanceKey, KeySet, Paged, PresentationRpcInterface, PresentationStatus, RegisteredRuleset, Ruleset,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import * as defaultRuleset from "./rulesets/default.json";
@@ -234,7 +234,7 @@ describe("PresentationRpcInterface tests", () => {
 
     it("[deprecated] comparHierarchies works as expected", async () => {
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
-        const options: PresentationDataCompareRpcOptions = {
+        const options: HierarchyCompareRpcOptions = {
           prev: {
             rulesetOrId: ruleset.id,
           },

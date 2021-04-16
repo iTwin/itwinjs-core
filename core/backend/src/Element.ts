@@ -13,7 +13,7 @@ import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionLocationProps, SectionType,
+  Placement3d, RelatedElement, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -188,9 +188,26 @@ export class Element extends Entity implements ElementProps {
    */
   protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
 
-  /** @beta */
+  /** Called when a *root* element in a subgraph is changed and before its outputs are processed.
+   * This special callback is made when:
+   * * the element is part of an [[ElementDrivesElement]] graph, and
+   * * the element has no inputs, and
+   * * none of the element's outputs have been processed.
+   * @see [[ElementDrivesElement]] for more on element dependency graphs.
+   * @beta
+   */
   protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
-  /** @beta */
+
+  /** Called on an element in a graph after all of its inputs have been processed and before its outputs are processed.
+   * This callback is made when:
+   * * the specified element is part of an [[ElementDrivesElement]] graph, and
+   * * there was a direct change to some element upstream in the dependency graph.
+   * * all upstream elements in the graph have been processed.
+   * * none of the downstream elements have been processed.
+   * This method is not called if none of the element's inputs were changed.
+   * @see [[ElementDrivesElement]] for more on element dependency graphs.
+   * @beta
+   */
   protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
   /** Save this Element's properties to an object for serializing to JSON.
@@ -508,33 +525,6 @@ export class VolumeElement extends SpatialLocationElement {
   public static get className(): string { return "VolumeElement"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/** A SectionLocation element defines how a section drawing should be generated in a 3d view.
- * @note The associated ECClass was added to the BisCore schema in version 1.0.6
- * @alpha
- * @deprecated use [[SectionDrawingLocation]].
- */
-export class SectionLocation extends SpatialLocationElement implements SectionLocationProps { // eslint-disable-line deprecation/deprecation
-  /** Section type */
-  public sectionType: SectionType;
-
-  /** @internal */
-  public static get className(): string { return "SectionLocation"; }
-
-  /** @internal */
-  public constructor(props: SectionLocationProps, iModel: IModelDb) { // eslint-disable-line deprecation/deprecation
-    super(props, iModel);
-    this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
-  }
-
-  /** @internal */
-  public toJSON(): SectionLocationProps { // eslint-disable-line deprecation/deprecation
-    return {
-      ...super.toJSON(),
-      sectionType: this.sectionType,
-    };
-  }
 }
 
 /** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]].

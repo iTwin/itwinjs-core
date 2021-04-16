@@ -7,11 +7,14 @@
  */
 
 import * as immer from "immer";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { PartialHierarchyModification, RegisteredRuleset, Ruleset, UPDATE_FULL, VariableValue } from "@bentley/presentation-common";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  HierarchyUpdateRecord, PageOptions, PartialHierarchyModification, RegisteredRuleset, Ruleset, UPDATE_FULL, VariableValue,
+} from "@bentley/presentation-common";
 import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import {
-  MutableTreeModel, PagedTreeNodeLoader, Subscription, TreeModel, TreeModelNodeInput, TreeModelSource, TreeNodeItemData, usePagedTreeNodeLoader,
+  isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange, Subscription,
+  TreeModel, TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, TreeNodeItemData, usePagedTreeNodeLoader, VisibleTreeNodes,
 } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
@@ -21,7 +24,7 @@ import { getExpandedNodeItems, useExpandedNodesTracking } from "./UseExpandedNod
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.
- * @beta
+ * @public
  */
 export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataProviderProps {
   /**
@@ -57,9 +60,9 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
  * Custom hooks which creates PagedTreeNodeLoader with PresentationTreeDataProvider using
  * supplied imodel and ruleset.
  *
- * @beta
+ * @public
  */
-export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader<IPresentationTreeDataProvider> {
+export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps) {
   interface Info {
     treeModel: MutableTreeModel | undefined;
   }
@@ -73,22 +76,23 @@ export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderP
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const modelSource = useMemo(() => new TreeModelSource(info.treeModel), [dataProvider, info]);
 
-  const rerenderWithTreeModel = (treeModel?: MutableTreeModel) => setInfo({ treeModel });
+  const rerenderWithTreeModel = useCallback((treeModel?: MutableTreeModel) => setInfo({ treeModel }), []);
   const modelSourceUpdateProps: ModelSourceUpdateProps = {
     enable: props.enableHierarchyAutoUpdate,
     modelSource,
     rerenderWithTreeModel,
     dataProvider,
-    treeNodeItemCreationProps: { appendChildrenCountForGroupingNodes: props.appendChildrenCountForGroupingNodes },
+    treeNodeItemCreationProps: useMemo(() => ({ appendChildrenCountForGroupingNodes: props.appendChildrenCountForGroupingNodes }), [props.appendChildrenCountForGroupingNodes]),
   };
-  useModelSourceUpdateOnIModelHierarchyUpdate(modelSourceUpdateProps);
+
+  const onItemsRendered = useModelSourceUpdateOnIModelHierarchyUpdate(modelSourceUpdateProps);
   useModelSourceUpdateOnRulesetModification(modelSourceUpdateProps);
   useModelSourceUpdateOnRulesetVariablesChange(modelSourceUpdateProps);
 
   const nodeLoader = usePagedTreeNodeLoader(dataProvider, props.pagingSize, modelSource);
   // When node loader is changed, all node loads automatically get cancelled; need to resume
   useResumeNodeLoading(modelSource, nodeLoader);
-  return nodeLoader;
+  return { nodeLoader, onItemsRendered };
 }
 
 /** Starts loading children for nodes that are marked as loading, each time arguments change. */
@@ -127,14 +131,19 @@ interface ModelSourceUpdateProps {
 
 function useModelSourceUpdateOnIModelHierarchyUpdate(props: ModelSourceUpdateProps) {
   const { modelSource, dataProvider, rerenderWithTreeModel } = props;
-  useExpandedNodesTracking({ modelSource, dataProvider, enableAutoUpdate: props.enable ?? false });
+  useExpandedNodesTracking({ modelSource, dataProvider, enableNodesTracking: !!props.enable });
+  const renderedItems = useRef<RenderedItemsRange | undefined>(undefined);
+  const onItemsRendered = useCallback((items: RenderedItemsRange) => {
+    renderedItems.current = items;
+  }, []);
+
   const onIModelHierarchyChanged = useCallback(
     async (args: IModelHierarchyChangeEventArgs) => {
       if (args.rulesetId === dataProvider.rulesetId && args.imodelKey === dataProvider.imodel.key) {
         if (args.updateInfo === UPDATE_FULL) {
           rerenderWithTreeModel(undefined);
         } else {
-          updateModelSource(modelSource, rerenderWithTreeModel, args.updateInfo, props.treeNodeItemCreationProps);
+          await updateModelSourceAfterIModelChange(modelSource, rerenderWithTreeModel, args.updateInfo, dataProvider, props.treeNodeItemCreationProps, renderedItems.current);
         }
       }
     },
@@ -148,6 +157,8 @@ function useModelSourceUpdateOnIModelHierarchyUpdate(props: ModelSourceUpdatePro
     },
     [onIModelHierarchyChanged, props.enable],
   );
+
+  return onItemsRendered;
 }
 
 function useModelSourceUpdateOnRulesetModification(props: ModelSourceUpdateProps) {
@@ -255,7 +266,7 @@ export function updateTreeModel(
         case "Delete":
           const nodeToRemove = model.getNode(createTreeNodeId(modification.target));
           if (nodeToRemove === undefined) {
-            return;
+            break;
           }
 
           model.removeChild(nodeToRemove.parentId, nodeToRemove.id);
@@ -298,4 +309,164 @@ function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentati
     dataProvider = new PresentationTreeDataProvider(providerProps);
   }
   return dataProvider;
+}
+
+async function updateModelSourceAfterIModelChange(
+  modelSource: TreeModelSource,
+  rerenderWithTreeModel: (treeModel?: MutableTreeModel) => void,
+  hierarchyUpdateRecords: HierarchyUpdateRecord[],
+  dataProvider: IPresentationTreeDataProvider,
+  treeNodeItemCreationProps: CreateTreeNodeItemProps,
+  renderedItems?: RenderedItemsRange,
+) {
+  const modelWithUpdateRecords = applyHierarchyChanges(modelSource.getModel() as MutableTreeModel, hierarchyUpdateRecords, [], treeNodeItemCreationProps);
+  if (modelWithUpdateRecords === modelSource.getModel())
+    return;
+
+  if (!renderedItems)
+    return rerenderWithTreeModel(modelWithUpdateRecords);
+
+  const reloadedHierarchyParts = await reloadVisibleHierarchyParts(new TreeModelSource(modelWithUpdateRecords).getVisibleNodes(), renderedItems, dataProvider);
+  const newModel = applyHierarchyChanges(modelSource.getModel() as MutableTreeModel, hierarchyUpdateRecords, reloadedHierarchyParts, treeNodeItemCreationProps);
+  rerenderWithTreeModel(newModel);
+}
+
+/** @internal */
+export interface ReloadedHierarchyPart {
+  parentId: string | undefined;
+  nodeItems: TreeNodeItem[];
+  offset: number;
+}
+
+/** @internal */
+export function applyHierarchyChanges(
+  treeModel: MutableTreeModel,
+  hierarchyUpdateRecords: HierarchyUpdateRecord[],
+  reloadedHierarchyParts: ReloadedHierarchyPart[],
+  treeNodeItemCreationProps: CreateTreeNodeItemProps
+) {
+  const updatedTreeModel = immer.produce(treeModel, (model: MutableTreeModel) => {
+    const updateParentIds = hierarchyUpdateRecords
+      .map((record) => record.parent ? createTreeNodeId(record.parent) : undefined);
+    for (const record of hierarchyUpdateRecords) {
+      const parentNodeId = record.parent ? createTreeNodeId(record.parent) : undefined;
+      const parentNode = parentNodeId ? model.getNode(parentNodeId) : model.getRootNode();
+      if (!parentNode) {
+        continue;
+      }
+
+      model.clearChildren(parentNodeId);
+      model.setNumChildren(parentNodeId, record.nodesCount);
+      if (isTreeModelNode(parentNode) && !parentNode.isExpanded)
+        continue;
+
+      for (const expandedNode of record.expandedNodes ?? []) {
+        const treeItem = createTreeNodeItem(expandedNode.node, parentNodeId, treeNodeItemCreationProps);
+        const existingNode = treeModel.getNode(treeItem.id);
+        model.setChildren(parentNodeId, [createModelNodeInput(existingNode, treeItem)], expandedNode.position);
+        if (existingNode) {
+          rebuildSubTree(treeModel, model, existingNode, updateParentIds);
+        }
+      }
+    }
+
+    for (const reloadedHierarchyPart of reloadedHierarchyParts) {
+      let offset = reloadedHierarchyPart.offset;
+      for (const item of reloadedHierarchyPart.nodeItems) {
+        const newItem = createModelNodeInput(undefined, item);
+        const existingItem = model.getNode(newItem.id);
+        if (!existingItem) {
+          model.setChildren(reloadedHierarchyPart.parentId, [newItem], offset);
+        }
+        offset++;
+      }
+    }
+  });
+  return updatedTreeModel;
+}
+
+function rebuildSubTree(oldModel: MutableTreeModel, newModel: MutableTreeModel, parentNode: TreeModelNode, excludedNodeIds: Array<string | undefined>) {
+  const oldChildren = oldModel.getChildren(parentNode.id);
+  if (!oldChildren || !parentNode.isExpanded || excludedNodeIds.includes(parentNode.id))
+    return;
+
+  newModel.setNumChildren(parentNode.id, oldChildren.getLength());
+  for (const [childId, index] of oldChildren.iterateValues()) {
+    const childNode = oldModel.getNode(childId);
+    // istanbul ignore else
+    if (childNode) {
+      newModel.setChildren(parentNode.id, [{ ...childNode }], index);
+      rebuildSubTree(oldModel, newModel, childNode, excludedNodeIds);
+    }
+  }
+}
+
+function createModelNodeInput(oldNode: MutableTreeModelNode | undefined, newNode: TreeNodeItem): TreeModelNodeInput {
+  const newInput = convertToTreeModelNodeInput(newNode);
+  if (!oldNode) {
+    return newInput;
+  }
+
+  return {
+    ...newInput,
+    isExpanded: oldNode.isExpanded,
+    isSelected: oldNode.isSelected,
+    isLoading: oldNode.isLoading,
+  };
+}
+
+/** @internal */
+export async function reloadVisibleHierarchyParts(
+  visibleNodes: VisibleTreeNodes,
+  renderedItems: RenderedItemsRange,
+  dataProvider: IPresentationTreeDataProvider,
+) {
+  const itemsRange = getItemsRange(renderedItems, visibleNodes);
+  const partsToReload = new Map<string | undefined, { parentItem: TreeNodeItem | undefined, startIndex: number, endIndex: number }>();
+  for (let i = itemsRange.startIndex; i <= itemsRange.endIndex; i++) {
+    const node = visibleNodes.getAtIndex(i);
+    if (!node || !isTreeModelNodePlaceholder(node))
+      continue;
+
+    const parentNode = node.parentId ? visibleNodes.getModel().getNode(node.parentId) : visibleNodes.getModel().getRootNode();
+    // istanbul ignore if
+    if (!parentNode || isTreeModelNodePlaceholder(parentNode))
+      continue;
+
+    const partToReload = partsToReload.get(parentNode.id);
+    if (!partToReload) {
+      partsToReload.set(parentNode.id, { parentItem: isTreeModelNode(parentNode) ? parentNode.item : undefined, startIndex: node.childIndex, endIndex: node.childIndex });
+      continue;
+    }
+    partToReload.endIndex = node.childIndex;
+  }
+
+  const reloadedHierarchyParts = new Array<ReloadedHierarchyPart>();
+  for (const [parentId, hierarchyPart] of partsToReload) {
+    const pageOptions: PageOptions = {
+      start: hierarchyPart.startIndex,
+      size: hierarchyPart.endIndex - hierarchyPart.startIndex + 1,
+    };
+    const reloadedPart: ReloadedHierarchyPart = {
+      parentId,
+      offset: hierarchyPart.startIndex,
+      nodeItems: await dataProvider.getNodes(hierarchyPart.parentItem, pageOptions),
+    };
+    reloadedHierarchyParts.push(reloadedPart);
+  }
+
+  return reloadedHierarchyParts;
+}
+
+function getItemsRange(renderedNodes: RenderedItemsRange, visibleNodes: VisibleTreeNodes) {
+  if (renderedNodes.visibleStopIndex < visibleNodes.getNumNodes())
+    return { startIndex: renderedNodes.visibleStartIndex, endIndex: renderedNodes.visibleStopIndex };
+
+  const visibleNodesCount = renderedNodes.visibleStopIndex - renderedNodes.visibleStartIndex;
+  const endPosition = visibleNodes.getNumNodes() - 1;
+  const startPosition = endPosition - visibleNodesCount;
+  return {
+    startIndex: startPosition < 0 ? 0 : startPosition,
+    endIndex: endPosition < 0 ? 0 : endPosition,
+  };
 }

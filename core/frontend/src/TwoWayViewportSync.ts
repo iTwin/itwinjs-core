@@ -8,10 +8,11 @@
 
 import { Viewport } from "./Viewport";
 
-/** Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
- * For example, Navigator uses this class to synchronize two views for revision comparison.
- * @note It is possible to synchronize two Viewports from two different [[IModelConnection]]s of the same iModel.
- * @beta
+/** Forms a bidirectional connection between two [[Viewport]]s such that the [Frustum]($common)s of both Viewports are synchronized.
+ * For example, panning in one viewport will cause the other viewport to pan by the same distance.
+ * @see [Multiple Viewport Sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=multi-viewport-sample&imodel=Metrostation+Sample)
+ * for an interactive demonstration.
+ * @public
  */
 export class TwoWayViewportSync {
   private readonly _disconnect: VoidFunction[] = [];
@@ -24,7 +25,9 @@ export class TwoWayViewportSync {
     this._isEcho = false;
   }
 
-  /** Establish the connection between two Viewports. When this method is called, view2 is initialized with the state of view1. */
+  /** Establish the connection between two Viewports. When this method is called, `view2` is initialized with the state of `view1`.
+   * Thereafter, any change to the frustum of either view will be reflected in the frustum of the other view.
+   */
   public connect(view1: Viewport, view2: Viewport) {
     this.disconnect();
 

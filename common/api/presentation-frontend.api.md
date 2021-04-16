@@ -11,6 +11,8 @@ import { ContentRequestOptions } from '@bentley/presentation-common';
 import { ContentUpdateInfo } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { DiagnosticsHandler } from '@bentley/presentation-common';
+import { DiagnosticsScopeLogs } from '@bentley/presentation-common';
 import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
@@ -18,6 +20,7 @@ import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
+import { HierarchyCompareOptions } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { HierarchyUpdateInfo } from '@bentley/presentation-common';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -38,7 +41,6 @@ import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { PagedResponse } from '@bentley/presentation-common';
 import { PartialHierarchyModification } from '@bentley/presentation-common';
-import { PresentationDataCompareOptions } from '@bentley/presentation-common';
 import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RpcRequestsHandler } from '@bentley/presentation-common';
@@ -50,10 +52,16 @@ import { SetRulesetVariableParams } from '@bentley/presentation-common';
 import { UpdateHierarchyStateParams } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 
+// @alpha (undocumented)
+export function consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void;
+
+// @alpha (undocumented)
+export function createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]): (scopeLogs: DiagnosticsScopeLogs[]) => void;
+
 // @internal (undocumented)
 export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
 
-// @beta
+// @public
 export class FavoritePropertiesManager implements IDisposable {
     constructor(props: FavoritePropertiesManagerProps);
     // @deprecated
@@ -78,7 +86,7 @@ export class FavoritePropertiesManager implements IDisposable {
     sortFields: (imodel: IModelConnection, fields: Field[]) => Field[];
     }
 
-// @beta
+// @public
 export interface FavoritePropertiesOrderInfo {
     // (undocumented)
     name: PropertyFullName;
@@ -90,7 +98,7 @@ export interface FavoritePropertiesOrderInfo {
     priority: number;
 }
 
-// @beta
+// @public
 export enum FavoritePropertiesScope {
     // (undocumented)
     Global = 0,
@@ -128,7 +136,7 @@ export interface HiliteSetProviderProps {
     imodel: IModelConnection;
 }
 
-// @beta
+// @public
 export interface IFavoritePropertiesStorage {
     loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
     loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
@@ -167,7 +175,6 @@ export interface NodeIdentifier {
 // @public
 export class Presentation {
     static get connectivity(): IConnectivityInformationProvider;
-    // @beta
     static get favoriteProperties(): FavoritePropertiesManager;
     static get i18n(): I18N;
     static initialize(props?: PresentationManagerProps): Promise<void>;
@@ -188,7 +195,7 @@ export class Presentation {
     static terminate(): void;
 }
 
-// @beta
+// @public
 export enum PresentationFrontendLoggerCategory {
     // (undocumented)
     Package = "presentation-frontend"
@@ -198,41 +205,41 @@ export enum PresentationFrontendLoggerCategory {
 export class PresentationManager implements IDisposable {
     activeLocale: string | undefined;
     activeUnitSystem: PresentationUnitSystem | undefined;
-    // @alpha (undocumented)
-    compareHierarchies(props: PresentationDataCompareOptions<IModelConnection, NodeKey>): Promise<PartialHierarchyModification[]>;
+    compareHierarchies(props: HierarchyCompareOptions<IModelConnection, NodeKey>): Promise<PartialHierarchyModification[]>;
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
     dispose(): void;
     // @deprecated
     getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
-    // @beta (undocumented)
+    // (undocumented)
     getContent(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>): Promise<Content | undefined>;
     // @deprecated
     getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{
         content: Content;
         size: number;
     } | undefined>;
-    // @beta (undocumented)
+    // (undocumented)
     getContentAndSize(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>): Promise<{
         content: Content;
         size: number;
     } | undefined>;
     // @deprecated
     getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
-    // @beta (undocumented)
+    // (undocumented)
     getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet>): Promise<Descriptor | undefined>;
     // @deprecated
     getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
-    // @beta (undocumented)
+    // (undocumented)
     getContentSetSize(requestOptions: ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<number>;
     // @deprecated
     getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition>;
-    // @beta (undocumented)
+    // (undocumented)
     getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition>;
     // @deprecated
     getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]>;
-    // @beta (undocumented)
+    // (undocumented)
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
+    // @deprecated
     getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
     getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
@@ -251,7 +258,6 @@ export class PresentationManager implements IDisposable {
     // @deprecated
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: NodeKey | undefined): Promise<number>;
     getNodesCount(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>): Promise<number>;
-    // @alpha
     getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
@@ -285,7 +291,7 @@ export interface PresentationManagerProps {
     stateTracker?: StateTracker;
 }
 
-// @beta
+// @public
 export type PropertyFullName = string;
 
 // @public
