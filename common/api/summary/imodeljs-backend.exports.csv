@@ -229,6 +229,20 @@ internal;class NativeAppAuthorizationBackend
 beta;NativeAppStorage
 beta;NativeHost
 beta;NativeHostOpts 
+beta;OnAspectArg
+beta;OnAspectIdArg 
+beta;OnAspectPropsArg 
+beta;OnChildElementArg 
+beta;OnChildElementIdArg 
+beta;OnChildElementPropsArg 
+beta;OnElementArg
+beta;OnElementIdArg 
+beta;OnElementInModelIdArg 
+beta;OnElementInModelPropsArg 
+beta;OnElementPropsArg 
+beta;OnModelArg
+beta;OnModelIdArg 
+beta;OnModelPropsArg 
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 

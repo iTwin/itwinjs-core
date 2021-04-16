@@ -23,6 +23,69 @@ import { IModelDb } from "./IModelDb";
 import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
+/** Argument for the `Element.onXxx` static methods
+ * @beta
+ */
+export interface OnElementArg {
+  /** The iModel for the Element affected by this method. */
+  iModel: IModelDb;
+}
+
+/** Argument for the `Element.onXxx` static methods that supply the properties of an Element to be inserted or updated.
+ * @beta
+ */
+export interface OnElementPropsArg extends OnElementArg {
+  /** The new properties of the Element affected by this method. */
+  props: Readonly<ElementProps>;
+}
+
+/** Argument for the `Element.onXxx` static methods that only supply the Id of the affected Element.
+ * @beta
+ */
+export interface OnElementIdArg extends OnElementArg {
+  /** The Id of the Element affected by this method */
+  id: Id64String;
+}
+
+/** Argument for the `Element.onChildXxx` static methods
+ * @beta
+ */
+export interface OnChildElementArg extends OnElementArg {
+  parentId: Id64String;
+}
+
+/** Argument for the `Element.onChildXxx` static methods that supply the properties of the child Element to be inserted or updated.
+ * @beta
+ */
+export interface OnChildElementPropsArg extends OnChildElementArg {
+  /** The new properties of the child Element for this method. */
+  childProps: Readonly<ElementProps>;
+}
+
+/** Argument for the `Element.onChildXxx` static methods that only supply the Id of the child Element.
+ * @beta
+ */
+export interface OnChildElementIdArg extends OnChildElementArg {
+  /** The Id of the child element for this method */
+  childId: Id64String;
+}
+
+/** Argument for the `Element.onSubModelInsert` static method
+ * @beta
+ */
+export interface OnSubModelPropsArg extends OnElementArg {
+  /** The properties of the prospective sub-model */
+  subModelProps: ModelProps;
+}
+
+/** Argument for several `Element.onSubModelXxx` static methods
+ * @beta
+ */
+export interface OnSubModelIdArg extends OnElementArg {
+  /** The modelId of the sub Model */
+  subModelId: Id64String;
+}
+
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
  * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model
  * other Elements that represent larger scale real world entities. Using this recursive modeling strategy,
@@ -121,69 +184,168 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Called before a new Element is inserted.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note throw an exception to disallow the insert
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element to be inserted
    * @beta
    */
-  protected static onInsert(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert);
+  protected static onInsert(arg: OnElementPropsArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Insert);
     }
   }
-  /** Called before an Element is updated.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
-   * @beta
-   */
-  protected static onUpdate(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update);
-    }
-  }
-  /** Called before an Element is deleted.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
-   * @beta
-   */
-  protected static onDelete(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
-    }
-  }
+
   /** Called after a new Element was inserted.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was inserted
    * @beta
    */
-  protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert);
+  protected static onInserted(arg: OnElementIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Insert);
     }
   }
+
+  /** Called before an Element is updated.
+   * @note throw an exception to disallow the update
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element to be updated
+   * @beta
+   */
+  protected static onUpdate(arg: OnElementPropsArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Update);
+    }
+  }
+
   /** Called after an Element was updated.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was updated
    * @beta
    */
-  protected static onUpdated(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update);
+  protected static onUpdated(arg: OnElementIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Update);
     }
   }
-  /** Called after an Element was deleted.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+
+  /** Called before an Element is deleted.
+   * @note throw an exception to disallow the delete
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element to be deleted
    * @beta
    */
-  protected static onDeleted(_props: Readonly<ElementProps>, _iModel: IModelDb): void { }
+  protected static onDelete(arg: OnElementIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      const props = arg.iModel.elements.tryGetElementProps(arg.id);
+      if (props !== undefined)
+        arg.iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
+    }
+  }
+
+  /** Called after an Element was deleted.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was deleted
+   * @beta
+   */
+  protected static onDeleted(_arg: OnElementIdArg): void { }
+
+  /** Called when an element with an instance of this class as its parent is about to be deleted.
+   * @note throw an exception if the element should not be deleted
+   * @note implementers should not presume that the element was deleted if this method does not throw,
+   * since the delete may fail for other reasons. Instead, rely on [[onChildDeleted]] for that purpose.
+   * @note `this` is the class of the parent Element whose child will be deleted
+   * @beta
+   */
+  protected static onChildDelete(_arg: OnChildElementIdArg): void { }
+
+  /** Called after an element with an instance of this class as its parent was successfully deleted.
+   * @note `this` is the class of the parent Element whose child was deleted
+   * @beta
+   */
+  protected static onChildDeleted(_arg: OnChildElementIdArg): void { }
+
+  /** Called when a *new element* with an instance of this class as its parent is about to be inserted.
+   * @note throw an exception if the element should not be inserted
+   * @note `this` is the class of the prospective parent Element.
+   * @beta
+   */
+  protected static onChildInsert(_arg: OnChildElementPropsArg): void { }
+
+  /** Called after a *new element* with an instance of this class as its parent was inserted.
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
+  protected static onChildInserted(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an element with an instance of this class as its parent is about to be updated.
+   * @note throw an exception if the element should not be updated
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
+  protected static onChildUpdate(_arg: OnChildElementPropsArg): void { }
+
+  /** Called after an element with an instance of this the class as its parent was updated.
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
+  protected static onChildUpdated(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an *existing element* is about to be updated so that an instance of this class will become its new parent.
+   * @note throw an exception if the element should not be added
+   * @note `this` is the class of the prospective parent Element.
+   * @beta
+   */
+  protected static onChildAdd(_arg: OnChildElementPropsArg): void { }
+
+  /** Called after an *existing element* has been updated so that an instance of this class is its new parent.
+   * @note `this` is the class of the new parent Element.
+   * @beta
+   */
+  protected static onChildAdded(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an element with an instance of this class as its parent is about to be updated change to a different parent.
+   * @note throw an exception if the element should not be dropped
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
+  protected static onChildDrop(_arg: OnChildElementIdArg): void { }
+
+  /** Called after an element with an instance of this class as its previous parent was updated to have a new parent.
+   * @note `this` is the class of the previous parent Element.
+   * @beta
+   */
+  protected static onChildDropped(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an instance of this class is being *sub-modeled* by a new Model.
+   * @note throw an exception if model should not be inserted
+   * @note `this` is the class of Element to be sub-modeled.
+   */
+  protected static onSubModelInsert(_arg: OnSubModelPropsArg): void { }
+
+  /** Called after an instance of this class was *sub-modeled* by a new Model.
+   * @note `this` is the class of Element that is now sub-modeled.
+   */
+  protected static onSubModelInserted(_arg: OnSubModelIdArg): void { }
+
+  /** Called when a sub-model of an instance of this class is being deleted.
+   * @note throw an exception if model should not be deleted
+   * @note `this` is the class of Element that is sub-modeled.
+   */
+  protected static onSubModelDelete(_arg: OnSubModelIdArg): void { }
+
+  /** Called after a sub-model of an instance of this class was deleted.
+   * @note `this` is the class of Element that was sub-modeled.
+   */
+  protected static onSubModelDeleted(_arg: OnSubModelIdArg): void { }
+
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
    * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.
    * This callback is only meant to be overridden if there are other Ids in non-standard locations that need to be remapped or other data that needs to be fixed up after the clone.
    * @param _context The context that persists any remapping between the source iModel and target iModel.
    * @param _sourceProps The ElementProps for the source Element that was cloned.
    * @param _targetProps The ElementProps that are a result of the clone. These can be further modified.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
    * @alpha
    */
   protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
