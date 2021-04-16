@@ -30,3 +30,24 @@ Name | Required? | Type | Default | Meaning
   "description": "\"Physical item\""
 }
 ```
+
+## Known Issues
+
+The rule is deprecated in favor of [InstanceLabelOverride](./InstanceLabelOverride) and has several known issues:
+
+- `InstanceLabelOverride` rules **always** take precedence over `LabelOverride`, no matter what their priorities are.
+A possible workaround is to avoid having `InstanceLabelOverride` rules for the class targeted by specific
+`LabelOverride`. If `InstanceLabelOverride` rules come from a supplemental schema, that can't be controlled, there's an
+option to add such an `InstanceLabelOverride` to reset overrides in supplemental ruleset:
+
+  ```JSON
+  {
+    "ruleType": "InstanceLabelOverride",
+    "priority": 9999,
+    "class": { "schemaName": "MySchema", "className": "MyClass" },
+    "values": []
+  },
+  ```
+
+- Nested `LabelOverride` rules (specified anywhere else other than at the root rules level) have no effect.
+A possible workaround is to move them to the root rules level.
