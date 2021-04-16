@@ -107,7 +107,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async loadElementProps(tokenProps: IModelRpcProps, identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined> {
-    let props: ElementLoadProps = options ? { ...options } : { };
+    const props: ElementLoadProps = options ? { ...options } : { };
     if (typeof identifier === "string") {
       if (Id64.isId64(identifier))
         props.id = identifier;

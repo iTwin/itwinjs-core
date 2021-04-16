@@ -148,7 +148,8 @@ alpha;ElementGeometryRequest
 alpha;ElementGeometryUpdate
 beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
-public;ElementLoadProps
+public;ElementLoadOptions
+public;ElementLoadProps 
 public;ElementProps 
 beta;EntityMetaData 
 beta;EntityMetaDataProps
