@@ -141,7 +141,7 @@
     "@bentley/icons-generic": "^1.0.15",
     "@bentley/icons-generic-webfont": "^1.0.15",
     "@bentley/presentation-components": "2.16.0-dev.9",
-    "classnames": "^2.2.5",
+    "classnames": "2.2.6",
     "immer": "^9.0.1",
     "lodash": "^4.17.10",
     "react-dnd": "^11.1.3",

@@ -122,7 +122,7 @@
     "@bentley/icons-generic-webfont": "^1.0.15",
     "@types/shortid": "~0.0.29",
     "callable-instance2": "1.0.0",
-    "classnames": "^2.2.5",
+    "classnames": "2.2.6",
     "eventemitter2": "^5.0.1",
     "immer": "^9.0.1",
     "immutable": "^3.8.2",
