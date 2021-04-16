@@ -13,7 +13,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderScheduleState } from "../RenderScheduleState";
@@ -44,12 +43,6 @@ class PlanProjectionTileTree extends IModelTileTree {
 
 class PrimaryTreeSupplier implements TileTreeSupplier {
   public constructor() {
-    InteractiveEditingSession.onBegin.addListener((session) => {
-      session.onEnded.addOnce((sesh) => {
-        assert(sesh === session);
-        this.onSessionEnd(session);
-      });
-    });
   }
 
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
@@ -100,25 +93,24 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   public getOwner(id: PrimaryTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(id, this);
   }
-
-  private onSessionEnd(session: InteractiveEditingSession): void {
-    // Reset tile trees for any models that were modified during the session.
-    const changes = session.getGeometryChanges();
-    const trees = session.iModel.tiles.getTreeOwnersForSupplier(this);
-    for (const kvp of trees) {
-      const id = kvp.id as PrimaryTreeId;
-      assert(undefined !== id.modelId);
-      for (const change of changes) {
-        if (change.id === id.modelId) {
-          kvp.owner.dispose();
-          break;
-        }
-      }
-    }
-  }
 }
 
 const primaryTreeSupplier = new PrimaryTreeSupplier();
+
+/** Find all extant tile trees associated with the specified model Ids and dispose of them.
+ * This is used by BriefcaseConnection when a GraphicalEditingScope is exited or after a change to the models' geometry guids
+ * is committed, undone, redone, or merged.
+ * @internal
+ */
+export function disposeTileTreesForGeometricModels(modelIds: Set<Id64String>, iModel: IModelConnection): void {
+  const trees = iModel.tiles.getTreeOwnersForSupplier(primaryTreeSupplier);
+  for (const kvp of trees) {
+    const id = kvp.id as PrimaryTreeId;
+    assert(undefined !== id.modelId);
+    if (modelIds.has(id.modelId))
+      kvp.owner.dispose();
+  }
+}
 
 class PrimaryTreeReference extends TileTreeReference {
   public readonly view: ViewState;

@@ -27,6 +27,10 @@
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/backend-webpack-tools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/bentleyjs-core",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -52,7 +56,11 @@
     },
     {
       "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
+    },
+    {
+      "name": "@bentley/ecschema-rpcinterface-common",
+      "allowedCategories": [ "backend", "integration-testing" ]
     },
     {
       "name": "@bentley/electron-manager",

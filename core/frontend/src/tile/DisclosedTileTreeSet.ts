@@ -11,7 +11,7 @@ import { TileTree } from "./internal";
 
 /** Interface adopted by an object that contains references to [[TileTree]]s, to expose those trees.
  * @see [[DisclosedTileTreeSet]].
- * @beta
+ * @public
  */
 export interface TileTreeDiscloser {
   /** Add all [[TileTree]]s referenced by this object to the set. */
@@ -19,7 +19,7 @@ export interface TileTreeDiscloser {
 }
 
 /** A set of [[TileTree]]s disclosed by a set of objects implementing [[TileTreeDiscloser]], used to collect references to tile trees in use by those objects.
- * @beta
+ * @public
  */
 export class DisclosedTileTreeSet implements Iterable<TileTree> {
   private readonly _processed = new Set<TileTreeDiscloser>();

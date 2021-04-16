@@ -97,10 +97,10 @@ export abstract class Client {
       if (undefined === prefix) {
         const region = Config.App.query("imjs_buddi_resolve_url_using_region");
         switch (region) {
-          case 102:
+          case "102":
             prefix = "qa-";
             break;
-          case 103:
+          case "103":
             prefix = "dev-";
             break;
         }

@@ -36,7 +36,7 @@ export interface ImdlReaderResult extends IModelTileContent {
 }
 
 /** Convert the byte array returned by [[TileAdmin.requestElementGraphics]] into a [[RenderGraphic]].
- * @beta
+ * @public
  */
 export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(bytes.buffer);

@@ -9,7 +9,7 @@
 import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { AccuDrawFlags } from "../AccuDraw";
+import { AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -126,10 +126,9 @@ export class ElementAgenda {
   /** Add elements to this agenda. */
   public add(arg: Id64Arg) {
     const groupStart = this.length;
-    Id64.forEach(arg, (id) => {
+    for (const id of Id64.iterable(arg))
       if (!this.has(id))
         this.elements.push(id);
-    });
 
     if (groupStart === this.length)
       return false;
@@ -208,7 +207,9 @@ export class ElementAgenda {
       return false;
 
     let changed = false;
-    Id64.forEach(arg, (elId) => { if (this.removeOne(elId)) changed = true; }); // NOTE: Removes group associated with this element, not just a single entry...
+    for (const elId of Id64.iterable(arg))
+      if (this.removeOne(elId))
+        changed = true; // NOTE: Removes group associated with this element, not just a single entry...
 
     return changed;
   }
@@ -223,7 +224,13 @@ export class ElementAgenda {
 
     const adds: string[] = [];
     const removes: string[] = [];
-    Id64.forEach(arg, (id) => { if (this.has(id)) removes.push(id); else adds.push(id); });
+    for (const id of Id64.iterable(arg)) {
+      if (this.has(id))
+        removes.push(id);
+      else
+        adds.push(id);
+    }
+
     if (adds.length === 0 && removes.length === 0)
       return false;
 
@@ -842,7 +849,12 @@ export abstract class ElementSetTool extends PrimitiveTool {
   protected async gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined> {
     if (undefined === this.anchorPoint) {
       this.anchorPoint = ev.point.clone();
-      IModelApp.accuDraw.setContext(AccuDrawFlags.AlwaysSetOrigin, this.anchorPoint);
+
+      const hints = new AccuDrawHintBuilder();
+
+      hints.setOriginAlways = true;
+      hints.setOrigin(this.anchorPoint);
+      hints.sendHints();
     }
 
     if (!this.wantProcessAgenda(ev)) {

@@ -42,7 +42,12 @@ function getConfig(env) {
     target: "node",
     devtool: "source-map",
     module: {
-      rules: []
+      rules: [
+        {
+          test: /AzCopyFileHandler\.js/g,
+          use: 'null-loader'
+        }
+      ]
     },
     stats: {
       warnings: false

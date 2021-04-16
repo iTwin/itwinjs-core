@@ -54,8 +54,7 @@ export enum IpcAppChannel {
   Functions = "ipc-app",
   AppNotify = "ipcApp-notify",
   Txns = "txns",
-  EditingSession = "editing-session",
-  PushPull = "push-pull",
+  EditingScope = "editing-scope",
 }
 
 /**
@@ -76,25 +75,20 @@ export interface TxnNotifications {
   notifyModelsChanged: (changes: ChangedEntities) => void;
   notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
   notifyCommit: () => void;
-  notifyCommitted: () => void;
+  notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
   notifyChangesApplied: () => void;
   notifyBeforeUndoRedo: (isUndo: boolean) => void;
   notifyAfterUndoRedo: (isUndo: boolean) => void;
+  notifyPulledChanges: (parentChangeSetId: string) => void;
+  notifyPushedChanges: (parentChangeSetId: string) => void;
 }
 
 /**
- * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel during an [InteractiveEditingSession]($frontend).
+ * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel during an [GraphicalEditingScope]($frontend).
  * @internal
  */
-export interface EditingSessionNotifications {
+export interface EditingScopeNotifications {
   notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
-}
-
-/** @internal */
-export interface BriefcasePushAndPullNotifications {
-  notifyPulledChanges: (arg: { parentChangeSetId: string }) => void;
-  notifyPushedChanges: (arg: { parentChangeSetId: string }) => void;
-  notifySavedChanges: (arg: { hasPendingTxns: boolean, time: number }) => void;
 }
 
 /**
@@ -142,8 +136,8 @@ export interface IpcAppFunctions {
    */
   cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
 
-  toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
-  isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+  toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
+  isGraphicalEditingSupported: (key: string) => Promise<boolean>;
 
   reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;

@@ -47,7 +47,8 @@ function assertInitialized(maybe: MaybeInitialized): asserts maybe is Initialize
 /** The API entry point for the hypermodeling package. Applications must call [[initialize]] and await the result before using the package.
  * The behavior of the package can be customized via a [[HyperModelingConfig]] supplied to [[initialize]], [[updateConfiguration]], or [[replaceConfiguration]].
  * Hypermodeling mode can be enabled or disabled via [[startOrStop]], which returns a [[HyperModelingDecorator]] when enabling hypermodeling.
- * @beta
+ * Consult the package's `README.md` for a description of the available functionality.
+ * @public
  */
 export class HyperModeling {
   /** @internal */
@@ -56,13 +57,14 @@ export class HyperModeling {
   private static _markerConfig: SectionMarkerConfig = {};
   private static _graphicsConfig: SectionGraphicsConfig = {};
 
-  /** Invoke this method to initialize the hypermodeling package for use. Your *must* await the result before using any of this package's APIs.
+  /** Invoke this method to initialize the hypermodeling package for use. You *must* await the result before using any of this package's APIs.
    * Typically an application would invoke this after [IModelApp.startup]($frontend), e.g.,
    * ```ts
    *  await IModelApp.startup();
    *  await HyperModeling.initialize();
    * ```
    * Calling this method again after the first initialization behaves the same as calling [[HyperModeling.replaceConfiguration]].
+   * @see [[replaceConfiguration]] and [[updateConfiguration]] to modify the configuration after initialization.
    */
   public static async initialize(config?: HyperModelingConfig): Promise<void> {
     if (undefined !== this.resources) {
@@ -93,6 +95,13 @@ export class HyperModeling {
 
     registerTools(namespace, IModelApp.i18n);
     this.replaceConfiguration(config);
+  }
+
+  private static async ensureInitialized(): Promise<void> {
+    if (undefined === this.resources)
+      await this.initialize();
+
+    assertInitialized(this);
   }
 
   /** Replaces the current package configuration, overwriting all previous settings. Passing `undefined` resets all settings to defaults.
@@ -175,47 +184,73 @@ export class HyperModeling {
   /** Returns whether hypermodeling is currently enabled for the specified viewport.
    * @see [[startOrStop]] to enable or disable hypermodeling for a viewport.
    */
-  public static isEnabledForViewport(vp: ScreenViewport): boolean {
-    return undefined !== HyperModelingDecorator.getForViewport(vp);
+  public static isEnabledForViewport(viewport: ScreenViewport): boolean {
+    return undefined !== HyperModelingDecorator.getForViewport(viewport);
   }
 
   /** Start or stop hypermodeling mode for the specified viewport.
    * Enabling hypermodeling registers and returns a [[HyperModelingDecorator]] to display [[SectionMarker]]s within the viewport.
    * Disabling hypermodeling removes that decorator.
-   * @param vp The hypermodeling viewport
+   * @param viewport The hypermodeling viewport
    * @param start `true` to enter hypermodeling mode, `false` to exit, or `undefined` to toggle the current mode.
    * @returns The new decorator is hypermodeling was successfully enabled.
    * @note Enabling hypermodeling may fail if the viewport is not viewing a spatial model or if the viewport's iModel does not support hypermodeling.
-   * @see [[isSupportedForIModel]]
+   * @see [[start]] and [[stop]].
+   * @see [[isSupportedForIModel]].
    */
-  public static async startOrStop(vp: ScreenViewport, start?: boolean): Promise<HyperModelingDecorator | undefined> {
+  public static async startOrStop(viewport: ScreenViewport, start?: boolean): Promise<HyperModelingDecorator | undefined> {
     // Help out the caller since we're async anyway...
-    if (undefined === this.resources)
-      await this.initialize();
+    await this.ensureInitialized();
 
-    assertInitialized(this);
-    let decorator = HyperModelingDecorator.getForViewport(vp);
+    const decorator = HyperModelingDecorator.getForViewport(viewport);
     if (undefined === start)
       start = undefined === decorator;
 
-    if (!start) {
+    if (start) {
+      return this._start(viewport);
+    } else {
       decorator?.dispose();
       return undefined;
     }
+  }
 
-    if (!vp.view.isSpatialView())
+  /** Start hypermodeling mode for the specified viewport if it is not currently enabled.
+   * If hypermodeling is already enabled for the viewport, the existing decorator is returned; otherwise, a new decorator is created.
+   * @param viewport The viewport for which to enable hypermodeling
+   * @returns The decorator that implements hypermodeling features for the viewport, or `undefined` if hypermodeling could not be enabled.
+   * @note Enabling hypermodeling may fail if the viewport is not viewing a spatial model or if the viewport's iModel does not support hypermodeling.
+   */
+  public static async start(viewport: ScreenViewport): Promise<HyperModelingDecorator | undefined> {
+    await this.ensureInitialized();
+    return this._start(viewport);
+  }
+
+  private static async _start(viewport: ScreenViewport): Promise<HyperModelingDecorator | undefined> {
+    assertInitialized(this);
+    if (!viewport.view.isSpatialView())
       return undefined;
 
-    decorator = await HyperModelingDecorator.create(vp, this._markerConfig);
+    let decorator = HyperModelingDecorator.getForViewport(viewport);
+    if (!decorator)
+      decorator = await HyperModelingDecorator.create(viewport, this._markerConfig);
 
-    if (undefined !== decorator && vp.view.isCameraOn) {
+    if (undefined !== decorator && viewport.view.isCameraOn) {
       // We want the 2d graphics to align with the 3d geometry. Perspective ruins that.
-      vp.view.turnCameraOff();
-      ViewManip.fitView(vp, false, { noSaveInUndo: true });
-      vp.clearViewUndo();
+      viewport.view.turnCameraOff();
+      ViewManip.fitView(viewport, false, { noSaveInUndo: true });
+      viewport.clearViewUndo();
     }
 
     return decorator;
+  }
+
+  /** Stop hypermodeling mode for the specified viewport if it is currently enabled. This disposes of the [[HyperModelingDecorator]] associated with the viewport.
+   * @see [[start]] to enable hypermodeling for a viewport.
+   * @see [[startOrStop]] to toggle hypermodeling mode.
+   */
+  public static stop(viewport: ScreenViewport): void {
+    const decorator = HyperModelingDecorator.getForViewport(viewport);
+    decorator?.dispose();
   }
 
   /** @internal */

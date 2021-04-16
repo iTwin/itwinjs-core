@@ -143,7 +143,7 @@ export class IpcApp {
  * to ensure all method names and signatures are correct. Your methods cannot have a return value.
  *
  * Then, call `MyNotificationHandler.register` at startup to connect your class to your channel.
- * @beta
+ * @public
  */
 export abstract class NotificationHandler {
   /** All subclasses must implement this method to specify their response channel name. */
