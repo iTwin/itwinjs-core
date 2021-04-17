@@ -55,7 +55,6 @@ export enum IpcAppChannel {
   AppNotify = "ipcApp-notify",
   Txns = "txns",
   EditingScope = "editing-scope",
-  PushPull = "push-pull",
 }
 
 /**
@@ -76,10 +75,12 @@ export interface TxnNotifications {
   notifyModelsChanged: (changes: ChangedEntities) => void;
   notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
   notifyCommit: () => void;
-  notifyCommitted: () => void;
+  notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
   notifyChangesApplied: () => void;
   notifyBeforeUndoRedo: (isUndo: boolean) => void;
   notifyAfterUndoRedo: (isUndo: boolean) => void;
+  notifyPulledChanges: (parentChangeSetId: string) => void;
+  notifyPushedChanges: (parentChangeSetId: string) => void;
 }
 
 /**
@@ -88,13 +89,6 @@ export interface TxnNotifications {
  */
 export interface EditingScopeNotifications {
   notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
-}
-
-/** @internal */
-export interface BriefcasePushAndPullNotifications {
-  notifyPulledChanges: (arg: { parentChangeSetId: string }) => void;
-  notifyPushedChanges: (arg: { parentChangeSetId: string }) => void;
-  notifySavedChanges: (arg: { hasPendingTxns: boolean, time: number }) => void;
 }
 
 /**

@@ -21,7 +21,6 @@ describe("BriefcaseTxns", () => {
 
     after(async () => {
       await ElectronApp.shutdown();
-      await initializeEditTools();
     });
 
     beforeEach(async () => {

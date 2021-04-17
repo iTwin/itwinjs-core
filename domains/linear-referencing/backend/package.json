@@ -1,6 +1,6 @@
 {
   "name": "@bentley/linear-referencing-backend",
-  "version": "2.16.0-dev.7",
+  "version": "2.16.0-dev.9",
   "main": "lib/linear-referencing-backend.js",
   "typings": "lib/linear-referencing-backend",
   "license": "MIT",
@@ -32,22 +32,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.7",
-    "@bentley/imodeljs-backend": "^2.16.0-dev.7",
-    "@bentley/imodeljs-common": "^2.16.0-dev.7",
-    "@bentley/linear-referencing-common": "^2.16.0-dev.7"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.9",
+    "@bentley/imodeljs-backend": "^2.16.0-dev.9",
+    "@bentley/imodeljs-common": "^2.16.0-dev.9",
+    "@bentley/linear-referencing-common": "^2.16.0-dev.9"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.7",
-    "@bentley/build-tools": "2.16.0-dev.7",
-    "@bentley/eslint-plugin": "2.16.0-dev.7",
-    "@bentley/imodeljs-backend": "2.16.0-dev.7",
-    "@bentley/imodeljs-common": "2.16.0-dev.7",
-    "@bentley/linear-referencing-common": "2.16.0-dev.7",
+    "@bentley/bentleyjs-core": "2.16.0-dev.9",
+    "@bentley/build-tools": "2.16.0-dev.9",
+    "@bentley/eslint-plugin": "2.16.0-dev.9",
+    "@bentley/imodeljs-backend": "2.16.0-dev.9",
+    "@bentley/imodeljs-common": "2.16.0-dev.9",
+    "@bentley/linear-referencing-common": "2.16.0-dev.9",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^5.2.5",

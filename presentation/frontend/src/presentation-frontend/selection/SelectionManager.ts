@@ -406,15 +406,15 @@ export class ToolSelectionSyncHandler implements IDisposable {
 const parseIds = (ids: Id64Arg): { persistent: Id64Arg, transient: Id64Arg } => {
   let allPersistent = true;
   let allTransient = true;
-  Id64.iterate(ids, (id) => {
+  for (const id of Id64.iterable(ids)) {
     if (Id64.isTransient(id))
       allPersistent = false;
     else
       allTransient = false;
+
     if (!allPersistent && !allTransient)
-      return false;
-    return true;
-  });
+      break;
+  }
 
   // avoid making a copy if ids are only persistent or only transient
   if (allPersistent) {
@@ -427,14 +427,20 @@ const parseIds = (ids: Id64Arg): { persistent: Id64Arg, transient: Id64Arg } => 
   // a Set for performance
   const persistentElementIds: Id64Array = [];
   const transientElementIds: Id64Array = [];
-  Id64.forEach(ids, (id) => {
+  for (const id of Id64.iterable(ids)) {
     if (Id64.isTransient(id))
       transientElementIds.push(id);
     else
       persistentElementIds.push(id);
-  });
+  }
+
   return { persistent: persistentElementIds, transient: transientElementIds };
 };
+
+function addTransientKeys(transientIds: Id64Arg, keys: KeySet): void {
+  for (const id of Id64.iterable(transientIds))
+    keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id });
+}
 
 /** @internal */
 class ScopedSelectionChanger {
@@ -453,17 +459,17 @@ class ScopedSelectionChanger {
   }
   public async add(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
     const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    Id64.forEach(transientIds, (id) => keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id }));
+    addTransientKeys(transientIds, keys);
     this.manager.addToSelection(this.name, this.imodel, keys, level);
   }
   public async remove(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
     const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    Id64.forEach(transientIds, (id) => keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id }));
+    addTransientKeys(transientIds, keys);
     this.manager.removeFromSelection(this.name, this.imodel, keys, level);
   }
   public async replace(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
     const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    Id64.forEach(transientIds, (id) => keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id }));
+    addTransientKeys(transientIds, keys);
     this.manager.replaceSelection(this.name, this.imodel, keys, level);
   }
 }
