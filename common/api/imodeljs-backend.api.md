@@ -1345,7 +1345,6 @@ export class DrawingCategory extends Category {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static getCodeSpecName(): string;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
-    protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void;
     static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined;
 }
 
@@ -1617,20 +1616,48 @@ export class Element extends Entity implements ElementProps {
     protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void;
     // @beta
     protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void;
+    // @beta
+    protected static onChildAdd(_arg: OnChildElementPropsArg): void;
+    // @beta
+    protected static onChildAdded(_arg: OnChildElementIdArg): void;
+    // @beta
+    protected static onChildDelete(_arg: OnChildElementIdArg): void;
+    // @beta
+    protected static onChildDeleted(_arg: OnChildElementIdArg): void;
+    // @beta
+    protected static onChildDrop(_arg: OnChildElementIdArg): void;
+    // @beta
+    protected static onChildDropped(_arg: OnChildElementIdArg): void;
+    // @beta
+    protected static onChildInsert(_arg: OnChildElementPropsArg): void;
+    // @beta
+    protected static onChildInserted(_arg: OnChildElementIdArg): void;
+    // @beta
+    protected static onChildUpdate(_arg: OnChildElementPropsArg): void;
+    // @beta
+    protected static onChildUpdated(_arg: OnChildElementIdArg): void;
     // @alpha
     protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void;
     // @beta
-    protected static onDelete(props: Readonly<ElementProps>, iModel: IModelDb): void;
+    protected static onDelete(arg: OnElementIdArg): void;
     // @beta
-    protected static onDeleted(_props: Readonly<ElementProps>, _iModel: IModelDb): void;
+    protected static onDeleted(_arg: OnElementIdArg): void;
     // @beta
-    protected static onInsert(props: Readonly<ElementProps>, iModel: IModelDb): void;
+    protected static onInsert(arg: OnElementPropsArg): void;
     // @beta
-    protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void;
+    protected static onInserted(arg: OnElementIdArg): void;
     // @beta
-    protected static onUpdate(props: Readonly<ElementProps>, iModel: IModelDb): void;
+    protected static onSubModelDelete(_arg: OnSubModelIdArg): void;
     // @beta
-    protected static onUpdated(props: Readonly<ElementProps>, iModel: IModelDb): void;
+    protected static onSubModelDeleted(_arg: OnSubModelIdArg): void;
+    // @beta
+    protected static onSubModelInsert(_arg: OnSubModelPropsArg): void;
+    // @beta
+    protected static onSubModelInserted(_arg: OnSubModelIdArg): void;
+    // @beta
+    protected static onUpdate(arg: OnElementPropsArg): void;
+    // @beta
+    protected static onUpdated(arg: OnElementIdArg): void;
     parent?: RelatedElement;
     // @beta
     static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined): void;
@@ -1655,17 +1682,17 @@ export class ElementAspect extends Entity implements ElementAspectProps {
     // (undocumented)
     element: RelatedElement;
     // @beta
-    protected static onDelete(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
+    protected static onDelete(_arg: OnAspectIdArg): void;
     // @beta
-    protected static onDeleted(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
+    protected static onDeleted(_arg: OnAspectIdArg): void;
     // @beta
-    protected static onInsert(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
+    protected static onInsert(_arg: OnAspectPropsArg): void;
     // @beta
-    protected static onInserted(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
+    protected static onInserted(_arg: OnAspectPropsArg): void;
     // @beta
-    protected static onUpdate(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
+    protected static onUpdate(_arg: OnAspectPropsArg): void;
     // @beta
-    protected static onUpdated(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
+    protected static onUpdated(_arg: OnAspectPropsArg): void;
     // @internal (undocumented)
     toJSON(): ElementAspectProps;
 }
@@ -3322,17 +3349,29 @@ export class Model extends Entity implements ModelProps {
     // (undocumented)
     readonly name: string;
     // @beta
-    protected static onDelete(props: Readonly<ModelProps>, iModel: IModelDb): void;
+    protected static onDelete(arg: OnModelIdArg): void;
     // @beta
-    protected static onDeleted(_props: Readonly<ModelProps>, _iModel: IModelDb): void;
+    protected static onDeleted(_arg: OnModelIdArg): void;
     // @beta
-    protected static onInsert(props: Readonly<ModelProps>, iModel: IModelDb): void;
+    protected static onDeletedElement(_arg: OnElementInModelIdArg): void;
     // @beta
-    protected static onInserted(id: string, iModel: IModelDb): void;
+    protected static onDeleteElement(_arg: OnElementInModelIdArg): void;
     // @beta
-    protected static onUpdate(props: Readonly<ModelProps>, iModel: IModelDb): void;
+    protected static onInsert(arg: OnModelPropsArg): void;
     // @beta
-    protected static onUpdated(props: Readonly<ModelProps>, iModel: IModelDb): void;
+    protected static onInserted(arg: OnModelIdArg): void;
+    // @beta
+    protected static onInsertedElement(_arg: OnElementInModelIdArg): void;
+    // @beta
+    protected static onInsertElement(_arg: OnElementInModelPropsArg): void;
+    // @beta
+    protected static onUpdate(arg: OnModelPropsArg): void;
+    // @beta
+    protected static onUpdated(arg: OnModelIdArg): void;
+    // @beta
+    protected static onUpdatedElement(_arg: OnElementInModelIdArg): void;
+    // @beta
+    protected static onUpdateElement(_arg: OnElementInModelPropsArg): void;
     // (undocumented)
     readonly parentModel: Id64String;
     // @beta
@@ -3443,6 +3482,87 @@ export interface NativeHostOpts extends IpcHostOpts {
 }
 
 export { NativeLoggerCategory }
+
+// @beta
+export interface OnAspectArg {
+    iModel: IModelDb;
+}
+
+// @beta
+export interface OnAspectIdArg extends OnAspectArg {
+    aspectId: Id64String;
+}
+
+// @beta
+export interface OnAspectPropsArg extends OnAspectArg {
+    props: Readonly<ElementAspectProps>;
+}
+
+// @beta
+export interface OnChildElementArg extends OnElementArg {
+    // (undocumented)
+    parentId: Id64String;
+}
+
+// @beta
+export interface OnChildElementIdArg extends OnChildElementArg {
+    childId: Id64String;
+}
+
+// @beta
+export interface OnChildElementPropsArg extends OnChildElementArg {
+    childProps: Readonly<ElementProps>;
+}
+
+// @beta
+export interface OnElementArg {
+    iModel: IModelDb;
+}
+
+// @beta
+export interface OnElementIdArg extends OnElementArg {
+    id: Id64String;
+}
+
+// @beta
+export interface OnElementInModelIdArg extends OnModelIdArg {
+    elementId: Id64String;
+}
+
+// @beta
+export interface OnElementInModelPropsArg extends OnModelIdArg {
+    elementProps: Readonly<ElementProps>;
+}
+
+// @beta
+export interface OnElementPropsArg extends OnElementArg {
+    props: Readonly<ElementProps>;
+}
+
+// @beta
+export interface OnModelArg {
+    iModel: IModelDb;
+}
+
+// @beta
+export interface OnModelIdArg extends OnModelArg {
+    id: Id64String;
+}
+
+// @beta
+export interface OnModelPropsArg extends OnModelArg {
+    props: Readonly<ModelProps>;
+}
+
+// @beta
+export interface OnSubModelIdArg extends OnElementArg {
+    subModelId: Id64String;
+}
+
+// @beta
+export interface OnSubModelPropsArg extends OnElementArg {
+    subModelProps: ModelProps;
+}
 
 // @public
 export class OrthographicViewDefinition extends SpatialViewDefinition {
@@ -3865,7 +3985,6 @@ export class SpatialCategory extends Category {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static getCodeSpecName(): string;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
-    protected static onInserted(props: ElementProps, iModel: IModelDb): void;
     static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined;
 }
 
