@@ -595,10 +595,10 @@ internal;class ViewClipModifyTool
 internal;ViewClipPlanesModifyTool 
 internal;ViewClipShapeModifyTool 
 public;ViewClipTool 
-beta;ViewCreator2d
-beta;ViewCreator2dOptions
-beta;ViewCreator3d
-beta;ViewCreator3dOptions
+public;ViewCreator2d
+public;ViewCreator2dOptions
+public;ViewCreator3d
+public;ViewCreator3dOptions
 internal;viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight?: number, pitchAngleRadians?: number, location?: GlobalLocation): number
 internal;ViewGlobalLocationConstants
 public;ViewGlobeBirdTool 
