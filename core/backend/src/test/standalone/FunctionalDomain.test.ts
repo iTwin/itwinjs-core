@@ -399,7 +399,7 @@ describe("Functional Domain", () => {
     TestFuncAspect.expectedVal = aspect.strProp;
     elements.updateAspect(aspect);
     assert.equal(aspectSpy.onInsert.callCount, 1, "ElementAspect.onInsert should not be called on update");
-    assert.equal(aspectSpy.onInsert.callCount, 1, "ElementAspect.onInserted should should not be called on update");
+    assert.equal(aspectSpy.onInserted.callCount, 1, "ElementAspect.onInserted should should not be called on update");
     assert.equal(aspectSpy.onUpdate.callCount, 1);
     assert.equal(aspectSpy.onUpdated.callCount, 1);
     assert.equal(aspectSpy.onUpdated.getCall(0).args[0].props.element.id, bd2, "from ElementAspect.onUpdated");
