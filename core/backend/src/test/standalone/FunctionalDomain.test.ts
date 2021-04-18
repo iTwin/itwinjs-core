@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import * as sinon from "sinon";
 import { Guid, Id64 } from "@bentley/bentleyjs-core";
-import { CodeScopeSpec, CodeSpec, IModel, IModelError } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
 import { ClassRegistry } from "../../ClassRegistry";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
 import {
@@ -82,7 +82,7 @@ class TestFuncModel extends FunctionalModel {
     super.onInsertElement(arg);
     assert.equal(arg.iModel, iModelDb);
     if (arg.elementProps.code.value === "badval")
-      throw new IModelError(100, "bad element");
+      throw new Error("bad element");
   }
   public static onInsertedElement(arg: OnElementInModelIdArg): void {
     super.onInsertedElement(arg);
