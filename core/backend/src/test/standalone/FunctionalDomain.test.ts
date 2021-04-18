@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { join } from "path";
-import * as sinon from "sinon";
+import { restore as sinonRestore, spy } from "sinon";
 import { Guid, Id64 } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
 import { ClassRegistry } from "../../ClassRegistry";
@@ -226,7 +226,7 @@ describe("Functional Domain", () => {
   const requestContext = new BackendRequestContext();
 
   afterEach(() => {
-    sinon.restore();
+    sinonRestore();
   });
 
   it("should populate FunctionalModel and test Element, Model, and ElementAspect callbacks", async () => {
@@ -270,53 +270,53 @@ describe("Functional Domain", () => {
     assert.equal(committed, 1);
 
     const modelSpy = {
-      onInsert: sinon.spy(TestFuncModel, "onInsert"),
-      onInserted: sinon.spy(TestFuncModel, "onInserted"),
-      onUpdate: sinon.spy(TestFuncModel, "onUpdate"),
-      onUpdated: sinon.spy(TestFuncModel, "onUpdated"),
-      onDelete: sinon.spy(TestFuncModel, "onDelete"),
-      onDeleted: sinon.spy(TestFuncModel, "onDeleted"),
-      onInsertElement: sinon.spy(TestFuncModel, "onInsertElement"),
-      onInsertedElement: sinon.spy(TestFuncModel, "onInsertedElement"),
-      onUpdateElement: sinon.spy(TestFuncModel, "onUpdateElement"),
-      onUpdatedElement: sinon.spy(TestFuncModel, "onUpdatedElement"),
-      onDeleteElement: sinon.spy(TestFuncModel, "onDeleteElement"),
-      onDeletedElement: sinon.spy(TestFuncModel, "onDeletedElement"),
+      onInsert: spy(TestFuncModel, "onInsert"),
+      onInserted: spy(TestFuncModel, "onInserted"),
+      onUpdate: spy(TestFuncModel, "onUpdate"),
+      onUpdated: spy(TestFuncModel, "onUpdated"),
+      onDelete: spy(TestFuncModel, "onDelete"),
+      onDeleted: spy(TestFuncModel, "onDeleted"),
+      onInsertElement: spy(TestFuncModel, "onInsertElement"),
+      onInsertedElement: spy(TestFuncModel, "onInsertedElement"),
+      onUpdateElement: spy(TestFuncModel, "onUpdateElement"),
+      onUpdatedElement: spy(TestFuncModel, "onUpdatedElement"),
+      onDeleteElement: spy(TestFuncModel, "onDeleteElement"),
+      onDeletedElement: spy(TestFuncModel, "onDeletedElement"),
     };
 
     const partitionSpy = {
-      onSubModelInsert: sinon.spy(TestFuncPartition, "onSubModelInsert"),
-      onSubModelInserted: sinon.spy(TestFuncPartition, "onSubModelInserted"),
-      onSubModelDelete: sinon.spy(TestFuncPartition, "onSubModelDelete"),
-      onSubModelDeleted: sinon.spy(TestFuncPartition, "onSubModelDeleted"),
+      onSubModelInsert: spy(TestFuncPartition, "onSubModelInsert"),
+      onSubModelInserted: spy(TestFuncPartition, "onSubModelInserted"),
+      onSubModelDelete: spy(TestFuncPartition, "onSubModelDelete"),
+      onSubModelDeleted: spy(TestFuncPartition, "onSubModelDeleted"),
     };
 
     const breakdownSpy = {
-      onInsert: sinon.spy(Breakdown, "onInsert"),
-      onInserted: sinon.spy(Breakdown, "onInserted"),
-      onUpdate: sinon.spy(Breakdown, "onUpdate"),
-      onUpdated: sinon.spy(Breakdown, "onUpdated"),
-      onDelete: sinon.spy(Breakdown, "onDelete"),
-      onDeleted: sinon.spy(Breakdown, "onDeleted"),
-      onChildDelete: sinon.spy(Breakdown, "onChildDelete"),
-      onChildDeleted: sinon.spy(Breakdown, "onChildDeleted"),
-      onChildInsert: sinon.spy(Breakdown, "onChildInsert"),
-      onChildInserted: sinon.spy(Breakdown, "onChildInserted"),
-      onChildUpdate: sinon.spy(Breakdown, "onChildUpdate"),
-      onChildUpdated: sinon.spy(Breakdown, "onChildUpdated"),
-      onChildAdd: sinon.spy(Breakdown, "onChildAdd"),
-      onChildAdded: sinon.spy(Breakdown, "onChildAdded"),
-      onChildDrop: sinon.spy(Breakdown, "onChildDrop"),
-      onChildDropped: sinon.spy(Breakdown, "onChildDropped"),
+      onInsert: spy(Breakdown, "onInsert"),
+      onInserted: spy(Breakdown, "onInserted"),
+      onUpdate: spy(Breakdown, "onUpdate"),
+      onUpdated: spy(Breakdown, "onUpdated"),
+      onDelete: spy(Breakdown, "onDelete"),
+      onDeleted: spy(Breakdown, "onDeleted"),
+      onChildDelete: spy(Breakdown, "onChildDelete"),
+      onChildDeleted: spy(Breakdown, "onChildDeleted"),
+      onChildInsert: spy(Breakdown, "onChildInsert"),
+      onChildInserted: spy(Breakdown, "onChildInserted"),
+      onChildUpdate: spy(Breakdown, "onChildUpdate"),
+      onChildUpdated: spy(Breakdown, "onChildUpdated"),
+      onChildAdd: spy(Breakdown, "onChildAdd"),
+      onChildAdded: spy(Breakdown, "onChildAdded"),
+      onChildDrop: spy(Breakdown, "onChildDrop"),
+      onChildDropped: spy(Breakdown, "onChildDropped"),
     };
 
     const aspectSpy = {
-      onInsert: sinon.spy(TestFuncAspect, "onInsert"),
-      onInserted: sinon.spy(TestFuncAspect, "onInserted"),
-      onUpdate: sinon.spy(TestFuncAspect, "onUpdate"),
-      onUpdated: sinon.spy(TestFuncAspect, "onUpdated"),
-      onDelete: sinon.spy(TestFuncAspect, "onDelete"),
-      onDeleted: sinon.spy(TestFuncAspect, "onDeleted"),
+      onInsert: spy(TestFuncAspect, "onInsert"),
+      onInserted: spy(TestFuncAspect, "onInserted"),
+      onUpdate: spy(TestFuncAspect, "onUpdate"),
+      onUpdated: spy(TestFuncAspect, "onUpdated"),
+      onDelete: spy(TestFuncAspect, "onDelete"),
+      onDeleted: spy(TestFuncAspect, "onDeleted"),
     };
 
     const codeSpec = CodeSpec.create(iModelDb, "Test Functional Elements", CodeScopeSpec.Type.Model);
