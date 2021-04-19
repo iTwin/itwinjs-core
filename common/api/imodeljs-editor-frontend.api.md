@@ -13,8 +13,7 @@ import { ElementSetTool } from '@bentley/imodeljs-frontend';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
-import { Placement2d } from '@bentley/imodeljs-common';
-import { Placement3d } from '@bentley/imodeljs-common';
+import { Placement } from '@bentley/imodeljs-common';
 import { Point3d } from '@bentley/geometry-core';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { RenderGraphic } from '@bentley/imodeljs-frontend';
@@ -223,7 +222,7 @@ export interface TransformGraphicsData {
     // (undocumented)
     id: Id64String;
     // (undocumented)
-    placement: Placement2d | Placement3d;
+    placement: Placement;
 }
 
 // @alpha (undocumented)
