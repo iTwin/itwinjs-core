@@ -71,7 +71,7 @@ class TestHelper {
     Logger.setLevel("ECObjectsNative", LogLevel.Error);
 
     this.db.nativeDb.enableTxnTesting();
-    assert.equal(this.db.nativeDb.addChildPropagatesChangesToParentRelationship("TestBim", "ParentOfDrivingChildElements"), 0);
+    assert.equal(this.db.nativeDb.addChildPropagatesChangesToParentRelationship("TestBim", "ChildPropagatesChangesToParent"), 0);
     this.setElementDependencyGraphCallbacks();
   }
 
@@ -221,7 +221,7 @@ describe("ElementDependencyGraph", () => {
     const helper = new TestHelper("Parents", dbInfo);
 
     const p2id = helper.insertElement("p2");
-    const e1id = helper.insertElement("e1", { id: p2id, relClassName: "TestBim.ParentOfDrivingChildElements" });
+    const e1id = helper.insertElement("e1", { id: p2id, relClassName: "TestBim.ChildPropagatesChangesToParent" });
     helper.db.saveChanges(); // get the elements into the iModel
 
     // The full graph:
@@ -261,7 +261,7 @@ describe("ElementDependencyGraph", () => {
 
     const p2id = helper.insertElement("p2");
     const p3id = helper.insertElement("p3");
-    const e1id = helper.insertElement("e1", { id: p2id, relClassName: "TestBim.ParentOfDrivingChildElements" });
+    const e1id = helper.insertElement("e1", { id: p2id, relClassName: "TestBim.ChildPropagatesChangesToParent" });
     const e2id = helper.insertElement("e2");
     const e3id = helper.insertElement("e3");
     helper.db.saveChanges(); // get the elements into the iModel
@@ -327,8 +327,8 @@ describe("ElementDependencyGraph", () => {
     // Material -EDE-> MaterialDepthRange
 
     const boreholeSource = helper.insertElement("BoreholeSource");
-    const borehole = helper.insertElement("Borehole", { id: boreholeSource, relClassName: "TestBim.ParentOfDrivingChildElements" });
-    const materialDepthRange = helper.insertElement("MaterialDepthRange", { id: borehole, relClassName: "TestBim.ParentOfDrivingChildElements" });
+    const borehole = helper.insertElement("Borehole", { id: boreholeSource, relClassName: "TestBim.ChildPropagatesChangesToParent" });
+    const materialDepthRange = helper.insertElement("MaterialDepthRange", { id: borehole, relClassName: "TestBim.ChildPropagatesChangesToParent" });
     const material = helper.insertElement("Material");
     const groundGeneration = helper.insertElement("GroundGeneration");
     helper.db.saveChanges(); // get the elements into the iModel
