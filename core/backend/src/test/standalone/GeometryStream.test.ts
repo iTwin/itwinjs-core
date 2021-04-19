@@ -897,7 +897,7 @@ describe("GeometryStream", () => {
       assert.isTrue(entry.primitive.textString.rotation.isIdentity());
     }
 
-    const itWorld = GeometryStreamIterator.fromGeometricElement3d(value);
+    const itWorld = GeometryStreamIterator.fromGeometricElement3d(value as GeometricElement3dProps);
     for (const entry of itWorld) {
       assertTrue(entry.primitive.type === "textString");
       assert.isTrue(entry.primitive.textString.origin.isAlmostEqual(testOrigin));
