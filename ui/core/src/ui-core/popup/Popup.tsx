@@ -82,7 +82,6 @@ interface PopupState {
   top: number;
   left: number;
   position: RelativePosition;
-  parentWindow: Window;
   parentDocument: Document;
 }
 
@@ -95,14 +94,12 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   constructor(props: PopupProps) {
     super(props);
     const parentDocument = this.props.target?.ownerDocument ?? document;
-    const parentWindow = parentDocument.defaultView ?? window;
 
     this.state = {
       isOpen: this.props.isOpen,
       top: 0,
       left: 0,
       position: this.props.position,
-      parentWindow,
       parentDocument,
     };
   }
@@ -127,11 +124,11 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     if (this.props.target !== previousProps.target) {
       this._unBindWindowEvents();
       const parentDocument = this.props.target?.ownerDocument ?? document;
-      const parentWindow = parentDocument.defaultView ?? window;
-      this.setState({
-        parentWindow,
-        parentDocument,
-      });
+      if (parentDocument !== this.state.parentDocument) {
+        this.setState({
+          parentDocument,
+        });
+      }
     }
 
     if (this.props.isOpen === previousProps.isOpen) {
@@ -164,7 +161,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _bindWindowEvents = () => {
-    const activeWindow = this.state.parentWindow;
+    const activeWindow = this.state.parentDocument.defaultView ?? window;
     activeWindow.addEventListener("pointerdown", this._handleOutsideClick);
     activeWindow.addEventListener("resize", this._hide);
     activeWindow.addEventListener("contextmenu", this._handleContextMenu);
@@ -174,7 +171,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   };
 
   private _unBindWindowEvents = () => {
-    const activeWindow = this.state.parentWindow;
+    const activeWindow = this.state.parentDocument.defaultView ?? window;
     activeWindow.removeEventListener("pointerdown", this._handleOutsideClick);
     activeWindow.removeEventListener("resize", this._hide);
     activeWindow.removeEventListener("contextmenu", this._handleContextMenu);
@@ -327,7 +324,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     let popupHeight = 0;
     // istanbul ignore else
     if (this._popup) {
-      const style = this.state.parentWindow.getComputedStyle(this._popup);
+      const activeWindow = this.state.parentDocument.defaultView ?? window;
+      const style = activeWindow.getComputedStyle(this._popup);
       const borderLeftWidth = parsePxString(style.borderLeftWidth);
       const borderRightWidth = parsePxString(style.borderRightWidth);
       const borderTopWidth = parsePxString(style.borderTopWidth);
@@ -340,7 +338,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _getPosition = (position: RelativePosition) => {
-    const activeWindow = this.state.parentWindow;
+    const activeWindow = this.state.parentDocument.defaultView ?? window;
     const { target, offset, top, left } = this.props;
     const offsetArrow = (this.props.showArrow) ? 6 : 0;
 
@@ -357,7 +355,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     const scrollY = (activeWindow.scrollY !== undefined) ? activeWindow.scrollY : /* istanbul ignore next */ activeWindow.pageYOffset;
     const scrollX = (activeWindow.scrollX !== undefined) ? activeWindow.scrollX : /* istanbul ignore next */ activeWindow.pageXOffset;
 
-    // const popupRect = this._popup.getBoundingClientRect();
     const targetRect = target.getBoundingClientRect();
 
     const { popupWidth, popupHeight } = this._getPopupDimensions();
@@ -436,7 +433,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       bottom: number;
     }
 
-    const activeWindow = this.state.parentWindow;
+    const activeWindow = this.state.parentDocument.defaultView ?? window;
 
     // Note: Cannot use DOMRect yet since it's experimental and not available in all browsers (Nov. 2018)
     const viewportRect: Rect = { left: activeWindow.scrollX, top: activeWindow.scrollY, right: activeWindow.scrollX + activeWindow.innerWidth, bottom: activeWindow.scrollY + activeWindow.innerHeight };

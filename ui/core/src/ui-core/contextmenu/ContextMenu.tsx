@@ -53,7 +53,6 @@ interface ContextMenuState {
   selectedIndex: number;
   direction: ContextMenuDirection;
   ignoreNextKeyUp: boolean;
-  parentDocument: Document | null;
   menuRect: ClientRect;
 }
 
@@ -88,7 +87,6 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       selectedIndex: this.props.selectedIndex!,
       direction: props.direction ?? ContextMenuDirection.BottomRight,
       ignoreNextKeyUp: props.ignoreNextKeyUp!,
-      parentDocument: null,
       menuRect: { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 },
     };
   }
@@ -165,22 +163,19 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   };
 
   public componentDidMount() {
-    const parentDocument = this._rootElement?.ownerDocument ?? null;
-    if (parentDocument) {
-      this.setState({ parentDocument }, () => {
-        const parentWindow = parentDocument.defaultView;
-        if (parentWindow) {
-          parentWindow.addEventListener("focus", this._handleFocusChange);
-          parentWindow.addEventListener("mouseup", this._handleFocusChange);
-          this.checkRenderDirection();
-        }
-      });
+    const parentDocument = this._rootElement!.ownerDocument;
+    const parentWindow = parentDocument.defaultView;
+    if (parentWindow) {
+      parentWindow.addEventListener("focus", this._handleFocusChange);
+      parentWindow.addEventListener("mouseup", this._handleFocusChange);
+      this.checkRenderDirection();
     }
   }
 
   /** @internal */
   public componentWillUnmount() {
-    const parentWindow = this.state.parentDocument?.defaultView;
+    const parentDocument = this._rootElement!.ownerDocument;
+    const parentWindow = parentDocument.defaultView;
     if (parentWindow) {
       parentWindow.removeEventListener("focus", this._handleFocusChange);
       parentWindow.removeEventListener("mouseup", this._handleFocusChange);
@@ -306,14 +301,15 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   private _menuRef = (el: HTMLDivElement | null) => {
     this._menuElement = el;
-    this.checkRenderDirection();
+    // this.checkRenderDirection();
   };
 
   private checkRenderDirection = () => {
     const { direction, autoflip, parentMenu } = this.props;
 
     let renderDirection = parentMenu === undefined ? this.state.direction : direction;
-    const parentWindow = this.state.parentDocument?.defaultView;
+    const parentDocument = this._rootElement!.ownerDocument;
+    const parentWindow = parentDocument.defaultView;
     if (parentWindow) {
       // check if menu should flip
       if (autoflip && parentMenu === undefined) {

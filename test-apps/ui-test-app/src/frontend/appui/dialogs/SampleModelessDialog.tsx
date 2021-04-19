@@ -39,7 +39,7 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
         movable={this.props.movable}
         onClose={this._handleCancel}
         onEscape={this._handleCancel}
-        onOutsideClick={this._handleCancel}
+      /* onOutsideClick={this._handleCancel} */
       >
         {/*  cSpell:disable */}
         Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per.
