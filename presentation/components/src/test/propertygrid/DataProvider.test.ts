@@ -10,7 +10,7 @@ import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Property, PropertyValueFormat, RegisteredRuleset,
+  ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat, RegisteredRuleset,
   StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
 } from "@bentley/presentation-common";
 import {
@@ -29,6 +29,8 @@ import { initializeLocalization } from "../../presentation-components/common/Uti
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 
 /**
  * This is just a helper class to provide public access to
@@ -1348,6 +1350,72 @@ describe("PropertyDataProvider", () => {
 
     runAllTestCases("with flat categories", () => provider.isNestedPropertyCategoryGroupingEnabled = false);
     runAllTestCases("with nested categories", () => provider.isNestedPropertyCategoryGroupingEnabled = true);
+
+  });
+
+  describe("getPropertyRecordInstanceKeys", () => {
+
+    it("returns empty list when there's no content", async () => {
+      (provider as any).getContent = async () => undefined;
+      const record = PropertyRecord.fromString("test");
+      expect(await provider.getPropertyRecordInstanceKeys(record)).to.deep.eq([]);
+    });
+
+    it("returns empty list when record is not made from current content", async () => {
+      (provider as any).getContent = async () => new Content(createTestContentDescriptor({ fields: [] }), [
+        new Item([], "", "", undefined, {}, {}, []),
+      ]);
+      const record = PropertyRecord.fromString("test");
+      expect(await provider.getPropertyRecordInstanceKeys(record)).to.deep.eq([]);
+    });
+
+    it("returns root level field instance keys", async () => {
+      const instanceKeys = [
+        createTestECInstanceKey({ id: createRandomId() }),
+        createTestECInstanceKey({ id: createRandomId() }),
+      ];
+      (provider as any).getContent = async () => new Content(createTestContentDescriptor({
+        fields: [
+          createTestSimpleContentField({ name: "test-field-name" }),
+        ],
+      }), [
+        new Item(instanceKeys, "", "", undefined, { ["test-field-name"]: "value" }, {}, []),
+      ]);
+      const record = PropertyRecord.fromString("value", "test-field-name");
+      expect(await provider.getPropertyRecordInstanceKeys(record)).to.deep.eq(instanceKeys);
+    });
+
+    it("returns nested field instance keys", async () => {
+      const instanceKeys = [
+        createTestECInstanceKey({ id: createRandomId() }),
+        createTestECInstanceKey({ id: createRandomId() }),
+        createTestECInstanceKey({ id: createRandomId() }),
+      ];
+      (provider as any).getContent = async () => new Content(createTestContentDescriptor({
+        fields: [
+          createTestNestedContentField({
+            name: "root-field",
+            nestedFields: [ createTestSimpleContentField({name: "nested-field"}) ],
+          }),
+        ],
+      }), [
+        new Item([], "", "", undefined, {
+          ["root-field"]: [{
+            primaryKeys: [instanceKeys[0]],
+            values: { ["nested-field"]: "value1" },
+            displayValues: {},
+            mergedFieldNames: [],
+          }, {
+            primaryKeys: [instanceKeys[1], instanceKeys[2]],
+            values: { ["nested-field"]: "value2" },
+            displayValues: {},
+            mergedFieldNames: [],
+          }],
+        }, {}, []),
+      ]);
+      const record = PropertyRecord.fromString("", applyOptionalPrefix("nested-field", "root-field"));
+      expect(await provider.getPropertyRecordInstanceKeys(record)).to.deep.eq(instanceKeys);
+    });
 
   });
 

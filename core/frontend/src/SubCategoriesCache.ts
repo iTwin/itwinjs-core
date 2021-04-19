@@ -47,14 +47,14 @@ export class SubCategoriesCache {
    */
   public load(categoryIds: Id64Arg): SubCategoriesRequest | undefined {
     let missing: Id64Set | undefined;
-    Id64.forEach(categoryIds, (catId) => {
+    for (const catId of Id64.iterable(categoryIds)) {
       if (undefined === this._byCategoryId.get(catId)) {
         if (undefined === missing)
           missing = new Set<string>();
 
         missing.add(catId);
       }
-    });
+    }
 
     if (undefined === missing)
       return undefined;
@@ -292,9 +292,8 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
       } else {
         // We have a request currently in process, and one or more pending. Append this one to the pending.
         this._next.funcs.push(func);
-        Id64.forEach(categoryIds, (categoryId) => {
-          this._next!.categoryIds.add(categoryId);
-        });
+        for (const categoryId of Id64.iterable(categoryIds))
+          this._next.categoryIds.add(categoryId);
       }
     }
   }

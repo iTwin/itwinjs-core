@@ -7,19 +7,17 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, ProcessDetector,
+  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, ProcessDetector,
 } from "@bentley/bentleyjs-core";
 import {
   CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface,
-  IModelTileTreeProps, ModelGeometryChanges, RpcOperation, RpcResponseCacheControl, ServerTimeoutError,
+  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
-import { GraphicalEditingScope } from "../GraphicalEditingScope";
-import { GeometricModelState } from "../ModelState";
 import {
   DisclosedTileTreeSet, IModelTile, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
 } from "./internal";
@@ -265,23 +263,9 @@ export class TileAdmin {
     // If unspecified skip one level before preloading  of parents of context tiles.
     this.contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
 
-    const removeEditingListener = GraphicalEditingScope.onEnter.addListener((scope) => {
-      const removeGeomListener = scope.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>) => this.onModelGeometryChanged(changes));
-      scope.onExited.addOnce((sesh: GraphicalEditingScope) => {
-        assert(sesh === scope);
-        removeGeomListener();
-        this.onExitScope(scope);
-      });
-    });
-
-    const removeLoadListener = this.addLoadListener(() => {
+    this._cleanup = this.addLoadListener(() => {
       this._viewports.forEach((vp) => vp.invalidateScene());
     });
-
-    this._cleanup = () => {
-      removeEditingListener();
-      removeLoadListener();
-    };
   }
 
   /** @internal */
@@ -491,15 +475,17 @@ export class TileAdmin {
     this._viewports.add(vp);
   }
 
-  /** @internal */
-  public forEachViewport(func: (vp: Viewport) => void): void {
-    for (const vp of this._viewports)
-      func(vp);
+  /** Iterable over all viewports registered with TileAdmin. This may include [[OffScreenViewports]].
+   * @alpha
+   */
+  public get viewports(): Iterable<Viewport> {
+    return this._viewports;
   }
 
   /** @internal */
   public invalidateAllScenes() {
-    this.forEachViewport((vp) => vp.invalidateScene());
+    for (const vp of this.viewports)
+      vp.invalidateScene();
   }
 
   /** @internal */
@@ -831,46 +817,6 @@ export class TileAdmin {
       if (usingCache)
         this.channels.enableCloudStorageCache();
     }).catch(() => { });
-  }
-
-  /** The geometry of one or models has changed during an [[GraphicalEditingScope]]. Invalidate the scenes and feature overrides of any viewports
-   * viewing any of those models.
-   */
-  private onModelGeometryChanged(changes: Iterable<ModelGeometryChanges>): void {
-    for (const vp of this._viewports) {
-      for (const change of changes) {
-        if (vp.view.viewsModel(change.id)) {
-          vp.invalidateScene();
-          vp.setFeatureOverrideProviderChanged();
-          break;
-        }
-      }
-    }
-  }
-
-  /** A graphical editing scope has ended. Update geometry guid for affected models and invalidate scenes of affected viewports. */
-  private onExitScope(scope: GraphicalEditingScope): void {
-    // Updating model's geometry guid will cause TileTreeReference to request new TileTree if guid changed.
-    const modelIds: Id64String[] = [];
-    for (const change of scope.getGeometryChanges()) {
-      modelIds.push(change.id);
-      const model = scope.iModel.models.getLoaded(change.id);
-      if (model && model instanceof GeometricModelState)
-        model.geometryGuid = change.geometryGuid;
-    }
-
-    // Invalidate scenes of all viewports viewing any affected model.
-    for (const vp of this._viewports) {
-      if (vp.iModel !== scope.iModel)
-        continue;
-
-      for (const modelId of modelIds) {
-        if (vp.view.viewsModel(modelId)) {
-          vp.invalidateScene();
-          break;
-        }
-      }
-    }
   }
 }
 
