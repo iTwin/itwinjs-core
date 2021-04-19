@@ -11,8 +11,8 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "../../PropertyDataProvider";
 
 /**
- * Base immutable data structure defining common methods and properties for both CategorizedProperties and GridCategories
- * @alpha
+ * Base immutable data structure defining common methods and properties for categories and categorized properties
+ * @beta
  */
 export interface FlatGridItemBase {
   readonly isExpanded: boolean;
@@ -32,8 +32,8 @@ export interface FlatGridItemBase {
 }
 
 /**
- * Data structure which describes methods and properties present on immutable GridCategoryItems
- * @alpha
+ * Data structure which describes methods and properties present on immutable [[GridCategoryItem]]
+ * @beta
  */
 export interface GridCategoryItem extends FlatGridItemBase {
   readonly type: FlatGridItemType.Category;
@@ -45,8 +45,8 @@ export interface GridCategoryItem extends FlatGridItemBase {
 }
 
 /**
- * Data structure which describes methods and properties present on immutable CategorizedPropertyItems
- * @alpha
+ * Data structure which describes methods and properties present on immutable [[CategorizedPropertyItem]] objects
+ * @beta
  */
 export interface CategorizedPropertyItem extends FlatGridItemBase {
   readonly type: CategorizedPropertyTypes;
@@ -58,7 +58,7 @@ export interface CategorizedPropertyItem extends FlatGridItemBase {
 }
 
 /**
- * Type which describes immutable GridCategoryItem or CategorizedPropertyItem
- * @alpha
+ * Type which describes immutable [[GridCategoryItem]] or [[CategorizedPropertyItem]]
+ * @beta
  */
 export type FlatGridItem = CategorizedPropertyItem | GridCategoryItem;
