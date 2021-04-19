@@ -5,7 +5,7 @@
 
 import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicBranch, GraphicType, IModelApp, IModelConnection, IpcApp, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner, ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
-import { ColorDef, IModelStatus, LinePixels, PersistentGraphicsRequestProps, Placement2d, Placement2dProps, Placement3d } from "@bentley/imodeljs-common";
+import { ColorDef, GeometricElement2dProps, GeometricElement3dProps, IModelStatus, LinePixels, PersistentGraphicsRequestProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps } from "@bentley/imodeljs-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import { EditTools } from "./EditTool";
@@ -35,19 +35,19 @@ export class TransformGraphicsProvider {
   }
 
   private getRequestId(id: Id64String): string { return `${this.prefix}-${id}`; }
-  private getToleranceLog10(): number { return Math.log10(this.chordTolerance); }
+  private getToleranceLog10(): number { return Math.floor(Math.log10(this.chordTolerance)); }
 
   private async createRequest(id: Id64String): Promise<TransformGraphicsData | undefined> {
     const elementProps = await this.iModel.elements.getProps(id);
     if (0 === elementProps.length)
       return;
 
-    const placementProps = (elementProps[0] as any).placement;
+    const placementProps = (elementProps[0] as GeometricElement3dProps | GeometricElement2dProps).placement;
     if (undefined === placementProps)
       return;
 
-    const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
-    const placement = hasAngle(placementProps) ? Placement2d.fromJSON(placementProps) : Placement3d.fromJSON(placementProps);
+    const is2d = (placementProps as any).angle !== undefined;
+    const placement = is2d ? Placement2d.fromJSON(placementProps as Placement2dProps) : Placement3d.fromJSON(placementProps as Placement3dProps);
 
     if (!placement.isValid)
       return; // Ignore assembly parents w/o geometry, etc...
@@ -64,7 +64,7 @@ export class TransformGraphicsProvider {
     if (undefined === graphicData)
       return;
 
-    const graphic = await readElementGraphics(graphicData, this.iModel, elementProps[0].model, placement instanceof Placement2d ? false : true);
+    const graphic = await readElementGraphics(graphicData, this.iModel, elementProps[0].model, !is2d);
     if (undefined === graphic)
       return;
 
@@ -153,8 +153,15 @@ export class TransformGraphicsProvider {
   }
 
   public addGraphics(transform: Transform, context: DynamicsContext): void {
+    if (0 === this.data.length)
+      return;
+
+    const branch = new GraphicBranch(false);
     for (const data of this.data)
-      this.addSingleGraphic(data.graphic, transform, context);
+      branch.add(data.graphic);
+
+    const branchGraphic = context.createBranch(branch, transform);
+    context.addGraphic(branchGraphic);
   }
 }
 
@@ -461,16 +468,16 @@ export class RotateElementsTool extends TransformElementsTool {
     if (undefined === this._graphicsProvider)
       return;
 
-    for (const data of this._graphicsProvider.data) {
-      const rotatePoint = Point3d.create();
+    const rotatePoint = Point3d.create();
+    const rotateTrans = Transform.createIdentity();
 
+    for (const data of this._graphicsProvider.data) {
       if (RotateAbout.Origin === this.rotateAbout)
         rotatePoint.setFrom(data.placement.origin);
       else
         rotatePoint.setFrom(data.placement.calculateRange().center);
 
-      const rotateTrans = Transform.createFixedPointAndMatrix(rotatePoint, transform.matrix);
-
+      Transform.createFixedPointAndMatrix(rotatePoint, transform.matrix, rotateTrans);
       this._graphicsProvider.addSingleGraphic(data.graphic, rotateTrans, context);
     }
   }
