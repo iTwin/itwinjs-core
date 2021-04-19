@@ -37,7 +37,7 @@ const checkForSilhouetteDiscard = `
 
   if (kFrustumType_Perspective != u_frustum.z) {
     float perpTol = 4.75e-6;
-    return (n0.z * n1.z > perpTol); // || (abs(n0.z) < 0.02 && abs(n1.z) < 0.02 && (abs(n0.z) > 0.01 || abs(n1.z) > 0.01)));        // orthographic.
+    return (n0.z * n1.z > perpTol);      // orthographic.
   } else {
     float perpTol = 2.5e-4;
     vec4  viewPos = MAT_MV * rawPos;     // perspective
