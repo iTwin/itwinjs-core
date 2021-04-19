@@ -6,9 +6,10 @@
  * @module RpcInterface
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Range3dProps } from "@bentley/geometry-core";
-import { ElementProps } from "../ElementProps";
+import { ElementLoadOptions, ElementProps } from "../ElementProps";
+import { CodeProps } from "../Code";
 import { EntityQueryParams } from "../EntityProps";
 import { GeoCoordinatesResponseProps, IModelCoordinatesResponseProps } from "../GeoCoordinateServices";
 import { GeometrySummaryRequestProps } from "../GeometrySummary";
@@ -49,7 +50,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelReadRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.2.1";
+  public static interfaceVersion = "2.3.1";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -71,18 +72,16 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
   public async getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String> { return this.forward(arguments); }
-  /** @internal */
   public async requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
-  /** @internal */
   public async cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void> { return this.forward(arguments); }
   public async getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return this.forward(arguments); }
   public async getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return this.forward(arguments); }
-  /** @beta */
   public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
-  /** @beta */
   public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
-  /** @beta */
   public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
-  /** @alpha */
   public async getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> { return this.forward(arguments); }
+
+  public async loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined> {
+    return this.forward(arguments);
+  }
 }

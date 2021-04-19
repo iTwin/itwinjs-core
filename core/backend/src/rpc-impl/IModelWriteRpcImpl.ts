@@ -156,9 +156,8 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     return iModelDb.concurrencyControl.request(rqctx);
   }
 
-  public async getModelsAffectedByWrites(tokenProps: IModelRpcProps): Promise<Id64String[]> {
-    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
-    return iModelDb.concurrencyControl.modelsAffectedByWrites;
+  public async getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]> {
+    return [];
   }
 
   public async deleteElements(tokenProps: IModelRpcProps, ids: Id64Array) {

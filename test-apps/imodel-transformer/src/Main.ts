@@ -7,8 +7,9 @@ import * as path from "path";
 import * as Yargs from "yargs";
 import { assert, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { ChangeSet, Version } from "@bentley/imodelhub-client";
 import { BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
-import { IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelHubUtils } from "./IModelHubUtils";
 import { Transformer } from "./Transformer";
@@ -124,14 +125,23 @@ interface CommandLineArgs {
       }
 
       if (args.logChangeSets) {
-        await IModelHubUtils.logChangeSets(requestContext, sourceIModelId, loggerCategory);
+        await IModelHubUtils.forEachChangeSet(requestContext, sourceIModelId, (changeSet: ChangeSet) => {
+          Logger.logInfo(loggerCategory, `sourceChangeSet: id="${changeSet.id}", description="${changeSet.description}", fileSize=${changeSet.fileSizeNumber}`);
+        });
       }
 
       if (args.logNamedVersions) {
-        await IModelHubUtils.logNamedVersions(requestContext, sourceIModelId, loggerCategory);
+        await IModelHubUtils.forEachNamedVersion(requestContext, sourceIModelId, (namedVersion: Version) => {
+          Logger.logInfo(loggerCategory, `sourceNamedVersion: id="${namedVersion.id}", changeSetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
+        });
       }
 
-      sourceDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, sourceContextId, sourceIModelId, sourceEndVersion);
+      sourceDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, {
+        contextId: sourceContextId,
+        iModelId: sourceIModelId,
+        asOf: sourceEndVersion.toJSON(),
+        briefcaseId: BriefcaseIdValue.Unassigned, // A "pull only" briefcase can be used since the sourceDb is opened read-only
+      });
     } else {
       // source is a local snapshot file
       assert(undefined !== args.sourceFile);
@@ -164,14 +174,21 @@ interface CommandLineArgs {
       Logger.logInfo(loggerCategory, `targetIModelId=${targetIModelId}`);
 
       if (args.logChangeSets) {
-        await IModelHubUtils.logChangeSets(requestContext, targetIModelId, loggerCategory);
+        await IModelHubUtils.forEachChangeSet(requestContext, targetIModelId, (changeSet: ChangeSet) => {
+          Logger.logInfo(loggerCategory, `targetChangeSet: id="${changeSet.id}", description="${changeSet.description}", fileSize=${changeSet.fileSizeNumber}`);
+        });
       }
 
       if (args.logNamedVersions) {
-        await IModelHubUtils.logNamedVersions(requestContext, targetIModelId, loggerCategory);
+        await IModelHubUtils.forEachNamedVersion(requestContext, targetIModelId, (namedVersion: Version) => {
+          Logger.logInfo(loggerCategory, `targetNamedVersion: id="${namedVersion.id}", changeSetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
+        });
       }
 
-      targetDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, targetContextId, targetIModelId, IModelVersion.latest());
+      targetDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, {
+        contextId: targetContextId,
+        iModelId: targetIModelId,
+      });
     } else {
       assert(undefined !== args.targetFile);
       // target is a local snapshot file
@@ -191,7 +208,7 @@ interface CommandLineArgs {
       excludeSubCategories = args.excludeSubCategories.split(",");
     }
 
-    const options = {
+    const transformerOptions = {
       simplifyElementGeometry: args.simplifyElementGeometry,
       combinePhysicalModels: args.combinePhysicalModels,
       deleteUnusedGeometryParts: args.deleteUnusedGeometryParts,
@@ -201,9 +218,9 @@ interface CommandLineArgs {
     if (processChanges) {
       assert(requestContext instanceof AuthorizedClientRequestContext);
       assert(undefined !== args.sourceStartChangeSetId);
-      await Transformer.transformChanges(requestContext, sourceDb, targetDb, args.sourceStartChangeSetId, options);
+      await Transformer.transformChanges(requestContext, sourceDb, targetDb, args.sourceStartChangeSetId, transformerOptions);
     } else {
-      await Transformer.transformAll(requestContext, sourceDb, targetDb, options);
+      await Transformer.transformAll(requestContext, sourceDb, targetDb, transformerOptions);
     }
 
     sourceDb.close();

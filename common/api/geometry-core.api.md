@@ -2059,19 +2059,6 @@ export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, prope
 // @internal
 export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
 
-// @internal
-export class GridInViewContext {
-    static create(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, lineCountLimiter: number): GridInViewContext | undefined;
-    processGrid(options: ViewportGraphicsGridSpacingOptions, announceLine: (
-    pointA: Point3d,
-    pointB: Point3d,
-    perspectiveZA: number | undefined,
-    perspectiveZB: number | undefined,
-    startEndDistance: Segment1d | undefined,
-    gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => void): boolean;
-    get xyzLoop(): Point3d[];
-    }
-
 // @public
 export class GrowableBlockedArray {
     constructor(blockSize: number, initialBlocks?: number);
@@ -5584,31 +5571,6 @@ export class Vector3d extends XYZ {
 export class Vector3dArray {
     static cloneVector3dArray(data: XYAndZ[]): Vector3d[];
     static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean;
-}
-
-// @internal
-export class ViewGraphicsOps {
-    static gridRangeMaxXY: number;
-    static gridRangeMaxZ: number;
-    static restrictGridRange(range0: Range3d, refPoint?: Point3d | undefined): Range3d;
-}
-
-// @internal
-export interface ViewportGraphicsGridLineIdentifier {
-    direction: 0 | 1;
-    index: number;
-    stepCount: number;
-}
-
-// @internal
-export class ViewportGraphicsGridSpacingOptions {
-    clipIfCloseToNeighborLine: 0 | 1;
-    clipToViewFrustum: boolean;
-    clone(): ViewportGraphicsGridSpacingOptions;
-    static create(distanceBetweenLines: number, cullingOption?: 0 | 1 | 2, clippingOption?: 0 | 1, gridMultiple?: number, clipToViewFrustum?: boolean): ViewportGraphicsGridSpacingOptions;
-    cullingOption: 0 | 1 | 2;
-    distanceBetweenLines: number;
-    gridMultiple: number;
 }
 
 // @public

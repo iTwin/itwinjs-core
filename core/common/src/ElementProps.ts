@@ -285,35 +285,46 @@ export interface InformationPartitionElementProps extends DefinitionElementProps
   description?: string;
 }
 
-/** Options for loading a [[DisplayStyleProps]].
- * @see [[ViewStateLoadProps]].
+/** Options controlling which properties are included or excluded when querying [[DisplayStyleProps]].
+ * @see [[ViewStateLoadProps]] and [[ElementLoadOptions]].
  * @public
  */
 export interface DisplayStyleLoadProps {
-  /** If true, the element Ids in the display style's schedule script will be empty. The element Ids are not required on the frontend for display and can be quite large.
-   * @public
+  /** If true, the lists of element Ids in the display style's schedule script will be empty.
+   * The element Ids are not required on the frontend for display and can be quite large.
    */
   omitScheduleScriptElementIds?: boolean;
-  /** If true, the Ids of excluded elements will be compressed into a single string.
-   * @see [[DisplayStyleSettingsProps.excludedElements]]
-   * @public
+  /** If true, [[DisplayStyleSettingsProps.excludedElements]] will be compressed into a single compact string; otherwise they will be expanded into an array of strings.
+   * The number of Ids may be quite large, so the compressed format is preferred, especially when communicating between the backend and frontend.
    */
   compressExcludedElementIds?: boolean;
 }
 
-/** Parameters to specify what element to load for [IModelDb.Elements.getElementProps]($backend).
+/** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
+ * [IModelDb.Elements.getElementProps]($backend) and [IModelConnection.Elements.loadProps]($frontend).
  * @public
  */
-export interface ElementLoadProps {
+export interface ElementLoadOptions {
+  /** If true, include the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
+   * Geometry streams can consist of many megabytes worth of JSON, so they are omitted by default.
+   */
+  wantGeometry?: boolean;
+  /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */
+  /** If true, include [[BRepEntity.DataProps.data]] in the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
+   * The data is a potentially large base-64-encoded opaque binary blob that cannot be directly inspected or manipulated on the frontend, so it is omitted by default.
+   */
+  wantBRepData?: boolean;
+  /** Options controlling which properties of [[DisplayStyleProps]] to include or exclude. */
+  displayStyle?: DisplayStyleLoadProps;
+}
+
+/** Parameters to specify what element to load for functions like [IModelDb.Elements.getElementProps]($backend).
+ * @public
+ */
+export interface ElementLoadProps extends ElementLoadOptions {
   id?: Id64String;
   code?: CodeProps;
   federationGuid?: GuidString;
-  /** Whether to include geometry stream in GeometricElementProps and GeometryPartProps, false when undefined */
-  wantGeometry?: boolean;
-  /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */
-  wantBRepData?: boolean;
-  /** Properties to omit when loading a [[DisplayStyle]]. */
-  displayStyle?: DisplayStyleLoadProps;
 }
 
 /** Properties of an [ElementAspect]($backend)

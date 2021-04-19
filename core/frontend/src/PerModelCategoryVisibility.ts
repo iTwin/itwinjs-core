@@ -101,8 +101,8 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
   public setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: PerModelCategoryVisibility.Override): void {
     const ovr = this._scratch;
     let changed = false;
-    Id64.forEach(modelIds, (modelId) => {
-      Id64.forEach(categoryIds, (categoryId) => {
+    for (const modelId of Id64.iterable(modelIds)) {
+      for (const categoryId of Id64.iterable(categoryIds)) {
         ovr.reset(modelId, categoryId, false);
         const index = this.indexOf(ovr);
         if (-1 === index) {
@@ -119,8 +119,8 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
             changed = true;
           }
         }
-      });
-    });
+      }
+    }
 
     if (changed) {
       this._vp.setViewedCategoriesPerModelChanged();
@@ -144,15 +144,15 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
 
     for (let i = 0; i < this.length; ) {
       const ovr = this._array[i];
-      const removed = !Id64.iterate(modelIds, (modelId) => {
+      let removed = false;
+      for (const modelId of Id64.iterable(modelIds)) {
         if (modelId === ovr.modelId) {
           this._array.splice(i, 1);
           this._vp.setViewedCategoriesPerModelChanged();
-          return false; // halt iteration
+          removed = true;
+          break;
         }
-
-        return true; // continue iteration
-      });
+      }
 
       if (!removed)
         ++i;

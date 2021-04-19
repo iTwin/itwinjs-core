@@ -1,6 +1,13 @@
 # Change Log - @bentley/extension-webpack-tools
 
-This log was last generated on Thu, 08 Apr 2021 14:30:09 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Apr 2021 15:13:16 GMT and should not be manually modified.
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+### Updates
+
+- Change react-dev-utils package version due to security vulnerability
 
 ## 2.14.2
 Thu, 08 Apr 2021 14:30:09 GMT
