@@ -3,12 +3,160 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
-import { ColorDef, Frustum, IModelStatus, LinePixels, Placement2d, Placement2dProps, Placement3d } from "@bentley/imodeljs-common";
+import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicBranch, GraphicType, IModelApp, IModelConnection, IpcApp, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner, ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
+import { ColorDef, IModelStatus, LinePixels, PersistentGraphicsRequestProps, Placement2d, Placement2dProps, Placement3d } from "@bentley/imodeljs-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import { EditTools } from "./EditTool";
+import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+
+/** @alpha */
+export interface TransformGraphicsData {
+  id: Id64String;
+  placement: Placement2d | Placement3d;
+  graphic: RenderGraphicOwner;
+}
+
+/** @alpha */
+export class TransformGraphicsProvider {
+  public readonly iModel: IModelConnection;
+  public readonly data: TransformGraphicsData[];
+  public readonly pending: Map<Id64String, string>;
+  public readonly prefix: string;
+  /** Chord tolerance to use to stroke the element's geometry in meters. */
+  public chordTolerance = 0.01;
+
+  constructor(iModel: IModelConnection, prefix: string) {
+    this.iModel = iModel;
+    this.prefix = prefix;
+    this.data = new Array<TransformGraphicsData>();
+    this.pending = new Map<Id64String, string>();
+  }
+
+  private getRequestId(id: Id64String): string { return `${this.prefix}-${id}`; }
+  private getToleranceLog10(): number { return Math.log10(this.chordTolerance); }
+
+  private async createRequest(id: Id64String): Promise<TransformGraphicsData | undefined> {
+    const elementProps = await this.iModel.elements.getProps(id);
+    if (0 === elementProps.length)
+      return;
+
+    const placementProps = (elementProps[0] as any).placement;
+    if (undefined === placementProps)
+      return;
+
+    const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
+    const placement = hasAngle(placementProps) ? Placement2d.fromJSON(placementProps) : Placement3d.fromJSON(placementProps);
+
+    if (!placement.isValid)
+      return; // Ignore assembly parents w/o geometry, etc...
+
+    const requestProps: PersistentGraphicsRequestProps = {
+      id: this.getRequestId(id),
+      elementId: id,
+      toleranceLog10: this.getToleranceLog10(),
+    };
+
+    this.pending.set(id, requestProps.id); // keep track of requests so they can be cancelled...
+
+    const graphicData = await IModelApp.tileAdmin.requestElementGraphics(this.iModel, requestProps);
+    if (undefined === graphicData)
+      return;
+
+    const graphic = await readElementGraphics(graphicData, this.iModel, elementProps[0].model, placement instanceof Placement2d ? false : true);
+    if (undefined === graphic)
+      return;
+
+    return {id, placement, graphic: IModelApp.renderSystem.createGraphicOwner(graphic)};
+  }
+
+  private disposeOfGraphics(): void {
+    this.data.forEach((data) => {
+      data.graphic.disposeGraphic();
+    });
+
+    this.data.length = 0;
+  }
+
+  private async cancelPendingRequests(): Promise<void> {
+    const requests = new Array<string>();
+    for (const [_key, id] of this.pending)
+      requests.push(id);
+
+    this.pending.clear();
+    if (0 === requests.length)
+      return;
+
+    return IpcApp.callIpcHost("cancelElementGraphicsRequests", this.iModel.key, requests);
+  }
+
+  /** Call to request a RenderGraphic for the supplied element id.
+ * @see [[cleanupGraphics]] Must be called when the tool exits.
+ */
+  public async createSingleGraphic(id: Id64String): Promise<boolean> {
+    try {
+      const info = await this.createRequest(id);
+
+      if (undefined !== info?.id)
+        this.pending.delete(info.id);
+
+      if (undefined === info?.graphic)
+        return false;
+
+      this.data.push(info);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Call to request RenderGraphics for the supplied element ids. Does not wait for results as
+   * generating graphics for a large number of elements can take time. Instead an array of [[RenderGraphicOwner]]
+   * is populated as requests are resolved and the current dynamics frame displays what is available.
+   * @see [[cleanupGraphics]] Must be called when the tool exits.
+   */
+  public createGraphics(elements: Id64Arg): void {
+    if (0 === Id64.sizeOf(elements))
+      return;
+
+    try {
+      for (const id of Id64.iterable(elements)) {
+        const promise = this.createRequest(id);
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        promise.then((info) => {
+          if (undefined !== info?.id)
+            this.pending.delete(info.id);
+
+          if (undefined !== info?.graphic)
+            this.data.push(info);
+        });
+      }
+    } catch { }
+  }
+
+  /** Call to dispose of [[RenderGraphic]] held by [[RenderGraphicOwner]] and cancel requests that are still pending.
+   * @note Must be called when the tool exits to avoid leaks of graphics memory or other webgl resources.
+   */
+  public async cleanupGraphics(): Promise<void> {
+    await this.cancelPendingRequests();
+    this.disposeOfGraphics();
+  }
+
+  public addSingleGraphic(graphic: RenderGraphic, transform: Transform, context: DynamicsContext): void {
+    const branch = new GraphicBranch(false);
+    branch.add(graphic);
+
+    const branchGraphic = context.createBranch(branch, transform);
+    context.addGraphic(branchGraphic);
+  }
+
+  public addGraphics(transform: Transform, context: DynamicsContext): void {
+    for (const data of this.data)
+      this.addSingleGraphic(data.graphic, transform, context);
+  }
+}
 
 /** @alpha Base class for applying a transform to element placements. */
 export abstract class TransformElementsTool extends ElementSetTool {
@@ -19,49 +167,38 @@ export abstract class TransformElementsTool extends ElementSetTool {
   protected get wantAccuSnap(): boolean { return true; }
   protected get wantDynamics(): boolean { return true; }
   protected get wantMakeCopy(): boolean { return false; } // For testing repeat vs. restart...
-  protected _elementOrigins?: Point3d[];
-  protected _elementAlignedBoxes?: Frustum[]; // TODO: Display agenda "graphics" with supplied transform...
+  protected _graphicsProvider?: TransformGraphicsProvider;
   protected _startedCmd?: string;
 
   protected abstract calculateTransform(ev: BeButtonEvent): Transform | undefined;
 
   protected async createAgendaGraphics(changed: boolean): Promise<void> {
     if (changed) {
-      if (undefined === this._elementAlignedBoxes)
+      if (undefined === this._graphicsProvider)
         return; // Not yet needed...
     } else {
-      if (undefined !== this._elementAlignedBoxes)
+      if (undefined !== this._graphicsProvider)
         return; // Use existing graphics...
     }
 
-    this._elementAlignedBoxes = new Array<Frustum>();
-    this._elementOrigins = new Array<Point3d>();
-    if (0 === this.currentElementCount)
+    if (undefined === this._graphicsProvider)
+      this._graphicsProvider = new TransformGraphicsProvider(this.iModel, this.toolId);
+    else
+      await this._graphicsProvider.cleanupGraphics();
+
+    if (1 === this.agenda.length) {
+      await this._graphicsProvider.createSingleGraphic(this.agenda.elements[0]);
       return;
+    }
 
-    try {
-      const elementProps = await this.iModel.elements.getProps(this.agenda.elements);
-      const range = new Range3d();
+    this._graphicsProvider.createGraphics(this.agenda.elements);
+  }
 
-      for (const props of elementProps) {
-        const placementProps = (props as any).placement;
-        if (undefined === placementProps)
-          continue;
-
-        const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
-        const placement = hasAngle(placementProps) ? Placement2d.fromJSON(placementProps) : Placement3d.fromJSON(placementProps);
-
-        if (!placement.isValid)
-          continue; // Ignore assembly parents w/o geometry, etc...
-
-        range.setFrom(placement instanceof Placement2d ? Range3d.createRange2d(placement.bbox, 0) : placement.bbox);
-
-        const frustum = Frustum.fromRange(range);
-        frustum.multiply(placement.transform);
-        this._elementAlignedBoxes.push(frustum);
-        this._elementOrigins.push(placement instanceof Placement2d ? Point3d.createFrom(placement.origin) : placement.origin);
-      }
-    } catch { }
+  protected async clearAgendaGraphics(): Promise<void> {
+    if (undefined === this._graphicsProvider)
+      return;
+    await this._graphicsProvider.cleanupGraphics();
+    this._graphicsProvider = undefined;
   }
 
   protected async onAgendaModified(): Promise<void> {
@@ -74,16 +211,8 @@ export abstract class TransformElementsTool extends ElementSetTool {
   }
 
   protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void {
-    if (undefined === this._elementAlignedBoxes)
-      return;
-
-    const builder = context.target.createGraphicBuilder(GraphicType.WorldDecoration, context.viewport, transform);
-    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.HiddenLine);
-
-    for (const frust of this._elementAlignedBoxes)
-      builder.addFrustum(frust.clone());
-
-    context.addGraphic(builder.finish());
+    if (undefined !== this._graphicsProvider)
+      this._graphicsProvider.addGraphics(transform, context);
   }
 
   public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
@@ -137,6 +266,12 @@ export abstract class TransformElementsTool extends ElementSetTool {
     if (this.wantMakeCopy)
       return; // TODO: Update agenda to hold copies, replace current selection set with copies, etc...
     return super.onProcessComplete();
+  }
+
+  public onCleanup(): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.clearAgendaGraphics();
+    super.onCleanup();
   }
 }
 
@@ -323,20 +458,21 @@ export class RotateElementsTool extends TransformElementsTool {
     if (RotateAbout.Point === this.rotateAbout)
       return super.transformAgendaDynamics(transform, context);
 
-    if (undefined === this._elementAlignedBoxes || undefined === this._elementOrigins || this._elementAlignedBoxes.length !== this._elementOrigins.length)
+    if (undefined === this._graphicsProvider)
       return;
 
-    const builder = context.target.createGraphicBuilder(GraphicType.WorldDecoration, context.viewport);
-    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.HiddenLine);
+    for (const data of this._graphicsProvider.data) {
+      const rotatePoint = Point3d.create();
 
-    this._elementAlignedBoxes.forEach((frust, i) => {
-      const rotatePoint = (RotateAbout.Origin === this.rotateAbout ? this._elementOrigins![i] : frust.getCenter());
+      if (RotateAbout.Origin === this.rotateAbout)
+        rotatePoint.setFrom(data.placement.origin);
+      else
+        rotatePoint.setFrom(data.placement.calculateRange().center);
+
       const rotateTrans = Transform.createFixedPointAndMatrix(rotatePoint, transform.matrix);
 
-      builder.addFrustum(frust.transformBy(rotateTrans));
-    });
-
-    context.addGraphic(builder.finish());
+      this._graphicsProvider.addSingleGraphic(data.graphic, rotateTrans, context);
+    }
   }
 
   protected async transformAgenda(transform: Transform): Promise<void> {

@@ -10,9 +10,15 @@ import { DialogItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
-import { Frustum } from '@bentley/imodeljs-common';
+import { Id64Arg } from '@bentley/bentleyjs-core';
+import { Id64String } from '@bentley/bentleyjs-core';
+import { IModelConnection } from '@bentley/imodeljs-frontend';
+import { Placement2d } from '@bentley/imodeljs-common';
+import { Placement3d } from '@bentley/imodeljs-common';
 import { Point3d } from '@bentley/geometry-core';
 import { PropertyDescription } from '@bentley/ui-abstract';
+import { RenderGraphic } from '@bentley/imodeljs-frontend';
+import { RenderGraphicOwner } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { Transform } from '@bentley/geometry-core';
@@ -173,17 +179,19 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
+    protected clearAgendaGraphics(): Promise<void>;
+    // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)
     protected createAgendaGraphics(changed: boolean): Promise<void>;
     // (undocumented)
-    protected _elementAlignedBoxes?: Frustum[];
-    // (undocumented)
-    protected _elementOrigins?: Point3d[];
+    protected _graphicsProvider?: TransformGraphicsProvider;
     // (undocumented)
     protected initAgendaDynamics(): Promise<boolean>;
     // (undocumented)
     protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onCleanup(): void;
     // (undocumented)
     onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
     // (undocumented)
@@ -206,6 +214,37 @@ export abstract class TransformElementsTool extends ElementSetTool {
     protected get wantDynamics(): boolean;
     // (undocumented)
     protected get wantMakeCopy(): boolean;
+}
+
+// @alpha (undocumented)
+export interface TransformGraphicsData {
+    // (undocumented)
+    graphic: RenderGraphicOwner;
+    // (undocumented)
+    id: Id64String;
+    // (undocumented)
+    placement: Placement2d | Placement3d;
+}
+
+// @alpha (undocumented)
+export class TransformGraphicsProvider {
+    constructor(iModel: IModelConnection, prefix: string);
+    // (undocumented)
+    addGraphics(transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
+    addSingleGraphic(graphic: RenderGraphic, transform: Transform, context: DynamicsContext): void;
+    chordTolerance: number;
+    cleanupGraphics(): Promise<void>;
+    createGraphics(elements: Id64Arg): void;
+    createSingleGraphic(id: Id64String): Promise<boolean>;
+    // (undocumented)
+    readonly data: TransformGraphicsData[];
+    // (undocumented)
+    readonly iModel: IModelConnection;
+    // (undocumented)
+    readonly pending: Map<Id64String, string>;
+    // (undocumented)
+    readonly prefix: string;
 }
 
 // @alpha
