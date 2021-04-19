@@ -3,18 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicBranch, GraphicType, IModelApp, IModelConnection, IpcApp, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner, ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
-import { ColorDef, GeometricElement2dProps, GeometricElement3dProps, IModelStatus, LinePixels, PersistentGraphicsRequestProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps } from "@bentley/imodeljs-common";
-import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
-import { EditTools } from "./EditTool";
 import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  ColorDef, GeometricElement2dProps, GeometricElement3dProps, IModelStatus, isPlacement2dProps, LinePixels, PersistentGraphicsRequestProps, Placement,
+  Placement2d, Placement3d,
+} from "@bentley/imodeljs-common";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+import {
+  AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicBranch, GraphicType, IModelApp,
+  IModelConnection, IpcApp, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner,
+  ToolAssistanceInstruction,
+} from "@bentley/imodeljs-frontend";
+import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
+import { EditTools } from "./EditTool";
 
 /** @alpha */
 export interface TransformGraphicsData {
   id: Id64String;
-  placement: Placement2d | Placement3d;
+  placement: Placement;
   graphic: RenderGraphicOwner;
 }
 
@@ -38,17 +45,15 @@ export class TransformGraphicsProvider {
   private getToleranceLog10(): number { return Math.floor(Math.log10(this.chordTolerance)); }
 
   private async createRequest(id: Id64String): Promise<TransformGraphicsData | undefined> {
-    const elementProps = await this.iModel.elements.getProps(id);
+    const elementProps = (await this.iModel.elements.getProps(id)) as (GeometricElement3dProps | GeometricElement2dProps)[];
     if (0 === elementProps.length)
       return;
 
-    const placementProps = (elementProps[0] as GeometricElement3dProps | GeometricElement2dProps).placement;
+    const placementProps = elementProps[0].placement;
     if (undefined === placementProps)
       return;
 
-    const is2d = (placementProps as any).angle !== undefined;
-    const placement = is2d ? Placement2d.fromJSON(placementProps as Placement2dProps) : Placement3d.fromJSON(placementProps as Placement3dProps);
-
+    const placement = isPlacement2dProps(placementProps) ? Placement2d.fromJSON(placementProps) : Placement3d.fromJSON(placementProps);
     if (!placement.isValid)
       return; // Ignore assembly parents w/o geometry, etc...
 
@@ -64,11 +69,11 @@ export class TransformGraphicsProvider {
     if (undefined === graphicData)
       return;
 
-    const graphic = await readElementGraphics(graphicData, this.iModel, elementProps[0].model, !is2d);
+    const graphic = await readElementGraphics(graphicData, this.iModel, elementProps[0].model, placement.is3d);
     if (undefined === graphic)
       return;
 
-    return {id, placement, graphic: IModelApp.renderSystem.createGraphicOwner(graphic)};
+    return { id, placement, graphic: IModelApp.renderSystem.createGraphicOwner(graphic) };
   }
 
   private disposeOfGraphics(): void {

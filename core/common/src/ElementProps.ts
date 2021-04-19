@@ -127,6 +127,20 @@ export interface Placement2dProps {
 /** @public */
 export type PlacementProps = Placement2dProps | Placement3dProps;
 
+/** determine if this is Placement2dProps
+ * @public
+ */
+export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps {
+  return (props as Placement2dProps).angle !== undefined;
+}
+
+/** determine if this is Placement3dProps
+ * @public
+ */
+export function isPlacement3dProps(props: PlacementProps): props is Placement3dProps {
+  return !isPlacement2dProps(props);
+}
+
 /** Properties that define a [GeometricElement3d]($backend)
  * @public
  */
