@@ -88,7 +88,7 @@ export namespace IModelHubUtils {
       const briefcaseProps = await BriefcaseManager.downloadBriefcase(requestContext, briefcaseArg);
       return BriefcaseDb.open(requestContext, {
         fileName: briefcaseProps.fileName,
-        readonly: briefcaseArg.briefcaseId ? briefcaseArg.briefcaseId === BriefcaseIdValue.Unassigned : undefined,
+        readonly: briefcaseArg.briefcaseId ? briefcaseArg.briefcaseId === BriefcaseIdValue.Unassigned : false,
       });
     }
 
