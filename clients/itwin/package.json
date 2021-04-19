@@ -46,7 +46,6 @@
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
-    "@types/nock": "^11.1.0",
     "@types/node": "10.14.1",
     "@types/qs": "^6.5.0",
     "@types/superagent": "^4.1.7",

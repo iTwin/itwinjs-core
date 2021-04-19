@@ -61,7 +61,6 @@
     "@types/fs-extra": "^4.0.7",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
-    "@types/nock": "^11.1.0",
     "cpx": "^1.5.0",
     "eslint": "^6.8.0",
     "internal-tools": "0.0.0",
