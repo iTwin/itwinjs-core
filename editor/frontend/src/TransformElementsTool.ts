@@ -469,7 +469,6 @@ export class RotateElementsTool extends TransformElementsTool {
       return;
 
     const rotatePoint = Point3d.create();
-    const rotateTrans = Transform.createIdentity();
 
     for (const data of this._graphicsProvider.data) {
       if (RotateAbout.Origin === this.rotateAbout)
@@ -477,7 +476,7 @@ export class RotateElementsTool extends TransformElementsTool {
       else
         rotatePoint.setFrom(data.placement.calculateRange().center);
 
-      Transform.createFixedPointAndMatrix(rotatePoint, transform.matrix, rotateTrans);
+      const rotateTrans = Transform.createFixedPointAndMatrix(rotatePoint, transform.matrix);
       this._graphicsProvider.addSingleGraphic(data.graphic, rotateTrans, context);
     }
   }
