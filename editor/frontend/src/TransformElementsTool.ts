@@ -6,8 +6,7 @@
 import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  ColorDef, GeometricElement2dProps, GeometricElement3dProps, IModelStatus, isPlacement2dProps, LinePixels, PersistentGraphicsRequestProps, Placement,
-  Placement2d, Placement3d,
+  ColorDef, GeometricElementProps, IModelStatus, isPlacement2dProps, LinePixels, PersistentGraphicsRequestProps, Placement, Placement2d, Placement3d,
 } from "@bentley/imodeljs-common";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import {
@@ -45,7 +44,7 @@ export class TransformGraphicsProvider {
   private getToleranceLog10(): number { return Math.floor(Math.log10(this.chordTolerance)); }
 
   private async createRequest(id: Id64String): Promise<TransformGraphicsData | undefined> {
-    const elementProps = (await this.iModel.elements.getProps(id)) as (GeometricElement3dProps | GeometricElement2dProps)[];
+    const elementProps = (await this.iModel.elements.getProps(id)) as GeometricElementProps[];
     if (0 === elementProps.length)
       return;
 

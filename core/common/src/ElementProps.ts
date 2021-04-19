@@ -103,7 +103,10 @@ export class TypeDefinition extends RelatedElement {
 export interface GeometricElementProps extends ElementProps {
   /** The id of the category for this geometric element. */
   category: Id64String;
+  /** The geometry stream properties */
   geom?: GeometryStreamProps;
+  /** The placement properties */
+  placement?: PlacementProps;
 }
 
 /** Properties of a [[Placement3d]]
