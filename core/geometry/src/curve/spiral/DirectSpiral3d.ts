@@ -18,12 +18,14 @@ import { LineString3d } from "../LineString3d";
 import { StrokeOptions } from "../StrokeOptions";
 import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
 import { ClothoidSeriesRLEvaluator } from "./ClothoidSeries";
-import { CzechSpiralEvaluator } from "./CzechSpiralEvaluator";
+import { CzechSpiralEvaluator, ItalianSpiralEvaluator } from "./CzechSpiralEvaluator";
 import { DirectHalfCosineSpiralEvaluator } from "./DirectHalfCosineSpiralEvaluator";
 import { AustralianRailCorpXYEvaluator } from "./AustralianRailCorpXYEvaluator";
 import { XYCurveEvaluator } from "./XYCurveEvaluator";
 import { TransitionSpiral3d } from "./TransitionSpiral3d";
 import { Angle } from "../../geometry3d/Angle";
+import { MXCubicAlongArcEvaluator } from "./MXCubicAlongArcSpiralEvaluator";
+import { PolishCubicEvaluator } from "./PolishCubicSpiralEvaluator";
 /**
 * DirectSpiral3d acts like a TransitionSpiral3d for serialization purposes, but implements spiral types that have "direct" xy calculations without the integrations required
 * for IntegratedSpiral3d.
@@ -35,6 +37,9 @@ import { Angle } from "../../geometry3d/Angle";
 *   * createDirectHalfCosine
 *   * createChineseCubic
 *   * createCzechCubic
+*   * createPolishCubic
+*   * createItalian
+*   * createWesternAustralian
 * @public
 */
 export class DirectSpiral3d extends TransitionSpiral3d {
@@ -184,25 +189,110 @@ export class DirectSpiral3d extends TransitionSpiral3d {
    *    * 1/(6RL) is the leading term of the sine series.
    *    * `gamma = 2R/sqrt (4RR-LL)` pushes y up a little bit to simulate the lost series terms.
    * @param localToWorld
-   * @param nominalL1
+   * @param nominalLx nominal length along x axis
    * @param nominalR1
    * @param activeInterval
    */
   public static createCzechCubic(
     localToWorld: Transform,
-    nominalL1: number,
+    nominalLx: number,
     nominalR1: number,
     activeInterval?: Segment1d): DirectSpiral3d | undefined {
-    const evaluator = CzechSpiralEvaluator.create(nominalL1, nominalR1);
+    const evaluator = CzechSpiralEvaluator.create(nominalLx, nominalR1);
     if (evaluator === undefined)
       return undefined;
     return new DirectSpiral3d(
       localToWorld.clone(),
       "Czech",
       undefined,
+      nominalLx, nominalR1,
+      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
+  }
+  /**
+   * Create an italian spiral
+   * This is y= m*x^3 with
+   * * x any point on the x axis
+   * * `fraction` along the spiral goes to `x = fraction * L`
+   * * m is gamma / (6RL)
+   *    * 1/(6RL) is the leading term of the sine series.
+   *    * `gamma = 2R/sqrt (4RR-LL)` pushes y up a little bit to simulate the lost series terms.
+   * * L in gamma and m is the
+   * @param localToWorld
+   * @param nominalL1 nominal length along the spiral
+   * @param nominalR1
+   * @param activeInterval
+   */
+   public static createItalian(
+    localToWorld: Transform,
+    nominalL1: number,
+    nominalR1: number,
+    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    const evaluator = ItalianSpiralEvaluator.create(nominalL1, nominalR1);
+    if (evaluator === undefined)
+      return undefined;
+    return new DirectSpiral3d(
+      localToWorld.clone(),
+      "Italian",
+      undefined,
       nominalL1, nominalR1,
       activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
   }
+
+  /**
+   * Create an MX Cubic whose nominal length is close to along the curve.
+   * This is y= m*x^3 with
+   * * m is 1/ (6RL1)
+   *    * 1/(6RL) is the leading term of the sine series.
+   * * L1 is an along-the-x-axis distance that is slightly LESS THAN the nominal length
+   * * x is axis position that is slightly LESS than nominal distance along
+   * * L1, x use the approximation   `x = s * ( 1 - s^4/ (40 R R L L))
+   * @param localToWorld
+   * @param nominalL1
+   * @param nominalR1
+   * @param activeInterval
+   */
+   public static createMXCubicAlongArc(
+    localToWorld: Transform,
+    nominalL1: number,
+    nominalR1: number,
+    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    const evaluator = MXCubicAlongArcEvaluator.create(nominalL1, nominalR1);
+    if (evaluator === undefined)
+      return undefined;
+    return new DirectSpiral3d(
+      localToWorld.clone(),
+      "MXCubicAlongArc",
+      undefined,
+      nominalL1, nominalR1,
+      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
+  }
+
+  /**
+   * Create a polish cubic
+   * This is y= m*x^3 with
+   * * m is 1/ (6RL)
+   *    * 1/(6RL) is the leading term of the sine series.
+   * * L is nominal length
+   * * R is nominal end radius.
+   * * x ranges up to the x axis distance for which the polish distance series produces f(x)=L
+   * * The support class PolishCubicEvaluator has static methods for the distance series and its inversion.
+   */
+   public static createPolishCubic(
+    localToWorld: Transform,
+    nominalL1: number,
+    nominalR1: number,
+    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    const evaluator = PolishCubicEvaluator.create(nominalL1, nominalR1);
+    if (evaluator === undefined)
+      return undefined;
+    return new DirectSpiral3d(
+      localToWorld.clone(),
+      "PolishCubic",
+      undefined,
+      nominalL1, nominalR1,
+      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
+  }
+
   /**
    * Create an AustralianRailCorp spiral
    * This is y= m*x^3 with
@@ -337,12 +427,17 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       return this.createDirectHalfCosine(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "Czech"))
       return this.createCzechCubic(localToWorld, arcLength, radius1, activeInterval);
+      if (Geometry.equalStringNoCase(spiralType, "Italian"))
+      return this.createItalian(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "AustralianRailCorp"))
       return this.createAustralianRail(localToWorld, arcLength, radius1, activeInterval);
-    if (Geometry.equalStringNoCase(spiralType, "WesternAustralian")) {
+    if (Geometry.equalStringNoCase(spiralType, "MXCubicAlongArc"))
+        return this.createMXCubicAlongArc(localToWorld, arcLength, radius1, activeInterval);
+    if (Geometry.equalStringNoCase(spiralType, "WesternAustralian"))
         return this.createWesternAustralian(localToWorld, arcLength, radius1, activeInterval);
-      }
-        return undefined;
+    if (Geometry.equalStringNoCase(spiralType, "PolishCubic"))
+        return this.createPolishCubic (localToWorld, arcLength, radius1, activeInterval);
+    return undefined;
   }
   /** Deep clone of this spiral */
   public clone(): DirectSpiral3d {
