@@ -34,16 +34,13 @@ export class ViewList extends SortedArray<ViewSpec> {
   public async getView(id: Id64String, iModel: IModelConnection): Promise<ViewState> {
     let view = this._views.get(id);
     if (undefined === view) {
-      if (Id64.isInvalid(id)) {
+      try {
+        view = await iModel.views.load(id);
+      } catch (_) {
+        // The view probably references a nonexistent display style or model/category selector. Replace with a default spatial view.
+        // Or, we've opened a blank connection and `id` is intentionally invalid.
+        // The viewport's title bar will display "UNNAMED" instead of the bad view's name.
         view = this.manufactureSpatialView(iModel);
-      } else {
-        try {
-          view = await iModel.views.load(id);
-        } catch (_) {
-          // The view probably references a nonexistent display style or model/category selector. Replace with a default spatial view.
-          // The viewport's title bar will display "UNNAMED" instead of the bad view's name.
-          view = this.manufactureSpatialView(iModel);
-        }
       }
 
       this._views.set(id, view);
