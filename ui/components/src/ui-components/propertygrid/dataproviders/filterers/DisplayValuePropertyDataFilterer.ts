@@ -11,8 +11,8 @@ import { countMatchesInString } from "../../../common/countMatchesInString";
 import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
 
 /**
- * PropertyData filterer which matches on Primitive Property Record display value text.
- * @alpha
+ * Property data filterer which matches on Primitive Property Record display value text.
+ * @beta
  */
 export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
   private _filterText: string = "";
