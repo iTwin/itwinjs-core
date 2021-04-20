@@ -66,6 +66,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   public get nominalR1(): number { return this._nominalR1; }
   /** Return the nominal distance from inflection to endpoint. */
   public get nominalL1(): number { return this._nominalL1; }
+  /** Return the nominal end curvature */
+  public get nominalCurvature1(): number { return TransitionSpiral3d.radiusToCurvature (this._nominalR1); }
   /** Return the low level evaluator
    * @internal
    */
@@ -587,7 +589,6 @@ export class DirectSpiral3d extends TransitionSpiral3d {
         && Geometry.isSameCoordinate(this._nominalR1, other._nominalR1)
         && this.localToWorld.isAlmostEqual(other.localToWorld)
         && this._activeFractionInterval.isAlmostEqual(other._activeFractionInterval)
-        && TransitionConditionalProperties.areAlmostEqual(this.designProperties, other.designProperties)
         && this._evaluator.isAlmostEqual(other._evaluator);
     }
     return false;

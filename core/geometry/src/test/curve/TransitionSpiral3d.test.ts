@@ -39,7 +39,7 @@ import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { Path } from "../../curve/Path";
 import { PolishCubicEvaluator } from "../../curve/spiral/PolishCubicSpiralEvaluator";
-
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 function exerciseCloneAndScale(ck: Checker, data: TransitionConditionalProperties) {
   const data1 = data.clone();
   ck.testTrue(data1.isAlmostEqual(data));
@@ -818,6 +818,7 @@ describe("TransitionSpiral3d", () => {
     const ck = new Checker();
     const directoryPath = "./src/test/testInputs/curve/AlexGSpiral/AlexG0421";
     const fileList = fs.readdirSync(directoryPath);
+    // fileList = ["italian.imjs"];
     const yShift = 1.0;
     if (fileList) {
       for (const fileName of fileList) {
@@ -861,6 +862,7 @@ describe("TransitionSpiral3d", () => {
             console.log(`Expected 4 spirals, got ${numSpiral} in ${outputFileName}  *******************************`);
             GeometryCoreTestIO.captureCloneGeometry (allGeometry, [point0, point0.plus (Vector3d.create (-1000,0,0))]);
           }
+          testGeometryQueryRoundTrip(ck, alignment);
           GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", outputFileName);
         }
       }
@@ -868,7 +870,7 @@ describe("TransitionSpiral3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("PolishSpiralDistanceInversion", () => {
+  it("PolishSpiralDistanceInversion", () => {
     const ck = new Checker();
     expect(ck.getNumErrors()).equals(0);
     const distanceInversionTolerance = 1.0e-10;

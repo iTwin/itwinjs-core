@@ -42,7 +42,9 @@ export type DirectSpiralTypeName = "Arema"
   | "AustralianRailCorp" // cubic with high accuracy distance series
   | "WesternAustralian"  // simple cubic -- 2 terms of x series, 1 term of y series.
   | "Czech"  // simple cubic with two term distance approximation
-  | "MXAlongArc"  // x obtained from fractional distance via 2-terms from series, y = x^3/ (6RL)
+  | "MXCubicAlongArc"  // x obtained from fractional distance via 2-terms from series, y = x^3/ (6RL)
+  | "Polish"
+  | "Italian"
   ;
 
 /**

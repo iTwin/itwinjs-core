@@ -104,7 +104,7 @@ it("HelloSpirals", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuery[] | undefined) {
+export function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuery[] | undefined) {
   if (!g)
     return;
   if (Checker.noisy.flatBuffer) {
@@ -120,7 +120,8 @@ function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuer
         ck.announceError("Unexpected array from flat buffer");
       } if (ck.testType<GeometryQuery>(g1 as (GeometryQuery | undefined))) {
         if (!ck.testTrue(g.isAlmostEqual(g1 as GeometryQuery))) {
-          console.log("OUTPUT (mismatch) solid: ", prettyPrint(IModelJson.Writer.toIModelJson(g1)));
+          console.log("input (mismatch): ", prettyPrint(IModelJson.Writer.toIModelJson(g)));
+          console.log("OUTPUT (mismatch): ", prettyPrint(IModelJson.Writer.toIModelJson(g1)));
           const g2 = BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes);
           if (g2 instanceof GeometryQuery)
             ck.testTrue(g.isAlmostEqual(g2));
