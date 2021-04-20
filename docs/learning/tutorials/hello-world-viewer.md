@@ -187,18 +187,34 @@ Notice the only significant difference is that ```getWidgetContent``` is now ret
 
 ### Changing the background color
 
-For this last step, let's put our new toggle to work.  We want the toggle to control the background color in the view of our house iModel.  When the toggle is on, we'll override the background color to "skyblue". When the toggle is off, we'll change the background color to "pink".
+For this last step, let's put our new toggle to work.  We want the toggle to control the background color in the view of our house iModel.  When the toggle is on, we'll override the background color to "skyblue". When the toggle is off, we'll change the background color back to its original color.
 
 To do this, we need to pass the ```onChange``` prop to the ```Toggle``` component like this:
 
 ``` typescript
           return <Toggle onChange={(toggle) => {
-            const color = toggle ? "skyblue" : "pink";
-            IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: ColorDef.computeTbgrFromString(color)})
+            if (MyFirstUiProvider.toggledOnce === false) {
+              MyFirstUiProvider.originalColor = IModelApp.viewManager.selectedView!.displayStyle.backgroundColor.tbgr;
+              MyFirstUiProvider.toggledOnce = true;
+            }
+
+            const color = toggle ? ColorDef.computeTbgrFromString("skyblue") : MyFirstUiProvider.originalColor;
+            IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: color})
           }}></Toggle>
 ```
 
-Notice we using the function [overrideDisplayStyle()](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewport/overridedisplaystyle/) on the currently selected view.  To get the view, we use the global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the [viewManager](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewmanager/).
+Since we're using two new static variables here, we need to add this to to our ```MyFirstUiProvider``` class at the beginning of our definition:
+
+``` typescript
+export class MyFirstUiProvider implements UiItemsProvider {
+  public readonly id = "HelloWorldProvider";
+  public static toggledOnce: boolean = false;
+  public static originalColor: number;
+```
+
+The first condition checks for only the first trigger of the toggle using boolean ```toggledOnce```. If true, we need to store the original color in static variable ```MyFirstUiProvider.originalColor```. We are using the global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the viewManager that can provide the current ```backgroundColor```. We also need to flip variable ```MyFirstUiProvider.toggledOnce``` to true to make sure we only store the original color once. We are using the glo
+
+Notice we using the function [overrideDisplayStyle()](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewport/overridedisplaystyle/) on the currently selected view.  To get the view, we use the same global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the [viewManager](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewmanager/).
 
 Our completed ```MyFirstUiProvider.tsx``` file should look similar to this:
 
