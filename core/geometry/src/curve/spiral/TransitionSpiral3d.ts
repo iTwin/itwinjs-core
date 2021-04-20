@@ -34,8 +34,8 @@ export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "c
  * "Direct" spirals can evaluate fractionToPoint by direct equations, i.e. not requiring the numeric integrations in "Integrated" spiral types.
  * @public
  */
-export type DirectSpiralTypeName = "Arema"
-  | "JapaneseCubic"  // 1 term from each of the X,Y clothoid series expansions:  y = x^3 / (6RL)
+export type DirectSpiralTypeName =
+   "JapaneseCubic"  // 1 term from each of the X,Y clothoid series expansions:  y = x^3 / (6RL)
   | "Arema"       // 2 terms from each of the X,Y clothoid series expansions.  Identical to ChineseCubic!
   | "ChineseCubic"  // Identical to Arema!
   | "HalfCosine"  // high continuity cosine variation from quadratic.
