@@ -92,9 +92,12 @@ describe("imodel-transformer", () => {
       ecefLocation: sourceDb.ecefLocation,
     });
 
-    const testCategory = "TestSpatialCategory";
+    const testSpatialCategory = {
+      name: "TestSpatialCategory",
+      id: "0x14",
+    };
 
-    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { excludeCategories: [testCategory] });
+    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { excludeCategories: [testSpatialCategory.name] });
 
     async function getElementCountInTestCategory(db: IModelDb) {
       // do two queries because querying abstract GeometricElement won't contain the category
@@ -102,7 +105,7 @@ describe("imodel-transformer", () => {
       return sum(await Promise.all([GeometricElement2d.classFullName, GeometricElement3d.classFullName].map(async (className) => {
         const queryResult = await db.query(
           `SELECT COUNT(*) FROM ${className} e JOIN bis.Category c ON e.category.id=c.ECInstanceId WHERE c.CodeValue=:category`,
-          { category: testCategory }
+          { category: testSpatialCategory.name }
         ).next();
         const value = Object.values(queryResult.value)[0]; // gets the value of the first column in the returned row
         if (typeof value !== "number") {
@@ -116,7 +119,7 @@ describe("imodel-transformer", () => {
       return db.queryEntityIds({
         from: Category.classFullName,
         where: "CodeValue=:category",
-        bindings: {category: testCategory},
+        bindings: {category: testSpatialCategory.name},
       }).size > 0;
     }
 
@@ -124,6 +127,12 @@ describe("imodel-transformer", () => {
 
     const elemsInCategoryInSrc = await getElementCountInTestCategory(sourceDb);
     assert.isAtLeast(elemsInCategoryInSrc, 6);
+
+    const _entityIdsTarget = targetDb.queryEntityIds({
+      from: Category.classFullName,
+      where: "CodeValue=:category",
+      bindings: {category: testSpatialCategory.name},
+    });
 
     assert.isFalse(await hasTheCategory(targetDb));
 
