@@ -58,9 +58,6 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
           return;
       }
 
-      e.stopPropagation();
-      e.preventDefault();
-
       if (this.props.onOutsideClick)
         return this.props.onOutsideClick(e);
       else if (defaultOnOutsideClick)

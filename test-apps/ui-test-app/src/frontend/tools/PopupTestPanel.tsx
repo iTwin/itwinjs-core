@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as React from "react";
 import { BeDragDropContext, DatePickerPopupButton, DatePickerPopupButtonProps } from "@bentley/ui-components";
 import { Button } from "@bentley/ui-core";
 import { ModalDialogManager, ModelessDialogManager, UiFramework } from "@bentley/ui-framework";
-import * as React from "react";
 import { SampleModelessDialog } from "../appui/dialogs/SampleModelessDialog";
 import { TestModalDialog } from "../appui/dialogs/TestModalDialog";
 
