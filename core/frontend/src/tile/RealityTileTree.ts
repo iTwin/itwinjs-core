@@ -10,6 +10,7 @@ import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
+import { GraphicsCollectorDrawArgs } from "../imodeljs-frontend";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
@@ -154,7 +155,7 @@ export class RealityTileTree extends TileTree {
       selectedTiles.sort((a, b) => a.depth - b.depth);                    // If parent and child are not exclusive then display parents (low resolution) first.
 
     const classifier = args.context.planarClassifiers.get(this.modelId);
-    if (classifier)
+    if (classifier && !(args instanceof GraphicsCollectorDrawArgs))
       classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
 
     assert(selectedTiles.length === displayedTileDescendants.length);
