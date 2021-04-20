@@ -20,6 +20,9 @@ export function useActiveViewport(): ScreenViewport | undefined {
       setActiveViewport(IModelApp.viewManager.selectedView);
     };
 
+    // IModelApp.viewManager.onSelectedViewportChanged will often fire before UI components have mounted
+    // so use ContentViewManager.onActiveContentChangedEvent which will always trigger once all stage components
+    // are loaded and when the IModelApp.viewManager.selectedView changes.
     ContentViewManager.onActiveContentChangedEvent.addListener(onActiveContentChanged);
     return () => {
       ContentViewManager.onActiveContentChangedEvent.removeListener(onActiveContentChanged);
