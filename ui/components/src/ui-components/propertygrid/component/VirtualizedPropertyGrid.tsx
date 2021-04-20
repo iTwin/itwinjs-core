@@ -28,7 +28,7 @@ import { FlatGridItemType } from "../internal/flat-items/MutableFlatGridItem";
 import { FlatPropertyRenderer } from "../internal/flat-properties/FlatPropertyRenderer";
 import { IPropertyGridEventHandler } from "../internal/PropertyGridEventHandler";
 import { IPropertyGridModel } from "../internal/PropertyGridModel";
-import { PropertyCategory } from "../PropertyDataProvider";
+import { IPropertyDataProvider, PropertyCategory } from "../PropertyDataProvider";
 import { ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier";
 import { FlatItemNestedBorderWrapper } from "./FlatItemNestedBorderWrapper";
 import { PropertyCategoryBlock } from "./PropertyCategoryBlock";
@@ -42,6 +42,7 @@ import { assert } from "@bentley/bentleyjs-core";
 export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
   model: IPropertyGridModel;
   eventHandler: IPropertyGridEventHandler;
+  dataProvider: IPropertyDataProvider;
   highlight?: HighlightingComponentProps & {
     filteredTypes?: FilteredType[];
   };
@@ -100,6 +101,7 @@ export interface VirtualizedPropertyGridContext {
   onEditCancel?: () => void;
 
   eventHandler: IPropertyGridEventHandler;
+  dataProvider: IPropertyDataProvider;
 
   actionButtonRenderers?: ActionButtonRenderer[];
   propertyValueRendererManager?: PropertyValueRendererManager;
@@ -329,6 +331,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
                   onEditCancel: selectionContext.onEditCancel,
 
                   eventHandler: this.props.eventHandler,
+                  dataProvider: this.props.dataProvider,
 
                   actionButtonRenderers: this.props.actionButtonRenderers,
                   propertyValueRendererManager: this.props.propertyValueRendererManager,
