@@ -13,6 +13,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
+import { BatchOptions } from "../RenderSystem";
 import { RenderMemory } from "../RenderMemory";
 import { ClipVolume } from "./ClipVolume";
 import { WebGLDisposable } from "./Disposable";
@@ -93,10 +94,11 @@ export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: PackedFeatureTable;
   public readonly range: ElementAlignedBox3d;
-  public readonly tileId?: string; // Chiefly for debugging.
   private readonly _context: BatchContext = { batchId: 0 };
   private readonly _perTargetData: PerTargetBatchData[] = [];
+  private readonly _options: BatchOptions;
 
+  public get tileId(): string | undefined { return this._options.tileId; } // chiefly for debugging
   public get batchId() { return this._context.batchId; }
   public get batchIModel() { return this._context.iModel; }
   public setContext(batchId: number, iModel: IModelConnection | undefined) {
@@ -108,12 +110,12 @@ export class Batch extends Graphic {
     this._context.iModel = undefined;
   }
 
-  public constructor(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string) {
+  public constructor(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
     super();
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
-    this.tileId = tileId;
+    this._options = options ?? { };
   }
 
   private _isDisposed = false;
@@ -180,7 +182,7 @@ export class Batch extends Graphic {
   public getOverrides(target: Target): FeatureOverrides {
     const ptd = this.getPerTargetData(target);
     if (!ptd.featureOverrides) {
-      ptd.featureOverrides = FeatureOverrides.createFromTarget(target);
+      ptd.featureOverrides = FeatureOverrides.createFromTarget(target, this._options);
       ptd.featureOverrides.initFromMap(this.featureTable);
     }
 

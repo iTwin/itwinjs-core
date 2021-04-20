@@ -116,7 +116,7 @@ export class IModelTile extends Tile {
 
     const tree = this.iModelTree;
     const mult = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
-    const reader = ImdlReader.create(streamBuffer, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, mult, this.contentId);
+    const reader = ImdlReader.create(streamBuffer, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, mult,  { tileId: this.contentId });
     if (undefined !== reader) {
       try {
         content = await reader.read();
