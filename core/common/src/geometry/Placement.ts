@@ -40,6 +40,11 @@ export type ElementAlignedBox2d = Range2d;
  */
 export type LocalAlignedBox3d = Range3d;
 
+/** Either a Placement2d or Placement3d
+ * @public
+ */
+export type Placement = Placement2d | Placement3d;
+
 /** The placement of a GeometricElement3d. This includes the origin, orientation, and size (bounding box) of the element.
  * All geometry of a GeometricElement are relative to its placement.
  * @public
@@ -50,6 +55,8 @@ export class Placement3d implements Placement3dProps {
   public get rotation(): Matrix3d { return this.angles.toMatrix3d(); }
   /** Get the transform from local coordinates of this placement to world coordinates. */
   public get transform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.rotation); }
+  /** determine if this is 3d placement */
+  public get is3d(): boolean { return true; }
 
   /** Create a new Placement3d from a Placement3dProps. */
   public static fromJSON(json?: Placement3dProps): Placement3d {
@@ -115,6 +122,8 @@ export class Placement2d implements Placement2dProps {
     const props: any = json ? json : {};
     return new Placement2d(Point2d.fromJSON(props.origin), Angle.fromJSON(props.angle), Range2d.fromJSON(props.bbox));
   }
+  /** determine if this is 3d placement */
+  public get is3d(): boolean { return false; }
 
   /** Get the 8 corners, in world coordinates, of this placement. */
   public getWorldCorners(out?: Frustum): Frustum {

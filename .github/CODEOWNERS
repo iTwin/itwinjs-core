@@ -120,7 +120,9 @@ rush.json       @calebmshafer @scsewall
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
 /core/frontend                  @imodeljs/admins
 /core/frontend/src/render       @imodeljs/display
+/core/frontend/src/test/render  @imodeljs/display
 /core/frontend/src/tile         @imodeljs/display
+/core/frontend/src/test/tile    @imodeljs/display
 /core/frontend-devtools         @imodeljs/display
 /core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
 /core/hypermodeling             @bbastings @pmconne

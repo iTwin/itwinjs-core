@@ -108,8 +108,8 @@ describe("CategoryVisibilityHandler", () => {
     viewManagerMock.reset();
     viewManagerMock.setup((x) => x.selectedView).returns(() => selectedViewMock.object);
     viewManagerMock
-      .setup((x) => x.forEachViewport(moq.It.isAny())) // eslint-disable-line deprecation/deprecation
-      .callback((action) => action(viewport))
+      .setup((x) => x[Symbol.iterator]())
+      .returns(() => [viewport as ScreenViewport][Symbol.iterator]())
       .verifiable(times);
   };
 
@@ -129,6 +129,10 @@ describe("CategoryVisibilityHandler", () => {
   describe("changeVisibility", () => {
 
     it("calls enableCategory", async () => {
+      viewManagerMock
+        .setup((x) => x[Symbol.iterator]())
+        .returns(() => [][Symbol.iterator]());
+
       const enableCategorySpy = sinon.spy(CategoryVisibilityHandler, "enableCategory");
       await using(createHandler({ activeView: mockViewport().object }), async (handler) => {
         await handler.changeVisibility(categoryNode, categoryKey, true);

@@ -915,7 +915,30 @@
       ]
     },
     {
-      "name": "imodel-transformer tests",
+      "name": "imodel-transformer (app)",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/test-apps/imodel-transformer",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "start",
+        "--",
+        "--hub=qa",
+        "--sourceContextId='ec002f93-f0c1-4ab3-a407-351848eba233'",
+        "--sourceIModelId='73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a'",
+        "--logChangeSets=true",
+        "--logNamedVersions=true",
+      ],
+      "outFiles": [
+        "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "imodel-transformer (tests)",
       "presentation": {
         "group": "6_Misc"
       },
