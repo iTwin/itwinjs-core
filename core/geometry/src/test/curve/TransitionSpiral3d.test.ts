@@ -814,7 +814,7 @@ describe("TransitionSpiral3d", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "AlexGStroking");
   });
-  it.only("AlexGSamples", () => {
+  it("AlexGSamples", () => {
     const ck = new Checker();
     const directoryPath = "./src/test/testInputs/curve/AlexGSpiral/AlexG0421";
     const fileList = fs.readdirSync(directoryPath);
