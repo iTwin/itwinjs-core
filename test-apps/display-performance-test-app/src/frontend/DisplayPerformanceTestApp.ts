@@ -449,7 +449,7 @@ async function waitForTilesToLoad(modelLocation?: string) {
     const sceneContext = theViewport!.createSceneContext();
     activeViewState.viewState!.createScene(sceneContext);
     sceneContext.requestMissingTiles();
-    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles || 0 < sceneContext.missingTiles.size;
+    haveNewTiles = !(theViewport!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles || 0 < sceneContext.missingTiles.size;
 
     if (!haveNewTiles) {
       // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports. Check those too.

@@ -11,7 +11,7 @@ import {
   BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps,
   DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode,
   GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings, RenderTexture, SkyBoxImageType, SkyBoxProps,
-  SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
+  SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -23,7 +23,7 @@ import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
+import { getCesiumOSMBuildingsUrl, MapCartoRectangle, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 
@@ -39,7 +39,7 @@ export class TerrainDisplayOverrides {
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
   public static get className() { return "DisplayStyle"; }
-  private readonly _backgroundDrapeMap: MapTileTreeReference;
+
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
   private _scheduleScript?: RenderScheduleState.Script;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
@@ -58,9 +58,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     const styles = this.jsonProperties.styles;
-    const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || {});
-    const mapImagery = MapImagerySettings.fromJSON(styles?.mapImagery, mapSettings.toJSON());
-    this._backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, true);
 
     if (styles) {
       if (styles.contextRealityModels)
@@ -90,9 +87,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get displayTerrain() {
     return this.viewFlags.backgroundMap && this.settings.backgroundMap.applyTerrain;
   }
-
-  /** @internal */
-  public get backgroundDrapeMap(): MapTileTreeReference { return this._backgroundDrapeMap; }
 
   /** @internal */
   public get globeMode(): GlobeMode { return this.settings.backgroundMap.globeMode; }
@@ -129,12 +123,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.onMapSettingsChanged.raiseEvent(newSettings);
     this.backgroundMapSettings = newSettings;
     if (props.providerName !== undefined || props.providerData?.mapType !== undefined) {
-      const mapBase = MapLayerSettings.fromMapSettings(this.backgroundMapSettings);
-      this._backgroundDrapeMap.setBaseLayerSettings(mapBase);
+      const mapBase = MapLayerSettings.fromMapSettings(newSettings);
       this.settings.mapImagery.backgroundBase = mapBase;
     }
-    // The settings change may cause a different tree to be used... make sure its imagery is in synch.
-    this._backgroundDrapeMap.clearLayers();
   }
 
   /** @beta
@@ -640,8 +631,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /* @internal */
   private _synchBackgroundMapImagery() {
-    this._backgroundDrapeMap.setBaseLayerSettings(this.settings.mapImagery.backgroundBase);
-    this._backgroundDrapeMap.setLayerSettings(this.settings.mapImagery.backgroundLayers);
     this.onMapImageryChanged.raiseEvent(this.settings.mapImagery);
     this.settings.synchMapImagery();
   }
@@ -734,13 +723,31 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getIsBackgroundMapVisible(): boolean {
     return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
   }
+  public get backgroundMapElevationBias(): number {
+    if (this.backgroundMapSettings.applyTerrain) {
+      const terrainSettings = this.backgroundMapSettings.terrainSettings;
+      switch (terrainSettings.heightOriginMode) {
+        case TerrainHeightOriginMode.Ground:
+          return terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.backgroundMapLocation.projectCenterAltitude;
+
+        case TerrainHeightOriginMode.Geodetic:
+          return terrainSettings.heightOrigin;
+
+        case TerrainHeightOriginMode.Geoid:
+          return terrainSettings.heightOrigin + this.iModel.backgroundMapLocation.geodeticToSeaLevel;
+      }
+    } else {
+      return this.backgroundMapSettings.groundBias;
+    }
+
+  }
 
   /** @internal */
   public getBackgroundMapGeometry(): BackgroundMapGeometry | undefined {
     if (undefined === this.iModel.ecefLocation)
       return undefined;
 
-    const bimElevationBias = 0.0; // TBD. this.backgroundMapElevationBias;
+    const bimElevationBias = this.backgroundMapElevationBias;
 
     const globeMode = this.globeMode;
     if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias) {
@@ -804,10 +811,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   protected registerSettingsEventListeners(): void {
     this.settings.onScheduleScriptPropsChanged.addListener((timeline) => {
       this._scheduleScript = timeline ? RenderScheduleState.Script.fromJSON(this.id, timeline) : undefined;
-    });
-
-    this.settings.onBackgroundMapChanged.addListener((mapSettings: BackgroundMapSettings) => {
-      this._backgroundDrapeMap.settings = mapSettings;
     });
 
     this.settings.onRealityModelPlanarClipMaskChanged.addListener((id: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => {

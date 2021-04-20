@@ -8,64 +8,62 @@
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { BackgroundMapSettings, MapImagerySettings, MapLayerSettings } from "@bentley/imodeljs-common";
-import { MapLayerImageryProvider, MapTileTree, Viewport } from "../../imodeljs-frontend";
+import { MapLayerImageryProvider, Viewport } from "../../imodeljs-frontend";
 import { TiledGraphicsProvider } from "../TiledGraphicsProvider";
 import { TileTreeReference } from "../TileTreeReference";
 import { MapTileTreeReference } from "./MapTileTree";
 
 /** @internal */
 export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
-  private _backgroundMap: MapTileTreeReference;
-  private _overlayMap: MapTileTreeReference;
+  public readonly backgroundMap: MapTileTreeReference;
+  public readonly overlayMap: MapTileTreeReference;
+  public readonly  backgroundDrapeMap: MapTileTreeReference;
 
   public forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void {
     if (viewport.viewFlags.backgroundMap) {
-      func(this._backgroundMap);
-      func(this._overlayMap);
+      func(this.backgroundMap);
+      func(this.overlayMap);
     }
   }
   constructor(private readonly _vp: Viewport) {
     const displayStyle = _vp.displayStyle;
     const mapSettings = displayStyle.backgroundMapSettings;
     const mapImagery = displayStyle.settings.mapImagery;
-    this._backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, false, false, () => displayStyle.overrideTerrainDisplay());
-    this._overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, true, false);
+    this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, false, () => displayStyle.overrideTerrainDisplay());
+    this.overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, _vp.viewportId, true, false);
+    this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel,  _vp.viewportId, false, true);
     displayStyle.onMapSettingsChanged.addListener((settings: BackgroundMapSettings) => {
-      this._backgroundMap.setBaseLayerSettings( MapLayerSettings.fromMapSettings(settings));
-      this._backgroundMap.clearLayers();
+      const mapBase = MapLayerSettings.fromMapSettings(settings);
+      this.backgroundMap.setBaseLayerSettings(mapBase);
+      this.backgroundDrapeMap.setBaseLayerSettings(mapBase);
+      this.backgroundMap.clearLayers();
+      this.backgroundDrapeMap.clearLayers();
     });
     displayStyle.onMapImageryChanged.addListener((imagery: MapImagerySettings) => {
-      this._backgroundMap.setBaseLayerSettings(imagery.backgroundBase);
-      this._backgroundMap.setLayerSettings(imagery.backgroundLayers);
-      this._overlayMap.setLayerSettings(imagery.overlayLayers);
+      this.backgroundMap.setBaseLayerSettings(imagery.backgroundBase);
+      this.backgroundMap.setLayerSettings(imagery.backgroundLayers);
+      this.backgroundDrapeMap.setBaseLayerSettings(mapImagery.backgroundBase);
+      this.backgroundDrapeMap.setLayerSettings(mapImagery.backgroundLayers);
+      this.overlayMap.setLayerSettings(imagery.overlayLayers);
     });
     displayStyle.settings.onBackgroundMapChanged.addListener((settings: BackgroundMapSettings) => {
-      this._backgroundMap.settings = this._overlayMap.settings = settings;
+      this.backgroundMap.settings = this.overlayMap.settings = settings;
+      this.backgroundDrapeMap.settings = mapSettings;
     });
   }
   /** @internal */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined {
-    const imageryTreeRef = isOverlay ? this._overlayMap.getLayerImageryTreeRef(index) : this._backgroundMap.getLayerImageryTreeRef(index);
+    const imageryTreeRef = isOverlay ? this.overlayMap.getLayerImageryTreeRef(index) : this.backgroundMap.getLayerImageryTreeRef(index);
     return imageryTreeRef?.imageryProvider;
   }
 
   /** @internal */
   public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
     let mapLayer;
-    if (undefined === (mapLayer = this._backgroundMap.layerFromTreeModelIds(mapTreeId, layerTreeId)))
-      mapLayer = this._overlayMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
+    if (undefined === (mapLayer = this.backgroundMap.layerFromTreeModelIds(mapTreeId, layerTreeId)))
+      mapLayer = this.overlayMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
 
     return mapLayer;
-  }
-  /** @internal */
-  public get backgroundMapElevationBias(): number {
-    let bimElevationBias = this._vp.displayStyle.backgroundMapSettings.groundBias;
-    const mapTree = this._backgroundMap.treeOwner.load() as MapTileTree;
-
-    if (mapTree !== undefined)
-      bimElevationBias = mapTree.bimElevationBias;    // Terrain trees calculate their bias when loaded (sea level or ground offset).
-
-    return bimElevationBias;
   }
 }
 

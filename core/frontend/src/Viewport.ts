@@ -48,7 +48,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { SheetViewState } from "./SheetViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { DisclosedTileTreeSet, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
+import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
 import { MapTiledGraphicsProvider } from "./tile/map/MapTiledGraphicsProvider";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -820,6 +820,18 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.changeBackgroundMapProps(props);
   }
 
+  /** @internal */
+  public get backgroundMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundMap; }
+
+  /** @internal */
+  public get overlayMap(): MapTileTreeReference  | undefined { return this._mapTiledGraphicsProvider?.overlayMap; }
+
+  /** @internal */
+  public get backgroundDrapeMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundDrapeMap; }
+
+  /** @internal */
+  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined  { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
+
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
 
@@ -969,6 +981,8 @@ export abstract class Viewport implements IDisposable {
         promises.push(tree.getToolTip(hit));
       });
     }
+    this.forEachMapTreeRef(async (tree) => promises.push(tree.getToolTip(hit)));
+
     const results = await Promise.all(promises);
     for (const result of results)
       if (result !== undefined)
@@ -1370,6 +1384,16 @@ export abstract class Viewport implements IDisposable {
     this.forEachMapTreeRef(func);
   }
 
+  /** Returns true if all [[TileTree]]s required by this viewport have been loaded. */
+  public get areAllTileTreesLoaded(): boolean {
+    let allLoaded = true;
+    this.forEachTileTreeRef((ref) => {
+      allLoaded = allLoaded && ref.isLoadingComplete;
+    });
+
+    return allLoaded;
+  }
+
   /** Disclose *all* TileTrees currently in use by this Viewport. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
@@ -1418,10 +1442,6 @@ export abstract class Viewport implements IDisposable {
     this.forEachTileTreeRef((ref) => ref.getTerrainHeight(heightRange));
     return heightRange;
   }
-  public get backgroundMapElevationBias(): number {
-    return this._mapTiledGraphicsProvider ? this._mapTiledGraphicsProvider.backgroundMapElevationBias : 0;
-  }
-
   /** @internal */
   public setViewedCategoriesPerModelChanged(): void {
     this._changeFlags.setViewedCategoriesPerModel();

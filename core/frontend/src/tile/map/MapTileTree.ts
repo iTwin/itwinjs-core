@@ -361,7 +361,7 @@ export class MapTileTree extends RealityTileTree {
 }
 
 interface MapTreeId {
-  uniqueId: number;
+  viewportId: number;
   applyTerrain: boolean;
   terrainProviderName: TerrainProviderName;
   terrainHeightOrigin: number;
@@ -406,7 +406,7 @@ class MapTreeSupplier implements TileTreeSupplier {
   public readonly isEcefDependent = true;
 
   public compareTileTreeIds(lhs: MapTreeId, rhs: MapTreeId): number {
-    let cmp = compareNumbers(lhs.uniqueId, rhs.uniqueId);
+    let cmp = compareNumbers(lhs.viewportId, rhs.viewportId);
     if (0 === cmp) {
       cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
       if (0 === cmp) {
@@ -506,7 +506,6 @@ class MapTreeSupplier implements TileTreeSupplier {
 }
 
 const mapTreeSupplier = new MapTreeSupplier();
-let mapTreeReferenceId = 0;
 
 /** @internal */
 type CheckTerrainDisplayOverride = () => TerrainDisplayOverrides | undefined;
@@ -515,7 +514,7 @@ type CheckTerrainDisplayOverride = () => TerrainDisplayOverrides | undefined;
  * @internal
  */
 export class MapTileTreeReference extends TileTreeReference {
-  private _uniqueId: number;
+  private _viewportId: number;
   private _settings: BackgroundMapSettings;
   private readonly _iModel: IModelConnection;
   private _baseImageryLayerIncluded = false;
@@ -525,9 +524,9 @@ export class MapTileTreeReference extends TileTreeReference {
   private _symbologyOverrides: FeatureSymbology.Overrides | undefined;
   private _planarClipMask?: PlanarClipMaskState;
 
-  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, public isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
+  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, viewportId: number, public isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
     super();
-    this._uniqueId = mapTreeReferenceId++;
+    this._viewportId = viewportId;
     this._settings = settings;
     this._iModel = iModel;
     let tree;
@@ -625,7 +624,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public get treeOwner(): TileTreeOwner {
     const id = {
-      uniqueId: this._uniqueId,
+      viewportId: this._viewportId,
       applyTerrain: this.settings.applyTerrain && !this.isOverlay && !this._isDrape,
       terrainProviderName: this.settings.terrainSettings.providerName,
       terrainHeightOrigin: this.settings.terrainSettings.heightOrigin,
