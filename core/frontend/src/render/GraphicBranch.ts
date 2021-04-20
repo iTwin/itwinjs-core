@@ -81,14 +81,20 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
 }
 
 /** Options passed to [[RenderSystem.createGraphicBranch]].
- * @internal
+ * @public
  */
 export interface GraphicBranchOptions {
+  /** Clip applied to the graphics in the branch. */
   clipVolume?: RenderClipVolume;
+  /** @internal */
   classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
+  /** Optionally replaces the view's hidden line settings when drawing the branch. */
   hline?: HiddenLine.Settings;
+  /** The iModel from which the graphics originate, if different than that associated with the view. */
   iModel?: IModelConnection;
+  /** @internal */
   frustum?: GraphicBranchFrustum;
+  /** Supplements the view's [[FeatureSymbology.Overrides]] for graphics in the branch. */
   appearanceProvider?: FeatureAppearanceProvider;
 }
 
@@ -103,11 +109,6 @@ export class AnimationBranchState {
     this.transform = transform;
     this.clip = clip;
     this.omit = omit;
-  }
-
-  public dispose(): void {
-    if (this.clip)
-      this.clip.dispose();
   }
 }
 

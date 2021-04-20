@@ -37,7 +37,7 @@ import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRela
 import { assert } from "@bentley/bentleyjs-core";
 
 /** Properties for [[VirtualizedPropertyGrid]] React component
- * @alpha
+ * @beta
  */
 export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
   model: IPropertyGridModel;
@@ -125,7 +125,7 @@ const [
 
 /**
  * VirtualizedPropertyGrid React component.
- * @alpha
+ * @beta
  */
 export class VirtualizedPropertyGrid extends React.Component<VirtualizedPropertyGridProps, VirtualizedPropertyGridState> {
   private _listRef = React.createRef<VariableSizeList>();

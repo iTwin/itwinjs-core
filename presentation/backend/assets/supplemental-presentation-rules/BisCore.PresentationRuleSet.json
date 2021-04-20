@@ -188,10 +188,24 @@
       ]
     },
     {
-      "ruleType": "LabelOverride",
+      "ruleType": "InstanceLabelOverride",
       "onlyIfNotHandled": true,
-      "condition": "ThisNode.IsInstanceNode ANDALSO this.IsOfClass(\"Model\", \"BisCore\")",
-      "label": "this.GetRelatedDisplayLabel(\"BisCore:ModelModelsElement\", \"Forward\", \"BisCore:Element\")"
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Model"
+      },
+      "values": [
+        {
+          "specType": "RelatedInstanceLabel",
+          "pathToRelatedInstance": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ModelModelsElement"
+            },
+            "direction": "Forward"
+          }
+        }
+      ]
     },
     {
       "ruleType": "ContentModifier",
@@ -421,7 +435,7 @@
                 "schemaName": "BisCore",
                 "classNames": [
                   "ElementOwnsMultiAspects",
-                  "ElementOwnsUniqueAspects"
+                  "ElementOwnsUniqueAspect"
                 ]
               },
               "requiredDirection": "Forward",
@@ -461,7 +475,7 @@
                 "schemaName": "BisCore",
                 "classNames": [
                   "ElementOwnsMultiAspects",
-                  "ElementOwnsUniqueAspects"
+                  "ElementOwnsUniqueAspect"
                 ]
               },
               "requiredDirection": "Forward",

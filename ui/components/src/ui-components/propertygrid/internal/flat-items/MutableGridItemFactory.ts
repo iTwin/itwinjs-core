@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 /** @packageDocumentation
  * @module PropertyGrid
  */
@@ -17,7 +16,7 @@ import { CategoryRecordsDict, MutableGridCategory } from "./MutableGridCategory"
 
 /**
  * IMutableGridItemFactory interface for creating MutableGridItem objects
- * @alpha
+ * @beta
  */
 export interface IMutableGridItemFactory {
   createCategorizedProperty: (
@@ -39,7 +38,7 @@ export interface IMutableGridItemFactory {
 
 /**
  * Implementation of IMutableGridItemFactory for creating MutableGridItem objects.
- * @alpha
+ * @beta
  */
 export class MutableGridItemFactory implements IMutableGridItemFactory {
   protected createPrimitiveProperty(

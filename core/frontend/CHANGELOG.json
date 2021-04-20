@@ -2,6 +2,108 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.14.3",
+      "tag": "@bentley/imodeljs-frontend_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/imodeljs-frontend_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix imports in CheckpointConnection.ts to not reference own barrel"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/imodeljs-frontend_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix raster view attachments using black background color."
+          },
+          {
+            "comment": "Fix delay before raster view attachments appear in a sheet view."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/imodeljs-frontend_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Polish up InteractiveEditingSession API and promote to beta."
+          },
+          {
+            "comment": "rework Authentication to use IpcHost"
+          },
+          {
+            "comment": "Fixed isAuthorized check. "
+          },
+          {
+            "comment": "Fix GPU Profiler for display-test-app"
+          },
+          {
+            "comment": "Grid drawing code"
+          },
+          {
+            "comment": "fixed z for edges and polylines when extended behind the eye"
+          },
+          {
+            "comment": "Don't use GCS to align reality model if not in project vicinity."
+          },
+          {
+            "comment": "Refine test for calculating pixel size for tile sphere"
+          },
+          {
+            "comment": "Fix Viewport.turnCameraOn to invoke setupFromView, and add Viewport.turnCameraOff."
+          },
+          {
+            "comment": "Fix shader bug in function unpackFloat which affected iOS unpacking floats precisely."
+          },
+          {
+            "comment": "MapLayerImageryProviders now handle 401 errors."
+          },
+          {
+            "comment": "Quick grid performance fix from Earlin."
+          },
+          {
+            "comment": "fix check in cartographicToDbFromGcs which causes certain locations to query GCS when they should not."
+          },
+          {
+            "comment": "Refactor attribution logo cards and add OpenStreetMap building attribution"
+          },
+          {
+            "comment": "Update Quantity Formatter to support UnitFormattingSettingsProvider for persisting and retrieving unit format settings."
+          },
+          {
+            "comment": "Use ProcessDetector.isMobileBrowser to detect mobile frontends."
+          },
+          {
+            "comment": "Align scheduling of tile content requests more closely with capabilities of HTTP and RPC."
+          },
+          {
+            "comment": "Support for Bump Tool Settings"
+          },
+          {
+            "comment": "Add missing ViewState.viewFlags setter."
+          },
+          {
+            "comment": "Simplified web app signIn, following the pattern established for desktops. The logic for silent signin has now been moved to WebViewerApp. "
+          }
+        ]
+      }
+    },
+    {
       "version": "2.13.0",
       "tag": "@bentley/imodeljs-frontend_v2.13.0",
       "date": "Tue, 09 Mar 2021 20:28:13 GMT",

@@ -19,7 +19,7 @@ import { CommonPropertyGridProps } from "./PropertyGridCommons";
 import { VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
 
 /** Properties for [[VirtualizedPropertyGridWithDataProvider]] React component
- * @alpha
+ * @beta
  */
 export interface VirtualizedPropertyGridWithDataProviderProps extends CommonPropertyGridProps {
   dataProvider: IPropertyDataProvider;
@@ -34,7 +34,7 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
 /**
  * VirtualizedPropertyGrid React Component which takes dataProvider and
  * sets up default implementations for IPropertyGridModelSource nad IPropertyGridEventHandler
- * @alpha
+ * @beta
  */
 export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps) {
   // eslint-disable-next-line deprecation/deprecation

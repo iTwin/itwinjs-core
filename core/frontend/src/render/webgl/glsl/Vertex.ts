@@ -11,6 +11,7 @@ import { DrawParams } from "../DrawCommand";
 import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
 import { RenderPass, TextureUnit } from "../RenderFlags";
+import { IsInstanced } from "../TechniqueFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
 import { decodeUint16, decodeUint24 } from "./Decode";
@@ -125,8 +126,14 @@ const computeNormalMatrix2 = `
   g_nmx[1][1] *= u_frustumScale.y;
 `;
 
+const computeNormalMatrix1Inst = `
+  g_nmx = mat3(MAT_MV);
+  g_nmx[0][0] *= u_frustumScale.x;
+  g_nmx[1][1] *= u_frustumScale.y;
+`;
+
 /** @internal */
-export function addNormalMatrix(vert: VertexShaderBuilder) {
+export function addNormalMatrix(vert: VertexShaderBuilder, instanced: IsInstanced) {
   vert.addGlobal("g_nmx", VariableType.Mat3);
   vert.addUniform("u_frustumScale", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_frustumScale", (uniform, params) => {
@@ -135,9 +142,11 @@ export function addNormalMatrix(vert: VertexShaderBuilder) {
     });
   });
 
-  if (System.instance.capabilities.isWebGL2)
+  if (System.instance.capabilities.isWebGL2) {
     vert.addInitializer(computeNormalMatrix2);
-  else {
+  } else if (IsInstanced.Yes === instanced) {
+    vert.addInitializer(computeNormalMatrix1Inst);
+  } else {
     vert.addUniform("u_modelViewN", VariableType.Mat3, (prog) => {
       prog.addGraphicUniform("u_modelViewN", (uniform, params) => {
         params.target.uniforms.branch.bindModelViewNTransform(uniform, params.geometry, false);

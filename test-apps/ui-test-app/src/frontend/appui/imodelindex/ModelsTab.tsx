@@ -11,9 +11,8 @@ import { NodeKey, RegisteredRuleset } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, DEPRECATED_Tree, TreeNodeItem } from "@bentley/ui-components";
-import { Checkbox, CheckBoxState, LoadingSpinner } from "@bentley/ui-core";
+import { Checkbox, CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@bentley/ui-core";
 import { UiFramework } from "@bentley/ui-framework";
-import { CheckListBox, CheckListBoxItem } from "./CheckListBox";
 
 interface ModelInfo {
   name: string;

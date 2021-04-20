@@ -201,9 +201,10 @@ class RealityModelTileTreeProps {
   public doDrapeBackgroundMap: boolean = false;
   public client: RealityModelTileClient;
   public yAxisUp = false;
+  public root: any;
 
-  constructor(json: any, client: RealityModelTileClient, tilesetTransform: Transform) {
-    this.tilesetJson = json.root;
+  constructor(json: any, root: any, client: RealityModelTileClient, tilesetTransform: Transform) {
+    this.tilesetJson = root;
     this.client = client;
     this.location = tilesetTransform;
     this.doDrapeBackgroundMap = (json.root && json.root.SMMasterHeader && SMTextureType.Streaming === json.root.SMMasterHeader.IsTextured);
@@ -280,6 +281,56 @@ class FindChildResult {
 }
 
 /** @internal */
+function assembleUrl(prefix: string, url: string): string {
+
+  if (url.startsWith("./")) {
+    url = url.substring(2);
+  } else {
+    const prefixParts = prefix.split("/");
+    prefixParts.pop();
+    while (url.startsWith("../")) {
+      prefixParts.pop();
+      url = url.substring(3);
+    }
+    prefixParts.push("");
+    prefix = prefixParts.join("/");
+  }
+  return prefix + url;
+}
+
+/** @internal */
+function addUrlPrefix(subTree: any, prefix: string) {
+  if (undefined === subTree)
+    return;
+
+  if (undefined !== subTree.content) {
+    if (undefined !== subTree.content.url)
+      subTree.content.url = assembleUrl(prefix, subTree.content.url);
+    else if (undefined !== subTree.content.uri)
+      subTree.content.uri = assembleUrl(prefix, subTree.content.uri);
+  }
+
+  if (undefined !== subTree.children)
+    for (const child of subTree.children)
+      addUrlPrefix(child, prefix);
+}
+
+/** @internal */
+async function expandSubTree(root: any, client: RealityModelTileClient): Promise<any> {
+  const childUrl = getUrl(root.content);
+  if (undefined !== childUrl && childUrl.endsWith("json")) {    // A child may contain a subTree...
+    const subTree = await client.getTileJson(childUrl);
+    const prefixIndex = childUrl.lastIndexOf("/");
+    if (prefixIndex > 0)
+      addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
+
+    return subTree.root;
+  } else {
+    return root;
+  }
+}
+
+/** @internal */
 class RealityModelTileLoader extends RealityTileLoader {
   public readonly tree: RealityModelTileTreeProps;
   private readonly _batchedIdMap?: BatchedTileIdMap;
@@ -343,22 +394,6 @@ class RealityModelTileLoader extends RealityTileLoader {
     return this.tree.client.getTileContent(getUrl(foundChild.json.content));
   }
 
-  private addUrlPrefix(subTree: any, prefix: string) {
-    if (undefined === subTree)
-      return;
-
-    if (undefined !== subTree.content) {
-      if (undefined !== subTree.content.url)
-        subTree.content.url = prefix + subTree.content.url;
-      else if (undefined !== subTree.content.uri)
-        subTree.content.uri = prefix + subTree.content.uri;
-    }
-
-    if (undefined !== subTree.children)
-      for (const child of subTree.children)
-        this.addUrlPrefix(child, prefix);
-  }
-
   private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform): Promise<FindChildResult | undefined> {
     if (id.length === 0)
       return new FindChildResult(id, tilesetJson, transformToRoot);    // Root.
@@ -372,7 +407,7 @@ class RealityModelTileLoader extends RealityTileLoader {
       return undefined;
     }
 
-    let foundChild = tilesetJson.children[childIndex];
+    const foundChild = tilesetJson.children[childIndex];
     const thisParentId = parentId.length ? (`${parentId}_${childId}`) : childId;
     if (foundChild.transform) {
       const thisTransform = RealityModelTileUtils.transformFromJson(foundChild.transform);
@@ -383,17 +418,9 @@ class RealityModelTileLoader extends RealityTileLoader {
       return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId, transformToRoot);
     }
 
-    const childUrl = getUrl(foundChild.content);
-    if (undefined !== childUrl && childUrl.endsWith("json")) {    // A child may contain a subTree...
-      const subTree = await this.tree.client.getTileJson(childUrl);
-      const prefixIndex = childUrl.lastIndexOf("/");
-      if (prefixIndex > 0)
-        this.addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
-      foundChild = subTree.root;
-      tilesetJson.children[childIndex] = subTree.root;
-    }
+    tilesetJson.children[childIndex] = await expandSubTree(foundChild, this.tree.client);
 
-    return new FindChildResult(thisParentId, foundChild, transformToRoot);
+    return new FindChildResult(thisParentId,  tilesetJson.children[childIndex], transformToRoot);
   }
 }
 
@@ -537,7 +564,8 @@ export namespace RealityModelTileTree {
     if (undefined !== tilesetToDbJson)
       rootTransform = Transform.fromJSON(tilesetToDbJson).multiplyTransformTransform(rootTransform);
 
-    return new RealityModelTileTreeProps(json, tileClient, rootTransform);
+    const root = await expandSubTree(json.root, tileClient);
+    return new RealityModelTileTreeProps(json, root, tileClient, rootTransform);
   }
 }
 

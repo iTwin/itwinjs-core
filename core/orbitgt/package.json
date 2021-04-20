@@ -1,6 +1,6 @@
 {
   "name": "@bentley/orbitgt-core",
-  "version": "2.15.0-dev.13",
+  "version": "2.16.0-dev.12",
   "description": "",
   "main": "lib/imodeljs-orbitgt.js",
   "typings": "lib/imodeljs-orbitgt",
@@ -15,7 +15,7 @@
     "extract-api": "betools extract-api --entry=imodeljs-orbitgt",
     "lint": "",
     "test": "betools test",
-    "cover": ""
+    "cover": "nyc npm test"
   },
   "repository": {
     "type": "git",
@@ -29,9 +29,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.15.0-dev.13",
-    "@bentley/build-tools": "2.15.0-dev.13",
-    "@bentley/eslint-plugin": "2.15.0-dev.13",
+    "@bentley/bentleyjs-core": "2.16.0-dev.12",
+    "@bentley/build-tools": "2.16.0-dev.12",
+    "@bentley/eslint-plugin": "2.16.0-dev.12",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

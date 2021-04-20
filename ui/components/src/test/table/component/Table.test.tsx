@@ -1448,6 +1448,14 @@ describe("Table", () => {
         label: "Lorem",
         filterRenderer: FilterRenderer.Text,
       },
+      {
+        key: "multi-value",
+        label: "Multi-Value",
+        filterable: true,
+        filterRenderer: FilterRenderer.MultiValue,
+        showDistinctValueFilters: true,
+        showFieldFilters: true,
+      },
     ];
 
     // cSpell:disable
@@ -1490,6 +1498,10 @@ describe("Table", () => {
         key: filteringColumns[3].key,
         record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], filteringColumns[3], "text"),
       });
+      row.cells.push({
+        key: filteringColumns[4].key,
+        record: TestUtils.createPropertyRecord(`Multi-Value ${i}`, filteringColumns[4], "text"),
+      });
       return row;
     };
 
@@ -1526,7 +1538,7 @@ describe("Table", () => {
 
     it("should create two row headers", async () => {
       expect(filterTable.find("div.react-grid-HeaderRow").length).to.eq(2);
-      expect(filterTable.find("div.react-grid-HeaderCell").length).to.eq(8);
+      expect(filterTable.find("div.react-grid-HeaderCell").length).to.eq(10);
       // expect(filterTable.find("input.input-sm").length).to.eq(2);
       // expect(filterTable.find("div.Select").length).to.eq(2);
 

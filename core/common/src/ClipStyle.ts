@@ -8,12 +8,13 @@
 
 import { assert, JsonUtils } from "@bentley/bentleyjs-core";
 import { ViewFlagOverrides, ViewFlagOverridesProps } from "./ViewFlags";
+import { RgbColor, RgbColorProps } from "./RgbColor";
 import { HiddenLine } from "./HiddenLine";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 
 /** Wire format describing a [[CutStyle]] applied to section-cut geometry produced at intersections with a view's [ClipVector]($geometry-core).
  * @see [[ClipStyleProps.cutStyle]].
- * @beta
+ * @public
  */
 export interface CutStyleProps {
   /** If defined, overrides aspects of the view's [[ViewFlags]] when drawing the cut geometry. */
@@ -26,7 +27,7 @@ export interface CutStyleProps {
 
 /** As part of a [[ClipStyle]], describes how section-cut graphics should be displayed.
  * @note Section-cut graphics are only produced if [[ClipStyle.produceCutGeometry]] is `true`.
- * @beta
+ * @public
  */
 export class CutStyle {
   /** Selectively overrides some of the view's [[ViewFlags]] when drawing the section-cut graphics. */
@@ -97,7 +98,7 @@ export class CutStyle {
 
 /** Wire format describing a [[ClipStyle]].
  * @see [[DisplayStyleSettingsProps.clipStyle]].
- * @beta
+ * @public
  */
 export interface ClipStyleProps {
   /** If `true`, geometry will be produced at the clip planes in a 3d view.
@@ -108,11 +109,15 @@ export interface ClipStyleProps {
   produceCutGeometry?: boolean;
   /** Controls aspects of how the cut geometry is displayed, if [[produceCutGeometry]] is `true`. */
   cutStyle?: CutStyleProps;
+  /** If defined, geometry inside the clip planes will be drawn in this color. */
+  insideColor?: RgbColorProps;
+  /** If defined, geometry outside of the clip planes will be drawn in this color instead of being clipped. */
+  outsideColor?: RgbColorProps;
 }
 
 /** Describes symbology and behavior applied to a [ClipVector]($geometry-core) when applied to a [ViewState]($frontend) or [[ModelClipGroup]].
  * @see [[DisplayStyleSettings.clipStyle]].
- * @beta
+ * @public
  */
 export class ClipStyle {
   /** If `true`, geometry will be produced at the clip planes.
@@ -123,31 +128,40 @@ export class ClipStyle {
   public readonly produceCutGeometry: boolean;
   /** Controls aspects of how the cut geometry is displayed, if [[produceCutGeometry]] is `true`. */
   public readonly cutStyle: CutStyle;
-  /** The default style, which overrides none of the view's settings. */
-  public static readonly defaults = new ClipStyle(false, CutStyle.defaults);
+  /** If defined, geometry inside the clip planes will be drawn in this color. */
+  public readonly insideColor?: RgbColor;
+  /** If defined, geometry outside of the clip planes will be drawn in this color instead of being clipped. */
+  public readonly outsideColor?: RgbColor;
 
-  private constructor(produceCutGeometry: boolean, cutStyle: CutStyle) {
+  /** The default style, which overrides none of the view's settings. */
+  public static readonly defaults = new ClipStyle(false, CutStyle.defaults, undefined, undefined);
+
+  private constructor(produceCutGeometry: boolean, cutStyle: CutStyle, inside: RgbColor | undefined, outside: RgbColor | undefined) {
     this.produceCutGeometry = produceCutGeometry;
     this.cutStyle = cutStyle;
+    this.insideColor = inside;
+    this.outsideColor = outside;
   }
 
   /** Create a style from its components. */
-  public static create(produceCutGeometry: boolean, cutStyle: CutStyle): ClipStyle {
-    if (!produceCutGeometry && cutStyle.matchesDefaults)
+  public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle {
+    if (!produceCutGeometry && cutStyle.matchesDefaults && !insideColor && !outsideColor)
       return this.defaults;
 
-    return new ClipStyle(produceCutGeometry, cutStyle);
+    return new ClipStyle(produceCutGeometry, cutStyle, insideColor, outsideColor);
   }
 
   public static fromJSON(props?: ClipStyleProps): ClipStyle {
     if (JsonUtils.isNonEmptyObject(props)) {
       const produceCutGeometry = props.produceCutGeometry ?? false;
       const cutStyle = CutStyle.fromJSON(props.cutStyle);
+      const inside = props.insideColor ? RgbColor.fromJSON(props.insideColor) : undefined;
+      const outside = props.outsideColor ? RgbColor.fromJSON(props.outsideColor) : undefined;
 
-      return this.create(produceCutGeometry, cutStyle);
-    } else {
-      return this.defaults;
+      return this.create(produceCutGeometry, cutStyle, inside, outside);
     }
+
+    return this.defaults;
   }
 
   /** The JSON representation of this style. It is `undefined` if this style matches the defaults. */
@@ -165,6 +179,12 @@ export class ClipStyle {
       props.cutStyle = cutStyle;
     }
 
+    if (this.insideColor)
+      props.insideColor = this.insideColor.toJSON();
+
+    if (this.outsideColor)
+      props.outsideColor = this.outsideColor.toJSON();
+
     return props;
   }
 
@@ -173,6 +193,6 @@ export class ClipStyle {
     if (this === ClipStyle.defaults)
       return true;
 
-    return !this.produceCutGeometry && this.cutStyle.matchesDefaults;
+    return !this.produceCutGeometry && !this.insideColor && !this.outsideColor && this.cutStyle.matchesDefaults;
   }
 }
