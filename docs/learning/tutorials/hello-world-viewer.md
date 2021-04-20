@@ -94,7 +94,7 @@ export class MyFirstUiProvider implements UiItemsProvider {
   public provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) : ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
 
-    if (location === StagePanelLocation.Right) {
+    if (location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       const helloWidget: AbstractWidgetProps = {
         id: "HelloWidget",
         label: "Hello",
@@ -111,7 +111,7 @@ export class MyFirstUiProvider implements UiItemsProvider {
 }
 ```
 
-Let's review that code.  We've defined our new ```MyFirstUiProvider``` class.  In the new class we've defined ``` public readonly id ``` which is required to distinguish between different providers.  Then notice that we've defined just one function called ``` provideWidgets ```.  This function will be called several times as the ```Viewer``` is building up the user interface.  We will return an empty array except for when the ```location``` is equal to ```StagePanelLocation.Right```.  In that case, we will return a single widget that will supply our "Hello World" ```span```.
+Let's review that code.  We've defined our new ```MyFirstUiProvider``` class.  In the new class we've defined ``` public readonly id ``` which is required to distinguish between different providers.  Then notice that we've defined just one function called ``` provideWidgets ```.  This function will be called several times as the ```Viewer``` is building up the user interface.  We will return an empty array except for when the ```location``` is equal to ```StagePanelLocation.Right``` and ```section``` is equal to ```StagePanelSection.Start```.  In that case, we will return a single widget that will supply our "Hello World" ```span```.
 
 Our ```helloWidget``` consists of three attributes:
 
