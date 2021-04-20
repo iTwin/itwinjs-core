@@ -925,7 +925,7 @@ export class Table extends React.Component<TableProps, TableState> {
         propertyValueRendererManager={this.props.propertyValueRendererManager
           ? this.props.propertyValueRendererManager
           : PropertyValueRendererManager.defaultManager}
-        zIndex={((cellItem.mergedCellsCount ?? 1) > 1) ? 1 : undefined}
+        style={{zIndex: ((cellItem.mergedCellsCount ?? 1) > 1) ? 1 : undefined}}
       />
     );
   }
@@ -1049,6 +1049,8 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private createRowCells(rowProps: RowProps, isSelected: boolean): { [columnKey: string]: React.ReactNode } {
     const cells: { [columnKey: string]: React.ReactNode } = {};
+    const visibleColumns = this._getVisibleColumns();
+    const foundHiddenColumns = 0;
 
     for (let index = 0; index < this.state.columns.length; index++) {
       const column = this.state.columns[index];
@@ -1129,7 +1131,7 @@ export class Table extends React.Component<TableProps, TableState> {
             propertyRecord: cellProps.item.record!,
             setFocus: true,
           } : undefined}
-          cellWidth={(columnsNumber && columnsNumber > 1) ? cellWidth : undefined }
+          style={{ width: (columnsNumber && columnsNumber > 1) ? cellWidth : undefined}}
         >
           <CellContent isSelected={isSelected} />
         </TableCell>

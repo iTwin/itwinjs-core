@@ -333,15 +333,20 @@ describe("TableDataProvider", () => {
     });
 
     it("extracts nested fields of sameInstance", async () => {
-      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
+      const childFields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
+      const childNestedField = createRandomNestedContentField(childFields);
+      childNestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
+      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField(), childNestedField];
       const nestedField = createRandomNestedContentField(fields);
       nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
       const descriptor = createRandomDescriptor(undefined, [nestedField]);
       (provider as any).getContentDescriptor = () => descriptor;
       const cols = await provider.getColumns();
-      expect(cols.length).to.be.eq(2);
+      expect(cols.length).to.be.eq(4);
       expect(cols[0].label).to.be.eq(fields[0].label);
       expect(cols[1].label).to.be.eq(fields[1].label);
+      expect(cols[2].label).to.be.eq(childFields[0].label);
+      expect(cols[3].label).to.be.eq(childFields[1].label);
     });
 
     it("memoizes result", async () => {
@@ -504,7 +509,10 @@ describe("TableDataProvider", () => {
     });
 
     it("extracts rows with nested sameInstace field and doesn't set mergedFieldsCount if there is only one value in the nestedField", async () => {
-      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
+      const childFields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
+      const childNestedField = createRandomNestedContentField(childFields);
+      childNestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
+      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField(), childNestedField];
       const nestedField = createRandomNestedContentField(fields);
       nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
       const descriptor = createRandomDescriptor(undefined, [nestedField]);
@@ -514,6 +522,18 @@ describe("TableDataProvider", () => {
           values: {
             [nestedField.nestedFields[0].name]: faker.random.word(),
             [nestedField.nestedFields[1].name]: faker.random.word(),
+            [childNestedField.name]: [{
+              primaryKeys: [createRandomECInstanceKey()],
+              values: {
+                [childFields[0].name]: faker.random.words(),
+                [childFields[1].name]: faker.random.words(),
+              },
+              displayValues: {
+                [childFields[0].name]: faker.random.words(),
+                [childFields[1].name]: faker.random.words(),
+              },
+              mergedFieldNames: [],
+            }] as NestedContentValue[],
           },
           displayValues: {
             [nestedField.nestedFields[0].name]: faker.random.words(),
@@ -540,12 +560,16 @@ describe("TableDataProvider", () => {
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
       (provider as any).getContent = async () => new Content(descriptor, [record]);
       const row = await provider.getRow(0);
-      expect(row.cells.length).to.eq(2);
+      expect(row.cells.length).to.eq(4);
 
       expect(row.cells[0].mergedCellsCount).to.be.undefined;
       expect(row.cells[0].alignment).to.be.undefined;
       expect(row.cells[1].mergedCellsCount).to.be.undefined;
       expect(row.cells[1].alignment).to.be.undefined;
+      expect(row.cells[2].mergedCellsCount).to.be.undefined;
+      expect(row.cells[2].alignment).to.be.undefined;
+      expect(row.cells[3].mergedCellsCount).to.be.undefined;
+      expect(row.cells[3].alignment).to.be.undefined;
     });
 
     it("returns valid row when display type is list", async () => {
