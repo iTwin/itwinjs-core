@@ -7,6 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
+import { RelationshipMeaning } from "../../presentation-common";
 import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
 import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
@@ -380,7 +381,6 @@ export class NestedContentField extends Field {
     nestedFields: Field[],
     editor?: EditorDescription,
     autoExpand?: boolean,
-    relationshipMeaning?: string,
     renderer?: RendererDescription,
   ) {
     super(category, name, label, description, isReadonly, priority, editor, renderer);
@@ -389,7 +389,6 @@ export class NestedContentField extends Field {
     this.relationshipMeaning = RelationshipMeaning.RelatedInstance;
     this.nestedFields = nestedFields;
     this.autoExpand = autoExpand;
-    this.relationshipMeaning = relationshipMeaning;
     this.actualPrimaryClassIds = [];
   }
 
@@ -406,7 +405,6 @@ export class NestedContentField extends Field {
       this.nestedFields,
       this.editor,
       this.autoExpand,
-      this.relationshipMeaning,
       this.renderer,
     );
     clone.actualPrimaryClassIds = this.actualPrimaryClassIds;

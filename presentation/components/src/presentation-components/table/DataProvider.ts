@@ -357,48 +357,85 @@ const extractNestedContentValue = (values: ValuesDictionary<Value>, nestedConten
 };
 
 const extractSameInstanceFields = (fields: Field[]) => {
-  const foundFields: { [field: string]: Field } = {};
   for (let i = 0; i < fields.length; i++) {
     const field = fields[i];
     if (field.isNestedContentField() && field.relationshipMeaning === RelationshipMeaning.SameInstance) {
-      const nestedFields = field.nestedFields.map((nestedField: Field): Field => (
-        new Field(
-          nestedField.category,
-          nestedField.name,
-          nestedField.label,
-          nestedField.type,
-          nestedField.isReadonly,
-          nestedField.priority,
-          nestedField.editor,
-          nestedField.renderer
-        ))
-      );
+      const nestedFields = field.nestedFields.map((nestedField: Field): Field => {
+        nestedField.resetParentship();
+        return nestedField;
+      });
+
+      extractSameInstanceFields(nestedFields);
+      fields.splice(i, 1, ...nestedFields);
+    }
+  }
+};
+
+const extractAndCreateSameInstanceFieldsMap = (fields: Field[]) => {
+  let foundFields: { [field: string]: Field } = {};
+  for (let i = 0; i < fields.length; i++) {
+    const field = fields[i];
+    if (field.isNestedContentField() && field.relationshipMeaning === RelationshipMeaning.SameInstance) {
+      const nestedFields = field.nestedFields.map((nestedField: Field): Field => {
+        nestedField.resetParentship();
+        return nestedField;
+      });
+      const childFoundFields = extractAndCreateSameInstanceFieldsMap(nestedFields);
       const deletedField = fields.splice(i, 1, ...nestedFields)[0];
       foundFields[field.nestedFields[0].name] = deletedField;
+      foundFields = {...foundFields, ...childFoundFields };
     }
   }
   return foundFields;
 };
 
-const extractValues = (values: ValuesDictionary<Value>, fields: string[]) => {
+const extractValues = (values: ValuesDictionary<Value>, sameInstanceNestedFieldNames: string[]) => {
   const mergedFieldsCounts: { [field: string]: number } = {};
-  for (const field of fields) {
-    const value = values[field]! as NestedContentValue[];
-    if (value.length === 1) {
-      const valueMap = value[0].values;
-      // eslint-disable-next-line guard-for-in
-      for (const valueMapKey in valueMap)
-        values[valueMapKey] = valueMap[valueMapKey];
-    }
-    if (value.length > 1) {
-      const keys = Object.keys(value[0].values);
-      const valueMapKey = keys[0];
-      values[valueMapKey] = values[field];
-      mergedFieldsCounts[valueMapKey] = keys.length;
-    }
+  for (const field of sameInstanceNestedFieldNames) {
+    const value = values[field];
+    if (!Value.isNestedContent(value))
+      continue;
+
+    extractNestedContentValue(values, value, mergedFieldsCounts, sameInstanceNestedFieldNames);
+
     delete values[field];
   }
   return mergedFieldsCounts;
+};
+
+const extractNestedContentValue = (values: ValuesDictionary<Value>, nestedContentValue: NestedContentValue[], mergedFieldsCounts: { [field: string]: number }, sameInstanceNestedFieldNames: string[]) => {
+  /* If nestedContentValue has only one value item, then all the values within the item will be extracted. */
+  if (nestedContentValue.length === 1) {
+    /* Get value map from the only item. */
+    const nestedContentValueMap = nestedContentValue[0].values;
+    // eslint-disable-next-line guard-for-in
+    for (const valueMapKey in nestedContentValueMap) {
+      const childValue = nestedContentValueMap[valueMapKey];
+      /**
+       * Check if child value in nested item itself is nested, if it is, try extracting values from it too,
+       * if not, then finish extracting values.
+       */
+      if (Value.isNestedContent(childValue) && sameInstanceNestedFieldNames.includes(valueMapKey))
+        extractNestedContentValue(values, childValue, mergedFieldsCounts, sameInstanceNestedFieldNames);
+      else
+        values[valueMapKey] = nestedContentValueMap[valueMapKey];
+    }
+  }
+  /**
+   * If nestedContentValue has more than one value item, then cells that should have values from extracted item will be merged
+   * while leaving a link that opens a dialog item containing all the values in nestedContentValue.
+   */
+  if (nestedContentValue.length > 1) {
+    const keys = Object.keys(nestedContentValue[0].values);
+    const valueMapKey = keys[0];
+    /* Set the nestedContentValue to be on the first cell that should contain extracted values. */
+    values[valueMapKey] = nestedContentValue;
+    /**
+     * Save information that describes how many cells will have to be merged in order to create this cell.
+     * Using this information, width of the merged cell will be calculated.
+     */
+    mergedFieldsCounts[valueMapKey] = keys.length;
+  }
 };
 
 const createColumn = (field: Readonly<Field>): ColumnDescription => {

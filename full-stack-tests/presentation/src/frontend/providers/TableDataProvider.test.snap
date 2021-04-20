@@ -28,9 +28,7 @@ exports[`TableDataProvider getRow returns first row 1`] = `
 Object {
   "cells": Array [
     Object {
-      "alignment": undefined,
       "key": "pc_bis_Model_ModeledElement",
-      "mergedCellsCount": undefined,
       "record": PropertyRecord {
         "description": "Properties_60InstancesWithUrl2",
         "isReadonly": true,
@@ -59,9 +57,7 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "alignment": undefined,
         "key": "pc_bis_Model_ModeledElement",
-        "mergedCellsCount": undefined,
         "record": PropertyRecord {
           "isReadonly": true,
           "property": Object {
@@ -82,9 +78,7 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "alignment": undefined,
         "key": "pc_bis_Model_ModeledElement",
-        "mergedCellsCount": undefined,
         "record": PropertyRecord {
           "description": "BisCore.DictionaryModel",
           "isReadonly": true,
@@ -109,9 +103,7 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "alignment": undefined,
         "key": "pc_bis_Model_ModeledElement",
-        "mergedCellsCount": undefined,
         "record": PropertyRecord {
           "description": "Properties_60InstancesWithUrl2",
           "isReadonly": true,
@@ -141,9 +133,7 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "alignment": undefined,
         "key": "pc_bis_Model_ModeledElement",
-        "mergedCellsCount": undefined,
         "record": PropertyRecord {
           "description": "Properties_60InstancesWithUrl2",
           "isReadonly": true,
@@ -168,9 +158,7 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "alignment": undefined,
         "key": "pc_bis_Model_ModeledElement",
-        "mergedCellsCount": undefined,
         "record": PropertyRecord {
           "description": "BisCore.DictionaryModel",
           "isReadonly": true,
@@ -195,9 +183,7 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "alignment": undefined,
         "key": "pc_bis_Model_ModeledElement",
-        "mergedCellsCount": undefined,
         "record": PropertyRecord {
           "isReadonly": true,
           "property": Object {
