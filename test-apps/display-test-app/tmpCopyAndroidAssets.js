@@ -5,17 +5,10 @@
 const path = require("path");
 const fs = require("fs-extra");
 
-const winAssets = path.join(__dirname, "node_modules/@bentley/imodeljs-backend/node_modules/@bentley/imodeljs-native/imodeljs-win32-x64/Assets/");
 const app = path.join(process.env.SrcRoot, "imodel02/iModelJsMobile/nonport/android/HelloNode/app/src/main/assets");
-const backend = path.join(app, "backend");
+const backend = path.join(app, "backend")
 const frontend = path.join(app, "frontend")
 
-fs.removeSync(app);
-
-fs.mkdirSync(app);
-
-fs.mkdirSync(backend);
-fs.copySync(winAssets, path.join(backend, "Assets"));
 fs.copySync(path.join(__dirname, "lib/ios/main.js"), path.join(backend, "main.js"))
 
 const mobileAssets = path.join(__dirname, "lib/ios/assets/");
