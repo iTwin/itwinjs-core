@@ -185,7 +185,7 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
   public clone(): ItalianSpiralEvaluator { return new ItalianSpiralEvaluator(this.nominalLength1, this.nominalRadius1, super.axisLength ,this.cubicM); }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
-    if (other instanceof CzechSpiralEvaluator) {
+    if (other instanceof ItalianSpiralEvaluator) {
       return Geometry.isSameCoordinate(this.nominalLength1, other.nominalLength1)
         && Geometry.isSameCoordinate(this.nominalRadius1, other.nominalRadius1);
     }

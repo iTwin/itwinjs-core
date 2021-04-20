@@ -104,7 +104,7 @@ internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
 public;DirectSpiral3d 
-public;DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesterAustralian" | "Czech"
+public;DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesternAustralian" | "Czech" | "MXCubicAlongArc" | "Polish" | "Italian"
 public;DuplicateFacetClusterSelector
 public;Ellipsoid 
 public;EllipsoidPatch 
