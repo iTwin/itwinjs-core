@@ -6,7 +6,7 @@
 import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
   Category, ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions,
-  InformationPartitionElement, PhysicalModel, PhysicalPartition, Relationship, SubCategory
+  InformationPartitionElement, PhysicalModel, PhysicalPartition, Relationship, SubCategory,
 } from "@bentley/imodeljs-backend";
 import { ElementProps, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
