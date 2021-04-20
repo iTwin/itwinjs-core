@@ -11,7 +11,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
@@ -689,9 +689,22 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   }
 
   /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
-  export class Models {
-    /** The set of loaded models for this IModelConnection, indexed by Id. */
-    public loaded = new Map<string, ModelState>();
+  export class Models implements Iterable<ModelState> {
+    private _loaded = new Map<string, ModelState>();
+
+    /** The set of loaded models for this IModelConnection, indexed by Id.
+     * @deprecated Use `for..of` to iterate and getLoaded() to look up by Id.
+     */
+    public get loaded(): Map<string, ModelState> { return this._loaded; }
+    public set loaded(loaded: Map<string, ModelState>) {
+      this._loaded = loaded;
+      assert(false, "there is no reason to replace the map of loaded models");
+    }
+
+    /** An iterator over all currently-loaded models. */
+    public [Symbol.iterator](): Iterator<ModelState> {
+      return this._loaded.values()[Symbol.iterator]();
+    }
 
     /** @internal */
     constructor(private _iModel: IModelConnection) { }
@@ -714,7 +727,9 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     }
 
     /** Find a ModelState in the set of loaded Models by ModelId. */
-    public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
+    public getLoaded(id: string): ModelState | undefined {
+      return this._loaded.get(id);
+    }
 
     /** Given a set of modelIds, return the subset of corresponding models that are not currently loaded.
      * @param modelIds The set of model Ids
@@ -722,14 +737,14 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      */
     public filterLoaded(modelIds: Id64Arg): Id64Set | undefined {
       let unloaded: Set<string> | undefined;
-      Id64.forEach(modelIds, (id) => {
+      for (const id of Id64.iterable(modelIds)) {
         if (undefined === this.getLoaded(id)) {
           if (undefined === unloaded)
             unloaded = new Set<string>();
 
           unloaded.add(id);
         }
-      });
+      }
 
       return unloaded;
     }
@@ -746,12 +761,19 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
           if (undefined === this.getLoaded(props.id!)) { // do not overwrite if someone else loads it while we await
             const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
-            this.loaded.set(modelState.id, modelState); // save it in loaded set
+            this._loaded.set(modelState.id, modelState); // save it in loaded set
           }
         }
       } catch (err) {
         // ignore error, we had nothing to do.
       }
+    }
+
+    /** Remove a model from the set of loaded models. Used internally by BriefcaseConnection in response to txn events.
+     * @internal
+     */
+    public unload(modelId: Id64String): void {
+      this._loaded.delete(modelId);
     }
 
     /** Query for a set of model ranges by ModelIds. */
@@ -807,6 +829,22 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getElementProps(this._iModel.getRpcProps(), [...Id64.toIdSet(arg)]) : [];
+    }
+
+    /** Obtain the properties of a single element, optionally specifying specific properties to include or exclude.
+     * For example, [[getProps]] and [[queryProps]] omit the [GeometryStreamProps]($common) property of [GeometricElementProps]($common) and [GeometryPartProps]($common)
+     * because it can be quite large and is generally not useful to frontend code. The following code requests that the geometry stream be included:
+     * ```ts
+     *  const props = await iModel.elements.loadProps(elementId, { wantGeometry: true });
+     * ```
+     * @param identifier Identifies the element by its Id, federation Guid, or [Code]($common).
+     * @param options Optionally includes or excludes specific properties.
+     * @returns The properties of the requested element; or `undefined` if no element exists with the specified identifier or the iModel is not open.
+     * @throws [IModelError]($common) if the element exists but could not be loaded.
+     */
+    public async loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined> {
+      const imodel = this._iModel;
+      return imodel.isOpen ? IModelReadRpcInterface.getClientForRouting(imodel.routingContext.token).loadElementProps(imodel.getRpcProps(), identifier, options) : undefined;
     }
 
     /** Get an array  of [[ElementProps]] that satisfy a query

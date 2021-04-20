@@ -12,11 +12,11 @@ import { IsAnimated, IsInstanced, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addAnimation } from "./Animation";
 import { addColor } from "./Color";
-import { addShaderFlags } from "./Common";
+import { addFrustum, addShaderFlags } from "./Common";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addAdjustWidth, addLineCode } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
-import { addLineWeight, addModelViewMatrix, addModelViewProjectionMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 
 const decodeEndPointAndQuadIndices = `
@@ -35,10 +35,11 @@ const checkForSilhouetteDiscard = `
   vec3 n0 = MAT_NORM * octDecodeNormal(a_normals.xy);
   vec3 n1 = MAT_NORM * octDecodeNormal(a_normals.zw);
 
-  float perpTol = 2.5e-4;
-  if (0.0 == MAT_MVP[0].w) {
-    return n0.z * n1.z > perpTol;        // orthographic.
+  if (kFrustumType_Perspective != u_frustum.z) {
+    float perpTol = 4.75e-6;
+    return (n0.z * n1.z > perpTol);      // orthographic.
   } else {
+    float perpTol = 2.5e-4;
     vec4  viewPos = MAT_MV * rawPos;     // perspective
     vec3  toEye = normalize(viewPos.xyz);
     float dot0 = dot(n0, toEye);
@@ -132,7 +133,7 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
 
   if (isSilhouette) {
     addNormalMatrix(vert, instanced);
-    addModelViewProjectionMatrix(vert);
+    addFrustum(builder);
     vert.set(VertexShaderComponent.CheckForEarlyDiscard, checkForSilhouetteDiscard);
     vert.addFunction(octDecodeNormal);
   }

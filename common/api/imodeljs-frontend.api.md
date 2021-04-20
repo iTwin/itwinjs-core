@@ -72,6 +72,7 @@ import { EditingScopeNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementGeometryChange } from '@bentley/imodeljs-common';
 import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
+import { ElementLoadOptions } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { Ellipsoid } from '@bentley/geometry-core';
 import { EllipsoidPatch } from '@bentley/geometry-core';
@@ -1625,6 +1626,8 @@ export class BriefcaseConnection extends IModelConnection {
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
+    // @internal
+    readonly onBufferedModelChanges: BeEvent<(changedModelIds: Set<string>) => void>;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullAndMergeChanges(version?: IModelVersionProps): Promise<void>;
@@ -1665,18 +1668,24 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyCommit(): void;
     // @internal (undocumented)
-    notifyCommitted(): void;
+    notifyCommitted(hasPendingTxns: boolean, time: number): void;
     // @internal (undocumented)
     notifyElementsChanged(changed: ChangedEntities): void;
     // @internal (undocumented)
     notifyGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     // @internal (undocumented)
     notifyModelsChanged(changed: ChangedEntities): void;
+    // @internal (undocumented)
+    notifyPulledChanges(parentChangeSetId: string): void;
+    // @internal (undocumented)
+    notifyPushedChanges(parentChangeSetId: string): void;
     readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onChangesApplied: BeEvent<() => void>;
+    readonly onChangesPulled: BeEvent<(parentChangeSetId: string) => void>;
+    readonly onChangesPushed: BeEvent<(parentChangeSetId: string) => void>;
     readonly onCommit: BeEvent<() => void>;
-    readonly onCommitted: BeEvent<() => void>;
+    readonly onCommitted: BeEvent<(hasPendingTxns: boolean, time: number) => void>;
     readonly onElementsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
@@ -2467,6 +2476,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get wantShadows(): boolean;
 }
+
+// @internal
+export function disposeTileTreesForGeometricModels(modelIds: Set<Id64String>, iModel: IModelConnection): void;
 
 // @beta
 export type DownloadBriefcaseId = {
@@ -4493,11 +4505,13 @@ export namespace IModelConnection {
         // @internal
         constructor(_iModel: IModelConnection);
         getProps(arg: Id64Arg): Promise<ElementProps[]>;
+        loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined>;
         queryIds(params: EntityQueryParams): Promise<Id64Set>;
         queryProps(params: EntityQueryParams): Promise<ElementProps[]>;
         get rootSubjectId(): Id64String;
     }
-    export class Models {
+    export class Models implements Iterable<ModelState> {
+        [Symbol.iterator](): Iterator<ModelState>;
         // @internal
         constructor(_iModel: IModelConnection);
         filterLoaded(modelIds: Id64Arg): Id64Set | undefined;
@@ -4506,11 +4520,15 @@ export namespace IModelConnection {
         getLoaded(id: string): ModelState | undefined;
         getProps(modelIds: Id64Arg): Promise<ModelProps[]>;
         load(modelIds: Id64Arg): Promise<void>;
-        loaded: Map<string, ModelState>;
+        // @deprecated
+        get loaded(): Map<string, ModelState>;
+        set loaded(loaded: Map<string, ModelState>);
         query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps>;
         queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]>;
         queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]>;
         get repositoryModelId(): string;
+        // @internal
+        unload(modelId: Id64String): void;
     }
     export class Views {
         // @internal
@@ -9923,8 +9941,6 @@ export class TileAdmin {
     readonly enableImprovedElision: boolean;
     // @internal (undocumented)
     get enableInstancing(): boolean;
-    // @internal (undocumented)
-    forEachViewport(func: (vp: Viewport) => void): void;
     // @internal
     forgetViewport(vp: Viewport): void;
     // @internal
@@ -9997,6 +10013,8 @@ export class TileAdmin {
     get unselectedLoadedTiles(): Iterable<Tile>;
     // @internal (undocumented)
     readonly useProjectExtents: boolean;
+    // @alpha
+    get viewports(): Iterable<Viewport>;
     }
 
 // @public (undocumented)
@@ -11465,26 +11483,26 @@ export class ViewClipTool extends PrimitiveTool {
     protected showPrompt(): void;
 }
 
-// @beta
+// @public
 export class ViewCreator2d {
     constructor(_imodel: IModelConnection);
     createViewForModel(modelId: Id64String, options?: ViewCreator2dOptions): Promise<ViewState>;
     }
 
-// @beta
+// @public
 export interface ViewCreator2dOptions {
     bgColor?: ColorDef;
     useSeedView?: boolean;
     vpAspect?: number;
 }
 
-// @beta
+// @public
 export class ViewCreator3d {
     constructor(_imodel: IModelConnection);
     createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState>;
     }
 
-// @beta
+// @public
 export interface ViewCreator3dOptions {
     cameraOn?: boolean;
     skyboxOn?: boolean;
