@@ -7,11 +7,10 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs,
+  BackendLoggerCategory, BackendRequestContext, Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs,
   PhysicalPartition, SnapshotDb, SpatialElement,
 } from "@bentley/imodeljs-backend";
 import { progressLoggerCategory, Transformer } from "../Transformer";
-import { Code, GeometricElementProps } from "@bentley/imodeljs-common";
 
 describe("imodel-transformer", () => {
   const sourceDbFileName = "../../core/backend/src/test/assets/CompatibilityTestSeed.bim";
@@ -96,40 +95,49 @@ describe("imodel-transformer", () => {
     const testSpatialCategory = {
       name: "TestSpatialCategory",
       id: "0x14",
-      code: new Code({
-        scope: "0x10",
-        spec: "0x16",
-        value: "TestSpatialCategory",
-      }),
     };
 
     await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { excludeCategories: [testSpatialCategory.name] });
 
-    async function getElementsInTestCategory(db: IModelDb) {
-      const result: GeometricElementProps[] = [];
+    async function getElementCountInTestCategory(db: IModelDb) {
       // do two queries because querying abstract GeometricElement won't contain the category
-      for (const type of [GeometricElement2d.classFullName, GeometricElement3d.classFullName]) {
-        for await (const elem of db.query(
-          `SELECT * FROM ${type} e JOIN bis.Category c ON e.category.id=c.ECInstanceId WHERE c.CodeValue=:category`,
-          { category: testSpatialCategory.code.value },
-        )) {
-          result.push(elem);
+      const sum = (arr: number[]) => arr.reduce((prev, x) => prev + x, 0);
+      return sum(await Promise.all([GeometricElement2d.classFullName, GeometricElement3d.classFullName].map(async (className) => {
+        const queryResult = await db.query(
+          `SELECT COUNT(*) FROM ${className} e JOIN bis.Category c ON e.category.id=c.ECInstanceId WHERE c.CodeValue=:category`,
+          { category: testSpatialCategory.name }
+        ).next();
+        const value = Object.values(queryResult.value)[0]; // gets the value of the first column in the returned row
+        if (typeof value !== "number") {
+          throw Error(`unexpected result from COUNT query, queryResult was: '${JSON.stringify(queryResult)}'`);
         }
-      }
-      return result;
+        return value;
+      })));
     }
 
-    const categoryInSrc = sourceDb.elements.tryGetElement(testSpatialCategory.code);
-    assert.isDefined(categoryInSrc);
+    async function hasTheCategory(db: IModelDb) {
+      return db.queryEntityIds({
+        from: Category.classFullName,
+        where: "CodeValue=:category",
+        bindings: {category: testSpatialCategory.name},
+      }).size > 0;
+    }
 
-    const elemsInCategoryInSrc = await getElementsInTestCategory(sourceDb);
-    assert.isAtLeast(elemsInCategoryInSrc.length, 6);
+    assert.isTrue(await hasTheCategory(sourceDb));
 
-    const categoryInTarget = targetDb.elements.tryGetElement(testSpatialCategory.code);
-    assert.isDefined(categoryInTarget);
+    const elemsInCategoryInSrc = await getElementCountInTestCategory(sourceDb);
+    assert.isAtLeast(elemsInCategoryInSrc, 6);
 
-    const elemsInCategoryInTarget = await getElementsInTestCategory(targetDb);
-    assert.isAtLeast(elemsInCategoryInTarget.length, 0);
+    const _entityIdsTarget = targetDb.queryEntityIds({
+      from: Category.classFullName,
+      where: "CodeValue=:category",
+      bindings: {category: testSpatialCategory.name},
+    });
+
+    assert.isFalse(await hasTheCategory(targetDb));
+
+    const elemsInCategoryInTarget = await getElementCountInTestCategory(targetDb);
+    assert.equal(elemsInCategoryInTarget, 0);
 
     targetDb.close();
   });

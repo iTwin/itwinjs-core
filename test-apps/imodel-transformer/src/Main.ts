@@ -75,7 +75,7 @@ void (async () => {
     Yargs.option("combinePhysicalModels", { desc: "Combine all source PhysicalModels into a single PhysicalModel in the target iModel", type: "boolean", default: false });
     Yargs.option("deleteUnusedGeometryParts", { desc: "Delete unused GeometryParts from the target iModel", type: "boolean", default: false });
     Yargs.option("excludeSubCategories", { desc: "Exclude geometry in the specified SubCategories (names with comma separators) from the target iModel", type: "string" });
-    Yargs.option("excludeCategories", { desc: "Exclude geometry in the specified Categories (names with comma separators) from the target iModel", type: "string" });
+    Yargs.option("excludeCategories", { desc: "Exclude a categories (names with comma separators) and their elements from the target iModel", type: "string" });
 
     const args = Yargs.parse() as Yargs.Arguments<CommandLineArgs>;
 

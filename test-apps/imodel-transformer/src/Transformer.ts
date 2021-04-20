@@ -130,6 +130,7 @@ export class Transformer extends IModelTransformer {
         while (DbResult.BE_SQLITE_ROW === statement.step()) {
           const categoryId = statement.getValue(0).getId();
           this.exporter.excludeElementCategory(categoryId);
+          this.exporter.excludeElement(categoryId);
         }
       });
     }
