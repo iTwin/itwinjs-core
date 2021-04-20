@@ -42,7 +42,7 @@ export interface FilteredPropertyData extends PropertyData {
 
 /**
  * IPropertyDataProvider implementation which will filter wrapped provider PropertyData using passed IPropertyDataFilterer.
- * @alpha
+ * @beta
  */
 export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDisposable {
   public onDataChanged = new PropertyDataChangeEvent();
