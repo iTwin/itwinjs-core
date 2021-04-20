@@ -7,8 +7,8 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, PhysicalPartition, SnapshotDb,
-  SpatialElement,
+  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, GeometricElement, IModelDb, IModelHost, IModelJsFs, PhysicalPartition,
+  SnapshotDb, SpatialElement,
 } from "@bentley/imodeljs-backend";
 import { progressLoggerCategory, Transformer } from "../Transformer";
 
@@ -82,6 +82,22 @@ describe("imodel-transformer", () => {
     assert.equal(count(targetDb, SpatialElement.classFullName), numSourceSpatialElements);
     assert.equal(count(targetDb, PhysicalPartition.classFullName), 1);
     assert.isAtLeast(count(sourceDb, PhysicalPartition.classFullName), 2);
+    targetDb.close();
+  });
+
+  it("should exclude categories", async () => {
+    const targetDbFileName = initOutputFile("CompatibilityTestSeed-Simplified.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFileName, {
+      rootSubject: { name: `${sourceDb.rootSubject.name}-CategoryExcluded` },
+      ecefLocation: sourceDb.ecefLocation,
+    });
+
+    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { excludeCategories: ["TestSpatialCategory"] });
+    const numSourceElements = count(sourceDb, GeometricElement.classFullName);
+    assert.isAtLeast(numSourceElements, 24);
+    const numTargetElems = count(targetDb, GeometricElement.classFullName);
+    assert.isBelow(numTargetElems, numSourceElements);
+    assert.isAtLeast(numTargetElems, 18);
     targetDb.close();
   });
 });
