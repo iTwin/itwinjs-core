@@ -85,7 +85,7 @@ describe("imodel-transformer", () => {
     targetDb.close();
   });
 
-  it("should exclude categories", async () => {
+  xit("should exclude categories", async () => {
     const targetDbFileName = initOutputFile("CompatibilityTestSeed-CategoryExcluded.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFileName, {
       rootSubject: { name: `${sourceDb.rootSubject.name}-CategoryExcluded` },
