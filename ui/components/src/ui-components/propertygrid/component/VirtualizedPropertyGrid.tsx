@@ -45,8 +45,6 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
   highlight?: HighlightingComponentProps & {
     filteredTypes?: FilteredType[];
   };
-
-  /** @alpha */
   propertyCategoryRendererManager?: PropertyCategoryRendererManager;
 }
 
@@ -81,7 +79,10 @@ export interface PropertyGridInternalContext {
   onItemHeightChanged: (index: number, key: string, height: number) => void;
 }
 
-/** @alpha */
+/**
+ * Context of the surrounding [VirtualizedPropertyGrid]($ui-components) component.
+ * @beta
+ */
 export interface VirtualizedPropertyGridContext {
   orientation: Orientation;
   gridWidth: number;

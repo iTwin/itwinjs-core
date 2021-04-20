@@ -6,9 +6,13 @@ import * as React from "react";
 import { VirtualizedPropertyGridContext } from "./component/VirtualizedPropertyGrid";
 import { GridCategoryItem } from "./internal/flat-items/FlatGridItem";
 
+/** @packageDocumentation
+ * @module PropertyGrid
+ */
+
 /**
  * Props that property category renderer receives.
- * @alpha
+ * @beta
  */
 export interface PropertyCategoryRendererProps {
   /** The category being rendered. */
@@ -21,14 +25,14 @@ export interface PropertyCategoryRendererProps {
 
 /**
  * Factory function that produces custom property category components.
- *  @alpha
+ *  @beta
  */
 export type PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType<PropertyCategoryRendererProps> | undefined;
 
 /**
  * Keeps a record of currently registered property category renderers and determines which renderers get invoked for
  * each category.
- * @alpha
+ * @beta
  */
 export class PropertyCategoryRendererManager {
   private _categoryRenderers = new Map<string, PropertyCategoryRenderer>();

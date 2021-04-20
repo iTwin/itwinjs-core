@@ -21,7 +21,7 @@ export interface PropertyCategory {
   /** @beta */
   childCategories?: PropertyCategory[];
 
-  /** @alpha */
+  /** @beta */
   renderer?: {
     name: string;
   };
