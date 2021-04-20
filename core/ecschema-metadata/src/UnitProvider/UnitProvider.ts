@@ -174,7 +174,7 @@ export class UnitProvider {
   private async findUnitByAltDisplayLabel(altDisplayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<Unit> {
     for (const entry of this._unitExtraData) {
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
-        if (entry.altDisplayLabels.findIndex((ref) => ref.toLowerCase() === altDisplayLabel) !== -1) {
+        if (entry.altDisplayLabels.findIndex((ref: string) => ref.toLowerCase() === altDisplayLabel) !== -1) {
           // Found altDisplayLabel that matches label to find
           const unit = await this.findUnitByName(entry.name);
           const foundPhenomenon = await unit.phenomenon;

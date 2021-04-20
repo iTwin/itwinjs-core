@@ -3,18 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { IModelApp } from "../../../IModelApp";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { AttributeMap } from "../../../render/webgl/AttributeMap";
-import { CompileStatus } from "../../../render/webgl/ShaderProgram";
+import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
 import { DrawParams, ShaderProgramParams } from "../../../render/webgl/DrawCommand";
-import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../render/webgl/ShaderBuilder";
-import { SingularTechnique } from "../../../render/webgl/Technique";
+import { CompileStatus } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
 import { Target } from "../../../render/webgl/Target";
+import { SingularTechnique } from "../../../render/webgl/Technique";
+import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 import { TechniqueId } from "../../../render/webgl/TechniqueId";
-import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
@@ -48,7 +50,11 @@ function createTarget(): Target | undefined {
 }
 
 describe("Techniques", () => {
-  before(async () => IModelApp.startup());
+  before(async () => {
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext })
+  });
   after(async () => IModelApp.shutdown());
 
   it("should produce a simple dynamic rendering technique", () => {
@@ -83,7 +89,9 @@ describe("Techniques", () => {
     if (undefined !== opts) {
       // Replace current render system with customized one
       await IModelApp.shutdown();
-      await IModelApp.startup({ renderSys: opts });
+      const schemaContext = new SchemaContext();
+      Schema.fromJsonSync(UnitSchemaString, schemaContext);
+      await IModelApp.startup({ renderSys: opts, schemaContext, });
     }
 
     expect(System.instance.techniques.compileShaders()).to.be.true;
@@ -91,7 +99,9 @@ describe("Techniques", () => {
     if (undefined !== opts) {
       // Reset render system to default state
       await IModelApp.shutdown();
-      await IModelApp.startup();
+      const schemaContext = new SchemaContext();
+      Schema.fromJsonSync(UnitSchemaString, schemaContext);
+      await IModelApp.startup({ schemaContext });
     }
   }
 

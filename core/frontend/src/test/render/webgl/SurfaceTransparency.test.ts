@@ -3,23 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { Point2d, Point3d, Range3d, Vector3d } from "@bentley/geometry-core";
 import {
   ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
 } from "@bentley/imodeljs-common";
-import { RenderGraphic } from "../../../render/RenderGraphic";
-import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
-import { SpatialViewState } from "../../../SpatialViewState";
-import { ScreenViewport } from "../../../Viewport";
-import { Target } from "../../../render/webgl/Target";
-import { Primitive } from "../../../render/webgl/Primitive";
-import { RenderPass } from "../../../render/webgl/RenderFlags";
-import { MeshGraphic, SurfaceGeometry } from "../../../render/webgl/Mesh";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
+import { RenderGraphic } from "../../../render/RenderGraphic";
+import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
+import { MeshGraphic, SurfaceGeometry } from "../../../render/webgl/Mesh";
+import { Primitive } from "../../../render/webgl/Primitive";
+import { RenderPass } from "../../../render/webgl/RenderFlags";
+import { Target } from "../../../render/webgl/Target";
+import { SpatialViewState } from "../../../SpatialViewState";
+import { ScreenViewport } from "../../../Viewport";
 import { createBlankConnection } from "../../createBlankConnection";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
   const args = new MeshArgs();
@@ -60,7 +62,9 @@ describe("Surface transparency", () => {
   document.body.appendChild(viewDiv);
 
   before(async () => {
-    await IModelApp.startup();
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext });
 
     imodel = createBlankConnection();
 

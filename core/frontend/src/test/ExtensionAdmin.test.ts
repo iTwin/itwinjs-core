@@ -4,13 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { PendingExtension } from "../extension/Extension";
 import { IModelApp } from "../IModelApp";
+import { UnitSchemaString } from "./public/assets/UnitSchema/UnitSchema";
 
 describe("ExtensionAdmin tests", () => {
   beforeEach(async function () {
     this.timeout(5000);
-    await IModelApp.startup();
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext });
   });
   afterEach(async function () {
     this.timeout(5000);

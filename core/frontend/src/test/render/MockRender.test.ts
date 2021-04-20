@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderTarget } from "../../render/RenderTarget";
 import { ViewRect } from "../../ViewRect";
+import { UnitSchemaString } from "../public/assets/UnitSchema/UnitSchema";
 
 class MyTarget extends MockRender.OffScreenTarget { }
 class MyList extends MockRender.List { }
@@ -20,7 +22,9 @@ class MySystem extends MockRender.System {
 describe("MockRender", () => {
   before(async () => {
     MockRender.App.systemFactory = () => new MySystem();
-    await MockRender.App.startup();
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await MockRender.App.startup({ schemaContext });
   });
 
   after(async () => MockRender.App.shutdown());

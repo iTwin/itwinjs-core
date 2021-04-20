@@ -3,14 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 import { Capabilities, WebGLContext } from "@bentley/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
 import { RenderSystem } from "../../../render/RenderSystem";
-import { TileAdmin } from "../../../tile/internal";
 import { System } from "../../../render/webgl/System";
+import { TileAdmin } from "../../../tile/internal";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
@@ -65,8 +67,11 @@ describe("Instancing", () => {
       if (!supportsInstancing)
         renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
 
+      const schemaContext = new SchemaContext();
+      Schema.fromJsonSync(UnitSchemaString, schemaContext);
       await IModelApp.startup({
         renderSys: renderSysOpts,
+        schemaContext,
         tileAdmin: tileAdminProps,
       });
 
@@ -104,8 +109,11 @@ describe("ExternalTextures", () => {
       const tileAdminProps: TileAdmin.Props = { enableExternalTextures };
       const renderSysOpts: RenderSystem.Options = { useWebGL2: false }; // use WebGL1 since instanced arrays cannot be disabled in WebGL2
 
+      const schemaContext = new SchemaContext();
+      Schema.fromJsonSync(UnitSchemaString, schemaContext);
       await IModelApp.startup({
         renderSys: renderSysOpts,
+        schemaContext,
         tileAdmin: tileAdminProps,
       });
 
@@ -187,8 +195,11 @@ describe("RenderSystem", () => {
     ]), ImageSourceFormat.Png);
 
     before(async () => {
+      const schemaContext = new SchemaContext();
+      Schema.fromJsonSync(UnitSchemaString, schemaContext);
       await IModelApp.startup({
         renderSys: TestSystem.create(),
+        schemaContext,
       });
     });
 
@@ -326,7 +337,9 @@ describe("RenderSystem", () => {
     const contextLossHandler = RenderSystem.contextLossHandler;
 
     beforeEach(async () => {
-      await IModelApp.startup();
+      const schemaContext = new SchemaContext();
+      Schema.fromJsonSync(UnitSchemaString, schemaContext);
+      await IModelApp.startup({ schemaContext });
     });
 
     afterEach(async () => {

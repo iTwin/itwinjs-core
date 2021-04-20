@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipVector, Point3d, Transform  } from "@bentley/geometry-core";
-import { ClipVolume } from "../../../render/webgl/ClipVolume";
-import { ClipStack } from "../../../render/webgl/ClipStack";
-import { RenderSystem } from "../../../render/RenderSystem";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
+import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { IModelApp } from "../../../IModelApp";
+import { RenderSystem } from "../../../render/RenderSystem";
+import { ClipStack } from "../../../render/webgl/ClipStack";
+import { ClipVolume } from "../../../render/webgl/ClipVolume";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 for (let i = 0; i < 2; i++) {
   let renderSys: RenderSystem.Options | undefined;
@@ -27,7 +29,9 @@ for (let i = 0; i < 2; i++) {
 
   describe(`ClipStack (${useFloat ? "floating point texture" : "encoded floats"})`, async () => {
     before(async () => {
-      await IModelApp.startup({ renderSys });
+      const schemaContext = new SchemaContext();
+      Schema.fromJsonSync(UnitSchemaString, schemaContext);
+      await IModelApp.startup({ renderSys,  schemaContext, });
     });
 
     after(async () => {

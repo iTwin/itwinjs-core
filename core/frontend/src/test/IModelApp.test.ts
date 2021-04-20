@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import { BentleyStatus, DbResult, IModelStatus } from "@bentley/bentleyjs-core";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
@@ -11,7 +13,7 @@ import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
 import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
-import { BentleyStatus, DbResult, IModelStatus } from "@bentley/bentleyjs-core";
+import { UnitSchemaString } from "./public/assets/UnitSchema/UnitSchema";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -72,7 +74,9 @@ class TestApp extends MockRender.App {
 
 describe("IModelApp", () => {
   before(async () => {
-    await TestApp.startup();
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await TestApp.startup({ schemaContext });
     await TestApp.testNamespace!.readFinished;  // we must wait for the localization read to finish.
   });
   after(async () => TestApp.shutdown());
@@ -174,7 +178,9 @@ describe("IModelApp", () => {
     await TestApp.shutdown();
     expect(debug.iModelAppForDebugger).to.be.undefined;
 
-    await TestApp.startup();
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await TestApp.startup({ schemaContext });
     expect(debug.iModelAppForDebugger).not.to.be.undefined;
     expect(debug.iModelAppForDebugger!.viewManager).to.equal(IModelApp.viewManager);
     expect(debug.iModelAppForDebugger!.viewManager).not.to.equal(viewMgr);

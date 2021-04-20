@@ -4,15 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { dispose } from "@bentley/bentleyjs-core";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { IModelApp } from "../../../IModelApp";
-import { ViewRect } from "../../../ViewRect";
-import { createEmptyRenderPlan } from "../../../render/RenderPlan";
 import { GraphicBranch } from "../../../render/GraphicBranch";
-import { Branch } from "../../../render/webgl/Graphic";
-import { ClipVolume } from "../../../render/webgl/ClipVolume";
+import { createEmptyRenderPlan } from "../../../render/RenderPlan";
 import { ClipStack } from "../../../render/webgl/ClipStack";
+import { ClipVolume } from "../../../render/webgl/ClipVolume";
+import { Branch } from "../../../render/webgl/Graphic";
 import { Target } from "../../../render/webgl/Target";
+import { ViewRect } from "../../../ViewRect";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();
@@ -97,7 +99,9 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
 
 describe("BranchUniforms", async () => {
   before(async () => {
-    await IModelApp.startup();
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext });
   });
 
   after(async () => {

@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 import { extractImageSourceDimensions, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../../../ImageUtil";
 import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
 import { TextureHandle } from "../../../render/webgl/Texture";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
 // bottom right pixel.  The rest of the square is red.
@@ -23,7 +25,11 @@ const bitmapData = new Uint8Array([
 ]);
 
 describe("Texture tests", () => {
-  before(async () => IModelApp.startup());
+  before(async () => {
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext });
+  });
   after(async () => IModelApp.shutdown());
 
   it("should produce an attachment texture (rgb, unsigned byte)", () => {

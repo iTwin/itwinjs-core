@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { Point2d } from "@bentley/geometry-core";
 import { ColorIndex, FeatureIndexType, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import { MockRender } from "../../../render/MockRender";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
   const params = MeshParams.create(args);
@@ -48,7 +50,11 @@ class FakeTexture extends RenderTexture {
 }
 
 describe("VertexLUT", () => {
-  before(async () => MockRender.App.startup());
+  before(async () => {
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await MockRender.App.startup({ schemaContext });
+  });
   after(async () => MockRender.App.shutdown());
 
   it("should produce correct VertexLUT.Params from MeshArgs", () => {

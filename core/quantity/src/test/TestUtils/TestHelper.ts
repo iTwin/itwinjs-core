@@ -74,6 +74,7 @@ const unitData: UnitDefinition[] = [
 export class ConversionData implements UnitConversion {
   public factor: number = 1.0;
   public offset: number = 0.0;
+  public error: boolean = false;
 }
 
 export class TestUnitsProvider implements UnitsProvider {

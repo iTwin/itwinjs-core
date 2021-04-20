@@ -14,7 +14,6 @@ export class NewUnitsProvider implements UnitsProvider {
   public async getUnitPropsFromUnit(unit: Unit): Promise<UnitProps> {
     const unitQuery = new UnitProvider(this._context, this._unitExtraData);
     try {
-      await this.findUnitByName(unit.fullName);
       return new BasicUnit(unit.fullName, unit.label ?? "", unit.phenomenon?.fullName ?? "", unitQuery.getAlternateDisplayLabels(unit.fullName), unit.unitSystem?.fullName ?? "");
     } catch (err) {
       return new BasicUnit("", "", "");
@@ -56,11 +55,11 @@ export class NewUnitsProvider implements UnitsProvider {
   }
 
   /** Return the information needed to convert a value between two different units.  The units should be from the same phenomenon. */
-  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<ConversionData> {
     const converter = new UnitConverter(this._context);
     try {
       const conversionData = await converter.calculateConversion(fromUnit.name, toUnit.name);
-      const conversion = new ConversionData(false);
+      const conversion = new ConversionData(false, conversionData.factor, conversionData.offset);
       conversion.factor = conversionData.factor;
       conversion.offset = conversionData.offset;
       return conversion;
@@ -73,9 +72,6 @@ export class NewUnitsProvider implements UnitsProvider {
 /** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
  * @alpha
  */
-class ConversionData implements UnitConversion {
-  public factor: number = 1.0;
-  public offset: number = 0.0;
-
-  constructor(public error: boolean) {}
+export class ConversionData implements UnitConversion {
+  constructor(public error: boolean, public factor = 1, public offset = 0) {}
 }

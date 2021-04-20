@@ -3,21 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
-import { RequestBasicCredentials } from "@bentley/itwin-client";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
+import { MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
+import { RequestBasicCredentials } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
-
 import {
-  MapLayerImageryProvider,
-  MapLayerImageryProviderStatus,
-  WmsCapabilities,
-  WmsMapLayerImageryProvider,
-  WmtsCapabilities,
-  WmtsMapLayerImageryProvider,
+  MapLayerImageryProvider, MapLayerImageryProviderStatus, WmsCapabilities, WmsMapLayerImageryProvider, WmtsCapabilities, WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 chai.use(chaiAsPromised);
 
@@ -138,7 +134,9 @@ describe("WmsMapLayerImageryProvider", () => {
 describe("MapLayerImageryProvider with IModelApp", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
-    await IModelApp.startup();
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext });
   });
 
   afterEach(async () => {

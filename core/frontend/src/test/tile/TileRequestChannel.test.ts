@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import { ServerTimeoutError, ViewFlagOverrides } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { Viewport } from "../../Viewport";
+import { IModelConnection } from "../../IModelConnection";
 import { MockRender } from "../../render/MockRender";
-import { createBlankConnection } from "../createBlankConnection";
 import {
   Tile, TileContent, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,
 } from "../../tile/internal";
+import { Viewport } from "../../Viewport";
+import { createBlankConnection } from "../createBlankConnection";
+import { UnitSchemaString } from "../public/assets/UnitSchema/UnitSchema";
 
 async function runMicroTasks(): Promise<void> {
   return BeDuration.wait(1);
@@ -300,7 +302,9 @@ describe("TileRequestChannel", () => {
   let imodel: IModelConnection;
 
   beforeEach(async () => {
-    await MockRender.App.startup();
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await MockRender.App.startup({ schemaContext });
     imodel = createBlankConnection();
   });
 

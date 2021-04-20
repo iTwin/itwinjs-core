@@ -57,6 +57,7 @@ export interface UnitConversionSpec {
 export interface UnitConversion {
   factor: number;
   offset: number;
+  error: boolean;
 }
 
 /** Interface that defines potential parse units that may be found in user's string input of a quantity value.
@@ -81,7 +82,7 @@ export interface PotentialParseUnit {
  * @beta
  */
 export interface UnitsProvider {
-  findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
+  findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
   getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
   findUnitByName(unitName: string): Promise<UnitProps>;
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;

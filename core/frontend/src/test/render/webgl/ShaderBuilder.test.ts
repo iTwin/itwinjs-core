@@ -4,15 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { IModelApp } from "../../../IModelApp";
-import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import {
   FragmentShaderComponent, ProgramBuilder, ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType, VertexShaderComponent,
 } from "../../../render/webgl/ShaderBuilder";
+import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 describe("Variable declaration tests", () => {
-  before(async () => IModelApp.startup());
+  before(async () => {
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext });
+  });
   after(async () => IModelApp.shutdown());
 
   it("should convert ShaderVariable to glsl declaration", () => {
@@ -84,7 +90,11 @@ describe("ShaderVariables tests", () => {
 });
 
 describe("Test shader compilation", () => {
-  before(async () => IModelApp.startup());
+  before(async () => {
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext });
+  });
   after(async () => IModelApp.shutdown());
 
   it.skip("should build and compile a simple shader program", () => {

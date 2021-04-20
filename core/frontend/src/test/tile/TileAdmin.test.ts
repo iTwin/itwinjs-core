@@ -3,20 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { ViewFlagOverrides } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { SpatialViewState } from "../../SpatialViewState";
-import { ScreenViewport, Viewport } from "../../Viewport";
+import { IModelConnection } from "../../IModelConnection";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
+import { SpatialViewState } from "../../SpatialViewState";
 import {
   GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
   TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
+import { ScreenViewport, Viewport } from "../../Viewport";
 import { createBlankConnection } from "../createBlankConnection";
+import { UnitSchemaString } from "../public/assets/UnitSchema/UnitSchema";
 
 describe("TileAdmin", () => {
   describe("memory limit configuration", () => {
@@ -259,7 +261,9 @@ describe("TileAdmin", () => {
     let imodel2: IModelConnection;
 
     beforeEach(async () => {
-      await MockRender.App.startup();
+      const schemaContext = new SchemaContext();
+      Schema.fromJsonSync(UnitSchemaString, schemaContext);
+      await MockRender.App.startup({ schemaContext });
       IModelApp.stopEventLoop();
       imodel1 = createBlankConnection("imodel1");
       imodel2 = createBlankConnection("imodel2");

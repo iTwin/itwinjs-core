@@ -4,18 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { Capabilities } from "@bentley/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { Debug } from "../../../render/webgl/Diagnostics";
 import { FrameBuffer } from "../../../render/webgl/FrameBuffer";
 import { GL } from "../../../render/webgl/GL";
 import { RenderBuffer } from "../../../render/webgl/RenderBuffer";
-import { TextureHandle } from "../../../render/webgl/Texture";
 import { System } from "../../../render/webgl/System";
+import { TextureHandle } from "../../../render/webgl/Texture";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 describe("FrameBuffer tests", () => {
   // eslint-disable-next-line no-return-await
-  before(async () => await IModelApp.startup());
+  before(async () => {
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext });
+  });
   // eslint-disable-next-line no-return-await
   after(async () => await IModelApp.shutdown());
 

@@ -3,12 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { IModelApp } from "../../../IModelApp";
-import { GL } from "../../../render/webgl/GL";
 import { BufferHandle } from "../../../render/webgl/AttributeBuffers";
+import { GL } from "../../../render/webgl/GL";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 describe("BufferHandle", () => {
-  before(async () => IModelApp.startup());
+  before(async () => {
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext });
+  });
   after(async () => IModelApp.shutdown());
 
   it("disposes", () => {

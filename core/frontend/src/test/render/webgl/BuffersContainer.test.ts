@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BuffersContainer, VAOContainer, VBOContainer } from "../../../render/webgl/AttributeBuffers";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { IModelApp } from "../../../IModelApp";
+import { BuffersContainer, VAOContainer, VBOContainer } from "../../../render/webgl/AttributeBuffers";
+import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
 
 describe("BuffersContainer", () => {
   afterEach(async () => {
@@ -13,17 +15,22 @@ describe("BuffersContainer", () => {
   });
 
   it("should use VAO if enabled", async () => {
-    await IModelApp.startup();
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    await IModelApp.startup({ schemaContext });
     const buffers = BuffersContainer.create();
     expect(buffers instanceof VAOContainer).to.be.true;
   });
 
   it("should use VBO is VAOs disabled", async () => {
+    const schemaContext = new SchemaContext();
+    Schema.fromJsonSync(UnitSchemaString, schemaContext);
     await IModelApp.startup({
       renderSys: {
         useWebGL2: false,
         disabledExtensions: ["OES_vertex_array_object"],
       },
+      schemaContext,
     });
 
     const buffers = BuffersContainer.create();

@@ -11,6 +11,7 @@ const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com
 import {
   BeDuration, BentleyStatus, ClientRequestContext, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
 } from "@bentley/bentleyjs-core";
+import { SchemaContext } from "@bentley/ecschema-metadata";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
@@ -120,6 +121,7 @@ export interface IModelAppOptions {
   tentativePoint?: TentativePoint;
   /** @internal */
   quantityFormatter?: QuantityFormatter;
+  schemaContext?: SchemaContext;
   /** @internal */
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[ExtensionAdmin]] for this session.
@@ -183,6 +185,7 @@ export class IModelApp {
   private static _notifications: NotificationManager;
   private static _extensionAdmin: ExtensionAdmin;
   private static _quantityFormatter: QuantityFormatter;
+  private static _schemaContext: SchemaContext;
   private static _renderSystem?: RenderSystem;
   private static _settings: SettingsAdmin;
   private static _tentativePoint: TentativePoint;
@@ -225,6 +228,7 @@ export class IModelApp {
    * @alpha
    */
   public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
+  public static get schemaContext(): SchemaContext { return this._schemaContext; }
   /** The [[ToolAdmin]] for this session. */
   public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }
   /** The [[AccuDraw]] for this session.
@@ -411,7 +415,8 @@ export class IModelApp {
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
     this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
-    this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
+    this._schemaContext = (opts.schemaContext !== undefined) ? opts.schemaContext : new SchemaContext();
+    this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter(this._schemaContext);
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
 
