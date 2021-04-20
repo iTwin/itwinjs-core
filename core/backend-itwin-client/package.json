@@ -90,12 +90,7 @@
     "typescript": "~4.1.0"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@azure-tools/azcopy-node": "^2.0.0",
-    "@bentley/usage-logging-client": "2.15.0-dev.23",
-=======
     "@bentley/usage-logging-client": "2.16.0-dev.13",
->>>>>>> 9a061049fc... Remove @azure-tools/azcopy-node dependency. (#1218)
     "applicationinsights": "^1.7.5",
     "deep-assign": "^2.0.0",
     "fs-extra": "^8.1.0",
