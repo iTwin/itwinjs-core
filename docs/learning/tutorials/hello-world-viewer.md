@@ -279,7 +279,7 @@ In the next tutorial, we will take widgets from the sample showcase and use them
 - [Web Viewer](https://www.itwinjs.org/learning/tutorials/develop-web-viewer/)
 - [UI Provider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/)
 - [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/)
-- [Sample House Model]([here](https://www.itwinjs.org/learning/tutorials/create-test-imodel-sample/))
+- [Sample House Model](https://www.itwinjs.org/learning/tutorials/create-test-imodel-sample/)
 
 ## Next Steps
 
