@@ -7,10 +7,11 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, GeometricElement, IModelDb, IModelHost, IModelJsFs, PhysicalPartition,
-  SnapshotDb, SpatialElement,
+  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs,
+  PhysicalPartition, SnapshotDb, SpatialElement,
 } from "@bentley/imodeljs-backend";
 import { progressLoggerCategory, Transformer } from "../Transformer";
+import { Code, GeometricElementProps } from "@bentley/imodeljs-common";
 
 describe("imodel-transformer", () => {
   const sourceDbFileName = "../../core/backend/src/test/assets/CompatibilityTestSeed.bim";
@@ -86,18 +87,50 @@ describe("imodel-transformer", () => {
   });
 
   it("should exclude categories", async () => {
-    const targetDbFileName = initOutputFile("CompatibilityTestSeed-Simplified.bim");
+    const targetDbFileName = initOutputFile("CompatibilityTestSeed-CategoryExcluded.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFileName, {
       rootSubject: { name: `${sourceDb.rootSubject.name}-CategoryExcluded` },
       ecefLocation: sourceDb.ecefLocation,
     });
 
-    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { excludeCategories: ["TestSpatialCategory"] });
-    const numSourceElements = count(sourceDb, GeometricElement.classFullName);
-    assert.isAtLeast(numSourceElements, 24);
-    const numTargetElems = count(targetDb, GeometricElement.classFullName);
-    assert.isBelow(numTargetElems, numSourceElements);
-    assert.isAtLeast(numTargetElems, 18);
+    const testSpatialCategory = {
+      name: "TestSpatialCategory",
+      id: "0x14",
+      code: new Code({
+        scope: "0x10",
+        spec: "0x16",
+        value: "TestSpatialCategory",
+      }),
+    };
+
+    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { excludeCategories: [testSpatialCategory.name] });
+
+    async function getElementsInTestCategory(db: IModelDb) {
+      const result: GeometricElementProps[] = [];
+      // do two queries because querying abstract GeometricElement won't contain the category
+      for (const type of [GeometricElement2d.classFullName, GeometricElement3d.classFullName]) {
+        for await (const elem of db.query(
+          `SELECT * FROM ${type} e JOIN bis.Category c ON e.category.id=c.ECInstanceId WHERE c.CodeValue=:category`,
+          { category: testSpatialCategory.code.value },
+        )) {
+          result.push(elem);
+        }
+      }
+      return result;
+    }
+
+    const categoryInSrc = sourceDb.elements.tryGetElement(testSpatialCategory.code);
+    assert.isDefined(categoryInSrc);
+
+    const elemsInCategoryInSrc = await getElementsInTestCategory(sourceDb);
+    assert.isAtLeast(elemsInCategoryInSrc.length, 6);
+
+    const categoryInTarget = targetDb.elements.tryGetElement(testSpatialCategory.code);
+    assert.isDefined(categoryInTarget);
+
+    const elemsInCategoryInTarget = await getElementsInTestCategory(targetDb);
+    assert.isAtLeast(elemsInCategoryInTarget.length, 0);
+
     targetDb.close();
   });
 });
