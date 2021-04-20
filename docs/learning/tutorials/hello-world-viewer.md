@@ -7,6 +7,7 @@
 This tutorial assumes that you already have:
 
 - Your own local source for the iTwin Web Viewer based on the template @bentley/itwin-viewer
+  - Instructions for that can be found [here](https://www.itwinjs.org/learning/tutorials/develop-web-viewer/)
 - Configured your local source to open the "House Model" sample iModel.
   - Instructions to use this sample iModel can be found [here](https://www.itwinjs.org/learning/tutorials/create-test-imodel-sample/).
 
@@ -227,19 +228,26 @@ import { Toggle } from "@bentley/ui-core";
 import * as React from "react";
 
 export class MyFirstUiProvider implements UiItemsProvider {
-  public readonly id = "MyFirstProviderId";
+  public readonly id = "HelloWorldProvider";
+  public static toggledOnce: boolean = false;
+  public static originalColor: number;
 
   public provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) : ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
+    if (location === StagePanelLocation.Right && section === StagePanelSection.Start) {
 
-    if (location === StagePanelLocation.Right) {
       const backgroundColorWidget: AbstractWidgetProps = {
         id: "BackgroundColorWidget",
         label: "Background Color Toggle",
         getWidgetContent() {
           return <Toggle onChange={(toggle) => {
-            const color = toggle ? "skyblue" : "pink";
-            IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: ColorDef.computeTbgrFromString(color)})
+            if (MyFirstUiProvider.toggledOnce === false) {
+              MyFirstUiProvider.originalColor = IModelApp.viewManager.selectedView!.displayStyle.backgroundColor.tbgr;
+              MyFirstUiProvider.toggledOnce = true;
+            }
+
+            const color = toggle ? ColorDef.computeTbgrFromString("skyblue") : MyFirstUiProvider.originalColor;
+            IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: color})
           }}></Toggle>
         }
       }
@@ -258,7 +266,7 @@ Result when the toggle is on:
 
 Result when the toggle is off:
 
-![Background pink](./images/background_toggled_pink.png)
+![Background original](./images/original_background_color.png)
 
 ### What's next?
 
@@ -268,9 +276,11 @@ In the next tutorial, we will take widgets from the sample showcase and use them
 
 ## Useful Links
 
+- [Web Viewer](https://www.itwinjs.org/learning/tutorials/develop-web-viewer/)
 - [UI Provider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/)
-- [iTwin Sample Showcase](https://www.itwinjs.org/sample-showcase/)
+- [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/)
+- [Sample House Model]([here](https://www.itwinjs.org/learning/tutorials/create-test-imodel-sample/))
 
 ## Next Steps
 
-- [Adding sample showcase widgets to your iTwin Viewer](./showcase-to-viewer.md)
+- [iTwin Sample Showcase](https://www.itwinjs.org/sample-showcase/)
