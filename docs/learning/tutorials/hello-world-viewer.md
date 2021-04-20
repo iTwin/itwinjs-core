@@ -213,9 +213,9 @@ export class MyFirstUiProvider implements UiItemsProvider {
   public static originalColor: number;
 ```
 
-The first condition checks for only the first trigger of the toggle using boolean ```toggledOnce```. If true, we need to store the original color in static variable ```MyFirstUiProvider.originalColor```. We are using the global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the viewManager that can provide the current ```backgroundColor```. We also need to flip variable ```MyFirstUiProvider.toggledOnce``` to true to make sure we only store the original color once. We are using the glo
+The first condition checks for only the first trigger of the toggle using boolean ```toggledOnce```. If true, we need to store the original color in static variable ```MyFirstUiProvider.originalColor```. We are using the global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the viewManager that can provide the current ```backgroundColor```. We also need to flip variable ```MyFirstUiProvider.toggledOnce``` to true to make sure we only store the original color once.
 
-Notice we using the function [overrideDisplayStyle()](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewport/overridedisplaystyle/) on the currently selected view.  To get the view, we use the same global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the [viewManager](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewmanager/).
+Notice we're using the function [overrideDisplayStyle()](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewport/overridedisplaystyle/) on the currently selected view.  To get the view, we use the same global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the [viewManager](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewmanager/).
 
 Our completed ```MyFirstUiProvider.tsx``` file should look similar to this:
 
