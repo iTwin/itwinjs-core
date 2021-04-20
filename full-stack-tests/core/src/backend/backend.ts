@@ -19,8 +19,6 @@ import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
 
 import serveHandler = require("serve-handler");
-import { IModelHubClient } from "@bentley/imodelhub-client";
-import { AzureFileHandler } from "@bentley/backend-itwin-client";
 /* eslint-disable no-console */
 
 async function init() {
@@ -34,7 +32,7 @@ async function init() {
   iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
   iModelHost.concurrentQuery.concurrent = 2;
   iModelHost.concurrentQuery.pollInterval = 5;
-  iModelHost.imodelClient = new IModelHubClient(new AzureFileHandler());
+
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
     EditCommandAdmin.registerModule(testCommands);
