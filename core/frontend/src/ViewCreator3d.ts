@@ -21,45 +21,50 @@ import { ViewState } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
 import { Environment, loggerCategory } from "./imodeljs-frontend";
 
-/** @beta Options for creating a 3d [[ViewState]] via [[ViewCreator3d]] */
+/** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
+ *  @public
+*/
 export interface ViewCreator3dOptions {
-  /** Turn camera on when generating view */
+  /** Turn [[Camera]] on when generating the view. */
   cameraOn?: boolean;
-  /** Turn skybox on when generating view */
+  /** Turn [[SkyBox]] on when generating the view. */
   skyboxOn?: boolean;
-  /** Standard view id for the view state */
+  /** [[StandardViewId]] for the view state. */
   standardViewId?: StandardViewId;
-  /** Merge in Props from seed view (default spatial view) in iModel  */
+  /** Merge in props from the seed view (default spatial view) of the iModel.  */
   useSeedView?: boolean;
-  /** vpAspect aspect ratio of vp to create fit view. */
+  /** Aspect ratio of [[Viewport]]. Required to fit contents of the model(s) in the initial state of the view. */
   vpAspect?: number;
 }
 
-/** @beta API for creating a 3D default [[ViewState]]  for an iModel.
+/**
+ * API for creating a 3D default [[ViewState3d]] for an iModel. @see [[ViewCreator2d]] to create a view for a 2d model.
+ * Example usage:
  * ```ts
  * const viewCreator = new ViewCreator3d(imodel);
  * const defaultView = await viewCreator.createDefaultView({skyboxOn: true});
  * ```
+ * @public
  */
 export class ViewCreator3d {
 
   /**
-   * Constructs ViewCreator3d with [[iModelConnection]].
-   * @param _imodel [[IModelConnection]] to query for categories and/or models
+   * Constructs a ViewCreator3d using an [[IModelConnection]].
+   * @param _imodel [[IModelConnection]] to query for categories and/or models.
    */
   constructor(private _imodel: IModelConnection) { }
 
   /**
-   * Creates a default [[ViewState]] based on the given model ids. Uses all 3D models if no modelIds passed in.
-   * @param options for view creation
-   * @param modelIds [optional] Model Ids to use in the view
-   * @throws [IModelError]($common) if no physical models are found.
+   * Creates a default [[ViewState3d]] based on the model ids passed in. If no model ids are passed in, all 3D models in the iModel are used.
+   * @param [options] Options for creating the view.
+   * @param [modelIds] Ids of models to display in the view.
+   * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState> {
 
     const models = modelIds ? modelIds : await this._getAllModels();
     if (models === undefined || models.length === 0)
-      throw new IModelError(IModelStatus.BadModel, "ViewCreator3d.createDefaultView: no physical models found in iModel", Logger.logError, loggerCategory, () => ({ models }));
+      throw new IModelError(IModelStatus.BadModel, "ViewCreator3d.createDefaultView: no 3D models found in iModel", Logger.logError, loggerCategory, () => ({ models }));
 
     const props = await this._createViewStateProps(models, options);
     const viewState = SpatialViewState.createFromProps(props, this._imodel);

@@ -114,7 +114,6 @@ export class ElectronHost {
     let assetPath = requestedUrl.substr(this._electronFrontend.length);
     if (assetPath.length === 0)
       assetPath = "index.html";
-    assetPath = assetPath.replace(/(#|\?).*$/, "");
 
     // NEEDS_WORK: Remove this after migration to DesktopAuthorizationClient
     assetPath = assetPath.replace("signin-callback", "index.html");
@@ -128,22 +127,29 @@ export class ElectronHost {
       // eslint-disable-next-line no-console
       // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }
+    if (!assetPath.startsWith(this.webResourcesPath))
+      throw new Error(`Access to files outside installation directory (${this.webResourcesPath}) is prohibited`);
     return assetPath;
   }
 
   private static _openWindow(options?: ElectronHostWindowOptions) {
     const opts: BrowserWindowConstructorOptions = {
+      ...options,
       autoHideMenuBar: true,
+      icon: this.appIconPath,
       webPreferences: {
+        ...options?.webPreferences,
+
+        // These web preference variables should not be overriden by the ElectronHostWindowOptions
         preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
-        nodeIntegration: false,
         experimentalFeatures: false,
-        enableRemoteModule: false,
+        nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
+        enableRemoteModule: false,
+        nodeIntegrationInWorker: false,
+        nodeIntegrationInSubFrames: false,
       },
-      icon: this.appIconPath,
-      ...options, // overrides everything above
     };
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);

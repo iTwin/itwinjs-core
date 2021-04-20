@@ -28,26 +28,6 @@ export class UserCancelledError extends BentleyError {
   }
 }
 
-/** Download error
- * @internal
- */
-export class DownloadError extends BentleyError {
-  public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, log, category, getMetaData);
-    this.name = "Download failed";
-  }
-}
-
-/** Uplaod error
- * @internal
- */
-export class UploadError extends BentleyError {
-  public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, log, category, getMetaData);
-    this.name = "Upload failed";
-  }
-}
-
 /** Error thrown when sas-url provided for download has expired
  * @beta
  */

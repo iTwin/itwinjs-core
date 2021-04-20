@@ -6,7 +6,7 @@ import "./TreeWidget.css";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  DiagnosticsProps, useControlledTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler,
+  DiagnosticsProps, useControlledPresentationTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler,
 } from "@bentley/presentation-components";
 import { ControlledTree, FilteringInput, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
@@ -38,7 +38,7 @@ export const Tree: React.FC<Props> = (props: Props) => {
     isFiltering,
     matchesCount,
     nodeHighlightingProps,
-  } = useControlledTreeFiltering({ nodeLoader, filter, activeMatchIndex });
+  } = useControlledPresentationTreeFiltering({ nodeLoader, filter, activeMatchIndex });
   const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader: filteredNodeLoader, collapsedChildrenDisposalEnabled: true, name: "TreeWithHooks" });
   const visibleNodes = useVisibleTreeNodes(filteredModelSource);
 

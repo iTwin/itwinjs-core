@@ -132,7 +132,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     });
 
     // include any attached reality models (may be any number; must be loaded already)
-    for (const loaded of this._vp.iModel.models.loaded.values())
+    for (const loaded of this._vp.iModel.models)
       if (loaded instanceof SpatialModelState && undefined !== loaded.classifiers)
         realityModels.push({ spatialClassifiers: loaded.classifiers, modelName: `${loaded.name} (attached)` });
 
