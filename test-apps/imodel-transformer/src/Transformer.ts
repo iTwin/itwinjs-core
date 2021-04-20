@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Logger } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
-  Category, ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions,
+  Category, CategorySelector, ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions,
   InformationPartitionElement, PhysicalModel, PhysicalPartition, Relationship, SubCategory,
 } from "@bentley/imodeljs-backend";
-import { ElementProps, IModel } from "@bentley/imodeljs-common";
+import { CategorySelectorProps, ElementProps, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 export const progressLoggerCategory = "Progress";
@@ -31,7 +31,7 @@ export class Transformer extends IModelTransformer {
 
   public static async transformAll(requestContext: AuthorizedClientRequestContext | ClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
     const transformer = new Transformer(sourceDb, targetDb, options);
-    transformer.initialize(options);
+    await transformer.initialize(options);
     await transformer.processSchemas(requestContext);
     targetDb.saveChanges("processSchemas");
     await transformer.processAll();
@@ -50,7 +50,7 @@ export class Transformer extends IModelTransformer {
       return this.transformAll(requestContext, sourceDb, targetDb, options);
     }
     const transformer = new Transformer(sourceDb, targetDb, options);
-    transformer.initialize(options);
+    await transformer.initialize(options);
     await transformer.processChanges(requestContext, sourceStartChangeSetId);
     targetDb.saveChanges("processChanges");
     if (options?.deleteUnusedGeometryParts) {
@@ -65,7 +65,7 @@ export class Transformer extends IModelTransformer {
     super(sourceDb, targetDb, options);
   }
 
-  private initialize(options?: TransformerOptions): void {
+  private async initialize(options?: TransformerOptions): Promise<void> {
     Logger.logInfo(progressLoggerCategory, `sourceDb=${this.sourceDb.pathName}`);
     Logger.logInfo(progressLoggerCategory, `targetDb=${this.targetDb.pathName}`);
     this.logChangeTrackingMemoryUsed();
@@ -82,7 +82,7 @@ export class Transformer extends IModelTransformer {
       this.excludeSubCategories(options.excludeSubCategories);
     }
     if (options?.excludeCategories) {
-      this.excludeCategories(options.excludeCategories);
+      await this.excludeCategories(options.excludeCategories);
     }
 
     // query for and log the number of source Elements that will be processed
@@ -119,20 +119,37 @@ export class Transformer extends IModelTransformer {
     }
   }
 
-  /** Initialize IModelTransformer to exclude Category Elements and geometry entries in a Category from the target iModel.
+  /** Initialize IModelTransformer to exclude Category Elements and references to them
+   * (e.g. from GeometricElements and CategorySelectors)
    * @param CategoryNames Array of Category names to exclude
    */
-  private excludeCategories(categoryNames: string[]): void {
+  private async excludeCategories(categoryNames: string[]): Promise<void> {
     const sql = `SELECT ECInstanceId FROM ${Category.classFullName} WHERE CodeValue=:categoryName`;
+
+    const categoryIds = new Set<Id64String>();
+
     for (const categoryName of categoryNames) {
-      this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
         statement.bindString("categoryName", categoryName);
         while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const categoryId = statement.getValue(0).getId();
-          this.exporter.excludeElementCategory(categoryId);
-          this.exporter.excludeElement(categoryId);
+          categoryIds.add(statement.getValue(0).getId());
         }
       });
+    }
+
+    for (const categoryId of categoryIds) {
+      this.exporter.excludeElementCategory(categoryId);
+      this.exporter.excludeElement(categoryId);
+      const query = this.sourceDb.query(`SELECT ECInstanceId FROM ${CategorySelector.classFullName}`) as AsyncIterableIterator<CategorySelectorProps>;
+      for await (const { id } of query) {
+        if (id) {
+          const categorySelector = this.sourceDb.elements.getElement<CategorySelector>(id, CategorySelector);
+          for (const category of categorySelector.categories) {
+            categorySelector.removeUserProperties;
+            categorySelector.getPredecessorIds();
+          }
+        }
+      }
     }
   }
 
