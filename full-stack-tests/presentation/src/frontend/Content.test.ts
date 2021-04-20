@@ -60,6 +60,10 @@ describe("Content", () => {
               ],
             },
           }],
+        }, {
+          ruleType: RuleTypes.LabelOverride,
+          condition: `ThisNode.IsInstanceNode ANDALSO this.IsOfClass("Model", "BisCore")`,
+          label: `this.GetRelatedDisplayLabel("BisCore:ModelModelsElement", "Forward", "BisCore:Element")`,
         }],
       };
       const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
