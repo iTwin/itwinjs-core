@@ -51,6 +51,10 @@ property value from a related instance.
 * A new [InstanceLabelOverrideRelatedInstanceLabelSpecification]($presentation-common) was added to allow taking label of a related
 instance. The related instance, possibly being a of a different ECClass, might have some different label overrides of its own.
 
+### Custom category renderers
+
+[VirtualizedPropertyGrid]($ui-components) now allows developers to fully customize displayed category contents, if the category is assigned a custom renderer via Presentation Rules. You can read more about that in our [Category customization learning page](../learning/presentation/Customization/PropertyCategoryRenderers.md).
+
 ## Promoted APIs
 
 The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
@@ -63,6 +67,7 @@ The following APIs have been promoted to `public`. Public APIs are guaranteed to
 * [WebGLRenderCompatibilityStatus]($webgl-compatibility) for describing a general compatiblity rating of a client system.
 * [GraphicsDriverBugs]($webgl-compatibility) for describing any known graphics driver bugs for which iTwin.js will apply workarounds.
 * [ContextCreator]($webgl-compatibility) for describing a function that creates and returns a WebGLContext for [queryRenderCompatibility]($webgl-compatibility).
+
 ## Breaking API changes
 
 ### @bentley/imodeljs-backend package

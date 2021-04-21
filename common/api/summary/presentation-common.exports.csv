@@ -42,6 +42,7 @@ public;ContentSpecificationTypes
 alpha;ContentUpdateInfo = typeof UPDATE_FULL
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
+public;CustomRendererSpecification
 public;DEFAULT_KEYS_BATCH_SIZE = 5000
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
@@ -270,7 +271,8 @@ public;PropertyInfoJSON
 public;PropertyJSON
 public;PropertyOverrides
 public;PropertyRangeGroupSpecification
-public;PropertyRendererSpecification
+public;PropertyRendererSpecification = CustomRendererSpecification
+deprecated;PropertyRendererSpecification = CustomRendererSpecification
 public;PropertySortingRule 
 public;PropertySpecification 
 public;PropertyValueFormat

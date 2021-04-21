@@ -6,6 +6,8 @@
  * @module PresentationRules
  */
 
+import { CustomRendererSpecification } from "./CustomRendererSpecification";
+
 /**
  * Specification to define a custom property category.
  *
@@ -30,4 +32,7 @@ export interface PropertyCategorySpecification {
 
   /** Should this category be auto-expanded. Defaults to `false`. */
   autoExpand?: boolean;
+
+  /** Custom category renderer specification. */
+  renderer?: CustomRendererSpecification;
 }

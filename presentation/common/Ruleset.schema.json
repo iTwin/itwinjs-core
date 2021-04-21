@@ -744,6 +744,20 @@
       ],
       "type": "object"
     },
+    "CustomRendererSpecification": {
+      "additionalProperties": false,
+      "description": "Specification for custom content renderer.",
+      "properties": {
+        "rendererName": {
+          "description": "Name of the custom renderer.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rendererName"
+      ],
+      "type": "object"
+    },
     "DEPRECATED_AllInstanceNodesSpecification": {
       "additionalProperties": false,
       "description": "Creates nodes for all available instances filtered only by the\n`supportedSchemas` properties of the specification or the ruleset.",
@@ -2150,6 +2164,10 @@
         "priority": {
           "description": "Priority of the category. Higher priority categories are displayed on top. Defaults to `1000`.",
           "type": "integer"
+        },
+        "renderer": {
+          "$ref": "#/definitions/CustomRendererSpecification",
+          "description": "Custom category renderer specification."
         }
       },
       "required": [
@@ -2386,20 +2404,6 @@
       ],
       "type": "object"
     },
-    "PropertyRendererSpecification": {
-      "additionalProperties": false,
-      "description": "Specification for custom property renderer.",
-      "properties": {
-        "rendererName": {
-          "description": "Name of the custom renderer.",
-          "type": "string"
-        }
-      },
-      "required": [
-        "rendererName"
-      ],
-      "type": "object"
-    },
     "PropertySortingRule": {
       "additionalProperties": false,
       "description": "Rule to configure sorting for certain ECInstances in the hierarchy and/or content.\nIt is possible to configure different sorting for different types of ECInstances.\n\nMultiple sorting rules may be applied for the same instances - in this case the\ninstances are first sorted by the highest priority rule and then the lower priority ones.\n\nNote: This rule is not meant to be used to sort grouping nodes, custom nodes or\nother non ECInstance type of nodes.",
@@ -2480,7 +2484,7 @@
           "type": "number"
         },
         "renderer": {
-          "$ref": "#/definitions/PropertyRendererSpecification",
+          "$ref": "#/definitions/CustomRendererSpecification",
           "description": "Custom property renderer specification."
         }
       },

@@ -631,6 +631,7 @@ class PropertyDataBuilder {
           name: categoryDescr.name,
           label: categoryDescr.label,
           expand: categoryDescr.expand,
+          renderer: categoryDescr.renderer,
         };
         return { category, source: categoryDescr, categoryHasParent: parentDescr !== undefined };
       });

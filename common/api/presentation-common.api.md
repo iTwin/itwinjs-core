@@ -76,6 +76,7 @@ export interface CategoryDescription {
     name: string;
     parent?: CategoryDescription;
     priority: number;
+    renderer?: RendererDescription;
 }
 
 // @public (undocumented)
@@ -99,6 +100,8 @@ export interface CategoryDescriptionJSON {
     parent?: string;
     // (undocumented)
     priority: number;
+    // (undocumented)
+    renderer?: RendererDescription;
 }
 
 // @public
@@ -333,6 +336,11 @@ export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     queries?: QuerySpecification[];
     specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes;
+}
+
+// @public
+export interface CustomRendererSpecification {
+    rendererName: string;
 }
 
 // @public
@@ -1851,6 +1859,7 @@ export interface PropertyCategorySpecification {
     id: string;
     label: string;
     priority?: number;
+    renderer?: CustomRendererSpecification;
 }
 
 // @public
@@ -1972,7 +1981,7 @@ export interface PropertyOverrides {
     isDisplayed?: boolean;
     labelOverride?: string;
     overridesPriority?: number;
-    renderer?: PropertyRendererSpecification;
+    renderer?: CustomRendererSpecification;
 }
 
 // @public
@@ -1983,10 +1992,8 @@ export interface PropertyRangeGroupSpecification {
     toValue: string;
 }
 
-// @public
-export interface PropertyRendererSpecification {
-    rendererName: string;
-}
+// @public @deprecated
+export type PropertyRendererSpecification = CustomRendererSpecification;
 
 // @public
 export interface PropertySortingRule extends SortingRuleBase {
