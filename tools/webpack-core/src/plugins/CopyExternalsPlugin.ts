@@ -6,7 +6,7 @@ import * as chalk from "chalk";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
-import { getAppRelativePath, getSourcePosition, paths } from "../utils/paths";
+import { getAppRelativePath, getSourcePosition, getPaths } from "../utils/paths";
 const getAllDependencies = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
@@ -32,6 +32,7 @@ export class CopyExternalsPlugin {
   private _logger: any;
 
   constructor() {
+    const paths = getPaths();
     const appPackageJson = require(paths.appPackageJson);
     // NEEDSWORK: We need to special case imodeljs-native now that it is not an explicit dependency of most apps.
     // This is a bit of a hack, but it's easier to just do this for now than build out the entire dependency tree...
@@ -72,6 +73,7 @@ export class CopyExternalsPlugin {
       }
       return;
     }
+    const paths = getPaths();
     const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [paths.appNodeModules, path.join(paths.appNodeModules, "@bentley", "imodeljs-backend")] });
     await this.copyPackage(pkgName, outputDir, path.dirname(packageJsonPath));
     if (!packageJsonPath)

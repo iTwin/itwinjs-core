@@ -7,13 +7,22 @@ import * as fs from "fs";
 import * as path from "path";
 
 const appDirectory = fs.realpathSync(process.cwd());
+
 export const resolveApp = (relativePath: string) => path.resolve(appDirectory, relativePath);
 
-export const paths = {
-  // Top-level files
+let _paths = {
   appPackageJson: resolveApp("package.json"),
   appNodeModules: resolveApp("node_modules"),
-};
+}
+
+export function getPaths() {
+  return _paths;
+}
+
+export function updatePaths(dir: string) {
+  _paths.appPackageJson = path.resolve(dir, "package.json");
+  _paths.appNodeModules = path.resolve(dir, "node_modules");
+}
 
 export function getAppRelativePath(p: string) {
   return path.relative(appDirectory, p);
