@@ -38,11 +38,10 @@ export class TouchCursor implements CanvasDecoration {
   protected constructor(vp: ScreenViewport) {
     this._size = vp.pixelsFromInches(0.3);
     this._yOffset = this._size * 1.75;
-    this.viewport = vp;    
+    this.viewport = vp;
   }
 
   protected setPosition(vp: Viewport, worldLocation: Point3d): boolean {
-    this.viewport = vp;
     const pointNpc = vp.worldToNpc(worldLocation);
     if (pointNpc.z < 0.0 || pointNpc.z > 1.0)
       pointNpc.z = 0.5; // move inside frustum.
@@ -58,6 +57,7 @@ export class TouchCursor implements CanvasDecoration {
 
     this.position.setFrom(viewLocation);
     this._offsetPosition.setFrom(offsetLocation);
+    this.viewport = vp;
     vp.invalidateDecorations();
     return true;
   }
