@@ -24,7 +24,7 @@ import {
   SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
   Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
-import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
+import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework, useActiveViewport } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
@@ -33,6 +33,26 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
+
+function BackgroundColorToggle() {
+  const activeViewport = useActiveViewport();
+  const [overrideColor] = React.useState(() => ColorDef.computeTbgrFromString("skyblue"));
+  const originalBgColor = React.useMemo(() => {
+    return activeViewport ? activeViewport.view.displayStyle.settings.backgroundColor.tbgr : ColorDef.black.tbgr;
+  }, [activeViewport]);
+
+  const [isOverrideOn, setIsOverrideOn] = React.useState(false);
+
+  const onToggle = React.useCallback((checked) => {
+    if (activeViewport) {
+      const backgroundColor = checked ? overrideColor : originalBgColor;
+      activeViewport.overrideDisplayStyle({ backgroundColor });
+      setIsOverrideOn(checked);
+    }
+  }, [activeViewport, originalBgColor, overrideColor]);
+
+  return <Toggle isOn={isOverrideOn} onChange={onToggle} />;
+}
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -1069,6 +1089,7 @@ export class ComponentExamplesProvider {
     return {
       title: "Toggle",
       examples: [
+        createComponentExample("BackgroundColorToggle", undefined, <BackgroundColorToggle />),
         createComponentExample("Basic Toggle", undefined, <Toggle isOn={true} />),
         createComponentExample("Primary Toggle", "Toggle with buttonType={ToggleButtonType.Primary}", <Toggle isOn={true} buttonType={ToggleButtonType.Primary} />),
         createComponentExample("Large Toggle", "Toggle with large={true}", <Toggle isOn={true} large={true} />),

@@ -6,12 +6,12 @@
  * Copies the source CSS into the destination
  * @param targetDoc - target document
  * @param sourceDoc - source document
- * @protected
+ * @internal
  */
 export function copyStyles(targetDoc: Document, sourceDoc: Document = document) {
   const stylesheets = Array.from(sourceDoc.styleSheets);
   stylesheets.forEach((stylesheet) => {
-    const css = stylesheet ;
+    const css = stylesheet;
     if (stylesheet.href) {
       const newStyleElement = sourceDoc.createElement("link");
       newStyleElement.rel = "stylesheet";

@@ -2,17 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family: $uicore-sans;
-  font-size: $uicore-font-size;
-  color: $buic-foreground-body;
+.uifw-popout-container-host {
+  height: 100%;
+  width: 100%;
+  position: relative;
 }
 
-.red-text {
-  color: red;
+.uifw-popout-container {
+  height: 100%;
+  width: 100%;
 }

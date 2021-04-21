@@ -4,18 +4,31 @@
 *--------------------------------------------------------------------------------------------*/
 // Cspell: ignore Popout
 
-import React from "react";
-import ReactDOM from "react-dom";
+/** @packageDocumentation
+ * @module Popout
+ */
+
+import "./PopoutManager.scss";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import { copyStyles } from "./CopyStyles";
 import { Provider } from "react-redux";
-import { ModalDialogRenderer, ModelessDialogRenderer, PopupRenderer, StateManager, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
+import { UiFramework } from "../UiFramework";
+import { StateManager } from "../redux/StateManager";
+import { UiSettingsProvider } from "../uisettings/useUiSettings";
+import { PopupRenderer } from "../popup/PopupManager";
+import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
+import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
+import { CursorPopupMenu } from "../../ui-framework";
 
+/** @alpha */
 export interface OpenPopoutWindow {
   contentId: string;
   window: Window;
   parentWindow: Window;
 }
 
+/** @alpha */
 export interface PopoutWindowLocationProps {
   width: number;
   height: number;
@@ -23,41 +36,62 @@ export interface PopoutWindowLocationProps {
   top: number;
 }
 
+/** Support opening a popout from the main application window.
+ * @alpha */
 export class PopoutManager {
   private _openPopoutWindows: OpenPopoutWindow[] = [];
+
+  public findPopoutWindow(contentId: string | undefined): OpenPopoutWindow | undefined {
+    if (undefined === contentId)
+      return undefined;
+
+    return this._openPopoutWindows.find((openWindow) => openWindow.contentId === contentId);
+  }
+
+  public findPopoutWindowId(contentWindow: Window | undefined): string | undefined {
+    if (undefined === contentWindow)
+      return undefined;
+
+    const popoutWindow = this._openPopoutWindows.find((openWindow) => openWindow.window === contentWindow);
+    return popoutWindow?.contentId;
+  }
 
   private renderPopOut(popoutWindow: Window, contentId: string, content: React.ReactNode) {
     const reactConnectionDiv = popoutWindow.document.getElementById("root");
     if (reactConnectionDiv) {
-      setTimeout(() => copyStyles(popoutWindow.document));
-      popoutWindow.document.documentElement.setAttribute("data-theme", UiFramework.getColorTheme());
-
-      ReactDOM.render(
-        <React.StrictMode>
-          <Provider store={StateManager.store} >
-            <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
-              <PopupRenderer />
-              <ModalDialogRenderer />
-              <ModelessDialogRenderer />
-              <div className="widget-popout-container nz-widget-widget">
-                {content}
-              </div>
-            </UiSettingsProvider>
-          </Provider>
-        </React.StrictMode>,
-        reactConnectionDiv
-      );
-
-      popoutWindow.onbeforeunload = () => {
-        this.closePopout(contentId, false);
-      };
-
+      // set openPopoutWindows now so components can use it when they mount
       this._openPopoutWindows.push({
         contentId,
         window: popoutWindow,
         parentWindow: window,
       });
-      // AppState.fireWidgetVisibilityChangedEvent();
+
+      setTimeout(() => copyStyles(popoutWindow.document));
+      popoutWindow.document.documentElement.setAttribute("data-theme", UiFramework.getColorTheme());
+      setImmediate(() => {
+        ReactDOM.render(
+          <React.StrictMode>
+            <Provider store={StateManager.store} >
+              <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
+                <div className="uifw-popout-container-host">
+                  <PopupRenderer />
+                  <ModalDialogRenderer />
+                  <ModelessDialogRenderer />
+                  <CursorPopupMenu />
+                  <div className="uifw-popout-container nz-widget-widget">
+                    {content}
+                  </div>
+                </div>
+              </UiSettingsProvider>
+            </Provider>
+          </React.StrictMode>,
+          reactConnectionDiv
+        );
+      });
+
+      popoutWindow.onbeforeunload = () => {
+        this.closePopout(contentId, false);
+      };
     }
   }
 

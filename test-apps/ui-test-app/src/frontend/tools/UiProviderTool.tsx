@@ -17,14 +17,14 @@ import {
 } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  ActionCreatorsObject, ActionsUnion, createAction, ModelSelectorWidget, ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
+  ActionCreatorsObject, ActionsUnion, createAction, ModelSelectorWidget, PopoutWindowLocationProps,
+  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
 import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";
-import { PopoutWindowLocationProps } from "../appui/widgets/popout/PopoutManager";
 import { PopupTestPanel } from "./PopupTestPanel";
 import { PopupTestView } from "./PopupTestView";
 
@@ -222,7 +222,7 @@ export class OpenWidgetPopoutTool extends Tool {
     };
     const connection = UiFramework.getIModelConnection();
     if (connection)
-      SampleAppIModelApp.popoutManager.openPopout("VisibilityTreeWidget", "VisibilityTreeWidget", <ModelSelectorWidget iModelConnection={connection} />, location);
+      UiFramework.popoutManager.openPopout("VisibilityTreeWidget", "VisibilityTreeWidget", <ModelSelectorWidget iModelConnection={connection} />, location);
   }
 
   public static get flyover(): string {
@@ -266,7 +266,7 @@ export class OpenCustomPopoutTool extends Tool {
       left: 0,
       top: 0,
     };
-    SampleAppIModelApp.popoutManager.openPopout("CustomPopout", "Custom Popout", <PopupTestPanel />, location);
+    UiFramework.popoutManager.openPopout("CustomPopout", "Custom Popout", <PopupTestPanel />, location);
   }
 
   public static get flyover(): string {
@@ -311,7 +311,7 @@ export class OpenViewPopoutTool extends Tool {
       left: 0,
       top: 0,
     };
-    SampleAppIModelApp.popoutManager.openPopout("ViewPopout", "View Popout", <PopupTestView />, location);
+    UiFramework.popoutManager.openPopout("ViewPopout", "View Popout", <PopupTestView />, location);
   }
 
   public static get flyover(): string {

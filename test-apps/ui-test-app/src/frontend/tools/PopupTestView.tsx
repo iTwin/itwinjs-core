@@ -36,7 +36,7 @@ export function PopupTestView() {
   const handleContextMenu = React.useCallback((e: React.MouseEvent): boolean => {
     e.preventDefault();
     // eslint-disable-next-line no-console
-    IModelApp.uiAdmin.showContextMenu(menuItems, IModelApp.uiAdmin.cursorPosition, e.target as HTMLElement);
+    IModelApp.uiAdmin.showContextMenu(menuItems, { x: e.pageX, y: e.pageY }, e.target as HTMLElement);
     return false;
   }, [menuItems]);
 
