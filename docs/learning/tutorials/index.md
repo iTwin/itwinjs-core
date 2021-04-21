@@ -27,6 +27,7 @@ Test iModels can be used for local development. There are a few different ways t
 [!bwc tile heading="Extension" linkTo="gettingstarted subPath=/frontend/extensions" contents="Create an iTwin.js Extension" icon="puzzle.svg" step="13" width="28%"]
 
 ### Building Applications
+
 [!bwc tile heading="iTwin Viewer - 'Hello World'" linkTo="hello-world-viewer" contents="Get a basic understanding of the iTwin Viewer" icon="network.svg" step="13" width="28%" ]
 
 ### Registering Applications

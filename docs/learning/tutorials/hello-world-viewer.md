@@ -12,6 +12,7 @@ This tutorial assumes that you already have:
   - Instructions to use this sample iModel can be found [here]($docs/learning/tutorials/create-test-imodel-sample/).
 
 ![HelloWorldAbove]($docs/learning/tutorials/images/hello_world_above.png)
+
 ### Goal
 
 This tutorial will take you through the first steps of customizing your iTwin Web Viewer.  First you will learn how to add a new user interface component.  Later you will customize that component to change the background color of your viewer.
