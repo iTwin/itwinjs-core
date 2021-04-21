@@ -59,8 +59,6 @@ export class ChangeSetToken {
  * @beta
  */
 export class BriefcaseManager {
-  private static _firstChangeSetDir: string = "first";
-
   /** @internal
    * @note temporary, will be removed in 3.0
    * @deprecated
@@ -87,7 +85,7 @@ export class BriefcaseManager {
 
   /** @internal */
   public static getChangeSetFolderNameFromId(changeSetId: string): string {
-    return changeSetId || this._firstChangeSetDir;
+    return changeSetId || "first";
   }
 
   /** Get the name of the local file that holds, or will hold, a briefcase in the briefcase cache established in the call to [[BriefcaseManager.initialize]], based
