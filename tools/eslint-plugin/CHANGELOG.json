@@ -2,6 +2,24 @@
   "name": "@bentley/eslint-plugin",
   "entries": [
     {
+      "version": "2.14.3",
+      "tag": "@bentley/eslint-plugin_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/eslint-plugin_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/eslint-plugin_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.14.0",
       "tag": "@bentley/eslint-plugin_v2.14.0",
       "date": "Fri, 02 Apr 2021 13:18:42 GMT",

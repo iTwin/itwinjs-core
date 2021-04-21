@@ -6,12 +6,14 @@
  * @module Table
  */
 
-import { Primitives, PrimitiveValue, PropertyRecord, PropertyValueFormat, UiError } from "@bentley/ui-abstract";
+import { Primitives, PropertyRecord, PropertyValueFormat, UiError } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { UiComponents } from "../UiComponents";
-import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
-import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent, TableDistinctValue } from "./TableDataProvider";
+import { CompositeFilterDescriptorCollection, DistinctValueCollection, TableDistinctValue } from "./columnfiltering/ColumnFiltering";
+import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent } from "./TableDataProvider";
+
+// cSpell:ignore columnfiltering
 
 /**
  * A Table Data Provider using an array of items.
@@ -205,7 +207,9 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
         continue;
 
       const value = this.getPrimitiveValue(record);
-      const displayValue = await TypeConverterManager.getConverter(propertyDescription.typename, propertyDescription.converter?.name).convertPropertyToString(propertyDescription, value);
+      const displayValue = await TypeConverterManager
+        .getConverter(propertyDescription.typename, propertyDescription.converter?.name)
+        .convertPropertyToString(propertyDescription, value);
 
       // istanbul ignore next
       if (value === undefined || typeof displayValue !== "string")
@@ -222,7 +226,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
 
     distinctValues.values = uniqueValues;
 
-    distinctValues.values.sort((a: PrimitiveValue, b: PrimitiveValue) => {
+    distinctValues.values.sort((a: TableDistinctValue, b: TableDistinctValue) => {
       if (a.value && b.value)
         return TypeConverterManager.getConverter(propertyDescription.typename, propertyDescription.converter?.name).sortCompare(a.value, b.value);
       return 0;

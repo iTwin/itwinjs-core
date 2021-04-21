@@ -1941,7 +1941,7 @@ describe("iModel", () => {
 
   function hasClassView(db: IModelDb, name: string): boolean {
     try {
-      return db.withPreparedSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
+      return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
     } catch (e) {
       return false;
     }

@@ -75,9 +75,8 @@ describe("SubCategoriesCache", () => {
 
   function expectEqualIdSets(idSet: Id64Set, ids: Id64Arg): void {
     expect(idSet.size).to.equal(Id64.sizeOf(ids));
-    Id64.forEach(ids, (id) => {
+    for (const id of Id64.iterable(ids))
       expect(idSet.has(id)).to.be.true;
-    });
   }
 
   class Queue extends SubCategoriesCache.Queue {
@@ -101,9 +100,8 @@ describe("SubCategoriesCache", () => {
     }
 
     public expectNotLoaded(catIds: Id64Arg): void {
-      Id64.forEach(catIds, (catId) => {
+      for (const catId of Id64.iterable(catIds))
         expect(this.cache.getSubCategories(catId)).to.be.undefined;
-      });
     }
 
     public expectLoaded(catId: Id64String, subcatIds: Id64Arg): void {

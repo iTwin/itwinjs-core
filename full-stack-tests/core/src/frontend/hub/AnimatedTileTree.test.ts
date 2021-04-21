@@ -91,6 +91,18 @@ describe("Animated tile trees (#integration)", () => {
     const view = await imodel.views.load(viewId);
     expect(view.displayStyle.id).to.equal(styleId);
     expect(hasNonEmptyElementIds(view.displayStyle.toJSON())).to.be.false;
+
+    let style = await imodel.elements.loadProps(styleId, { displayStyle: { omitScheduleScriptElementIds: true } });
+    expect(style).not.to.be.undefined;
+    expect(hasNonEmptyElementIds(style!)).to.be.false;
+
+    style = await imodel.elements.loadProps(styleId, { displayStyle: { omitScheduleScriptElementIds: false } });
+    expect(style).not.to.be.undefined;
+    expect(hasNonEmptyElementIds(style!)).to.be.true;
+
+    style = await imodel.elements.loadProps(styleId);
+    expect(style).not.to.be.undefined;
+    expect(hasNonEmptyElementIds(style!)).to.be.true;
   });
 
   it("creates an additional tile tree per animation transform node", async () => {

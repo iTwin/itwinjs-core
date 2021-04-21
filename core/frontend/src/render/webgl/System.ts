@@ -9,7 +9,7 @@
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import {
-  ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
+  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
 } from "@bentley/imodeljs-common";
 import { Capabilities, DepthType, WebGLContext } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
@@ -30,7 +30,9 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, TerrainTexture } from "../RenderSystem";
+import {
+  BatchOptions, DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, TerrainTexture,
+} from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
@@ -59,6 +61,7 @@ import { Techniques } from "./Technique";
 import { RealityMeshGeometry } from "./RealityMesh";
 import { Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
+import { PlanarGridGeometry } from "./PlanarGrid";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -508,6 +511,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return MeshGraphic.create(params, instances);
   }
 
+  public createPlanarGrid(frustum: Frustum, grid: PlanarGridProps): RenderGraphic | undefined {
+    return PlanarGridGeometry.create (frustum, grid, this);
+  }
+
   public createRealityMeshFromTerrain(terrainMesh: TerrainMeshPrimitive, transform?: Transform): RealityMeshGeometry | undefined {
     return RealityMeshGeometry.createFromTerrainMesh(terrainMesh, transform);
   }
@@ -540,8 +547,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new Branch(branch, transform, undefined, options);
   }
 
-  public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic {
-    return new Batch(graphic, features, range, tileId);
+  public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic {
+    return new Batch(graphic, features, range, options);
   }
 
   public createGraphicOwner(owned: RenderGraphic): RenderGraphicOwner {

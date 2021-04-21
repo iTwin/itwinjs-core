@@ -73,7 +73,9 @@ function assignOptionalTreeNodeItemFields(
   node: Partial<Node>,
   parentId?: string,
 ): void {
-  (item as any)[PRESENTATION_TREE_NODE_KEY] = node.key;
+  if (node.key !== undefined) {
+    (item as any)[PRESENTATION_TREE_NODE_KEY] = node.key;
+  }
 
   if (parentId) {
     item.parentId = parentId;

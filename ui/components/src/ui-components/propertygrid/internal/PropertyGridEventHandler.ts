@@ -10,7 +10,7 @@ import { IPropertyGridModelSource } from "./PropertyGridModelSource";
 
 /**
  * Handles events and changes on PropertyGridModel data.
- * @alpha
+ * @beta
  */
 export interface IPropertyGridEventHandler {
   onExpansionToggled: (selectionKey: string) => void;
@@ -18,7 +18,7 @@ export interface IPropertyGridEventHandler {
 
 /**
  * Handles events and changes on PropertyGridModel data.
- * @alpha
+ * @beta
  */
 export class PropertyGridEventHandler {
   public constructor(private _modelSource: IPropertyGridModelSource) {

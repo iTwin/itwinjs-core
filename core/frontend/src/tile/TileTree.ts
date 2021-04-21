@@ -143,14 +143,11 @@ export abstract class TileTree {
 
     this._isDisposed = true;
     dispose(this.rootTile);
-    dispose(this.clipVolume);
   }
 
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.rootTile.collectStatistics(stats);
-    if (undefined !== this.clipVolume)
-      this.clipVolume.collectStatistics(stats);
   }
 
   /** Returns the number of [[Tile]]s currently in memory belonging to this tree, primarily for debugging. */
