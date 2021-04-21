@@ -8,6 +8,7 @@ import { SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, Unit } from "../ec
 import { SchemaItemType } from "../ECObjects";
 
 /**
+ * Class used to find Units in SchemaContext by attributes such as Phenomenon and DisplayLabel
  * @alpha
  */
 export class UnitProvider {
@@ -132,6 +133,7 @@ export class UnitProvider {
       try {
         foundUnit = await this.findUnitByDisplayLabel(findLabel, findSchema, findPhenomenon, findUnitSystem);
       } catch (err) {
+        // If there is no Unit with display label that matches label, then check for alternate display labels that may match
         foundUnit = await this.findUnitByAltDisplayLabel(findLabel, findSchema, findPhenomenon, findUnitSystem);
       }
     } catch (err) {
@@ -152,11 +154,11 @@ export class UnitProvider {
     let { value, done } = schemaItems.next();
     while (!done) {
       if (Unit.isUnit(value) && value.label?.toLowerCase() === displayLabel) {
-        const foundPhenomenon = await value.phenomenon;
-        const foundUnitSystem = await value.unitSystem;
+        const currPhenomenon = await value.phenomenon;
+        const currUnitSystem = await value.unitSystem;
         if (!schemaName || value.schema.name.toLowerCase() === schemaName)
-          if (!phenomenon || foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon))
-            if (!unitSystem || foundUnitSystem && foundUnitSystem.key.matchesFullName(unitSystem))
+          if (!phenomenon || (currPhenomenon && currPhenomenon.key.matchesFullName(phenomenon)))
+            if (!unitSystem || (currUnitSystem && currUnitSystem.key.matchesFullName(unitSystem)))
               return value;
       }
       ({ value, done } = schemaItems.next());
@@ -180,8 +182,8 @@ export class UnitProvider {
           const foundPhenomenon = await unit.phenomenon;
           const foundUnitSystem = await unit.unitSystem;
           if (!schemaName || unit.schema.name.toLowerCase() === schemaName)
-            if (!phenomenon || foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon))
-              if (!unitSystem || foundUnitSystem && foundUnitSystem.key.matchesFullName(unitSystem))
+            if (!phenomenon || (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)))
+              if (!unitSystem || (foundUnitSystem && foundUnitSystem.key.matchesFullName(unitSystem)))
                 return unit;
         }
       }

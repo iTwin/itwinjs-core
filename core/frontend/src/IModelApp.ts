@@ -121,6 +121,7 @@ export interface IModelAppOptions {
   tentativePoint?: TentativePoint;
   /** @internal */
   quantityFormatter?: QuantityFormatter;
+  /** @internal */
   schemaContext?: SchemaContext;
   /** @internal */
   renderSys?: RenderSystem | RenderSystem.Options;
@@ -228,6 +229,10 @@ export class IModelApp {
    * @alpha
    */
   public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
+  /**
+   * The [[SchemaContext]] for this session.
+   * @alpha
+   */
   public static get schemaContext(): SchemaContext { return this._schemaContext; }
   /** The [[ToolAdmin]] for this session. */
   public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }

@@ -342,6 +342,7 @@ export class QuantityFormatter implements UnitsProvider {
 
   /**
    * constructor
+   * @param _context - SchemaContext with Units for _unitsProvider to find Units from
    * @param showMetricOrUnitSystem - Pass in `true` to show Metric formatted quantity values. Defaults to Imperial. To explicitly
    * set it to a specific unit system pass a UnitSystemKey.
    */
