@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Update to get activeViewPort by monitoring ContentViewManager.onActiveContentChangedEvent this elimates issue where ViewManager active viewport changes occur before all UI components are mounted and listening.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}
