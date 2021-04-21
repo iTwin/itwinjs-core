@@ -128,12 +128,6 @@ describe("imodel-transformer", () => {
     const elemsInCategoryInSrc = await getElementCountInTestCategory(sourceDb);
     assert.isAtLeast(elemsInCategoryInSrc, 6);
 
-    const _entityIdsTarget = targetDb.queryEntityIds({
-      from: Category.classFullName,
-      where: "CodeValue=:category",
-      bindings: {category: testSpatialCategory.name},
-    });
-
     assert.isFalse(await hasTheCategory(targetDb));
 
     const elemsInCategoryInTarget = await getElementCountInTestCategory(targetDb);
