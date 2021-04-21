@@ -1158,10 +1158,6 @@
       "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/test-apps/display-performance-test-app/lib/backend/WebMain.js",
-      "args": [
-        "D:\\DisplayPerformanceConfigs\\tpbmaps.json",
-        "e:\\Images\\tpbmaps\\imodeljs",
-      ],
       "outFiles": [
         "${workspaceFolder}/test-apps/display-performance-test-app/lib/{backend}/**/*.js",
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
