@@ -92,12 +92,9 @@ describe("imodel-transformer", () => {
       ecefLocation: sourceDb.ecefLocation,
     });
 
-    const testSpatialCategory = {
-      name: "TestSpatialCategory",
-      id: "0x14",
-    };
+    const testCategory = "TestSpatialCategory";
 
-    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { excludeCategories: [testSpatialCategory.name] });
+    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { excludeCategories: [testCategory] });
 
     async function getElementCountInTestCategory(db: IModelDb) {
       // do two queries because querying abstract GeometricElement won't contain the category
@@ -105,7 +102,7 @@ describe("imodel-transformer", () => {
       return sum(await Promise.all([GeometricElement2d.classFullName, GeometricElement3d.classFullName].map(async (className) => {
         const queryResult = await db.query(
           `SELECT COUNT(*) FROM ${className} e JOIN bis.Category c ON e.category.id=c.ECInstanceId WHERE c.CodeValue=:category`,
-          { category: testSpatialCategory.name }
+          { category: testCategory }
         ).next();
         const value = Object.values(queryResult.value)[0]; // gets the value of the first column in the returned row
         if (typeof value !== "number") {
@@ -119,7 +116,7 @@ describe("imodel-transformer", () => {
       return db.queryEntityIds({
         from: Category.classFullName,
         where: "CodeValue=:category",
-        bindings: {category: testSpatialCategory.name},
+        bindings: {category: testCategory},
       }).size > 0;
     }
 
