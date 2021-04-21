@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform, TransformProps, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
   BatchType, Cartographic, ColorDef, Feature,
   FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d, Quantization,
@@ -19,7 +19,6 @@ import {
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@bentley/orbitgt-core";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
-import { DisplayStyleState } from "../DisplayStyleState";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -27,13 +26,11 @@ import { Mesh, PointCloudArgs } from "../render-primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderMemory } from "../render/RenderMemory";
 import { RenderSystem } from "../render/RenderSystem";
-import { SpatialClassifiers } from "../SpatialClassifiers";
-import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  createClassifierTileTreeReference, DisclosedTileTreeSet, RealityModelTileTree, SpatialClassifierTileTreeReference, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeReference, TileTreeSupplier,
+  RealityModelTileTree, Tile, TileContent,
+  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier,
 } from "./internal";
 import { TileUsageMarker } from "./TileUsageMarker";
 

@@ -492,7 +492,7 @@ export namespace RealityModelTileTree {
         if (!tf.isIdentity)
           transform = tf;
 
-          this._transform = transform;
+        this._transform = transform;
       }
       this._iModel = props.iModel;
       this._planarClipMask = (props.planarMask && props.planarMask.mode !== PlanarClipMaskMode.None) ? PlanarClipMaskState.create(PlanarClipMaskSettings.fromJSON(props.planarMask)) : undefined;
@@ -645,7 +645,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
     this._url = props.url;
-    }
+  }
   public get treeOwner(): TileTreeOwner {
     const treeId = { url: this._url, transform: this._transform, modelId: this.modelId, maskModelIds: this._maskModelIds };
     return realityTreeSupplier.getOwner(treeId, this._iModel);
@@ -674,7 +674,6 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     return drawArgs;
   }
 
-
   public addToScene(context: SceneContext): void {
     const tree = this.treeOwner.tileTree as RealityTileTree;
     if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
@@ -685,8 +684,6 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
     super.addToScene(context);
   }
-
-
 
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree;
