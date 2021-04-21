@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "../style/themecolors";
-@import "../style/space";
+@import "~@itwin/itwinui-css/scss/style/space";
+@import "~@itwin/itwinui-css/scss/style/typography";
 @import "../style/mixins";
 @import "../text/mixins";
 
@@ -14,7 +15,7 @@
   position: relative;
 
   > .header {
-    padding: $uicore-xs $uicore-xxs;
+    padding: $iui-xs $iui-xxs;
     background: $buic-background-control;
     transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
     cursor: pointer;
@@ -28,7 +29,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: $uicore-xxs;
+      margin-right: $iui-xxs;
       color: $buic-foreground-body;
       transition: 0.15s ease-in-out;
     }
@@ -46,7 +47,7 @@
     > .title {
       @include no-link;
       @include uicore-text(subheading);
-      font-size: $uicore-font-size;
+      font-size: $iui-font-size;
       line-height: 23px;
       display: block;
       margin: 0;

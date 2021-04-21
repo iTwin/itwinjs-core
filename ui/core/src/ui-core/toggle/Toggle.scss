@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index";
 @import "../button/button";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
-$toggle-height-small: $uicore-font-size * 1.5;
+$toggle-height-small: $iui-font-size * 1.5;
 $toggle-width-small:  $toggle-height-small * 2;
 $toggle-padding:      2;
 
@@ -24,7 +25,7 @@ $toggle-handle-large: $toggle-height-large - ($toggle-padding * 2);
   color: $uicore-white;
   vertical-align: middle;
   overflow: hidden;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   cursor: pointer;
   outline:        none;
   margin:         2px;

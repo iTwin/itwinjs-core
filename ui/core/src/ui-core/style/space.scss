@@ -2,12 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-$uicore-xxs:           2px;
-$uicore-xs:            4px;
-$uicore-s:             8px;
-$uicore-sm:            12px;
-$uicore-m:             16px;
-$uicore-l:             24px;
-$uicore-xl:            32px;
-$uicore-xxl:           64px;
-$uicore-3xl:           96px;
+@import "~@itwin/itwinui-css/scss/style/space";
+
+// @warn "space.scss is deprecated. Use '~@itwin/itwinui-css/scss/style/space' instead.";
+
+$uicore-xxs:           $iui-xxs;
+$uicore-xs:            $iui-xs;
+$uicore-s:             $iui-s;
+$uicore-sm:            $iui-sm;
+$uicore-m:             $iui-m;
+$uicore-l:             $iui-l;
+$uicore-xl:            $iui-xl;
+$uicore-xxl:           $iui-xxl;
+$uicore-3xl:           $iui-3xl;

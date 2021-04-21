@@ -10,8 +10,8 @@ import * as React from "react";
 import { Tile, TileProps } from "./Tile";
 
 /** Featured [[Tile]] component
- * @beta
+ * @beta @deprecated
  */
-export function FeaturedTile(props: TileProps) {
+export function FeaturedTile(props: TileProps) {    // eslint-disable-line deprecation/deprecation
   return <Tile {...props} featured={true} />;
 }

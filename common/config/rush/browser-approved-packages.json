@@ -267,6 +267,14 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@itwin/itwinui-css",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/itwinui-react",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
     },

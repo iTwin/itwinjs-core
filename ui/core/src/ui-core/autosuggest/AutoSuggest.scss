@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../inputs/input";
 @import "../scrollbar";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 .uicore-autosuggest__container {
   position: relative;
@@ -73,6 +74,6 @@
 
 .uicore-autosuggest__section-title {
   padding: 10px 0 0 10px;
-  font-size: $uicore-font-size-small;
+  font-size: $iui-font-size-small;
   color: $buic-background-table-header;
 }

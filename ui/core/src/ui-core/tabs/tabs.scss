@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index";
 @import "../icons/variables";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 @mixin uicore-tabs {
 
@@ -30,7 +31,7 @@
 
       display:        block;
       position:       relative;
-      padding:        $uicore-bordered-padding ( $uicore-font-size - 1px ) $uicore-unbordered-padding;
+      padding:        $uicore-bordered-padding ( $iui-font-size - 1px ) $uicore-unbordered-padding;
       margin:         0;
       line-height:    $uicore-line-height;
       color:          $buic-text-color;
@@ -81,7 +82,7 @@
 
       > a {
 
-        font-weight:        $uicore-font-weight-bold;
+        font-weight:        $iui-font-weight-bold;
 
         &::after {
 
@@ -94,15 +95,15 @@
       display: flex;
       flex-direction: column;
       .uicore-tabs-subLabel {
-        font-size: $uicore-font-size-small;
-        font-weight: $uicore-font-weight-semibold;
+        font-size: $iui-font-size-small;
+        font-weight: $iui-font-weight-semibold;
       }
     }
     &:not(.core-active) {
       .uicore-tabs-label-subLabel-container {
         .uicore-tabs-subLabel {
           color: $buic-text-color-muted;
-          font-weight: $uicore-font-weight-light;
+          font-weight: $iui-font-weight-light;
         }
       }
     }

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 @mixin uicore-inputs-labeled-themed-select {
   $uicore-select-padding-bordered:  $uicore-inputs-padding-bordered;
@@ -11,9 +12,9 @@
   padding:                    $uicore-select-padding-bordered ($uicore-bordered-padding - 3px);
   margin:                     $uicore-inputs-margin 0;
   text-align:                 left;
-  font-family:                $uicore-font-family;
-  font-size:                  $uicore-font-size;
-  font-weight:                $uicore-font-weight-normal;
+  font-family:                $iui-font-family;
+  font-size:                  $iui-font-size;
+  font-weight:                $iui-font-weight-normal;
   cursor:                     pointer;
 
   > .uicore-label {
@@ -22,8 +23,8 @@
     margin:                 0 0 3px;
     border:                 0 none transparent;
     display:                block;
-    font-size:              $uicore-font-size;
-    font-weight:            $uicore-font-weight-semibold;
+    font-size:              $iui-font-size;
+    font-weight:            $iui-font-weight-semibold;
     line-height:            $uicore-line-height;
     text-align:             left;
     color:                  $buic-text-color;
@@ -32,7 +33,7 @@
   > .uicore-message {
 
     display:                block;
-    font-size:              $uicore-font-size-small;
+    font-size:              $iui-font-size-small;
     line-height:            $uicore-line-height;
     color:                  $buic-text-color-muted;
   }

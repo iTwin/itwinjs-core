@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 $divider-color: $buic-background-toolbutton-stroke;
 $hovered-icon-color: $buic-foreground-primary-tone;
@@ -46,7 +47,7 @@ button.map-manager-item-visibility {
   border-bottom-width: 1px;
 
   .map-manager-header-label {
-    font-size: $uicore-font-size;
+    font-size: $iui-font-size;
     width: auto;
     white-space: nowrap;
     flex: 1 1 auto;
@@ -378,7 +379,7 @@ button.map-manager-item-visibility {
   width: 400px;
   height: 400px;
   color: $buic-foreground-body;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   padding: 4px;
   display: block;
   box-sizing: border-box;
@@ -401,7 +402,7 @@ button.map-manager-item-visibility {
 
 .map-layer-settings-popup-panel {
   color: $buic-foreground-body;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   display: grid;
   grid-row-gap: 4px;
   padding: 4px;

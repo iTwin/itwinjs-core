@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
+import { ThemeProvider } from "@itwin/itwinui-react";
 import { FrameworkState } from "../redux/FrameworkState";
 import { UiFramework } from "../UiFramework";
 
@@ -83,7 +84,16 @@ class ThemeManagerComponent extends React.Component<ThemeProps> {
   };
 
   public render(): React.ReactNode {
-    return this.props.children;
+    // NEEDSWORK in itwinui-react
+    type ThemeType = "light" | "dark" | "os" | undefined;
+
+    const theme: ThemeType = (this.props.theme === SYSTEM_PREFERRED_COLOR_THEME) ? "os" : this.props.theme as ThemeType;
+
+    return (
+      <ThemeProvider theme={theme}>
+        {this.props.children}
+      </ThemeProvider>
+    );
   }
 }
 

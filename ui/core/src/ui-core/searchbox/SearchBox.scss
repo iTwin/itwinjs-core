@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../style/typography";
 @import "../style/themecolors";
 @import "../inputs/input";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 .core-searchbox {
-  @include uicore-font-family;
+  @include iui-font-family;
   display: flex;
   align-items: center;
   position: relative;
   //default values (height, width, font-size, color)
   height: 34px;
   width: 12em;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   color: $buic-text-color;
 
   input {

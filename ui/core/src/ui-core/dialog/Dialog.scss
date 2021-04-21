@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../icons/variables";
 @import "../inputs/variables";
-@import "../style/typography";
 @import "../style/themecolors";
-@import "../style/variables";
 @import "../text/block";
 @import "../text/leading";
 @import "../z-index";
 @import "../scrollbar";
+@import "~@itwin/itwinui-css/scss/style/typography";
+@import "~@itwin/itwinui-css/scss/style/variables";
 
 // cspell:ignore titlebar outoffocus nwse
 
 .core-dialog {
-  @include uicore-font-family;
+  @include iui-font-family;
 
   display: none;
   position: fixed;
@@ -103,7 +103,7 @@
       flex-grow: 1;
       flex-direction: column;
       border: 1px solid $buic-background-dialog-stroke;
-      border-radius: $uicore-border-radius;
+      border-radius: $iui-border-radius;
       background-color: $buic-background-dialog;
       color: $buic-text-color;
       padding: 0;
@@ -132,9 +132,9 @@
 
         > .core-dialog-close {
           cursor: pointer;
-          height: $uicore-font-size-title;
-          width: $uicore-font-size-title;
-          line-height: $uicore-font-size-title;
+          height: $iui-font-size-title;
+          width: $iui-font-size-title;
+          line-height: $iui-font-size-title;
           flex: 0 0 $uicore-icons-medium;
           text-align: center;
           color: $buic-text-color-muted;

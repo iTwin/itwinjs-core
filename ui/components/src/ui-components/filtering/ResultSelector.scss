@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/button/hollow";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 .components-result-selector {
   display: flex;
   align-items: center;
   font-size: 12px;
 
-  @include uicore-font-family;
+  @include iui-font-family;
   color: $buic-text-color;
 }
 

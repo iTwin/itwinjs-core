@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/icons/variables";
 @import "~@bentley/ui-core/lib/ui-core/inputs/variables";
 @import "~@bentley/ui-core/lib/ui-core/inputs/input";
-@import "~@bentley/ui-core/lib/ui-core/icons/variables";
+@import "~@itwin/itwinui-css/scss/style/variables";
 @import "~@bentley/ui-core/lib/ui-core/text/block";
 
 $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
@@ -80,11 +81,11 @@ $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
         }
 
         &.root {
-          color: $buic-foreground-mediumgray;
+          color: $buic-foreground-muted;
           cursor: default;
 
           &:hover {
-            color: $buic-foreground-mediumgray;
+            color: $buic-foreground-muted;
           }
         }
 
@@ -124,7 +125,7 @@ $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
       }
 
       .components-breadcrumb-drop-target {
-        border-radius: $uicore-border-radius;
+        border-radius: $iui-border-radius;
         &.hover {
           background-color: $buic-row-hover;
         }
@@ -139,7 +140,7 @@ $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
         margin: 0;
         min-width: $uicore-line-height;
         text-align: center;
-        border-radius: $uicore-border-radius;
+        border-radius: $iui-border-radius;
 
         &:not(.static) {
          user-select: none;

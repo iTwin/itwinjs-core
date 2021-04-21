@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/breakpoints";
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@itwin/itwinui-css/scss/style/typography";
 @import "~@bentley/ui-core/lib/ui-core/text/leading";
 
 $image-size: 22px;
@@ -19,8 +19,8 @@ $key-size-large: 36px;
 $key-size-modifier: 24px;
 
 .uifw-statusFields-toolassistance {
-  $font-size-medium: $uicore-font-size-small;
-  $font-size-small: $uicore-font-size-smaller;
+  $font-size-medium: $iui-font-size-small;
+  $font-size-small: $iui-font-size-small - 1px;
 
   overflow: hidden;
 

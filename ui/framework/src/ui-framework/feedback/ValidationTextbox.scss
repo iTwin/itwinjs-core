@@ -5,10 +5,10 @@
 @import "~@bentley/ui-core/lib/ui-core/icons/variables";
 @import "~@bentley/ui-core/lib/ui-core/inputs/input";
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 .uifw-ValidationTextbox {
-  @include uicore-font-family;
+  @include iui-font-family;
   position: relative;
   padding: $uicore-unbordered-padding;
   width: 12em;

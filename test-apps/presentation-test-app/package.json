@@ -47,6 +47,8 @@
     "@bentley/ui-core": "2.16.0-dev.13",
     "@bentley/ui-components": "2.16.0-dev.13",
     "@bentley/ui-abstract": "2.16.0-dev.13",
+    "@itwin/itwinui-css": "^0.9.0",
+    "@itwin/itwinui-react": "^1.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-select": "3.1.0",

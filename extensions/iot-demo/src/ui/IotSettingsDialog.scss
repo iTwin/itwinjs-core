@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 .iot-settings-dialog {
 
@@ -21,7 +22,7 @@
     grid-template-columns: 1fr 2fr;
     align-items: center;
     color: $buic-foreground-body;
-    font-size: $uicore-font-size;
+    font-size: $iui-font-size;
 
     > time-input {
       border: 1px solid #ccc;
@@ -45,7 +46,7 @@
       padding: 5px 5px 5px 6px;
       text-align: left;
       position: relative;
-      font-size: $uicore-font-size;
+      font-size: $iui-font-size;
 
       > span:last-child {
         position: absolute;
@@ -81,7 +82,7 @@
       cursor: pointer;
       border-width: 2px;
       border-style: solid;
-      font-size: $uicore-font-size;
+      font-size: $iui-font-size;
 
       &:hover {
         border: 2px solid $buic-foreground-primary !important;
@@ -93,7 +94,7 @@
 .dialog-tabstrip {
 	position: relative;
   color: $uicore-text-color;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   padding-bottom: 1px;
   border-bottom: 2px solid #ccc;
 }
