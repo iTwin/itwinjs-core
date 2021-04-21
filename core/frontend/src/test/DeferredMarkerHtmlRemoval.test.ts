@@ -12,12 +12,12 @@ import { IModelApp } from "../IModelApp";
 import { SpatialViewState } from "../SpatialViewState";
 import { BlankConnection } from "../IModelConnection";
 import { Cartographic } from "@bentley/imodeljs-common";
-import { UnitSchemaString } from "./public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "./public/assets/UnitSchema/UnitSchema";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
     await IModelApp.startup({ schemaContext });
   });
   afterEach(async () => {

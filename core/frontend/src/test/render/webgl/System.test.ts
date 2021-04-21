@@ -12,7 +12,7 @@ import { MockRender } from "../../../render/MockRender";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { System } from "../../../render/webgl/System";
 import { TileAdmin } from "../../../tile/internal";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
@@ -68,7 +68,7 @@ describe("Instancing", () => {
         renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
 
       const schemaContext = new SchemaContext();
-      Schema.fromJsonSync(UnitSchemaString, schemaContext);
+      Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
       await IModelApp.startup({
         renderSys: renderSysOpts,
         schemaContext,
@@ -110,7 +110,7 @@ describe("ExternalTextures", () => {
       const renderSysOpts: RenderSystem.Options = { useWebGL2: false }; // use WebGL1 since instanced arrays cannot be disabled in WebGL2
 
       const schemaContext = new SchemaContext();
-      Schema.fromJsonSync(UnitSchemaString, schemaContext);
+      Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
       await IModelApp.startup({
         renderSys: renderSysOpts,
         schemaContext,
@@ -196,7 +196,7 @@ describe("RenderSystem", () => {
 
     before(async () => {
       const schemaContext = new SchemaContext();
-      Schema.fromJsonSync(UnitSchemaString, schemaContext);
+      Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
       await IModelApp.startup({
         renderSys: TestSystem.create(),
         schemaContext,
@@ -338,7 +338,7 @@ describe("RenderSystem", () => {
 
     beforeEach(async () => {
       const schemaContext = new SchemaContext();
-      Schema.fromJsonSync(UnitSchemaString, schemaContext);
+      Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
       await IModelApp.startup({ schemaContext });
     });
 

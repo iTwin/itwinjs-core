@@ -16,7 +16,7 @@ import { Target } from "../../../render/webgl/Target";
 import { SingularTechnique } from "../../../render/webgl/Technique";
 import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 import { TechniqueId } from "../../../render/webgl/TechniqueId";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
@@ -57,7 +57,7 @@ describe("Techniques", () => {
     describe(`WebGL ${webGLVersion}`, () => {
       before(async () => {
         const schemaContext = new SchemaContext();
-        Schema.fromJsonSync(UnitSchemaString, schemaContext);
+        Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
         await IModelApp.startup({
           renderSys: { useWebGL2 },
           schemaContext,
@@ -104,7 +104,7 @@ describe("Techniques", () => {
           // Restart with extension disabled.
           await IModelApp.shutdown();
           const schemaContext = new SchemaContext();
-          Schema.fromJsonSync(UnitSchemaString, schemaContext);
+          Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
           await IModelApp.startup({
             renderSys: {
               useWebGL2: false,
@@ -120,7 +120,7 @@ describe("Techniques", () => {
           // Reset render system to previous state
           await IModelApp.shutdown();
           const schemaContext = new SchemaContext();
-          Schema.fromJsonSync(UnitSchemaString, schemaContext);
+          Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
           await IModelApp.startup({
             renderSys: { useWebGL2: false },
             schemaContext,

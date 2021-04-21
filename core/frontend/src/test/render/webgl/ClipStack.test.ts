@@ -9,7 +9,7 @@ import { IModelApp } from "../../../IModelApp";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { ClipStack } from "../../../render/webgl/ClipStack";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 for (let i = 0; i < 2; i++) {
   let renderSys: RenderSystem.Options | undefined;
@@ -30,8 +30,8 @@ for (let i = 0; i < 2; i++) {
   describe(`ClipStack (${useFloat ? "floating point texture" : "encoded floats"})`, async () => {
     before(async () => {
       const schemaContext = new SchemaContext();
-      Schema.fromJsonSync(UnitSchemaString, schemaContext);
-      await IModelApp.startup({ renderSys,  schemaContext, });
+      Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
+      await IModelApp.startup({ renderSys,  schemaContext });
     });
 
     after(async () => {

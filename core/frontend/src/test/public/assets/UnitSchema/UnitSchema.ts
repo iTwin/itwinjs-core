@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-export const UnitSchemaString = `{
+export const UNIT_SCHEMA_STRING = `{
   "$schema": "https://dev.bentley.com/json_schemas/ec/32/ecschema",
   "name": "Units",
   "version": "01.00.06",

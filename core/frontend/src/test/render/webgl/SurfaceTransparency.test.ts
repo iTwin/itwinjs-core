@@ -21,7 +21,7 @@ import { Target } from "../../../render/webgl/Target";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { ScreenViewport } from "../../../Viewport";
 import { createBlankConnection } from "../../createBlankConnection";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
   const args = new MeshArgs();
@@ -63,7 +63,7 @@ describe("Surface transparency", () => {
 
   before(async () => {
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
     await IModelApp.startup({ schemaContext });
 
     imodel = createBlankConnection();

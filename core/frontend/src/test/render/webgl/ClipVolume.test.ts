@@ -7,12 +7,12 @@ import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@bentley/geometry-core";
 import { IModelApp } from "../../../IModelApp";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 describe("ClipVolume", async () => {
   before(async () => {
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
     await IModelApp.startup({ schemaContext });
   });
 

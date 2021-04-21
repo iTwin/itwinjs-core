@@ -9,7 +9,7 @@ import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
 import { KeyinParseError, Tool } from "../tools/Tool";
-import { UnitSchemaString } from "./public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "./public/assets/UnitSchema/UnitSchema";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: number;
@@ -39,8 +39,8 @@ class TestCommandApp extends MockRender.App {
 
   public static async startup(): Promise<void> {
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
-    await IModelApp.startup({ i18n: this.supplyI18NOptions(), schemaContext, });
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
+    await IModelApp.startup({ i18n: this.supplyI18NOptions(), schemaContext });
     this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
   }

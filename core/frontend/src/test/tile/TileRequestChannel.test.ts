@@ -15,7 +15,7 @@ import {
 } from "../../tile/internal";
 import { Viewport } from "../../Viewport";
 import { createBlankConnection } from "../createBlankConnection";
-import { UnitSchemaString } from "../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../public/assets/UnitSchema/UnitSchema";
 
 async function runMicroTasks(): Promise<void> {
   return BeDuration.wait(1);
@@ -303,7 +303,7 @@ describe("TileRequestChannel", () => {
 
   beforeEach(async () => {
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
     await MockRender.App.startup({ schemaContext });
     imodel = createBlankConnection();
   });

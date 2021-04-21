@@ -13,13 +13,13 @@ import { GL } from "../../../render/webgl/GL";
 import { RenderBuffer } from "../../../render/webgl/RenderBuffer";
 import { System } from "../../../render/webgl/System";
 import { TextureHandle } from "../../../render/webgl/Texture";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 describe("FrameBuffer tests", () => {
   // eslint-disable-next-line no-return-await
   before(async () => {
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
     await IModelApp.startup({ schemaContext });
   });
   // eslint-disable-next-line no-return-await

@@ -72,7 +72,7 @@ export interface PotentialParseUnit {
  * This interface defines extra properties to be associated with Units from Units Schema by name
  * @alpha
  */
- export interface UnitExtraData {
+export interface UnitExtraData {
   readonly name: string;
   readonly altDisplayLabels: string[];
 }

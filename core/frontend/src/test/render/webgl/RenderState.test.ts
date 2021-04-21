@@ -10,7 +10,7 @@ import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
 import { RenderState } from "../../../render/webgl/RenderState";
 import { System } from "../../../render/webgl/System";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 function withinTolerance(x: number, y: number): boolean {
   const tol: number = 0.1e-6;
@@ -21,7 +21,7 @@ function withinTolerance(x: number, y: number): boolean {
 describe("RenderState", () => {
   before(async () => {
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
     await IModelApp.startup({ schemaContext });
   });
   after(async () => IModelApp.shutdown());

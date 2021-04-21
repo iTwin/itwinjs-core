@@ -149,12 +149,14 @@ export class TestUnitsProvider implements UnitsProvider {
       const deltaNumerator = toUnitData.conversion.numerator * fromUnitData.conversion.denominator;
       const deltaDenominator = toUnitData.conversion.denominator * fromUnitData.conversion.numerator;
 
-      const conversion = new ConversionData();
-      conversion.factor = deltaNumerator / deltaDenominator;
-      conversion.offset = deltaOffset;
-      return conversion;
+      const conversionData = new ConversionData();
+      conversionData.factor = deltaNumerator / deltaDenominator;
+      conversionData.offset = deltaOffset;
+      return conversionData;
     }
 
-    return new ConversionData();
+    const conversion = new ConversionData();
+    conversion.error = true;
+    return conversion;
   }
 }

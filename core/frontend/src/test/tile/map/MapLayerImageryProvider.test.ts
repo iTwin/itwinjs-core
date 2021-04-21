@@ -13,7 +13,7 @@ import { IModelApp } from "../../../IModelApp";
 import {
   MapLayerImageryProvider, MapLayerImageryProviderStatus, WmsCapabilities, WmsMapLayerImageryProvider, WmtsCapabilities, WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 chai.use(chaiAsPromised);
 
@@ -135,7 +135,7 @@ describe("MapLayerImageryProvider with IModelApp", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
     await IModelApp.startup({ schemaContext });
   });
 

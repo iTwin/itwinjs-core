@@ -14,7 +14,7 @@ import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { Branch } from "../../../render/webgl/Graphic";
 import { Target } from "../../../render/webgl/Target";
 import { ViewRect } from "../../../ViewRect";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();
@@ -100,7 +100,7 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
 describe("BranchUniforms", async () => {
   before(async () => {
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
     await IModelApp.startup({ schemaContext });
   });
 

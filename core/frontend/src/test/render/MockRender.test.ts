@@ -10,7 +10,7 @@ import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderTarget } from "../../render/RenderTarget";
 import { ViewRect } from "../../ViewRect";
-import { UnitSchemaString } from "../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../public/assets/UnitSchema/UnitSchema";
 
 class MyTarget extends MockRender.OffScreenTarget { }
 class MyList extends MockRender.List { }
@@ -23,7 +23,7 @@ describe("MockRender", () => {
   before(async () => {
     MockRender.App.systemFactory = () => new MySystem();
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
     await MockRender.App.startup({ schemaContext });
   });
 

@@ -5,7 +5,7 @@
 import { BadUnit, BasicUnit, UnitConversion, UnitExtraData, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { SchemaContext, Unit, UnitConverter, UnitProvider } from "@bentley/ecschema-metadata";
 
-/** Units provider that provides a limited number of UnitDefinitions that are needed to support basic tools.
+/** Units provider to be used in place of BasicUnitsProvider
  * @internal
  */
 export class NewUnitsProvider implements UnitsProvider {
@@ -36,10 +36,10 @@ export class NewUnitsProvider implements UnitsProvider {
     const unitProvider = new UnitProvider(this._context, this._unitExtraData);
     try {
       const units = await unitProvider.findUnitsByPhenomenon(phenomenon);
-      const unitPropsPromises = units.map(unit => this.getUnitPropsFromUnit(unit));
+      const unitPropsPromises = units.map((unit) => this.getUnitPropsFromUnit(unit));
       return await Promise.all(unitPropsPromises);
     } catch (err) {
-      return []
+      return [];
     }
   }
 

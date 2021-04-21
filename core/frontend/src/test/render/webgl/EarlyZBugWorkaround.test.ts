@@ -10,7 +10,7 @@ import { IModelApp } from "../../../IModelApp";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 class TestSystem extends System {
   private static _simulateBug = true;
@@ -23,8 +23,8 @@ class TestSystem extends System {
   public static async startIModelApp(simulateBug: boolean): Promise<void> {
     this._simulateBug = simulateBug;
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
-    return await IModelApp.startup({
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
+    return IModelApp.startup({
       renderSys: this.create({ preserveShaderSourceCode: true }),
       schemaContext,
     });

@@ -9,7 +9,7 @@ import { ColorIndex, FeatureIndexType, QParams2d, QParams3d, QPoint3d, QPoint3dL
 import { MockRender } from "../../../render/MockRender";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
-import { UnitSchemaString } from "../../public/assets/UnitSchema/UnitSchema";
+import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
   const params = MeshParams.create(args);
@@ -52,7 +52,7 @@ class FakeTexture extends RenderTexture {
 describe("VertexLUT", () => {
   before(async () => {
     const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UnitSchemaString, schemaContext);
+    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
     await MockRender.App.startup({ schemaContext });
   });
   after(async () => MockRender.App.shutdown());
