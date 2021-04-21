@@ -7,10 +7,11 @@
 This tutorial assumes that you already have:
 
 - Your own local source for the iTwin Web Viewer based on the template @bentley/itwin-viewer
-  - Instructions for that can be found [here](https://www.itwinjs.org/learning/tutorials/develop-web-viewer/)
+  - Instructions for that can be found [here]($docs/learning/tutorials/develop-web-viewer/)
 - Configured your local source to open the "House Model" sample iModel.
-  - Instructions to use this sample iModel can be found [here](https://www.itwinjs.org/learning/tutorials/create-test-imodel-sample/).
+  - Instructions to use this sample iModel can be found [here]($docs/learning/tutorials/create-test-imodel-sample/).
 
+![HelloWorldAbove]($docs/learning/tutorials/images/hello_world_above.png)
 ### Goal
 
 This tutorial will take you through the first steps of customizing your iTwin Web Viewer.  First you will learn how to add a new user interface component.  Later you will customize that component to change the background color of your viewer.
@@ -64,7 +65,7 @@ At the bottom of ```App.tsx``` you can see the ```return``` statement where the 
 
 Result:
 
-![HelloWorldAbove](./images/hello_world_above.png)
+![HelloWorldAbove]($docs/learning/tutorials/images/hello_world_above.png)
 
 ### Your first UI Widget
 
@@ -80,7 +81,7 @@ So far, we haven't done anything to change the way the viewer works.  We've only
   );
 ```
 
-The ```uiProviders``` prop is typed to require an array of objects that implements the [UIItemsProvider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/) interface.  Passing in the array will allow us to extend the ```Viewer``` with custom UI components. To do that, we need to define our ```MyFirstUiProvider``` class so that it implements the ```UiItemsProvider``` interface.  Our new provider will tell the ```Viewer``` to include our "Hello world" ```span``` within the view.
+The ```uiProviders``` prop is typed to require an array of objects that implements the [UIItemsProvider]($docs/reference/ui-abstract/uiitemsprovider/uiitemsprovider/) interface.  Passing in the array will allow us to extend the ```Viewer``` with custom UI components. To do that, we need to define our ```MyFirstUiProvider``` class so that it implements the ```UiItemsProvider``` interface.  Our new provider will tell the ```Viewer``` to include our "Hello world" ```span``` within the view.
 
 Create a new file called ```MyFirstUiProvider.tsx``` with the following contents:
 
@@ -154,11 +155,11 @@ Finally, let's clean up the ```span``` and ```div``` that we added directly into
 
 Now we have our "Hello World" ```span``` displaying in a panel within the ```Viewer``` component.  It should look like this:
 
-![HelloWorldWidget](./images/hello_world_widget.png)
+![HelloWorldWidget]($docs/learning/tutorials/images/hello_world_widget.png)
 
 ### Beyond Hello World
 
-Saying hello to the world can be fun but we need to get past that.  For this next step we'll swap out our trivial ```helloWidget``` with something a little more interactive: a [Toggle](https://www.itwinjs.org/reference/ui-core/toggle/toggle/).  Eventually this toggle will control the background color, so we'll name our new widget ```backgroundColorWidget```.  Instead of returning a ```span``` we'll return a ```Toggle```.
+Saying hello to the world can be fun but we need to get past that.  For this next step we'll swap out our trivial ```helloWidget``` with something a little more interactive: a [Toggle]($docs/reference/ui-core/toggle/toggle/).  Eventually this toggle will control the background color, so we'll name our new widget ```backgroundColorWidget```.  Instead of returning a ```span``` we'll return a ```Toggle```.
 
 Start by navigating back to ```MyFirstUiProvider.tsx``` and adding an import for ```Toggle``` at the top of the file:
 
@@ -184,7 +185,7 @@ Next switch out the ```helloWidget``` with the new ```backgroundColorWidget``` h
 
 Notice the only significant difference is that ```getWidgetContent``` is now returning a ```Toggle```.  It doesn't do anything interesting yet, but it should look like this:
 
-![Background Color Toggle](./images/background_color_toggle.png)
+![Background Color Toggle]($docs/learning/tutorials/images/background_color_toggle.png)
 
 ### Changing the background color
 
@@ -213,9 +214,9 @@ export class MyFirstUiProvider implements UiItemsProvider {
   public static originalColor: number;
 ```
 
-The first condition checks for only the first trigger of the toggle using boolean ```toggledOnce```. If true, we need to store the original color in static variable ```MyFirstUiProvider.originalColor```. We are using the global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the viewManager that can provide the current ```backgroundColor```. We also need to flip variable ```MyFirstUiProvider.toggledOnce``` to true to make sure we only store the original color once.
+The first condition checks for only the first trigger of the toggle using boolean ```toggledOnce```. If true, we need to store the original color in static variable ```MyFirstUiProvider.originalColor```. We are using the global singleton [IModelApp]($docs/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the viewManager that can provide the current ```backgroundColor```. We also need to flip variable ```MyFirstUiProvider.toggledOnce``` to true to make sure we only store the original color once.
 
-Notice we're using the function [overrideDisplayStyle()](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewport/overridedisplaystyle/) on the currently selected view.  To get the view, we use the same global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the [viewManager](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewmanager/).
+Notice we're using the function [overrideDisplayStyle()]($docs/reference/imodeljs-frontend/views/viewport/overridedisplaystyle/) on the currently selected view.  To get the view, we use the same global singleton [IModelApp]($docs/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the [viewManager]($docs/reference/imodeljs-frontend/views/viewmanager/).
 
 Our completed ```MyFirstUiProvider.tsx``` file should look similar to this:
 
@@ -262,25 +263,25 @@ export class MyFirstUiProvider implements UiItemsProvider {
 
 Result when the toggle is on:
 
-![Background blue](./images/background_toggled_blue.png)
+![Background blue]($docs/learning/tutorials/images/background_toggled_blue.png)
 
 Result when the toggle is off:
 
-![Background original](./images/original_background_color.png)
+![Background original]($docs/learning/tutorials/images/original_background_color.png)
 
 ### What's next?
 
-This is one of infinitely many possible widgets we can create in the iTwin Viewer. Feel free to explore sample widgets on our [sample showcase](https://www.itwinjs.org/sample-showcase/).
+This is one of infinitely many possible widgets we can create in the iTwin Viewer. Feel free to explore sample widgets on our [sample showcase]($docs/sample-showcase/).
 
 In the next tutorial, we will take widgets from the sample showcase and use them in our iTwin Viewer.
 
 ## Useful Links
 
-- [Web Viewer](https://www.itwinjs.org/learning/tutorials/develop-web-viewer/)
-- [UI Provider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/)
-- [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/)
-- [Sample House Model](https://www.itwinjs.org/learning/tutorials/create-test-imodel-sample/)
+- [Web Viewer]($docs/learning/tutorials/develop-web-viewer/)
+- [UI Provider]($docs/reference/ui-abstract/uiitemsprovider/uiitemsprovider/)
+- [IModelApp]($docs/reference/imodeljs-frontend/imodelapp/imodelapp/)
+- [Sample House Model]($docs/learning/tutorials/create-test-imodel-sample/)
 
 ## Next Steps
 
-- [iTwin Sample Showcase](https://www.itwinjs.org/sample-showcase/)
+- [iTwin Sample Showcase]($docs/sample-showcase/)
