@@ -2197,6 +2197,13 @@ export enum RequestPriority {
     Preload = 0
 }
 
+// @beta
+export interface RequiredSchemaSpecification {
+    maxVersion?: string;
+    minVersion?: string;
+    name: string;
+}
+
 // @public
 export interface RootNodeRule extends NavigationRuleBase {
     autoExpand?: boolean;
@@ -2257,6 +2264,8 @@ export type Rule = CustomizationRule | NavigationRule | ContentRule | ContentMod
 export interface RuleBase {
     onlyIfNotHandled?: boolean;
     priority?: number;
+    // @beta
+    requiredSchemas?: RequiredSchemaSpecification[];
     ruleType: RuleTypes;
 }
 
@@ -2499,6 +2508,8 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
 // @public
 export interface SubCondition extends ConditionContainer {
     condition?: string;
+    // @beta
+    requiredSchemas?: RequiredSchemaSpecification[];
     specifications?: ChildNodeSpecification[];
     subConditions?: SubCondition[];
 }
