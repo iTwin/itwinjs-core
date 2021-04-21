@@ -3350,7 +3350,7 @@ export interface PropertyCategory {
     label: string;
     // (undocumented)
     name: string;
-    // @beta (undocumented)
+    // @alpha (undocumented)
     renderer?: {
         name: string;
     };
@@ -3387,25 +3387,6 @@ export class PropertyCategoryLabelFilterer extends PropertyCategoryDataFiltererB
     set filterText(value: string);
     // (undocumented)
     get isActive(): boolean;
-}
-
-// @beta
-export type PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType<PropertyCategoryRendererProps> | undefined;
-
-// @beta
-export class PropertyCategoryRendererManager {
-    addRenderer(rendererName: string, categoryRenderer: PropertyCategoryRenderer, override?: boolean): void;
-    // (undocumented)
-    static defaultManager: PropertyCategoryRendererManager;
-    getCategoryComponent(categoryItem: GridCategoryItem): React.ComponentType<PropertyCategoryRendererProps> | undefined;
-    removeRenderer(rendererName: string): void;
-}
-
-// @beta
-export interface PropertyCategoryRendererProps {
-    categoryItem: GridCategoryItem;
-    gridContext: VirtualizedPropertyGridContext;
-    onHeightChanged: (newHeight: number) => void;
 }
 
 // @public
@@ -5741,7 +5722,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
     render(): JSX.Element;
     }
 
-// @beta
+// @alpha (undocumented)
 export interface VirtualizedPropertyGridContext {
     // (undocumented)
     actionButtonRenderers?: ActionButtonRenderer[];
@@ -5749,8 +5730,6 @@ export interface VirtualizedPropertyGridContext {
     columnInfo: PropertyGridColumnInfo;
     // (undocumented)
     columnRatio: number;
-    // (undocumented)
-    dataProvider: IPropertyDataProvider;
     // (undocumented)
     editingPropertyKey?: string;
     // (undocumented)
@@ -5795,10 +5774,24 @@ export interface VirtualizedPropertyGridContext {
     selectedPropertyKey?: string;
 }
 
+// @internal
+export const
+/**
+ * Context of [[VirtualizedPropertyGrid]] provider.
+ * @internal
+ */
+VirtualizedPropertyGridContextConsumer: React.ExoticComponent<React.ConsumerProps<VirtualizedPropertyGridContext>>;
+
+// @internal
+export const
+/**
+ * Context of [[VirtualizedPropertyGrid]] provider.
+ * @internal
+ */
+VirtualizedPropertyGridContextProvider: React.ProviderExoticComponent<React.ProviderProps<VirtualizedPropertyGridContext>>;
+
 // @beta
 export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
-    // (undocumented)
-    dataProvider: IPropertyDataProvider;
     // (undocumented)
     eventHandler: IPropertyGridEventHandler;
     // (undocumented)
