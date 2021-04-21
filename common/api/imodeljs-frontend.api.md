@@ -6722,21 +6722,11 @@ export namespace OrbitGtTileTree {
     // (undocumented)
     export function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
     // (undocumented)
-    export interface ReferenceProps {
-        // (undocumented)
-        classifiers?: SpatialClassifiers;
-        // (undocumented)
-        displayStyle: DisplayStyleState;
-        // (undocumented)
-        iModel: IModelConnection;
+    export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
         // (undocumented)
         modelId?: Id64String;
         // (undocumented)
-        name?: string;
-        // (undocumented)
         orbitGtBlob: OrbitGtBlobProps;
-        // (undocumented)
-        tilesetToDbTransform?: TransformProps;
     }
 }
 
@@ -7317,13 +7307,33 @@ export namespace RealityModelTileTree {
     export function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb?: Transform): Promise<TileTree | undefined>;
     // (undocumented)
     export abstract class Reference extends TileTreeReference {
-        constructor(modelId: Id64String | undefined, iModel: IModelConnection);
+        constructor(props: RealityModelTileTree.ReferenceBaseProps);
         // (undocumented)
-        abstract get classifiers(): SpatialClassifiers | undefined;
+        protected addPlanarClassifierOrMaskToScene(context: SceneContext): void;
+        // (undocumented)
+        addToScene(context: SceneContext): void;
+        // (undocumented)
+        protected _classifier?: SpatialClassifierTileTreeReference;
+        // (undocumented)
+        get classifiers(): SpatialClassifiers | undefined;
+        // (undocumented)
+        collectStatistics(stats: RenderMemory.Statistics): void;
+        // (undocumented)
+        discloseTileTrees(trees: DisclosedTileTreeSet): void;
+        // (undocumented)
+        protected _iModel: IModelConnection;
         // (undocumented)
         get isGlobal(): boolean;
         // (undocumented)
+        protected _mapDrapeTree?: TileTreeReference;
+        // (undocumented)
+        protected _maskModelIds?: string;
+        // (undocumented)
         get modelId(): string;
+        // (undocumented)
+        protected readonly _name: string;
+        // (undocumented)
+        get planarClassifierTreeRef(): SpatialClassifierTileTreeReference | undefined;
         // (undocumented)
         get planarClipMask(): PlanarClipMaskState | undefined;
         set planarClipMask(planarClipMask: PlanarClipMaskState | undefined);
@@ -7332,10 +7342,12 @@ export namespace RealityModelTileTree {
         // (undocumented)
         get planarClipMaskPriority(): number;
         // (undocumented)
+        protected _transform?: Transform;
+        // (undocumented)
         unionFitRange(union: Range3d): void;
     }
     // (undocumented)
-    export interface ReferenceProps {
+    export interface ReferenceBaseProps {
         // (undocumented)
         classifiers?: SpatialClassifiers;
         // (undocumented)
@@ -7347,11 +7359,14 @@ export namespace RealityModelTileTree {
         // (undocumented)
         planarMask?: PlanarClipMaskProps;
         // (undocumented)
-        requestAuthorization?: string;
-        // (undocumented)
         source: RealityModelSource;
         // (undocumented)
         tilesetToDbTransform?: TransformProps;
+    }
+    // (undocumented)
+    export interface ReferenceProps extends ReferenceBaseProps {
+        // (undocumented)
+        requestAuthorization?: string;
         // (undocumented)
         url: string;
     }
