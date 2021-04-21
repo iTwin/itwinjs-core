@@ -5,25 +5,26 @@
 - [Install necessary prerequisites]($docs/getting-started/development-prerequisites)
 - [Clone desktop-starter repo](https://github.com/imodeljs/desktop-starter)
 
-## Create client
+## Create application
 
 - Navigate to [developer.bentley.com](https://developer.bentley.com/register/)
 - Sign in
-- Configure client
-  - Provide client name
+- Configure application
+  - Provide application name
   - API associations: "Visualization"
   - Application type: "Desktop/Mobile"
   - Redirect URI: "http://localhost:3000/signin-callback"
   - Post logout redirect URI: "http://localhost:3000"
   - Save
-- View Details
-- Copy Client ID
+- Click on the name of the client you just created to see the details
+- Copy Client ID to your clipboard
 
 ## Build
 
 - Open the cloned repo in VS Code
 - Edit [./src/backend/main.ts](https://github.com/imodeljs/desktop-starter/blob/master/src/backend/main.ts#L55)
 - Replace `process.env.ELECTRON_CLIENT_ID` with your Client ID
+  - Ex: `const clientId = "native-XXXXXXXXXXXXXXXXXXX";`
   - *Or set environment variable `ELECTRON_CLIENT_ID` to your Client ID in your shell*
 - `npm install`
 - `npm run build`
