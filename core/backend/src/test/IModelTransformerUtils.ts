@@ -1261,14 +1261,20 @@ export class PhysicalModelConsolidator extends IModelTransformer {
   }
 }
 
-/** Test IModelTransformer that uses a ViewDefinition to filter the iModel contents. */
+/** Test IModelTransformer that uses a SpatialViewDefinition to filter the iModel contents. */
 export class FilterByViewTransformer extends IModelTransformer {
   private readonly _exportViewDefinitionId: Id64String;
+  private readonly _exportModelSelectorId: Id64String;
+  private readonly _exportCategorySelectorId: Id64String;
+  private readonly _exportDisplayStyleId: Id64String;
   private readonly _exportModelIds: Id64Set;
   public constructor(sourceDb: IModelDb, targetDb: IModelDb, exportViewDefinitionId: Id64String) {
     super(sourceDb, targetDb);
     this._exportViewDefinitionId = exportViewDefinitionId;
     const exportViewDefinition = sourceDb.elements.getElement<SpatialViewDefinition>(exportViewDefinitionId, SpatialViewDefinition);
+    this._exportCategorySelectorId = exportViewDefinition.categorySelectorId;
+    this._exportModelSelectorId = exportViewDefinition.modelSelectorId;
+    this._exportDisplayStyleId = exportViewDefinition.displayStyleId;
     const exportCategorySelector = sourceDb.elements.getElement<CategorySelector>(exportViewDefinition.categorySelectorId, CategorySelector);
     this.excludeCategories(Id64.toIdSet(exportCategorySelector.categories));
     const exportModelSelector = sourceDb.elements.getElement<ModelSelector>(exportViewDefinition.modelSelectorId, ModelSelector);
@@ -1286,27 +1292,20 @@ export class FilterByViewTransformer extends IModelTransformer {
       }
     });
   }
-  /** Override of IModelTransformer.shouldExportElement that excludes PhysicalPartitions/Models not referenced by the export view's ModelSelector */
+  /** Override of IModelTransformer.shouldExportElement that excludes other ViewDefinition-related elements that are not associated with the *export* ViewDefinition. */
   protected shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
-      if (!this._exportModelIds.has(sourceElement.id)) {
-        return false;
-      }
+      return this._exportModelIds.has(sourceElement.id);
     } else if (sourceElement instanceof SpatialViewDefinition) {
-      if (sourceElement.id !== this._exportViewDefinitionId) {
-        return false;
-      }
+      return sourceElement.id === this._exportViewDefinitionId;
+    } else if (sourceElement instanceof CategorySelector) {
+      return sourceElement.id === this._exportCategorySelectorId;
+    } else if (sourceElement instanceof ModelSelector) {
+      return sourceElement.id === this._exportModelSelectorId;
+    } else if (sourceElement instanceof DisplayStyle3d) {
+      return sourceElement.id === this._exportDisplayStyleId;
     }
     return super.shouldExportElement(sourceElement);
-  }
-  /** Override of IModelTransformer.processAll that does additional logging after completion. */
-  public async processAll(): Promise<void> {
-    await super.processAll();
-    Logger.logInfo(BackendLoggerCategory.IModelTransformer, `processAll complete with ${this._deferredElementIds.size} deferred elements remaining`);
-  }
-  /** Override of IModelTransformer.processDeferredElements that catches all exceptions and keeps going. */
-  public async processDeferredElements(numRetries: number = 3): Promise<void> {
-    try { await super.processDeferredElements(numRetries); } catch (error) { }
   }
 }
 
