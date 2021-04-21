@@ -216,7 +216,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
     const branch = new GraphicBranch(true);
     for (const mesh of meshes) {
       const primitive = Primitive.create(() => mesh);
-      branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), tileId));
+      branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), { tileId }));
     }
 
     return system.createBranch(branch, realityMesh._transform ? realityMesh._transform : Transform.createIdentity());
