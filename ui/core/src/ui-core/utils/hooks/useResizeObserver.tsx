@@ -15,9 +15,14 @@ import { useRefs } from "./useRefs";
  */
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void) {
   const observerRef = useRefEffect((instance: T | null) => {
-    const resizeObserver = new ResizeObserver((entries) => {
-      const bounds = entries.length === 1 && entries[0].target.getBoundingClientRect();
-      bounds && onResize && onResize(bounds.width, bounds.height);
+    const resizeObserver = new ResizeObserver((entries: any[]) => {
+      window.requestAnimationFrame(() => {
+        if (!Array.isArray(entries) || !entries.length) {
+          return;
+        }
+        const bounds = entries.length === 1 && entries[0].target.getBoundingClientRect();
+        bounds && onResize && onResize(bounds.width, bounds.height);
+      });
     });
     instance && resizeObserver.observe(instance);
     return () => {
