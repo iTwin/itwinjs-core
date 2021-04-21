@@ -10920,6 +10920,8 @@ export class TouchCursor implements CanvasDecoration {
     // (undocumented)
     protected _size: number;
     // (undocumented)
+    viewport: Viewport;
+    // (undocumented)
     protected _yOffset: number;
 }
 
