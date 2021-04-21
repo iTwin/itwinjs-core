@@ -6,8 +6,23 @@
 import { DbResult, Guid, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
+import * as fs from "fs";
+import * as path from "path";
 
-/* eslint-disable no-console */
+let prefix = "";
+
+function indent() {
+  prefix = `${prefix}  `;
+}
+
+function outdent() {
+  prefix = prefix.substr(2);
+}
+
+function log(msg: string) {
+  /* eslint-disable-next-line no-console */
+  console.log(`${prefix}${msg}`);
+}
 
 /**
  * This utility will change an existing iModel file to be a standalone iModel. It does so by
@@ -22,39 +37,63 @@ import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
   node lib\backend\SetToStandalone.js [iModel-filename]
 ```
 */
-async function setToStandalone() {
-  if (process.argv.length < 3)
-    throw new Error("usage: SetToStandalone.js [iModel-filename]");
+function setToStandalone(iModelName: string) {
+  log(`setting [${iModelName}] as a standalone iModel`);
+  try {
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const status = nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
+    if (DbResult.BE_SQLITE_OK !== status)
+      throw new IModelError(status, `Could not open iModel [${iModelName}]`);
 
-  const iModelName = process.argv[2];
-  console.log(`setting [${iModelName}] as a standalone iModel`);
+    nativeDb.saveProjectGuid(Guid.empty);
+    if (nativeDb.hasPendingTxns()) {
+      log("Local Txns found - deleting them");
+      nativeDb.deleteAllTxns();
+    }
 
-  const nativeDb = new IModelHost.platform.DgnDb();
-  const status = nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
-  if (DbResult.BE_SQLITE_OK !== status)
-    throw new IModelError(status, `Could not open iModel [${iModelName}]`);
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+    nativeDb.saveChanges();
+    nativeDb.closeIModel();
 
-  nativeDb.saveProjectGuid(Guid.empty);
-  if (nativeDb.hasPendingTxns()) {
-    console.log("Local Txns found - deleting them");
-    nativeDb.deleteAllTxns();
+    log(`[${iModelName}] successfully set as standalone iModel`);
+  } catch (err) {
+    log(err.message);
+  }
+}
+
+async function processDirectory(dir: string) {
+  log(`Converting iModels in directory ${dir}`);
+  indent();
+
+  for (const file of fs.readdirSync(dir)) {
+    const fullPath = path.join(dir, file);
+    log(fullPath);
+    if (fs.statSync(fullPath).isDirectory()) {
+      await processDirectory(fullPath);
+    } else {
+      if (file.endsWith(".bim") || file.endsWith(".ibim"))
+        setToStandalone(fullPath);
+    }
   }
 
-  nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-  nativeDb.saveChanges();
-  nativeDb.closeIModel();
-
-  console.log(`[${iModelName}] successfully set as standalone iModel`);
+  outdent();
 }
 
 async function run() {
-  try {
-    await IModelHost.startup();
-    await setToStandalone();
-    await IModelHost.shutdown();
-  } catch (err) {
-    console.log(err.message);
+  if (process.argv.length !== 3) {
+    log("Expected 1 argument - the path to an iModel or directory.");
+    return;
   }
+
+  await IModelHost.startup();
+
+  const rootPath = process.argv[2];
+  if (fs.statSync(rootPath).isDirectory())
+    await processDirectory(rootPath);
+  else
+    setToStandalone(rootPath);
+
+  await IModelHost.shutdown();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
