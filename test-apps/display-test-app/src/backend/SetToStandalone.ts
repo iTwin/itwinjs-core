@@ -49,6 +49,7 @@ function setToStandalone(iModelName: string) {
     if (nativeDb.hasPendingTxns()) {
       log("Local Txns found - deleting them");
       nativeDb.deleteAllTxns();
+      nativeDb.saveChanges();
     }
 
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
