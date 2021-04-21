@@ -73,7 +73,15 @@ async function processDirectory(dir: string) {
 
   for (const file of fs.readdirSync(dir)) {
     const fullPath = path.join(dir, file);
-    if (fs.statSync(fullPath).isDirectory()) {
+    let isDirectory;
+    try {
+      isDirectory = fs.statSync(fullPath).isDirectory();
+    } catch (err) {
+      log(err);
+      continue;
+    }
+
+    if (isDirectory) {
       await processDirectory(fullPath);
     } else {
       if (file.endsWith(".bim") || file.endsWith(".ibim"))
