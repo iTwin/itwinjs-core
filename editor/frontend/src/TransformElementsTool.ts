@@ -68,7 +68,7 @@ export class TransformGraphicsProvider {
     if (undefined === graphicData)
       return;
 
-    const graphic = await readElementGraphics(graphicData, this.iModel, elementProps[0].model, placement.is3d);
+    const graphic = await readElementGraphics(graphicData, this.iModel, elementProps[0].model, placement.is3d, { noFlash: true, noHilite: true });
     if (undefined === graphic)
       return;
 
