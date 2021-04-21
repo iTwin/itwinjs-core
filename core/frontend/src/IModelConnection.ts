@@ -80,7 +80,7 @@ export abstract class IModelConnection extends IModel {
   /** The map location.
    * @internal
    */
-  public backgroundMapLocation = new BackgroundMapLocation();
+  public backgroundMapLocation: BackgroundMapLocation;
   /** The Geographic location services available for this iModelConnection
    * @internal
    */
@@ -230,6 +230,7 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
+    this.backgroundMapLocation = new BackgroundMapLocation(this);
   }
 
   /** Called prior to connection closing. Raises close events and calls tiles.dispose.

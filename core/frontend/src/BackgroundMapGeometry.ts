@@ -439,6 +439,9 @@ export class BackgroundMapLocation {
     this._ecefToDb = ecefLocation.getTransform().inverse()!;
     this._ecefValidated = false;
   }
+  public constructor(iModel: IModelConnection) {
+    this.initialize(iModel).then (() => {});
+  }
 
   public async initialize(iModel: IModelConnection): Promise<void> {
     if (this._ecefToDb !== undefined && this._ecefValidated)
@@ -476,6 +479,7 @@ export class BackgroundMapLocation {
     this._ecefValidated = true;
   }
   public getMapEcefToDb(bimElevationBias: number): Transform {
+    assert (this._ecefValidated);
     if (undefined === this._ecefToDb) {
       assert(false);
       return Transform.createIdentity();

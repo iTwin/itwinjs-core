@@ -32,7 +32,7 @@ describe("SavedViewLayout", () => {
   imodelMock.setup((x) => x.views).returns(() => viewsMock.object);
   imodelMock.setup((x) => x.subcategories).returns(() => new SubCategoriesCache(imodelMock.object));
   imodelMock.setup((x) => x.models).returns(() => new IModelConnection.Models(imodelMock.object));
-  imodelMock.setup((x) => x.backgroundMapLocation).returns(() => new BackgroundMapLocation());
+  imodelMock.setup((x) => x.backgroundMapLocation).returns(() => new BackgroundMapLocation(imodelMock.object));
   imodelMock.setup((x) => x.ecefLocation).returns(() => new EcefLocation({ origin: Point3d.createZero(), orientation: YawPitchRollAngles.createRadians(0, 0, 0) }));
   imodelMock.setup((x) => x.projectExtents).returns(() => Range3d.create(Point3d.createZero()));
 
