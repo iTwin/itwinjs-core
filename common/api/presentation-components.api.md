@@ -19,6 +19,7 @@ import { DiagnosticsOptionsWithHandler } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FavoritePropertiesScope } from '@bentley/presentation-frontend';
 import { Field } from '@bentley/presentation-common';
+import { HierarchyUpdateRecord } from '@bentley/presentation-common';
 import { HighlightableTreeProps } from '@bentley/ui-components';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -28,8 +29,10 @@ import { IPropertyDataProvider } from '@bentley/ui-components';
 import { IPropertyValueRenderer } from '@bentley/ui-components';
 import { Item } from '@bentley/presentation-common';
 import { ITreeDataProvider } from '@bentley/ui-components';
+import { ITreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
+import { MutableTreeModel } from '@bentley/ui-components';
 import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
@@ -38,6 +41,7 @@ import { Paged } from '@bentley/presentation-common';
 import { PagedTreeNodeLoader } from '@bentley/ui-components';
 import { PageOptions } from '@bentley/presentation-common';
 import { PageOptions as PageOptions_2 } from '@bentley/ui-components';
+import { PartialHierarchyModification } from '@bentley/presentation-common';
 import { PropertyData } from '@bentley/ui-components';
 import { PropertyDataChangeEvent } from '@bentley/ui-components';
 import { PropertyDataFiltererBase } from '@bentley/ui-components';
@@ -60,6 +64,7 @@ import { TableDataProvider } from '@bentley/ui-components';
 import { TableProps } from '@bentley/ui-components';
 import { TreeEditingParams } from '@bentley/ui-components';
 import { TreeEventHandler } from '@bentley/ui-components';
+import { TreeModel } from '@bentley/ui-components';
 import { TreeModelChanges } from '@bentley/ui-components';
 import { TreeModelSource } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
@@ -67,6 +72,13 @@ import { TreeProps } from '@bentley/ui-components';
 import { TreeSelectionModificationEventArgs } from '@bentley/ui-components';
 import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { ViewportProps } from '@bentley/ui-components';
+import { VisibleTreeNodes } from '@bentley/ui-components';
+
+// @internal (undocumented)
+export function applyHierarchyChanges(treeModel: MutableTreeModel, hierarchyUpdateRecords: HierarchyUpdateRecord[], reloadedHierarchyParts: ReloadedHierarchyPart[], treeNodeItemCreationProps: CreateTreeNodeItemProps): MutableTreeModel;
+
+// @internal (undocumented)
+export const applyOptionalPrefix: (str: string, prefix?: string | undefined) => string;
 
 // @public
 export interface CacheInvalidationProps {
@@ -160,6 +172,28 @@ export interface ControlledTreeWithVisibleNodesProps extends Omit<ControlledTree
 // @alpha
 export function createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined;
 
+// @internal (undocumented)
+export interface CreatePropertyRecordProps {
+    // (undocumented)
+    autoExpand?: boolean;
+    // (undocumented)
+    description: PropertyDescription;
+    // (undocumented)
+    extendedData?: {
+        [key: string]: any;
+    };
+    // (undocumented)
+    isMerged?: boolean;
+    // (undocumented)
+    isReadonly?: boolean;
+    // (undocumented)
+    items?: CreatePropertyRecordProps;
+    // (undocumented)
+    members?: {
+        [name: string]: CreatePropertyRecordProps;
+    };
+}
+
 // @public
 export class DataProvidersFactory {
     constructor(props?: DataProvidersFactoryProps);
@@ -237,6 +271,70 @@ export interface FavoritePropertiesDataProviderProps {
     ruleset?: Ruleset | string;
 }
 
+// @internal (undocumented)
+export const FAVORITES_CATEGORY_NAME = "Favorite";
+
+// @internal (undocumented)
+export const FIELD_NAMES_SEPARATOR = "$";
+
+// @internal (undocumented)
+export interface FieldHierarchy {
+    // (undocumented)
+    childFields?: FieldHierarchy[];
+    // (undocumented)
+    field: Field;
+}
+
+// @internal (undocumented)
+export interface FieldRecord {
+    // (undocumented)
+    field: Field;
+    // (undocumented)
+    record: PropertyRecord;
+}
+
+// @internal
+export class FilteredPresentationTreeDataProvider implements IFilteredPresentationTreeDataProvider {
+    constructor(props: FilteredPresentationTreeDataProviderProps);
+    countFilteringResults(nodePaths: ReadonlyArray<Readonly<NodePathElement>>): number;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    get filter(): string;
+    // (undocumented)
+    getActiveMatch: (index: number) => ActiveMatchInfo | undefined;
+    // (undocumented)
+    getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
+    // (undocumented)
+    getNodeKey(node: TreeNodeItem): NodeKey;
+    // (undocumented)
+    getNodes(parent?: TreeNodeItem, pageOptions?: PageOptions_2): Promise<DelayLoadedTreeNodeItem[]>;
+    // (undocumented)
+    getNodesCount(parent?: TreeNodeItem): Promise<number>;
+    // (undocumented)
+    get imodel(): IModelConnection;
+    // @alpha
+    loadHierarchy(): Promise<void>;
+    nodeMatchesFilter(node: TreeNodeItem): boolean;
+    // (undocumented)
+    get parentDataProvider(): IPresentationTreeDataProvider;
+    // (undocumented)
+    get rulesetId(): string;
+}
+
+// @internal (undocumented)
+export interface FilteredPresentationTreeDataProviderProps {
+    // (undocumented)
+    filter: string;
+    // (undocumented)
+    parentDataProvider: IPresentationTreeDataProvider;
+    // (undocumented)
+    paths: ReadonlyArray<Readonly<NodePathElement>>;
+}
+
+// @internal (undocumented)
+export const getFavoritesCategory: () => CategoryDescription;
+
 // @public
 export interface IContentDataProvider extends IPresentationDataProvider {
     readonly displayType: string;
@@ -246,6 +344,11 @@ export interface IContentDataProvider extends IPresentationDataProvider {
     getFieldByPropertyRecord: (propertyRecord: PropertyRecord) => Promise<Field | undefined>;
     keys: KeySet;
     selectionInfo: SelectionInfo | undefined;
+}
+
+// @public
+export interface IFavoritePropertiesDataProvider {
+    getData: (imodel: IModelConnection, elementIds: Id64Arg | KeySet) => Promise<PropertyData>;
 }
 
 // @public
@@ -449,6 +552,11 @@ export interface PropertyDataProviderWithUnifiedSelectionProps {
     selectionHandler?: SelectionHandler;
 }
 
+// @internal (undocumented)
+export interface PropertyDescriptionCreationProps {
+    namePrefix?: string;
+}
+
 // @public @deprecated
 export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<P & PropertyGridWithUnifiedSelectionProps>;
 
@@ -459,6 +567,25 @@ export interface PropertyGridWithUnifiedSelectionProps {
     // @internal (undocumented)
     selectionHandler?: SelectionHandler;
 }
+
+// @internal (undocumented)
+export interface ReloadedHierarchyPart {
+    // (undocumented)
+    nodeItems: TreeNodeItem[];
+    // (undocumented)
+    offset: number;
+    // (undocumented)
+    parentId: string | undefined;
+}
+
+// @internal (undocumented)
+export function reloadVisibleHierarchyParts(visibleNodes: VisibleTreeNodes, renderedItems: RenderedItemsRange, dataProvider: IPresentationTreeDataProvider): Promise<ReloadedHierarchyPart[]>;
+
+// @public
+export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
+
+// @public
+export const TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20;
 
 // @public
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableWithUnifiedSelectionProps>;
@@ -544,6 +671,9 @@ export interface UnifiedSelectionTreeEventHandlerParams {
     selectionHandler?: SelectionHandler;
 }
 
+// @internal (undocumented)
+export function updateTreeModel(treeModel: TreeModel, hierarchyModifications: PartialHierarchyModification[], treeNodeItemCreationProps: CreateTreeNodeItemProps): MutableTreeModel | undefined;
+
 // @public
 export function useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps): {
     nodeHighlightingProps: HighlightableTreeProps | undefined;
@@ -555,6 +685,17 @@ export function useControlledPresentationTreeFiltering(props: ControlledPresenta
 
 // @beta @deprecated
 export const useControlledTreeFiltering: typeof useControlledPresentationTreeFiltering;
+
+// @internal (undocumented)
+export function useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filter: string | undefined): {
+    filteredNodeLoader: PagedTreeNodeLoader<IFilteredPresentationTreeDataProvider> | undefined;
+    isFiltering: boolean;
+    filterApplied: string | undefined;
+    matchesCount: number | undefined;
+};
+
+// @internal (undocumented)
+export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;
 
 // @public
 export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): {
@@ -575,6 +716,27 @@ export function useUnifiedSelectionContext(): UnifiedSelectionContext | undefine
 
 // @public
 export function useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams): UnifiedSelectionTreeEventHandler;
+
+// @internal
+export class ViewportSelectionHandler implements IDisposable {
+    constructor(props: ViewportSelectionHandlerProps);
+    // (undocumented)
+    applyCurrentSelection(): Promise<void>;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    get imodel(): IModelConnection;
+    set imodel(value: IModelConnection);
+    get pendingAsyncs(): Set<string>;
+    // (undocumented)
+    get selectionHandler(): SelectionHandler;
+    }
+
+// @internal (undocumented)
+export interface ViewportSelectionHandlerProps {
+    // (undocumented)
+    imodel: IModelConnection;
+}
 
 // @public
 export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & ViewWithUnifiedSelectionProps>;
