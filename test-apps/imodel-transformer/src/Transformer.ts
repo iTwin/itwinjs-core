@@ -156,7 +156,6 @@ export class Transformer extends IModelTransformer {
     }
     this.logElapsedTime();
     this.logChangeTrackingMemoryUsed();
-    // this.targetDb.saveChanges();
     super.onProgress();
   }
 
