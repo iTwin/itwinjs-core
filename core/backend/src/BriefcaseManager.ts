@@ -83,11 +83,6 @@ export class BriefcaseManager {
     return path.join(this.getIModelPath(iModelId), this._bcSubDir);
   }
 
-  /** @internal */
-  public static getChangeSetFolderNameFromId(changeSetId: string): string {
-    return changeSetId || "first";
-  }
-
   /** Get the name of the local file that holds, or will hold, a briefcase in the briefcase cache established in the call to [[BriefcaseManager.initialize]], based
  * on an iModelId and BriefcaseId.
  * @param briefcase the iModelId and BriefcaseId for the filename
