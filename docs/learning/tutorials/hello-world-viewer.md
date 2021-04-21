@@ -271,7 +271,7 @@ Result when the toggle is off:
 
 ### What's next?
 
-This is one of infinitely many possible widgets we can create in the iTwin Viewer. Feel free to explore sample widgets on our [sample showcase]($docs/sample-showcase/).
+This is one of infinitely many possible widgets we can create in the iTwin Viewer. Feel free to explore sample widgets on our [sample showcase](https://www.itwinjs.org/sample-showcase/).
 
 In the next tutorial, we will take widgets from the sample showcase and use them in our iTwin Viewer.
 
@@ -284,4 +284,4 @@ In the next tutorial, we will take widgets from the sample showcase and use them
 
 ## Next Steps
 
-- [iTwin Sample Showcase]($docs/sample-showcase/)
+- [iTwin Sample Showcase](https://www.itwinjs.org/sample-showcase/)

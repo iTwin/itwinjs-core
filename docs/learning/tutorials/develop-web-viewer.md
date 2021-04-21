@@ -28,4 +28,4 @@
 ## Next Steps
 
 - [iTwin Viewer - "Hello World"]($docs/learning/tutorials/hello-world-viewer/)
-- [Visit the iTwin Sample Showcase]($docs/sample-showcase/)
+- [Visit the iTwin Sample Showcase](https://www.itwinjs.org/sample-showcase/)
