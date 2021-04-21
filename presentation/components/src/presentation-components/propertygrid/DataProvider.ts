@@ -11,8 +11,9 @@ import memoize from "micro-memoize";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, Item, NestedContentField, PresentationError,
-  PropertyValueFormat as PresentationPropertyValueFormat, PresentationStatus, Ruleset,
+  CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, InstanceKey, Item,
+  NestedContentField, NestedContentValue, PresentationError, PropertyValueFormat as PresentationPropertyValueFormat,
+  PresentationStatus, Ruleset, Value, ValuesMap,
 } from "@bentley/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
@@ -20,14 +21,14 @@ import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChan
 import { ContentBuilder, FieldRecord } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
-import { createLabelRecord, priorityAndNameSortFunction } from "../common/Utils";
+import { createLabelRecord, findField, priorityAndNameSortFunction } from "../common/Utils";
 import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-properties/DataProvider";
 
 /**
  * Default presentation ruleset used by [[PresentationPropertyDataProvider]]. The ruleset just gets properties
  * of the selected elements.
  *
- * @beta
+ * @public
  */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset = require("./DefaultPropertyGridRules.json");
@@ -171,10 +172,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     this.invalidateCache({ content: true });
   }
 
-  /**
-   * Is nested property categories enabled
-   * @beta
-   */
+  /** Is nested property categories enabled */
   public get isNestedPropertyCategoryGroupingEnabled(): boolean { return this._isNestedPropertyCategoryGroupingEnabled; }
   public set isNestedPropertyCategoryGroupingEnabled(value: boolean) {
     if (this._isNestedPropertyCategoryGroupingEnabled === value)
@@ -242,6 +240,46 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    */
   public async getData(): Promise<PropertyData> {
     return this.getMemoizedData();
+  }
+
+  /**
+   * Get keys of instances which were used to create given [[PropertyRecord]].
+   * @beta
+   */
+  public async getPropertyRecordInstanceKeys(record: PropertyRecord): Promise<InstanceKey[]> {
+    const content = await this.getContent();
+    if (!content || 0 === content.contentSet.length)
+      return [];
+
+    let recordField = findField(content.descriptor, record.property.name);
+    if (!recordField)
+      return [];
+
+    const fieldsStack: Field[] = [];
+    while (recordField.parent) {
+      recordField = recordField.parent;
+      fieldsStack.push(recordField);
+    }
+    fieldsStack.reverse();
+
+    let contentItems: Array<{ primaryKeys: InstanceKey[], values: ValuesMap }> = content.contentSet;
+    fieldsStack.forEach((field) => {
+      const nestedContent = contentItems.reduce((nc, curr) => {
+        const currItemValue = curr.values[field.name];
+        assert(Value.isNestedContent(currItemValue));
+        nc.push(...currItemValue);
+        return nc;
+      }, new Array<NestedContentValue>());
+      contentItems = nestedContent.map((nc) => ({
+        primaryKeys: nc.primaryKeys,
+        values: nc.values,
+      }));
+    });
+
+    return contentItems.reduce((keys, curr) => {
+      keys.push(...curr.primaryKeys);
+      return keys;
+    }, new Array<InstanceKey>());
   }
 }
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Additional properties (source/target ellipsoid) and fallback transform for geodetic transforms\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "73677355+AlainRobertAtBentley@users.noreply.github.com"
+}

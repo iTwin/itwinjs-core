@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-locaters",
-  "version": "2.16.0-dev.1",
+  "version": "2.16.0-dev.13",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/ecschema-locaters.js",
@@ -31,9 +31,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.1",
-    "@bentley/ecschema-metadata": "2.16.0-dev.1",
-    "@bentley/eslint-plugin": "2.16.0-dev.1",
+    "@bentley/build-tools": "2.16.0-dev.13",
+    "@bentley/ecschema-metadata": "2.16.0-dev.13",
+    "@bentley/eslint-plugin": "2.16.0-dev.13",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -54,7 +54,7 @@
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@bentley/ecschema-metadata": "^2.16.0-dev.1"
+    "@bentley/ecschema-metadata": "^2.16.0-dev.13"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

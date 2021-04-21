@@ -56,6 +56,7 @@ internal;BackgroundMapGeometry
 internal;BackgroundMapLocation
 beta;class BaseUnitFormattingSettingsProvider 
 internal;BatchedTileIdMap
+public;BatchOptions
 public;BeButton
 public;BeButtonEvent 
 public;BeButtonEventProps
@@ -124,6 +125,7 @@ public;DisclosedTileTreeSet
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
+internal;disposeTileTreesForGeometricModels(modelIds: Set
 beta;DownloadBriefcaseId =
 beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
 internal;DrawClipOptions
@@ -201,6 +203,7 @@ public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string
 internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise
 public;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
+internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
@@ -225,7 +228,6 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
-internal;GridDisplaySettings
 alpha;GroupMark
 internal;Hilites
 beta;HiliteSet
@@ -388,6 +390,8 @@ public;Pixel
 internal;PlanarClassifierMap = Map
 internal;PlanarClassifierTarget
 beta;PlanarClipMaskState
+alpha;PlanarGridProps
+alpha;PlanarGridTransparency
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
@@ -403,7 +407,7 @@ beta;QuantityTypeKey = string
 public;queryRealityData(criteria: RealityDataQueryCriteria): Promise
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
-public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise
+public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 public;RealityDataQueryCriteria
 internal;RealityModelSource = ViewState | DisplayStyleState
@@ -419,7 +423,7 @@ internal;RealityTileTree
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
 deprecated;RemoteBriefcaseConnection 
-beta;class RenderClipVolume 
+public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics
 public;class RenderGraphic 
@@ -592,10 +596,10 @@ internal;class ViewClipModifyTool
 internal;ViewClipPlanesModifyTool 
 internal;ViewClipShapeModifyTool 
 public;ViewClipTool 
-beta;ViewCreator2d
-beta;ViewCreator2dOptions
-beta;ViewCreator3d
-beta;ViewCreator3dOptions
+public;ViewCreator2d
+public;ViewCreator2dOptions
+public;ViewCreator3d
+public;ViewCreator3dOptions
 internal;viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight?: number, pitchAngleRadians?: number, location?: GlobalLocation): number
 internal;ViewGlobalLocationConstants
 public;ViewGlobeBirdTool 
@@ -606,7 +610,7 @@ internal;ViewHandleArray
 internal;ViewHandleType
 public;ViewingSpace
 internal;class ViewingToolHandle
-public;ViewManager
+public;ViewManager 
 public;class ViewManip 
 public;class Viewport 
 public;ViewportDecorator

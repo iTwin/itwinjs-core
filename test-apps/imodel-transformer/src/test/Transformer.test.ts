@@ -7,7 +7,8 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BackendLoggerCategory, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, PhysicalPartition, SnapshotDb, SpatialElement,
+  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, PhysicalPartition, SnapshotDb,
+  SpatialElement,
 } from "@bentley/imodeljs-backend";
 import { progressLoggerCategory, Transformer } from "../Transformer";
 
@@ -61,7 +62,7 @@ describe("imodel-transformer", () => {
       ecefLocation: sourceDb.ecefLocation,
     });
 
-    await Transformer.transformAll(sourceDb, targetDb, { simplifyElementGeometry: true });
+    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { simplifyElementGeometry: true });
     const numSourceElements = count(sourceDb, Element.classFullName);
     assert.isAtLeast(numSourceElements, 50);
     assert.equal(count(targetDb, Element.classFullName), numSourceElements);
@@ -75,7 +76,7 @@ describe("imodel-transformer", () => {
       ecefLocation: sourceDb.ecefLocation,
     });
 
-    await Transformer.transformAll(sourceDb, targetDb, { combinePhysicalModels: true });
+    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { combinePhysicalModels: true });
     const numSourceSpatialElements = count(sourceDb, SpatialElement.classFullName);
     assert.isAtLeast(numSourceSpatialElements, 6);
     assert.equal(count(targetDb, SpatialElement.classFullName), numSourceSpatialElements);

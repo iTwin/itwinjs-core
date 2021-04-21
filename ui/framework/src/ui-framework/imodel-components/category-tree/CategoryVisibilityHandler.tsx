@@ -212,7 +212,9 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
 
     // This property let us act on all viewports or just on the selected one, configurable by the app
     if (forAllViewports) {
-      viewManager.forEachViewport(updateViewport);
+      for (const viewport of viewManager) {
+        updateViewport(viewport);
+      }
     } else {
       updateViewport(viewManager.selectedView);
     }
@@ -233,7 +235,9 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
 
     // This property let us act on all viewports or just on the selected one, configurable by the app
     if (forAllViewports) {
-      viewManager.forEachViewport(updateViewport);
+      for (const viewport of viewManager) {
+        updateViewport(viewport);
+      }
     } else {
       updateViewport(viewManager.selectedView);
     }

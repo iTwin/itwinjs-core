@@ -2,19 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { PropertyCategory, PropertyData } from "../PropertyDataProvider";
-import { IMutableFlatGridItem, IMutableGridCategoryItem } from "./flat-items/MutableFlatGridItem";
-import { FlatGridItem, GridCategoryItem } from "./flat-items/FlatGridItem";
-import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
 import { immerable } from "immer";
+import { PropertyCategory, PropertyData } from "../PropertyDataProvider";
+import { FlatGridItem, GridCategoryItem } from "./flat-items/FlatGridItem";
+import { IMutableFlatGridItem, IMutableGridCategoryItem } from "./flat-items/MutableFlatGridItem";
+import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
 
 /**
  * PropertyGridModel interface for working with immutable FlatGridItems
- * @alpha
+ * @beta
  */
 export interface IPropertyGridModel {
   getItem: (selectionKey: string) => FlatGridItem;
@@ -25,7 +24,7 @@ export interface IPropertyGridModel {
 
 /**
  * PropertyGridModel interface for working with mutable FlatGridItems
- * @alpha
+ * @beta
  */
 export interface IMutablePropertyGridModel {
   getItem: (selectionKey: string) => IMutableFlatGridItem;
@@ -36,7 +35,7 @@ export interface IMutablePropertyGridModel {
 
 /**
  * Implementation of PropertyGridModel for working with and converting PropertyData to mutable FlatGridItems
- * @alpha
+ * @beta
  */
 export class MutablePropertyGridModel implements IPropertyGridModel, IMutablePropertyGridModel {
   public [immerable] = true;

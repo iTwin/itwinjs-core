@@ -21,10 +21,6 @@ class TimePointComparison {
     this._timePoint = timePoint;
   }
 
-  public dispose(): void {
-    this._clipVolume?.dispose();
-  }
-
   public forEachTileTreeRef(viewport: ScreenViewport, func: (ref: TileTreeReference) => void): void {
     viewport.view.forEachTileTreeRef(func);
   }
@@ -90,7 +86,6 @@ class TimePointComparison {
       vp.viewFlags.clipVolume = true;
     } else {
       vp.dropTiledGraphicsProvider(provider);
-      provider.dispose();
       vp.view.setViewClip(undefined);
     }
 

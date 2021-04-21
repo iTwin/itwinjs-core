@@ -7,10 +7,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@azure-tools/azcopy-node",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "@azure/storage-blob",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -25,6 +21,10 @@
     {
       "name": "@bentley/backend-itwin-client",
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@bentley/backend-webpack-tools",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/bentleyjs-core",
@@ -56,11 +56,7 @@
     },
     {
       "name": "@bentley/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "common", "integration-testing" ]
-    },
-    {
-      "name": "@bentley/ecschema-rpcinterface-impl",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "integration-testing" ]
     },
     {
       "name": "@bentley/electron-manager",

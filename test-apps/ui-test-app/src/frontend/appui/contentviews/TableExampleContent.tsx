@@ -201,7 +201,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       resizable: true,
       editable: true,
       filterable: true,
-      filterRenderer: FilterRenderer.MultiSelect,
+      filterRenderer: FilterRenderer.MultiValue,
     },
     {
       key: "color",
