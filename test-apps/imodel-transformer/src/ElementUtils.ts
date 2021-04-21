@@ -65,5 +65,10 @@ export namespace ElementUtils {
         iModelDb.elements.getElement<SubCategory>(subCategoryId, SubCategory); // will throw Error if not a valid SubCategory
       }
     }
+    if (displayStyle.settings?.excludedElementIds) {
+      for (const elementId of displayStyle.settings.excludedElementIds) {
+        iModelDb.elements.getElement(elementId);
+      }
+    }
   }
 }
