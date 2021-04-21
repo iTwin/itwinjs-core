@@ -62,8 +62,8 @@ export namespace ElementUtils {
     const iModelDb = displayStyle.iModel;
     if (displayStyle.settings?.subCategoryOverrides) {
       for (const subCategoryId of displayStyle.settings.subCategoryOverrides.keys()) {
-        iModelDb.elements.getElement<SubCategory>(subCategoryId, SubCategory);
-      };
+        iModelDb.elements.getElement<SubCategory>(subCategoryId, SubCategory); // will throw Error if not a valid SubCategory
+      }
     }
   }
 }
