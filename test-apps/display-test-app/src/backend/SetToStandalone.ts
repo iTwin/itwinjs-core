@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbResult, Guid, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { BriefcaseManager, IModelHost } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
@@ -38,7 +38,9 @@ function log(msg: string) {
 ```
 */
 function setToStandalone(iModelName: string) {
-  log(`setting [${iModelName}] as a standalone iModel`);
+  log(`Setting ${iModelName} to standalone...`);
+  indent();
+
   try {
     const nativeDb = new IModelHost.platform.DgnDb();
     const status = nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
@@ -46,20 +48,23 @@ function setToStandalone(iModelName: string) {
       throw new IModelError(status, `Could not open iModel [${iModelName}]`);
 
     nativeDb.saveProjectGuid(Guid.empty);
-    if (nativeDb.hasPendingTxns()) {
-      log("Local Txns found - deleting them");
-      nativeDb.deleteAllTxns();
+
+    if (!BriefcaseManager.isStandaloneBriefcaseId(nativeDb.getBriefcaseId())) {
+      if (nativeDb.hasPendingTxns()) {
+        log("Local Txns found - deleting them");
+        nativeDb.deleteAllTxns();
+        nativeDb.saveChanges();
+      }
+
+      nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
       nativeDb.saveChanges();
+      nativeDb.closeIModel();
     }
-
-    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    nativeDb.saveChanges();
-    nativeDb.closeIModel();
-
-    log(`[${iModelName}] successfully set as standalone iModel`);
   } catch (err) {
     log(err.message);
   }
+
+  outdent();
 }
 
 async function processDirectory(dir: string) {
@@ -68,7 +73,6 @@ async function processDirectory(dir: string) {
 
   for (const file of fs.readdirSync(dir)) {
     const fullPath = path.join(dir, file);
-    log(fullPath);
     if (fs.statSync(fullPath).isDirectory()) {
       await processDirectory(fullPath);
     } else {
@@ -95,6 +99,8 @@ async function run() {
     setToStandalone(rootPath);
 
   await IModelHost.shutdown();
+
+  log("Finished.");
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
