@@ -350,7 +350,7 @@ export class Element extends Entity implements ElementProps {
    * @param _sourceProps The ElementProps for the source Element that was cloned.
    * @param _targetProps The ElementProps that are a result of the clone. These can be further modified.
    * @note If you override this method, you must call super.
-   * @alpha
+   * @beta
    */
   protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
 
@@ -512,9 +512,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
       val.geom = this.geom;
     return val;
   }
-  /** Return the list of *predecessor* Elements for this GeometricElement.
-   * @beta
-   */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.category);
@@ -548,9 +546,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
     return val;
   }
 
-  /** Return the list of *predecessor* Elements for this GeometricElement3d.
-   * @beta
-   */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
@@ -592,9 +588,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
     return val;
   }
 
-  /** Return the list of *predecessor* Elements for this GeometricElement2d.
-   * @beta
-   */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
@@ -923,9 +917,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
   public border?: Id64String;
   /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
-  /** Return the list of *predecessor* Elements for this SheetTemplate.
-   * @beta
-   */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.border) { predecessorIds.add(this.border); }
@@ -950,9 +942,7 @@ export class Sheet extends Document implements SheetProps {
     this.scale = props.scale;
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
-  /** Return the list of *predecessor* Elements for this Sheet.
-   * @beta
-   */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.sheetTemplate) { predecessorIds.add(this.sheetTemplate); }
@@ -1114,9 +1104,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
   public recipe?: RelatedElement;
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
-  /** Return the list of *predecessor* Elements for this TypeDefinitionElement.
-   * @beta
-   */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.recipe) { predecessorIds.add(this.recipe.id); }
