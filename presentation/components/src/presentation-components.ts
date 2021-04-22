@@ -19,6 +19,7 @@ export { ContentBuilder } from "./presentation-components/common/ContentBuilder"
 export { IContentDataProvider, ContentDataProvider, ContentDataProviderProps, CacheInvalidationProps } from "./presentation-components/common/ContentDataProvider";
 export { DataProvidersFactory, DataProvidersFactoryProps } from "./presentation-components/DataProvidersFactory";
 export { useRulesetRegistration } from "./presentation-components/hooks/UseRulesetRegistration";
+export * from "./presentation-components/common/Diagnostics";
 
 /**
  * @module Logging
@@ -76,7 +77,7 @@ export { IFilteredPresentationTreeDataProvider } from "./presentation-components
 export { DEPRECATED_treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./presentation-components/tree/WithUnifiedSelection";
 export { DEPRECATED_treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./presentation-components/tree/WithFilteringSupport";
 export { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams, useUnifiedSelectionTreeEventHandler } from "./presentation-components/tree/controlled/UseUnifiedSelection";
-export { useControlledTreeFiltering, ControlledTreeFilteringProps } from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
+export { useControlledTreeFiltering, useControlledPresentationTreeFiltering, ControlledTreeFilteringProps, ControlledPresentationTreeFilteringProps } from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
 export { DEPRECATED_controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./presentation-components/tree/controlled/WithFilteringSupport";
 export { DEPRECATED_controlledTreeWithVisibleNodes, ControlledTreeWithVisibleNodesProps } from "./presentation-components/tree/controlled/WithVisibleNodes";
 export { usePresentationTreeNodeLoader, PresentationTreeNodeLoaderProps } from "./presentation-components/tree/controlled/TreeHooks";

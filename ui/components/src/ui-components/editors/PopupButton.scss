@@ -24,11 +24,17 @@
   flex-shrink:        1;
   align-items:        center;
 
+  font-weight:        normal;
+
   > .components-popup-button-value {
     flex-grow:        1;
     max-width:        calc(100% - #{$uicore-line-height});
     overflow-x:       hidden;
     padding:          0 3px;
+
+    &.components-popup-button-placeholder {
+      color:          $buic-foreground-disabled;
+    }
   }
 
   > .components-popup-button-arrow {

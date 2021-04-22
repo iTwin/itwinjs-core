@@ -2,6 +2,39 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.14.3",
+      "tag": "@bentley/imodeljs-frontend_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/imodeljs-frontend_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix imports in CheckpointConnection.ts to not reference own barrel"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/imodeljs-frontend_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix raster view attachments using black background color."
+          },
+          {
+            "comment": "Fix delay before raster view attachments appear in a sheet view."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.14.0",
       "tag": "@bentley/imodeljs-frontend_v2.14.0",
       "date": "Fri, 02 Apr 2021 13:18:42 GMT",

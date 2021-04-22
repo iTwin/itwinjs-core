@@ -5,59 +5,81 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, NoRenderApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { useActiveViewport } from "../../ui-framework";
+import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { ActiveContentChangedEventArgs, ContentViewManager, useActiveViewport } from "../../ui-framework";
 import { mount } from "../TestUtils";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const ActiveViewport = (props: { children?: (activeViewport: ReturnType<typeof useActiveViewport>) => React.ReactNode }) => {
+const ActiveViewport = (props: { children?: () => React.ReactNode }) => {
   const activeViewport = useActiveViewport();
   return (
     <>
-      {props.children && props.children(activeViewport)}
+      {props.children && activeViewport && props.children()}
     </>
   );
 };
 
 describe("useActiveViewport", () => {
-  before(async () => {
-    (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
-    await NoRenderApp.startup();
+  // const viewManagerMock = moq.Mock.ofType<ViewManager>();
+  const selectedViewMock = moq.Mock.ofType<ScreenViewport>();
+  const selectedViewMock2 = moq.Mock.ofType<ScreenViewport>();
+
+  beforeEach(() => {
+    selectedViewMock.reset();
+    selectedViewMock2.reset();
+
+    // hacks to avoid instantiating the whole core..
+    (IModelApp as any)._viewManager = {
+      selectedView: () => {
+        return selectedViewMock.object;
+      },
+    };
   });
 
-  after(async () => {
-    await IModelApp.shutdown();
+  afterEach(() => {
+    (IModelApp as any)._viewManager = undefined;
   });
 
   it("should add onSelectedViewportChanged listener", () => {
-    const spy = sinon.spy(IModelApp.viewManager.onSelectedViewportChanged, "addListener");
+    const spy = sinon.spy(ContentViewManager.onActiveContentChangedEvent, "addListener");
     mount(<ActiveViewport />);
 
     expect(spy.calledOnce).to.be.true;
   });
 
   it("should remove onSelectedViewportChanged listener", () => {
-    const spy = sinon.spy(IModelApp.viewManager.onSelectedViewportChanged, "removeListener");
+    const spy = sinon.spy(ContentViewManager.onActiveContentChangedEvent, "removeListener");
     const sut = mount(<ActiveViewport />);
     sut.unmount();
     expect(spy.calledOnce).to.be.true;
   });
 
   it("should add event listeners once", () => {
-    const spy = sinon.spy(IModelApp.viewManager.onSelectedViewportChanged, "addListener");
+    const spy = sinon.spy(ContentViewManager.onActiveContentChangedEvent, "addListener");
     const sut = mount(<ActiveViewport />);
     sut.setProps({});
-
     expect(spy.calledOnce).to.be.true;
   });
 
   it("should update active viewport", () => {
-    const spy = sinon.stub<NonNullable<Parameters<typeof ActiveViewport>[0]["children"]>>();
-    mount(<ActiveViewport children={spy} />); // eslint-disable-line react/no-children-prop
-    spy.resetHistory();
+    let renderedCount = 0;
+    const childFunc = () => {
+      renderedCount = renderedCount + 1;
+      return renderedCount;
+    };
 
-    const newViewport: ScreenViewport = {} as any;
-    IModelApp.viewManager.onSelectedViewportChanged.emit({ current: newViewport });
-    expect(spy.calledOnceWithExactly(newViewport)).to.be.true;
+    mount(<ActiveViewport children={childFunc} />); // eslint-disable-line react/no-children-prop
+    expect(renderedCount).to.be.eql(1);
+
+    // update to return a different object so re-render occurs
+    (IModelApp as any)._viewManager = {
+      selectedView: () => {
+        return selectedViewMock2.object;
+      },
+    };
+
+    ContentViewManager.onActiveContentChangedEvent.emit({} as ActiveContentChangedEventArgs);
+    expect(renderedCount).to.be.eql(2);
   });
 });

@@ -17,8 +17,8 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
+  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, NpcCenter, Placement, Placement2d,
+  Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
   SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -84,7 +84,9 @@ export interface ViewportDecorator {
   decorate(context: DecorateContext): void;
 }
 
-/** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
+/** Source of depth point returned by [[Viewport.pickDepthPoint]].
+ * @public
+ */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
   Geometry, // eslint-disable-line @typescript-eslint/no-shadow
@@ -104,7 +106,9 @@ export enum DepthPointSource {
   Map,
 }
 
-/** @alpha Options to control behavior of [[Viewport.pickDepthPoint]]. */
+/** Options to control behavior of [[Viewport.pickDepthPoint]].
+ * @public
+ */
 export interface DepthPointOptions {
   /** If true, geometry with the "non-locatable" flag set will not be selected. */
   excludeNonLocatable?: boolean;
@@ -412,8 +416,6 @@ export abstract class Viewport implements IDisposable {
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
-  private _outsideClipColor?: ColorDef;
-  private _insideClipColor?: ColorDef;
 
   /** @see [DisplayStyle3dSettings.lights]($common) */
   public get lightSettings(): LightSettings | undefined {
@@ -562,28 +564,6 @@ export abstract class Viewport implements IDisposable {
       return false;
 
     return this.displayStyle.globeMode === GlobeMode.Ellipsoid && view.isGlobalView;
-  }
-
-  /** This setting controls the color override for pixels outside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
-   * @note The transparency component of the color object is ignored.
-   * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
-   * @beta
-   */
-  public get outsideClipColor(): ColorDef | undefined { return this._outsideClipColor; }
-  public set outsideClipColor(color: ColorDef | undefined) {
-    this._outsideClipColor = color === undefined ? undefined : color;
-    this.invalidateRenderPlan();
-  }
-
-  /** This setting controls the color override for pixels inside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
-   * @note The transparency component of the color object is ignored.
-   * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
-   * @beta
-   */
-  public get insideClipColor(): ColorDef | undefined { return this._insideClipColor; }
-  public set insideClipColor(color: ColorDef | undefined) {
-    this._insideClipColor = color === undefined ? undefined : color;
-    this.invalidateRenderPlan();
   }
 
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
@@ -791,13 +771,13 @@ export abstract class Viewport implements IDisposable {
   }
 
   private enableAllSubCategories(categoryIds: Id64Arg): void {
-    Id64.forEach(categoryIds, (categoryId) => {
+    for (const categoryId of Id64.iterable(categoryIds)) {
       const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
       if (undefined !== subCategoryIds) {
         for (const subCategoryId of subCategoryIds)
           this.changeSubCategoryDisplay(subCategoryId, true);
       }
-    });
+    }
   }
 
   /** @internal */
@@ -1827,9 +1807,8 @@ export abstract class Viewport implements IDisposable {
    * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
    */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
-    const toPlacement = (placement: Placement2dProps | Placement3dProps): Placement2d | Placement3d => {
-      const props = placement as any;
-      return undefined !== props.angle ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
+    const toPlacement = (props: PlacementProps): Placement => {
+      return isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
     };
 
     const indexOfFirstValidPlacement = placementProps.findIndex((props) => toPlacement(props).isValid);
@@ -2770,7 +2749,6 @@ export class ScreenViewport extends Viewport {
    * @param options Optional settings to control what can be selected.
    * @returns A plane with origin from closest geometry point or reference plane projection and the source of the depth point.
    * @note The result plane normal is valid when the source is not geometry or a reality model.
-   * @alpha
    */
   public pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, sourceId?: string } {
     if (!this.view.is3d())

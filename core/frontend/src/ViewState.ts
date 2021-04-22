@@ -965,14 +965,22 @@ export abstract class ViewState extends ElementState {
   public hasSameCoordinates(other: ViewState): boolean {
     if (this.iModel !== other.iModel)
       return false;
+
+    // Spatial views view any number of spatial models all sharing one coordinate system.
     if (this.isSpatialView() && other.isSpatialView())
       return true;
+
+    // People sometimes mistakenly stick 2d models into spatial views' model selectors.
+    if (this.isSpatialView() || other.isSpatialView())
+      return false;
+
+    // Non-spatial views view exactly one model. If they view the same model, they share a coordinate system.
     let allowView = false;
     this.forEachModel((model) => {
-      if (!allowView && other.viewsModel(model.id))
-        allowView = true;
+      allowView ||= other.viewsModel(model.id);
     });
-    return allowView; // Accept if this view shares a model in common with target.
+
+    return allowView;
   }
 
   public getUpVector(point: Point3d): Vector3d {
@@ -1173,9 +1181,6 @@ export abstract class ViewState3d extends ViewState {
   }
 
   private updateModelClips(groups: ModelClipGroups): void {
-    for (const clip of this._modelClips)
-      clip?.dispose();
-
     this._modelClips.length = 0;
     for (const group of groups.groups) {
       const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;
@@ -1185,10 +1190,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** @internal */
   public getModelClip(modelId: Id64String): RenderClipVolume | undefined {
-    // If the view has a clip, or clipping is turned off, the model clips are ignored.
-    if (undefined !== this.getViewClip() || !this.viewFlags.clipVolume)
-      return undefined;
-
+    // ###TODO: ViewFlags.clipVolume is for the *view clip* only. Some tiles will want to ignore *all* clips (i.e., section-cut tiles).
     const index = this.details.modelClipGroups.findGroupIndex(modelId);
     return -1 !== index ? this._modelClips[index] : undefined;
   }

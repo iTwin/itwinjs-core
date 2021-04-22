@@ -151,6 +151,10 @@ export * from "./LocalhostIpcApp";
  * Classes for [working with Tools]($docs/learning/frontend/Tools.md)
  */
 /**
+ * @docs-group-description Measure
+ * Classes for reporting point to point distances and mass properties of elements.
+ */
+/**
  * @docs-group-description Views
  * Classes for [working with Views]($docs/learning/frontend/Views.md)
  */
