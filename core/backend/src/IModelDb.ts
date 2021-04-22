@@ -2306,8 +2306,9 @@ export class BriefcaseDb extends IModelDb {
    * @param requestContext Context used for authorization to pull change sets
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
+   * @returns the new changeSetId of this BriefcaseDb after pulling
    */
-  public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+  public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<string> {
     if (this.allowLocalChanges)
       this.concurrencyControl.onMergeChanges();
 
@@ -2324,6 +2325,7 @@ export class BriefcaseDb extends IModelDb {
 
     this.changeSetId = this.nativeDb.getParentChangeSetId();
     this.initializeIModelDb();
+    return this.changeSetId;
   }
 
   /** Push changes to iModelHub. Locks are released and codes are marked as used as part of a successful push.
