@@ -203,7 +203,7 @@ To do this, we need to pass the ```onChange``` prop to the ```Toggle``` componen
 
             const color = toggle ? ColorDef.computeTbgrFromString("skyblue") : MyFirstUiProvider.originalColor;
             IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: color})
-          }}></Toggle>
+          }} />
 ```
 
 Since we're using two new static variables here, we need to add this to to our ```MyFirstUiProvider``` class at the beginning of our definition:
@@ -250,7 +250,7 @@ export class MyFirstUiProvider implements UiItemsProvider {
 
             const color = toggle ? ColorDef.computeTbgrFromString("skyblue") : MyFirstUiProvider.originalColor;
             IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: color})
-          }}></Toggle>
+          }} />
         }
       }
 
