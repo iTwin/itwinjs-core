@@ -74,7 +74,7 @@ describe("ElementGraphics", () => {
     expect(content.length).least(40);
   });
 
-  it.only("obtains graphics for dynamics from flatbuffers format geometry stream", async () => {
+  it("obtains graphics for dynamics from flatbuffers format geometry stream", async () => {
     const elementId = "0x29";
     const element = imodel.elements.tryGetElement<GeometricElement3d>({ id: elementId, wantGeometry: true });
     expect(element).not.to.be.undefined;
