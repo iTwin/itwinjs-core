@@ -1375,6 +1375,7 @@ export abstract class Viewport implements IDisposable {
       provider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
+  /** @internal */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
@@ -1387,7 +1388,9 @@ export abstract class Viewport implements IDisposable {
     this.forEachMapTreeRef(func);
   }
 
-  /** Returns true if all [[TileTree]]s required by this viewport have been loaded. */
+  /** @internal
+   * Returns true if all [[TileTree]]s required by this viewport have been loaded.
+   */
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeRef((ref) => {
