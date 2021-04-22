@@ -232,7 +232,7 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pullAndMergeChanges(version?: IModelVersionProps): Promise<void> {
     this.requireTimeline();
-    return IpcApp.callIpcHost("pullAndMergeChanges", this.key, version);
+    this._changeSetId = await IpcApp.callIpcHost("pullAndMergeChanges", this.key, version);
   }
 
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
