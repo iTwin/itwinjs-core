@@ -620,16 +620,19 @@ export abstract class ElementSetTool extends PrimitiveTool {
    * @return true if [[ElementSetTool.agenda]] was changed.
    */
   protected async doLocate(ev: BeButtonEvent, newSearch: boolean): Promise<boolean> {
-    if (!newSearch)
-      this.agenda.popGroup();
-
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), newSearch, ev.point, ev.viewport, ev.inputSource);
-    const changed = (undefined !== hit && await this.buildLocateAgenda(hit));
 
-    if (!changed && !newSearch)
+    if (newSearch)
+      return (undefined !== hit && this.buildLocateAgenda(hit));
+
+    // If next element is already in agenda (part of a group, etc.) don't re-add group...
+    const addNext = (undefined !== hit && !this.agenda.has(hit.sourceId));
+    this.agenda.popGroup();
+
+    if (!addNext || !await this.buildLocateAgenda(hit!))
       await this.onAgendaModified(); // only change was popGroup...
 
-    return changed || !newSearch;
+    return true;
   }
 
   /** Whether drag box selection only identifies elements that are wholly inside or also allows those that overlap
