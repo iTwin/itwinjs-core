@@ -312,31 +312,6 @@
           "relationships": {
             "schemaName": "BisCore",
             "classNames": [
-              "ElementOwnsMultiAspects"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ExternalSourceAspect"
-            ]
-          },
-          "properties": [
-            {
-              "name": "Identifier",
-              "overridesPriority": 1001,
-              "labelOverride": "@BisCore:Properties.SourceElementId@",
-              "categoryId": "source_file_information",
-              "isDisplayed": true
-            }
-          ],
-          "relationshipMeaning": "SameInstance"
-        },
-        {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
               "ModelContainsElements"
             ]
           },
@@ -398,9 +373,56 @@
                       "isDisplayed": true
                     }
                   ],
-                  "relationshipMeaning": "SameInstance"
+                  "relationshipMeaning": "SameInstance",
+                  "autoExpand": true
                 }
               ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "requiredSchemas": [
+        {
+          "name": "BisCore",
+          "minVersion": "1.0.2"
+        }
+      ],
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Element"
+      },
+      "propertyCategories": [
+        {
+          "id": "source_file_information",
+          "label": "@BisCore:Categories.SourceFileInformation@"
+        }
+      ],
+      "relatedProperties": [
+        {
+          "relationshipMeaning": "SameInstance",
+          "propertiesSource": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ElementOwnsMultiAspects"
+              },
+              "direction": "Forward",
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "ExternalSourceAspect"
+              }
+            }
+          ],
+          "properties": [
+            {
+              "name": "Identifier",
+              "overridesPriority": 1001,
+              "labelOverride": "@BisCore:Properties.SourceElementId@",
+              "categoryId": "source_file_information",
+              "isDisplayed": true
             }
           ]
         }

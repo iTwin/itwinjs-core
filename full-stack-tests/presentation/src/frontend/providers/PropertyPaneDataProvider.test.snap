@@ -1536,6 +1536,7 @@ Object {
     ],
     "/selected-item/-source_file_information": Array [
       PropertyRecord {
+        "autoExpand": true,
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
           "displayLabel": "$óúrçè Fílê Ñâmé",
@@ -1549,6 +1550,7 @@ Object {
         },
       },
       PropertyRecord {
+        "autoExpand": true,
         "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
         "property": Object {
           "displayLabel": "$óúrçè Fílê Páth",
@@ -3364,6 +3366,7 @@ Object {
     ],
     "/selected-item/-source_file_information": Array [
       PropertyRecord {
+        "autoExpand": true,
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
           "displayLabel": "$óúrçè Fílê Ñâmé",
@@ -3377,6 +3380,7 @@ Object {
         },
       },
       PropertyRecord {
+        "autoExpand": true,
         "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
         "property": Object {
           "displayLabel": "$óúrçè Fílê Páth",
