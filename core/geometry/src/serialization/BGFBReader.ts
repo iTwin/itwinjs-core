@@ -40,6 +40,7 @@ import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { Geometry } from "../Geometry";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
+import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 
 /** * Context to write to a flatbuffer blob.
  *  * This class is internal.
@@ -119,12 +120,26 @@ export class BGFBReader {
       const activeFractionInterval = Segment1d.create(detailHeader.fractionA(),
         detailHeader.fractionB());
       if (!directDetailHeader) {
-        const spiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+        const integratedSpiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
           Segment1d.create(IntegratedSpiral3d.curvatureToRadius(curvature0), IntegratedSpiral3d.curvatureToRadius(curvature1)),
           AngleSweep.createStartEndRadians(bearing0Radians, bearing1Radians),
           activeFractionInterval, localToWorld, spiralTypeName);
-        if (spiral)
-          return spiral;
+        if (integratedSpiral)
+          return integratedSpiral;
+        const radius0 = TransitionSpiral3d.curvatureToRadius(curvature0);
+        const radius1 = TransitionSpiral3d.curvatureToRadius(curvature1);
+        const arcLength = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(radius0, radius1,
+          bearing1Radians - bearing0Radians);
+        const directSpiral = DirectSpiral3d.createFromLengthAndRadius(
+          spiralTypeName!,
+          radius0, radius1,
+          Angle.createRadians(bearing0Radians),
+          Angle.createRadians (bearing1Radians),
+          arcLength,
+          activeFractionInterval,
+          localToWorld);
+        if (directSpiral)
+          return directSpiral;
       }
     }
     return undefined;
