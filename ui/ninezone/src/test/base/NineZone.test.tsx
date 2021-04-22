@@ -82,7 +82,7 @@ describe("<NineZone />", () => {
     })).should.true;
   });
 
-  it("should not dispatch RESIZE if size did not change", () => {
+  it("should not dispatch RESIZE if size did not change", async () => {
     let resizeObserver: ResizeObserverMock | undefined;
     let measurer: Element | undefined;
     sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
@@ -100,6 +100,8 @@ describe("<NineZone />", () => {
     />);
 
     spy.reset();
+
+    await flushAsyncOperations();
 
     resizeObserver!.callback([{
       contentRect: createDOMRect(),

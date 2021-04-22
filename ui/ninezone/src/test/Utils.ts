@@ -99,5 +99,5 @@ export const mount: typeof enzyme.mount = (global as any).enzymeMount;
 
 /** Waits until all async operations finish */
 export async function flushAsyncOperations() {
-  return new Promise((resolve) => setTimeout(resolve));
+  return new Promise((resolve) => setTimeout(resolve, 300));
 }
