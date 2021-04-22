@@ -37,7 +37,9 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import * as fs from "fs";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { CurveCollection } from "../../curve/CurveCollection";
-
+import { Path } from "../../curve/Path";
+import { PolishCubicEvaluator } from "../../curve/spiral/PolishCubicSpiralEvaluator";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 function exerciseCloneAndScale(ck: Checker, data: TransitionConditionalProperties) {
   const data1 = data.clone();
   ck.testTrue(data1.isAlmostEqual(data));
@@ -321,9 +323,10 @@ describe("TransitionSpiral3d", () => {
     const y4 = spiral4.evaluator.fractionToY(1.0);
     const x4 = spiral4.evaluator.fractionToX(1.0);
     const czechSpiral = DirectSpiral3d.createCzechCubic(Transform.createIdentity(), nominalL1, nominalR1)!;
+    const mxCubicAlongArc = DirectSpiral3d.createMXCubicAlongArc(Transform.createIdentity(), nominalL1, nominalR1)!;
     const australianRailSpiral = DirectSpiral3d.createAustralianRail(Transform.createIdentity(), nominalL1, nominalR1)!;
     console.log(`Czech gamma factor ${CzechSpiralEvaluator.gammaConstant(nominalL1, nominalR1)}`);
-    for (const spiral of [australianRailSpiral, westernAustralianSpiral, spiral23, simpleCubic, czechSpiral, directHalfCosine, westernAustralianSpiral, aremaSpiral, spiral3, spiral4]) {
+    for (const spiral of [mxCubicAlongArc, australianRailSpiral, westernAustralianSpiral, spiral23, simpleCubic, czechSpiral, directHalfCosine, westernAustralianSpiral, aremaSpiral, spiral3, spiral4]) {
       const strokes = spiral.activeStrokes;
       const markerLines = LineString3d.create([[0, 0, 0], [nominalL1, 0, 0], [nominalL1, y4, 0], [x4, y4, 0], [x4, y4 + 0.1, 0]]);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, markerLines, x0, y0);
@@ -810,6 +813,75 @@ describe("TransitionSpiral3d", () => {
     captureStroked(allGeometry, alignment);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "AlexGStroking");
+  });
+  it("AlexGSamples", () => {
+    const ck = new Checker();
+    const directoryPath = "./src/test/testInputs/curve/AlexGSpiral/AlexG0421";
+    const fileList = fs.readdirSync(directoryPath);
+    // fileList = ["italian.imjs"];
+    const yShift = 1.0;
+    if (fileList) {
+      for (const fileName of fileList) {
+        console.log(fileName);
+        const fullPath = `${directoryPath}/${fileName}`;
+        const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(fullPath, "utf8")));
+        const outputFileName = `AlexG0421${fileName}`;
+        const allGeometry: GeometryQuery[] = [];
+        if (ck.testTrue(alignment instanceof Path, "expect one alignment in test file") && alignment instanceof Path) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment, 0, 0, 0);
+          let numSpiral = 0;
+          let counter = 0;
+          const children = alignment.children;
+          // console.log(`** End-to-start ${fileName}`);
+          for (let i = 0; i + 1 < children.length; i++){
+            const xyzA = children[i].fractionToPoint(1.0);
+            const xyzB = children[i + 1].fractionToPoint(0.0);
+            const d = xyzA.distance(xyzB);
+            ck.testCoordinate(0.0, d, `end-to-start distance ${fileName} index ${i}`);
+            // console.log(`    AB ${d}`);
+          }
+          let point0 = Point3d.create(0, 0, 0);
+          for (const curve of alignment.children) {
+            if (0 === counter++) {
+              point0 = curve.startPoint();
+              // console.log(`${fileName}  start point xy=${point0.x},${point0.y})`);
+            }
+            if (curve instanceof TransitionSpiral3d){
+              numSpiral++;
+              const points = [];
+              for (let fraction = 0.0; fraction <= 1.0; fraction += 1.0 / 16.0){   // stay strictly less to allow debug break at 1.0
+                points.push(curve.fractionToPoint(fraction));
+              }
+              // throw away for debugging...
+              curve.fractionToPoint(1.0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, 0, 0, 0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, 0, yShift, 0); // second time to stand out visually
+            }
+          }
+          if (numSpiral !== 4){
+            console.log(`Expected 4 spirals, got ${numSpiral} in ${outputFileName}  *******************************`);
+            GeometryCoreTestIO.captureCloneGeometry (allGeometry, [point0, point0.plus (Vector3d.create (-1000,0,0))]);
+          }
+          testGeometryQueryRoundTrip(ck, alignment);
+          GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", outputFileName);
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("PolishSpiralDistanceInversion", () => {
+    const ck = new Checker();
+    expect(ck.getNumErrors()).equals(0);
+    const distanceInversionTolerance = 1.0e-10;
+    const nominalL1 = 100.0;
+    const nominalR1 = 500.0;
+    for (const xA of [10, 20, 40, 80, 99, 100, 0]) {
+      const dA = PolishCubicEvaluator.xToApproximateDistance(xA, nominalR1, nominalL1);
+      const xB = PolishCubicEvaluator.approximateDistanceAlongToX(dA, nominalR1, nominalL1)!;
+      ck.testTrue(Math.abs(xA - xB) < distanceInversionTolerance);
+    }
+    expect(ck.getNumErrors()).equals(0);
   });
 
   it("spiralStroking", () => {
