@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Removed unneeded CSS class for modeless dialogs that was setting width & height to 0",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
+}
