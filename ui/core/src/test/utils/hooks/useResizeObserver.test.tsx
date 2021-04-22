@@ -100,4 +100,25 @@ describe("useResizeObserver", () => {
     await TestUtils.flushAsyncOperations();
     spy.calledOnceWithExactly(sinon.match.any, 100).should.true;
   });
+
+  it("should call onResize (width and height)", async () => {
+    const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
+    const spy = sandbox.spy();
+    const { result } = renderHook(() => useResizeObserver(spy));
+    const element = document.createElement("div");
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
+      result.current(element);
+    });
+
+    spy.resetHistory();
+    sinon.stub(element, "getBoundingClientRect").returns(createDOMRect({ width: 100, height: 100 }));
+    // Call the ResizeObserver callback.
+    resizeObserverSpy.firstCall.args[0]([{
+      contentRect: createDOMRect({ width: 100, height: 100 }),
+      target: element,
+    }], resizeObserverSpy.firstCall.returnValue);
+    await TestUtils.flushAsyncOperations();
+    spy.calledOnce.should.true;
+  });
+
 });
