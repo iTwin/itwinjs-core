@@ -20,7 +20,7 @@ This application demonstrates the following:
 - Calling the `ContextRegistry` API to get *context* (project or asset) information
 - Querying `IModelHub` to get iModel information
 - How to handle either *briefcase* or *snapshot* iModel in the same application
-- Using `yargs` to handle command line arguments
+- Using [yargs](http://yargs.js.org/) to handle command line arguments
 
 ## imodel-transformer as a support tool
 
