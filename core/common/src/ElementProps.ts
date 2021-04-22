@@ -464,3 +464,15 @@ export interface RepositoryLinkProps extends UrlLinkProps {
 export interface SynchronizationConfigLinkProps extends UrlLinkProps {
   lastSuccessfulRun?: string;
 }
+
+/** Wire format describing a [RenderTimeline]($backend).
+ * @alpha
+ */
+export interface RenderTimelineProps extends ElementProps {
+  /** An optional human-readable description of the timeline. */
+  description?: string;
+  /** The stringified JSON representation of the instructions for visualizing change over time.
+   * ###TODO see [[RenderTimelineScriptProps]].
+   */
+  script: string;
+}

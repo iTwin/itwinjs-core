@@ -13,7 +13,7 @@ import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
+  Placement3d, RelatedElement, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -1554,5 +1554,40 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
    */
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     return new Code({ spec: iModel.codeSpecs.getByName(BisCodeSpec.lineStyle).id, scope: scopeModelId, value: codeValue });
+  }
+}
+
+/** Describes how to animate a view of a [[GeometricModel]] to show change over time.
+ * @note This class was introduced in version 01.00.13 of the BisCore ECSchema. It should only be used with [[IModelDb]]s containing that version or newer.
+ * @alpha
+ */
+export class RenderTimeline extends InformationRecordElement {
+  /** A human-readable description of the timeline, which may be an empty string. */
+  public description: string;
+  /** The JSON representation of the instructions for visualizing change over time. */
+  public readonly script: any; // ###TODO RenderTimelineScript
+
+  /** @internal */
+  protected constructor(props: RenderTimelineProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.description = props.description ?? "";
+    try {
+      this.script = JSON.parse(props.script);
+    } catch (_) {
+      this.script = [ ];
+    }
+  }
+
+  public static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline {
+    return new RenderTimeline(props, iModel);
+  }
+
+  public toJSON(): RenderTimelineProps {
+    const props = super.toJSON() as RenderTimelineProps;
+    if (this.description.length > 0)
+      props.description = this.description;
+
+    props.script = JSON.stringify(this.script);
+    return props;
   }
 }
