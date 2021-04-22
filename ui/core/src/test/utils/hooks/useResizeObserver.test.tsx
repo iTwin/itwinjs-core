@@ -7,8 +7,30 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import * as ResizeObserverModule from "../../../ui-core/utils/hooks/ResizeObserverPolyfill";
 import { useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
 import { createDOMRect } from "../../Utils";
+import TestUtils from "../../TestUtils";
+
+/** Stubs requestAnimationFrame. */
+function stubRaf() {
+  const raf = window.requestAnimationFrame;
+  const caf = window.cancelAnimationFrame;
+
+  before(() => {
+    window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+      return window.setTimeout(cb, 0);
+    };
+    window.cancelAnimationFrame = (handle: number) => {
+      window.clearTimeout(handle);
+    };
+  });
+
+  after(() => {
+    window.requestAnimationFrame = raf;
+    window.cancelAnimationFrame = caf;
+  });
+}
 
 describe("useResizeObserver", () => {
+  stubRaf();
   const sandbox = sinon.createSandbox();
 
   afterEach(() => {
@@ -38,7 +60,7 @@ describe("useResizeObserver", () => {
     spy.calledOnceWithExactly(element).should.true;
   });
 
-  it("should call onResize", () => {
+  it("should call onResize", async () => {
     const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
     const spy = sandbox.spy();
     const { result } = renderHook(() => useResizeObserver(spy));
@@ -54,11 +76,11 @@ describe("useResizeObserver", () => {
       contentRect: createDOMRect({ width: 100 }),
       target: element,
     }], resizeObserverSpy.firstCall.returnValue);
-
+    await TestUtils.flushAsyncOperations();
     spy.calledOnceWithExactly(100, sinon.match.any).should.true;
   });
 
-  it("should call onResize (height)", () => {
+  it("should call onResize (height)", async () => {
     const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
     const spy = sandbox.spy();
     const { result } = renderHook(() => useResizeObserver(spy));
@@ -66,6 +88,7 @@ describe("useResizeObserver", () => {
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current(element);
     });
+    // await TestUtils.flushAsyncOperations();
 
     spy.resetHistory();
     sinon.stub(element, "getBoundingClientRect").returns(createDOMRect({ height: 100 }));
@@ -74,7 +97,7 @@ describe("useResizeObserver", () => {
       contentRect: createDOMRect({ height: 100 }),
       target: element,
     }], resizeObserverSpy.firstCall.returnValue);
-
+    await TestUtils.flushAsyncOperations();
     spy.calledOnceWithExactly(sinon.match.any, 100).should.true;
   });
 });

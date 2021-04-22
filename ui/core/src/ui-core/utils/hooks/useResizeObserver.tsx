@@ -17,6 +17,7 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
   const observerRef = useRefEffect((instance: T | null) => {
     const resizeObserver = new ResizeObserver((entries: any[]) => {
       window.requestAnimationFrame(() => {
+        // istanbul ignore next
         if (!Array.isArray(entries) || !entries.length) {
           return;
         }
