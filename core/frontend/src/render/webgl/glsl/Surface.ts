@@ -34,6 +34,7 @@ import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addTranslucency } from "./Translucency";
 import { addFeatureAndMaterialLookup, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { wantMaterials } from "../Mesh";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -157,7 +158,7 @@ function addMaterial(builder: ProgramBuilder): void {
   vert.addFunction(decodeMaterialColor);
   vert.addUniform("u_materialColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_materialColor", (uniform, params) => {
-      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+      const info = wantMaterials(params.target.currentViewFlags) ? params.geometry.materialInfo : undefined;
       const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform4fv(mat.rgba);
     });
@@ -165,7 +166,7 @@ function addMaterial(builder: ProgramBuilder): void {
 
   vert.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_materialParams", (uniform, params) => {
-      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+      const info = wantMaterials(params.target.currentViewFlags) ? params.geometry.materialInfo : undefined;
       const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform4fv(mat.fragUniforms);
     });

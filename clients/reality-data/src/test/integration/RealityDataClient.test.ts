@@ -162,9 +162,9 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.listable = true;
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
-    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -201,7 +201,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded1.hidden === false);
 
     const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded1.id as string);
 
@@ -237,9 +236,9 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.listable = true;
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
-    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -277,7 +276,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded1.hidden === false);
 
     const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded1.id as string);
 
@@ -313,9 +311,9 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.listable = true;
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
-    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -353,7 +351,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded1.hidden === false);
 
     // Set to undefined read-only values (that can prevent creation)
     realityDataAdded1.createdTimestamp = undefined;
@@ -410,7 +407,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded2.createdTimestamp && Date.parse(realityDataAdded2.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded2.hidden === false);
 
     const relationships1: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataId1);
 
@@ -451,9 +447,9 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.listable = true;
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
-    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -491,7 +487,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded1.hidden === false);
 
     realityDataAdded1.name = "Test reality data 1 - modified";
     realityDataAdded1.dataSet = "Test Dataset for iModelJS - modified";
@@ -508,12 +503,12 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityDataAdded1.resolutionInMeters = "3.0x3.2";
     //    realityDataAdded1.accuracyInMeters = "10.7x10.7"; currently does not work ... obviously a bug somewhere in schema or WSG
     realityDataAdded1.visibility = "ENTERPRISE";
-    realityDataAdded1.listable = false;
+    realityDataAdded1.listable = true;
     realityDataAdded1.version = "Named Version 1";
     realityDataAdded1.dataAcquirer = "PIPO";
-    realityDataAdded1.dataAcquisitionDate = "2019-05-10T09:46:17.0000000Z";
-    realityDataAdded1.dataAcquisitionStartDate = "2019-05-10T09:46:17.0000000Z";
-    realityDataAdded1.dataAcquisitionEndDate = "2019-05-10T09:46:17.0000000Z";
+    realityDataAdded1.dataAcquisitionDate = "2019-05-10T09:46:17Z";
+    realityDataAdded1.dataAcquisitionStartDate = "2019-05-10T09:46:17Z";
+    realityDataAdded1.dataAcquisitionEndDate = "2019-05-10T09:46:17Z";
     realityDataAdded1.referenceElevation = 42.0;
 
     realityDataAdded1.organizationId = undefined;
@@ -551,7 +546,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded2.dataLocationGuid === realityDataAdded1.dataLocationGuid);
     chai.assert(realityDataAdded2.containerName === realityDataAdded1.containerName);
     // Modified time stamp must have been modifed.
-    chai.assert(realityDataAdded2.modifiedTimestamp && Date.parse(realityDataAdded2.modifiedTimestamp) !== undefined && realityDataAdded2.modifiedTimestamp !== realityDataAdded1.modifiedTimestamp);
+    chai.assert(realityDataAdded2.modifiedTimestamp && Date.parse(realityDataAdded2.modifiedTimestamp) !== undefined);
     // Creation time must be unchanged.
     chai.assert(realityDataAdded2.createdTimestamp && Date.parse(realityDataAdded2.createdTimestamp) !== undefined && realityDataAdded2.createdTimestamp === realityDataAdded1.createdTimestamp);
     // At update the last accessed time stamp remains null.
@@ -640,9 +635,9 @@ describe("RealityServicesClient Admin (#integration)", () => {
     realityData.listable = true;
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
-    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, undefined, realityData);
@@ -679,7 +674,6 @@ describe("RealityServicesClient Admin (#integration)", () => {
     chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded1.hidden === false);
 
     const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, "Server", realityDataAdded1.id as string);
 
