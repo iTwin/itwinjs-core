@@ -6,7 +6,7 @@ import * as chalk from "chalk";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
-import { getAppRelativePath, getSourcePosition, getPaths } from "../utils/paths";
+import { getAppRelativePath, getPaths, getSourcePosition } from "../utils/paths";
 const getAllDependencies = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */

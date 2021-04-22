@@ -18,7 +18,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha \"./lib/test/**/*.test.js\"",
+    "test": "mocha --opts ./mocha.opts \"./lib/test/**/*.test.js\"",
     "cover": "nyc npm test"
   },
   "dependencies": {
@@ -44,7 +44,7 @@
     "@types/node": "10.14.1",
     "@types/webpack": "^4.41.2",
     "@types/webpack-sources": "^0.1.6",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^5.2.5",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "eslint": "^6.8.0",
@@ -52,8 +52,8 @@
     "typescript": "~4.1.0",
     "webpack": "4.42.0",
     "cpx": "^1.5.0",
-    "mocha": "^8.3.2",
-    "nyc": "^15.1.0",
+    "mocha": "^5.2.0",
+    "nyc": "^14.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7"
   },
@@ -71,7 +71,7 @@
   },
   "mocha": {
     "checkLeaks": false,
-    "timeout": 60000,
+    "timeout": 15000,
     "exclude": [
       "lib/test/coverage/**/*"
     ],

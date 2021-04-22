@@ -10,7 +10,7 @@ import { getPaths, resolveApp } from "../utils/paths";
 abstract class AbstractAsyncStartupPlugin {
   private _name: string;
   private _promise!: Promise<any>;
-  _logger: any;
+  public logger: any;
 
   constructor(name: string) {
     this._name = name;
@@ -22,7 +22,7 @@ abstract class AbstractAsyncStartupPlugin {
     });
 
     compiler.hooks.compilation.tap(this._name, (compilation) => {
-      this._logger = compilation.getLogger(this._name);
+      this.logger = compilation.getLogger(this._name);
     });
 
     compiler.hooks.afterEmit.tapPromise(this._name, async () => {
@@ -68,11 +68,12 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
   public async runAsync(compiler: Compiler) {
     const paths = getPaths();
     const bentleyDir = path.resolve(paths.appNodeModules, "@bentley");
+    // console.log(bentleyDir);
     let subDirectoryNames: string[];
     try {
       subDirectoryNames = await fs.readdir(bentleyDir);
     } catch (err) {
-      this._logger.error(`Can't locate ${err.path}`);
+      this.logger.error(`Can't locate ${err.path}`);
       return;
     }
     for (const thisSubDir of subDirectoryNames) {

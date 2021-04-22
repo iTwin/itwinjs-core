@@ -12,22 +12,22 @@ import { CopyBentleyStaticResourcesPlugin } from "../plugins/CopyBentleyStaticRe
 function getTestConfig(srcFile: any, pluginToTest: any) {
   return {
     entry: [
-      path.join(__dirname, srcFile)
+      path.join(__dirname, srcFile),
     ],
     output: {
-      path: path.join(__dirname, 'dist'),
+      path: path.join(__dirname, "dist"),
       filename: path.basename(srcFile),
     },
     plugins: [
       pluginToTest,
     ],
   };
-};
+}
 
-function createCompiler(webpack: any, config: any) {
+function createCompiler(webpackTest: any, config: any) {
   let compiler: any;
   try {
-    compiler = webpack(config);
+    compiler = webpackTest(config);
   } catch (err) {
     console.log(err);
   }
@@ -35,23 +35,39 @@ function createCompiler(webpack: any, config: any) {
 }
 
 describe("CopyBentleyStaticResourcesPlugin", () => {
-  let testConfig: any;
-  let testCompiler: any;
+  // let testConfig: any;
+  // let testCompiler: any;
 
-  before(() => {
-    updatePaths(__dirname);
-    testConfig = getTestConfig("assets/empty-test/empty.js", new CopyBentleyStaticResourcesPlugin([""]))
-    testCompiler = createCompiler(webpack, testConfig);
+  // before(() => {
+  //   testConfig = getTestConfig("assets/empty-test/empty.js", new CopyBentleyStaticResourcesPlugin([""]));
+  //   testCompiler = createCompiler(webpack, testConfig);
+  // });
+
+  it("success with inability to find directory path", async () => {
+    // console.log(path.join(__dirname, "assets/copy-resources-test"));
+    // updatePaths(path.join(__dirname, "assets/copy-resources-test"));
+    const successTestConfig = getTestConfig("assets/copy-resources-test/copyResources.js", new CopyBentleyStaticResourcesPlugin([""]));
+    const sucessTestCompiler = createCompiler(webpack, successTestConfig);
+    const result = await new Promise<any>((resolve, reject) => {
+      sucessTestCompiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats));
+    });
+
+    const logging = result.toJson({ logging: true }).logging;
+
+    expect(logging).to.not.have.property("CopyBentleyStaticResourcesPlugin");
   });
 
   it("failure with inability to find directory path", async () => {
-    const stats = await new Promise<any>((resolve, reject) => {
-      testCompiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats))
+    updatePaths(__dirname);
+    const failTestConfig = getTestConfig("assets/empty-test/empty.js", new CopyBentleyStaticResourcesPlugin([""]));
+    const failTestCompiler = createCompiler(webpack, failTestConfig);
+    const result = await new Promise<any>((resolve, reject) => {
+      failTestCompiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats));
     });
 
-    const entry = stats.toJson({ logging: true }).logging.CopyBentleyStaticResourcesPlugin.entries[0];
+    const entry = result.toJson({ logging: true }).logging.CopyBentleyStaticResourcesPlugin.entries[0];
 
-    expect(entry.type, 'Type is not an error').to.equal('error');
+    expect(entry.type, "Type is not an error").to.equal("error");
     expect(entry.message, `Message should start with Can't locate`).to.include(`Can't locate`);
-  })
-})
+  });
+});

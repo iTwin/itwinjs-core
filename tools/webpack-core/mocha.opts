@@ -1,0 +1,4 @@
+--timeout 60000
+--exclude lib/test/coverage/**/*
+--reporter node_modules/@bentley/build-tools/mocha-reporter
+--reporter-options mochaFile=lib/test/junit_results.xml

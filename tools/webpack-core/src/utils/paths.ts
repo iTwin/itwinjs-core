@@ -10,10 +10,10 @@ const appDirectory = fs.realpathSync(process.cwd());
 
 export const resolveApp = (relativePath: string) => path.resolve(appDirectory, relativePath);
 
-let _paths = {
+const _paths = {
   appPackageJson: resolveApp("package.json"),
   appNodeModules: resolveApp("node_modules"),
-}
+};
 
 export function getPaths() {
   return _paths;
