@@ -35,9 +35,10 @@ interface CommandLineArgs {
   combinePhysicalModels?: boolean;
   deleteUnusedGeometryParts?: boolean;
   excludeSubCategories?: string;
+  excludeCategories?: string;
 }
 
-(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+void (async () => {
   try {
     Yargs.usage("Transform the specified source iModel into a new target iModel");
 
@@ -74,6 +75,7 @@ interface CommandLineArgs {
     Yargs.option("combinePhysicalModels", { desc: "Combine all source PhysicalModels into a single PhysicalModel in the target iModel", type: "boolean", default: false });
     Yargs.option("deleteUnusedGeometryParts", { desc: "Delete unused GeometryParts from the target iModel", type: "boolean", default: false });
     Yargs.option("excludeSubCategories", { desc: "Exclude geometry in the specified SubCategories (names with comma separators) from the target iModel", type: "string" });
+    Yargs.option("excludeCategories", { desc: "Exclude a categories (names with comma separators) and their elements from the target iModel", type: "string" });
 
     const args = Yargs.parse() as Yargs.Arguments<CommandLineArgs>;
 
@@ -203,16 +205,15 @@ interface CommandLineArgs {
       });
     }
 
-    let excludeSubCategories: string[] | undefined;
-    if (args.excludeSubCategories) {
-      excludeSubCategories = args.excludeSubCategories.split(",");
-    }
+    const excludeSubCategories = args.excludeSubCategories?.split(",");
+    const excludeCategories = args.excludeCategories?.split(",");
 
     const transformerOptions = {
       simplifyElementGeometry: args.simplifyElementGeometry,
       combinePhysicalModels: args.combinePhysicalModels,
       deleteUnusedGeometryParts: args.deleteUnusedGeometryParts,
       excludeSubCategories,
+      excludeCategories,
     };
 
     if (processChanges) {
