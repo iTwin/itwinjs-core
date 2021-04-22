@@ -1409,6 +1409,15 @@ export class BatchedTileIdMap {
     getBatchProperties(id: Id64String): any;
     }
 
+// @public
+export interface BatchOptions {
+    noEmphasis?: boolean;
+    noFlash?: boolean;
+    noHilite?: boolean;
+    // @beta
+    tileId?: string;
+}
+
 // @public (undocumented)
 export enum BeButton {
     // (undocumented)
@@ -4275,7 +4284,7 @@ export interface ImageryTileContent extends TileContent {
 export class ImdlReader extends GltfReader {
     // (undocumented)
     protected colorDefFromMaterialJson(json: any): ColorDef | undefined;
-    static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type?: BatchType, loadEdges?: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, tileId?: string): ImdlReader | undefined;
+    static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type?: BatchType, loadEdges?: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions): ImdlReader | undefined;
     // (undocumented)
     protected createDisplayParams(json: any): DisplayParams | undefined;
     // (undocumented)
@@ -7278,7 +7287,7 @@ export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Car
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
 
 // @public
-export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise<RenderGraphic | undefined>;
+export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise<RenderGraphic | undefined>;
 
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
@@ -8055,7 +8064,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
-    abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
+    abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     // @internal (undocumented)
@@ -11483,26 +11492,26 @@ export class ViewClipTool extends PrimitiveTool {
     protected showPrompt(): void;
 }
 
-// @beta
+// @public
 export class ViewCreator2d {
     constructor(_imodel: IModelConnection);
     createViewForModel(modelId: Id64String, options?: ViewCreator2dOptions): Promise<ViewState>;
     }
 
-// @beta
+// @public
 export interface ViewCreator2dOptions {
     bgColor?: ColorDef;
     useSeedView?: boolean;
     vpAspect?: number;
 }
 
-// @beta
+// @public
 export class ViewCreator3d {
     constructor(_imodel: IModelConnection);
     createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState>;
     }
 
-// @beta
+// @public
 export interface ViewCreator3dOptions {
     cameraOn?: boolean;
     skyboxOn?: boolean;

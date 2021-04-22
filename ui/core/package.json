@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.16.0-dev.9",
+  "version": "2.16.0-dev.14",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.9",
-    "@bentley/geometry-core": "^2.16.0-dev.9",
-    "@bentley/imodeljs-i18n": "^2.16.0-dev.9",
-    "@bentley/ui-abstract": "^2.16.0-dev.9",
+    "@bentley/bentleyjs-core": "^2.16.0-dev.14",
+    "@bentley/geometry-core": "^2.16.0-dev.14",
+    "@bentley/imodeljs-i18n": "^2.16.0-dev.14",
+    "@bentley/ui-abstract": "^2.16.0-dev.14",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -47,13 +47,13 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.9",
-    "@bentley/build-tools": "2.16.0-dev.9",
-    "@bentley/eslint-plugin": "2.16.0-dev.9",
-    "@bentley/geometry-core": "2.16.0-dev.9",
-    "@bentley/imodeljs-i18n": "2.16.0-dev.9",
+    "@bentley/bentleyjs-core": "2.16.0-dev.14",
+    "@bentley/build-tools": "2.16.0-dev.14",
+    "@bentley/eslint-plugin": "2.16.0-dev.14",
+    "@bentley/geometry-core": "2.16.0-dev.14",
+    "@bentley/imodeljs-i18n": "2.16.0-dev.14",
     "@bentley/react-scripts": "3.4.9",
-    "@bentley/ui-abstract": "2.16.0-dev.9",
+    "@bentley/ui-abstract": "2.16.0-dev.14",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -67,7 +67,7 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/react": "16.9.43",
-    "@types/react-autosuggest": "^10.0.0",
+    "@types/react-autosuggest": "10.1.2",
     "@types/react-dom": "^16.8.0",
     "@types/react-select": "3.0.26",
     "@types/sinon": "^9.0.0",
@@ -104,7 +104,7 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "classnames": "^2.2.5",
+    "classnames": "2.2.6",
     "dompurify": "^2.0.12",
     "lodash": "^4.17.10",
     "react-autosuggest": "^10.0.2",
