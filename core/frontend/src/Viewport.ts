@@ -1144,7 +1144,10 @@ export abstract class Viewport implements IDisposable {
     if (this._view)
       this._view.detachFromViewport();
 
-    this._mapTiledGraphicsProvider = undefined;
+    if (this._mapTiledGraphicsProvider) {
+      this._mapTiledGraphicsProvider.detachFromDisplayStyle();
+      this._mapTiledGraphicsProvider = undefined;
+    }
   }
 
   private detachFromDisplayStyle(): void {

@@ -18,6 +18,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   public readonly backgroundMap: MapTileTreeReference;
   public readonly overlayMap: MapTileTreeReference;
   public readonly  backgroundDrapeMap: MapTileTreeReference;
+  private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
   public forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void {
     if (viewport.viewFlags.backgroundMap) {
@@ -32,24 +33,31 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, false, () => displayStyle.overrideTerrainDisplay());
     this.overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, _vp.viewportId, true, false);
     this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel,  _vp.viewportId, false, true);
-    displayStyle.onMapSettingsChanged.addListener((settings: BackgroundMapSettings) => {
+    const removals = this._detachFromDisplayStyle;
+
+    removals.push(displayStyle.onMapSettingsChanged.addListener((settings: BackgroundMapSettings) => {
       const mapBase = MapLayerSettings.fromMapSettings(settings);
       this.backgroundMap.setBaseLayerSettings(mapBase);
       this.backgroundDrapeMap.setBaseLayerSettings(mapBase);
       this.backgroundMap.clearLayers();
       this.backgroundDrapeMap.clearLayers();
-    });
-    displayStyle.onMapImageryChanged.addListener((imagery: MapImagerySettings) => {
+    }));
+    removals.push(displayStyle.onMapImageryChanged.addListener((imagery: MapImagerySettings) => {
       this.backgroundMap.setBaseLayerSettings(imagery.backgroundBase);
       this.backgroundMap.setLayerSettings(imagery.backgroundLayers);
       this.backgroundDrapeMap.setBaseLayerSettings(mapImagery.backgroundBase);
       this.backgroundDrapeMap.setLayerSettings(mapImagery.backgroundLayers);
       this.overlayMap.setLayerSettings(imagery.overlayLayers);
-    });
-    displayStyle.settings.onBackgroundMapChanged.addListener((settings: BackgroundMapSettings) => {
+    }));
+    removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings: BackgroundMapSettings) => {
       this.backgroundMap.settings = this.overlayMap.settings = settings;
       this.backgroundDrapeMap.settings = mapSettings;
-    });
+    }));
+  }
+
+  public detachFromDisplayStyle(): void {
+    this._detachFromDisplayStyle.forEach((f) => f());
+    this._detachFromDisplayStyle.length = 0;
   }
   /** @internal */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined {
