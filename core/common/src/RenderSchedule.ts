@@ -7,7 +7,7 @@
  */
 
 import { CompressedId64Set, Constructor, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range1d, Vector3d, XYAndZ } from "@bentley/geometry-core";
+import { Point3d, Range1d, Transform, Vector3d, XYAndZ } from "@bentley/geometry-core";
 import { RgbColor } from "./RgbColor";
 
 /**
@@ -59,16 +59,10 @@ export namespace RenderSchedule {
     /** if true the geometry is completely hidden */
     hidden?: boolean;
   }
-  /** Specifies properties for a transform specified as s separate pivot, rotate and rotation or single transform. */
+
   export interface TransformProps {
-    /** (x, y, z) of position  - applied after rotation */
-    position: number[];
-    /** quaternion representing rotation  */
-    orientation: number[];
-    /** x, y, z) of pivot - applied before rotation */
-    pivot: number[];
-    /**
-     * 3 X 4 transform.  Used directly rather than position, pivot and orientation if defined.
+    /** 3 X 4 transformation matrix containing 3 arrays of matrix rows consisting of 4 numbers each: [qx qy qz ax]
+     * where the fourth columnn in each row holds the translation.
      */
     transform: number[][];
   }
@@ -167,16 +161,20 @@ export namespace RenderSchedule {
   }
 
   export class TransformEntry extends TimelineEntry {
-    public readonly value: any; // ###TODO
+    public readonly value: Readonly<Transform>;
 
     public constructor(props: TransformEntryProps) {
       super(props);
-      // ###TODO
+      this.value = Transform.fromJSON(props.value.transform);
     }
 
     public toJSON(): TransformEntryProps {
-      // ###TODO
-      return { } as unknown as TransformEntryProps;
+      return {
+        ...super.toJSON(),
+        value: {
+          transform: this.value.toRows(),
+        },
+      };
     }
   }
 
