@@ -270,7 +270,6 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       <div
         className={classnames(
           "core-dialog",
-          !modal && "core-dialog-hidden",
           opened && "core-dialog-opened",
           className,
         )}
