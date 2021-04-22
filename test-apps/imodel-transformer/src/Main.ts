@@ -32,6 +32,7 @@ interface CommandLineArgs {
   clean?: boolean;
   logChangeSets: boolean;
   logNamedVersions: boolean;
+  logTransformer: boolean;
   validation: boolean;
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
@@ -70,6 +71,7 @@ interface CommandLineArgs {
     // print/debug options
     Yargs.option("logChangeSets", { desc: "If true, log the list of changeSets", type: "boolean", default: false });
     Yargs.option("logNamedVersions", { desc: "If true, log the list of named versions", type: "boolean", default: false });
+    Yargs.option("logTransformer", { desc: "If true, turn on verbose logging for iModel transformation", type: "boolean", default: false });
     Yargs.option("validation", { desc: "If true, perform extra and potentially expensive validation to assist with finding issues and confirming results", type: "boolean", default: false });
 
     // transformation options
@@ -86,7 +88,7 @@ interface CommandLineArgs {
     Logger.setLevelDefault(LogLevel.Error);
     Logger.setLevel(loggerCategory, LogLevel.Info);
 
-    if (true) { // set to true to enable additional low-level transformation logging
+    if (args.logTransformer) { // optionally enable verbose transformation logging
       Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
       Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
       Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
