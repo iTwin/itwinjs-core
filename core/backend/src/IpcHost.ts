@@ -217,8 +217,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<string> {
     const iModelDb = BriefcaseDb.findByKey(key);
     const requestContext = await IModelHost.getAuthorizedContext();
-    await iModelDb.pullAndMergeChanges(requestContext, version ? IModelVersion.fromJSON(version) : undefined);
-    return iModelDb.changeSetId;
+    return iModelDb.pullAndMergeChanges(requestContext, version ? IModelVersion.fromJSON(version) : undefined);
   }
   public async pushChanges(key: string, description: string): Promise<string> {
     const iModelDb = BriefcaseDb.findByKey(key);
