@@ -32,7 +32,7 @@ interface CommandLineArgs {
   clean?: boolean;
   logChangeSets: boolean;
   logNamedVersions: boolean;
-  extraValidation: boolean;
+  validation: boolean;
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
   deleteUnusedGeometryParts?: boolean;
@@ -70,7 +70,7 @@ interface CommandLineArgs {
     // print/debug options
     Yargs.option("logChangeSets", { desc: "If true, log the list of changeSets", type: "boolean", default: false });
     Yargs.option("logNamedVersions", { desc: "If true, log the list of named versions", type: "boolean", default: false });
-    Yargs.option("extraValidation", { desc: "If true, perform extra validation to confirm there were no underlying issues with the source and no transformation issues with the target", type: "boolean", default: false });
+    Yargs.option("validation", { desc: "If true, perform extra and potentially expensive validation to assist with finding issues and confirming results", type: "boolean", default: false });
 
     // transformation options
     Yargs.option("simplifyElementGeometry", { desc: "Simplify element geometry upon import into target iModel", type: "boolean", default: false });
@@ -153,7 +153,7 @@ interface CommandLineArgs {
       sourceDb = SnapshotDb.openFile(sourceFile);
     }
 
-    if (args.extraValidation) {
+    if (args.validation) {
       // validate that there are no issues with the sourceDb to ensure that IModelTransformer is starting from a consistent state
       ElementUtils.validateCategorySelectors(sourceDb);
       ElementUtils.validateModelSelectors(sourceDb);
@@ -233,7 +233,7 @@ interface CommandLineArgs {
       await Transformer.transformAll(requestContext, sourceDb, targetDb, transformerOptions);
     }
 
-    if (args.extraValidation) {
+    if (args.validation) {
       // validate that there are no issues with the targetDb after transformation
       ElementUtils.validateCategorySelectors(targetDb);
       ElementUtils.validateModelSelectors(targetDb);
