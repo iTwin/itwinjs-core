@@ -303,6 +303,7 @@ public;RepeatableRelationshipStepSpecification
 public;RequestOptions
 public;RequestOptionsWithRuleset
 public;RequestPriority
+beta;RequiredSchemaSpecification
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
