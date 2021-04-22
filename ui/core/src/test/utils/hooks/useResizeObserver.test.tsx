@@ -37,17 +37,18 @@ describe("useResizeObserver", () => {
     sandbox.restore();
   });
 
-  it("should observe instance", () => {
+  it("should observe instance", async () => {
     const spy = sandbox.spy(ResizeObserverModule.ResizeObserver.prototype, "observe");
     const { result } = renderHook(() => useResizeObserver());
     const element = document.createElement("div");
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current(element);
     });
+    await TestUtils.flushAsyncOperations();
     spy.calledOnceWithExactly(element).should.true;
   });
 
-  it("should unobserve instance", () => {
+  it("should unobserve instance", async () => {
     const spy = sandbox.spy(ResizeObserverModule.ResizeObserver.prototype, "unobserve");
     const { result } = renderHook(() => useResizeObserver());
     const element = document.createElement("div");
@@ -57,6 +58,7 @@ describe("useResizeObserver", () => {
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current(null);
     });
+    await TestUtils.flushAsyncOperations();
     spy.calledOnceWithExactly(element).should.true;
   });
 
@@ -68,7 +70,7 @@ describe("useResizeObserver", () => {
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current(element);
     });
-
+    await TestUtils.flushAsyncOperations();
     spy.resetHistory();
     sinon.stub(element, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
     // Call the ResizeObserver callback.
@@ -88,7 +90,7 @@ describe("useResizeObserver", () => {
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current(element);
     });
-    // await TestUtils.flushAsyncOperations();
+    await TestUtils.flushAsyncOperations();
 
     spy.resetHistory();
     sinon.stub(element, "getBoundingClientRect").returns(createDOMRect({ height: 100 }));
@@ -110,6 +112,7 @@ describe("useResizeObserver", () => {
       result.current(element);
     });
 
+    await TestUtils.flushAsyncOperations();
     spy.resetHistory();
     sinon.stub(element, "getBoundingClientRect").returns(createDOMRect({ width: 100, height: 100 }));
     // Call the ResizeObserver callback.
