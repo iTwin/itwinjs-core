@@ -34,7 +34,10 @@ export class GeometryCoreTestIO {
       if (!fs.existsSync(path))
         fs.mkdirSync(path);
     }
-    const fullPath = `${path}/${fileName}.imjs`;
+    let fullPath = `${path}/${fileName}`;
+    if (fileName.search("\.imjs$") === 0)
+        fullPath = `${fullPath}.imjs`;
+
     console.log(`saveGeometry:: ${fullPath}`);
 
     const imjs = IModelJson.Writer.toIModelJson(geometry);
