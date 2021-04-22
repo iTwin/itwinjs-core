@@ -176,7 +176,7 @@ Next switch out the ```helloWidget``` with the new ```backgroundColorWidget``` h
         id: "BackgroundColorWidget",
         label: "Background Color Toggle",
         getWidgetContent() {
-          return <Toggle></Toggle>
+          return <Toggle />
         }
       }
 
