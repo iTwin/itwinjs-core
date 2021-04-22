@@ -55,6 +55,8 @@ export class BingElevationProvider {
    * @public
    */
   public async getHeight(carto: Cartographic, geodetic = true) {
+    if (undefined === carto)
+      return 0.0;
     const requestUrl = this._heightListRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
@@ -79,6 +81,8 @@ export class BingElevationProvider {
   /** @internal */
   public async getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number> {
     const carto = iModel.spatialToCartographicFromEcef(point);
+    if (carto === undefined)
+      return 0.0;
     const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`);
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {

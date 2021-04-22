@@ -1090,6 +1090,7 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
       alert(`openSnapshot failed: ${err.toString()}`);
       openLocalIModel = false;
     }
+
     if (extViews) {
       activeViewState.externalSavedViews = extViews;
     } else {
@@ -1159,6 +1160,8 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
 
 async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise<boolean> {
   await openImodelAndLoadExtViews(testConfig, extViews); // Open iModel & load all external saved views into activeViewState
+  if (activeViewState.iModelConnection)
+    await activeViewState.iModelConnection?.backgroundMapLocation.initialize(activeViewState.iModelConnection);
 
   // open the specified view
   if (undefined !== testConfig.viewStatePropsString)
