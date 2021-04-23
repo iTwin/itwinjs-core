@@ -15,7 +15,7 @@ import { parseToggle } from "./parseToggle";
 import { parseBoolean } from "./parseBoolean";
 import { DisplayStyleTool } from "./DisplayStyleTools";
 
-/** Specify or unspecify a clip color to use for pixels inside or outside the clip region.
+/** This tool specifies or unspecifies a clip color to use for pixels inside or outside the clip region.
  * Arguments can be:
  * - clear
  * - inside   <color string> | clear
@@ -28,7 +28,7 @@ import { DisplayStyleTool } from "./DisplayStyleTools";
  * "#rrbbgg"
  * "blanchedAlmond" (see possible values from [[ColorByName]]). Case insensitive.
  * @see [ColorDef]
- * @alpha
+ * @beta
  */
 export class ClipColorTool extends Tool {
   public static toolId = "ClipColorTool";
@@ -53,6 +53,20 @@ export class ClipColorTool extends Tool {
     }
   }
 
+  /** This runs the tool using the given arguments, specifying or unspecifying a clip color to use for pixels inside or outside the clip region.
+   * Arguments can be:
+   * - clear
+   * - inside   <color string> | clear
+   * - outside  <color string> | clear
+   * <color string> must be in one of the following forms:
+   * "rgb(255,0,0)"
+   * "rgba(255,0,0,255)"
+   * "rgb(100%,0%,0%)"
+   * "hsl(120,50%,50%)"
+   * "#rrbbgg"
+   * "blanchedAlmond" (see possible values from [[ColorByName]]). Case insensitive.
+   * @beta
+   */
   public parseAndRun(...args: string[]): boolean {
     if (1 === args.length) {
       if (args[0] === "clear")
@@ -70,13 +84,16 @@ export class ClipColorTool extends Tool {
 }
 
 /** Controls a [ViewState]($frontend)'s [ViewDetails]($frontend)'s [ClipStyle.produceCutGeometry]($common) flag.
- * @alpha
+ * @beta
  */
 export class ToggleSectionCutTool extends Tool {
   public static toolId = "ToggleSectionCut";
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
+  /** This method runs the tool, controlling a [ViewState]($frontend)'s [ViewDetails]($frontend)'s [ClipStyle.produceCutGeometry]($common) flag.
+   * @param produceCutGeometry whether to produce cut geometry
+   */
   public run(produceCutGeometry?: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
@@ -96,6 +113,9 @@ export class ToggleSectionCutTool extends Tool {
     return true;
   }
 
+  /** Executes this tool's run method with args[0] containing `produceCutGeometry`.
+   * @see [[run]]
+   */
   public parseAndRun(...args: string[]): boolean {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
@@ -106,7 +126,7 @@ export class ToggleSectionCutTool extends Tool {
 }
 
 /** Simple tool that toggles a hard-coded [ClipStyle]($frontend) overriding various aspects of the cut geometry appearance.
- * @alpha
+ * @beta
  */
 export class TestClipStyleTool extends DisplayStyleTool {
   public static toolId = "TestClipStyle";
