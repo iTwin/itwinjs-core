@@ -672,7 +672,10 @@ export namespace RenderSchedule {
       this.containsTransform = containsTransform;
     }
 
-    public static fromJSON(props: ScriptProps): Script {
+    public static fromJSON(props: ScriptProps): Script | undefined {
+      if (!Array.isArray(props) || props.length === 0)
+        return undefined;
+
       return new Script(props);
     }
 
@@ -695,6 +698,28 @@ export namespace RenderSchedule {
     public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
       for (const timeline of this.modelTimelines)
         timeline.addSymbologyOverrides(overrides, time);
+    }
+  }
+
+  export class ScriptReference {
+    public readonly sourceId: Id64String;
+    public readonly script: Script;
+
+    public constructor(sourceId: Id64String, script: Script) {
+      this.sourceId = sourceId;
+      this.script = script;
+    }
+
+    public getModelAnimationId(modelId: Id64String): Id64String | undefined {
+      // Only if the script contains animation (cutting plane, transform or visibility by node ID) do we require separate tilesets for animations.
+      if (Id64.isTransient(modelId))
+        return undefined;
+
+      for (const modelTimeline of this.script.modelTimelines)
+        if (modelTimeline.modelId === modelId && (modelTimeline.containsElementClipping || modelTimeline.containsTransform))
+          return this.sourceId;
+
+      return undefined;
     }
   }
 }
