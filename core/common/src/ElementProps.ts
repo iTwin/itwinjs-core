@@ -300,6 +300,17 @@ export interface DisplayStyleLoadProps {
   compressExcludedElementIds?: boolean;
 }
 
+/** Options controlling which properties are included or excluded when querying [[RenderTimelineProps]].
+ * @see [[ElementLoadOptions]].
+ * @beta
+ */
+export interface RenderTimelineLoadProps {
+  /** If true, the lists of element Ids in the schedule script will be empty.
+   * The element Ids can be extremely numerous and are not required on the frontend for display, so they are omitted by default by [DisplayStyleState.load]($frontend).
+   */
+  omitScheduleScriptElementIds?: boolean;
+}
+
 /** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
  * [IModelDb.Elements.getElementProps]($backend) and [IModelConnection.Elements.loadProps]($frontend).
  * @public
@@ -316,6 +327,10 @@ export interface ElementLoadOptions {
   wantBRepData?: boolean;
   /** Options controlling which properties of [[DisplayStyleProps]] to include or exclude. */
   displayStyle?: DisplayStyleLoadProps;
+  /** Options controlling which properties of [[RenderTimelineProps]] to include or exclude.
+   * @beta
+   */
+  renderTimeline?: RenderTimelineLoadProps;
 }
 
 /** Parameters to specify what element to load for functions like [IModelDb.Elements.getElementProps]($backend).

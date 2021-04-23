@@ -29,7 +29,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManag
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
-import { RenderScheduleState } from "./RenderScheduleState";
+import {RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
@@ -212,10 +212,10 @@ export abstract class ViewState extends ElementState {
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
   public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.settings.analysisStyle; }
 
-  /** Get the RenderSchedule.Script from the displayStyle of this viewState
-   * @internal
-   */
-  public get scheduleScript(): RenderScheduleState.Script | undefined { return this.displayStyle.scheduleScript; }
+  /** @internal */
+  public get scheduleState(): RenderScheduleState | undefined {
+    return this.displayStyle.scheduleState;
+  }
 
   /** Get the globe projection mode.
    * @internal
@@ -235,12 +235,7 @@ export abstract class ViewState extends ElementState {
     return json;
   }
 
-  /** Asynchronously load any required data for this ViewState from the backend.
-   * @note callers should await the Promise returned by this method before using this ViewState.
-   * @see [Views]($docs/learning/frontend/Views.md)
-   */
-  public async load(): Promise<void> {
-    await this.iModel.backgroundMapLocation.initialize(this.iModel);
+  private async loadAcs(): Promise<void> {
     this._auxCoordSystem = undefined;
     const acsId = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValid(acsId)) {
@@ -250,10 +245,24 @@ export abstract class ViewState extends ElementState {
           this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
       } catch { }
     }
+  }
+
+  /** Asynchronously load any required data for this ViewState from the backend.
+   * @note callers should await the Promise returned by this method before using this ViewState.
+   * @see [Views]($docs/learning/frontend/Views.md)
+   */
+  public async load(): Promise<void> {
+    const promises = [
+      this.iModel.backgroundMapLocation.initialize(this.iModel),
+      this.loadAcs(),
+      this.displayStyle.load(),
+    ];
 
     const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
     if (undefined !== subcategories)
-      await subcategories.promise;
+      promises.push(subcategories.promise.then((_) => { }));
+
+    await Promise.all(promises);
   }
 
   /** Returns true if all [[TileTree]]s required by this view have been loaded. */

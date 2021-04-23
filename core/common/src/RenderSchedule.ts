@@ -645,7 +645,7 @@ export namespace RenderSchedule {
     public readonly containsFeatureOverrides: boolean;
     public readonly duration: Range1d;
 
-    protected constructor(props: ScriptProps) {
+    protected constructor(props: Readonly<ScriptProps>) {
       this.duration = Range1d.createNull();
 
       const modelTimelines: ModelTimeline[] = [];
@@ -673,7 +673,7 @@ export namespace RenderSchedule {
       this.containsFeatureOverrides = containsFeatureOverrides;
     }
 
-    public static fromJSON(props: ScriptProps): Script | undefined {
+    public static fromJSON(props: Readonly<ScriptProps>): Script | undefined {
       if (!Array.isArray(props) || props.length === 0)
         return undefined;
 
