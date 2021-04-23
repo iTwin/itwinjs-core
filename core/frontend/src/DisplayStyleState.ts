@@ -1311,21 +1311,15 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _environment?: Environment;
   private _settings: DisplayStyle3dSettings;
 
-  /** @internal */
-  public clone(iModel?: IModelConnection): this {
-    const clone = super.clone(iModel);
-    if (undefined === iModel || this.iModel === iModel) {
-      clone._skyBoxParams = this._skyBoxParams;
-      clone._skyBoxParamsLoaded = this._skyBoxParamsLoaded;
-    }
-
-    return clone;
-  }
-
   public get settings(): DisplayStyle3dSettings { return this._settings; }
 
-  public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
-    super(props, iModel);
+  public constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState) {
+    super(props, iModel, source);
+    if (source && source.iModel === this.iModel) {
+      this._skyBoxParams = source._skyBoxParams;
+      this._skyBoxParamsLoaded = source._skyBoxParamsLoaded;
+    }
+
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
     this.registerSettingsEventListeners();
   }
