@@ -214,6 +214,22 @@ export namespace RenderSchedule {
     }
   }
 
+  export class Interval {
+    public i!: number;
+    public j!: number;
+    public fraction!: number;
+
+    public constructor(i = 0, j = 0, fraction = 0) {
+      this.init(i, j, fraction);
+    }
+
+    public init(i = 0, j = 0, fraction = 0): void {
+      this.i = i;
+      this.j = j;
+      this.fraction = fraction;
+    }
+  }
+
   export class TimelineEntryList<T extends TimelineEntry, P extends TimelineEntryProps> {
     private readonly _entries: ReadonlyArray<T>;
     public readonly duration: Range1d;
@@ -275,22 +291,6 @@ export namespace RenderSchedule {
       }
 
       return undefined;
-    }
-  }
-
-  export class Interval {
-    public i!: number;
-    public j!: number;
-    public fraction!: number;
-
-    public constructor(i = 0, j = 0, fraction = 0) {
-      this.init(i, j, fraction);
-    }
-
-    public init(i = 0, j = 0, fraction = 0): void {
-      this.i = i;
-      this.j = j;
-      this.fraction = fraction;
     }
   }
 
@@ -439,6 +439,10 @@ export namespace RenderSchedule {
         realityModelUrl: this.realityModelUrl,
         elementTimelines: this.elementTimelines.map((x) => x.toJSON()),
       };
+    }
+
+    public findByBatchId(batchId: number): ElementTimeline | undefined {
+      return this.elementTimelines.find((x) => x.batchId === batchId);
     }
   }
 
