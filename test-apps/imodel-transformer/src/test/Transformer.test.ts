@@ -85,7 +85,7 @@ describe("imodel-transformer", () => {
     targetDb.close();
   });
 
-  xit("should exclude categories", async () => {
+  it("should exclude categories", async () => {
     const targetDbFileName = initOutputFile("CompatibilityTestSeed-CategoryExcluded.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFileName, {
       rootSubject: { name: `${sourceDb.rootSubject.name}-CategoryExcluded` },
@@ -116,7 +116,7 @@ describe("imodel-transformer", () => {
       return db.queryEntityIds({
         from: Category.classFullName,
         where: "CodeValue=:category",
-        bindings: {category: testCategory},
+        bindings: { category: testCategory },
       }).size > 0;
     }
 
