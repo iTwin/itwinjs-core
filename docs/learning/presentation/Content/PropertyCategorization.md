@@ -14,7 +14,7 @@ A property may or may not have a category and there are several sources it may b
 2. An ECPropertyCategory assigned to the ECProperty in ECSchema.
 3. If a property is related with a *SameInstance* relationship, and that related class contains the property.
 
-If a property has no direct category, it is displayed as if it belonged to the parent category. See the [next chapter](#category-nesting) for more details on category nesting.
+If a property has no direct category, it is displayed as if it belonged to the parent category. See the [next section](#category-nesting) for more details on category nesting.
 
 ## Category Nesting
 
@@ -30,9 +30,9 @@ If properties have [direct categories of their own](#direct-property-categories)
 
 ![Nested Categories](./media/property-grid-nested-categories.png)
 
-Additionally, when presentation rules specify [related properties](./RelatedPropertiesSpecification.md), it is possible to create new top-level categories. See [this topic](#controlling-category-nesting-of-related-properties) for more details.
+Additionally, when presentation rules specify [related properties](./RelatedPropertiesSpecification.md), it is possible to create new top-level categories. See the [Controlling Category Nesting of Related Properties](#controlling-category-nesting-of-related-properties) for more details.
 
-Finally, category nesting can be achieved using [property category overrides](./PropertyCategorySpecification.md) - see [this topic](#controlling-category-nesting-through-property-category-overrides) for more details.
+Finally, category nesting can be achieved using [property category overrides](./PropertyCategorySpecification.md) - see the [Controlling Category Nesting Through Property Category Overrides section](#controlling-category-nesting-through-property-category-overrides) for more details.
 
 ### Controlling Category Nesting of Related Properties
 
