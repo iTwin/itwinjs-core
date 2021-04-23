@@ -98,8 +98,12 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
       this.outsideClickContainerDiv = outsideClickContainerDiv;
     };
 
+    public getParentDocument() {
+      return this.outsideClickContainerDiv?.ownerDocument ?? document;
+    }
+
     public componentDidMount() {
-      const outsideClickParentDocument = this.outsideClickContainerDiv!.ownerDocument;
+      const outsideClickParentDocument = this.getParentDocument();
       if (usePointerEvents) {
         outsideClickParentDocument.addEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
         outsideClickParentDocument.addEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
@@ -109,7 +113,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
 
     /** @internal */
     public componentWillUnmount() {
-      const outsideClickParentDocument = this.outsideClickContainerDiv!.ownerDocument;
+      const outsideClickParentDocument = this.getParentDocument();
       if (usePointerEvents) {
         outsideClickParentDocument.removeEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
         outsideClickParentDocument.removeEventListener("pointerup", this.handleDocumentPointerUp, useCapture);

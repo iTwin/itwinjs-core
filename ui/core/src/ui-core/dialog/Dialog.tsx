@@ -9,7 +9,6 @@
 import "./Dialog.scss";
 import classnames from "classnames";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 import { UiCore } from "../UiCore";
@@ -158,7 +157,6 @@ interface DialogState {
   width?: number;
   height?: number;
   positionSet: boolean;
-  parentDocument?: Document;
 }
 
 /**
@@ -166,6 +164,7 @@ interface DialogState {
  * @public
  */
 export class Dialog extends React.Component<DialogProps, DialogState> {
+  private _parentDocument = document;
   private _containerRef = React.createRef<HTMLDivElement>();
   public static defaultProps: Partial<DialogProps> = {
     alignment: DialogAlignment.Center,
@@ -192,37 +191,30 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       grabOffsetX: 0,
       grabOffsetY: 0,
       positionSet: props.x !== undefined || props.y !== undefined,
-      parentDocument: undefined,
     };
   }
 
-  private _bindWindowEvents = () => {
-    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
-    if (parentWindow) {
-      parentWindow.addEventListener("pointerup", this._handlePointerUp, true);
-      this.state.parentDocument!.addEventListener("keyup", this._handleKeyUp, true);
-    }
-  };
-
-  private _unBindWindowEvents = () => {
-    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
-    if (parentWindow) {
-      parentWindow.removeEventListener("pointerup", this._handlePointerUp, true);
-      parentWindow.removeEventListener("pointermove", this._handlePointerMove, true);
-      this.state.parentDocument!.removeEventListener("keyup", this._handleKeyUp, true);
-    }
-  };
+  private getParentWindow() {
+    // istanbul ignore next
+    return this._parentDocument.defaultView ?? window;
+  }
 
   public componentWillUnmount(): void {
-    this._unBindWindowEvents();
+    const parentWindow = this.getParentWindow();
+    parentWindow.removeEventListener("pointerup", this._handlePointerUp, true);
+    parentWindow.removeEventListener("pointermove", this._handlePointerMove, true);
+    this._parentDocument.removeEventListener("keyup", this._handleKeyUp, true);
+  }
+
+  public componentDidMount(): void {
+    const parentWindow = this.getParentWindow();
+    parentWindow.addEventListener("pointerup", this._handlePointerUp, true);
+    this._parentDocument.addEventListener("keyup", this._handleKeyUp, true);
   }
 
   public handleRefSet = (containerDiv: HTMLDivElement | null) => {
-    if (containerDiv) {
-      this._unBindWindowEvents();
-      const parentDocument = containerDiv.ownerDocument;
-      this.setState({ parentDocument }, () => this._bindWindowEvents());
-    }
+    if (containerDiv)
+      this._parentDocument = containerDiv.ownerDocument;
   };
 
   public render(): JSX.Element {
@@ -310,7 +302,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         data-testid="core-dialog-root"
         {...props}
       >
-        {this.state.parentDocument && opened &&
+        { opened &&
           <DivWithOutsideClick onOutsideClick={onOutsideClick}>
             <FocusTrap active={trapFocus && modal} returnFocusOnDeactivate={true}>
               <div
@@ -471,28 +463,22 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   private _handleStartResizeRight = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ rightResizing: true });
-    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
-    if (parentWindow) {
-      parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
-    }
+    const parentWindow = this.getParentWindow();
+    parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
   };
 
   private _handleStartResizeDown = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ downResizing: true });
-    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
-    if (parentWindow) {
-      parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
-    }
+    const parentWindow = this.getParentWindow();
+    parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
   };
 
   private _handleStartResizeDownRight = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ downResizing: true, rightResizing: true });
-    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
-    if (parentWindow) {
-      parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
-    }
+    const parentWindow = this.getParentWindow();
+    parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
   };
 
   private _handleStartMove = (event: React.PointerEvent): void => {
@@ -511,10 +497,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         moving: true,
       });
 
-      const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
-      if (parentWindow) {
-        parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
-      }
+      const parentWindow = this.getParentWindow();
+      parentWindow.addEventListener("pointermove", this._handlePointerMove, true);
     }
   };
 
@@ -566,6 +550,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     if (!this.props.movable && !this.props.resizable)
       return;
 
+    // istanbul ignore else
     if (this._containerRef.current) {
       this.setState({
         rightResizing: false,
@@ -576,71 +561,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       });
     }
 
-    const parentWindow = this.state.parentDocument?.defaultView ?? undefined;
-    if (parentWindow) {
-      parentWindow.removeEventListener("pointermove", this._handlePointerMove, true);
-    }
+    const parentWindow = this.getParentWindow();
+    parentWindow.removeEventListener("pointermove", this._handlePointerMove, true);
   };
-}
-
-/** Properties for the [[GlobalDialog]] component
- * @public
- */
-export interface GlobalDialogProps extends DialogProps {
-  identifier?: string;
-}
-
-/** @internal */
-interface GlobalDialogState {
-  parentDocument: Document | null;
-}
-
-/** GlobalDialog React component used to display a [[Dialog]] on the top of screen
- * @public
- */
-export class GlobalDialog extends React.Component<GlobalDialogProps, GlobalDialogState> {
-  private _container?: HTMLDivElement;
-
-  public readonly state: GlobalDialogState = {
-    parentDocument: null,
-  };
-
-  constructor(props: GlobalDialogProps) {
-    super(props);
-  }
-
-  private _handleRefSet = (popupDiv: HTMLElement | null) => {
-    const parentDocument = popupDiv?.ownerDocument ?? null;
-    if (parentDocument) {
-      this._container = parentDocument.createElement("div");
-      this._container.id = this.props.identifier !== undefined ? `dialog-${this.props.identifier}` : "core-dialog";
-      let rt = parentDocument.getElementById("core-dialog-root") as HTMLDivElement;
-      if (!rt) {
-        rt = parentDocument.createElement("div");
-        rt.id = "core-dialog-root";
-        parentDocument.body.appendChild(rt);
-      }
-      rt.appendChild(this._container);
-
-      // used to support component rendering in pop-out window
-      this.setState({ parentDocument });
-    }
-  };
-
-  public componentWillUnmount() {
-    // istanbul ignore else
-    if (this._container && this._container.parentElement) { // cleanup
-      this._container.parentElement.removeChild(this._container);
-    }
-  }
-
-  public render(): React.ReactNode {
-    const { identifier, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
-    return (
-      <div ref={this._handleRefSet}>
-        {this.state.parentDocument &&
-          ReactDOM.createPortal(<Dialog {...props} />, this.state.parentDocument.body)}
-      </div>
-    );
-  }
 }

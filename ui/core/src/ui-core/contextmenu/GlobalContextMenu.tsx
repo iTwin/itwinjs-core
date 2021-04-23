@@ -54,11 +54,11 @@ export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProp
     const parentDocument = popupDiv?.ownerDocument ?? null;
     if (parentDocument) {
       this._container = parentDocument.createElement("div");
-      this._container.id = this.props.identifier !== undefined ? `dialog-${this.props.identifier}` : "core-dialog";
-      let rt = parentDocument.getElementById("core-dialog-root") as HTMLDivElement;
+      this._container.id = this.props.identifier !== undefined ? `dialog-${this.props.identifier}` : "core-global-context-menu";
+      let rt = parentDocument.getElementById("core-global-context-menu-root") as HTMLDivElement;
       if (!rt) {
         rt = parentDocument.createElement("div");
-        rt.id = "core-dialog-root";
+        rt.id = "core-global-context-menu-root";
         parentDocument.body.appendChild(rt);
       }
       rt.appendChild(this._container);

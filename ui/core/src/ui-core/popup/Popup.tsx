@@ -120,14 +120,20 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     }
   }
 
+  private getParentWindow() {
+    // istanbul ignore next
+    return this.state.parentDocument.defaultView ?? window;
+  }
+
   public componentDidUpdate(previousProps: PopupProps) {
     if (this.props.target !== previousProps.target) {
-      this._unBindWindowEvents();
-      const parentDocument = this.props.target?.ownerDocument ?? document;
-      if (parentDocument !== this.state.parentDocument) {
-        this.setState({
-          parentDocument,
-        });
+      // istanbul ignore next
+      {
+        const parentDocument = this.props.target?.ownerDocument ?? document;
+        if (parentDocument !== this.state.parentDocument) {
+          this._unBindWindowEvents();
+          this.setState({ parentDocument });
+        }
       }
     }
 
@@ -161,7 +167,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _bindWindowEvents = () => {
-    const activeWindow = this.state.parentDocument.defaultView ?? window;
+    const activeWindow = this.getParentWindow();
     activeWindow.addEventListener("pointerdown", this._handleOutsideClick);
     activeWindow.addEventListener("resize", this._hide);
     activeWindow.addEventListener("contextmenu", this._handleContextMenu);
@@ -171,7 +177,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   };
 
   private _unBindWindowEvents = () => {
-    const activeWindow = this.state.parentDocument.defaultView ?? window;
+    const activeWindow = this.getParentWindow();
     activeWindow.removeEventListener("pointerdown", this._handleOutsideClick);
     activeWindow.removeEventListener("resize", this._hide);
     activeWindow.removeEventListener("contextmenu", this._handleContextMenu);
@@ -324,7 +330,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     let popupHeight = 0;
     // istanbul ignore else
     if (this._popup) {
-      const activeWindow = this.state.parentDocument.defaultView ?? window;
+      const activeWindow = this.getParentWindow();
       const style = activeWindow.getComputedStyle(this._popup);
       const borderLeftWidth = parsePxString(style.borderLeftWidth);
       const borderRightWidth = parsePxString(style.borderRightWidth);
@@ -338,7 +344,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _getPosition = (position: RelativePosition) => {
-    const activeWindow = this.state.parentDocument.defaultView ?? window;
+    const activeWindow = this.getParentWindow();
     const { target, offset, top, left } = this.props;
     const offsetArrow = (this.props.showArrow) ? 6 : 0;
 
@@ -433,7 +439,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       bottom: number;
     }
 
-    const activeWindow = this.state.parentDocument.defaultView ?? window;
+    const activeWindow = this.getParentWindow();
 
     // Note: Cannot use DOMRect yet since it's experimental and not available in all browsers (Nov. 2018)
     const viewportRect: Rect = { left: activeWindow.scrollX, top: activeWindow.scrollY, right: activeWindow.scrollX + activeWindow.innerWidth, bottom: activeWindow.scrollY + activeWindow.innerHeight };
