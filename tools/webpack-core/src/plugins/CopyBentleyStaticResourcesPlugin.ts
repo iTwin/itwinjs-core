@@ -68,7 +68,6 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
   public async runAsync(compiler: Compiler) {
     const paths = getPaths();
     const bentleyDir = path.resolve(paths.appNodeModules, "@bentley");
-    // console.log(bentleyDir);
     let subDirectoryNames: string[];
     try {
       subDirectoryNames = await fs.readdir(bentleyDir);
