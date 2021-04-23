@@ -963,6 +963,9 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
+      if (!Id64.isValidId64(viewDefinitionId))
+        throw new IModelError(IModelStatus.InvalidId, "Invalid view definition Id for IModelConnection.Views.load", Logger.logError, loggerCategory, () => { return { viewDefinitionId }; });
+
       const options: ViewStateLoadProps = {
         displayStyle: {
           omitScheduleScriptElementIds: true,

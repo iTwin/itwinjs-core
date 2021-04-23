@@ -56,6 +56,7 @@ internal;BackgroundMapGeometry
 internal;BackgroundMapLocation
 beta;class BaseUnitFormattingSettingsProvider 
 internal;BatchedTileIdMap
+public;BatchOptions
 public;BeButton
 public;BeButtonEvent 
 public;BeButtonEventProps
@@ -406,7 +407,7 @@ beta;QuantityTypeKey = string
 public;queryRealityData(criteria: RealityDataQueryCriteria): Promise
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
-public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise
+public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 public;RealityDataQueryCriteria
 internal;RealityModelSource = ViewState | DisplayStyleState
