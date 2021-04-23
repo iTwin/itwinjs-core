@@ -497,8 +497,11 @@ export class IModelExporter {
     }
   }
 
-  /** Returns true if the specified element should be exported. */
-  private shouldExportElement(element: Element): boolean {
+  /** Returns true if the specified element should be exported.
+   * This considers the standard IModelExporter exclusion rules plus calls [IModelExportHandler.shouldExportElement]($backend) for any custom exclusion rules.
+   * @note This method is called from within [[exportChanges]] and [[exportAll]], so usually does not need to be called directly.
+   */
+  public shouldExportElement(element: Element): boolean {
     if (this._excludedElementIds.has(element.id)) {
       Logger.logInfo(loggerCategory, `Excluded element ${element.id} by Id`);
       return false;
