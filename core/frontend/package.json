@@ -37,7 +37,6 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.16.0-dev.13",
-    "@bentley/ecschema-metadata": "^2.16.0-dev.13",
     "@bentley/frontend-authorization-client": "^2.16.0-dev.13",
     "@bentley/geometry-core": "^2.16.0-dev.13",
     "@bentley/imodelhub-client": "^2.16.0-dev.13",
@@ -60,7 +59,6 @@
     "@bentley/bentleyjs-core": "2.16.0-dev.13",
     "@bentley/build-tools": "2.16.0-dev.13",
     "@bentley/certa": "2.16.0-dev.13",
-    "@bentley/ecschema-metadata": "2.16.0-dev.13",
     "@bentley/eslint-plugin": "2.16.0-dev.13",
     "@bentley/frontend-authorization-client": "2.16.0-dev.13",
     "@bentley/geometry-core": "2.16.0-dev.13",

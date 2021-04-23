@@ -8,6 +8,7 @@ import { Parser } from "@bentley/imodeljs-quantity";
 import { BasicUnitsProvider } from "../quantity-formatting/BasicUnitsProvider";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
+import { UNIT_EXTRA_DATA } from "../quantity-formatting/UnitsData";
 import { BearingQuantityType } from "./BearingQuantityType";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {
@@ -55,7 +56,7 @@ describe("Quantity formatter", async () => {
   });
 
   beforeEach(async () => {
-    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider());
+    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider(UNIT_EXTRA_DATA));
     await quantityFormatter.onInitialized();
   });
 

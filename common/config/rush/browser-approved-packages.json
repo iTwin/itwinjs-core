@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
     },
     {
       "name": "@bentley/ecschema-rpcinterface-common",
