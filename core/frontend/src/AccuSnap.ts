@@ -27,6 +27,7 @@ import { ScreenViewport, Viewport } from "./Viewport";
  */
 export class TouchCursor implements CanvasDecoration {
   public position = new Point3d();
+  public viewport: Viewport;
   protected _offsetPosition = new Point3d();
   protected _size: number;
   protected _yOffset: number;
@@ -37,6 +38,7 @@ export class TouchCursor implements CanvasDecoration {
   protected constructor(vp: ScreenViewport) {
     this._size = vp.pixelsFromInches(0.3);
     this._yOffset = this._size * 1.75;
+    this.viewport = vp;
   }
 
   protected setPosition(vp: Viewport, worldLocation: Point3d): boolean {
@@ -55,6 +57,7 @@ export class TouchCursor implements CanvasDecoration {
 
     this.position.setFrom(viewLocation);
     this._offsetPosition.setFrom(offsetLocation);
+    this.viewport = vp;
     vp.invalidateDecorations();
     return true;
   }
@@ -995,7 +998,7 @@ export class AccuSnap implements Decorator {
 
   /** @internal */
   public decorate(context: DecorateContext): void {
-    if (undefined !== this.touchCursor)
+    if (undefined !== this.touchCursor && this.touchCursor.viewport === context.viewport)
       context.addCanvasDecoration(this.touchCursor, true);
 
     this.flashElements(context);

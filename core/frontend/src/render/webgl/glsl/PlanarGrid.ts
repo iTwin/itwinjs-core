@@ -78,7 +78,7 @@ export default function createPlanarGridProgram(context: WebGLContext): ShaderPr
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 
-  vert.headerComment = `//!V! PlanarGrid"}`;
+  vert.headerComment = `//!V! PlanarGrid`;
   frag.headerComment = `//!F! PlanarGrid`;
 
   vert.addFunction(unquantize2d);

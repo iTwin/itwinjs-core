@@ -7,8 +7,8 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, PhysicalPartition, SnapshotDb,
-  SpatialElement,
+  BackendLoggerCategory, BackendRequestContext, Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs,
+  PhysicalPartition, SnapshotDb, SpatialElement,
 } from "@bentley/imodeljs-backend";
 import { progressLoggerCategory, Transformer } from "../Transformer";
 
@@ -82,6 +82,54 @@ describe("imodel-transformer", () => {
     assert.equal(count(targetDb, SpatialElement.classFullName), numSourceSpatialElements);
     assert.equal(count(targetDb, PhysicalPartition.classFullName), 1);
     assert.isAtLeast(count(sourceDb, PhysicalPartition.classFullName), 2);
+    targetDb.close();
+  });
+
+  it("should exclude categories", async () => {
+    const targetDbFileName = initOutputFile("CompatibilityTestSeed-CategoryExcluded.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFileName, {
+      rootSubject: { name: `${sourceDb.rootSubject.name}-CategoryExcluded` },
+      ecefLocation: sourceDb.ecefLocation,
+    });
+
+    const testCategory = "TestSpatialCategory";
+
+    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { excludeCategories: [testCategory] });
+
+    async function getElementCountInTestCategory(db: IModelDb) {
+      // do two queries because querying abstract GeometricElement won't contain the category
+      const sum = (arr: number[]) => arr.reduce((prev, x) => prev + x, 0);
+      return sum(await Promise.all([GeometricElement2d.classFullName, GeometricElement3d.classFullName].map(async (className) => {
+        const queryResult = await db.query(
+          `SELECT COUNT(*) FROM ${className} e JOIN bis.Category c ON e.category.id=c.ECInstanceId WHERE c.CodeValue=:category`,
+          { category: testCategory }
+        ).next();
+        const value = Object.values(queryResult.value)[0]; // gets the value of the first column in the returned row
+        if (typeof value !== "number") {
+          throw Error(`unexpected result from COUNT query, queryResult was: '${JSON.stringify(queryResult)}'`);
+        }
+        return value;
+      })));
+    }
+
+    async function hasTheCategory(db: IModelDb) {
+      return db.queryEntityIds({
+        from: Category.classFullName,
+        where: "CodeValue=:category",
+        bindings: { category: testCategory },
+      }).size > 0;
+    }
+
+    assert.isTrue(await hasTheCategory(sourceDb));
+
+    const elemsInCategoryInSrc = await getElementCountInTestCategory(sourceDb);
+    assert.isAtLeast(elemsInCategoryInSrc, 6);
+
+    assert.isFalse(await hasTheCategory(targetDb));
+
+    const elemsInCategoryInTarget = await getElementCountInTestCategory(targetDb);
+    assert.equal(elemsInCategoryInTarget, 0);
+
     targetDb.close();
   });
 });
