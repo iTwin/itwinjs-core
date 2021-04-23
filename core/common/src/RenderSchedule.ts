@@ -7,8 +7,18 @@
  */
 
 import { CompressedId64Set, Constructor, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range1d, Transform, Vector3d, XYAndZ } from "@bentley/geometry-core";
+import {
+  ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
+} from "@bentley/geometry-core";
 import { RgbColor } from "./RgbColor";
+
+function interpolate(start: number, end: number, fraction: number): number {
+  return start + fraction * (end - start);
+}
+
+function interpolateRgb(start: RgbColor, end: RgbColor, fraction: number): RgbColor {
+  return new RgbColor(interpolate(start.r, end.r, fraction), interpolate(start.g, end.g, fraction), interpolate(start.b, end.b, fraction));
+}
 
 /**
  * A schedule (or script)  for controlling the visibility, position and symbology of a series of elements over a period of time.
@@ -152,7 +162,7 @@ export namespace RenderSchedule {
   }
 
   export class ColorEntry extends TimelineEntry {
-    public readonly value?: RgbColor;
+    public readonly value: RgbColor | undefined;
 
     public constructor(props: ColorEntryProps) {
       super(props);
@@ -179,7 +189,7 @@ export namespace RenderSchedule {
 
     public constructor(props: TransformEntryProps) {
       super(props);
-      this.value = props.value ? Transform.fromJSON(props.value.transform) : Transform.createIdentity();
+      this.value = props.value ? Transform.fromJSON(props.value.transform) : Transform.identity;
     }
 
     public toJSON(): TransformEntryProps {
@@ -224,7 +234,7 @@ export namespace RenderSchedule {
   const planeDirection = new Vector3d();
 
   export class CuttingPlaneEntry extends TimelineEntry {
-    public readonly value?: CuttingPlane;
+    public readonly value: CuttingPlane | undefined;
 
     public constructor(props: CuttingPlaneEntryProps) {
       super(props);
@@ -251,13 +261,13 @@ export namespace RenderSchedule {
     }
 
     public init(lower = 0, upper = 0, fraction = 0): void {
-      this.lower = lower;
-      this.upper = upper;
+      this.lowerIndex = lower;
+      this.upperIndex = upper;
       this.fraction = fraction;
     }
   }
 
-  export class TimelineEntryList<T extends TimelineEntry, P extends TimelineEntryProps> {
+  export class TimelineEntryList<T extends TimelineEntry & { readonly value: V }, P extends TimelineEntryProps, V> {
     private readonly _entries: ReadonlyArray<T>;
     public readonly duration: Range1d;
 
@@ -278,8 +288,12 @@ export namespace RenderSchedule {
       return this._entries[Symbol.iterator]();
     }
 
-    public get(index: number): T | undefined {
+    public getEntry(index: number): T | undefined {
       return this._entries[index];
+    }
+
+    public getValue(index: number): V | undefined {
+      return this.getEntry(index)?.value;
     }
 
     public toJSON(): P[] {
@@ -321,33 +335,47 @@ export namespace RenderSchedule {
     }
   }
 
+  const scratchInterval = new Interval();
+
+  export class VisibilityTimelineEntries extends TimelineEntryList<VisibilityEntry, VisibilityEntryProps, number> {
+    public getValue(index: number): number {
+      return super.getValue(index) ?? 100;
+    }
+  }
+
+  export class TransformTimelineEntries extends TimelineEntryList<TransformEntry, TransformEntryProps, Readonly<Transform>> {
+    public getValue(index: number): Readonly<Transform> {
+      return super.getValue(index) ?? Transform.identity;
+    }
+  }
+
   export class Timeline {
-    public readonly visibility?: TimelineEntryList<VisibilityEntry, VisibilityEntryProps>;
-    public readonly color?: TimelineEntryList<ColorEntry, ColorEntryProps>;
-    public readonly transform?: TimelineEntryList<TransformEntry, TransformEntryProps>;
-    public readonly cuttingPlane?: TimelineEntryList<CuttingPlaneEntry, CuttingPlaneEntryProps>;
+    public readonly visibility?: VisibilityTimelineEntries;
+    public readonly color?: TimelineEntryList<ColorEntry, ColorEntryProps, RgbColor | undefined>;
+    public readonly transform?: TransformTimelineEntries;
+    public readonly cuttingPlane?: TimelineEntryList<CuttingPlaneEntry, CuttingPlaneEntryProps, CuttingPlane | undefined>;
     public readonly duration: Range1d;
 
     public constructor(props: TimelineProps) {
       this.duration = Range1d.createNull();
 
       if (props.visibilityTimeline) {
-        this.visibility = new TimelineEntryList<VisibilityEntry, VisibilityEntryProps>(props.visibilityTimeline, VisibilityEntry);
+        this.visibility = new VisibilityTimelineEntries(props.visibilityTimeline, VisibilityEntry);
         this.duration.extendRange(this.visibility.duration);
       }
 
       if (props.colorTimeline) {
-        this.color = new TimelineEntryList<ColorEntry, ColorEntryProps>(props.colorTimeline, ColorEntry);
+        this.color = new TimelineEntryList(props.colorTimeline, ColorEntry);
         this.duration.extendRange(this.color.duration);
       }
 
       if (props.transformTimeline) {
-        this.transform = new TimelineEntryList<TransformEntry, TransformEntryProps>(props.transformTimeline, TransformEntry);
+        this.transform = new TransformTimelineEntries(props.transformTimeline, TransformEntry);
         this.duration.extendRange(this.transform.duration);
       }
 
       if (props.cuttingPlaneTimeline) {
-        this.cuttingPlane = new TimelineEntryList<CuttingPlaneEntry, CuttingPlaneEntryProps>(props.cuttingPlaneTimeline, CuttingPlaneEntry);
+        this.cuttingPlane = new TimelineEntryList(props.cuttingPlaneTimeline, CuttingPlaneEntry);
         this.duration.extendRange(this.cuttingPlane.duration);
       }
     }
@@ -359,6 +387,93 @@ export namespace RenderSchedule {
         transformTimeline: this.transform?.toJSON(),
         cuttingPlaneTimeline: this.cuttingPlane?.toJSON(),
       };
+    }
+
+    public getVisibility(time: number): number {
+      let interval;
+      if (!this.visibility || !(interval = this.visibility.findInterval(time, scratchInterval)))
+        return 100;
+
+      let visibility = this.visibility.getValue(interval.lowerIndex) ?? 100;
+      if (interval.fraction > 0)
+        visibility = interpolate(visibility, this.visibility.getValue(interval.upperIndex) ?? 100, interval.fraction);
+
+      return visibility;
+    }
+
+    public getColor(time: number): RgbColor | undefined {
+      let interval;
+      if (!this.color || !(interval = this.color.findInterval(time, scratchInterval)))
+        return undefined;
+
+      const start = this.color.getValue(interval.lowerIndex);
+      if (start && interval.fraction > 0) {
+        const end = this.color.getValue(interval.upperIndex);
+        if (end)
+          return interpolateRgb(start, end, interval.fraction);
+      }
+
+      return start;
+    }
+
+    public getTransform(time: number): Readonly<Transform> {
+      let interval;
+      if (!this.transform || !(interval = this.transform.findInterval(time, scratchInterval)))
+        return Transform.identity;
+
+      let transform = this.transform.getValue(interval.lowerIndex);
+      if (interval.fraction > 0) {
+        const end = this.transform.getValue(interval.upperIndex);
+        const q0 = transform.matrix.inverse()?.toQuaternion();
+        const q1 = end.matrix.inverse()?.toQuaternion();
+        if (q0 && q1) {
+          const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
+          const matrix = Matrix3d.createFromQuaternion(sum);
+
+          const origin0 = Vector3d.createFrom(transform.origin);
+          const origin1 = Vector3d.createFrom(end.origin);
+          transform = Transform.createRefs(origin0.interpolate(interval.fraction, origin1), matrix);
+        }
+      }
+
+      return transform;
+    }
+
+    public getCuttingPlane(time: number): Plane3dByOriginAndUnitNormal | undefined {
+      let interval;
+      if (!this.cuttingPlane || !(interval = this.cuttingPlane.findInterval(time, scratchInterval)))
+        return undefined;
+
+      const start = this.cuttingPlane.getValue(interval.lowerIndex);
+      if (!start)
+        return undefined;
+
+      const position = Point3d.createFrom(start.position);
+      const direction = Vector3d.createFrom(start.direction);
+      const end = interval.fraction > 0 ? this.cuttingPlane.getValue(interval.upperIndex) : undefined;
+      if (end) {
+        position.interpolate(interval.fraction, end.position, position);
+        direction.interpolate(interval.fraction, end.direction, direction);
+      } else {
+        if (start.hidden || start.visible)
+          return undefined;
+      }
+
+      direction.negate(direction);
+      direction.normalizeInPlace();
+
+      return Plane3dByOriginAndUnitNormal.create(position, direction);
+    }
+
+    public getClipVector(time: number): ClipVector | undefined {
+      const plane = this.getCuttingPlane(time);
+      if (!plane)
+        return undefined;
+
+      const cp = ClipPlane.createPlane(plane);
+      const cps = UnionOfConvexClipPlaneSets.createConvexSets([ConvexClipPlaneSet.createPlanes([cp])]);
+      const prim = ClipPrimitive.createCapture(cps);
+      return ClipVector.createCapture([prim]);
     }
   }
 
