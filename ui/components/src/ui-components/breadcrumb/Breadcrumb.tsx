@@ -549,6 +549,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
   /** @internal */
   public componentWillUnmount() {
+    // istanbul ignore else
     if (this._inputElement) {
       const activeWindow = this._inputElement.ownerDocument.defaultView;
       activeWindow && activeWindow.removeEventListener("click", this._handleClick);

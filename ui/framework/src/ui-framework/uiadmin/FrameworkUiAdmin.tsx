@@ -99,11 +99,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   /** Resolve location and parent element */
   private resolveHtmlElement(location: XAndY, htmlElement?: HTMLElement): { position: XAndY, el: HTMLElement } {
     const position = location;
-    let el = htmlElement!;
-
-    if (!htmlElement)
-      el = ConfigurableUiManager.getWrapperElement();
-
+    const el = htmlElement ?? ConfigurableUiManager.getWrapperElement();
     return { position, el };
   }
 
