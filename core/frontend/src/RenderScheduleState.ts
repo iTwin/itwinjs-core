@@ -6,17 +6,12 @@
  * @module Views
  */
 
-import { assert, CompressedId64Set, Id64, Id64String } from "@bentley/bentleyjs-core";
-import {
-  ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform,
-  UnionOfConvexClipPlaneSets, Vector3d,
-} from "@bentley/geometry-core";
-import { FeatureAppearance, RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
-import { DisplayStyleState } from "./DisplayStyleState";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Range1d, Transform } from "@bentley/geometry-core";
+import { RenderSchedule } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { AnimationBranchState, AnimationBranchStates } from "./render/GraphicBranch";
-import { RenderClipVolume } from "./render/RenderClipVolume";
 
 function formatBranchId(modelId: Id64String, branchId: number): string {
   return branchId < 0 ? "" : `${modelId}_Node_${branchId.toString()}`;

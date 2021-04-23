@@ -18,7 +18,6 @@ export interface GraphicBranchFrustum {
 }
 
 import { disposeArray, IDisposable } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
 import { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";

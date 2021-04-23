@@ -1081,6 +1081,8 @@ export abstract class Viewport implements IDisposable {
       this.setFeatureOverrideProviderChanged();
       IModelApp.requestNextAnimation();
     };
+
+    // eslint-disable-next-line deprecation/deprecation
     removals.push(settings.onScheduleScriptPropsChanged.addListener(scheduleChanged));
     removals.push(style.onRenderTimelineChanged.addListener(scheduleChanged));
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
