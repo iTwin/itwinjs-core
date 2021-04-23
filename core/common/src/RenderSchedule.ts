@@ -6,11 +6,12 @@
  * @module DisplayStyles
  */
 
-import { CompressedId64Set, Constructor, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { assert, CompressedId64Set, Constructor, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
 } from "@bentley/geometry-core";
 import { RgbColor } from "./RgbColor";
+import { FeatureAppearance, FeatureOverrides } from "./FeatureSymbology";
 
 function interpolate(start: number, end: number, fraction: number): number {
   return start + fraction * (end - start);
@@ -416,7 +417,7 @@ export namespace RenderSchedule {
       return start;
     }
 
-    public getTransform(time: number): Readonly<Transform> {
+    public getAnimationTransform(time: number): Readonly<Transform> {
       let interval;
       if (!this.transform || !(interval = this.transform.findInterval(time, scratchInterval)))
         return Transform.identity;
@@ -475,6 +476,12 @@ export namespace RenderSchedule {
       const prim = ClipPrimitive.createCapture(cps);
       return ClipVector.createCapture([prim]);
     }
+
+    protected getFeatureAppearance(visibility: number, time: number): FeatureAppearance | undefined {
+      const transparency = visibility < 100 ? (1 - visibility / 100) : undefined;
+      const rgb = this.getColor(time);
+      return undefined !== rgb || undefined !== transparency ? FeatureAppearance.fromJSON({ rgb, transparency }) : undefined;
+    }
   }
 
   export class ElementTimeline extends Timeline {
@@ -520,13 +527,27 @@ export namespace RenderSchedule {
     public get containsTransform(): boolean {
       return undefined !== this.transform;
     }
+
+    public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
+      assert(0 !== this.batchId);
+
+      const vis = this.getVisibility(time);
+      if (vis <= 0) {
+        overrides.setAnimationNodeNeverDrawn(this.batchId);
+        return;
+      }
+
+      const appearance = this.getFeatureAppearance(vis, time);
+      if (appearance)
+        overrides.overrideAnimationNode(this.batchId, appearance);
+    }
   }
 
   export class ModelTimeline extends Timeline {
     public readonly modelId: Id64String;
     public readonly realityModelUrl?: string;
     public readonly elementTimelines: ReadonlyArray<ElementTimeline>;
-    public readonly transformNodeIds: ReadonlyArray<number>;
+    public readonly transformBatchIds: ReadonlyArray<number>;
     public readonly containsFeatureOverrides: boolean;
     public readonly containsModelClipping: boolean;
     public readonly containsElementClipping: boolean;
@@ -543,7 +564,7 @@ export namespace RenderSchedule {
       let containsElementClipping = false;
       let containsTransform = false;
 
-      const transformNodeIds: number[] = [];
+      const transformBatchIds: number[] = [];
       const elementTimelines: ElementTimeline[] = [];
 
       for (const elProps of props.elementTimelines) {
@@ -555,7 +576,7 @@ export namespace RenderSchedule {
         if (el.containsTransform) {
           containsTransform = true;
           if (el.batchId)
-            transformNodeIds.push(el.batchId);
+            transformBatchIds.push(el.batchId);
         }
 
         containsFeatureOverrides ||= el.containsFeatureOverrides;
@@ -563,7 +584,7 @@ export namespace RenderSchedule {
       }
 
       this.elementTimelines = elementTimelines;
-      this.transformNodeIds = transformNodeIds;
+      this.transformBatchIds = transformBatchIds;
 
       this.containsFeatureOverrides = containsFeatureOverrides;
       this.containsElementClipping = containsElementClipping;
@@ -585,6 +606,19 @@ export namespace RenderSchedule {
 
     public findByBatchId(batchId: number): ElementTimeline | undefined {
       return this.elementTimelines.find((x) => x.batchId === batchId);
+    }
+
+    public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
+      const appearance = this.getFeatureAppearance(this.getVisibility(time), time);
+      if (appearance)
+        overrides.overrideModel(this.modelId, appearance);
+
+      for (const timeline of this.elementTimelines)
+        timeline.addSymbologyOverrides(overrides, time);
+    }
+
+    public getTransform(batchId: number, time: number): Readonly<Transform> | undefined {
+      return this.findByBatchId(batchId)?.getAnimationTransform(time);
     }
   }
 
@@ -632,8 +666,17 @@ export namespace RenderSchedule {
       return this.modelTimelines.find((x) => x.modelId === modelId);
     }
 
-    public getTransformNodeIds(modelId: Id64String): ReadonlyArray<number> | undefined {
-      return this.find(modelId)?.transformNodeIds;
+    public getTransformBatchIds(modelId: Id64String): ReadonlyArray<number> | undefined {
+      return this.find(modelId)?.transformBatchIds;
+    }
+
+    public getTransform(modelId: Id64String, batchId: number, time: number): Readonly<Transform> | undefined {
+      return this.find(modelId)?.getTransform(batchId, time);
+    }
+
+    public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
+      for (const timeline of this.modelTimelines)
+        timeline.addSymbologyOverrides(overrides, time);
     }
   }
 }
