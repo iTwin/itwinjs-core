@@ -1562,6 +1562,8 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
  * @alpha
  */
 export class RenderTimeline extends InformationRecordElement {
+  /** @internal */
+  public static get className(): string { return "RenderTimeline"; }
   /** A human-readable description of the timeline, which may be an empty string. */
   public description: string;
   /** The JSON representation of the instructions for visualizing change over time. */

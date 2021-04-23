@@ -114,7 +114,7 @@ class NoOpTimelineProvider {
 
 function createTimelineProvider(vp: Viewport): TimelineProvider {
   if (vp.displayStyle.scheduleScript)
-    return new ScheduleTimelineProvider(vp.displayStyle.scheduleScript.computeDuration());
+    return new ScheduleTimelineProvider(vp.displayStyle.scheduleScript.duration);
 
   if (vp.displayStyle.settings.analysisStyle)
     return new AnalysisTimelineProvider();
