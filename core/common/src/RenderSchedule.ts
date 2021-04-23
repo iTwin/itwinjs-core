@@ -642,6 +642,7 @@ export namespace RenderSchedule {
     public readonly containsModelClipping: boolean;
     public readonly containsElementClipping: boolean;
     public readonly containsTransform: boolean;
+    public readonly containsFeatureOverrides: boolean;
     public readonly duration: Range1d;
 
     protected constructor(props: ScriptProps) {
@@ -651,6 +652,7 @@ export namespace RenderSchedule {
       let containsModelClipping = false;
       let containsElementClipping = false;
       let containsTransform = false;
+      let containsFeatureOverrides = false;
 
       for (const modelProps of props) {
         const model = ModelTimeline.fromJSON(modelProps);
@@ -661,12 +663,14 @@ export namespace RenderSchedule {
         containsModelClipping ||= model.containsModelClipping;
         containsElementClipping ||= model.containsElementClipping;
         containsTransform ||= model.containsTransform;
+        containsFeatureOverrides ||= model.containsFeatureOverrides;
       }
 
       this.modelTimelines = modelTimelines;
       this.containsModelClipping = containsModelClipping;
       this.containsElementClipping = containsElementClipping;
       this.containsTransform = containsTransform;
+      this.containsFeatureOverrides = containsFeatureOverrides;
     }
 
     public static fromJSON(props: ScriptProps): Script | undefined {
@@ -705,18 +709,6 @@ export namespace RenderSchedule {
     public constructor(sourceId: Id64String, script: Script) {
       this.sourceId = sourceId;
       this.script = script;
-    }
-
-    public getModelAnimationId(modelId: Id64String): Id64String | undefined {
-      // Only if the script contains animation (cutting plane, transform or visibility by node ID) do we require separate tilesets for animations.
-      if (Id64.isTransient(modelId))
-        return undefined;
-
-      for (const modelTimeline of this.script.modelTimelines)
-        if (modelTimeline.modelId === modelId && (modelTimeline.containsElementClipping || modelTimeline.containsTransform))
-          return this.sourceId;
-
-      return undefined;
     }
   }
 }
