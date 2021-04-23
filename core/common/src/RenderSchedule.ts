@@ -21,63 +21,66 @@ export namespace RenderSchedule {
     Linear = 2,
   }
 
-  /**
-   * Properties included in each property entry.
-   */
+  /** JSON representation of a [[TimelineEntry]]. */
   export interface TimelineEntryProps {
-    /** The time in Unix Epoch (POSIX) seconds */
+    /** The time point in seconds in the [Unix Epoch](https://en.wikipedia.org/wiki/Unix_time). */
     time: number;
     /** Interpolation value from synchro.  2 is linear, else currently treated as step.  */
-    interpolation: Interpolation;
+    /** How to interpolate from this entry to the next in the timeline.
+     * Currently, anything other than [[Interpolation.Linear]] is treated as [[Interpolation.Step]].
+     * Additional interpolation modes may become supported in the future.
+     */
+    interpolation?: Interpolation;
   }
 
-  /**
-   * Controls the visibility (inverse of transparency).  100 is completely visible, 0 is invisible.
-   */
+  /** JSON representation of a [[VisibilityEntry]]. */
   export interface VisibilityEntryProps extends TimelineEntryProps {
-    value: number;
+    /** Visibility of the geometry from 0 (invisible) to 100 (fully visible), with intermediate values appearing increasingly less transparent.
+     * Default: 100 (fully visible).
+     */
+    value?: number;
   }
 
-  /**
-   * Controls geometry color. red, green and blue values between 0 and 255.
-   * (0,0,0) is black (1,1,1) is white.
-   */
+  /** JSON representation of a [[ColorEntry]]. */
   export interface ColorEntryProps extends TimelineEntryProps {
-    value: { red: number, green: number, blue: number };
+    /** The color applied to the geometry, with each component specified as an integer in [0, 255].
+     * e.g., (0, 0, 0) represents black and (255, 255, 255) represents white.
+     * If `undefined`, the geometry is displayed in its actual color.
+     */
+    value?: { red: number, green: number, blue: number };
   }
 
-  /**
-   * Specifies properties for cutting plane.
-   */
+  /** JSON representation of a [[CuttingPlane]]. */
   export interface CuttingPlaneProps {
     /** (x,y,z) of the plane position */
     position: number[];
     /** (x, y, z) of the plane direction (towards the clip) */
     direction: number[];
-    /**  if true geometry is completely visible (unclipped) */
+    /** If true, the clip plane is ignored and the geometry is displayed unclipped. */
     visible?: boolean;
-    /** if true the geometry is completely hidden */
+    /** If true, the clip plane is ignored and the geometry is not displayed. */
     hidden?: boolean;
   }
 
+  /** JSON representation of a [[CuttingPlaneEntry]]. */
+  export interface CuttingPlaneEntryProps extends TimelineEntryProps {
+    /** The clip plane, or undefined if the geometry is not clipped. */
+    value?: CuttingPlaneProps;
+  }
+
+  /** JSON representation of a [Transform]($geometry-core) associated with a [[TransformEntryProps]]. */
   export interface TransformProps {
     /** 3 X 4 transformation matrix containing 3 arrays of matrix rows consisting of 4 numbers each: [qx qy qz ax]
      * where the fourth columnn in each row holds the translation.
+     * `undefined` is equivalent to an identity transform.
      */
-    transform: number[][];
-  }
-  /**
-   * Timeline entry controlling transform.
-   */
-  export interface TransformEntryProps extends TimelineEntryProps {
-    value: TransformProps;
+    transform?: number[][];
   }
 
-  /**
-   * Timeline entry controlling cutting plane.
-   */
-  export interface CuttingPlaneEntryProps extends TimelineEntryProps {
-    value: CuttingPlaneProps;
+  /** JSON representation of a [[TransformEntry]]. */
+  export interface TransformEntryProps extends TimelineEntryProps {
+    /** The transformation matrix, with `undefined` corresponding to an identity matrix. */
+    value?: TransformProps;
   }
 
   /** Timeline properties (extended by element, model and reality model timelines. */
@@ -117,10 +120,14 @@ export namespace RenderSchedule {
     }
 
     public toJSON(): TimelineEntryProps {
-      return {
+      const props: TimelineEntryProps = {
         time: this.time,
-        interpolation: this.interpolation,
       };
+
+      if (this.interpolation === Interpolation.Linear)
+        props.interpolation = this.interpolation;
+
+      return props;
     }
   }
 
@@ -129,34 +136,41 @@ export namespace RenderSchedule {
 
     public constructor(props: VisibilityEntryProps) {
       super(props);
-      this.value = Math.max(0, Math.min(100, props.value));
+      if (undefined === props.value)
+        this.value = 100;
+      else
+        this.value = Math.max(0, Math.min(100, props.value));
     }
 
     public toJSON(): VisibilityEntryProps {
-      return {
-        ...super.toJSON(),
-        value: this.value,
-      };
+      const props = super.toJSON() as VisibilityEntryProps;
+      if (100 !== this.value)
+        props.value = this.value;
+
+      return props;
     }
   }
 
   export class ColorEntry extends TimelineEntry {
-    public readonly value: RgbColor;
+    public readonly value?: RgbColor;
 
     public constructor(props: ColorEntryProps) {
       super(props);
-      this.value = new RgbColor(props.value.red, props.value.green, props.value.blue);
+      if (props.value)
+        this.value = new RgbColor(props.value.red, props.value.green, props.value.blue);
     }
 
     public toJSON(): ColorEntryProps {
-      return {
-        ...super.toJSON(),
-        value: {
+      const props = super.toJSON() as ColorEntryProps;
+      if (this.value) {
+        props.value = {
           red: this.value.r,
           green: this.value.g,
           blue: this.value.b,
-        },
-      };
+        };
+      }
+
+      return props;
     }
   }
 
@@ -165,16 +179,44 @@ export namespace RenderSchedule {
 
     public constructor(props: TransformEntryProps) {
       super(props);
-      this.value = Transform.fromJSON(props.value.transform);
+      this.value = props.value ? Transform.fromJSON(props.value.transform) : Transform.createIdentity();
     }
 
     public toJSON(): TransformEntryProps {
-      return {
-        ...super.toJSON(),
-        value: {
-          transform: this.value.toRows(),
-        },
+      const props = super.toJSON() as TransformEntryProps;
+      if (!this.value.isIdentity)
+        props.value = { transform: this.value.toRows() };
+
+      return props;
+    }
+  }
+
+  export class CuttingPlane {
+    public readonly position: XYAndZ;
+    public readonly direction: XYAndZ;
+    public readonly visible: boolean;
+    public readonly hidden: boolean;
+
+    public constructor(props: CuttingPlaneProps) {
+      this.position = Point3d.fromJSON(props.position);
+      this.direction = Point3d.fromJSON(props.direction);
+      this.hidden = true === props.hidden;
+      this.visible = true === props.visible;
+    }
+
+    public toJSON(): CuttingPlaneProps {
+      const props: CuttingPlaneProps = {
+        position: [ this.position.x, this.position.y, this.position.z ],
+        direction: [ this.direction.x, this.direction.y, this.direction.z ],
       };
+
+      if (this.visible)
+        props.visible = true;
+
+      if (this.hidden)
+        props.hidden = true;
+
+      return props;
     }
   }
 
@@ -182,33 +224,18 @@ export namespace RenderSchedule {
   const planeDirection = new Vector3d();
 
   export class CuttingPlaneEntry extends TimelineEntry {
-    public readonly position: XYAndZ;
-    public readonly direction: XYAndZ;
-    public readonly visible: boolean;
-    public readonly hidden: boolean;
+    public readonly value?: CuttingPlane;
 
     public constructor(props: CuttingPlaneEntryProps) {
       super(props);
-      this.position = Point3d.fromJSON(props.value.position);
-      this.direction = Point3d.fromJSON(props.value.direction);
-      this.hidden = true === props.value.hidden;
-      this.visible = true === props.value.visible;
+      if (props.value)
+        this.value = new CuttingPlane(props.value);
     }
 
     public toJSON(): CuttingPlaneEntryProps {
-      const props: CuttingPlaneEntryProps = {
-        ...super.toJSON(),
-        value: {
-          position: [ this.position.x, this.position.y, this.position.z ],
-          direction: [ this.direction.x, this.direction.y, this.direction.z ],
-        },
-      };
-
-      if (this.visible)
-        props.value.visible = true;
-
-      if (this.hidden)
-        props.value.hidden = true;
+      const props = super.toJSON() as CuttingPlaneEntryProps;
+      if (this.value)
+        props.value = this.value.toJSON();
 
       return props;
     }
