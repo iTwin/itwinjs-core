@@ -340,18 +340,26 @@ export class IModelTransformer extends IModelExportHandler {
    * @param sourceElement The Element from the source iModel
    */
   private findMissingPredecessors(sourceElement: Element): Id64Set {
-    const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
-    predecessorIds.forEach((sourceElementId: Id64String) => {
-      if (Id64.invalid === sourceElementId) {
-        predecessorIds.delete(sourceElementId);
+    const sourcePredecessorIds: Id64Set = sourceElement.getPredecessorIds();
+    sourcePredecessorIds.forEach((sourcePredecessorId: Id64String) => {
+      if (Id64.invalid === sourcePredecessorId) {
+        sourcePredecessorIds.delete(sourcePredecessorId);
       } else {
-        const targetElementId: Id64String = this.context.findTargetElementId(sourceElementId);
-        if (Id64.isValidId64(targetElementId)) {
-          predecessorIds.delete(sourceElementId);
+        const targetPredecessorId: Id64String = this.context.findTargetElementId(sourcePredecessorId);
+        if (Id64.isValidId64(targetPredecessorId)) {
+          // a valid Id indicates that the predecessor has already been remapped
+          sourcePredecessorIds.delete(sourcePredecessorId);
+        } else {
+          const sourcePredecessor = this.sourceDb.elements.getElement(sourcePredecessorId);
+          if (!this.exporter.shouldExportElement(sourcePredecessor)) {
+            // any predecessor that has been explicitly excluded is not considered missing
+            sourcePredecessorIds.delete(sourcePredecessorId);
+            Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has an excluded predecessor (${sourcePredecessorId}) "${sourcePredecessor.getDisplayLabel()}"`);
+          }
         }
       }
     });
-    return predecessorIds;
+    return sourcePredecessorIds;
   }
 
   /** Cause the specified Element and its child Elements (if applicable) to be exported from the source iModel and imported into the target iModel.
