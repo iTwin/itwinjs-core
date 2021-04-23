@@ -136,7 +136,7 @@ export namespace RenderSchedule {
 
     public constructor(props: VisibilityEntryProps) {
       super(props);
-      if (undefined === props.value)
+      if (typeof props.value !== "number")
         this.value = 100;
       else
         this.value = Math.max(0, Math.min(100, props.value));
@@ -242,17 +242,17 @@ export namespace RenderSchedule {
   }
 
   export class Interval {
-    public i!: number;
-    public j!: number;
+    public lowerIndex!: number;
+    public upperIndex!: number;
     public fraction!: number;
 
-    public constructor(i = 0, j = 0, fraction = 0) {
-      this.init(i, j, fraction);
+    public constructor(lower = 0, upper = 0, fraction = 0) {
+      this.init(lower, upper, fraction);
     }
 
-    public init(i = 0, j = 0, fraction = 0): void {
-      this.i = i;
-      this.j = j;
+    public init(lower = 0, upper = 0, fraction = 0): void {
+      this.lower = lower;
+      this.upper = upper;
       this.fraction = fraction;
     }
   }
