@@ -149,6 +149,10 @@ export interface DisplayStyleSettingsProps {
    * @internal
    */
   scheduleScript?: RenderSchedule.ModelTimelineProps[];
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view.
+   * @beta
+   */
+  renderTimeline?: Id64String;
   /** The point in time reflected by the view, in UNIX seconds.
    * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    * @beta
@@ -408,6 +412,11 @@ export class DisplayStyleSettings {
    * @internal
    */
   public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>();
+
+  /** Event raised just prior to assignment to the [[renderTimeline]] property.
+   * @beta
+   */
+  public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
   /** Event raised just prior to assignment to the [[timePoint]] property.
    * @beta
    */
@@ -609,6 +618,17 @@ export class DisplayStyleSettings {
   public synchMapImagery() {
     this.onMapImageryChanged.raiseEvent(this._mapImagery);
     this._json.mapImagery = this._mapImagery.toJSON();
+  }
+
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view. 
+   * @beta
+   */
+  public get renderTimeline(): Id64String | undefined {
+    return this._json.renderTimeline;
+  }
+  public set renderTimeline(id: Id64String | undefined) {
+    this.onRenderTimelineChanged.raiseEvent(id);
+    this._json.renderTimeline = id;
   }
 
   /** @internal @deprecated */
@@ -881,6 +901,9 @@ export class DisplayStyleSettings {
       if (this.scheduleScriptProps)
         props.scheduleScript = [...this.scheduleScriptProps];
 
+      if (this.renderTimeline)
+        props.renderTimeline = this.renderTimeline;
+
       props.subCategoryOvr = this._json.subCategoryOvr ? [...this._json.subCategoryOvr] : [];
       props.modelOvr = this._json.modelOvr ? [...this._json.modelOvr] : [];
       props.excludedElements = this._excludedElements.ids;
@@ -945,6 +968,9 @@ export class DisplayStyleSettings {
 
     if (overrides.scheduleScript)
       this.scheduleScriptProps = [...overrides.scheduleScript];
+
+    if (overrides.renderTimeline)
+      this.renderTimeline = overrides.renderTimeline;
 
     if (overrides.subCategoryOvr) {
       this._json.subCategoryOvr = [...overrides.subCategoryOvr];
