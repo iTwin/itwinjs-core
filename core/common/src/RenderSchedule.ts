@@ -614,8 +614,10 @@ export namespace RenderSchedule {
       return undefined !== this.visibility || undefined !== this.color;
     }
 
-    /** @internal because it also returns true if color or visibility are affected which have nothing to do with clipping. */
-    public get containsClipping(): boolean {
+    /** If true, applying this timeline requires special tiles to be generated in which groups of elements are batched into nodes.
+     * @internal
+     */
+    public get requiresBatching(): boolean {
       if (this.cuttingPlane)
         return true;
 
@@ -657,8 +659,10 @@ export namespace RenderSchedule {
     public readonly containsFeatureOverrides: boolean;
     /** True if this timeline applies clipping to the model. */
     public readonly containsModelClipping: boolean;
-    /** True if this timeline applies clipping to groups of elements. */
-    public readonly containsElementClipping: boolean;
+    /** If true, applying this timeline requires special tiles to be generated in which groups of elements are batched into nodes.
+     * @internal
+     */
+    public readonly requiresBatching: boolean;
     /** True if this timeline affects the position, orientation, or scale of the geometry. */
     public readonly containsTransform: boolean;
 
@@ -670,7 +674,7 @@ export namespace RenderSchedule {
       this.containsModelClipping = undefined !== this.cuttingPlane;
 
       let containsFeatureOverrides = undefined !== this.visibility || undefined !== this.color;
-      let containsElementClipping = false;
+      let requiresBatching = false;
       let containsTransform = false;
 
       const transformBatchIds: number[] = [];
@@ -689,14 +693,14 @@ export namespace RenderSchedule {
         }
 
         containsFeatureOverrides ||= el.containsFeatureOverrides;
-        containsElementClipping ||= el.containsClipping;
+        requiresBatching ||= el.requiresBatching;
       }
 
       this.elementTimelines = elementTimelines;
       this.transformBatchIds = transformBatchIds;
 
       this.containsFeatureOverrides = containsFeatureOverrides;
-      this.containsElementClipping = containsElementClipping;
+      this.requiresBatching = requiresBatching;
       this.containsTransform = containsTransform;
     }
 
@@ -745,8 +749,10 @@ export namespace RenderSchedule {
     public readonly modelTimelines: ReadonlyArray<ModelTimeline>;
     /** True if this script applies clipping to any models. */
     public readonly containsModelClipping: boolean;
-    /** True if this script applies clipping to any groups of elements. */
-    public readonly containsElementClipping: boolean;
+    /** If true, applying this timeline requires special tiles to be generated in which groups of elements are batched into nodes.
+     * @internal
+     */
+    public readonly requiresBatching: boolean;
     /** True if this script affects the position, orientation, or scale of the geometry. */
     public readonly containsTransform: boolean;
     /** True if this script affects the color or transparency of the geometry. */
@@ -759,7 +765,7 @@ export namespace RenderSchedule {
 
       const modelTimelines: ModelTimeline[] = [];
       let containsModelClipping = false;
-      let containsElementClipping = false;
+      let requiresBatching = false;
       let containsTransform = false;
       let containsFeatureOverrides = false;
 
@@ -770,15 +776,15 @@ export namespace RenderSchedule {
         this.duration.extendRange(model.duration);
 
         containsModelClipping ||= model.containsModelClipping;
-        containsElementClipping ||= model.containsElementClipping;
+        requiresBatching ||= model.requiresBatching;
         containsTransform ||= model.containsTransform;
         containsFeatureOverrides ||= model.containsFeatureOverrides;
       }
 
       this.modelTimelines = modelTimelines;
       this.containsModelClipping = containsModelClipping;
-      this.containsElementClipping = containsElementClipping;
       this.containsTransform = containsTransform;
+      this.requiresBatching = requiresBatching || this.containsTransform;
       this.containsFeatureOverrides = containsFeatureOverrides;
     }
 

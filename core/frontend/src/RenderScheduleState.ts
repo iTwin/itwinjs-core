@@ -34,7 +34,7 @@ export class RenderScheduleState extends RenderSchedule.ScriptReference {
   }
 
   public getAnimationBranches(time: number): AnimationBranchStates | undefined {
-    if (!this.script.containsModelClipping && !this.script.containsElementClipping)
+    if (!this.script.containsModelClipping && !this.script.requiresBatching)
       return undefined;
 
     const branches = new Map<string, AnimationBranchState>();
@@ -71,7 +71,7 @@ export class RenderScheduleState extends RenderSchedule.ScriptReference {
       return undefined;
 
     for (const modelTimeline of this.script.modelTimelines)
-      if (modelTimeline.modelId === modelId && (modelTimeline.containsElementClipping || modelTimeline.containsTransform))
+      if (modelTimeline.modelId === modelId && modelTimeline.requiresBatching)
         return this.sourceId;
 
     return undefined;

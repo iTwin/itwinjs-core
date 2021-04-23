@@ -247,12 +247,22 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return this._scheduleState;
   }
 
+  /** This is only used by [RealityTransitionTool]($frontend-devtools). It basically can only work if the script contains nothing that requires special tiles to be generated,
+   * or if the script only applies to reality models. Special tiles are required 
+   * so if the view contains any persistent models, we're going to request new tiles for them using a non-existent sourceId. I'm not sure if that will produce nothing, or
+   * just un-
+  public setScheduleState(state: RenderScheduleState | undefined): void {
+    this._scheduleState = state;
+    this.settings.scheduleScriptProps = state?.script.toJSON();
+    this.onRenderTimelineChanged.raiseEvent();
+  }
+
   /** @beta */
   public async changeRenderTimelineId(newTimeline: Id64String | undefined): Promise<void> {
     if (this.settings.renderTimeline === newTimeline)
       return;
 
-    // ###TODO
+    return this.loadScheduleState();
   }
 
   /** @internal */
