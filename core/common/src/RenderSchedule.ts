@@ -21,14 +21,22 @@ function interpolateRgb(start: RgbColor, end: RgbColor, fraction: number): RgbCo
   return new RgbColor(interpolate(start.r, end.r, fraction), interpolate(start.g, end.g, fraction), interpolate(start.b, end.b, fraction));
 }
 
-/**
- * A schedule (or script)  for controlling the visibility, position and symbology of a series of elements over a period of time.
- * A schedule script is exposed through [[DisplayStyleSettingsProps]].
+/** Namespace containing types that collectively define a script that animates the contents of a view by adjusting the visibility, position,
+ * and/or symbology of groups of elements over time. A [[RenderSchedule.Script]] is hosted by a [RenderTimeline]($backend) element. The script
+ * can be associated with a [DisplayStyleState]($frontend) by way of its [[DisplayStyleSettings.renderTimeline]] property.
  * @beta
  */
 export namespace RenderSchedule {
+  /** Defines how two interpolate between two entries in a [[Timeline]].
+   * @note Currently only Linear and Step are supported. Any other value is treated as Step.
+   * @see [[TimelineEntry]].
+   */
   export enum Interpolation {
+    /** Each timeline entry's value is discrete - the timeline jumps from one entry's value directly to another. */
     Step = 1,
+    /** Given two entries on the timeline and a timepoint in between them, linearly interpolate based on the timepoint's distance between the
+     * two entries.
+     */
     Linear = 2,
   }
 
@@ -36,8 +44,7 @@ export namespace RenderSchedule {
   export interface TimelineEntryProps {
     /** The time point in seconds in the [Unix Epoch](https://en.wikipedia.org/wiki/Unix_time). */
     time: number;
-    /** Interpolation value from synchro.  2 is linear, else currently treated as step.  */
-    /** How to interpolate from this entry to the next in the timeline.
+    /** How to interpolate from this entry to the next entry in the timeline.
      * Currently, anything other than [[Interpolation.Linear]] is treated as [[Interpolation.Step]].
      * Additional interpolation modes may become supported in the future.
      */
@@ -63,7 +70,7 @@ export namespace RenderSchedule {
 
   /** JSON representation of a [[CuttingPlane]]. */
   export interface CuttingPlaneProps {
-    /** (x,y,z) of the plane position */
+    /** (x,y,z) of a point on the plane. */
     position: number[];
     /** (x, y, z) of the plane direction (towards the clip) */
     direction: number[];
@@ -82,17 +89,17 @@ export namespace RenderSchedule {
   /** JSON representation of a [Transform]($geometry-core) associated with a [[TransformEntryProps]]. */
   export interface TransformProps {
     /** (x, y, z) of position  - applied after rotation.
-     * This value is preserved but unused by iTwin.js.
+     * This property is preserved but unused by iTwin.js.
      * @internal
      */
     position?: number[];
     /** quaternion representing rotation.
-     * This value is preserved but unused by iTwin.js.
+     * This property is preserved but unused by iTwin.js.
      * @internal
      */
     orientation?: number[];
     /** x, y, z) of pivot - applied before rotation.
-     * This value is preserved but unused by iTwin.js.
+     * This property is preserved but unused by iTwin.js.
      * @internal
      */
     pivot?: number[];
@@ -109,35 +116,53 @@ export namespace RenderSchedule {
     value?: TransformProps;
   }
 
-  /** Timeline properties (extended by element, model and reality model timelines. */
+  /** JSON representation of a [[Timeline]]. */
   export interface TimelineProps {
+    /** Timeline controlling the visibility of the associated geometry. */
     visibilityTimeline?: VisibilityEntryProps[];
+    /** Timeline controlling the colors of the associated geometry. */
     colorTimeline?: ColorEntryProps[];
+    /** Timeline applying transforms to the associated geometry. */
     transformTimeline?: TransformEntryProps[];
+    /** Timeline applying [ClipVector]($geometry-core)s to the associated geometry. */
     cuttingPlaneTimeline?: CuttingPlaneEntryProps[];
   }
 
-  /** Animation timeline entries that apply to one or more elements. */
+  /** JSON representation of an [[ElementTimeline]]. */
   export interface ElementTimelineProps extends TimelineProps {
+    /** A positive integer that uniquely identifies this timeline among all element timelines in the [[Script]]. */
     batchId: number;
     /** The Ids of the elements to which this timeline applies.
+     * @note Prefer the compressed representation - lists of element Ids can be comparatively enormous.
      * @note For a [[DisplayStyleSettingsProps]] associated with a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend),
-     * this property will be an empty `CompressedId64Set`. They are omitted to conserve bandwidth and memory - they are not needed for display on the frontend.
+     * this property will be an empty `CompressedId64Set`. They are omitted to conserve bandwidth and memory because they are not needed for display on the frontend.
      */
     elementIds: Id64String[] | CompressedId64Set;
   }
 
-  /** Animation timeline for a single model.  */
+  /** JSON representation of a [[ModelTimeline]]. */
   export interface ModelTimelineProps extends TimelineProps {
+    /** The Id of the [GeometricModelState]($frontend) to which the timeline applies. */
     modelId: Id64String;
+    /** @alpha */
     realityModelUrl?: string;     // defined only for "context" reality models (attached through display style)
+    /** Timelines affecting groups of elements. */
     elementTimelines: ElementTimelineProps[];
   }
 
+  /** JSON representation of a [[Script]]. */
   export type ScriptProps = ModelTimelineProps[];
 
+  /** Describes the value of some property at a specific point along a [[Timeline]].
+   * @see [[VisibilityEntry]]
+   * @see [[ColorEntry]]
+   * @see [[TransformEntry]]
+   * @see [[CuttingPlaneEntry]]
+   */
   export class TimelineEntry {
+    /** The time point in seconds in the [Unix Epoch](https://en.wikipedia.org/wiki/Unix_time). */
     public readonly time: number;
+    /** How to interpolate from this entry to the next entry in the timeline. */
     public readonly interpolation: Interpolation;
 
     public constructor(props: TimelineEntryProps) {
@@ -157,7 +182,11 @@ export namespace RenderSchedule {
     }
   }
 
+  /** A timeline entry that controls the visibility of the associated geometry. */
   export class VisibilityEntry extends TimelineEntry {
+    /** The visibility of the geometry at this point on the timeline, in the range [0, 100] where 0 is completely invisible, 100 is completely visible,
+     * and values in between indicate increasing opacity.
+     */
     public readonly value: number;
 
     public constructor(props: VisibilityEntryProps) {
@@ -177,7 +206,9 @@ export namespace RenderSchedule {
     }
   }
 
+  /** A timeline entry controlling the color of the affected geometry. */
   export class ColorEntry extends TimelineEntry {
+    /** If defined, the color in which to draw the geometry. If undefined, the geometry is drawn in its actual color. */
     public readonly value: RgbColor | undefined;
 
     public constructor(props: ColorEntryProps) {
@@ -200,15 +231,19 @@ export namespace RenderSchedule {
     }
   }
 
+  /** A timeline entry that applies rotation, scaling, and/or translation to the affected geometry. */
   export class TransformEntry extends TimelineEntry {
+    /** The transform matrix to be applied to the geometry. */
     public readonly value: Readonly<Transform>;
     private readonly _value?: TransformProps;
 
     public constructor(props: TransformEntryProps) {
       super(props);
       this.value = props.value ? Transform.fromJSON(props.value.transform) : Transform.identity;
-      if (props.value)
+      if (props.value) {
+        // Preserve the other properties for toJSON(). We don't use them but other apps could.
         this._value = { ...props.value };
+      }
     }
 
     public toJSON(): TransformEntryProps {
@@ -220,10 +255,15 @@ export namespace RenderSchedule {
     }
   }
 
+  /** Defines a [ClippingPlane]($geometry-core) associated with a [[CuttingPlaneEntry]]. */
   export class CuttingPlane {
+    /** A point on the plane. */
     public readonly position: XYAndZ;
+    /** The direction perpendicular to the plane pointing toward the clip. */
     public readonly direction: XYAndZ;
+    /** If true, the clip plane is ignored and the geometry is never clipped. */
     public readonly visible: boolean;
+    /** If true, the clip plane is ignored and the geometry is always clipped. */
     public readonly hidden: boolean;
 
     public constructor(props: CuttingPlaneProps) {
@@ -249,7 +289,9 @@ export namespace RenderSchedule {
     }
   }
 
+  /** A timeline entry that applies a [ClipPlane]($geometry-core) to the affected geometry. */
   export class CuttingPlaneEntry extends TimelineEntry {
+    /** The definition of the [ClipPlane]($geometry-core), or undefined if this entry applies no clipping. */
     public readonly value: CuttingPlane | undefined;
 
     public constructor(props: CuttingPlaneEntryProps) {
@@ -267,9 +309,15 @@ export namespace RenderSchedule {
     }
   }
 
+  /** Identifies a fractional position along a [[Timeline]] between any two [[TimelineEntry]]'s within a [[TimelineEntryList]].
+   * @internal
+   */
   export class Interval {
+    /** The index of the first timeline entry within the list. */
     public lowerIndex!: number;
+    /** The index of the second timeline entry within the list. */
     public upperIndex!: number;
+    /** The normalized distance between the two timeline entries. */
     public fraction!: number;
 
     public constructor(lower = 0, upper = 0, fraction = 0) {
@@ -283,8 +331,14 @@ export namespace RenderSchedule {
     }
   }
 
-  export class TimelineEntryList<T extends TimelineEntry & { readonly value: V }, P extends TimelineEntryProps, V> {
+  /** A list of the [[TimelineEntry]] objects within a [[Timeline]]. The type parameters are:
+   *  - T, a subclass of TimelineEntry with a `value` property specifying the value of the property controlled by the timeline at that entry's time point.
+   *  - P, the JSON representation from which T is to be constructed.
+   *  - V, the type of `T.value`.
+   */
+  export class TimelineEntryList<T extends TimelineEntry & { readonly value: V }, P extends TimelineEntryProps, V> implements Iterable<T> {
     private readonly _entries: ReadonlyArray<T>;
+    /** The total time period represented by the entries in this list. */
     public readonly duration: Range1d;
 
     public constructor(props: P[], ctor: Constructor<T>) {
@@ -296,18 +350,22 @@ export namespace RenderSchedule {
       });
     }
 
+    /** The number of entries in the list. */
     public get length(): number {
       return this._entries.length;
     }
 
+    /** An iterator over the entries in the list. */
     public [Symbol.iterator](): Iterator<T> {
       return this._entries[Symbol.iterator]();
     }
 
+    /** Look up an entry by its position in the list. */
     public getEntry(index: number): T | undefined {
       return this._entries[index];
     }
 
+    /** Look up the value of an entry by its position in the list. */
     public getValue(index: number): V | undefined {
       return this.getEntry(index)?.value;
     }
@@ -316,6 +374,7 @@ export namespace RenderSchedule {
       return this._entries.map((x) => x.toJSON() as P);
     }
 
+    /** @internal */
     public findInterval(time: number, interval?: Interval): Interval | undefined {
       if (this.length === 0)
         return undefined;
@@ -353,23 +412,36 @@ export namespace RenderSchedule {
 
   const scratchInterval = new Interval();
 
+  /** A list of [[VisibilityEntry]]'s within a [[Timeline]]. */
   export class VisibilityTimelineEntries extends TimelineEntryList<VisibilityEntry, VisibilityEntryProps, number> {
+    /** Returns the visibility value for the entry at the specified position in the list, or 100 (fully-visible) if no such entry exists. */
     public getValue(index: number): number {
       return super.getValue(index) ?? 100;
     }
   }
 
+  /** A list of [[TransformEntry]]'s within a [[Timeline]]. */
   export class TransformTimelineEntries extends TimelineEntryList<TransformEntry, TransformEntryProps, Readonly<Transform>> {
+    /** Returns the transform for the entry at the specified position in the list, or an identity transform if no such entry exists. */
     public getValue(index: number): Readonly<Transform> {
       return super.getValue(index) ?? Transform.identity;
     }
   }
 
+  /** Specifies how to animate a set of geometry over time within a [[Script]].
+   * A [[Script]] can contain any number of [[Timeline]]s, each affecting different sets of geometry.
+   * @see [[ElementTimeline]] and [[ModelTimeline]].
+   */
   export class Timeline {
+    /** Sequence controlling the visibility of the geometry. */
     public readonly visibility?: VisibilityTimelineEntries;
+    /** Sequence controlling the color of the geometry. */
     public readonly color?: TimelineEntryList<ColorEntry, ColorEntryProps, RgbColor | undefined>;
+    /** Sequence controlling the position, orientation, and/or scale of the geometry. */
     public readonly transform?: TransformTimelineEntries;
+    /** Sequence controlling how the geometry is clipped. */
     public readonly cuttingPlane?: TimelineEntryList<CuttingPlaneEntry, CuttingPlaneEntryProps, CuttingPlane | undefined>;
+    /** The total time period represented by this timeline. */
     public readonly duration: Range1d;
 
     public constructor(props: TimelineProps) {
@@ -405,6 +477,7 @@ export namespace RenderSchedule {
       };
     }
 
+    /** Get the visibility of the geometry at the specified time point. */
     public getVisibility(time: number): number {
       let interval;
       if (!this.visibility || !(interval = this.visibility.findInterval(time, scratchInterval)))
@@ -417,6 +490,7 @@ export namespace RenderSchedule {
       return visibility;
     }
 
+    /** Get the color of the geometry at the specified time point, or undefined if the color is not overridden at that time point. */
     public getColor(time: number): RgbColor | undefined {
       let interval;
       if (!this.color || !(interval = this.color.findInterval(time, scratchInterval)))
@@ -432,6 +506,7 @@ export namespace RenderSchedule {
       return start;
     }
 
+    /** Get the transform applied to the geometry at the specified time point. */
     public getAnimationTransform(time: number): Readonly<Transform> {
       let interval;
       if (!this.transform || !(interval = this.transform.findInterval(time, scratchInterval)))
@@ -455,6 +530,7 @@ export namespace RenderSchedule {
       return transform;
     }
 
+    /** Get the clipping plane applied to the geometry at the specified time point, or undefined if the geometry is unclipped at that time point. */
     public getCuttingPlane(time: number): Plane3dByOriginAndUnitNormal | undefined {
       let interval;
       if (!this.cuttingPlane || !(interval = this.cuttingPlane.findInterval(time, scratchInterval)))
@@ -481,6 +557,7 @@ export namespace RenderSchedule {
       return Plane3dByOriginAndUnitNormal.create(position, direction);
     }
 
+    /** Create a ClipVector from the [[CuttingPlane]] applied to the geometry at the specified time point, if any. */
     public getClipVector(time: number): ClipVector | undefined {
       const plane = this.getCuttingPlane(time);
       if (!plane)
@@ -492,6 +569,7 @@ export namespace RenderSchedule {
       return ClipVector.createCapture([prim]);
     }
 
+    /** @internal */
     protected getFeatureAppearance(visibility: number, time: number): FeatureAppearance | undefined {
       const transparency = visibility < 100 ? (1 - visibility / 100) : undefined;
       const rgb = this.getColor(time);
@@ -499,7 +577,9 @@ export namespace RenderSchedule {
     }
   }
 
+  /** Specifies how to animate the geometry belonging to a set of [GeometricElement]($backend)s as part of a [[Script]]. */
   export class ElementTimeline extends Timeline {
+    /** A positive integer that uniquely identififes this timeline among all ElementTimelines in the [[Script]]. */
     public readonly batchId: number;
     private readonly _elementIds: Id64String[] | CompressedId64Set;
 
@@ -521,6 +601,7 @@ export namespace RenderSchedule {
       };
     }
 
+    /** The Ids of the elements controlled by this timeline. */
     public get elementIds(): Iterable<Id64String> {
       if (typeof this._elementIds === "string")
         return CompressedId64Set.iterable(this._elementIds);
@@ -528,10 +609,12 @@ export namespace RenderSchedule {
         return this._elementIds;
     }
 
+    /** True if this timeline affects the color or transparency of the elements. */
     public get containsFeatureOverrides(): boolean {
       return undefined !== this.visibility || undefined !== this.color;
     }
 
+    /** @internal because it also returns true if color or visibility are affected which have nothing to do with clipping. */
     public get containsClipping(): boolean {
       if (this.cuttingPlane)
         return true;
@@ -539,10 +622,12 @@ export namespace RenderSchedule {
       return this.batchId !== 0 && (undefined !== this.color || undefined !== this.visibility);
     }
 
+    /** True if this timeline affects the position, orientation, or scale of the elements. */
     public get containsTransform(): boolean {
       return undefined !== this.transform;
     }
 
+    /** @internal */
     public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
       assert(0 !== this.batchId);
 
@@ -558,14 +643,23 @@ export namespace RenderSchedule {
     }
   }
 
+  /** Specifies how to animate the geometry within a [GeometricModel]($backend) as part of a [[Script]]. */
   export class ModelTimeline extends Timeline {
+    /** The Id of the [GeometricModel]($backend) to be animated. */
     public readonly modelId: Id64String;
+    /** @internal */
     public readonly realityModelUrl?: string;
+    /** Timelines specifying how to animate groups of [GeometricElement]($backend)s within the model. */
     public readonly elementTimelines: ReadonlyArray<ElementTimeline>;
+    /** @internal */
     public readonly transformBatchIds: ReadonlyArray<number>;
+    /** True if this timeline affects the color or transparency of the geometry. */
     public readonly containsFeatureOverrides: boolean;
+    /** True if this timeline applies clipping to the model. */
     public readonly containsModelClipping: boolean;
+    /** True if this timeline applies clipping to groups of elements. */
     public readonly containsElementClipping: boolean;
+    /** True if this timeline affects the position, orientation, or scale of the geometry. */
     public readonly containsTransform: boolean;
 
     private constructor(props: ModelTimelineProps) {
@@ -619,10 +713,12 @@ export namespace RenderSchedule {
       };
     }
 
+    /** Look up the element timeline with the specified batch Id. */
     public findByBatchId(batchId: number): ElementTimeline | undefined {
       return this.elementTimelines.find((x) => x.batchId === batchId);
     }
 
+    /** @internal */
     public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
       const appearance = this.getFeatureAppearance(this.getVisibility(time), time);
       if (appearance)
@@ -632,17 +728,30 @@ export namespace RenderSchedule {
         timeline.addSymbologyOverrides(overrides, time);
     }
 
+    /** Obtain the transform applied to the model at the specified time point, if any. */
     public getTransform(batchId: number, time: number): Readonly<Transform> | undefined {
       return this.findByBatchId(batchId)?.getAnimationTransform(time);
     }
   }
 
+  /** Specifies how to animate the contents of a [ViewState]($frontend) over time. The script contains any number of [[ModelTimeline]]s, each describing how
+   * to animate one of the models in the view.
+   * @see [RenderTimeline]($backend) to create an [Element]($backend) to host a script.
+   * @see [[DisplayStyleSettings.renderTimeline]] to associate a [RenderTimeline]($backend)'s script with a [DisplayStyle]($backend).
+   * @see [DisplayStyleState.scheduleScript]($frontend) to obtain the script associated with a display style.
+   */
   export class Script {
+    /** Timelines specifying how to animate individual models within the view. */
     public readonly modelTimelines: ReadonlyArray<ModelTimeline>;
+    /** True if this script applies clipping to any models. */
     public readonly containsModelClipping: boolean;
+    /** True if this script applies clipping to any groups of elements. */
     public readonly containsElementClipping: boolean;
+    /** True if this script affects the position, orientation, or scale of the geometry. */
     public readonly containsTransform: boolean;
+    /** True if this script affects the color or transparency of the geometry. */
     public readonly containsFeatureOverrides: boolean;
+    /** The total time period over which this script animates. */
     public readonly duration: Range1d;
 
     protected constructor(props: Readonly<ScriptProps>) {
@@ -684,26 +793,37 @@ export namespace RenderSchedule {
       return this.modelTimelines.map((x) => x.toJSON());
     }
 
+    /** Look up the timeline that animates the specified model, if any. */
     public find(modelId: Id64String): ModelTimeline | undefined {
       return this.modelTimelines.find((x) => x.modelId === modelId);
     }
 
+    /** @internal */
     public getTransformBatchIds(modelId: Id64String): ReadonlyArray<number> | undefined {
       return this.find(modelId)?.transformBatchIds;
     }
 
+    /** @internal */
     public getTransform(modelId: Id64String, batchId: number, time: number): Readonly<Transform> | undefined {
       return this.find(modelId)?.getTransform(batchId, time);
     }
 
+    /** @internal */
     public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
       for (const timeline of this.modelTimelines)
         timeline.addSymbologyOverrides(overrides, time);
     }
   }
 
+  /** A reference to a [[Script]] indicating the persistent [Element]($backend) from which the script was obtained.
+   * Prior to the introduction of the [RenderTimeline]($backend) class in version 01.00.13 of the BisCore ECSchema, scripts were
+   * stored in the JSON properties of [DisplayStyle]($backend) elements. Now they are stored in the Script property of a RenderTimeline element.
+   * The `sourceId` can refer to either a DisplayStyle or a RenderTimeline.
+   */
   export class ScriptReference {
+    /** The Id of the [RenderTimeline]($backend) or [DisplayStyle]($backend) element that hosts the script. */
     public readonly sourceId: Id64String;
+    /** The script. */
     public readonly script: Script;
 
     public constructor(sourceId: Id64String, script: Script) {

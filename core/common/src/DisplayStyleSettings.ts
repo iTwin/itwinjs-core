@@ -901,7 +901,7 @@ export class DisplayStyleSettings {
         props.analysisFraction = this.analysisFraction;
       }
 
-    // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line deprecation/deprecation
       if (this.scheduleScriptProps) {
         // eslint-disable-next-line deprecation/deprecation
         props.scheduleScript = [...this.scheduleScriptProps];

@@ -427,8 +427,11 @@ beta;RenderMaterial
 beta;RenderMaterialProps 
 public;RenderMode
 beta;RenderSchedule
+internal;Interval
 beta;class RenderTexture 
 beta;RenderTexture
+beta;RenderTimelineLoadProps
+alpha;RenderTimelineProps 
 public;RepositoryLinkProps 
 beta;RequestNewBriefcaseProps
 public;ResponseLike 
