@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../../IModelApp";
@@ -18,7 +17,6 @@ import {
 } from "../../tile/internal";
 import { ScreenViewport, Viewport } from "../../Viewport";
 import { createBlankConnection } from "../createBlankConnection";
-import { UNIT_SCHEMA_STRING } from "../public/assets/UnitSchema/UnitSchema";
 
 describe("TileAdmin", () => {
   describe("memory limit configuration", () => {
@@ -261,9 +259,7 @@ describe("TileAdmin", () => {
     let imodel2: IModelConnection;
 
     beforeEach(async () => {
-      const schemaContext = new SchemaContext();
-      Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-      await MockRender.App.startup({ schemaContext });
+      await MockRender.App.startup();
       IModelApp.stopEventLoop();
       imodel1 = createBlankConnection("imodel1");
       imodel2 = createBlankConnection("imodel2");

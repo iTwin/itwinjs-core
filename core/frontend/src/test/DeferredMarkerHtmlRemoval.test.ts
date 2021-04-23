@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { ScreenViewport } from "../Viewport";
 import { Marker } from "../Marker";
 import { Decorator } from "../ViewManager";
@@ -12,13 +11,10 @@ import { IModelApp } from "../IModelApp";
 import { SpatialViewState } from "../SpatialViewState";
 import { BlankConnection } from "../IModelConnection";
 import { Cartographic } from "@bentley/imodeljs-common";
-import { UNIT_SCHEMA_STRING } from "./public/assets/UnitSchema/UnitSchema";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    await IModelApp.startup({ schemaContext });
+    await IModelApp.startup();
   });
   afterEach(async () => {
     if (IModelApp.initialized) await IModelApp.shutdown();

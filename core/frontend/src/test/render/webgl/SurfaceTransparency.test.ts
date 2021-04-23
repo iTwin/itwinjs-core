@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { Point2d, Point3d, Range3d, Vector3d } from "@bentley/geometry-core";
 import {
   ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
@@ -21,7 +20,6 @@ import { Target } from "../../../render/webgl/Target";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { ScreenViewport } from "../../../Viewport";
 import { createBlankConnection } from "../../createBlankConnection";
-import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
   const args = new MeshArgs();
@@ -62,9 +60,7 @@ describe("Surface transparency", () => {
   document.body.appendChild(viewDiv);
 
   before(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    await IModelApp.startup({ schemaContext });
+    await IModelApp.startup();
 
     imodel = createBlankConnection();
 

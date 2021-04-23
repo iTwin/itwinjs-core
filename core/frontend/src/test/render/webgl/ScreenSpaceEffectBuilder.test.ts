@@ -4,17 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, UniformType, VaryingType } from "../../../render/ScreenSpaceEffectBuilder";
 import { System } from "../../../render/webgl/System";
-import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 describe("ScreenSpaceEffectBuilder", () => {
   before(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    await IModelApp.startup({ schemaContext });
+    await IModelApp.startup();
   });
 
   after(async () => {

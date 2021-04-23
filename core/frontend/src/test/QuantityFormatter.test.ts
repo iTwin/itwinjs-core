@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { Parser } from "@bentley/imodeljs-quantity";
+import { BasicUnitsProvider } from "../quantity-formatting/BasicUnitsProvider";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
-import { UNIT_SCHEMA_STRING } from "./public/assets/UnitSchema/UnitSchema";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {
   const tol: number = undefined !== tolerance ? tolerance : 0.1e-6;
@@ -56,9 +55,7 @@ describe("Quantity formatter", async () => {
   });
 
   beforeEach(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    quantityFormatter = new QuantityFormatter(schemaContext);
+    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider());
     await quantityFormatter.onInitialized();
   });
 
@@ -484,9 +481,7 @@ describe("Quantity formatter", async () => {
 describe("Test Custom QuantityType", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    quantityFormatter = new QuantityFormatter(schemaContext);
+    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider());
     await quantityFormatter.onInitialized();
   });
 
@@ -520,9 +515,7 @@ describe("Test Custom QuantityType", async () => {
 describe("Test Formatted Quantities", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    quantityFormatter = new QuantityFormatter(schemaContext);
+    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider());
     await quantityFormatter.onInitialized();
   });
 
@@ -543,7 +536,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8399 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft (US Survey)");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
-    await testFormatting(QuantityType.Volume, 1000.0, "35314.6667 ft³");
+    await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
 
     await quantityFormatter.setActiveUnitSystem("metric");
     await testFormatting(QuantityType.Length, 1000.0, `1000 m`);
@@ -566,18 +559,17 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8399 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
-    await testFormatting(QuantityType.Volume, 1000.0, "35314.6667 ft³");
+    await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
 
-    // Have to be commented out for now, need to add CUB_US_SURVEY_FT
-    // await quantityFormatter.setActiveUnitSystem("usSurvey");
-    // await testFormatting(QuantityType.Length, 1000.0, `3280.8333 ft`);
-    // await testFormatting(QuantityType.Angle, Math.PI / 2, `90°0'0"`);
-    // await testFormatting(QuantityType.Area, 1000.0, "10763.8674 ft²");
-    // await testFormatting(QuantityType.Coordinate, 1000.0, "3280.83 ft");
-    // await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0.0"`);
-    // await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8333 ft");
-    // await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
-    // await testFormatting(QuantityType.Stationing, 1000.0, "32+80.83");
-    // await testFormatting(QuantityType.Volume, 1000.0, "35314.4548 ft³");
+    await quantityFormatter.setActiveUnitSystem("usSurvey");
+    await testFormatting(QuantityType.Length, 1000.0, `3280.8333 ft`);
+    await testFormatting(QuantityType.Angle, Math.PI / 2, `90°0'0"`);
+    await testFormatting(QuantityType.Area, 1000.0, "10763.8674 ft²");
+    await testFormatting(QuantityType.Coordinate, 1000.0, "3280.83 ft");
+    await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0.0"`);
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8333 ft");
+    await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
+    await testFormatting(QuantityType.Stationing, 1000.0, "32+80.83");
+    await testFormatting(QuantityType.Volume, 1000.0, "35314.4548 ft³");
   });
 });

@@ -3,13 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { IModelApp } from "../../../IModelApp";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { ClipStack } from "../../../render/webgl/ClipStack";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
-import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 for (let i = 0; i < 2; i++) {
   let renderSys: RenderSystem.Options | undefined;
@@ -29,9 +27,7 @@ for (let i = 0; i < 2; i++) {
 
   describe(`ClipStack (${useFloat ? "floating point texture" : "encoded floats"})`, async () => {
     before(async () => {
-      const schemaContext = new SchemaContext();
-      Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-      await IModelApp.startup({ renderSys,  schemaContext });
+      await IModelApp.startup({ renderSys });
     });
 
     after(async () => {

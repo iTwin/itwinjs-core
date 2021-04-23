@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { AttributeMap } from "../../../render/webgl/AttributeMap";
@@ -16,7 +15,6 @@ import { Target } from "../../../render/webgl/Target";
 import { SingularTechnique } from "../../../render/webgl/Technique";
 import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 import { TechniqueId } from "../../../render/webgl/TechniqueId";
-import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
@@ -56,11 +54,8 @@ describe("Techniques", () => {
     const useWebGL2 = webGLVersion === 2;
     describe(`WebGL ${webGLVersion}`, () => {
       before(async () => {
-        const schemaContext = new SchemaContext();
-        Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
         await IModelApp.startup({
           renderSys: { useWebGL2 },
-          schemaContext,
         });
       });
 
@@ -103,14 +98,11 @@ describe("Techniques", () => {
 
           // Restart with extension disabled.
           await IModelApp.shutdown();
-          const schemaContext = new SchemaContext();
-          Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
           await IModelApp.startup({
             renderSys: {
               useWebGL2: false,
               disabledExtensions: [disabledExtension],
             },
-            schemaContext,
           });
         }
 
@@ -119,11 +111,8 @@ describe("Techniques", () => {
         if (disabledExtension) {
           // Reset render system to previous state
           await IModelApp.shutdown();
-          const schemaContext = new SchemaContext();
-          Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
           await IModelApp.startup({
             renderSys: { useWebGL2: false },
-            schemaContext,
           });
         }
       }

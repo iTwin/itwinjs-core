@@ -7,7 +7,7 @@
  */
 
 import {
-  BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider,
+  BadUnit, BasicUnit, UnitConversion, UnitExtraData, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 
 // cSpell:ignore ussurvey USCUSTOM
@@ -16,13 +16,18 @@ import {
  * @internal
  */
 export class BasicUnitsProvider implements UnitsProvider {
+  constructor(private _unitExtraData: UnitExtraData[] = []) {}
+
   /** Find a unit given the unitLabel. */
-  public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
+  public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     const labelToFind = unitLabel.toLowerCase();
     const unitFamilyToFind = phenomenon ? phenomenon.toLowerCase():undefined;
     const unitSystemToFind = unitSystem ? unitSystem.toLowerCase():undefined;
 
     for (const entry of UNIT_DATA) {
+      if (schemaName && schemaName !== "Units")
+        continue;
+
       if (phenomenon && entry.phenomenon.toLowerCase() !== unitFamilyToFind)
         continue;
 

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { Capabilities } from "@bentley/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { Debug } from "../../../render/webgl/Diagnostics";
@@ -13,14 +12,11 @@ import { GL } from "../../../render/webgl/GL";
 import { RenderBuffer } from "../../../render/webgl/RenderBuffer";
 import { System } from "../../../render/webgl/System";
 import { TextureHandle } from "../../../render/webgl/Texture";
-import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 describe("FrameBuffer tests", () => {
   // eslint-disable-next-line no-return-await
   before(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    await IModelApp.startup({ schemaContext });
+    await IModelApp.startup();
   });
   // eslint-disable-next-line no-return-await
   after(async () => await IModelApp.shutdown());

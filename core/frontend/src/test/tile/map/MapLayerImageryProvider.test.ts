@@ -6,14 +6,12 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
 import { RequestBasicCredentials } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
 import {
   MapLayerImageryProvider, MapLayerImageryProviderStatus, WmsCapabilities, WmsMapLayerImageryProvider, WmtsCapabilities, WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
-import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 chai.use(chaiAsPromised);
 
@@ -134,9 +132,7 @@ describe("WmsMapLayerImageryProvider", () => {
 describe("MapLayerImageryProvider with IModelApp", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    await IModelApp.startup({ schemaContext });
+    await IModelApp.startup();
   });
 
   afterEach(async () => {

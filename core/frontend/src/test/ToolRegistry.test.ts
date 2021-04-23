@@ -3,13 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
 import { KeyinParseError, Tool } from "../tools/Tool";
-import { UNIT_SCHEMA_STRING } from "./public/assets/UnitSchema/UnitSchema";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: number;
@@ -38,9 +36,7 @@ class TestCommandApp extends MockRender.App {
   public static testNamespace?: I18NNamespace;
 
   public static async startup(): Promise<void> {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    await IModelApp.startup({ i18n: this.supplyI18NOptions(), schemaContext });
+    await IModelApp.startup({ i18n: this.supplyI18NOptions() });
     this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
   }

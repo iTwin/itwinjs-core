@@ -4,20 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { IModelApp } from "../../../IModelApp";
 import {
   FragmentShaderComponent, ProgramBuilder, ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType, VertexShaderComponent,
 } from "../../../render/webgl/ShaderBuilder";
 import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
-import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 describe("Variable declaration tests", () => {
   before(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    await IModelApp.startup({ schemaContext });
+    await IModelApp.startup();
   });
   after(async () => IModelApp.shutdown());
 
@@ -91,9 +87,7 @@ describe("ShaderVariables tests", () => {
 
 describe("Test shader compilation", () => {
   before(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    await IModelApp.startup({ schemaContext });
+    await IModelApp.startup();
   });
   after(async () => IModelApp.shutdown());
 

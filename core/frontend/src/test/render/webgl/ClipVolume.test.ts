@@ -3,17 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@bentley/geometry-core";
 import { IModelApp } from "../../../IModelApp";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
-import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 describe("ClipVolume", async () => {
   before(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    await IModelApp.startup({ schemaContext });
+    await IModelApp.startup();
   });
 
   after(async () => {

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { dispose } from "@bentley/bentleyjs-core";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { IModelApp } from "../../../IModelApp";
 import { GraphicBranch } from "../../../render/GraphicBranch";
@@ -14,7 +13,6 @@ import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { Branch } from "../../../render/webgl/Graphic";
 import { Target } from "../../../render/webgl/Target";
 import { ViewRect } from "../../../ViewRect";
-import { UNIT_SCHEMA_STRING } from "../../public/assets/UnitSchema/UnitSchema";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();
@@ -99,9 +97,7 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
 
 describe("BranchUniforms", async () => {
   before(async () => {
-    const schemaContext = new SchemaContext();
-    Schema.fromJsonSync(UNIT_SCHEMA_STRING, schemaContext);
-    await IModelApp.startup({ schemaContext });
+    await IModelApp.startup();
   });
 
   after(async () => {

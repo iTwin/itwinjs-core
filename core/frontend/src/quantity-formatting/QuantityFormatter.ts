@@ -8,13 +8,10 @@
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import {
-  Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitProps, UnitsProvider,
+  Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
-import { SchemaContext } from "@bentley/ecschema-metadata";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../imodeljs-frontend";
-import { ConversionData, NewUnitsProvider } from "./NewUnitsProvider";
-import { UNIT_EXTRA_DATA } from "./UnitsData";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
 
@@ -305,7 +302,6 @@ export interface UnitFormattingSettingsProvider {
  * @beta
  */
 export class QuantityFormatter implements UnitsProvider {
-  private _unitsProvider: UnitsProvider = new NewUnitsProvider(this._context, UNIT_EXTRA_DATA);
   protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
   protected _activeUnitSystem: UnitSystemKey = "imperial";
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
@@ -346,7 +342,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @param showMetricOrUnitSystem - Pass in `true` to show Metric formatted quantity values. Defaults to Imperial. To explicitly
    * set it to a specific unit system pass a UnitSystemKey.
    */
-  constructor(private _context: SchemaContext, showMetricOrUnitSystem?: boolean | UnitSystemKey) {
+  constructor(private _unitsProvider: UnitsProvider, showMetricOrUnitSystem?: boolean | UnitSystemKey) {
     if (undefined !== showMetricOrUnitSystem) {
       if (typeof showMetricOrUnitSystem === "boolean")
         this._activeUnitSystem = showMetricOrUnitSystem ? "metric" : "imperial";
@@ -826,7 +822,7 @@ export class QuantityFormatter implements UnitsProvider {
     return this._unitsProvider.findUnitByName(unitName);
   }
 
-  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<ConversionData> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion> {
     return this._unitsProvider.getConversion(fromUnit, toUnit);
   }
 }
