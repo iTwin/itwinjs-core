@@ -620,7 +620,7 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view. 
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view.
    * @beta
    */
   public get renderTimeline(): Id64String | undefined {
@@ -633,10 +633,13 @@ export class DisplayStyleSettings {
 
   /** @internal @deprecated */
   public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
+    // eslint-disable-next-line deprecation/deprecation
     return this._json.scheduleScript;
   }
   public set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined) {
+    // eslint-disable-next-line deprecation/deprecation
     this.onScheduleScriptPropsChanged.raiseEvent(props);
+    // eslint-disable-next-line deprecation/deprecation
     this._json.scheduleScript = props;
   }
 
@@ -898,8 +901,11 @@ export class DisplayStyleSettings {
         props.analysisFraction = this.analysisFraction;
       }
 
-      if (this.scheduleScriptProps)
+    // eslint-disable-next-line deprecation/deprecation
+      if (this.scheduleScriptProps) {
+        // eslint-disable-next-line deprecation/deprecation
         props.scheduleScript = [...this.scheduleScriptProps];
+      }
 
       if (this.renderTimeline)
         props.renderTimeline = this.renderTimeline;
@@ -966,8 +972,11 @@ export class DisplayStyleSettings {
     if (undefined !== overrides.analysisFraction)
       this.analysisFraction = overrides.analysisFraction;
 
-    if (overrides.scheduleScript)
+    // eslint-disable-next-line deprecation/deprecation
+    if (overrides.scheduleScript) {
+      // eslint-disable-next-line deprecation/deprecation
       this.scheduleScriptProps = [...overrides.scheduleScript];
+    }
 
     if (overrides.renderTimeline)
       this.renderTimeline = overrides.renderTimeline;

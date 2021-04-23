@@ -6,18 +6,12 @@
  * @module ViewDefinitions
  */
 
-import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, JsonUtils, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 import {
-  Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import {
-  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera,
-  CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, LightLocationProps, MapImageryProps, ModelSelectorProps, PlanProjectionSettingsProps, RelatedElement,
-  RenderSchedule, SkyBoxImageProps, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
-  ViewDetails3d, ViewFlags,
+  BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  DisplayStyleProps, DisplayStyleSettings, MapImageryProps, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@bentley/imodeljs-common";
-import { DefinitionElement, GraphicalElement2d, RenderTimeline, SpatialLocationElement } from "./Element";
+import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 
@@ -101,7 +95,8 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
         script = RenderSchedule.Script.fromJSON(timeline.scriptProps);
         sourceId = timeline.id;
       }
-    } else if (this.settings.scheduleScriptProps) {
+    } else if (this.settings.scheduleScriptProps) { // eslint-disable-line deprecation/deprecation
+      // eslint-disable-next-line deprecation/deprecation
       script = RenderSchedule.Script.fromJSON(this.settings.scheduleScriptProps);
       sourceId = this.id;
     }

@@ -249,9 +249,6 @@ export namespace RenderSchedule {
     }
   }
 
-  const planePosition = new Point3d();
-  const planeDirection = new Vector3d();
-
   export class CuttingPlaneEntry extends TimelineEntry {
     public readonly value: CuttingPlane | undefined;
 
@@ -532,7 +529,7 @@ export namespace RenderSchedule {
     }
 
     public get containsFeatureOverrides(): boolean {
-      return undefined != this.visibility || undefined != this.color;
+      return undefined !== this.visibility || undefined !== this.color;
     }
 
     public get containsClipping(): boolean {
@@ -650,7 +647,7 @@ export namespace RenderSchedule {
     protected constructor(props: ScriptProps) {
       this.duration = Range1d.createNull();
 
-      let modelTimelines: ModelTimeline[] = [];
+      const modelTimelines: ModelTimeline[] = [];
       let containsModelClipping = false;
       let containsElementClipping = false;
       let containsTransform = false;
