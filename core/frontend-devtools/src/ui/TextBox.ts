@@ -8,7 +8,7 @@
  */
 
 /** Wraps an HTML text input field.
- * @alpha
+ * @beta
  */
 export interface TextBox {
   /** The label, if the text box has one. */
