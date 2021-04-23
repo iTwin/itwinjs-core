@@ -140,14 +140,17 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   analysisFraction?: number;
-  /** Schedule script
+  /** A schedule script embedded into the display style settings. This is how schedule scripts were stored prior to the introduction of
+   * [RenderTimeline]($backend) elements. It should no longer be used - instead, set [[renderTimeline]] to the Id of the RenderTimeline element
+   * that hosts the script.
    * @note For a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend), the element Ids will be omitted from all
-   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory - they are not needed for display on the frontend.
-   * @beta
+   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory, because they are not needed for display on the frontend.
+   * @deprecated Use DisplayStyleSettingsProps.renderTimeline.
+   * @internal
    */
   scheduleScript?: RenderSchedule.ModelTimelineProps[];
   /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
+   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    * @beta
    */
   timePoint?: number;
@@ -401,6 +404,7 @@ export class DisplayStyleSettings {
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
+   * @deprecated Use onRenderTimelineChanged
    * @internal
    */
   public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>();
@@ -607,7 +611,7 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** @internal */
+  /** @internal @deprecated */
   public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
     return this._json.scheduleScript;
   }
@@ -617,7 +621,7 @@ export class DisplayStyleSettings {
   }
 
   /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
+   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    * @beta
    */
   public get timePoint(): number | undefined {
