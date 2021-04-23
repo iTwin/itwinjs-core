@@ -17,7 +17,7 @@ import {
   RenderSchedule, SkyBoxImageProps, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags,
 } from "@bentley/imodeljs-common";
-import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
+import { DefinitionElement, GraphicalElement2d, RenderTimeline, SpatialLocationElement } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 
@@ -90,6 +90,23 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
           settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
       }
     }
+  }
+
+  public loadScheduleScript(): RenderSchedule.ScriptReference | undefined {
+    let script;
+    let sourceId;
+    if (this.settings.renderTimeline) {
+      const timeline = this.iModel.elements.tryGetElement<RenderTimeline>(this.settings.renderTimeline);
+      if (timeline) {
+        script = RenderSchedule.Script.fromJSON(timeline.scriptProps);
+        sourceId = timeline.id;
+      }
+    } else if (this.settings.scheduleScriptProps) {
+      script = RenderSchedule.Script.fromJSON(this.settings.scheduleScriptProps);
+      sourceId = this.id;
+    }
+
+    return undefined !== sourceId && undefined !== script ? new RenderSchedule.ScriptReference(sourceId, script) : undefined;
   }
 }
 

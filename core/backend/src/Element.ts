@@ -13,7 +13,7 @@ import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
+  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -1565,16 +1565,16 @@ export class RenderTimeline extends InformationRecordElement {
   /** A human-readable description of the timeline, which may be an empty string. */
   public description: string;
   /** The JSON representation of the instructions for visualizing change over time. */
-  public readonly script: any; // ###TODO RenderTimelineScript
+  public scriptProps: RenderSchedule.ScriptProps;
 
   /** @internal */
   protected constructor(props: RenderTimelineProps, iModel: IModelDb) {
     super(props, iModel);
     this.description = props.description ?? "";
     try {
-      this.script = JSON.parse(props.script);
+      this.scriptProps = JSON.parse(props.script);
     } catch (_) {
-      this.script = [ ];
+      this.scriptProps = [];
     }
   }
 
@@ -1587,7 +1587,7 @@ export class RenderTimeline extends InformationRecordElement {
     if (this.description.length > 0)
       props.description = this.description;
 
-    props.script = JSON.stringify(this.script);
+    props.script = JSON.stringify(this.scriptProps);
     return props;
   }
 }
