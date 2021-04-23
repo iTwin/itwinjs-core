@@ -7,10 +7,11 @@
  * @module Table
  */
 
+import { Primitives } from "@bentley/ui-abstract";
 import { RowItem } from "../TableDataProvider";
 
 /** Operator used in FilterDescriptor
- * @beta
+ * @public
  */
 export enum FilterOperator {
   // All filterable types
@@ -40,7 +41,7 @@ export enum FilterOperator {
 }
 
 /** Logical operator used for filter descriptor composition
- * @beta
+ * @public
  */
 export enum FilterCompositionLogicalOperator {
   And,
@@ -48,7 +49,7 @@ export enum FilterCompositionLogicalOperator {
 }
 
 /** FilterableTable contains the properties and methods provided by a filterable Table.
- * @beta
+ * @public
  */
 export interface FilterableTable {
   /** Gets the filter descriptors for the table. */
@@ -59,7 +60,7 @@ export interface FilterableTable {
 }
 
 /** Represents a column that is filterable.
- * @beta
+ * @public
  */
 export interface FilterableColumn {
   /** Gets the owning Table for this column. */
@@ -77,11 +78,14 @@ export interface FilterableColumn {
   /** Determines if the filter for this column is active. */
   isFilterActive: boolean;
 
-  /** Gets if the filter should show distinct values as a filter option */
+  /** Determines if the filter should show distinct values as a filter option */
   showDistinctValueFilters: boolean;
 
-  /** Gets if the filter should show field filter options */
+  /** Determines if the filter should show field filter options */
   showFieldFilters: boolean;
+
+  /** Determines if the filter is case-sensitive */
+  filterCaseSensitive: boolean;
 
   /** Allows the column to create a filter descriptor for use in the filter descriptor collection. */
   createSimpleFilterDescriptor(value: any, filterOperator: FilterOperator): OperatorValueFilterDescriptor;
@@ -91,7 +95,7 @@ export interface FilterableColumn {
 }
 
 /** A filtering abstraction that knows how to create predicate filtering expression.
- * @beta
+ * @public
  */
 export interface FilterDescriptor {
   /** Gets a value indicating whether this filter is active. */
@@ -106,12 +110,12 @@ export interface FilterDescriptor {
   /** Determines if this filter is for a particular column. */
   isFilterForColumn(columnKey: string): boolean;
 
-  /** Returns filter as ECExpression */
+  /** Returns filter as ECExpression. @alpha */
   getFilterExpression(): string;
 }
 
 /** An abstraction for all filter descriptors that have an operator and a value
- * @beta
+ * @public
  */
 export interface OperatorValueFilterDescriptor extends FilterDescriptor {
   /** Gets the operator for the filter. */
@@ -131,7 +135,7 @@ export interface OperatorValueFilterDescriptor extends FilterDescriptor {
 }
 
 /** Represents the distinct filter descriptor of a column filter descriptor.
- * @beta
+ * @public
  */
 export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
   /** Gets the distinct values. */
@@ -156,7 +160,7 @@ export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
 }
 
 /** Represents the field filter descriptor of a column filter descriptor.
- * @beta
+ * @public
  */
 export interface FieldFilterDescriptor extends FilterDescriptor {
 
@@ -177,7 +181,7 @@ export interface FieldFilterDescriptor extends FilterDescriptor {
 }
 
 /** Represents a column filter descriptor associated with a specific column.
- * @beta
+ * @public
  */
 export interface ColumnFilterDescriptor extends FilterDescriptor {
   /** Gets the Distinct Values filter descriptor. */
@@ -187,24 +191,31 @@ export interface ColumnFilterDescriptor extends FilterDescriptor {
   fieldFilter: FieldFilterDescriptor;
 }
 
+/** Distinct Value for Table filtering purposes
+ * @public
+ */
+export interface TableDistinctValue {
+  value: Primitives.Value;
+  label: string;
+}
+
 /** A set of distinct values for a column.
- * @beta
+ * @public
  */
 export class DistinctValueCollection {
-  private _values: any[];
+  private _values: TableDistinctValue[];
 
   constructor() {
-    this._values = new Array<any>();
+    this._values = new Array<TableDistinctValue>();
   }
 
   public get values() { return this._values; }
-
-  public set values(values: any[]) { this._values = values; }
+  public set values(values: TableDistinctValue[]) { this._values = values; }
 }
 
 /** Represents a composite filtering abstraction which has a collection of
  * filter descriptors combined together by a logical operator.
- * @beta
+ * @public
  */
 export interface CompositeFilterDescriptor extends FilterDescriptor {
   /** Gets or sets the logical operator. */
@@ -215,7 +226,7 @@ export interface CompositeFilterDescriptor extends FilterDescriptor {
 }
 
 /** Collection of FilterDescriptor objects composed together by a logical operator.
- * @beta
+ * @public
  */
 export interface CompositeFilterDescriptorCollection {
   /** Gets the number of filter descriptors in the collection */
@@ -239,12 +250,12 @@ export interface CompositeFilterDescriptorCollection {
   /** Clears the filter descriptor. */
   clear(): void;
 
-  /** Returns filter as ECExpression */
+  /** Returns filter as ECExpression. @alpha */
   getFilterExpression(): string;
 }
 
 /** Collection of filter descriptors.
- * @beta
+ * @public
  */
 export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterDescriptor> {
   private _descriptors: TDescriptor[];
@@ -294,13 +305,13 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
 }
 
 /** Collection of filter descriptors.
- * @beta
+ * @public
  */
 export class FilterDescriptorCollection extends FilterDescriptorCollectionBase<FilterDescriptor> {
 }
 
 /** Collection of OperatorValue filter descriptors.
- * @beta
+ * @public
  */
 export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {
 }

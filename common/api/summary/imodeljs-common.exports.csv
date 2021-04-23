@@ -21,8 +21,8 @@ public;BackgroundMapSettings
 public;BackgroundMapType
 public;Base64EncodedString = string
 public;Base64EncodedString
-alpha;BaseLayerProps = MapLayerProps | ColorDefProps
-alpha;BaseLayerSettings = MapLayerSettings | ColorDef
+beta;BaseLayerProps = MapLayerProps | ColorDefProps
+beta;BaseLayerSettings = MapLayerSettings | ColorDef
 public;BatchType
 public;class BentleyCloudRpcConfiguration 
 public;BentleyCloudRpcManager 
@@ -45,7 +45,6 @@ alpha;BRepThickenProps
 beta;BriefcaseDownloader
 public;BriefcaseIdValue
 beta;BriefcaseProps
-internal;BriefcasePushAndPullNotifications
 public;calculateSolarAngles(date: Date, location: Cartographic):
 public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 public;calculateSolarDirectionFromAngles(azimuthElevation:
@@ -148,7 +147,8 @@ alpha;ElementGeometryRequest
 alpha;ElementGeometryUpdate
 beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
-public;ElementLoadProps
+public;ElementLoadOptions
+public;ElementLoadProps 
 public;ElementProps 
 beta;EntityMetaData 
 beta;EntityMetaDataProps
@@ -291,6 +291,8 @@ internal;IpcWebSocketMessage
 internal;IpcWebSocketMessageType
 internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
+public;isPlacement2dProps(props: PlacementProps): props is Placement2dProps
+public;isPlacement3dProps(props: PlacementProps): props is Placement3dProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 beta;iTwinChannel: (channel: string) => string
@@ -304,13 +306,13 @@ public;LineStyle
 public;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
 beta;LocalBriefcaseProps
-alpha;MapImageryProps
-alpha;MapImagerySettings
+beta;MapImageryProps
+beta;MapImagerySettings
 beta;MapLayerKey
-alpha;MapLayerProps
-alpha;MapLayerSettings
-alpha;MapSubLayerProps
-alpha;MapSubLayerSettings
+beta;MapLayerProps
+beta;MapLayerSettings
+beta;MapSubLayerProps
+beta;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
@@ -375,6 +377,7 @@ public;PartReference
 beta;PersistentGraphicsRequestProps 
 public;PhysicalElementProps 
 public;PhysicalTypeProps 
+public;Placement = Placement2d | Placement3d
 public;Placement2d 
 public;Placement2dProps
 public;Placement3d 
@@ -527,7 +530,7 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
-alpha;SubLayerId = string | number
+beta;SubLayerId = string | number
 beta;SynchronizationConfigLinkProps 
 public;SyncMode
 public;TerrainHeightOriginMode

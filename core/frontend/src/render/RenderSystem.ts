@@ -7,8 +7,8 @@
  */
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@bentley/geometry-core";
+import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -147,6 +147,54 @@ export class TerrainTexture {
 export class DebugShaderFile {
   public constructor(public readonly filename: string, public readonly src: string, public isVS: boolean, public isGL: boolean, public isUsed: boolean) {
   }
+}
+/** Transparency settings for planar grid display.
+ * @alpha
+ */
+export class PlanarGridTransparency {
+  /** Transparency for the grid plane.   This should generally be fairly high to avoid obscuring other geometry */
+  public readonly planeTransparency = .9;
+  /** Transparency of the grid lines.  This should be higher than the plane, but less than reference line transparency */
+  public readonly lineTransparency = .75;
+  /** Transparency of the reference lines.   This should be less than plane or line transparency so that reference lines are more prominent */
+  public readonly refTransparency = .5;
+}
+
+/** Settings for planar grid display.
+ * @alpha
+ */
+export interface PlanarGridProps {
+  /**  The grid origin */
+  origin: Point3d;
+  /** The grid orientation. The grid X and Y direction are the first and second matrix rows */
+  rMatrix: Matrix3d;
+  /** The spacing between grid liens in the X and Y direction */
+  spacing: XAndY;
+  /** Grid lines per reference. If zero no reference lines are displayed. */
+  gridsPerRef: number;
+  /** Grid color.   [[Use Viewport.getContrastToBackgroundColor]] to get best constrast color based on current background. */
+  color: ColorDef;
+  /** Transparency settings.  If omitted then the [[PlanarGridTransparency]] defaults are used. */
+  transparency?: PlanarGridTransparency;
+}
+
+/** Options used when constructing a `Batch` - that is, a [[RenderGraphic]] with an associated [FeatureTable]($common) describing individual [Feature]($common)s within the
+ * graphic. Individual features can be resymbolized in a variety of ways including flashing and hiliting.
+ * For example, to prevent graphics produced by [[readElementGraphics]] from being hilited when their corresponding element is in the [[SelectionSet]],
+ * pass `{ noHilite: true }` to [[readElementGraphics]].
+ * @public
+ */
+export interface BatchOptions {
+  /** Identifies the [[Tile]] associated with the batch, chiefly for debugging purposes.
+   * @beta
+   */
+  tileId?: string;
+  /** If true, features within the batch will not be flashed on mouseover. */
+  noFlash?: boolean;
+  /** If true, features within the batch will not be hilited when their corresponding element is in the [[SelectionSet]]. */
+  noHilite?: boolean;
+  /** If true, features within the batch will not be emphasized when the corresponding [[Feature]] is emphasized using [FeatureOverrides]($common). */
+  noEmphasis?: boolean;
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
@@ -288,6 +336,8 @@ export abstract class RenderSystem implements IDisposable {
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
 
   /** @internal */
+  public createPlanarGrid(_frustum: Frustum,_grid: PlanarGridProps): RenderGraphic | undefined { return undefined; }
+  /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
@@ -350,7 +400,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal
    */
-  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
+  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
 
   /** Create a graphic that assumes ownership of another graphic.
    * @param ownedGraphic The RenderGraphic to be owned.
