@@ -2238,11 +2238,15 @@
           "type": "string"
         },
         "id": {
-          "description": "Category identifier which has to be unique at the scope of it's definition",
+          "description": "Category identifier which has to be unique at the scope of it's definition.",
           "type": "string"
         },
         "label": {
           "description": "Display label of the category. May be localized.",
+          "type": "string"
+        },
+        "parentId": {
+          "description": "Identifier of a parent category.",
           "type": "string"
         },
         "priority": {

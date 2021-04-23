@@ -15,8 +15,11 @@ import { CustomRendererSpecification } from "./CustomRendererSpecification";
  * @public
  */
 export interface PropertyCategorySpecification {
-  /** Category identifier which has to be unique at the scope of it's definition */
+  /** Category identifier which has to be unique at the scope of it's definition. */
   id: string;
+
+  /** Identifier of a parent category. */
+  parentId?: string;
 
   /** Display label of the category. May be [localized]($docs/learning/presentation/Localization.md). */
   label: string;
