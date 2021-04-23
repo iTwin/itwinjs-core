@@ -81,6 +81,21 @@ export namespace RenderSchedule {
 
   /** JSON representation of a [Transform]($geometry-core) associated with a [[TransformEntryProps]]. */
   export interface TransformProps {
+    /** (x, y, z) of position  - applied after rotation.
+     * This value is preserved but unused by iTwin.js.
+     * @internal
+     */
+    position?: number[];
+    /** quaternion representing rotation.
+     * This value is preserved but unused by iTwin.js.
+     * @internal
+     */
+    orientation?: number[];
+    /** x, y, z) of pivot - applied before rotation.
+     * This value is preserved but unused by iTwin.js.
+     * @internal
+     */
+    pivot?: number[];
     /** 3 X 4 transformation matrix containing 3 arrays of matrix rows consisting of 4 numbers each: [qx qy qz ax]
      * where the fourth columnn in each row holds the translation.
      * `undefined` is equivalent to an identity transform.
@@ -187,16 +202,19 @@ export namespace RenderSchedule {
 
   export class TransformEntry extends TimelineEntry {
     public readonly value: Readonly<Transform>;
+    private readonly _value?: TransformProps;
 
     public constructor(props: TransformEntryProps) {
       super(props);
       this.value = props.value ? Transform.fromJSON(props.value.transform) : Transform.identity;
+      if (props.value)
+        this._value = { ...props.value };
     }
 
     public toJSON(): TransformEntryProps {
       const props = super.toJSON() as TransformEntryProps;
-      if (!this.value.isIdentity)
-        props.value = { transform: this.value.toRows() };
+      if (this._value)
+        props.value = { ...this._value };
 
       return props;
     }
