@@ -111,7 +111,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       let script;
       let sourceId;
       if (this.settings.renderTimeline) {
-        const timeline = await this.iModel.elements.loadProps(this.settings.renderTimeline, { renderTimeline: { omitScheduleScriptElementIds: true } }) as RenderTimelineProps;
+        const timeline = await this.iModel.elements.loadProps(this.settings.renderTimeline, { renderTimeline: { omitScriptElementIds: true } }) as RenderTimelineProps;
         if (timeline) {
           const scriptProps = JSON.parse(timeline.script);
           script = RenderSchedule.Script.fromJSON(scriptProps);

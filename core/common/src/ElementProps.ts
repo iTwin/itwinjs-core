@@ -308,7 +308,7 @@ export interface RenderTimelineLoadProps {
   /** If true, the lists of element Ids in the schedule script will be empty.
    * The element Ids can be extremely numerous and are not required on the frontend for display, so they are omitted by default by [DisplayStyleState.load]($frontend).
    */
-  omitScheduleScriptElementIds?: boolean;
+  omitScriptElementIds?: boolean;
 }
 
 /** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
