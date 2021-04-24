@@ -100,8 +100,7 @@ describe("external texture requests (#integration)", () => {
     });
   }
 
-  // test currently fails due to problem throwing exceptions in native code. Will be re-enabled on next addon build
-  it.skip("should process all external texture requests", async () => {
+  it("should process all external texture requests", async () => {
     await testExternalTextures();
   });
 });
