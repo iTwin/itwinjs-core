@@ -270,7 +270,7 @@ const createColumns = (descriptor: Readonly<Descriptor> | undefined): ColumnDesc
 const extractSameInstanceFields = (fields: Field[]) => {
   for (let i = 0; i < fields.length; i++) {
     const field = fields[i];
-    if (field.isNestedContentField() && field.relationshipMeaning === RelationshipMeaning.SameInstance) {
+    if (field.isNestedContentField()/* && field.relationshipMeaning === RelationshipMeaning.SameInstance*/) {
       const nestedFields = field.nestedFields.map((nestedField: Field): Field => {
         nestedField.resetParentship();
         return nestedField;
@@ -284,34 +284,40 @@ const extractSameInstanceFields = (fields: Field[]) => {
 
 const extractAndCreateSameInstanceFieldsMap = (fields: Field[]) => {
   let foundFields: { [field: string]: Field } = {};
-  for (let i = 0; i < fields.length; i++) {
-    const field = fields[i];
-    if (field.isNestedContentField() && field.relationshipMeaning === RelationshipMeaning.SameInstance) {
+  const updatedFields: Field[] = [...fields];
+  let extractedFields: Field[] = [];
+
+  for (let i = 0; i < updatedFields.length; i++) {
+    const field = updatedFields[i];
+    if (field.isNestedContentField()/* && field.relationshipMeaning === RelationshipMeaning.SameInstance*/) {
       const nestedFields = field.nestedFields.map((nestedField: Field): Field => {
         nestedField.resetParentship();
         return nestedField;
       });
-      const childFoundFields = extractAndCreateSameInstanceFieldsMap(nestedFields);
-      const deletedField = fields.splice(i, 1, ...nestedFields)[0];
+      const { foundFields: childFoundFields, updatedFields: childUpdatedFields } = extractAndCreateSameInstanceFieldsMap(nestedFields);
+      const deletedField = updatedFields.splice(i, 1, ...childUpdatedFields)[0];
+      extractedFields = [...extractedFields, ...nestedFields];
       foundFields[field.nestedFields[0].name] = deletedField;
-      foundFields = {...foundFields, ...childFoundFields };
+      foundFields = { ...foundFields, ...childFoundFields };
+      i += childUpdatedFields.length-1;
     }
   }
-  return foundFields;
+  return { foundFields, updatedFields };
 };
 
 const extractValues = (values: ValuesDictionary<Value>, sameInstanceNestedFieldNames: string[]) => {
   const mergedFieldsCounts: { [field: string]: number } = {};
+  const updatedValues: ValuesDictionary<Value> = {...values};
   for (const field of sameInstanceNestedFieldNames) {
     const value = values[field];
     if (!Value.isNestedContent(value))
       continue;
 
-    extractNestedContentValue(values, value, mergedFieldsCounts, sameInstanceNestedFieldNames);
+    extractNestedContentValue(updatedValues, value, mergedFieldsCounts, sameInstanceNestedFieldNames);
 
-    delete values[field];
+    delete updatedValues[field];
   }
-  return mergedFieldsCounts;
+  return { mergedFieldsCounts, updatedValues };
 };
 
 const extractNestedContentValue = (values: ValuesDictionary<Value>, nestedContentValue: NestedContentValue[], mergedFieldsCounts: { [field: string]: number }, sameInstanceNestedFieldNames: string[]) => {
@@ -382,8 +388,10 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>): RowI
     // note: for table view we expect the record to always have only 1 primary key
     throw new PresentationError(PresentationStatus.InvalidArgument, "item.primaryKeys");
   }
-  const sameInstanceFieldsMap = extractAndCreateSameInstanceFieldsMap(descriptor.fields);
-  const mergedCellsCounts = extractValues(item.values, Object.values(sameInstanceFieldsMap).map((field) => (field.name)));
+  const { foundFields: sameInstanceFieldsMap, updatedFields } = extractAndCreateSameInstanceFieldsMap(descriptor.fields);
+  const { mergedFieldsCounts: mergedCellsCounts, updatedValues } = extractValues(item.values, Object.values(sameInstanceFieldsMap).map((field) => (field.name)));
+  const updatedItem: Item = Object.assign(item);
+  updatedItem.values = updatedValues;
 
   const key = JSON.stringify(item.primaryKeys[0]);
   if (descriptor.displayType === DefaultContentDisplayTypes.List) {
@@ -398,21 +406,21 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>): RowI
 
   return {
     key,
-    cells: descriptor.fields.map((field: Field): CellItem => {
+    cells: updatedFields.map((field: Field): CellItem => {
+      const itemProps: Partial<CellItem> = {};
       const mergedCellsCount = mergedCellsCounts[field.name];
-      if ((mergedCellsCount ?? 0) > 1) {
-        const nestedField = sameInstanceFieldsMap[field.name] ;
+      if (mergedCellsCount) {
+        itemProps.mergedCellsCount = mergedCellsCount;
+        itemProps.alignment = HorizontalAlignment.Center;
+
+        const nestedField = sameInstanceFieldsMap[field.name];
         nestedField.name = field.name;
-        return {
-          key: field.name,
-          record: ContentBuilder.createPropertyRecord({ field: nestedField }, item).record,
-          mergedCellsCount,
-          alignment: HorizontalAlignment.Center,
-        };
+        field = nestedField;
       }
       return {
         key: field.name,
-        record: ContentBuilder.createPropertyRecord({ field }, item).record,
+        record: ContentBuilder.createPropertyRecord({ field }, updatedItem).record,
+        ...itemProps,
       };
     }),
   };
