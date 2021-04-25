@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-// cSpell:ignore configurableui clientservices Popout
+// cSpell:ignore configurableui clientservices
 
 import { Store } from "redux";
 import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
@@ -38,7 +38,7 @@ import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
-import { PopoutManager } from "./popout/PopoutManager";
+import { ChildWindowManager } from "./childwindow/ChildWindowManager";
 
 // cSpell:ignore Mobi
 
@@ -104,10 +104,11 @@ export class UiFramework {
   private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage(); // this provides a default storage location for settings
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
-  private static _popoutManager = new PopoutManager();
+  private static _PopupWindowManager = new ChildWindowManager();
 
-  public static get popoutManager(): PopoutManager {
-    return UiFramework._popoutManager;
+  /** @alpha */
+  public static get ChildWindowManager(): ChildWindowManager {
+    return UiFramework._PopupWindowManager;
   }
 
   /** Registers class that will be informed when the UserSettingsStorage location has been set or changed. This allows

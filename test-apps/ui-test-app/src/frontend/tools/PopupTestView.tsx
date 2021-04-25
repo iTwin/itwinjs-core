@@ -7,7 +7,7 @@ import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { AbstractMenuItemProps } from "@bentley/ui-abstract";
 import { useActiveIModelConnection } from "@bentley/ui-framework";
-import ViewportContentComponent from "../appui/popout/ViewportContentControl";
+import ViewportContentComponent from "../appui/childwindows/ViewportContentControl";
 
 import "./PopupTestView.scss";
 

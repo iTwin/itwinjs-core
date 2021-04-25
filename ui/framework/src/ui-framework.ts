@@ -124,7 +124,7 @@ export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
-export * from "./ui-framework/popout/PopoutManager";
+export * from "./ui-framework/childwindow/ChildWindowManager";
 
 export * from "./ui-framework/popup/KeyinPalettePanel";
 export * from "./ui-framework/popup/KeyinPalettePopup";
@@ -346,8 +346,8 @@ export * from "./ui-framework/zones/ZoneDef";
  */
 
 /**
- * @docs-group-description Popout
- * Classes for working with Popout windows.
+ * @docs-group-description ChildWindow
+ * Classes for working with child windows.
  */
 /**
  * @docs-group-description Picker

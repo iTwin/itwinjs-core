@@ -17,7 +17,9 @@ export interface GlobalDialogProps extends DialogProps {
   identifier?: string;
 }
 
-/** @internal */
+/** State properties for the [[GlobalDialog]] component
+ * @public
+ */
 export interface GlobalDialogState {
   parentDocument: Document | null;
 }

@@ -6,8 +6,6 @@
  * @module Admin
  */
 
-// Cspell: ignore Popout
-
 import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
@@ -80,17 +78,17 @@ export class FrameworkUiAdmin extends UiAdmin {
    */
   public showContextMenu(items: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean {
     let position = location;
-    let popoutContentId: string | undefined;
+    let childWindowId: string | undefined;
     if (htmlElement) {
       const anchorOffset = htmlElement.getBoundingClientRect();
       position = { x: anchorOffset.left + location.x, y: anchorOffset.top + location.y };
-      popoutContentId = UiFramework.popoutManager.findPopoutWindowId(htmlElement.ownerDocument.defaultView ?? undefined);
+      childWindowId = UiFramework.ChildWindowManager.findChildWindowId(htmlElement.ownerDocument.defaultView);
     }
 
     const offset = -8;
     position = { x: position.x + offset, y: position.y + offset };
 
-    const cursorMenu: CursorMenuData = { position, items, popoutContentId };
+    const cursorMenu: CursorMenuData = { position, items, childWindowId };
     UiFramework.openCursorMenu(cursorMenu);
 
     return true;

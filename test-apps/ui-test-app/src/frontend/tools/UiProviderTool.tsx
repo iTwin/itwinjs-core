@@ -17,7 +17,7 @@ import {
 } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  ActionCreatorsObject, ActionsUnion, createAction, ModelSelectorWidget, PopoutWindowLocationProps,
+  ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, createAction, ModelSelectorWidget,
   ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { ShadowField } from "../appui/statusfields/ShadowField";
@@ -201,7 +201,7 @@ export class UiProviderTool extends Tool {
 }
 
 export class OpenWidgetPopoutTool extends Tool {
-  public static toolId = "OpenPopout";
+  public static toolId = "openChildWindow";
   public static iconSpec = IconSpecUtilities.createSvgIconSpec(toolIconSvg);
 
   public static get minArgs() { return 0; }
@@ -214,7 +214,7 @@ export class OpenWidgetPopoutTool extends Tool {
   }
 
   private async _run(): Promise<void> {
-    const location: PopoutWindowLocationProps = {
+    const location: ChildWindowLocationProps = {
       width: 300,
       height: 600,
       left: 0,
@@ -222,7 +222,7 @@ export class OpenWidgetPopoutTool extends Tool {
     };
     const connection = UiFramework.getIModelConnection();
     if (connection)
-      UiFramework.popoutManager.openPopout("VisibilityTreeWidget", "VisibilityTreeWidget", <ModelSelectorWidget iModelConnection={connection} />, location);
+      UiFramework.ChildWindowManager.openChildWindow("VisibilityTreeWidget", "VisibilityTreeWidget", <ModelSelectorWidget iModelConnection={connection} />, location);
   }
 
   public static get flyover(): string {
@@ -260,13 +260,13 @@ export class OpenCustomPopoutTool extends Tool {
   }
 
   private async _run(): Promise<void> {
-    const location: PopoutWindowLocationProps = {
+    const location: ChildWindowLocationProps = {
       width: 800,
       height: 600,
       left: 0,
       top: 0,
     };
-    UiFramework.popoutManager.openPopout("CustomPopout", "Custom Popout", <PopupTestPanel />, location);
+    UiFramework.ChildWindowManager.openChildWindow("CustomPopout", "Custom Popout", <PopupTestPanel />, location);
   }
 
   public static get flyover(): string {
@@ -305,13 +305,13 @@ export class OpenViewPopoutTool extends Tool {
   }
 
   private async _run(): Promise<void> {
-    const location: PopoutWindowLocationProps = {
+    const location: ChildWindowLocationProps = {
       width: 800,
       height: 600,
       left: 0,
       top: 0,
     };
-    UiFramework.popoutManager.openPopout("ViewPopout", "View Popout", <PopupTestView />, location);
+    UiFramework.ChildWindowManager.openChildWindow("ViewPopout", "View Popout", <PopupTestView />, location);
   }
 
   public static get flyover(): string {

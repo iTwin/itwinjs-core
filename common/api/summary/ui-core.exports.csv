@@ -105,6 +105,7 @@ public;GlobalContextMenu
 public;GlobalContextMenuProps 
 public;GlobalDialog 
 public;GlobalDialogProps 
+public;GlobalDialogState
 internal;hasPointerEventsSupport(): boolean
 public;Headline(props: TextProps): JSX.Element
 public;HorizontalAlignment

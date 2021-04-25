@@ -493,6 +493,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     // (undocumented)
     static defaultProps: Partial<DialogProps>;
     // (undocumented)
+    handleRefSet: (containerDiv: HTMLDivElement | null) => void;
+    // (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<DialogState>;
@@ -612,15 +614,17 @@ export interface DivProps extends CommonDivProps {
 // @public
 export const DivWithOutsideClick: {
     new (props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
-        ref: React.RefObject<HTMLDivElement>;
+        outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
         isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
-        handleDocumentPointerUp: (e: PointerEvent) => any;
+        handleDocumentPointerUp: (e: PointerEvent) => void;
+        handleOutsideClickContainerDivSet: (outsideClickContainerDiv: HTMLDivElement | null) => void;
+        getParentDocument(): Document;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
@@ -644,15 +648,17 @@ export const DivWithOutsideClick: {
         UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps, context?: any): {
-        ref: React.RefObject<HTMLDivElement>;
+        outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
         isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
-        handleDocumentPointerUp: (e: PointerEvent) => any;
+        handleDocumentPointerUp: (e: PointerEvent) => void;
+        handleOutsideClickContainerDivSet: (outsideClickContainerDiv: HTMLDivElement | null) => void;
+        getParentDocument(): Document;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
@@ -900,12 +906,14 @@ export const getToolbarBoxShadow: (opacity: number) => string;
 export function getUserColor(email: string): string;
 
 // @public
-export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps> {
+export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps, GlobalContextMenuState> {
     constructor(props: GlobalContextMenuProps);
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
+    // (undocumented)
+    readonly state: GlobalContextMenuState;
 }
 
 // @public
@@ -917,18 +925,26 @@ export interface GlobalContextMenuProps extends ContextMenuProps {
 }
 
 // @public
-export class GlobalDialog extends React.Component<GlobalDialogProps> {
+export class GlobalDialog extends React.Component<GlobalDialogProps, GlobalDialogState> {
     constructor(props: GlobalDialogProps);
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
+    // (undocumented)
+    readonly state: GlobalDialogState;
 }
 
 // @public
 export interface GlobalDialogProps extends DialogProps {
     // (undocumented)
     identifier?: string;
+}
+
+// @public
+export interface GlobalDialogState {
+    // (undocumented)
+    parentDocument: Document | null;
 }
 
 // @internal
@@ -2706,15 +2722,17 @@ export interface WithIsPressedProps {
 // @public
 export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>, defaultOnOutsideClick?: ((event: MouseEvent) => any) | undefined, useCapture?: boolean, usePointerEvents?: boolean) => {
     new (props: Readonly<ComponentProps & WithOnOutsideClickProps>): {
-        ref: React.RefObject<HTMLDivElement>;
+        outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
         isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
-        handleDocumentPointerUp: (e: PointerEvent) => any;
+        handleDocumentPointerUp: (e: PointerEvent) => void;
+        handleOutsideClickContainerDivSet: (outsideClickContainerDiv: HTMLDivElement | null) => void;
+        getParentDocument(): Document;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
@@ -2738,15 +2756,17 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithOnOutsideClickProps, context?: any): {
-        ref: React.RefObject<HTMLDivElement>;
+        outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
         isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
-        handleDocumentPointerUp: (e: PointerEvent) => any;
+        handleDocumentPointerUp: (e: PointerEvent) => void;
+        handleOutsideClickContainerDivSet: (outsideClickContainerDiv: HTMLDivElement | null) => void;
+        getParentDocument(): Document;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;

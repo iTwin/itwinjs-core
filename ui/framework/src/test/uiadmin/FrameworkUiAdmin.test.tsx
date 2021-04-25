@@ -12,7 +12,7 @@ import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../
 import { ClearKeyinPaletteHistoryTool } from "../../ui-framework/tools/KeyinPaletteTools";
 import * as keyinExports from "../../ui-framework/popup/KeyinPalettePanel";
 import TestUtils from "../TestUtils";
-import { MockRender } from "@bentley/imodeljs-frontend";
+import { MockRender, Tool } from "@bentley/imodeljs-frontend";
 
 class TestDialogUiDataProvider extends DialogLayoutDataProvider {
   public currentPageIndex = 0;
@@ -117,19 +117,38 @@ class TestDialogUiDataProvider extends DialogLayoutDataProvider {
   }
 }
 
-describe.only("FrameworkUiAdmin", () => {
+const descriptorToRestore1 = Object.getOwnPropertyDescriptor(Tool, "englishKeyin")!;
+const descriptorToRestore2 = Object.getOwnPropertyDescriptor(Tool, "keyin")!;
+
+describe("FrameworkUiAdmin", () => {
 
   let uiAdmin: FrameworkUiAdmin;
 
+  // avoid problems due to no real localization resources by return dummy values for englishKeyin and keyin properties.
   before(async () => {
-    await TestUtils.initializeUiFramework();
+    Object.defineProperty(Tool, "englishKeyin", {
+      get: () => {
+        return "english";
+      },
+    });
+
+    Object.defineProperty(Tool, "keyin", {
+      get: () => {
+        return "localized";
+      },
+    });
+
     uiAdmin = new FrameworkUiAdmin();
-    await MockRender.App.startup();
+    await TestUtils.initializeUiFramework();
+    await MockRender.App.startup({ i18n: TestUtils.i18n });
   });
 
   after(async () => {
     await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
+    sinon.reset();
+    Object.defineProperty(Tool, "englishKeyin", descriptorToRestore1);
+    Object.defineProperty(Tool, "keyin", descriptorToRestore2);
   });
 
   it("onInitialized should do nothing", () => {
@@ -345,13 +364,20 @@ describe.only("FrameworkUiAdmin", () => {
   it("should get/set keyin preference", () => {
     expect(uiAdmin.localizedKeyinPreference).to.eq(KeyinFieldLocalization.NonLocalized);
     const nonLocalKeyins = uiAdmin.getKeyins();
-    uiAdmin.localizedKeyinPreference = KeyinFieldLocalization.Both;
-    const bothKeyins = uiAdmin.getKeyins();
-    expect(bothKeyins.length > nonLocalKeyins.length);
-    expect(uiAdmin.localizedKeyinPreference).to.eq(KeyinFieldLocalization.Both);
     uiAdmin.localizedKeyinPreference = KeyinFieldLocalization.Localized;
     const localizedKeyins = uiAdmin.getKeyins();
     expect(localizedKeyins.length === nonLocalKeyins.length);
+    uiAdmin.localizedKeyinPreference = KeyinFieldLocalization.Both;
+    let bothKeyins = uiAdmin.getKeyins();
+    expect(bothKeyins.length > nonLocalKeyins.length);
+    expect(uiAdmin.localizedKeyinPreference).to.eq(KeyinFieldLocalization.Both);
+    // test when both keyin and english keyin are the same
+    Object.defineProperty(Tool, "keyin", {
+      get: () => {
+        return "english";
+      },
+    });
+    bothKeyins = uiAdmin.getKeyins();
   });
 
   it("openUiDialog (modal) should return true", () => {

@@ -6,8 +6,6 @@
  * @module Cursor
  */
 
-// cSpell: ignore popout
-
 import * as React from "react";
 import { CommonProps, GlobalContextMenu } from "@bentley/ui-core"; // ContextSubMenu,
 import { SessionStateActionId } from "../../redux/SessionState";
@@ -32,7 +30,7 @@ interface CursorPopupMenuState {
 // istanbul ignore next
 export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopupMenuState> {
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
-  private _parentPopoutWindowId?: string;
+  private _hostChildWindowId?: string;
 
   /** @internal */
   public readonly state: CursorPopupMenuState = {
@@ -50,7 +48,7 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
     /* istanbul ignore else */
     if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SessionStateActionId.UpdateCursorMenu])) {
       const menuData = UiFramework.getCursorMenuData();
-      if (menuData && this._parentPopoutWindowId === menuData.popoutContentId) {
+      if (menuData && this._hostChildWindowId === menuData.childWindowId) {
         this.setState({ menuVisible: menuData.items && menuData.items.length > 0, items: menuData.items, menuX: menuData.position.x, menuY: menuData.position.y });
       } else {
         this.setState({ menuVisible: false, items: undefined });
@@ -70,8 +68,8 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
   private _handleRefSet = (popupDiv: HTMLElement | null) => {
     const parentWindow = popupDiv?.ownerDocument.defaultView ?? undefined;
     // if the window is not a pop out set to undefined
-    this._parentPopoutWindowId = UiFramework.popoutManager.findPopoutWindowId(parentWindow);
-    Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Cursor Menu for ${this._parentPopoutWindowId ?? "main"} window`);
+    this._hostChildWindowId = UiFramework.ChildWindowManager.findChildWindowId(parentWindow);
+    Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Cursor Menu for ${this._hostChildWindowId ?? "main"} window`);
   };
 
   public render(): React.ReactNode {

@@ -47,11 +47,19 @@ export class DialogManagerBase {
 
   public get onDialogChangedEvent(): DialogChangedEvent { return this._onDialogChangedEvent; }
 
+  /**
+   * Triggers opening a dialog.
+   * @param dialog Dialog React component.
+   * @param id The unique Id the identifies the dialog.
+   * @param parentDocument Optional document required when displaying a dialog in a child popup window.
+   */
   public openDialog(dialog: React.ReactNode, id?: string, parentDocument?: Document): void {
     if (!id)
       id = `Dialog-${++DialogManagerBase._sId}`;
 
-    this.pushDialog({ reactNode: dialog, id, parentDocument: parentDocument ?? document });
+    // istanbul ignore next
+    const owningDoc = parentDocument ?? document;
+    this.pushDialog({ reactNode: dialog, id, parentDocument: owningDoc });
   }
 
   /** @internal */

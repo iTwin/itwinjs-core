@@ -31,7 +31,7 @@ export interface PresentationSelectionScope {
 export interface CursorMenuData {
   items: MenuItemProps[];
   position: XAndY;
-  popoutContentId?: string;
+  childWindowId?: string;
 }
 
 /** Action Ids used by Redux and to send sync UI components. Typically used to refresh visibility or enable state of control.

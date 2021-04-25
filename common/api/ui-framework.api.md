@@ -920,6 +920,32 @@ export interface ChangeSetInfo {
     userCreated?: string;
 }
 
+// @alpha (undocumented)
+export interface ChildWindowLocationProps {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    left: number;
+    // (undocumented)
+    top: number;
+    // (undocumented)
+    width: number;
+}
+
+// @alpha
+export class ChildWindowManager {
+    // (undocumented)
+    closeChildWindow: (childWindowId: string, processWindowClose?: boolean) => boolean;
+    // (undocumented)
+    findChildWindow(childWindowId: string | undefined): OpenChildWindowInfo | undefined;
+    // (undocumented)
+    findChildWindowId(contentWindow: Window | undefined | null): string | undefined;
+    // (undocumented)
+    openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps): boolean;
+    // (undocumented)
+    get openChildWindows(): OpenChildWindowInfo[];
+    }
+
 // @beta
 export enum ClassGroupingOption {
     No = 0,
@@ -1465,6 +1491,8 @@ export class CursorInformation {
 // @public
 export interface CursorMenuData {
     // (undocumented)
+    childWindowId?: string;
+    // (undocumented)
     items: MenuItemProps[];
     // (undocumented)
     position: XAndY;
@@ -1714,6 +1742,8 @@ export interface DialogInfo {
     // (undocumented)
     id: string;
     // (undocumented)
+    parentDocument: Document;
+    // (undocumented)
     reactNode: React.ReactNode;
 }
 
@@ -1734,8 +1764,7 @@ export class DialogManagerBase {
     emitDialogChangedEvent(): void;
     // (undocumented)
     get onDialogChangedEvent(): DialogChangedEvent;
-    // (undocumented)
-    openDialog(dialog: React.ReactNode, id?: string): void;
+    openDialog(dialog: React.ReactNode, id?: string, parentDocument?: Document): void;
     // (undocumented)
     pushDialog(dialogInfo: DialogInfo): void;
     // (undocumented)
@@ -1745,13 +1774,15 @@ export class DialogManagerBase {
 }
 
 // @internal
-export class DialogRendererBase extends React.PureComponent<DialogRendererProps> {
+export class DialogRendererBase extends React.PureComponent<DialogRendererProps, DialogRendererState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
+    // (undocumented)
+    readonly state: DialogRendererState;
 }
 
 // @internal
@@ -3738,7 +3769,7 @@ export class ModalDialogManager {
     static readonly dialogManager: DialogManagerBase;
     static get dialogs(): import("./DialogManagerBase").DialogInfo[];
     static readonly onModalDialogChangedEvent: ModalDialogChangedEvent;
-    static openDialog(dialog: React.ReactNode, id?: string): void;
+    static openDialog(dialog: React.ReactNode, id?: string, parentDocument?: Document): void;
     static update(): void;
 }
 
@@ -3841,7 +3872,7 @@ export class ModelessDialogManager {
     static handlePointerDownEvent(_event: React.PointerEvent, id: string, updateFunc: () => void): void;
     static initialize(): void;
     static readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
-    static openDialog(dialog: React.ReactNode, id: string): void;
+    static openDialog(dialog: React.ReactNode, id: string, parentDocument?: Document): void;
     static update(): void;
 }
 
@@ -3849,6 +3880,8 @@ export class ModelessDialogManager {
 export interface ModelessDialogProps extends DialogProps {
     // (undocumented)
     dialogId: string;
+    // (undocumented)
+    movable?: boolean;
 }
 
 // @public
@@ -4094,6 +4127,16 @@ export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessage
 // @public
 export type NotifyMessageType = MessageType;
 
+// @alpha (undocumented)
+export interface OpenChildWindowInfo {
+    // (undocumented)
+    childWindowId: string;
+    // (undocumented)
+    parentWindow: Window;
+    // (undocumented)
+    window: Window;
+}
+
 // @public
 export class OpenMessageCenterEvent extends UiEvent<{}> {
 }
@@ -4220,6 +4263,8 @@ export interface PopupInfo {
     component: React.ReactNode;
     // (undocumented)
     id: string;
+    // (undocumented)
+    parentDocument: Document;
     // (undocumented)
     pt: XAndY;
 }
@@ -6398,6 +6443,8 @@ export interface UiDataProvidedDialogProps {
 export class UiFramework {
     // @beta (undocumented)
     static get backstageManager(): BackstageManager;
+    // @alpha (undocumented)
+    static get ChildWindowManager(): ChildWindowManager;
     // @beta (undocumented)
     static closeCursorMenu(): void;
     // (undocumented)
