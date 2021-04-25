@@ -359,7 +359,7 @@ const extractNestedContentValue = (values: ValuesDictionary<Value>, nestedConten
 const extractSameInstanceFields = (fields: Field[]) => {
   for (let i = 0; i < fields.length; i++) {
     const field = fields[i];
-    if (field.isNestedContentField() && field.relationshipMeaning === RelationshipMeaning.SameInstance) {
+    if (field.isNestedContentField()/* && field.relationshipMeaning === RelationshipMeaning.SameInstance*/) {
       const nestedFields = field.nestedFields.map((nestedField: Field): Field => {
         nestedField.resetParentship();
         return nestedField;
@@ -373,34 +373,40 @@ const extractSameInstanceFields = (fields: Field[]) => {
 
 const extractAndCreateSameInstanceFieldsMap = (fields: Field[]) => {
   let foundFields: { [field: string]: Field } = {};
-  for (let i = 0; i < fields.length; i++) {
-    const field = fields[i];
-    if (field.isNestedContentField() && field.relationshipMeaning === RelationshipMeaning.SameInstance) {
+  const updatedFields: Field[] = [...fields];
+  let extractedFields: Field[] = [];
+
+  for (let i = 0; i < updatedFields.length; i++) {
+    const field = updatedFields[i];
+    if (field.isNestedContentField()/* && field.relationshipMeaning === RelationshipMeaning.SameInstance*/) {
       const nestedFields = field.nestedFields.map((nestedField: Field): Field => {
         nestedField.resetParentship();
         return nestedField;
       });
-      const childFoundFields = extractAndCreateSameInstanceFieldsMap(nestedFields);
-      const deletedField = fields.splice(i, 1, ...nestedFields)[0];
+      const { foundFields: childFoundFields, updatedFields: childUpdatedFields } = extractAndCreateSameInstanceFieldsMap(nestedFields);
+      const deletedField = updatedFields.splice(i, 1, ...childUpdatedFields)[0];
+      extractedFields = [...extractedFields, ...nestedFields];
       foundFields[field.nestedFields[0].name] = deletedField;
-      foundFields = {...foundFields, ...childFoundFields };
+      foundFields = { ...foundFields, ...childFoundFields };
+      i += childUpdatedFields.length-1;
     }
   }
-  return foundFields;
+  return { foundFields, updatedFields };
 };
 
 const extractValues = (values: ValuesDictionary<Value>, sameInstanceNestedFieldNames: string[]) => {
   const mergedFieldsCounts: { [field: string]: number } = {};
+  const updatedValues: ValuesDictionary<Value> = {...values};
   for (const field of sameInstanceNestedFieldNames) {
     const value = values[field];
     if (!Value.isNestedContent(value))
       continue;
 
-    extractNestedContentValue(values, value, mergedFieldsCounts, sameInstanceNestedFieldNames);
+    extractNestedContentValue(updatedValues, value, mergedFieldsCounts, sameInstanceNestedFieldNames);
 
-    delete values[field];
+    delete updatedValues[field];
   }
-  return mergedFieldsCounts;
+  return { mergedFieldsCounts, updatedValues };
 };
 
 const extractNestedContentValue = (values: ValuesDictionary<Value>, nestedContentValue: NestedContentValue[], mergedFieldsCounts: { [field: string]: number }, sameInstanceNestedFieldNames: string[]) => {

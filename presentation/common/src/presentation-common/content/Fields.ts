@@ -432,7 +432,6 @@ export class NestedContentField extends Field {
       actualPrimaryClassIds: this.actualPrimaryClassIds,
       nestedFields: this.nestedFields.map((field: Field) => field.toJSON()),
       autoExpand: this.autoExpand,
-      relationshipMeaning: this.relationshipMeaning,
     };
   }
 
@@ -460,7 +459,6 @@ export class NestedContentField extends Field {
       relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
       actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
       autoExpand: json.autoExpand,
-      relationshipMeaning: json.relationshipMeaning,
     });
   }
 
