@@ -7,7 +7,6 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { RelationshipMeaning } from "../../presentation-common";
 import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
 import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";

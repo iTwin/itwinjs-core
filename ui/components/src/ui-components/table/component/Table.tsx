@@ -47,7 +47,6 @@ import ReactDataGrid = require("react-data-grid");
 
 const TABLE_ROW_HEIGHT = 27;
 const TABLE_FILTER_ROW_HEIGHT = 32;
-const TABLE_MIN_COLUMN_WIDTH = 80;
 
 /**
  * Specifies table selection target.
@@ -1481,14 +1480,6 @@ export class Table extends React.Component<TableProps, TableState> {
     this._applyFilter();  // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
-  private _handleColumnResize = (index: number, columnWidth: number) => {
-    this.setState((prevState) => {
-      prevState.columns
-        .filter((tableColumn: TableColumn) => prevState.hiddenColumns.indexOf(tableColumn.key) === -1)[index].reactDataGridColumn.width = columnWidth;
-      return { columns: prevState.columns };
-    });
-  };
-
   private _applyFilter = async (): Promise<void> => {
     // istanbul ignore else
     if (this.props.dataProvider.applyFilterDescriptors) {
@@ -1722,7 +1713,6 @@ export class Table extends React.Component<TableProps, TableState> {
                 minWidth={width}
                 headerRowHeight={TABLE_ROW_HEIGHT}
                 rowHeight={TABLE_ROW_HEIGHT}
-                minColumnWidth={TABLE_MIN_COLUMN_WIDTH}
                 onGridSort={this._handleGridSort}
                 enableRowSelect={null}  // Prevent deprecation warning
                 onAddFilter={this._handleFilterChange}
@@ -1730,7 +1720,6 @@ export class Table extends React.Component<TableProps, TableState> {
                 headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
                 getValidFilterValues={this._getValidFilterValues}
                 onScroll={this._onScroll}
-                onColumnResize={this._handleColumnResize}
               />
             )}
           />

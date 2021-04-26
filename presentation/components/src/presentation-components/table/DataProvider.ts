@@ -379,6 +379,7 @@ const extractAndCreateSameInstanceFieldsMap = (fields: Field[]) => {
   for (let i = 0; i < updatedFields.length; i++) {
     const field = updatedFields[i];
     if (field.isNestedContentField()/* && field.relationshipMeaning === RelationshipMeaning.SameInstance*/) {
+      /** Reset parentship for nestedFields, so ContentBuilder.createPropertyRecord() wouldn't create an array record */
       const nestedFields = field.nestedFields.map((nestedField: Field): Field => {
         nestedField.resetParentship();
         return nestedField;
