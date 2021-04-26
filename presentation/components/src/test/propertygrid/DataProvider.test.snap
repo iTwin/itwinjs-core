@@ -203,14 +203,14 @@ exports[`PropertyDataProvider getData with flat categories nested content handli
 Object {
   "categories": Array [
     Object {
-      "expand": false,
-      "label": "Test Category",
-      "name": "Category1",
-    },
-    Object {
       "expand": true,
       "label": "Test Category",
       "name": "Category2",
+    },
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category1",
     },
   ],
   "description": undefined,
@@ -451,12 +451,12 @@ Object {
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category1",
+      "name": "Category2",
     },
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category2",
+      "name": "Category1",
     },
   ],
   "description": undefined,
@@ -514,12 +514,12 @@ Object {
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category1",
+      "name": "Category2",
     },
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category2",
+      "name": "Category1",
     },
   ],
   "description": undefined,
@@ -1104,19 +1104,6 @@ Object {
   "records": Object {
     "Category1": Array [
       PropertyRecord {
-        "description": "display value 1",
-        "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "root-field$middle-field$nested-field-1",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "display value 1",
-          "value": "value 1",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
         "description": "display value 4",
         "property": Object {
           "displayLabel": "Simple Field",
@@ -1126,6 +1113,19 @@ Object {
         "value": Object {
           "displayValue": "display value 4",
           "value": "value 4",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 1",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$middle-field$nested-field-1",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 1",
+          "value": "value 1",
           "valueFormat": 0,
         },
       },

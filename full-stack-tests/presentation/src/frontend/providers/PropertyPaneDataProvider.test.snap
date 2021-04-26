@@ -289,6 +289,23 @@ Object {
   "records": Object {
     "/selected-item/": Array [
       PropertyRecord {
+        "description": "Uncategorized",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Category",
+          "name": "pc_bis_GeometricElement3d_Category",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Uncategorized",
+          "value": Object {
+            "className": "BisCore:SpatialCategory",
+            "id": "0x17",
+          },
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
         "property": Object {
           "displayLabel": "Code",
           "name": "pc_bis_Element_CodeValue",
@@ -326,23 +343,6 @@ Object {
         "value": Object {
           "displayValue": "",
           "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "description": "Uncategorized",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Category",
-          "name": "pc_bis_GeometricElement3d_Category",
-          "typename": "navigation",
-        },
-        "value": Object {
-          "displayValue": "Uncategorized",
-          "value": Object {
-            "className": "BisCore:SpatialCategory",
-            "id": "0x17",
-          },
           "valueFormat": 0,
         },
       },
@@ -2119,6 +2119,23 @@ Object {
   "records": Object {
     "/selected-item/": Array [
       PropertyRecord {
+        "description": "Uncategorized",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Category",
+          "name": "pc_bis_GeometricElement3d_Category",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Uncategorized",
+          "value": Object {
+            "className": "BisCore:SpatialCategory",
+            "id": "0x17",
+          },
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
         "property": Object {
           "displayLabel": "Code",
           "name": "pc_bis_Element_CodeValue",
@@ -2156,23 +2173,6 @@ Object {
         "value": Object {
           "displayValue": "",
           "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "description": "Uncategorized",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Category",
-          "name": "pc_bis_GeometricElement3d_Category",
-          "typename": "navigation",
-        },
-        "value": Object {
-          "displayValue": "Uncategorized",
-          "value": Object {
-            "className": "BisCore:SpatialCategory",
-            "id": "0x17",
-          },
           "valueFormat": 0,
         },
       },

@@ -19,18 +19,18 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/Content";
 import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import {
   FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager, RulesetManager,
 } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "@bentley/ui-components";
+import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 
 /**
  * This is just a helper class to provide public access to
@@ -921,8 +921,8 @@ describe("PropertyDataProvider", () => {
 
           it("doesn't include composite fields when set", async () => {
             const primitiveField = createPrimitiveField({ name: "Primitive" });
-            const arrayField = createArrayField({name: "Array"});
-            const structField = createStructField({name: "Struct"});
+            const arrayField = createArrayField({ name: "Array" });
+            const structField = createStructField({ name: "Struct" });
             const descriptor = createTestContentDescriptor({ fields: [primitiveField, arrayField, structField] });
             const values = {
               Primitive: "some value",
@@ -1395,7 +1395,7 @@ describe("PropertyDataProvider", () => {
         fields: [
           createTestNestedContentField({
             name: "root-field",
-            nestedFields: [ createTestSimpleContentField({name: "nested-field"}) ],
+            nestedFields: [createTestSimpleContentField({ name: "nested-field" })],
           }),
         ],
       }), [

@@ -6,14 +6,14 @@
  * @module PropertyGrid
  */
 
+import { inPlaceSort } from "fast-sort";
 import { once } from "lodash";
 import memoize from "micro-memoize";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, InstanceKey, Item,
-  NestedContentField, NestedContentValue, PresentationError, PropertyValueFormat as PresentationPropertyValueFormat,
-  PresentationStatus, Ruleset, Value, ValuesMap,
+  CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, InstanceKey, Item, NestedContentField,
+  NestedContentValue, PresentationError, PresentationStatus, PropertyValueFormat as PresentationPropertyValueFormat, Ruleset, Value, ValuesMap,
 } from "@bentley/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
@@ -21,8 +21,10 @@ import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChan
 import { ContentBuilder, FieldRecord } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
-import { createLabelRecord, findField, priorityAndNameSortFunction } from "../common/Utils";
+import { createLabelRecord, findField } from "../common/Utils";
 import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-properties/DataProvider";
+
+const labelsComparer = new Intl.Collator(undefined, { sensitivity: "base" }).compare;
 
 /**
  * Default presentation ruleset used by [[PresentationPropertyDataProvider]]. The ruleset just gets properties
@@ -190,7 +192,10 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * to supply a different sorting algorithm.
    */
   protected sortCategories(categories: CategoryDescription[]): void {
-    categories.sort(priorityAndNameSortFunction);
+    inPlaceSort(categories).by([
+      { desc: (c) => c.priority },
+      { asc: (c) => c.label, comparer: labelsComparer },
+    ]);
   }
 
   /**
@@ -201,8 +206,12 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   protected sortFields = (category: CategoryDescription, fields: Field[]) => {
     if (category.name === FAVORITES_CATEGORY_NAME)
       Presentation.favoriteProperties.sortFields(this.imodel, fields);
-    else
-      fields.sort(priorityAndNameSortFunction);
+    else {
+      inPlaceSort(fields).by([
+        { desc: (f) => f.priority },
+        { asc: (f) => f.label, comparer: labelsComparer },
+      ]);
+    }
   };
 
   /**

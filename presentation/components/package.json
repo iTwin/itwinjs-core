@@ -42,6 +42,7 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
+    "fast-sort": "^3.0.2",
     "lodash": "^4.17.10",
     "micro-memoize": "^4.0.9",
     "rxjs": "^6.6.2"
