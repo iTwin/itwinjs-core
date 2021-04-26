@@ -7,7 +7,7 @@
     },
     {
       "packageName": "@bentley/ui-components",
-      "comment": "Added `zIndex` property to [TableCellContentProps]. It is used to set z-index for the [TableCellContent].",
+      "comment": "Added `overflow` property for `react-grid-Cell__value` element. `zIndex` is set in [TableCellContent] style property. These updates are necessary for rendering merged cells in [Table] component.",
       "type": "none"
     },
     {
