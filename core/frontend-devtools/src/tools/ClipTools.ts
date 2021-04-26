@@ -83,7 +83,7 @@ export class ClipColorTool extends Tool {
   }
 }
 
-/** Controls a [ViewState]($frontend)'s [ViewDetails]($frontend)'s [ClipStyle.produceCutGeometry]($common) flag.
+/** Controls a view state's view details' flag for producing cut geometry for a clip style.
  * @beta
  */
 export class ToggleSectionCutTool extends Tool {
@@ -91,7 +91,7 @@ export class ToggleSectionCutTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
-  /** This method runs the tool, controlling a [ViewState]($frontend)'s [ViewDetails]($frontend)'s [ClipStyle.produceCutGeometry]($common) flag.
+  /** This method runs the tool, controlling a view state's view details' flag for producing cut geometry for a clip style.
    * @param produceCutGeometry whether to produce cut geometry
    */
   public run(produceCutGeometry?: boolean): boolean {
@@ -125,7 +125,7 @@ export class ToggleSectionCutTool extends Tool {
   }
 }
 
-/** Simple tool that toggles a hard-coded [ClipStyle]($frontend) overriding various aspects of the cut geometry appearance.
+/** Simple tool that toggles a hard-coded clip style overriding various aspects of the cut geometry appearance.
  * @beta
  */
 export class TestClipStyleTool extends DisplayStyleTool {
