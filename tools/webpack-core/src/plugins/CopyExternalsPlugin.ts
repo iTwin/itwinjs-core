@@ -56,9 +56,10 @@ export class CopyExternalsPlugin {
 
   public async handleModule(currentModule: any, outputDir: string, compilation: any) {
     const pkgName = this.pathToPackageName(currentModule.request);
-    if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
+    if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName)) {
+      this._logger.log(`Skipping ${pkgName}`);
       return;
-
+    }
     if (!this._appDependencies.has(pkgName)) {
       this._logger.warn(`Can't copy package "${pkgName}" - it is not a direct dependency.`);
       for (const reason of currentModule.reasons) {

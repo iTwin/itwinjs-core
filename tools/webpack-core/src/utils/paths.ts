@@ -31,3 +31,8 @@ export function getAppRelativePath(p: string) {
 export function getSourcePosition(module: any, loc: any) {
   return `${getAppRelativePath(module.resource)}:${loc.start.line}:${loc.start.column}`;
 }
+
+export function resetPaths() {
+  _paths.appPackageJson = resolveApp("package.json");
+  _paths.appNodeModules = resolveApp("node_modules");
+}

@@ -14,13 +14,13 @@
   "main": "lib/plugins/index.js",
   "scripts": {
     "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run copy:test-assets",
+    "build": "tsc 1>&2 && npm run copy:test",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha --opts ./mocha.opts \"./lib/test/**/*.test.js\"",
     "cover": "nyc npm test",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets"
+    "copy:test": "cpx \"./src/test/**/*\" ./lib/test"
   },
   "dependencies": {
     "chalk": "^3.0.0",

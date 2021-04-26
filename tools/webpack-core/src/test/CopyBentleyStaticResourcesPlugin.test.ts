@@ -7,38 +7,14 @@ import { expect } from "chai";
 import * as path from "path";
 import * as webpack from "webpack";
 import * as fs from "fs-extra";
-import { updatePaths } from "../utils/paths";
+import { updatePaths, resetPaths } from "../utils/paths";
+import { createCompiler, getTestConfig } from "./TestUtils";
 import { CopyBentleyStaticResourcesPlugin } from "../plugins/CopyBentleyStaticResourcesPlugin";
-
-function getTestConfig(srcFile: any, pluginToTest: any) {
-  return {
-    entry: [
-      path.join(__dirname, srcFile),
-    ],
-    output: {
-      path: path.join(__dirname, "dist"),
-      filename: path.basename(srcFile),
-    },
-    plugins: [
-      pluginToTest,
-    ],
-  };
-}
-
-function createCompiler(webpackTest: any, config: any) {
-  let compiler: any;
-  try {
-    compiler = webpackTest(config);
-  } catch (err) {
-    console.log(err);
-  }
-  return compiler;
-}
 
 describe("CopyBentleyStaticResourcesPlugin", () => {
   it("success with inability to find directory path", async () => {
     updatePaths(path.join(__dirname, "assets/copy-resources-test"));
-    const successTestConfig = getTestConfig("assets/copy-resources-test/copyResources.js", new CopyBentleyStaticResourcesPlugin(["assets"]));
+    const successTestConfig = getTestConfig("assets/copy-resources-test/copyResourcesTest.js", new CopyBentleyStaticResourcesPlugin(["assets"]));
     const sucessTestCompiler = createCompiler(webpack, successTestConfig);
     const result = await new Promise<any>((resolve, reject) => {
       sucessTestCompiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats));
