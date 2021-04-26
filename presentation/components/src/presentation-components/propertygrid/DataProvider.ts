@@ -13,7 +13,8 @@ import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, InstanceKey, Item, NestedContentField,
-  NestedContentValue, PresentationError, PresentationStatus, PropertyValueFormat as PresentationPropertyValueFormat, Ruleset, Value, ValuesMap,
+  NestedContentValue, PresentationError, PropertyValueFormat as PresentationPropertyValueFormat, PresentationStatus, RelationshipMeaning, Ruleset,
+  Value, ValuesMap,
 } from "@bentley/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
@@ -753,39 +754,54 @@ const isValueEmpty = (v: PropertyValue): boolean => {
   throw new PresentationError(PresentationStatus.InvalidArgument, "Unknown property value format");
 };
 
-function shouldDestructureField(field: Field) {
-  return field.isNestedContentField() || field.parent !== undefined;
+function shouldDestructureArrayField(field: Field) {
+  // destructure arrays if they're based on nested content field or nested under a nested content field
+  return field.isNestedContentField() || field.parent;
+}
+
+function shouldDestructureStructField(field: Field, totalRecordsCount: number) {
+  // destructure structs if they're based on nested content and:
+  // - if relationship meaning is 'same instance' - always destructure
+  // - if relationship meaning is 'related instance' - only if it's the only record in the list
+  return field.isNestedContentField() && (field.relationshipMeaning === RelationshipMeaning.SameInstance || totalRecordsCount === 1);
 }
 
 function destructureRecords(records: Array<FieldRecord & { fieldHierarchy: StrictFieldHierarchy }>) {
-  let madeModifications = true;
-  while (madeModifications) {
-    madeModifications = false;
-    for (let i = 0; i < records.length; ++i) {
-      const entry = records[i];
-      if (entry.record.value.valueFormat === PropertyValueFormat.Array && entry.record.value.items.length <= 1 && shouldDestructureField(entry.field)) {
-        records.splice(i, 1);
-        if (entry.record.value.items.length > 0) {
-          const item = entry.record.value.items[0];
-          records.push({ ...entry, fieldHierarchy: entry.fieldHierarchy, record: item });
-        }
-        madeModifications = true;
+  let i = 0;
+  while (i < records.length) {
+    const entry = records[i];
+
+    // destructure 0 or 1 sized arrays by removing the array record and putting its first item in its place (if any)
+    if (entry.record.value.valueFormat === PropertyValueFormat.Array && entry.record.value.items.length <= 1 && shouldDestructureArrayField(entry.field)) {
+      records.splice(i, 1);
+      if (entry.record.value.items.length > 0) {
+        const item = entry.record.value.items[0];
+        records.splice(i, 0, { ...entry, fieldHierarchy: entry.fieldHierarchy, record: item });
       }
+      continue;
     }
-    if (records.length === 1 && records[0].record.value.valueFormat === PropertyValueFormat.Struct && shouldDestructureField(records[0].field)) {
-      const entry = records[0];
-      records.length = 0;
-      entry.fieldHierarchy.childFields.forEach((nestedFieldHierarchy) => {
+
+    // destructure structs by replacing them with their member records
+    if (entry.record.value.valueFormat === PropertyValueFormat.Struct && shouldDestructureStructField(entry.field, records.length)) {
+      records.splice(i, 1, ...entry.fieldHierarchy.childFields.map((nestedFieldHierarchy) => {
         assert(entry.record.value.valueFormat === PropertyValueFormat.Struct);
         assert(entry.record.value.members[nestedFieldHierarchy.field.name] !== undefined);
-        records.push({
+        return {
           fieldHierarchy: nestedFieldHierarchy,
           field: nestedFieldHierarchy.field,
           record: entry.record.value.members[nestedFieldHierarchy.field.name],
-        });
-      });
-      madeModifications = true;
+        };
+      }));
+      continue;
     }
+
+    ++i;
+  }
+
+  // lastly, when there's only one record in the list and it's an array that we want destructured, set the `hideCompositePropertyLabel`
+  // attribute so only the items are rendered
+  if (records.length === 1 && records[0].record.value.valueFormat === PropertyValueFormat.Array && shouldDestructureArrayField(records[0].field)) {
+    records[0].record.property.hideCompositePropertyLabel = true;
   }
 }
 

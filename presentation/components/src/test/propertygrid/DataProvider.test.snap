@@ -128,19 +128,6 @@ Object {
   "records": Object {
     "Category1": Array [
       PropertyRecord {
-        "description": "display value 4",
-        "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "nested-field-4",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "display value 4",
-          "value": "value 4",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
         "description": "display value 1",
         "property": Object {
           "displayLabel": "Simple Field",
@@ -153,21 +140,21 @@ Object {
           "valueFormat": 0,
         },
       },
-    ],
-    "Category2": Array [
       PropertyRecord {
-        "description": "display value 3",
+        "description": "display value 4",
         "property": Object {
           "displayLabel": "Simple Field",
-          "name": "root-field$nested-field-3",
+          "name": "nested-field-4",
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "display value 3",
-          "value": "value 3",
+          "displayValue": "display value 4",
+          "value": "value 4",
           "valueFormat": 0,
         },
       },
+    ],
+    "Category2": Array [
       PropertyRecord {
         "property": Object {
           "displayLabel": "Nested Content",
@@ -191,6 +178,19 @@ Object {
             },
           },
           "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 3",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-3",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 3",
+          "value": "value 3",
+          "valueFormat": 0,
         },
       },
     ],
@@ -228,19 +228,6 @@ Object {
   },
   "records": Object {
     "Category1": Array [
-      PropertyRecord {
-        "description": "display value",
-        "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "root-sibling",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "display value",
-          "value": "value",
-          "valueFormat": 0,
-        },
-      },
       PropertyRecord {
         "property": Object {
           "displayLabel": "Nested Content",
@@ -329,6 +316,19 @@ Object {
             },
           },
           "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "display value",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-sibling",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value",
+          "value": "value",
+          "valueFormat": 0,
         },
       },
     ],
@@ -538,19 +538,6 @@ Object {
   "records": Object {
     "Category1": Array [
       PropertyRecord {
-        "description": "display value 3",
-        "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "sibling-root-field",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "display value 3",
-          "value": "value 3",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
         "property": Object {
           "displayLabel": "Nested Content",
           "name": "root-field",
@@ -573,6 +560,19 @@ Object {
             },
           },
           "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 3",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "sibling-root-field",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 3",
+          "value": "value 3",
+          "valueFormat": 0,
         },
       },
     ],
@@ -624,6 +624,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
+          "hideCompositePropertyLabel": true,
           "name": "root-field",
           "typename": "NestedContentFieldType[]",
         },
@@ -758,19 +759,6 @@ Object {
   "records": Object {
     "test-category": Array [
       PropertyRecord {
-        "description": "display value 3",
-        "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "sibling-root-field",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "display value 3",
-          "value": "value 3",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
         "property": Object {
           "displayLabel": "Nested Content",
           "name": "root-field",
@@ -793,6 +781,19 @@ Object {
             },
           },
           "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 3",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "sibling-root-field",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 3",
+          "value": "value 3",
+          "valueFormat": 0,
         },
       },
     ],
@@ -1104,19 +1105,6 @@ Object {
   "records": Object {
     "Category1": Array [
       PropertyRecord {
-        "description": "display value 4",
-        "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "nested-field-4",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "display value 4",
-          "value": "value 4",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
         "description": "display value 1",
         "property": Object {
           "displayLabel": "Simple Field",
@@ -1126,6 +1114,19 @@ Object {
         "value": Object {
           "displayValue": "display value 1",
           "value": "value 1",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 4",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "nested-field-4",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 4",
+          "value": "value 4",
           "valueFormat": 0,
         },
       },
@@ -1616,6 +1617,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
+          "hideCompositePropertyLabel": true,
           "name": "root-field",
           "typename": "NestedContentFieldType[]",
         },
