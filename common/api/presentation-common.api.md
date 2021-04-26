@@ -1360,6 +1360,8 @@ export class NestedContentField extends Field {
     pathToPrimaryClass: RelationshipPath;
     // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
+    // @alpha (undocumented)
+    relationshipMeaning: RelationshipMeaning;
     // @internal (undocumented)
     resetParentship(): void;
     toJSON(): NestedContentFieldJSON;
@@ -1377,6 +1379,8 @@ export interface NestedContentFieldJSON extends BaseFieldJSON {
     nestedFields: FieldJSON[];
     // (undocumented)
     pathToPrimaryClass: RelationshipPathJSON;
+    // @alpha (undocumented)
+    relationshipMeaning?: RelationshipMeaning;
 }
 
 // @public
