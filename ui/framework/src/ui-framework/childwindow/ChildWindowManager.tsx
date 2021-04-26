@@ -41,21 +41,26 @@ export interface ChildWindowLocationProps {
 export class ChildWindowManager {
   private _openChildWindows: OpenChildWindowInfo[] = [];
 
+  public get openChildWindows() {
+    return this._openChildWindows;
+  }
+
   public findChildWindow(childWindowId: string | undefined): OpenChildWindowInfo | undefined {
     if (undefined === childWindowId)
       return undefined;
 
-    return this._openChildWindows.find((openWindow) => openWindow.childWindowId === childWindowId);
+    return this.openChildWindows.find((openWindow) => openWindow.childWindowId === childWindowId);
   }
 
   public findChildWindowId(contentWindow: Window | undefined | null): string | undefined {
     if (!contentWindow)
       return undefined;
 
-    const childWindow = this._openChildWindows.find((openWindow) => openWindow.window === contentWindow);
+    const childWindow = this.openChildWindows.find((openWindow) => openWindow.window === contentWindow);
     return childWindow?.childWindowId;
   }
 
+  // istanbul ignore next
   private renderChildWindowContents(childWindow: Window, childWindowId: string, content: React.ReactNode) {
     const reactConnectionDiv = childWindow.document.getElementById("root");
     if (reactConnectionDiv) {
@@ -96,25 +101,18 @@ export class ChildWindowManager {
   }
 
   public closeChildWindow = (childWindowId: string, processWindowClose = true) => {
-    const windowIndex = this._openChildWindows.findIndex((openWindow) => openWindow.childWindowId === childWindowId);
+    const windowIndex = this.openChildWindows.findIndex((openWindow) => openWindow.childWindowId === childWindowId);
     if (-1 === windowIndex)
       return false;
-    const childWindow = this._openChildWindows[windowIndex];
-    if (childWindow) {
-      this._openChildWindows.splice(windowIndex, 1);
-      // AppState.fireWidgetVisibilityChangedEvent();
-      if (processWindowClose) {
-        childWindow.window.close();
-        return true;
-      }
+    const childWindow = this.openChildWindows[windowIndex];
+    this.openChildWindows.splice(windowIndex, 1);
+    if (processWindowClose) {
+      childWindow.window.close();
     }
-    return false;
+    return true;
   };
 
-  public get openChildWindows() {
-    return this._openChildWindows;
-  }
-
+  // istanbul ignore next
   private adjustWidowLocation(location: ChildWindowLocationProps, center?: boolean): ChildWindowLocationProps {
     const outLocation = { ...location };
 
@@ -136,15 +134,16 @@ export class ChildWindowManager {
     return outLocation;
   }
 
-  public openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps) {
+  // istanbul ignore next
+  public openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useBlankUrl?: boolean) {
     // first check to see if content is already open in child window
-    if (this._openChildWindows.findIndex((openWindow) => openWindow.childWindowId === childWindowId) >= 0) {
+    if (this.openChildWindows.findIndex((openWindow) => openWindow.childWindowId === childWindowId) >= 0) {
       return false;
     }
 
     location = this.adjustWidowLocation(location);
-
-    const childWindow = window.open("/iTwinPopup.html", "", `width=${location.width},height=${location.height},left=${location.left},top=${location.top},menubar=no,resizable=no,scrollbars=no,status=no,location=no`);
+    const url = useBlankUrl ? "" : "/iTwinPopup.html";
+    const childWindow = window.open(url, "", `width=${location.width},height=${location.height},left=${location.left},top=${location.top},menubar=no,resizable=no,scrollbars=no,status=no,location=no`);
     if (!childWindow)
       return false;
 
