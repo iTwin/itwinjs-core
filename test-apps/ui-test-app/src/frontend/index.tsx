@@ -183,6 +183,10 @@ export class SampleAppIModelApp {
     else
       await WebViewerApp.startup(opts);
 
+    window.onerror = function (error) {
+      alert(error);
+    };
+
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
