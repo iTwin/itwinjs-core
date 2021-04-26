@@ -9,7 +9,7 @@ import { act, fireEvent, queryByText, render } from "@testing-library/react";
 import {
   DockedToolSetting, DockedToolSettings, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
 } from "../../ui-ninezone";
-import { createDOMRect, ResizeObserverMock } from "../Utils";
+import { createDOMRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
 import { DragManagerProvider } from "../Providers";
 
 describe("DockedToolSettings", () => {
@@ -152,7 +152,7 @@ describe("DockedToolSettings", () => {
     document.getElementsByClassName("nz-toolSettings-panel").length.should.eq(0);
   });
 
-  it("should recalculate overflow on resize", () => {
+  it("should recalculate overflow on resize", async () => {
     let width = 100;
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
@@ -192,13 +192,15 @@ describe("DockedToolSettings", () => {
       resizeObserver!.callback([{
         contentRect: createDOMRect(),
         target: target!,
-      }], resizeObserver!);
+      } as any ], resizeObserver!);
     });
+
+    await flushAsyncOperations();
 
     queryAllByText(/Entry [0-9]$/).length.should.eq(1);
   });
 
-  it("should recalculate overflow on entry resize", () => {
+  it("should recalculate overflow on entry resize", async () => {
     let width = 50;
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
@@ -238,8 +240,10 @@ describe("DockedToolSettings", () => {
       resizeObserver!.callback([{
         contentRect: createDOMRect(),
         target: target!,
-      }], resizeObserver!);
+      } as any ], resizeObserver!);
     });
+
+    await flushAsyncOperations();
 
     queryAllByText(/Entry [0-9]$/).length.should.eq(1);
   });
