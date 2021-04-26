@@ -966,14 +966,22 @@ export abstract class ViewState extends ElementState {
   public hasSameCoordinates(other: ViewState): boolean {
     if (this.iModel !== other.iModel)
       return false;
+
+    // Spatial views view any number of spatial models all sharing one coordinate system.
     if (this.isSpatialView() && other.isSpatialView())
       return true;
+
+    // People sometimes mistakenly stick 2d models into spatial views' model selectors.
+    if (this.isSpatialView() || other.isSpatialView())
+      return false;
+
+    // Non-spatial views view exactly one model. If they view the same model, they share a coordinate system.
     let allowView = false;
     this.forEachModel((model) => {
-      if (!allowView && other.viewsModel(model.id))
-        allowView = true;
+      allowView ||= other.viewsModel(model.id);
     });
-    return allowView; // Accept if this view shares a model in common with target.
+
+    return allowView;
   }
 
   public getUpVector(point: Point3d): Vector3d {

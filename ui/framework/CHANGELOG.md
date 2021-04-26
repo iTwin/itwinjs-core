@@ -1,6 +1,20 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Thu, 08 Apr 2021 14:30:09 GMT and should not be manually modified.
+This log was last generated on Thu, 22 Apr 2021 21:07:34 GMT and should not be manually modified.
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:34 GMT
+
+### Updates
+
+- Update to get activeViewPort by monitoring ContentViewManager.onActiveContentChangedEvent this elimates issue where ViewManager active viewport changes occur before all UI components are mounted and listening.
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+### Updates
+
+- Cleanup statusbar styling to ensure items are centered and do not overflow area.
 
 ## 2.14.2
 Thu, 08 Apr 2021 14:30:09 GMT

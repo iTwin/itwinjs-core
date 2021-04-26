@@ -2,6 +2,24 @@
   "name": "@bentley/reality-data-client",
   "entries": [
     {
+      "version": "2.14.4",
+      "tag": "@bentley/reality-data-client_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update tests to account for changes and deprecations to reality data service"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@bentley/reality-data-client_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.14.2",
       "tag": "@bentley/reality-data-client_v2.14.2",
       "date": "Thu, 08 Apr 2021 14:30:09 GMT",

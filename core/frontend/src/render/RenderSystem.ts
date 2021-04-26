@@ -178,6 +178,25 @@ export interface PlanarGridProps {
   transparency?: PlanarGridTransparency;
 }
 
+/** Options used when constructing a `Batch` - that is, a [[RenderGraphic]] with an associated [FeatureTable]($common) describing individual [Feature]($common)s within the
+ * graphic. Individual features can be resymbolized in a variety of ways including flashing and hiliting.
+ * For example, to prevent graphics produced by [[readElementGraphics]] from being hilited when their corresponding element is in the [[SelectionSet]],
+ * pass `{ noHilite: true }` to [[readElementGraphics]].
+ * @public
+ */
+export interface BatchOptions {
+  /** Identifies the [[Tile]] associated with the batch, chiefly for debugging purposes.
+   * @beta
+   */
+  tileId?: string;
+  /** If true, features within the batch will not be flashed on mouseover. */
+  noFlash?: boolean;
+  /** If true, features within the batch will not be hilited when their corresponding element is in the [[SelectionSet]]. */
+  noHilite?: boolean;
+  /** If true, features within the batch will not be emphasized when the corresponding [[Feature]] is emphasized using [FeatureOverrides]($common). */
+  noEmphasis?: boolean;
+}
+
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
@@ -381,7 +400,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal
    */
-  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
+  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
 
   /** Create a graphic that assumes ownership of another graphic.
    * @param ownedGraphic The RenderGraphic to be owned.

@@ -43,6 +43,92 @@ exports[`<PopupButton /> renders correctly 1`] = `
 </div>
 `;
 
+exports[`<PopupButton /> renders correctly with moveFocus 1`] = `
+<div>
+  <div
+    className="components-popup-button"
+    data-testid="components-popup-button"
+    onClick={[Function]}
+    onKeyDown={[Function]}
+    role="button"
+    tabIndex={0}
+  >
+    <div
+      className="components-popup-button-value"
+    >
+      Hello
+    </div>
+    <div
+      className="components-popup-button-arrow"
+    >
+      <div
+        className="components-popup-button-arrow-icon icon icon-chevron-down"
+      />
+    </div>
+  </div>
+  <Popup
+    className="components-popup-button-popup"
+    isOpen={false}
+    left={-1}
+    moveFocus={false}
+    offset={4}
+    onClose={[Function]}
+    position={3}
+    showArrow={false}
+    showShadow={false}
+    target={null}
+    top={-1}
+  >
+    <div>
+      Hello World
+    </div>
+  </Popup>
+</div>
+`;
+
+exports[`<PopupButton /> renders correctly with placeholder 1`] = `
+<div>
+  <div
+    className="components-popup-button"
+    data-testid="components-popup-button"
+    onClick={[Function]}
+    onKeyDown={[Function]}
+    role="button"
+    tabIndex={0}
+  >
+    <div
+      className="components-popup-button-value"
+    >
+      Hello
+    </div>
+    <div
+      className="components-popup-button-arrow"
+    >
+      <div
+        className="components-popup-button-arrow-icon icon icon-chevron-down"
+      />
+    </div>
+  </div>
+  <Popup
+    className="components-popup-button-popup"
+    isOpen={false}
+    left={-1}
+    moveFocus={true}
+    offset={4}
+    onClose={[Function]}
+    position={3}
+    showArrow={false}
+    showShadow={false}
+    target={null}
+    top={-1}
+  >
+    <div>
+      Hello World
+    </div>
+  </Popup>
+</div>
+`;
+
 exports[`<PopupButton /> renders correctly with showArrow and showShadow 1`] = `
 <div>
   <div

@@ -627,23 +627,6 @@ export interface BriefcaseProps {
     iModelId: GuidString;
 }
 
-// @internal (undocumented)
-export interface BriefcasePushAndPullNotifications {
-    // (undocumented)
-    notifyPulledChanges: (arg: {
-        parentChangeSetId: string;
-    }) => void;
-    // (undocumented)
-    notifyPushedChanges: (arg: {
-        parentChangeSetId: string;
-    }) => void;
-    // (undocumented)
-    notifySavedChanges: (arg: {
-        hasPendingTxns: boolean;
-        time: number;
-    }) => void;
-}
-
 export { BriefcaseStatus }
 
 // @public
@@ -2280,16 +2263,20 @@ export interface ElementIdsAndRangesProps {
 }
 
 // @public
-export interface ElementLoadProps {
+export interface ElementLoadOptions {
+    displayStyle?: DisplayStyleLoadProps;
+    wantBRepData?: boolean;
+    wantGeometry?: boolean;
+}
+
+// @public
+export interface ElementLoadProps extends ElementLoadOptions {
     // (undocumented)
     code?: CodeProps;
-    displayStyle?: DisplayStyleLoadProps;
     // (undocumented)
     federationGuid?: GuidString;
     // (undocumented)
     id?: Id64String;
-    wantBRepData?: boolean;
-    wantGeometry?: boolean;
 }
 
 // @public
@@ -2870,8 +2857,8 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 // @public
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
-    // (undocumented)
     geom?: GeometryStreamProps;
+    placement?: PlacementProps;
 }
 
 // @public
@@ -3846,19 +3833,19 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String>;
     // (undocumented)
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
-    // @beta (undocumented)
+    // (undocumented)
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps>;
     // (undocumented)
     getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
-    // @beta (undocumented)
+    // (undocumented)
     getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string>;
-    // @beta (undocumented)
+    // (undocumented)
     getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps>;
     // (undocumented)
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
-    // @alpha (undocumented)
+    // (undocumented)
     getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
@@ -3868,6 +3855,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
     static readonly interfaceName = "IModelReadRpcInterface";
     static interfaceVersion: string;
+    // (undocumented)
+    loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
     // (undocumented)
     openForRead(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
@@ -3992,7 +3981,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void>;
     static getClient(): IModelWriteRpcInterface;
     static getClientForRouting(token: RpcRoutingToken): IModelWriteRpcInterface;
-    // (undocumented)
+    // @deprecated (undocumented)
     getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]>;
     // @deprecated (undocumented)
     getParentChangeset(_iModelToken: IModelRpcProps): Promise<string>;
@@ -4071,8 +4060,6 @@ export enum IpcAppChannel {
     // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
-    PushPull = "push-pull",
-    // (undocumented)
     Txns = "txns"
 }
 
@@ -4091,7 +4078,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
+    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<string>;
     pushChanges: (key: string, description: string) => Promise<string>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
@@ -4216,6 +4203,12 @@ export abstract class IpcWebSocketTransport {
 
 // @internal
 export function isKnownTileFormat(format: number): boolean;
+
+// @public
+export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps;
+
+// @public
+export function isPlacement3dProps(props: PlacementProps): props is Placement3dProps;
 
 // @public
 export function isPowerOfTwo(num: number): boolean;
@@ -5132,6 +5125,9 @@ export interface PhysicalTypeProps extends TypeDefinitionElementProps {
 }
 
 // @public
+export type Placement = Placement2d | Placement3d;
+
+// @public
 export class Placement2d implements Placement2dProps {
     constructor(origin: Point2d, angle: Angle, bbox: ElementAlignedBox2d);
     // (undocumented)
@@ -5141,6 +5137,7 @@ export class Placement2d implements Placement2dProps {
     calculateRange(): AxisAlignedBox3d;
     static fromJSON(json?: Placement2dProps): Placement2d;
     getWorldCorners(out?: Frustum): Frustum;
+    get is3d(): boolean;
     get isValid(): boolean;
     multiplyTransform(other: Transform): void;
     // (undocumented)
@@ -5170,6 +5167,7 @@ export class Placement3d implements Placement3dProps {
     calculateRange(): AxisAlignedBox3d;
     static fromJSON(json?: Placement3dProps): Placement3d;
     getWorldCorners(out?: Frustum): Frustum;
+    get is3d(): boolean;
     get isValid(): boolean;
     multiplyTransform(other: Transform): void;
     // (undocumented)
@@ -7683,13 +7681,17 @@ export interface TxnNotifications {
     // (undocumented)
     notifyCommit: () => void;
     // (undocumented)
-    notifyCommitted: () => void;
+    notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
     // (undocumented)
     notifyElementsChanged: (changes: ChangedEntities) => void;
     // (undocumented)
     notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
     // (undocumented)
     notifyModelsChanged: (changes: ChangedEntities) => void;
+    // (undocumented)
+    notifyPulledChanges: (parentChangeSetId: string) => void;
+    // (undocumented)
+    notifyPushedChanges: (parentChangeSetId: string) => void;
 }
 
 // @public

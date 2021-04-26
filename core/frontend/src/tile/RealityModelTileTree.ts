@@ -445,23 +445,34 @@ export class RealityModelTileTree extends RealityTileTree {
 /** @internal */
 // eslint-disable-next-line no-redeclare
 export namespace RealityModelTileTree {
-  export interface ReferenceProps {
-    url: string;
+
+  export interface ReferenceBaseProps {
     iModel: IModelConnection;
     source: RealityModelSource;
     modelId?: Id64String;
     tilesetToDbTransform?: TransformProps;
     name?: string;
     classifiers?: SpatialClassifiers;
-    requestAuthorization?: string;
     planarMask?: PlanarClipMaskProps;
+  }
+  export interface ReferenceProps extends ReferenceBaseProps {
+    url: string;
+    requestAuthorization?: string;
   }
 
   export abstract class Reference extends TileTreeReference {
+    protected readonly _name: string;
+
+    protected _transform?: Transform;
+    protected _iModel: IModelConnection;
+    protected _maskModelIds?: string;
     private _modelId: Id64String;
     private _isGlobal?: boolean;
     protected _planarClipMask?: PlanarClipMaskState;
+    protected _classifier?: SpatialClassifierTileTreeReference;
+    protected _mapDrapeTree?: TileTreeReference;
     public get modelId() { return this._modelId; }
+    public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
     public get planarClipMaskPriority(): number {
@@ -471,12 +482,27 @@ export namespace RealityModelTileTree {
       return this.isGlobal ? PlanarClipMaskPriority.GlobalRealityModel : PlanarClipMaskPriority.RealityModel;
     }
 
-    public constructor(modelId: Id64String | undefined, iModel: IModelConnection) {
+    public constructor(props: RealityModelTileTree.ReferenceBaseProps) {
       super();
-      this._modelId = modelId ? modelId : iModel.transientIds.next;
+      this._name = undefined !== props.name ? props.name : "";
+      this._modelId = props.modelId ? props.modelId : props.iModel.transientIds.next;
+      let transform;
+      if (undefined !== props.tilesetToDbTransform) {
+        const tf = Transform.fromJSON(props.tilesetToDbTransform);
+        if (!tf.isIdentity)
+          transform = tf;
+
+        this._transform = transform;
+      }
+      this._iModel = props.iModel;
+      this._planarClipMask = (props.planarMask && props.planarMask.mode !== PlanarClipMaskMode.None) ? PlanarClipMaskState.create(PlanarClipMaskSettings.fromJSON(props.planarMask)) : undefined;
+      this._maskModelIds = props.planarMask?.modelIds;
+
+      if (undefined !== props.classifiers)
+        this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
     }
 
-    public abstract get classifiers(): SpatialClassifiers | undefined;
+    public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
 
     public unionFitRange(union: Range3d): void {
       const contentRange = this.computeWorldContentRange();
@@ -490,6 +516,47 @@ export namespace RealityModelTileTree {
           this._isGlobal = range.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
       }
       return this._isGlobal === undefined ? false : this._isGlobal;
+    }
+
+    public addToScene(context: SceneContext): void {
+      // NB: The classifier must be added first, so we can find it when adding our own tiles.
+      if (this._classifier && this._classifier.activeClassifier)
+        this._classifier.addToScene(context);
+
+      this.addPlanarClassifierOrMaskToScene(context);
+      super.addToScene(context);
+    }
+    protected addPlanarClassifierOrMaskToScene(context: SceneContext) {
+      // A planarClassifier is required if there is a classification tree OR planar masking is required.
+      const classifierTree = this.planarClassifierTreeRef;
+      const planarClipMask = this._planarClipMask ? this._planarClipMask : context.viewport.displayStyle.getRealityModelPlanarClipMask(this.modelId);
+      if (!classifierTree && !planarClipMask)
+        return;
+
+      if (classifierTree && !classifierTree.treeOwner.load())
+        return;
+
+      context.addPlanarClassifier(this.modelId, classifierTree, planarClipMask);
+    }
+
+    public discloseTileTrees(trees: DisclosedTileTreeSet): void {
+      super.discloseTileTrees(trees);
+
+      if (undefined !== this._classifier)
+        this._classifier.discloseTileTrees(trees);
+
+      if (undefined !== this._mapDrapeTree)
+        this._mapDrapeTree.discloseTileTrees(trees);
+
+      if (undefined !== this._planarClipMask)
+        this._planarClipMask.discloseTileTrees(trees);
+    }
+    public collectStatistics(stats: RenderMemory.Statistics): void {
+      super.collectStatistics(stats);
+
+      const tree = undefined !== this._classifier ? this._classifier.treeOwner.tileTree : undefined;
+      if (undefined !== tree)
+        tree.collectStatistics(stats);
     }
   }
 
@@ -573,32 +640,11 @@ export namespace RealityModelTileTree {
  * @internal
  */
 class RealityTreeReference extends RealityModelTileTree.Reference {
-  private readonly _name: string;
   private readonly _url: string;
-  private readonly _classifier?: SpatialClassifierTileTreeReference;
-  private _mapDrapeTree?: TileTreeReference;
-  private _transform?: Transform;
-  private _iModel: IModelConnection;
-  private _maskModelIds?: string;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
-    super(props.modelId, props.iModel);
-    let transform;
-    if (undefined !== props.tilesetToDbTransform) {
-      const tf = Transform.fromJSON(props.tilesetToDbTransform);
-      if (!tf.isIdentity)
-        transform = tf;
-    }
-
-    this._name = undefined !== props.name ? props.name : "";
+    super(props);
     this._url = props.url;
-    this._transform = transform;
-    this._iModel = props.iModel;
-    this._planarClipMask = (props.planarMask && props.planarMask.mode !== PlanarClipMaskMode.None) ? PlanarClipMaskState.create(PlanarClipMaskSettings.fromJSON(props.planarMask)) : undefined;
-    this._maskModelIds = props.planarMask?.modelIds;
-
-    if (undefined !== props.classifiers)
-      this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
   }
   public get treeOwner(): TileTreeOwner {
     const treeId = { url: this._url, transform: this._transform, modelId: this.modelId, maskModelIds: this._maskModelIds };
@@ -613,7 +659,6 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     return !this._mapDrapeTree || this._mapDrapeTree.isLoadingComplete;
   }
 
-  public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
   public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     // For global reality models (OSM Building layer only) - offset the reality model by the BIM elevation bias.  This would not be necessary
     // if iModels had their elevation set correctly but unfortunately many GCS erroneously report Sea (Geoid) elevation rather than
@@ -629,49 +674,15 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     return drawArgs;
   }
 
-  public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
-
   public addToScene(context: SceneContext): void {
-    // NB: The classifier must be added first, so we can find it when adding our own tiles.
-    if (this._classifier && this._classifier.activeClassifier)
-      this._classifier.addToScene(context);
-
-    this.addPlanarClassifierOrMaskToScene(context);
-
     const tree = this.treeOwner.tileTree as RealityTileTree;
-    if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
+    if (undefined !== tree && context.viewport.iModel.isGeoLocated &&  (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
       // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
       this._mapDrapeTree = context.viewport.backgroundDrapeMap;
       context.addBackgroundDrapedModel(this, undefined);
     }
 
     super.addToScene(context);
-  }
-
-  private addPlanarClassifierOrMaskToScene(context: SceneContext) {
-    // A planarClassifier is required if there is a classification tree OR planar masking is required.
-    const classifierTree = this.planarClassifierTreeRef;
-    const planarClipMask = this._planarClipMask ? this._planarClipMask : context.viewport.displayStyle.getRealityModelPlanarClipMask(this.modelId);
-    if (!classifierTree && !planarClipMask)
-      return;
-
-    if (classifierTree && !classifierTree.treeOwner.load())
-      return;
-
-    context.addPlanarClassifier(this.modelId, classifierTree, planarClipMask);
-  }
-
-  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
-    super.discloseTileTrees(trees);
-
-    if (undefined !== this._classifier)
-      this._classifier.discloseTileTrees(trees);
-
-    if (undefined !== this._mapDrapeTree)
-      this._mapDrapeTree.discloseTileTrees(trees);
-
-    if (undefined !== this._planarClipMask)
-      this._planarClipMask.discloseTileTrees(trees);
   }
 
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
@@ -700,14 +711,6 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");
     return div;
-  }
-
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    super.collectStatistics(stats);
-
-    const tree = undefined !== this._classifier ? this._classifier.treeOwner.tileTree : undefined;
-    if (undefined !== tree)
-      tree.collectStatistics(stats);
   }
 
   public addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {

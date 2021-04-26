@@ -12,7 +12,7 @@ import { FilteredType, PropertyCategoryDataFiltererBase, PropertyDataFilterResul
 
 /**
  * PropertyData filterer which matches on PropertyCategory's label.
- * @alpha
+ * @beta
  */
 export class PropertyCategoryLabelFilterer extends PropertyCategoryDataFiltererBase {
   private _filterText: string = "";

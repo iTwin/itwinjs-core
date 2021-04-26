@@ -9,17 +9,17 @@
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
   ProcessDetector,
-  StopWatch,
+  StopWatch
 } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
-  Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
+  Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, MapLayerSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
-  SubCategoryOverride, ViewFlags,
+  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, NpcCenter, Placement, Placement2d,
+  Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
+  SubCategoryOverride, ViewFlags
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -773,13 +773,13 @@ export abstract class Viewport implements IDisposable {
   }
 
   private enableAllSubCategories(categoryIds: Id64Arg): void {
-    Id64.forEach(categoryIds, (categoryId) => {
+    for (const categoryId of Id64.iterable(categoryIds)) {
       const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
       if (undefined !== subCategoryIds) {
         for (const subCategoryId of subCategoryIds)
           this.changeSubCategoryDisplay(subCategoryId, true);
       }
-    });
+    }
   }
 
   /** @internal */
@@ -1860,9 +1860,8 @@ export abstract class Viewport implements IDisposable {
    * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
    */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
-    const toPlacement = (placement: Placement2dProps | Placement3dProps): Placement2d | Placement3d => {
-      const props = placement as any;
-      return undefined !== props.angle ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
+    const toPlacement = (props: PlacementProps): Placement => {
+      return isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
     };
 
     const indexOfFirstValidPlacement = placementProps.findIndex((props) => toPlacement(props).isValid);
