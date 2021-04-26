@@ -9,7 +9,7 @@
 import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, MapImageryProps, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
+  DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
@@ -159,8 +159,7 @@ export class DisplayStyle2d extends DisplayStyle {
 /** Describes initial settings for a new [[DisplayStyle3d]].
  * Most properties are inherited from [DisplayStyle3dSettingsProps]($common), but for backwards compatibility reasons, this interface is slightly awkward:
  * - It adds a `viewFlags` member that differs only in case and type from [DisplayStyleSettingsProps.viewflags]($common); and
- * - It extends the type of [DisplayStyleSettingsProps.backgroundColor]($common) to include [ColorDef]($common); and
- * - It decreases type-safety of [DisplayStyleSettingsProps.scheduleScript]($common) by redefining its type as `object`. If it is not an array, it is ignored.
+ * - It extends the type of [DisplayStyleSettingsProps.backgroundColor]($common) to include [ColorDef]($common).
  * These idiosyncrasies will be addressed in a future version of imodeljs-backend.
  * @see [[DisplayStyle3d.create]].
  * @public
@@ -171,9 +170,6 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
    */
   viewFlags?: ViewFlags;
   backgroundColor?: ColorDef | number;
-  /** Schedule script controlling timeline animation. Ignored if it is not an array. */
-  scheduleScript?: object | RenderSchedule.ModelTimelineProps[];
-  mapImagery?: MapImageryProps;
 }
 
 /** A DisplayStyle for 3d views.
@@ -263,13 +259,11 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
     if (!viewflags)
       viewflags = options.viewflags ?? new ViewFlags().toJSON();
 
-    const scheduleScript = Array.isArray(options.scheduleScript) ? options.scheduleScript : undefined;
     const backgroundColor = options.backgroundColor instanceof ColorDef ? options.backgroundColor.toJSON() : options.backgroundColor;
 
     const settings: DisplayStyle3dSettingsProps = {
       ...options,
       viewflags,
-      scheduleScript,
       backgroundColor,
     };
 
