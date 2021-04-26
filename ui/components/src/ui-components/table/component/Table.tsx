@@ -47,7 +47,6 @@ import ReactDataGrid = require("react-data-grid");
 
 const TABLE_ROW_HEIGHT = 27;
 const TABLE_FILTER_ROW_HEIGHT = 32;
-const TABLE_MIN_COLUMN_WIDTH = 80;
 
 /**
  * Specifies table selection target.
@@ -389,9 +388,12 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   /** @internal */
-  public componentDidUpdate(previousProps: TableProps) {
+  public componentDidUpdate(previousProps: TableProps, previousState: TableState) {
     this._rowSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
     this._cellSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
+
+    if (previousState.hiddenColumns.length !== this.state.hiddenColumns.length)
+      this.forceUpdate();
 
     if (previousProps.dataProvider !== this.props.dataProvider) {
       this._disposableListeners.dispose();
@@ -925,7 +927,7 @@ export class Table extends React.Component<TableProps, TableState> {
         propertyValueRendererManager={this.props.propertyValueRendererManager
           ? this.props.propertyValueRendererManager
           : PropertyValueRendererManager.defaultManager}
-        style={{zIndex: ((cellItem.mergedCellsCount ?? 1) > 1) ? 1 : undefined}}
+        style={{ zIndex: ((cellItem.mergedCellsCount ?? 1) > 1) ? 1 : undefined }}
       />
     );
   }
@@ -1049,8 +1051,16 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private createRowCells(rowProps: RowProps, isSelected: boolean): { [columnKey: string]: React.ReactNode } {
     const cells: { [columnKey: string]: React.ReactNode } = {};
-    const visibleColumns = this._getVisibleColumns();
-    const foundHiddenColumns = 0;
+    let gridColumns: HTMLElement[] = [];
+    let foundHiddenColumns = 0;
+
+    // istanbul ignore else
+    if (this._gridRef.current) {
+      const grid = this._gridRef.current as any;
+      // istanbul ignore else
+      if (grid.getDataGridDOMNode)
+        gridColumns = grid.getDataGridDOMNode().querySelectorAll(".react-grid-HeaderCell");
+    }
 
     for (let index = 0; index < this.state.columns.length; index++) {
       const column = this.state.columns[index];
@@ -1092,31 +1102,32 @@ export class Table extends React.Component<TableProps, TableState> {
       }
 
       className = classnames(className, this.getCellBorderStyle(cellKey));
-      const columnsNumber = cellProps.item.mergedCellsCount;
+      const mergedAdjacentCellsCount = (cellProps.item.mergedCellsCount ?? 1) - 1;
       let cellWidth = 0;
 
-      if (columnsNumber && columnsNumber > 1) {
-        for (let i = 0; i < columnsNumber; i++) {
-          const col = this.state.columns[index + i];
-          if (this.state.hiddenColumns.indexOf(col.key) === -1) {
-            const colWidth = col.reactDataGridColumn.width;
-            cellWidth += (colWidth && colWidth > TABLE_MIN_COLUMN_WIDTH) ? colWidth : TABLE_MIN_COLUMN_WIDTH;
-          }
-
-          if (i > 0)
-            cells[col.key] = (
-              <TableCell
-                className={className}
-                title={"empty-cell"}
-                onClick={onClick}
-                onMouseMove={onMouseMove}
-                onMouseDown={onMouseDown}
-              >
-              </TableCell>
-            );
+      for (let i = 0; i <= mergedAdjacentCellsCount; i++) {
+        const col = this.state.columns[index + i];
+        if (this.state.hiddenColumns.indexOf(col.key) === -1) {
+          const gridColumn = gridColumns[index + i - foundHiddenColumns];
+          const gridColumnWidth = gridColumn ? gridColumn.getBoundingClientRect().width : 0;
+          cellWidth += gridColumnWidth;
+        } else {
+          foundHiddenColumns++;
         }
-        index += columnsNumber - 1;
+
+        if (i > 0)
+          cells[col.key] = (
+            <TableCell
+              className={className}
+              title={"empty-cell"}
+              onClick={onClick}
+              onMouseMove={onMouseMove}
+              onMouseDown={onMouseDown}
+            >
+            </TableCell>
+          );
       }
+      index += mergedAdjacentCellsCount;
 
       cells[column.key] = (
         <TableCell
@@ -1131,7 +1142,7 @@ export class Table extends React.Component<TableProps, TableState> {
             propertyRecord: cellProps.item.record!,
             setFocus: true,
           } : undefined}
-          style={{ width: (columnsNumber && columnsNumber > 1) ? cellWidth : undefined}}
+          style={{ width: (mergedAdjacentCellsCount > 0) ? cellWidth : undefined }}
         >
           <CellContent isSelected={isSelected} />
         </TableCell>
@@ -1469,14 +1480,6 @@ export class Table extends React.Component<TableProps, TableState> {
     this._applyFilter();  // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
-  private _handleColumnResize = (index: number, columnWidth: number) => {
-    this.setState((prevState) => {
-      prevState.columns
-        .filter((tableColumn: TableColumn) => prevState.hiddenColumns.indexOf(tableColumn.key) === -1)[index].reactDataGridColumn.width = columnWidth;
-      return { columns: prevState.columns };
-    });
-  };
-
   private _applyFilter = async (): Promise<void> => {
     // istanbul ignore else
     if (this.props.dataProvider.applyFilterDescriptors) {
@@ -1710,7 +1713,6 @@ export class Table extends React.Component<TableProps, TableState> {
                 minWidth={width}
                 headerRowHeight={TABLE_ROW_HEIGHT}
                 rowHeight={TABLE_ROW_HEIGHT}
-                minColumnWidth={TABLE_MIN_COLUMN_WIDTH}
                 onGridSort={this._handleGridSort}
                 enableRowSelect={null}  // Prevent deprecation warning
                 onAddFilter={this._handleFilterChange}
@@ -1718,7 +1720,6 @@ export class Table extends React.Component<TableProps, TableState> {
                 headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
                 getValidFilterValues={this._getValidFilterValues}
                 onScroll={this._onScroll}
-                onColumnResize={this._handleColumnResize}
               />
             )}
           />

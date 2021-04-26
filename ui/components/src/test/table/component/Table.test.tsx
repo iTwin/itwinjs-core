@@ -24,7 +24,8 @@ import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTabl
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import ReactDataGrid from "react-data-grid";
+import { createDOMRect } from "../../Utils";
+import { stub } from "sinon";
 
 describe("Table", () => {
 
@@ -328,12 +329,19 @@ describe("Table", () => {
     });
 
     describe("without cell styles", () => {
-
+      let boundingClientStub: sinon.SinonStub<[], DOMRect>;
       beforeEach(async () => {
+        boundingClientStub = sinon.stub(HTMLElement.prototype, "getBoundingClientRect");
+        boundingClientStub
+          .onFirstCall().returns(createDOMRect({ width: 80 }))
+          .onSecondCall().returns(createDOMRect({ width: 90 }))
+          .onThirdCall().returns(createDOMRect({ width: 80 }));
+        boundingClientStub.returns(createDOMRect({ width: 80 }));
+
         rowData = [{
           key: "no_overrides",
           cells: [
-            { key: "1", record: testRecord(), mergedCellsCount: 3  },
+            { key: "1", record: testRecord(), mergedCellsCount: 3 },
             { key: "2", record: testRecord() },
             { key: "3", record: testRecord() }],
         }];
@@ -358,6 +366,10 @@ describe("Table", () => {
         table.update();
       });
 
+      afterEach(() => {
+        boundingClientStub.reset();
+      });
+
       const cellWidth = (cellContainer: enzyme.ReactWrapper<enzyme.HTMLAttributes, any, React.Component<{}, {}, any>>, index: number) => (cellContainer.at(index).prop("style")?.width as number);
 
       it("renders cells which have mergedCells specified", async () => {
@@ -369,7 +381,11 @@ describe("Table", () => {
         expect(cells.length).to.eq(3);
         expect(gridCells.length).to.eq(3);
 
-        expect(cellWidth(cells, 0)).to.be.eq(`${cellWidth(gridCells, 0) + cellWidth(gridCells, 1) + cellWidth(gridCells, 2)}px`);
+        expect(cellWidth(gridCells, 0)).to.eq(80);
+        expect(cellWidth(gridCells, 1)).to.eq(90);
+        expect(cellWidth(gridCells, 2)).to.eq(80);
+
+        expect(cellWidth(cells, 0)).to.be.eq(cellWidth(gridCells, 0) + cellWidth(gridCells, 1) + cellWidth(gridCells, 2));
         expect(cells.at(0).prop("title")).to.be.eq("123");
         expect(cells.at(1).prop("title")).to.be.eq("empty-cell");
         expect(cells.at(2).prop("title")).to.be.eq("empty-cell");
@@ -386,27 +402,10 @@ describe("Table", () => {
         expect(cells.length).to.eq(2);
         expect(gridCells.length).to.eq(2);
 
-        expect(cellWidth(cells, 0)).to.be.eq(`${cellWidth(gridCells, 0) + cellWidth(gridCells, 1)}px`);
+        expect(cellWidth(cells, 0)).to.be.eq(cellWidth(gridCells, 0) + cellWidth(gridCells, 1));
 
         expect(cells.at(0).prop("title")).to.be.eq("123");
         expect(cells.at(1).prop("title")).to.be.eq("empty-cell");
-      });
-
-      it("renders cells which have mergedCells specified and changes its width, when one of the merged cells width is changed", async () => {
-        const rows = table.find(rowClassName);
-        expect(rows.length).to.eq(1);
-
-        let cells = table.find(cellClassName);
-        const gridCells = table.find(gridCellClassName);
-        expect(cells.length).to.eq(3);
-        expect(gridCells.length).to.eq(3);
-
-        expect(cellWidth(cells, 0)).to.be.eq(`${cellWidth(gridCells, 0) + 90 + cellWidth(gridCells, 2)}px`);
-        // Resize one of the merged columns.
-        table.find(ReactDataGrid).props().onColumnResize!(1, 100);
-        cells = table.update().find(cellClassName);
-
-        expect(cellWidth(cells, 0)).to.eq(`${cellWidth(gridCells, 0) + 100 + cellWidth(gridCells, 2)}px`);
       });
 
     });

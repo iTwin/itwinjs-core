@@ -290,6 +290,7 @@ const extractAndCreateSameInstanceFieldsMap = (fields: Field[]) => {
   for (let i = 0; i < updatedFields.length; i++) {
     const field = updatedFields[i];
     if (field.isNestedContentField()/* && field.relationshipMeaning === RelationshipMeaning.SameInstance*/) {
+      /** Reset parentship for nestedFields, so ContentBuilder.createPropertyRecord() wouldn't create an array record */
       const nestedFields = field.nestedFields.map((nestedField: Field): Field => {
         nestedField.resetParentship();
         return nestedField;
@@ -390,8 +391,7 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>): RowI
   }
   const { foundFields: sameInstanceFieldsMap, updatedFields } = extractAndCreateSameInstanceFieldsMap(descriptor.fields);
   const { mergedFieldsCounts: mergedCellsCounts, updatedValues } = extractValues(item.values, Object.values(sameInstanceFieldsMap).map((field) => (field.name)));
-  const updatedItem: Item = Object.assign(item);
-  updatedItem.values = updatedValues;
+  const updatedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, updatedValues, item.displayValues, item.mergedFieldNames, item.extendedData);
 
   const key = JSON.stringify(item.primaryKeys[0]);
   if (descriptor.displayType === DefaultContentDisplayTypes.List) {
