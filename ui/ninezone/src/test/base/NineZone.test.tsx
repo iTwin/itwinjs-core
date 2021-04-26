@@ -10,7 +10,7 @@ import { Rectangle } from "@bentley/ui-core";
 import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
 import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
-import { createBoundingClientRect, createDOMRect, ResizeObserverMock } from "../Utils";
+import { createBoundingClientRect, createDOMRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
 
 describe("<NineZone />", () => {
   it("renders correctly", () => {
@@ -50,7 +50,7 @@ describe("<NineZone />", () => {
     });
   });
 
-  it("should dispatch RESIZE", () => {
+  it("should dispatch RESIZE", async () => {
     let resizeObserver: ResizeObserverMock | undefined;
     let measurer: Element | undefined;
     sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
@@ -71,8 +71,8 @@ describe("<NineZone />", () => {
     resizeObserver!.callback([{
       contentRect: createDOMRect(),
       target: measurer!,
-    }], resizeObserver!);
-
+    } as any], resizeObserver!);
+    await flushAsyncOperations();
     spy.calledOnceWithExactly(sinon.match({
       type: "RESIZE",
       size: {
@@ -82,7 +82,7 @@ describe("<NineZone />", () => {
     })).should.true;
   });
 
-  it("should not dispatch RESIZE if size did not change", () => {
+  it("should not dispatch RESIZE if size did not change", async () => {
     let resizeObserver: ResizeObserverMock | undefined;
     let measurer: Element | undefined;
     sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
@@ -101,10 +101,12 @@ describe("<NineZone />", () => {
 
     spy.reset();
 
+    await flushAsyncOperations();
+
     resizeObserver!.callback([{
       contentRect: createDOMRect(),
       target: measurer!,
-    }], resizeObserver!);
+    } as any], resizeObserver!);
 
     spy.notCalled.should.true;
   });
