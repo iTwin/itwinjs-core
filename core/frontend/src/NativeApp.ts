@@ -185,7 +185,7 @@ export class NativeApp {
     const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig);
     IModelApp.authorizationClient = auth;
     const connStatus = await NativeApp.checkInternetConnectivity();
-    if (true !== opts?.nativeApp?.noInitializeAuthClient && connStatus === InternetConnectivityStatus.Online)
+    if (opts?.nativeApp?.authConfig && true !== opts?.nativeApp?.noInitializeAuthClient && connStatus === InternetConnectivityStatus.Online)
       await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
   }
 
