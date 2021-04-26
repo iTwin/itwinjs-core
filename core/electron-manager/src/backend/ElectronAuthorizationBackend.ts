@@ -11,7 +11,7 @@
 // cSpell:ignore openid appauth signin Pkce Signout
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { AuthStatus, BentleyError, ClientRequestContext, Logger, SessionProps } from "@bentley/bentleyjs-core";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger, SessionProps } from "@bentley/bentleyjs-core";
 import { IModelHost, NativeAppAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
@@ -30,7 +30,7 @@ const loggerCategory = "electron-auth";
 
 /**
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
- * @internal
+ * @beta
  */
 export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend {
   public static defaultRedirectUri = "http://localhost:3000/signin-callback";
@@ -40,24 +40,24 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   public get tokenStore() { return this._tokenStore!; }
 
   public constructor(config?: NativeAppAuthorizationConfiguration) {
-    super();
-    this.config = config ?? {
-      clientId: NativeHost.applicationName ?? "electron-app",
-      scope: "openid email profile organization offline_access",
-    };
+    super(config);
   }
-  public get redirectUri() { return this.config.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri; }
+
+  public get redirectUri() { return this.config?.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri; }
+  private get isInitialized() { return this._configuration !== undefined; }
+
   /**
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public async initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void> {
-    await super.initialize(props, config);
-    this._tokenStore = new ElectronTokenStore(this.config.clientId);
+  public async initialize(config?: NativeAppAuthorizationConfiguration): Promise<void> {
+    await super.initialize(config);
+    assert(this.config !== undefined && this.issuerUrl != undefined, "URL of authorization provider was not initialized");
 
-    const url = await this.getUrl(ClientRequestContext.fromJSON(props));
+    this._tokenStore = new ElectronTokenStore(this.config!.clientId);
+
     const tokenRequestor = new NodeRequestor(); // the Node.js based HTTP client
-    this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(url, tokenRequestor);
+    this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(this.issuerUrl!, tokenRequestor);
     Logger.logTrace(loggerCategory, "Initialized service configuration", () => ({ configuration: this._configuration }));
 
     // Attempt to load the access token from store
@@ -95,7 +95,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    *   (ii) an interactive signin that requires user input.
    */
   public async signIn(): Promise<void> {
-    if (!this._configuration)
+    if (!this.isInitialized)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
     // Attempt to load the access token from store
@@ -104,7 +104,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
       return this.setAccessToken(token);
 
     // Create the authorization request
-    const nativeConfig = this.config;
+    const nativeConfig = this.config!;
     const authReqJson: AuthorizationRequestJson = {
       client_id: nativeConfig.clientId,
       redirect_uri: this.redirectUri,
@@ -143,7 +143,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     });
 
     // Start the signin
-    await authorizationHandler.performAuthorizationRequest(this._configuration, authorizationRequest);
+    await authorizationHandler.performAuthorizationRequest(this._configuration!, authorizationRequest);
   }
 
   private async _onAuthorizationResponse(authRequest: AuthorizationRequest, authResponse: AuthorizationResponse | null, authError: AuthorizationError | null): Promise<TokenResponse | undefined> {
@@ -183,7 +183,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     const options: RequestOptions = {
       method: "GET",
       headers: {
-        authorization: `Bearer ${tokenResponse.accessToken}`,
+        authorization: `Bearer ${tokenResponse.accessToken} `,
       },
       accept: "application/json",
     };
@@ -230,7 +230,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
-    const nativeConfig = this.config;
+    const nativeConfig = this.config!;
     const extras: StringMap = { code_verifier: codeVerifier };
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
@@ -254,7 +254,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
       refresh_token: refreshToken,
       redirect_uri: this.redirectUri,
-      client_id: this.config.clientId,
+      client_id: this.config!.clientId,
     };
 
     const tokenRequest = new TokenRequest(tokenRequestJson);
@@ -272,7 +272,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     const revokeTokenRequestJson: RevokeTokenRequestJson = {
       token: refreshToken,
       token_type_hint: "refresh_token",
-      client_id: this.config.clientId,
+      client_id: this.config!.clientId,
     };
 
     const revokeTokenRequest = new RevokeTokenRequest(revokeTokenRequestJson);

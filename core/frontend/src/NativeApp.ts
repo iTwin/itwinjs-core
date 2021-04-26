@@ -106,9 +106,13 @@ export class NativeAppAuthorization {
  */
 export interface NativeAppOpts extends IpcAppOptions {
   nativeApp?: {
-    /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized. */
+    /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized.
+     * @deprecated Initialize authorization for native applications at the backend
+     */
     authConfig?: NativeAppAuthorizationConfiguration;
-    /** if true, do not attempt to initialize AuthorizationClient */
+    /** if true, do not attempt to initialize AuthorizationClient
+     * @deprecated Initialize authorization for native applications at the backend
+     */
     noInitializeAuthClient?: boolean;
   };
 }
@@ -172,16 +176,17 @@ export class NativeApp {
     Config.App.merge(await this.callNativeHost("getConfig"));
     NativeApp.hookBrowserConnectivityEvents();
 
-    const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig);
-    IModelApp.authorizationClient = auth;
-    if (true !== opts?.nativeApp?.noInitializeAuthClient)
-      await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
-
     // initialize current online state.
     if (window.navigator.onLine) {
       RequestGlobalOptions.online = window.navigator.onLine;
       await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
+
+    const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig);
+    IModelApp.authorizationClient = auth;
+    const connStatus = await NativeApp.checkInternetConnectivity();
+    if (true !== opts?.nativeApp?.noInitializeAuthClient && connStatus === InternetConnectivityStatus.Online)
+      await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
   }
 
   public static async shutdown() {
