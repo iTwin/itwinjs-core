@@ -70,14 +70,6 @@ export class ElectronTestRunner {
         require(${JSON.stringify(initScriptPath)});
         startCertaTests(${JSON.stringify(config.testBundle)});`);
 
-      if (config.debug) {
-        // For some reason, the VS Code chrome debugger doesn't work correctly unless we reload the window before running tests.
-        await rendererWindow.webContents.executeJavaScript(`window.location.reload();`);
-        // Note that we'll have to wait for the did-finish-load event again since we just reloaded.
-        rendererWindow.webContents.once("did-finish-load", startTests);
-        return;
-      }
-
       await startTests();
     });
     await rendererWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
