@@ -1047,6 +1047,7 @@ export abstract class Viewport implements IDisposable {
       this.invalidateRenderPlan();
 
       this.detachFromDisplayStyle();
+      this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
       this.registerDisplayStyleListeners(newStyle);
     }));
 
@@ -1144,15 +1145,16 @@ export abstract class Viewport implements IDisposable {
     if (this._view)
       this._view.detachFromViewport();
 
-    if (this._mapTiledGraphicsProvider) {
-      this._mapTiledGraphicsProvider.detachFromDisplayStyle();
-      this._mapTiledGraphicsProvider = undefined;
-    }
   }
 
   private detachFromDisplayStyle(): void {
     this._detachFromDisplayStyle.forEach((f) => f());
     this._detachFromDisplayStyle.length = 0;
+
+    if (this._mapTiledGraphicsProvider) {
+      this._mapTiledGraphicsProvider.detachFromDisplayStyle();
+      this._mapTiledGraphicsProvider = undefined;
+    }
   }
 
   /** Enables or disables continuous rendering. Ideally, during each render frame a Viewport will do as little work as possible.

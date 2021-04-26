@@ -35,14 +35,14 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel,  _vp.viewportId, false, true);
     const removals = this._detachFromDisplayStyle;
 
-    removals.push(displayStyle.onMapSettingsChanged.addListener((settings: BackgroundMapSettings) => {
+    removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings: BackgroundMapSettings) => {
       const mapBase = MapLayerSettings.fromMapSettings(settings);
       this.backgroundMap.setBaseLayerSettings(mapBase);
       this.backgroundDrapeMap.setBaseLayerSettings(mapBase);
       this.backgroundMap.clearLayers();
       this.backgroundDrapeMap.clearLayers();
     }));
-    removals.push(displayStyle.onMapImageryChanged.addListener((imagery: MapImagerySettings) => {
+    removals.push(displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
       this.backgroundMap.setBaseLayerSettings(imagery.backgroundBase);
       this.backgroundMap.setLayerSettings(imagery.backgroundLayers);
       this.backgroundDrapeMap.setBaseLayerSettings(mapImagery.backgroundBase);

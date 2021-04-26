@@ -5,12 +5,12 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
   BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps,
   DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode,
-  GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings, RenderTexture, SkyBoxImageType, SkyBoxProps,
+  GroundPlane, LightSettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings, RenderTexture, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
@@ -73,15 +73,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
             this._attachedRealityModelPlanarClipMasks.set(planarClipOvr.modelId, PlanarClipMaskState.fromJSON(planarClipOvr));
     }
   }
-  /** Event raised just before changing the back ground map settings.
-   * @internal
-   */
-  public readonly onMapSettingsChanged = new BeEvent<(mapSettings: BackgroundMapSettings) => void>();
-
-  /** Event raised just after changing the back ground map settings.
-   * @internal
-   */
-  public readonly onMapImageryChanged = new BeEvent<(mapImagery: MapImagerySettings) => void>();
 
   /** @internal */
   public get displayTerrain() {
@@ -120,7 +111,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     const newSettings = this.backgroundMapSettings.clone(props);
-    this.onMapSettingsChanged.raiseEvent(newSettings);
     this.backgroundMapSettings = newSettings;
     if (props.providerName !== undefined || props.providerData?.mapType !== undefined) {
       const mapBase = MapLayerSettings.fromMapSettings(newSettings);
@@ -631,7 +621,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /* @internal */
   private _synchBackgroundMapImagery() {
-    this.onMapImageryChanged.raiseEvent(this.settings.mapImagery);
     this.settings.synchMapImagery();
   }
 
