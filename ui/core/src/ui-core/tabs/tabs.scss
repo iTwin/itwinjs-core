@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index";
 @import "../icons/variables";
+@import "~@itwin/itwinui-css/scss/style/speed";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 @mixin uicore-tabs {
@@ -59,7 +60,7 @@
         content:            "";
         position:           absolute;
         z-index:            1;
-        transition:         all 0.15s;
+        transition:         all $iui-speed-fast;
         top:                0;
         left:               0;
         background:         $buic-foreground-primary;

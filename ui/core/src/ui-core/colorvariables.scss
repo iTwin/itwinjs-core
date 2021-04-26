@@ -55,15 +55,17 @@
   --buic-foreground-primary-tone:             var(--iui-color-foreground-primary-overlay);
   --buic-foreground-focus:                    var(--iui-color-foreground-primary-overlay);
   --buic-foreground-focus-border:             var(--buic-inputs-border);
-  --buic-focus-boxshadow-gradient1:           rgba(var(--iui-color-foreground-primary-rgb), 0);
-  --buic-focus-boxshadow-gradient2:           rgba(var(--iui-color-foreground-primary-rgb), var(--iui-opacity-3));
+  --buic-focus-boxshadow:                     rgba(var(--iui-color-foreground-primary-rgb), var(--iui-opacity-4));
 
   --buic-foreground-accessory:                var(--iui-color-foreground-accessory);
   --buic-foreground-success:                  var(--iui-color-foreground-positive);
   --buic-foreground-positive:                 var(--iui-color-foreground-positive);
+  --buic-foreground-positive-rgb:             var(--iui-color-foreground-positive-rgb);
   --buic-foreground-alert:                    var(--iui-color-foreground-negative);
   --buic-foreground-negative:                 var(--iui-color-foreground-negative);
+  --buic-foreground-negative-rgb:             var(--iui-color-foreground-negative-rgb);
   --buic-foreground-warning:                  var(--iui-color-foreground-warning);
+  --buic-foreground-warning-rgb:              var(--iui-color-foreground-warning-rgb);
 
   --buic-background-focus-overlay:            rgba(var(--iui-color-foreground-primary-rgb), var(--iui-opacity-6));
   --buic-background-hover-overlay:            rgba(var(--iui-color-foreground-primary-rgb), var(--iui-opacity-5));
@@ -75,7 +77,7 @@
   --buic-row-hover:                           rgba(var(--iui-color-foreground-primary-rgb), var(--iui-opacity-6));
 
   --buic-background-card:                     var(--buic-background-tooltip);
-  --buic-background-striped_row:              rgba(var(--iui-color-foreground-body-rgb), 0.02);
+  --buic-background-striped_row:              rgba(var(--iui-color-foreground-body-rgb), 0.05);
 
   /** background.5 */
   --buic-background-titlebar:                 var(--buic-background-5);

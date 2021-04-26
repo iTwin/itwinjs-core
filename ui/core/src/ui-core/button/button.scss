@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "./variables";
-@import "~@itwin/itwinui-css/scss/style/variables";
+@import "~@itwin/itwinui-css/scss/style/speed";
 @import "~@itwin/itwinui-css/scss/style/typography";
+@import "~@itwin/itwinui-css/scss/style/variables";
 
 // cspell:ignore unbordered
 
@@ -26,7 +27,7 @@
   box-sizing:             border-box;
   box-shadow:             transparent 0px 1px 1px inset;
   border:                 1px solid transparent;
-  transition:             all 0.15s ease-in-out;
+  transition:             all $iui-speed-fast ease-in-out;
 
   &:active,
   &:focus {

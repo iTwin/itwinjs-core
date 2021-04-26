@@ -46,9 +46,9 @@
   /// Status colors ----------------------------------------------------------
 
   $status-colors: (
-    success:    $buic-foreground-success,
-    warning:    $buic-foreground-warning,
-    error:      $buic-foreground-alert
+    success:    $buic-foreground-positive-rgb,
+    warning:    $buic-foreground-warning-rgb,
+    error:      $buic-foreground-negative-rgb
   );
 
   @each $status, $color in $status-colors {
@@ -56,20 +56,20 @@
     &.#{$status},
     &.#{$status} > .uicore-message {
 
-      color:              $color;
+      color:                rgb($color);
     }
 
     &.#{$status} {
       > textarea,
       > .uicore-inputs-textarea {
 
-        border-color:       $color;
+        border-color:       rgb($color);
         box-shadow:         $buic-inputs-border 0px 1px 1px inset;
 
         &:focus {
 
-          border-color:   $color;
-          box-shadow:     $buic-focus-boxshadow-gradient1 0px 1px 1px inset, rgba( $color, 0.15 ) 0px 0px 0px 2px;
+          border-color:     rgb($color);
+          box-shadow:       rgba( $color, $uicore-opacity-boxshadow ) 0px 0px 0px 2px;
         }
       }
     }

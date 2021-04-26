@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../style/themecolors";
 @import "~@itwin/itwinui-css/scss/style/space";
+@import "~@itwin/itwinui-css/scss/style/speed";
 @import "~@itwin/itwinui-css/scss/style/typography";
 @import "../style/mixins";
 @import "../text/mixins";
@@ -17,7 +18,7 @@
   > .header {
     padding: $iui-xs $iui-xxs;
     background: $buic-background-control;
-    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    transition: background-color $iui-speed-fast ease-in-out, border-color $iui-speed-fast ease-in-out;
     cursor: pointer;
 
     > .icon-container {
@@ -31,7 +32,7 @@
       justify-content: center;
       margin-right: $iui-xxs;
       color: $buic-foreground-body;
-      transition: 0.15s ease-in-out;
+      transition: $iui-speed-fast ease-in-out;
     }
 
     > .caption {
@@ -55,9 +56,9 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      -webkit-transition: 0.15s ease-in-out;
-      -o-transition: 0.15s ease-in-out;
-      transition: 0.15s ease-in-out;
+      -webkit-transition: $iui-speed-fast ease-in-out;
+      -o-transition: $iui-speed-fast ease-in-out;
+      transition: $iui-speed-fast ease-in-out;
     }
 
     &:focus {
@@ -72,8 +73,8 @@
     margin: 0;
     border: 0 none transparent;
     transition:
-    padding-top 0.15s ease-in-out,
-    padding-bottom 0.15s ease-in-out;
+    padding-top $iui-speed-fast ease-in-out,
+    padding-bottom $iui-speed-fast ease-in-out;
   }
 
   &.with-caption > .header > .icon-container {
@@ -103,9 +104,9 @@
     border-top: 1px solid $buic-foreground-primary;
 
     > .header {
-      -webkit-transition: 0.15s ease-in-out;
-      -o-transition: 0.15s ease-in-out;
-      transition: 0.15s ease-in-out;
+      -webkit-transition: $iui-speed-fast ease-in-out;
+      -o-transition: $iui-speed-fast ease-in-out;
+      transition: $iui-speed-fast ease-in-out;
 
       > .icon-container,
       > .caption,
@@ -119,9 +120,9 @@
       }
 
       > .title {
-        -webkit-transition: 0.15s ease-in-out;
-        -o-transition: 0.15s ease-in-out;
-        transition: 0.15s ease-in-out;
+        -webkit-transition: $iui-speed-fast ease-in-out;
+        -o-transition: $iui-speed-fast ease-in-out;
+        transition: $iui-speed-fast ease-in-out;
       }
     }
 
