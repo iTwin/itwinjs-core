@@ -14,7 +14,10 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { AnimationBranchState, AnimationBranchStates } from "./render/GraphicBranch";
 
 function formatBranchId(modelId: Id64String, branchId: number): string {
-  return branchId < 0 ? "" : `${modelId}_Node_${branchId.toString()}`;
+  if (branchId < 0)
+    return modelId;
+
+  return `${modelId}_Node_${branchId.toString()}`;
 }
 
 function addAnimationBranch(modelId: Id64String, timeline: RenderSchedule.Timeline, branchId: number, branches: AnimationBranchStates, time: number): void {
