@@ -95,7 +95,13 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     }
 
     // eslint-disable-next-line deprecation/deprecation
-    if (settings.scheduleScript) {
+    if (settings.renderTimeline) {
+      const renderTimeline = context.findTargetElementId(settings.renderTimeline);
+      if (Id64.isValid(renderTimeline))
+        settings.renderTimeline = renderTimeline;
+      else
+        delete settings.renderTimeline;
+    } else if (settings.scheduleScript) {
       // eslint-disable-next-line deprecation/deprecation
       const scheduleScript = RenderTimeline.remapScript(context, settings.scheduleScript);
       if (scheduleScript.length > 0)
