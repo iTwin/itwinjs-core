@@ -789,7 +789,7 @@ function destructureStructMember(member: FieldRecord & { fieldHierarchy: StrictF
   return recs;
 }
 
-function destructureStructArrayItems(items: PropertyRecord[], _field: Field, fieldHierarchy: StrictFieldHierarchy) {
+function destructureStructArrayItems(items: PropertyRecord[], fieldHierarchy: StrictFieldHierarchy) {
   const destructuredFields: StrictFieldHierarchy[] = [];
   fieldHierarchy.childFields.forEach((nestedFieldHierarchy) => {
     items.forEach((item, index) => {
@@ -830,7 +830,7 @@ function destructureRecords(records: Array<FieldRecord & { fieldHierarchy: Stric
     if (entry.record.value.valueFormat === PropertyValueFormat.Array && shouldDestructureArrayField(entry.field)) {
       if (shouldDestructureStructField(entry.field, 1)) {
         // destructure individual array items
-        destructureStructArrayItems(entry.record.value.items, entry.field, entry.fieldHierarchy);
+        destructureStructArrayItems(entry.record.value.items, entry.fieldHierarchy);
       }
 
       // destructure 0 or 1 sized arrays by removing the array record and putting its first item in its place (if any)
