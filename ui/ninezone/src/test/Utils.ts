@@ -96,3 +96,8 @@ export type SinonStub<T extends (...args: any) => any> = sinon.SinonStub<Paramet
 
 /** Enzyme mount with automatic unmount after the test. */
 export const mount: typeof enzyme.mount = (global as any).enzymeMount;
+
+/** Waits until all async operations finish */
+export async function flushAsyncOperations() {
+  return new Promise((resolve) => setTimeout(resolve, 300));
+}
