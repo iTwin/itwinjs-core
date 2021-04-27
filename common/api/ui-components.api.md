@@ -2771,6 +2771,10 @@ export class MutableCategorizedArrayProperty extends MutableCategorizedProperty 
     // (undocumented)
     getChildren(): IMutableCategorizedPropertyItem[];
     // (undocumented)
+    getDescendantsAndSelf(): import("./MutableFlatGridItem").IMutableFlatGridItem[];
+    // (undocumented)
+    getVisibleDescendantsAndSelf(): import("./MutableFlatGridItem").IMutableFlatGridItem[];
+    // (undocumented)
     get type(): FlatGridItemType.Array;
 }
 
@@ -2808,6 +2812,10 @@ export class MutableCategorizedStructProperty extends MutableCategorizedProperty
     // (undocumented)
     getChildren(): IMutableCategorizedPropertyItem[];
     // (undocumented)
+    getDescendantsAndSelf(): import("./MutableFlatGridItem").IMutableFlatGridItem[];
+    // (undocumented)
+    getVisibleDescendantsAndSelf(): import("./MutableFlatGridItem").IMutableFlatGridItem[];
+    // (undocumented)
     get type(): FlatGridItemType.Struct;
 }
 
@@ -2839,6 +2847,7 @@ export abstract class MutableFlatPropertyGridItem implements IMutableFlatPropert
     getLastVisibleDescendantOrSelf(): IMutableFlatGridItem;
     // (undocumented)
     abstract getSelf(): IMutableFlatGridItem;
+    getVisibleDescendants(): IMutableFlatGridItem[];
     getVisibleDescendantsAndSelf(): IMutableFlatGridItem[];
     // (undocumented)
     get isExpanded(): boolean;

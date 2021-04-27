@@ -6,14 +6,15 @@
  * @module PropertyGrid
  */
 
+import { inPlaceSort } from "fast-sort";
 import { once } from "lodash";
 import memoize from "micro-memoize";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, InstanceKey, Item,
-  NestedContentField, NestedContentValue, PresentationError, PropertyValueFormat as PresentationPropertyValueFormat,
-  PresentationStatus, Ruleset, Value, ValuesMap,
+  CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, InstanceKey, Item, NestedContentField,
+  NestedContentValue, PresentationError, PropertyValueFormat as PresentationPropertyValueFormat, PresentationStatus, RelationshipMeaning, Ruleset,
+  Value, ValuesMap,
 } from "@bentley/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
@@ -21,8 +22,10 @@ import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChan
 import { ContentBuilder, FieldRecord } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
-import { createLabelRecord, findField, priorityAndNameSortFunction } from "../common/Utils";
+import { createLabelRecord, findField } from "../common/Utils";
 import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-properties/DataProvider";
+
+const labelsComparer = new Intl.Collator(undefined, { sensitivity: "base" }).compare;
 
 /**
  * Default presentation ruleset used by [[PresentationPropertyDataProvider]]. The ruleset just gets properties
@@ -190,7 +193,10 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * to supply a different sorting algorithm.
    */
   protected sortCategories(categories: CategoryDescription[]): void {
-    categories.sort(priorityAndNameSortFunction);
+    inPlaceSort(categories).by([
+      { desc: (c) => c.priority },
+      { asc: (c) => c.label, comparer: labelsComparer },
+    ]);
   }
 
   /**
@@ -201,8 +207,12 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   protected sortFields = (category: CategoryDescription, fields: Field[]) => {
     if (category.name === FAVORITES_CATEGORY_NAME)
       Presentation.favoriteProperties.sortFields(this.imodel, fields);
-    else
-      fields.sort(priorityAndNameSortFunction);
+    else {
+      inPlaceSort(fields).by([
+        { desc: (f) => f.priority },
+        { asc: (f) => f.label, comparer: labelsComparer },
+      ]);
+    }
   };
 
   /**
@@ -744,39 +754,120 @@ const isValueEmpty = (v: PropertyValue): boolean => {
   throw new PresentationError(PresentationStatus.InvalidArgument, "Unknown property value format");
 };
 
-function shouldDestructureField(field: Field) {
-  return field.isNestedContentField() || field.parent !== undefined;
+function shouldDestructureArrayField(field: Field) {
+  // destructure arrays if they're based on nested content field or nested under a nested content field
+  return field.isNestedContentField() || field.parent;
+}
+
+function shouldDestructureStructField(field: Field, totalRecordsCount: number | undefined) {
+  // destructure structs if they're based on nested content and:
+  // - if relationship meaning is 'same instance' - always destructure
+  // - if relationship meaning is 'related instance' - only if it's the only record in the list
+  return field.isNestedContentField() && (field.relationshipMeaning === RelationshipMeaning.SameInstance || totalRecordsCount === 1);
+}
+
+function destructureStructMember(member: FieldRecord & { fieldHierarchy: StrictFieldHierarchy }): Array<FieldRecord & { fieldHierarchy: StrictFieldHierarchy }> {
+  // only destructure array member items
+  if (member.record.value.valueFormat !== PropertyValueFormat.Array || !shouldDestructureArrayField(member.field) || !shouldDestructureStructField(member.field, undefined))
+    return [member];
+
+  // don't want to include struct arrays without items - just return empty array
+  if (member.record.value.items.length === 0)
+    return [];
+
+  // the array should be of size 1
+  if (member.record.value.items.length > 1)
+    return [member];
+
+  // the single item should be a struct
+  const item = member.record.value.items[0];
+  assert(item.value.valueFormat === PropertyValueFormat.Struct);
+
+  // if all above checks pass, destructure the struct item
+  const recs = [{ ...member, record: item }];
+  destructureRecords(recs);
+  return recs;
+}
+
+function destructureStructArrayItems(items: PropertyRecord[], fieldHierarchy: StrictFieldHierarchy) {
+  const destructuredFields: StrictFieldHierarchy[] = [];
+  fieldHierarchy.childFields.forEach((nestedFieldHierarchy) => {
+    items.forEach((item, index) => {
+      assert(item.value.valueFormat === PropertyValueFormat.Struct);
+      assert(item.value.members[nestedFieldHierarchy.field.name] !== undefined);
+
+      // destructure a single struct array item member
+      const destructuredMembers = destructureStructMember({
+        fieldHierarchy: nestedFieldHierarchy,
+        field: nestedFieldHierarchy.field,
+        record: item.value.members[nestedFieldHierarchy.field.name],
+      });
+
+      // remove the old member and insert all destructured new members
+      delete item.value.members[nestedFieldHierarchy.field.name];
+      destructuredMembers.forEach((destructuredMember) => {
+        assert(item.value.valueFormat === PropertyValueFormat.Struct);
+        item.value.members[destructuredMember.field.name] = destructuredMember.record;
+      });
+
+      // store new members. all items are expected to have the same members, so only need to do this once
+      if (index === 0)
+        destructuredMembers.forEach((destructuredMember) => destructuredFields.push(destructuredMember.fieldHierarchy));
+    });
+  });
+
+  // if we got a chance to destructure at least one item, replace old members with new ones
+  // in the field hierarchy that we got
+  if (items.length > 0)
+    fieldHierarchy.childFields = destructuredFields;
 }
 
 function destructureRecords(records: Array<FieldRecord & { fieldHierarchy: StrictFieldHierarchy }>) {
-  let madeModifications = true;
-  while (madeModifications) {
-    madeModifications = false;
-    for (let i = 0; i < records.length; ++i) {
-      const entry = records[i];
-      if (entry.record.value.valueFormat === PropertyValueFormat.Array && entry.record.value.items.length <= 1 && shouldDestructureField(entry.field)) {
+  let i = 0;
+  while (i < records.length) {
+    const entry = records[i];
+
+    if (entry.record.value.valueFormat === PropertyValueFormat.Array && shouldDestructureArrayField(entry.field)) {
+      if (shouldDestructureStructField(entry.field, 1)) {
+        // destructure individual array items
+        destructureStructArrayItems(entry.record.value.items, entry.fieldHierarchy);
+      }
+
+      // destructure 0 or 1 sized arrays by removing the array record and putting its first item in its place (if any)
+      if (entry.record.value.items.length <= 1) {
         records.splice(i, 1);
         if (entry.record.value.items.length > 0) {
           const item = entry.record.value.items[0];
-          records.push({ ...entry, fieldHierarchy: entry.fieldHierarchy, record: item });
+          records.splice(i, 0, { ...entry, fieldHierarchy: entry.fieldHierarchy, record: item });
         }
-        madeModifications = true;
+        continue;
       }
     }
-    if (records.length === 1 && records[0].record.value.valueFormat === PropertyValueFormat.Struct && shouldDestructureField(records[0].field)) {
-      const entry = records[0];
-      records.length = 0;
-      entry.fieldHierarchy.childFields.forEach((nestedFieldHierarchy) => {
+
+    if (entry.record.value.valueFormat === PropertyValueFormat.Struct && shouldDestructureStructField(entry.field, records.length)) {
+      // destructure structs by replacing them with their member records
+      const members = entry.fieldHierarchy.childFields.reduce((list, nestedFieldHierarchy) => {
         assert(entry.record.value.valueFormat === PropertyValueFormat.Struct);
         assert(entry.record.value.members[nestedFieldHierarchy.field.name] !== undefined);
-        records.push({
+        const member = {
           fieldHierarchy: nestedFieldHierarchy,
           field: nestedFieldHierarchy.field,
           record: entry.record.value.members[nestedFieldHierarchy.field.name],
-        });
-      });
-      madeModifications = true;
+        };
+        list.push(...destructureStructMember(member));
+        return list;
+      }, new Array<FieldRecord & { fieldHierarchy: StrictFieldHierarchy }>());
+      records.splice(i, 1, ...members);
+      continue;
     }
+
+    ++i;
+  }
+
+  // lastly, when there's only one record in the list and it's an array that we want destructured, set the `hideCompositePropertyLabel`
+  // attribute so only the items are rendered
+  if (records.length === 1 && records[0].record.value.valueFormat === PropertyValueFormat.Array && shouldDestructureArrayField(records[0].field)) {
+    records[0].record.property.hideCompositePropertyLabel = true;
   }
 }
 

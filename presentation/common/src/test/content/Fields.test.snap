@@ -165,6 +165,7 @@ Object {
     },
   ],
   "priority": 18043,
+  "relationshipMeaning": "RelatedInstance",
   "renderer": Object {
     "name": "custom_renderer",
   },
@@ -316,6 +317,7 @@ Object {
     },
   ],
   "priority": 50980,
+  "relationshipMeaning": "RelatedInstance",
   "renderer": Object {
     "name": "custom_renderer",
   },
@@ -426,6 +428,7 @@ Object {
     },
   ],
   "priority": 64071,
+  "relationshipMeaning": "RelatedInstance",
   "renderer": Object {
     "name": "custom_renderer",
   },
@@ -441,6 +444,117 @@ Object {
       },
     ],
     "typeName": "Sleek Soft Fish",
+    "valueFormat": "Struct",
+  },
+}
+`;
+
+exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON with categories and \`relationshipMeaning\` 1`] = `
+Object {
+  "actualPrimaryClassIds": Array [],
+  "autoExpand": false,
+  "category": Object {
+    "description": "Veritatis suscipit asperiores nihil saepe quasi exercitationem non placeat.",
+    "expand": true,
+    "label": "navigate Delaware back-end",
+    "name": "Boliviano Mvdol",
+    "parent": undefined,
+    "priority": 92224,
+  },
+  "contentClassInfo": Object {
+    "id": "0x7331000000315a",
+    "label": "radical Salad Outdoors",
+    "name": "withdrawal",
+  },
+  "editor": undefined,
+  "isReadonly": true,
+  "label": "Internal",
+  "name": "generate",
+  "nestedFields": Array [
+    Object {
+      "category": Object {
+        "description": "Veritatis suscipit asperiores nihil saepe quasi exercitationem non placeat.",
+        "expand": true,
+        "label": "navigate Delaware back-end",
+        "name": "Boliviano Mvdol",
+        "parent": undefined,
+        "priority": 92224,
+      },
+      "editor": Object {
+        "name": "Music",
+      },
+      "isReadonly": false,
+      "label": "Investment Account Tuna ability",
+      "name": "content",
+      "priority": 31346,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
+      "type": Object {
+        "typeName": "geometry",
+        "valueFormat": "Primitive",
+      },
+    },
+  ],
+  "pathToPrimaryClass": Array [
+    Object {
+      "isForwardRelationship": true,
+      "isPolymorphicRelationship": false,
+      "isPolymorphicTargetClass": true,
+      "relationshipInfo": Object {
+        "id": "0x17e760000005a66",
+        "label": "scale Vermont",
+        "name": "compress",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x3e9900000044a8",
+        "label": "Business-focused auxiliary Ergonomic",
+        "name": "Principal",
+      },
+      "targetClassInfo": Object {
+        "id": "0x145d000001197a",
+        "label": "Toys e-markets",
+        "name": "Infrastructure",
+      },
+    },
+    Object {
+      "isForwardRelationship": false,
+      "isPolymorphicRelationship": false,
+      "isPolymorphicTargetClass": false,
+      "relationshipInfo": Object {
+        "id": "0xfe840000011cca",
+        "label": "Direct bottom-line Stand-alone",
+        "name": "metrics",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x2eb40000011b26",
+        "label": "Forward",
+        "name": "Cotton",
+      },
+      "targetClassInfo": Object {
+        "id": "0x6717000000a142",
+        "label": "content JSON",
+        "name": "orchestration",
+      },
+    },
+  ],
+  "priority": 52971,
+  "relationshipMeaning": "SameInstance",
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
+  "type": Object {
+    "members": Array [
+      Object {
+        "label": "Cambridgeshire",
+        "name": "connecting",
+        "type": Object {
+          "typeName": "double",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "typeName": "moderator",
     "valueFormat": "Struct",
   },
 }
@@ -536,6 +650,7 @@ Object {
     },
   ],
   "priority": 5085,
+  "relationshipMeaning": "RelatedInstance",
   "renderer": Object {
     "name": "custom_renderer",
   },

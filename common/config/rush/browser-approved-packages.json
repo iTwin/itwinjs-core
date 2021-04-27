@@ -539,6 +539,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "fast-sort",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
