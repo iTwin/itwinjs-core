@@ -145,7 +145,7 @@ export namespace RenderSchedule {
     /** The Id of the [GeometricModelState]($frontend) to which the timeline applies. */
     modelId: Id64String;
     /** @alpha */
-    realityModelUrl?: string;     // defined only for "context" reality models (attached through display style)
+    realityModelUrl?: string; // defined only for "context" reality models (attached through display style)
     /** Timelines affecting groups of elements. */
     elementTimelines: ElementTimelineProps[];
   }
@@ -412,7 +412,7 @@ export namespace RenderSchedule {
 
   const scratchInterval = new Interval();
 
-  /** A list of [[VisibilityEntry]]'s within a [[Timeline]]. */
+  /** A list of [[VisibilityEntry]]s within a [[Timeline]]. */
   export class VisibilityTimelineEntries extends TimelineEntryList<VisibilityEntry, VisibilityEntryProps, number> {
     /** Returns the visibility value for the entry at the specified position in the list, or 100 (fully-visible) if no such entry exists. */
     public getValue(index: number): number {
@@ -420,7 +420,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** A list of [[TransformEntry]]'s within a [[Timeline]]. */
+  /** A list of [[TransformEntry]]s within a [[Timeline]]. */
   export class TransformTimelineEntries extends TimelineEntryList<TransformEntry, TransformEntryProps, Readonly<Transform>> {
     /** Returns the transform for the entry at the specified position in the list, or an identity transform if no such entry exists. */
     public getValue(index: number): Readonly<Transform> {

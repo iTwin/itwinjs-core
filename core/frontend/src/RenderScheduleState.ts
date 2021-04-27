@@ -27,6 +27,10 @@ function addAnimationBranch(modelId: Id64String, timeline: RenderSchedule.Timeli
     branches.set(formatBranchId(modelId, branchId), { clip });
 }
 
+/** Provides frontend-specific APIs for applying a RenderSchedule.Script to a view via a DisplayStyleState.
+ * The methods it adds are for internal use by the display system.
+ * @internal
+ */
 export class RenderScheduleState extends RenderSchedule.ScriptReference {
   public get duration(): Range1d {
     return this.script.duration;

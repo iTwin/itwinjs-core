@@ -1557,16 +1557,18 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
   }
 }
 
-/** Describes how to animate a view of a [[GeometricModel]] to show change over time.
+/** Describes how to animate a view of a [[GeometricModel]] to show change over time using a [RenderSchedule.Script]($common).
  * @note This class was introduced in version 01.00.13 of the BisCore ECSchema. It should only be used with [[IModelDb]]s containing that version or newer.
- * @alpha
+ * @beta
  */
 export class RenderTimeline extends InformationRecordElement {
   /** @internal */
   public static get className(): string { return "RenderTimeline"; }
   /** A human-readable description of the timeline, which may be an empty string. */
   public description: string;
-  /** The JSON representation of the instructions for visualizing change over time. */
+  /** The JSON representation of the instructions for visualizing change over time.
+   * @see [RenderSchedule.Script]($common) for the API for working with the script.
+   */
   public scriptProps: RenderSchedule.ScriptProps;
 
   /** @internal */

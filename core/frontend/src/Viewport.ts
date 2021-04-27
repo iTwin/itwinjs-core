@@ -1082,9 +1082,7 @@ export abstract class Viewport implements IDisposable {
       IModelApp.requestNextAnimation();
     };
 
-    // eslint-disable-next-line deprecation/deprecation
-    removals.push(settings.onScheduleScriptPropsChanged.addListener(scheduleChanged));
-    removals.push(style.onRenderTimelineChanged.addListener(scheduleChanged));
+    removals.push(style.onScheduleScriptReferenceChanged.addListener(scheduleChanged));
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
@@ -1099,7 +1097,6 @@ export abstract class Viewport implements IDisposable {
     // ###TODO detach/attach reality model
     // ###TODO reality model appearance overrides
     // ###TODO OSM Building display
-    // ###TODO map imagery?
 
     removals.push(settings.onBackgroundMapChanged.addListener(() => {
       this.invalidateController();

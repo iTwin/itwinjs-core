@@ -481,13 +481,13 @@ export interface SynchronizationConfigLinkProps extends UrlLinkProps {
 }
 
 /** Wire format describing a [RenderTimeline]($backend).
- * @alpha
+ * @beta
  */
 export interface RenderTimelineProps extends ElementProps {
   /** An optional human-readable description of the timeline. */
   description?: string;
   /** The stringified JSON representation of the instructions for visualizing change over time.
-   * ###TODO see [[RenderTimelineScriptProps]].
+   * @see [[RenderSchedule.ScriptProps]] for the JSON interface.
    */
   script: string;
 }

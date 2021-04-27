@@ -47,7 +47,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _scheduleState?: RenderScheduleState;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
-  public readonly onRenderTimelineChanged = new BeEvent<() => void>();
+  /** Event raised just before the [[scheduleScriptReference]] property is changed.
+   * @beta
+   */
+  public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
 
   /** The container for this display style's settings. */
   public abstract get settings(): DisplayStyleSettings;
@@ -84,7 +87,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
-  /** @beta */
+  /** Ensures all of the data required by the display style is loaded.
+   * @note This method is invoked by [[ViewState.load]].
+   * @beta
+   */
   public async load(): Promise<void> {
     // If we were cloned, we may already have a valid schedule state, and our display style Id may be invalid / different.
     // Preserve it if still usable.
@@ -101,12 +107,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       }
     }
 
-    return this.loadScheduleState();
+    this._scheduleState = await this.loadScheduleState();
   }
 
-  private async loadScheduleState(): Promise<void> {
+  private async loadScheduleState(): Promise<RenderScheduleState | undefined> {
     // The script can be stored on a separate RenderTimeline element (new, preferred way); or stuffed into the display style's JSON properties (old, deprecated way).
-    this._scheduleState = undefined;
     try {
       let script;
       let sourceId;
@@ -123,19 +128,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
         sourceId = this.id;
       }
 
-      if (script && sourceId)
-        this._scheduleState = new RenderScheduleState(sourceId, script);
+      return (script && sourceId) ? new RenderScheduleState(sourceId, script) : undefined;
     } catch (_) {
+      return undefined;
     }
-  }
-
-  /** @beta */
-  public async changeRenderTimeline(timelineId: Id64String | undefined): Promise<void> {
-    if (timelineId === this.settings.renderTimeline)
-      return;
-
-    await this.loadScheduleState();
-    this.onRenderTimelineChanged.raiseEvent();
   }
 
   /** @internal */
@@ -232,12 +228,32 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The name of this DisplayStyle */
   public get name(): string { return this.code.value; }
 
-  /** @beta */
+  /** Change the Id of the [RenderTimeline]($backend) element that hosts the [RenderSchedule.Script]($common) to be applied by this display style for
+   * animating the contents of the view.
+   * @beta
+   */
+  public async changeRenderTimeline(timelineId: Id64String | undefined): Promise<void> {
+    if (timelineId === this.settings.renderTimeline)
+      return;
+
+    const script = await this.loadScheduleState();
+    this.onScheduleScriptReferenceChanged.raiseEvent(script);
+    this._scheduleState = script;
+  }
+
+  /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
+   * @see [[changeRenderTimeline]] to change the script.
+   * @beta
+   */
   public get scheduleScript(): RenderSchedule.Script | undefined {
     return this._scheduleState?.script;
   }
 
-  /** @beta */
+  /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
+   * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
+   * @see [[changeRenderTimeline]] to change the script.
+   * @beta
+   */
   public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
     return this._scheduleState;
   }
@@ -248,21 +264,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** This is only used by [RealityTransitionTool]($frontend-devtools). It basically can only work if the script contains nothing that requires special tiles to be generated -
-   * no symbology changes, transforms, or clipping - or if the script only applies to reality models.
+   * no symbology changes, transforms, or clipping - because the backend tile generator requires a *persistent* element to host the script for those features to work.
    * @internal
    */
   public setScheduleState(state: RenderScheduleState | undefined): void {
+    this.onScheduleScriptReferenceChanged.raiseEvent(state);
     this._scheduleState = state;
     this.settings.scheduleScriptProps = state?.script.toJSON();
-    this.onRenderTimelineChanged.raiseEvent();
-  }
-
-  /** @beta */
-  public async changeRenderTimelineId(newTimeline: Id64String | undefined): Promise<void> {
-    if (this.settings.renderTimeline === newTimeline)
-      return;
-
-    return this.loadScheduleState();
   }
 
   /** @internal */
@@ -920,17 +928,26 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   protected registerSettingsEventListeners(): void {
     // eslint-disable-next-line deprecation/deprecation
-    this.settings.onScheduleScriptPropsChanged.addListener((timeline) => {
-      const prevState = this._scheduleState;
-      this._scheduleState = undefined;
-      if (timeline) {
-        const script = RenderSchedule.Script.fromJSON(timeline);
+    this.settings.onScheduleScriptPropsChanged.addListener((scriptProps) => {
+      let newState: RenderScheduleState | undefined;
+      if (scriptProps) {
+        const script = RenderSchedule.Script.fromJSON(scriptProps);
         if (script)
-          this._scheduleState = new RenderScheduleState(this.id, script);
+          newState = new RenderScheduleState(this.id, script);
       }
 
-      if (this._scheduleState !== prevState)
-        this.onRenderTimelineChanged.raiseEvent();
+      if (newState !== this._scheduleState) {
+        this.onScheduleScriptReferenceChanged.raiseEvent(newState);
+        this._scheduleState = newState;
+      }
+    });
+
+    this.settings.onRenderTimelineChanged.addListener((newTimeline) => {
+      if (newTimeline !== this._scheduleState?.sourceId) {
+        // Loading the new script is asynchronous...people should really be using DisplayStyleState.changeRenderTimeline().
+        this.onScheduleScriptReferenceChanged.raiseEvent(undefined);
+        this._scheduleState = undefined;
+      }
     });
 
     this.settings.onBackgroundMapChanged.addListener((mapSettings: BackgroundMapSettings) => {
