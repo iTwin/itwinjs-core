@@ -99,10 +99,12 @@ export class LoopbackWebServer {
       const errorUri = searchParams.get("error_uri") || undefined;
       const errorDescription = searchParams.get("error_description") || undefined;
       authorizationError = { error, error_description: errorDescription, error_uri: errorUri, state }; // eslint-disable-line @typescript-eslint/naming-convention
+      httpResponse.write('<h1>Sign in error!</h1>'); // TODO: Needs localization
+      httpResponse.end();
     } else {
       authorizationResponse = { code: code!, state };
       httpResponse.writeHead(200, { "Content-Type": 'text/html' });
-      httpResponse.write('<h1><h1>Sign in was successful!</h1>Close this window and return to the application</h1>'); // TODO: Needs localization
+      httpResponse.write('<h1>Sign in was successful!</h1>You can close this browser window and return to the application'); // TODO: Needs localization
       httpResponse.end();
     }
     authorizationEvents.onAuthorizationResponse.raiseEvent(authorizationError, authorizationResponse);
