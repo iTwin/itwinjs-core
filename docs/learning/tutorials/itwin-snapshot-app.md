@@ -11,3 +11,5 @@ Snapshot iModels should not be used in any production workflows as they do not p
 The iTwin Snapshot app was designed with developers in mind. The free tool allows developers to create snapshots and after the snapshot has been created, it guides you to a viewer to visualize the snapshot. It also contains links to iTwin.js documentation and blogs.
 
 [!bwc tile heading="Download iTwin Snapshot" link="https://autoupdatecdn.bentley.com/itsnp/client/iTwinSnapshot.exe" contents=" " icon="download.svg" step="13" width="20%"]
+
+Further information on how to use iTwin Snapshot can be found in the ["Create a snapshot iModel"]($docs/learning/tutorials/create-test-imodel-offline.md) tutorial.
