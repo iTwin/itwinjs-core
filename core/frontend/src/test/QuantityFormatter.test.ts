@@ -472,7 +472,7 @@ describe("Quantity formatter", async () => {
 
       // Exact values do not exist in document
       await testUnitConversion(1.0, "Units.US_SURVEY_FT", 0.3048006, "Units.M");
-      await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 20.11684, "Units.M", 1.0e-6);
+      await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 20.11684, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_YRD", 3.0 * 0.3048006, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1609.347, "Units.M", 1.0e-3);
     });
@@ -482,7 +482,7 @@ describe("Quantity formatter", async () => {
 describe("Test Custom QuantityType", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
-    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider());
+    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider(UNIT_EXTRA_DATA));
     await quantityFormatter.onInitialized();
   });
 
@@ -516,7 +516,7 @@ describe("Test Custom QuantityType", async () => {
 describe("Test Formatted Quantities", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
-    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider());
+    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider(UNIT_EXTRA_DATA));
     await quantityFormatter.onInitialized();
   });
 

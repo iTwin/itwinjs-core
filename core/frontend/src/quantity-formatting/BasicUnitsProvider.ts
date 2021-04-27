@@ -16,22 +16,6 @@ import { BadUnit, BasicUnit, UnitConversion, UnitExtraData, UnitProps, UnitsProv
 export class BasicUnitsProvider implements UnitsProvider {
   constructor(private _unitExtraData: UnitExtraData[] = []) {}
 
-  /**
-   * Find alternate display labels associated with unitName, if any
-   * @param unitName Full name of Unit
-   */
-  private getAlternateDisplayLabels(unitName: string): Array<string> {
-    let alternateLabels: Array<string> = [];
-    for (const entry of this._unitExtraData) {
-      if (entry.name.toLowerCase() === unitName.toLowerCase()) {
-        alternateLabels = entry.altDisplayLabels;
-        break;
-      }
-    }
-
-    return alternateLabels;
-  }
-
   /** Find a unit given the unitLabel. */
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     const labelToFind = unitLabel.toLowerCase();
@@ -63,7 +47,7 @@ export class BasicUnitsProvider implements UnitsProvider {
     return new BadUnit();
   }
 
-  /** find all units given phenomenon */
+  /** Find all units given phenomenon */
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
     const units: UnitProps[] = [];
     for (const entry of UNIT_DATA) {
@@ -74,15 +58,6 @@ export class BasicUnitsProvider implements UnitsProvider {
       units.push(new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, altDisplayLabels, entry.system));
     }
     return units;
-  }
-
-  protected findUnitDefinition(name: string): UnitDefinition | undefined {
-    for (const entry of UNIT_DATA) {
-      if (entry.name === name)
-        return entry;
-    }
-
-    return undefined;
   }
 
   /** Find a unit given the unit's unique name. */
@@ -114,6 +89,28 @@ export class BasicUnitsProvider implements UnitsProvider {
     const conversion = new ConversionData();
     conversion.error = true;
     return conversion;
+  }
+
+  /** Helper to find UnitDefiniton for name in UNIT_DATA */
+  protected findUnitDefinition(name: string): UnitDefinition | undefined {
+    for (const entry of UNIT_DATA) {
+      if (entry.name === name)
+        return entry;
+    }
+
+    return undefined;
+  }
+
+  /** Find alternate display labels associated with unitName, if any */
+  private getAlternateDisplayLabels(unitName: string): Array<string> {
+    let alternateLabels: Array<string> = [];
+    for (const entry of this._unitExtraData) {
+      if (entry.name.toLowerCase() === unitName.toLowerCase()) {
+        alternateLabels = entry.altDisplayLabels;
+        break;
+      }
+    }
+    return alternateLabels;
   }
 }
 
