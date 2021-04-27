@@ -150,6 +150,22 @@ describe("Unified Selection", () => {
       expect(imodel.selectionSet.has(instances.transientElement.key.id)).to.be.true;
     });
 
+    it("hilites after re-initializing Presentation", async () => {
+      handler.dispose();
+      Presentation.terminate();
+      await Presentation.initialize();
+      handler = new ViewportSelectionHandler({ imodel });
+
+      Presentation.selection.addToSelection("", imodel, new KeySet([instances.leafElement.key]));
+      await waitForAllAsyncs([handler]);
+      expect(imodel.hilited.models.isEmpty).to.be.true;
+      expect(imodel.hilited.subcategories.isEmpty).to.be.true;
+      expect(imodel.hilited.elements.size).to.eq(1);
+      expect(imodel.hilited.elements.hasId(instances.leafElement.key.id)).to.be.true;
+      expect(imodel.selectionSet.size).to.eq(1);
+      expect(imodel.selectionSet.has(instances.leafElement.key.id)).to.be.true;
+    });
+
   });
 
 });
