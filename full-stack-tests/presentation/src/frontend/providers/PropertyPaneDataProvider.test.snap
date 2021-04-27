@@ -268,9 +268,9 @@ Object {
       "name": "/selected-item/",
     },
     Object {
-      "expand": false,
-      "label": "$óúrçè Fílê Ïñfõrmätïòñ",
-      "name": "/selected-item/-source_file_information",
+      "expand": true,
+      "label": "Mòdél $õürçê",
+      "name": "/selected-item/-source_information-model_source",
     },
   ],
   "description": "Physical Object",
@@ -1534,12 +1534,12 @@ Object {
         },
       },
     ],
-    "/selected-item/-source_file_information": Array [
+    "/selected-item/-source_information-model_source": Array [
       PropertyRecord {
         "autoExpand": true,
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
-          "displayLabel": "$óúrçè Fílê Ñâmé",
+          "displayLabel": "Ñámê",
           "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
           "typename": "string",
         },
@@ -1553,7 +1553,7 @@ Object {
         "autoExpand": true,
         "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
         "property": Object {
-          "displayLabel": "$óúrçè Fílê Páth",
+          "displayLabel": "Pàth",
           "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
           "typename": "string",
         },
@@ -2090,10 +2090,18 @@ Object {
           "renderer": undefined,
         },
         Object {
-          "childCategories": Array [],
+          "childCategories": Array [
+            Object {
+              "childCategories": Array [],
+              "expand": true,
+              "label": "Mòdél $õürçê",
+              "name": "/selected-item/-source_information-model_source",
+              "renderer": undefined,
+            },
+          ],
           "expand": false,
-          "label": "$óúrçè Fílê Ïñfõrmätïòñ",
-          "name": "/selected-item/-source_file_information",
+          "label": "$óúrçè Íñfórmâtíöñ",
+          "name": "/selected-item/-source_information",
           "renderer": undefined,
         },
       ],
@@ -3364,12 +3372,12 @@ Object {
         },
       },
     ],
-    "/selected-item/-source_file_information": Array [
+    "/selected-item/-source_information-model_source": Array [
       PropertyRecord {
         "autoExpand": true,
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
-          "displayLabel": "$óúrçè Fílê Ñâmé",
+          "displayLabel": "Ñámê",
           "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
           "typename": "string",
         },
@@ -3383,7 +3391,7 @@ Object {
         "autoExpand": true,
         "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
         "property": Object {
-          "displayLabel": "$óúrçè Fílê Páth",
+          "displayLabel": "Pàth",
           "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
           "typename": "string",
         },
