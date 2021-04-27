@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as path from "path";
 import * as webpack from "webpack";
 import * as fs from "fs-extra";
-import { updatePaths, resetPaths } from "../utils/paths";
+import { resetPaths, updatePaths } from "../utils/paths";
 import { createCompiler, getTestConfig } from "./TestUtils";
 import { CopyBentleyStaticResourcesPlugin } from "../plugins/CopyBentleyStaticResourcesPlugin";
 
@@ -39,5 +39,9 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
 
     expect(entry.type, "Type is not an error").to.equal("error");
     expect(entry.message, `Message should start with Can't locate`).to.include(`Can't locate`);
+  });
+
+  afterEach(() => {
+    resetPaths();
   });
 });

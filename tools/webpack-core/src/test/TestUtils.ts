@@ -35,11 +35,6 @@ export function getTestConfig(srcFile: any, pluginToTest: any) {
       "electron",
       "eslint",
       "@bentley/imodeljs-native",
-      // "@bentley/imodeljs-native/package.json",
-      // "dtrace-provider",
-      // "node-report/api",
-      // "applicationinsights-native-metrics",
-      // "@opentelemetry/tracing",
     ],
   };
 }

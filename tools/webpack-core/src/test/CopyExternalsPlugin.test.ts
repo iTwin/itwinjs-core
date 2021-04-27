@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import * as webpack from "webpack";
 import * as fs from "fs-extra";
-import { updatePaths, resetPaths } from "../utils/paths";
+import * as webpack from "webpack";
 import { createCompiler, getTestConfig } from "./TestUtils";
 import { CopyExternalsPlugin } from "../plugins/CopyExternalsPlugin";
 
@@ -21,13 +20,15 @@ describe("CopyExternalsPlugin", () => {
       testCompiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats));
     });
 
-    const logging = result.toJson({ logging: true }).logging["CopyExternalsPlugin"].entries;
+    const logging = result.toJson({ logging: true }).logging.CopyExternalsPlugin.entries;
 
     expect(logging.length, "Length of entries should be 4").to.be.equal(4);
     for (let i = 0; i < 4; i++) {
       expect(logging[i].type).to.be.equal("log");
       expect(logging[i].message, "Message should contain 'Copying ... fs-extra'").to.match(/^Copying.*?fs-extra.*?$/);
     }
+    const testModulePath = path.join(__dirname, "dist/node_modules/fs-extra");
+    expect(fs.existsSync(testModulePath), "fs-extra should be copied to /dist/node_modules").to.be.true;
   });
 
   it("sucess not copying indirect depency", async () => {
@@ -37,7 +38,7 @@ describe("CopyExternalsPlugin", () => {
       testCompiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats));
     });
 
-    const logging = result.toJson({ logging: true }).logging["CopyExternalsPlugin"].entries;
+    const logging = result.toJson({ logging: true }).logging.CopyExternalsPlugin.entries;
 
     expect(logging.length, "Length of entries should be 2").to.be.equal(2);
     expect(logging[0].type).to.be.equal("warn");
@@ -53,7 +54,7 @@ describe("CopyExternalsPlugin", () => {
       testCompiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats));
     });
 
-    const logging = result.toJson({ logging: true }).logging["CopyExternalsPlugin"].entries;
+    const logging = result.toJson({ logging: true }).logging.CopyExternalsPlugin.entries;
 
     expect(logging.length, "Length of entries should be 1").to.be.equal(1);
     expect(logging[0].type).to.be.equal("log");
@@ -67,14 +68,12 @@ describe("CopyExternalsPlugin", () => {
       testCompiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats));
     });
 
-    const logging = result.toJson({ logging: true }).logging["CopyExternalsPlugin"].entries;
+    const logging = result.toJson({ logging: true }).logging.CopyExternalsPlugin.entries;
 
     expect(logging.length, "Length of entries should be 1").to.be.equal(1);
     expect(logging[0].type).to.be.equal("log");
     expect(logging[0].message, "Message should contain 'Copying ... imodeljs-native'").to.match(/^Copying.*?imodeljs-native.*?$/);
-  });
-
-  afterEach(() => {
-    resetPaths();
+    const testModulePath = path.join(__dirname, "dist/node_modules/@bentley/imodeljs-native");
+    expect(fs.existsSync(testModulePath), "@bentley/imodeljs-native should be copied to /dist/node_modules").to.be.true;
   });
 });
