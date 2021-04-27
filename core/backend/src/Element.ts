@@ -1573,11 +1573,7 @@ export class RenderTimeline extends InformationRecordElement {
   protected constructor(props: RenderTimelineProps, iModel: IModelDb) {
     super(props, iModel);
     this.description = props.description ?? "";
-    try {
-      this.scriptProps = JSON.parse(props.script);
-    } catch (_) {
-      this.scriptProps = [];
-    }
+    this.scriptProps = RenderTimeline.parseScriptProps(props.script);
   }
 
   public static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline {
@@ -1591,5 +1587,58 @@ export class RenderTimeline extends InformationRecordElement {
 
     props.script = JSON.stringify(this.scriptProps);
     return props;
+  }
+
+  private static parseScriptProps(json: string): RenderSchedule.ScriptProps {
+    try {
+      return JSON.parse(json);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /** @alpha */
+  protected collectPredecessorIds(ids: Id64Set): void {
+    super.collectPredecessorIds(ids);
+    const script = RenderSchedule.Script.fromJSON(this.scriptProps);
+    script?.discloseIds(ids);
+  }
+
+  /** @alpha */
+  protected static onCloned(context: IModelCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
+    super.onCloned(context, sourceProps, targetProps);
+    if (context.isBetweenIModels)
+      targetProps.script = JSON.stringify(this.remapScript(context, this.parseScriptProps(targetProps.script)));
+  }
+
+  /** Remap Ids when cloning a RenderSchedule.Script between iModels on a DisplayStyle or RenderTimeline.
+   * @internal
+   */
+  public static remapScript(context: IModelCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+    const scriptProps: RenderSchedule.ScriptProps = [];
+    if (!Array.isArray(input))
+      return scriptProps;
+
+    for (const model of scriptProps) {
+      const modelId = context.findTargetElementId(model.modelId);
+      if (!Id64.isValid(modelId))
+        continue;
+
+      scriptProps.push(model);
+      for (const element of model.elementTimelines) {
+        // NB: Neither the connector that imports the schedule scripts into the iModel nor the non-iModel.js renderers that consume them
+        // actually support compressed element Ids. Until they do, produce the big fat array instead.
+        const elementIds: Id64String[] = [];
+        for (const sourceId of RenderSchedule.ElementTimeline.getElementIds(element.elementIds)) {
+          const targetId = context.findTargetElementId(sourceId);
+          if (Id64.isValid(targetId))
+            elementIds.push(targetId);
+        }
+
+        element.elementIds = elementIds;
+      }
+    }
+
+    return scriptProps;
   }
 }

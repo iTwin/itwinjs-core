@@ -49,40 +49,59 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
 
     for (const excludedElementId of this.settings.excludedElementIds)
       predecessorIds.add(excludedElementId);
+
+    if (this.settings.renderTimeline) {
+      predecessorIds.add(this.settings.renderTimeline);
+    } else {
+      const script = this.loadScheduleScript();
+      if (script)
+        script.script.discloseIds(predecessorIds);
+    }
   }
 
   /** @alpha */
   protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
 
-    if (context.isBetweenIModels && targetElementProps?.jsonProperties?.styles) {
-      const settings = targetElementProps.jsonProperties.styles;
-      if (settings.subCategoryOvr) {
-        for (let i = 0; i < settings.subCategoryOvr.length; /* */) {
-          const ovr = settings.subCategoryOvr[i];
-          ovr.subCategory = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
-          if (Id64.invalid === ovr.subCategory)
-            settings.subCategoryOvr.splice(i, 1);
-          else
-            i++;
-        }
-      }
+    if (!context.isBetweenIModels || !targetElementProps.jsonProperties?.styles)
+      return;
 
-      if (settings.excludedElements) {
-        const excluded: Id64Array = "string" === typeof settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
-        for (let i = 0; i < excluded.length; /* */) {
-          const remapped = context.findTargetElementId(excluded[i]);
-          if (Id64.invalid === remapped)
-            excluded.splice(i, 1);
-          else
-            excluded[i++] = remapped;
-        }
-
-        if (0 === excluded.length)
-          delete settings.excludedElements;
+    const settings = targetElementProps.jsonProperties.styles;
+    if (settings.subCategoryOvr) {
+      for (let i = 0; i < settings.subCategoryOvr.length; /* */) {
+        const ovr = settings.subCategoryOvr[i];
+        ovr.subCategory = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
+        if (Id64.invalid === ovr.subCategory)
+          settings.subCategoryOvr.splice(i, 1);
         else
-          settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
+          i++;
       }
+    }
+
+    if (settings.excludedElements) {
+      const excluded: Id64Array = "string" === typeof settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
+      for (let i = 0; i < excluded.length; /* */) {
+        const remapped = context.findTargetElementId(excluded[i]);
+        if (Id64.invalid === remapped)
+          excluded.splice(i, 1);
+        else
+          excluded[i++] = remapped;
+      }
+
+      if (0 === excluded.length)
+        delete settings.excludedElements;
+      else
+        settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
+    }
+
+    // eslint-disable-next-line deprecation/deprecation
+    if (settings.scheduleScript) {
+      // eslint-disable-next-line deprecation/deprecation
+      const scheduleScript = RenderTimeline.remapScript(context, settings.scheduleScript);
+      if (scheduleScript.length > 0)
+        settings.scheduleScript = scheduleScript; // eslint-disable-line deprecation/deprecation
+      else
+        delete settings.scheduleScript; // eslint-disable-line deprecation/deprecation
     }
   }
 

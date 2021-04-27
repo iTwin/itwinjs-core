@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { assert, CompressedId64Set, Constructor, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
 } from "@bentley/geometry-core";
@@ -601,12 +601,20 @@ export namespace RenderSchedule {
       };
     }
 
+    /** @internal */
+    public static getElementIds(ids: Id64String[] | CompressedId64Set): Iterable<Id64String> {
+      if (typeof ids === "string")
+        return CompressedId64Set.iterable(ids);
+      else if (Array.isArray(ids)) {
+        return ids;
+      } else {
+        return [];
+      }
+    }
+
     /** The Ids of the elements controlled by this timeline. */
     public get elementIds(): Iterable<Id64String> {
-      if (typeof this._elementIds === "string")
-        return CompressedId64Set.iterable(this._elementIds);
-      else
-        return this._elementIds;
+      return ElementTimeline.getElementIds(this._elementIds);
     }
 
     /** True if this timeline affects the color or transparency of the elements. */
@@ -818,6 +826,18 @@ export namespace RenderSchedule {
     public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
       for (const timeline of this.modelTimelines)
         timeline.addSymbologyOverrides(overrides, time);
+    }
+
+    /** Used by collectPredecessorIds methods of RenderTimeline and DisplayStyle.
+     * @internal
+     */
+    public discloseIds(ids: Id64Set): void {
+      for (const model of this.modelTimelines) {
+        ids.add(model.modelId);
+        for (const element of model.elementTimelines)
+          for (const id of element.elementIds)
+            ids.add(id);
+      }
     }
   }
 
