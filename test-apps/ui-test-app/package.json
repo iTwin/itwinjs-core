@@ -51,7 +51,7 @@
     "@bentley/imodeljs-markup": "2.16.0-dev.12",
     "@bentley/frontend-devtools": "2.16.0-dev.12",
     "@bentley/react-scripts": "3.4.9",
-    "@types/classnames": "^2.2.3",
+    "@types/classnames": "~2.2.3",
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "10.14.1",
     "@types/react": "16.9.43",
