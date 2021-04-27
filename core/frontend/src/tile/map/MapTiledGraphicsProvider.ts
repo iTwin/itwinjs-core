@@ -8,7 +8,7 @@
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { BackgroundMapSettings, MapImagerySettings, MapLayerSettings } from "@bentley/imodeljs-common";
-import { MapLayerImageryProvider, Viewport } from "../../imodeljs-frontend";
+import { DisplayStyleState, MapLayerImageryProvider, Viewport, ViewState } from "../../imodeljs-frontend";
 import { TiledGraphicsProvider } from "../TiledGraphicsProvider";
 import { TileTreeReference } from "../TileTreeReference";
 import { MapTileTreeReference } from "./MapTileTree";
@@ -53,6 +53,28 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
       this.backgroundMap.settings = this.overlayMap.settings = settings;
       this.backgroundDrapeMap.settings = mapSettings;
     }));
+  }
+
+  // This is used in inital view setup and when views are synchronized.  If view is being synchronized
+  // we need to clear the layers which purges tile graphics if the settings or layers are changed.
+  public setView(newView: ViewState) {
+    const layersMatch = ((layers1: MapLayerSettings[], layers2: MapLayerSettings[]): boolean => {
+      if (layers1.length !== layers2.length)
+        return false;
+
+    for (let i = 0; i < layers1.length; i++)
+      if (!layers1[i].displayMatches(layers2[i]))
+        return false;
+
+    return true;
+    });
+    const mapImagery = newView.displayStyle.settings.mapImagery;
+    if (!newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings) || !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings)) {
+      this.backgroundMap.clearLayers();
+      this.backgroundDrapeMap.clearLayers();
+    }
+    if (!layersMatch(mapImagery.overlayLayers, this.overlayMap.layerSettings))
+      this.overlayMap.clearLayers();
   }
 
   public detachFromDisplayStyle(): void {

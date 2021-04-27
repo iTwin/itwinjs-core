@@ -1014,6 +1014,8 @@ export abstract class Viewport implements IDisposable {
     if (view === this._view)
       return;
 
+    if (this._mapTiledGraphicsProvider)
+      this._mapTiledGraphicsProvider.setView(view);
     this.detachFromView();
     this._view = view;
     this.attachToView();
@@ -1966,8 +1968,8 @@ export abstract class Viewport implements IDisposable {
    * @internal
    */
   public applyViewState(val: ViewState) {
-    this.setView(val);
     this.updateChangeFlags(val);
+    this.setView(val);
     this._viewingSpace.view = val;
     this.synchWithView({ noSaveInUndo: true });
   }

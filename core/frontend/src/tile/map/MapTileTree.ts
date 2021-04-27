@@ -587,6 +587,10 @@ export class MapTileTreeReference extends TileTreeReference {
     this._baseImageryLayerIncluded = tree !== undefined;
     this.clearLayers();
   }
+  public get layerSettings(): MapLayerSettings[] {
+    return this._layerSettings;
+  }
+
   public setLayerSettings(layerSettings: MapLayerSettings[]) {
     this._layerSettings = layerSettings;
     const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
