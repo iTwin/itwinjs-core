@@ -52,6 +52,8 @@ export interface CommonBackstageItem extends ProvidedItem {
   readonly subtitle?: string | ConditionalStringValue;
   /** Tooltip. */
   readonly tooltip?: string | ConditionalStringValue;
+  /** Describes if the item is active. The default is for the item to be active if stageId matches activeFrontstageId */
+  readonly isActive?: boolean | ConditionalBooleanValue;
 }
 
 /** Describes the data needed to insert an action button into the backstage menu.
