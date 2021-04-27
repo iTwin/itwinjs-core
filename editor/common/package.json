@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-common",
-  "version": "2.15.0-dev.23",
+  "version": "2.15.0-dev.24",
   "description": "iModel.js editing properties common to frontend and backend",
   "main": "lib/imodeljs-editor-common.js",
   "typings": "lib/imodeljs-editor-common",
@@ -33,16 +33,16 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.15.0-dev.23",
-    "@bentley/geometry-core": "^2.15.0-dev.23",
-    "@bentley/imodeljs-common": "^2.15.0-dev.23"
+    "@bentley/bentleyjs-core": "^2.15.0-dev.24",
+    "@bentley/geometry-core": "^2.15.0-dev.24",
+    "@bentley/imodeljs-common": "^2.15.0-dev.24"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.15.0-dev.23",
-    "@bentley/build-tools": "2.15.0-dev.23",
-    "@bentley/eslint-plugin": "2.15.0-dev.23",
-    "@bentley/geometry-core": "2.15.0-dev.23",
-    "@bentley/imodeljs-common": "2.15.0-dev.23",
+    "@bentley/bentleyjs-core": "2.15.0-dev.24",
+    "@bentley/build-tools": "2.15.0-dev.24",
+    "@bentley/eslint-plugin": "2.15.0-dev.24",
+    "@bentley/geometry-core": "2.15.0-dev.24",
+    "@bentley/imodeljs-common": "2.15.0-dev.24",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
