@@ -6,6 +6,8 @@
  * @module PresentationRules
  */
 
+import { CustomRendererSpecification } from "./CustomRendererSpecification";
+
 /**
  * Specification to define a custom property category.
  *
@@ -13,8 +15,11 @@
  * @public
  */
 export interface PropertyCategorySpecification {
-  /** Category identifier which has to be unique at the scope of it's definition */
+  /** Category identifier which has to be unique at the scope of it's definition. */
   id: string;
+
+  /** Identifier of a parent category. */
+  parentId?: string;
 
   /** Display label of the category. May be [localized]($docs/learning/presentation/Localization.md). */
   label: string;
@@ -30,4 +35,7 @@ export interface PropertyCategorySpecification {
 
   /** Should this category be auto-expanded. Defaults to `false`. */
   autoExpand?: boolean;
+
+  /** Custom category renderer specification. */
+  renderer?: CustomRendererSpecification;
 }

@@ -9,6 +9,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { TransformProps } from "@bentley/geometry-core";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
+import { ElementGeometryDataEntry } from "../geometry/ElementGeometry";
 import { GeometryStreamProps } from "../geometry/GeometryStream";
 import { ContentFlags, TreeFlags } from "../tile/TileMetadata";
 
@@ -47,6 +48,22 @@ export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
   readonly elementId: Id64String;
 }
 
+/** The geometry from which to generate the graphics supplied in json format.
+ * @beta
+ */
+export interface JsonGeometryStream {
+  format: "json";
+  data: GeometryStreamProps;
+}
+
+/** The geometry from which to generate the graphics supplied in flatbuffers format.
+ * @beta
+ */
+export interface FlatBufferGeometryStream {
+  format: "flatbuffer";
+  data: ElementGeometryDataEntry[];
+}
+
 /** Wire format describing a request to produce graphics in "iMdl" format for a single geometry stream.
  * @see [[DynamicGraphicsRequest2dProps]] and [[DynamicGraphicsRequest3dProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.
@@ -54,7 +71,7 @@ export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
  */
 export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
   /** The geometry from which to generate the graphics. */
-  readonly geometry: GeometryStreamProps;
+  readonly geometry: JsonGeometryStream | FlatBufferGeometryStream;
   /** The category to which the geometry belongs. This is required to identify a persistent [SpatialCategory]($backend) for 3d geometry or
    * [DrawingCategory]($backend) for 2d geometry.
    */

@@ -76,6 +76,7 @@ export interface CategoryDescription {
     name: string;
     parent?: CategoryDescription;
     priority: number;
+    renderer?: RendererDescription;
 }
 
 // @public (undocumented)
@@ -99,6 +100,8 @@ export interface CategoryDescriptionJSON {
     parent?: string;
     // (undocumented)
     priority: number;
+    // (undocumented)
+    renderer?: RendererDescription;
 }
 
 // @public
@@ -317,7 +320,8 @@ export enum ContentSpecificationTypes {
 export type ContentUpdateInfo = typeof UPDATE_FULL;
 
 // @public
-export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
+export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | // eslint-disable-line deprecation/deprecation
+SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
 
 // @public
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
@@ -332,6 +336,11 @@ export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     queries?: QuerySpecification[];
     specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes;
+}
+
+// @public
+export interface CustomRendererSpecification {
+    rendererName: string;
 }
 
 // @public
@@ -1351,6 +1360,8 @@ export class NestedContentField extends Field {
     pathToPrimaryClass: RelationshipPath;
     // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
+    // @alpha (undocumented)
+    relationshipMeaning: RelationshipMeaning;
     // @internal (undocumented)
     resetParentship(): void;
     toJSON(): NestedContentFieldJSON;
@@ -1368,6 +1379,8 @@ export interface NestedContentFieldJSON extends BaseFieldJSON {
     nestedFields: FieldJSON[];
     // (undocumented)
     pathToPrimaryClass: RelationshipPathJSON;
+    // @alpha (undocumented)
+    relationshipMeaning?: RelationshipMeaning;
 }
 
 // @public
@@ -1850,6 +1863,7 @@ export interface PropertyCategorySpecification {
     id: string;
     label: string;
     priority?: number;
+    renderer?: CustomRendererSpecification;
 }
 
 // @public
@@ -1971,7 +1985,7 @@ export interface PropertyOverrides {
     isDisplayed?: boolean;
     labelOverride?: string;
     overridesPriority?: number;
-    renderer?: PropertyRendererSpecification;
+    renderer?: CustomRendererSpecification;
 }
 
 // @public
@@ -1982,10 +1996,8 @@ export interface PropertyRangeGroupSpecification {
     toValue: string;
 }
 
-// @public
-export interface PropertyRendererSpecification {
-    rendererName: string;
-}
+// @public @deprecated
+export type PropertyRendererSpecification = CustomRendererSpecification;
 
 // @public
 export interface PropertySortingRule extends SortingRuleBase {
@@ -2189,6 +2201,13 @@ export enum RequestPriority {
     Preload = 0
 }
 
+// @beta
+export interface RequiredSchemaSpecification {
+    maxVersion?: string;
+    minVersion?: string;
+    name: string;
+}
+
 // @public
 export interface RootNodeRule extends NavigationRuleBase {
     autoExpand?: boolean;
@@ -2249,6 +2268,8 @@ export type Rule = CustomizationRule | NavigationRule | ContentRule | ContentMod
 export interface RuleBase {
     onlyIfNotHandled?: boolean;
     priority?: number;
+    // @beta
+    requiredSchemas?: RequiredSchemaSpecification[];
     ruleType: RuleTypes;
 }
 
@@ -2491,6 +2512,8 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
 // @public
 export interface SubCondition extends ConditionContainer {
     condition?: string;
+    // @beta
+    requiredSchemas?: RequiredSchemaSpecification[];
     specifications?: ChildNodeSpecification[];
     subConditions?: SubCondition[];
 }

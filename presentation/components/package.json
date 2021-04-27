@@ -31,10 +31,10 @@
     "build:watch": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
-    "docs": "npm run docs:reference && npm run docs:changelog",
+    "docs": "npm run docs:reference && npm run extract && npm run docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-components",
     "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-components/file.json --tsIndexFile=presentation-components.ts --onlyJson --excludeGlob=**/presentation-components.ts",
-    "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
+    "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-components",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
@@ -42,6 +42,7 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
+    "fast-sort": "^3.0.2",
     "lodash": "^4.17.10",
     "micro-memoize": "^4.0.9",
     "rxjs": "^6.6.2"

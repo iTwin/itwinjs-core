@@ -40,9 +40,9 @@ public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | C
 public;ContentSpecificationBase 
 public;ContentSpecificationTypes
 alpha;ContentUpdateInfo = typeof UPDATE_FULL
-public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
+public;CustomRendererSpecification
 public;DEFAULT_KEYS_BATCH_SIZE = 5000
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
@@ -271,7 +271,8 @@ public;PropertyInfoJSON
 public;PropertyJSON
 public;PropertyOverrides
 public;PropertyRangeGroupSpecification
-public;PropertyRendererSpecification
+public;PropertyRendererSpecification = CustomRendererSpecification
+deprecated;PropertyRendererSpecification = CustomRendererSpecification
 public;PropertySortingRule 
 public;PropertySpecification 
 public;PropertyValueFormat
@@ -302,6 +303,7 @@ public;RepeatableRelationshipStepSpecification
 public;RequestOptions
 public;RequestOptionsWithRuleset
 public;RequestPriority
+beta;RequiredSchemaSpecification
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
