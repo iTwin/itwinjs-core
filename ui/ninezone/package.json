@@ -37,7 +37,8 @@
     "@bentley/ui-core": "^2.16.0-dev.18",
     "@bentley/bentleyjs-core": "^2.16.0-dev.18",
     "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "react-dom": "^16.8.0",
+    "react-transition-group": "^4.4.1"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -60,6 +61,7 @@
     "@types/mocha": "^5.2.5",
     "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",
+    "@types/react-transition-group": "^4.4.1",
     "@types/sinon": "^9.0.0",
     "@types/testing-library__react-hooks": "^3.1.0",
     "@types/uuid": "^7.0.2",

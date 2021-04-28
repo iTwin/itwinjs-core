@@ -37,6 +37,9 @@ export interface FloatingWidgetState {
   readonly bounds: RectangleProps;
   readonly id: WidgetState["id"];
   readonly home: FloatingWidgetHomeState;
+  readonly animateTransition: boolean;
+  readonly animateEnter: boolean;
+  readonly animateExit: boolean;
 }
 
 /** @internal future */
@@ -394,6 +397,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           widgetId: undefined,
           widgetIndex,
         },
+        animateTransition: false,
+        animateEnter: false,
+        animateExit: false,
       };
       state.widgets[action.newFloatingWidgetId] = state.widgets[action.id];
       state.widgets[action.newFloatingWidgetId].id = action.newFloatingWidgetId;
@@ -484,6 +490,8 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const widget = state.widgets[action.id];
       const home = floatingWidget.home;
       const panel = state.panels[home.side];
+      floatingWidget.animateTransition = false;
+      floatingWidget.animateExit = true;
       let homeWidget;
       if (home.widgetId) {
         homeWidget = state.widgets[home.widgetId];
@@ -631,6 +639,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           bounds: containedBounds.toProps(),
           id: target.newFloatingWidgetId,
           home: state.draggedTab.home,
+          animateTransition: false,
+          animateEnter: false,
+          animateExit: false,
         };
         state.floatingWidgets.allIds.push(target.newFloatingWidgetId);
         state.widgets[target.newFloatingWidgetId] = {
@@ -664,6 +675,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
             widgetId: undefined,
             widgetIndex: 0,
           },
+          animateTransition: false,
+          animateEnter: false,
+          animateExit: false,
         };
         state.floatingWidgets.allIds.push(action.newFloatingWidgetId);
       }
@@ -843,6 +857,9 @@ export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: 
       widgetId: undefined,
       widgetIndex: 0,
     },
+    animateTransition: false,
+    animateEnter: false,
+    animateExit: false,
     ...args,
   };
 }
@@ -1105,6 +1122,9 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
             widgetId: location.widgetId,
             widgetIndex,
           },
+          animateTransition: true,
+          animateEnter: true,
+          animateExit: true,
         };
         draft.floatingWidgets.allIds.push(floatingWidgetId);
         draft.widgets[floatingWidgetId] = {
@@ -1118,7 +1138,6 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
   }
   return undefined;
 }
-
 /** @internal */
 export function dockWidgetContainer(state: NineZoneState, widgetTabId: string) {
   const location = findTab(state, widgetTabId);
