@@ -44,7 +44,6 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   }
 
   public get redirectUri() { return this.config?.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri; }
-  private get isInitialized() { return this._configuration !== undefined; }
 
   /**
    * Used to initialize the client - must be awaited before any other methods are called.
@@ -95,7 +94,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    *   (ii) an interactive signin that requires user input.
    */
   public async signIn(): Promise<void> {
-    if (!this.isInitialized)
+    if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
     // Attempt to load the access token from store
@@ -183,7 +182,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     const options: RequestOptions = {
       method: "GET",
       headers: {
-        authorization: `Bearer ${tokenResponse.accessToken} `,
+        authorization: `Bearer ${tokenResponse.accessToken}`,
       },
       accept: "application/json",
     };
