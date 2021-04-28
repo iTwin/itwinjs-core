@@ -10,21 +10,23 @@ import {
   Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
-  FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator,
-  GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, PlanProjectionSettings,
-  RelatedElement, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
+  AuxCoordSystem2dProps, Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
+  ElementProps, ExternalSourceProps, FontProps, FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps,
+  GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps,
+  Placement3d, PlanProjectionSettings, RelatedElement, RepositoryLinkProps, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance,
+  SubCategoryOverride, SubjectProps, TextureFlags,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
   DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingModel,
   DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects,
-  ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d,
-  GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement,
-  InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition,
-  Platform, Relationship, RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition,
-  SubCategory, Subject, TemplateRecipe2d, TemplateRecipe3d, Texture, ViewDefinition,
+  ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceIsInRepository,
+  FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter,
+  IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, LinkElement, Model, ModelSelector, OrthographicViewDefinition,
+  PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps, RenderMaterialElement, RepositoryLink,
+  SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, TemplateRecipe2d, TemplateRecipe3d, Texture,
+  ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -1157,6 +1159,30 @@ export namespace IModelTransformerUtils {
       statement.bindString("userLabel", userLabel);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
     });
+  }
+
+  export function insertRepositoryLink(iModelDb: IModelDb, codeValue: string, url: string, format: string): Id64String {
+    const repositoryLinkProps: RepositoryLinkProps = {
+      classFullName: RepositoryLink.classFullName,
+      model: IModel.repositoryModelId,
+      code: LinkElement.createCode(iModelDb, IModel.repositoryModelId, codeValue),
+      url,
+      format,
+    };
+    return iModelDb.elements.insertElement(repositoryLinkProps);
+  }
+
+  export function insertExternalSource(iModelDb: IModelDb, repositoryId: Id64String, userLabel: string): Id64String {
+    const externalSourceProps: ExternalSourceProps = {
+      classFullName: ExternalSource.classFullName,
+      model: IModel.repositoryModelId,
+      code: Code.createEmpty(),
+      userLabel,
+      repository: new ExternalSourceIsInRepository(repositoryId),
+      connectorName: "Connector",
+      connectorVersion: "0.0.1",
+    };
+    return iModelDb.elements.insertElement(externalSourceProps);
   }
 
   export function dumpIModelInfo(iModelDb: IModelDb): void {
