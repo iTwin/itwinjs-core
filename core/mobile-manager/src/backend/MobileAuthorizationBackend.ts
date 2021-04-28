@@ -44,7 +44,8 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
     };
 
     return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authInit(this.getClientRequestContext(), this.config!, (err?: string) => {
+      assert(this.config !== undefined);
+      MobileHost.device.authInit(this.getClientRequestContext(), this.config, (err?: string) => {
         if (!err) {
           resolve();
         } else {
