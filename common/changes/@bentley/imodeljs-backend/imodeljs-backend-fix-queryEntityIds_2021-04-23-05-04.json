@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "Fix `IModelDb.queryEntityIds` when used with `orderBy` and `limit` params.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

@@ -605,9 +605,9 @@ export abstract class IModelDb extends IModel {
       sql += "ONLY ";
     sql += params.from;
     if (params.where) sql += ` WHERE ${params.where}`;
+    if (params.orderBy) sql += ` ORDER BY ${params.orderBy}`;
     if (typeof params.limit === "number" && params.limit > 0) sql += ` LIMIT ${params.limit}`;
     if (typeof params.offset === "number" && params.offset > 0) sql += ` OFFSET ${params.offset}`;
-    if (params.orderBy) sql += ` ORDER BY ${params.orderBy}`;
 
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {

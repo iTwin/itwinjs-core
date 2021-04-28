@@ -11,6 +11,7 @@ import { ChangeSet, Version } from "@bentley/imodelhub-client";
 import { BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";
 import { Transformer, TransformerOptions } from "./Transformer";
 
@@ -31,6 +32,8 @@ interface CommandLineArgs {
   clean?: boolean;
   logChangeSets: boolean;
   logNamedVersions: boolean;
+  logTransformer: boolean;
+  validation: boolean;
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
   deleteUnusedGeometryParts?: boolean;
@@ -71,6 +74,8 @@ void (async () => {
     // print/debug options
     Yargs.option("logChangeSets", { desc: "If true, log the list of changeSets", type: "boolean", default: false });
     Yargs.option("logNamedVersions", { desc: "If true, log the list of named versions", type: "boolean", default: false });
+    Yargs.option("logTransformer", { desc: "If true, turn on verbose logging for iModel transformation", type: "boolean", default: false });
+    Yargs.option("validation", { desc: "If true, perform extra and potentially expensive validation to assist with finding issues and confirming results", type: "boolean", default: false });
 
     // transformation options
     Yargs.option("simplifyElementGeometry", { desc: "Simplify element geometry upon import into target iModel", type: "boolean", default: false });
@@ -89,7 +94,7 @@ void (async () => {
     Logger.setLevelDefault(LogLevel.Error);
     Logger.setLevel(loggerCategory, LogLevel.Info);
 
-    if (true) { // set to true to enable additional low-level transformation logging
+    if (args.logTransformer) { // optionally enable verbose transformation logging
       Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
       Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
       Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
@@ -154,6 +159,13 @@ void (async () => {
       const sourceFile = path.normalize(args.sourceFile);
       Logger.logInfo(loggerCategory, `sourceFile=${sourceFile}`);
       sourceDb = SnapshotDb.openFile(sourceFile);
+    }
+
+    if (args.validation) {
+      // validate that there are no issues with the sourceDb to ensure that IModelTransformer is starting from a consistent state
+      ElementUtils.validateCategorySelectors(sourceDb);
+      ElementUtils.validateModelSelectors(sourceDb);
+      ElementUtils.validateDisplayStyles(sourceDb);
     }
 
     if (args.targetContextId) {
@@ -228,6 +240,13 @@ void (async () => {
       await Transformer.transformChanges(requestContext, sourceDb, targetDb, args.sourceStartChangeSetId, transformerOptions);
     } else {
       await Transformer.transformAll(requestContext, sourceDb, targetDb, transformerOptions);
+    }
+
+    if (args.validation) {
+      // validate that there are no issues with the targetDb after transformation
+      ElementUtils.validateCategorySelectors(targetDb);
+      ElementUtils.validateModelSelectors(targetDb);
+      ElementUtils.validateDisplayStyles(targetDb);
     }
 
     sourceDb.close();
