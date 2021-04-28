@@ -96,6 +96,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   public async signIn(): Promise<void> {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+    assert(this.config !== undefined);
 
     // Attempt to load the access token from store
     const token = await this.loadAccessToken();
@@ -103,7 +104,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
       return this.setAccessToken(token);
 
     // Create the authorization request
-    const nativeConfig = this.config!;
+    const nativeConfig = this.config;
     const authReqJson: AuthorizationRequestJson = {
       client_id: nativeConfig.clientId,
       redirect_uri: this.redirectUri,
@@ -228,8 +229,9 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private async swapAuthorizationCodeForTokens(authCode: string, codeVerifier: string): Promise<TokenResponse> {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+    assert(this.config !== undefined);
 
-    const nativeConfig = this.config!;
+    const nativeConfig = this.config;
     const extras: StringMap = { code_verifier: codeVerifier };
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
@@ -248,12 +250,13 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private async makeRefreshAccessTokenRequest(refreshToken: string): Promise<TokenResponse> {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+    assert(this.config !== undefined);
 
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
       refresh_token: refreshToken,
       redirect_uri: this.redirectUri,
-      client_id: this.config!.clientId,
+      client_id: this.config.clientId,
     };
 
     const tokenRequest = new TokenRequest(tokenRequestJson);
@@ -265,13 +268,14 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private async makeRevokeTokenRequest(): Promise<void> {
     if (!this._tokenResponse)
       throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful", Logger.logError, loggerCategory);
+    assert(this.config !== undefined);
 
     const refreshToken = this._tokenResponse.refreshToken!;
 
     const revokeTokenRequestJson: RevokeTokenRequestJson = {
       token: refreshToken,
       token_type_hint: "refresh_token",
-      client_id: this.config!.clientId,
+      client_id: this.config.clientId,
     };
 
     const revokeTokenRequest = new RevokeTokenRequest(revokeTokenRequestJson);
