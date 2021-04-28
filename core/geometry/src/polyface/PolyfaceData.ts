@@ -18,6 +18,7 @@ import { Transform } from "../geometry3d/Transform";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { PolyfaceAuxData } from "./AuxData";
 import { FacetFaceData } from "./FacetFaceData";
+import { TaggedGeometryData } from "./TaggedGeometryData";
 
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
@@ -65,6 +66,8 @@ export class PolyfaceData {
   public face: FacetFaceData[];
   /** Auxiliary data */
   public auxData: PolyfaceAuxData | undefined;
+  /** Tagged geometry data */
+  public taggedGeometryData: TaggedGeometryData[] | undefined;
   private _twoSided: boolean;
   /** boolean tag indicating if the facets are viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
@@ -113,6 +116,12 @@ export class PolyfaceData {
       result.colorIndex = this.colorIndex.slice();
     if (this.auxData)
       result.auxData = this.auxData.clone();
+    if (this.taggedGeometryData){
+      result.taggedGeometryData = [];
+      for (const d of this.taggedGeometryData) {
+        result.taggedGeometryData.push(d.clone());
+      }
+    }
     return result;
   }
   /** Test for equal indices and nearly equal coordinates */

@@ -1460,6 +1460,15 @@ export class Sample {
     result.push(Cone.createAxisPoints(topZ, origin, 0.0, 1.0, true) as Cone);
     return result;
   }
+  public static createPartialTorusAroundZ(majorRadius: number, majorSweep: Angle, minorRadius: number, minorStart: Angle, minorEnd: Angle): RotationalSweep{
+    const arc = Arc3d.createXYZXYZXYZ(
+      majorRadius, 0, 0,
+      minorRadius, 0, 0,
+      0, minorRadius, 0,
+      AngleSweep.createStartEnd(minorStart, minorEnd));
+    const contour = Path.create(arc);
+    return RotationalSweep.create(contour, Ray3d.createZAxis(), majorSweep, false)!;
+  }
   /** Create assorted Torus Pipes */
   public static createTorusPipes(): TorusPipe[] {
     const result: TorusPipe[] = [];

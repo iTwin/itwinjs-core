@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { expect } from "chai";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
@@ -12,12 +13,16 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { TaggedGeometryData } from "../../polyface/TaggedGeometryData";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
@@ -25,6 +30,8 @@ import { LinearSweep } from "../../solid/LinearSweep";
 import { RotationalSweep } from "../../solid/RotationalSweep";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /* eslint-disable no-console */
 // This file emits (to console.log) text suitable for use as markdown content for examples of constructor call and json of results
@@ -39,7 +46,7 @@ function emitCategoryHeader(name: string) {
   }
 }
 // emit a single geometry fragment in bare json form ...
-function emitIModelJson(className: string, description: string, g: GeometryQuery) {
+function emitIModelJson(className: string, description: string, g: any) {
   if (emitToLog) {
     const imjs = IModelJson.Writer.toIModelJson(g);
     console.log(`| ${className} | ${description} | ${JSON.stringify(imjs)}|`);
@@ -166,4 +173,104 @@ describe("constructorsAndImodelJson", () => {
     emitCategoryHeader("CurveCollections");
     emitIModelJson("CoordinateXYZ.create", "isolated point", CoordinateXYZ.create(Point3d.create(2, 3, 4)));
   });
-});
+  it("taggedGeometryData.methods", () => {
+    const ck = new Checker();
+    const objA = new TaggedGeometryData(1, 2);
+    const objB = new TaggedGeometryData(1, 2, [1, 2], [2.3, 1.5], [Point3d.create(1, 2, 3)], [Vector3d.create(5, 2, 3)],
+      [LineSegment3d.createXYZXYZ(0, 1, 2, 3, 4, 5)]);
+    ck.testTrue(objA.isAlmostEqual(objA));
+    ck.testTrue(objB.isAlmostEqual(objB));
+    ck.testFalse(objA.isAlmostEqual(objB));
+    for (const obj of [objA, objB]) {
+      const obj1 = obj.clone();
+      const obj2 = obj.clone();
+      ck.testTrue(obj.isAlmostEqual(obj1));
+      // cause various length and content mismatches
+      if (obj1.intData) {
+        obj1.intData.push(1);
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj2.intData!.push(7);
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj1.intData = undefined;
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj2.intData = undefined;
+        ck.testTrue(obj1.isAlmostEqual(obj2));
+      }
+      if (obj1.doubleData) {
+        obj1.doubleData.push(1);
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj2.doubleData!.push(3);
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj1.doubleData = undefined;
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj2.doubleData = undefined;
+        ck.testTrue(obj1.isAlmostEqual(obj2));
+      }
+      if (obj1.pointData) {
+        obj1.pointData.push(Point3d.create (1,2,3));
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj2.pointData!.push(Point3d.create (9,2,4));
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj1.pointData = undefined;
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj2.pointData = undefined;
+        ck.testTrue(obj1.isAlmostEqual(obj2));
+      }
+      if (obj1.vectorData) {
+        obj1.vectorData.push(Vector3d.create (1,2,3));
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj2.vectorData!.push(Vector3d.create (9,2,4));
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj1.vectorData = undefined;
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj2.vectorData = undefined;
+        ck.testTrue(obj1.isAlmostEqual(obj2));
+      }
+      if (obj1.geometry) {
+        obj1.geometry.push(CoordinateXYZ.create (Point3d.create (1,2,3)));
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj2.geometry!.push(CoordinateXYZ.create (Point3d.create (9,2,4)));
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj1.geometry = undefined;
+        ck.testFalse(obj1.isAlmostEqual(obj2));
+        obj2.geometry = undefined;
+        ck.testTrue(obj1.isAlmostEqual(obj2));
+      }
+
+    }
+    expect(ck.getNumErrors()).equals(0);
+    });
+    it("taggedGeometryData.json", () => {
+      const ck = new Checker();
+      const objA = new TaggedGeometryData(1, 2);
+      const objB = new TaggedGeometryData(1, 2, [1, 2], [2.3, 1.5], [Point3d.create(1, 2, 3)], [Vector3d.create(5, 2, 3)],
+        [LineSegment3d.createXYZXYZ(0, 1, 2, 3, 4, 5)]);
+      for (const obj of [objA, objB]) {
+        const json = IModelJson.Writer.toIModelJson(obj);
+        if (ck.testDefined(json, "to json")) {
+          const obj1 = IModelJson.Reader.parseTaggedGeometryProps(json);
+          if (ck.testDefined (obj1) && obj1)
+            ck.testTrue(obj.isAlmostEqual(obj1), "json round trip");
+          }
+        }
+        expect(ck.getNumErrors()).equals(0);
+      });
+      it.only("MeshWithTag", () => {
+        const ck = new Checker();
+        const allGeometry: GeometryQuery [] = [];
+        const tagA = new TaggedGeometryData(-1000, 0);
+        const surface = TorusPipe.createDgnTorusPipe(Point3d.create(0, 0, 0), Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), 4, 1, Angle.createDegrees(90), true)!;
+        const options = StrokeOptions.createForFacets();
+        options.angleTol = Angle.createDegrees(90);
+        const builder = PolyfaceBuilder.create(options);
+        builder.addTorusPipe(surface, 12, 6);
+        const mesh = builder.claimPolyface();
+        let y0 = 0;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, 0, y0, 0);
+        y0 += 5.0;
+        mesh.data.taggedGeometryData = [tagA];
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, 0, y0, 0);
+        GeometryCoreTestIO.saveGeometry(allGeometry, "TaggedGeometryData", "TorusPipe");
+        expect(ck.getNumErrors()).equals(0);
+        });
+      });

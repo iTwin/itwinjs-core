@@ -782,4 +782,54 @@ export class Geometry {
   public static equalStringNoCase(string1: string, string2: string): boolean {
     return string1.toUpperCase() === string2.toUpperCase();
   }
+/** test for EXACT match of number arrays. */
+public static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean {
+  if (a === undefined && b === undefined)
+    return true;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length)
+      return false;
+    for (let i = 0; i < a.length; i++)
+      if (a[i] !== b[i])
+        return false;
+    return true;
+  }
+  return false;
+}
+
+/** test for  match of XYZ arrays. */
+  public static almostEqualArrays<T>(a: T[] | undefined, b: T[] | undefined,
+    testFunction: (p: T, q: T) => boolean): boolean{
+  if (a === undefined && b === undefined)
+    return true;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length)
+      return false;
+    for (let i = 0; i < a.length; i++){
+      if (!testFunction (a[i],b[i]))
+        return false;
+      }
+    return true;
+    }
+  return false;
+  }
+  /** clone an array whose members have a clone method.
+   * * undefined return from clone is forced into the output array.
+  */
+  public static cloneMembers<T extends  Cloneable<T>>(a: T[] | undefined): T[] | undefined{
+    if (a === undefined)
+      return undefined;
+    const b: T[] = [];
+    for (const p of a) {
+      b.push(p.clone()!);
+      }
+    return b;
+    }
+}
+
+/**
+ * interface for method with a clone operation
+ */
+export interface Cloneable<T> {
+  clone (): T | undefined;
 }

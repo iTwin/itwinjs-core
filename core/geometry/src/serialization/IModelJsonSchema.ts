@@ -49,6 +49,7 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
+import { TaggedGeometryData } from "../polyface/TaggedGeometryData";
 // cspell:word bagof
 /* eslint-disable no-console*/
 /**
@@ -482,7 +483,19 @@ export namespace IModelJson {
     /** optional capping flag. */
     capped?: boolean;
   }
+  /**
+   * Interface for extra data attached to an indexed mesh.
+   */
+  export interface TaggedGeometryDataProps {
+    tagA: number;
+    tagB: number;
 
+    intData?: number[];
+    doubleData?: number[];
+    pointData?: XYZProps[];
+    vectorData?: XYZProps[];
+    geometry?: GeometryQuery[];
+  }
   /**
    * Interface for an indexed mesh.
    * * IMPORTANT: All indices are one-based.
@@ -561,22 +574,55 @@ export namespace IModelJson {
       }
       return defaultValue;
     }
-    /* ==============
-        private static parseNumberArrayProperty(json: any, propertyName: string, minValues: number, maxValues: number, defaultValue?: number[] | undefined): number[] | undefined {
-          if (json.hasOwnProperty(propertyName)) {
-            const value = json[propertyName];
-            if (Array.isArray(value)
-              && value.length >= minValues && value.length <= maxValues) {
-              const result = [];
-              for (const a of value) {
-                result.push(a);
-              }
-              return result;
-            }
-          }
-          return defaultValue;
+    /**
+     * @internal
+     */
+    public static parseTaggedGeometryProps(json: any): TaggedGeometryData | undefined {
+      const tagA = this.parseNumberProperty(json, "tagA");
+      const tagB = this.parseNumberProperty(json, "tagB", 0);
+      if (tagA !== undefined) {
+        const result = new TaggedGeometryData(tagA, tagB);
+        if (json.hasOwnProperty("intData"))
+          result.intData = this.parseNumberArrayProperty (json, "intData", 0,undefined);
+        if (json.hasOwnProperty("doubleData"))
+          result.doubleData = this.parseNumberArrayProperty (json, "doubleData", 0,undefined);
+        if (json.hasOwnProperty("pointData")) {
+          result.pointData = [];
+          for (const p of json.pointData) result.pointData.push(Point3d.fromJSON (p));
         }
-    */
+        if (json.hasOwnProperty("vectorData")) {
+          result.vectorData = [];
+          for (const p of json.vectorData) result.vectorData.push(Vector3d.fromJSON (p));
+        }
+        if (json.hasOwnProperty("geometry")) {
+          result.geometry = [];
+          for (const p of json.geometry) {
+            const q = this.parse(p);
+            if (q !== undefined && q instanceof GeometryQuery)
+              result.geometry.push(q);
+          }
+        }
+        return result;
+
+      }
+      return undefined;
+    }
+
+    private static parseNumberArrayProperty(json: any, propertyName: string, minValues: number, maxValues: number | undefined, defaultValue?: number[] | undefined): number[] | undefined {
+      if (json.hasOwnProperty(propertyName)) {
+        const value = json[propertyName];
+        if (Array.isArray(value)
+          && value.length >= minValues && (undefined === maxValues || value.length <= maxValues)) {
+          const result = [];
+          for (const a of value) {
+            result.push(a);
+          }
+          return result;
+        }
+      }
+      return defaultValue;
+    }
+
     private static parseAngleProperty(json: any, propertyName: string, defaultValue?: Angle | undefined): Angle | undefined {
       if (json.hasOwnProperty(propertyName)) {
         const value = json[propertyName];
@@ -961,6 +1007,15 @@ export namespace IModelJson {
         if (data.hasOwnProperty("auxData"))
           polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData);
 
+        if (data.hasOwnProperty("taggedGeometry") && Array.isArray (data.taggedGeometry)){
+          polyface.data.taggedGeometryData = [];
+          for (const t of data.taggedGeometry) {
+            const q = Reader.parseTaggedGeometryProps(data.taggedGeometry);
+            if (q instanceof TaggedGeometryData)
+              polyface.data.taggedGeometryData.push(q);
+          }
+        }
+
         return polyface;
       }
       return undefined;
@@ -1255,6 +1310,28 @@ export namespace IModelJson {
    * @public
    */
   export class Writer extends GeometryHandler {
+
+    public handleTaggedGeometryData(data: TaggedGeometryData): TaggedGeometryDataProps {
+      const result: TaggedGeometryDataProps = { tagA: data.tagA, tagB: data.tagB};
+      if (data.intData !== undefined && data.intData.length > 0)
+        result.intData = data.intData.slice();
+      if (data.doubleData !== undefined && data.doubleData.length > 0)
+        result.doubleData = data.doubleData.slice();
+      if (data.pointData !== undefined && data.pointData.length > 0) {
+        result.pointData = [];
+        for (const p of data.pointData) result.pointData.push(p.toJSON());
+      }
+      if (data.vectorData !== undefined && data.vectorData.length > 0) {
+        result.vectorData = [];
+        for (const p of data.vectorData) result.vectorData.push(p.toJSON());
+      }
+      if (data.geometry !== undefined && data.geometry.length > 0) {
+        result.geometry = [];
+        for (const g of data.geometry)
+          result.geometry.push(this.emit(g));
+      }
+      return result;
+    }
     /** Convert strongly typed instance to tagged json */
     public handleLineSegment3d(data: LineSegment3d): any {
       return { lineSegment: [data.point0Ref.toJSON(), data.point1Ref.toJSON()] };
@@ -1716,6 +1793,12 @@ export namespace IModelJson {
           colorIndex.push(0);
         }
       }
+      let taggedGeometry;
+      if (pf.data.taggedGeometryData) {
+        taggedGeometry = [];
+        for (const t of pf.data.taggedGeometryData)
+          taggedGeometry.push(this.handleTaggedGeometryData(t));
+      }
       // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
       if (pf.expectedClosure  !== 0)
@@ -1737,6 +1820,8 @@ export namespace IModelJson {
       contents.point = points;
       contents.pointIndex = pointIndex;
 
+      if (taggedGeometry)
+        contents.taggedGeometry = taggedGeometry;
       return { indexedMesh: contents };
     }
 
@@ -1945,6 +2030,8 @@ export namespace IModelJson {
 
       if (data instanceof GeometryQuery) {
         return data.dispatchToGeometryHandler(this);
+      } else if (data instanceof TaggedGeometryData) {
+        return this.handleTaggedGeometryData(data);
       }
       return undefined;
     }
