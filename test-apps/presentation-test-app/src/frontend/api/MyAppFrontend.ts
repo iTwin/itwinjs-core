@@ -19,8 +19,6 @@ export interface MyAppSettings {
 }
 
 export class MyAppFrontend {
-  public static iModel: IModelConnection | undefined;
-
   public static async getSampleImodels(): Promise<string[]> {
     return SampleRpcInterface.getClient().getSampleImodels();
   }
@@ -30,16 +28,19 @@ export class MyAppFrontend {
   }
 
   public static async openIModel(path: string): Promise<IModelConnection | undefined> {
+    let imodel: IModelConnection | undefined;
     if (IpcApp.isValid) {
       Logger.logInfo("presentation", `Trying to open standalone ${path}`);
-      this.iModel = await tryOpenStandalone(path);
-    } else {
-      Logger.logInfo("presentation", `Opening snapshot: ${path}`);
-      this.iModel = await SnapshotConnection.openFile(path);
-      Logger.logInfo("presentation", `Opened snapshot: ${this.iModel.name}`);
+      imodel = await tryOpenStandalone(path);
     }
 
-    return this.iModel;
+    if (!imodel) {
+      Logger.logInfo("presentation", `Opening snapshot: ${path}`);
+      imodel = await SnapshotConnection.openFile(path);
+      Logger.logInfo("presentation", `Opened snapshot: ${imodel.name}`);
+    }
+
+    return imodel;
   }
 
   public static get settings(): MyAppSettings {
