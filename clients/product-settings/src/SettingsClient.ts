@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Settings
  */
-import { BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { assert, BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, Client, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { SettingsAdmin, SettingsMapResult, SettingsResult, SettingsStatus } from "./SettingsAdmin";
 
@@ -27,14 +27,11 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    */
   public constructor(public applicationId: string) {
     super();
+    this.baseUrl = "https://api.bentley.com/productsettings";
   }
 
-  /** Gets name/key to query the service URLs from the URL Discovery Service
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return ConnectSettingsClient.searchKey;
-  }
+  /** @internal */
+  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);

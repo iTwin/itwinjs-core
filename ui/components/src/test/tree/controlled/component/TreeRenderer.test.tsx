@@ -228,6 +228,26 @@ describe("TreeRenderer", () => {
     expect(nodeAfter.style.top).to.be.equal("20px");
   });
 
+  it("calls 'onItemRendered' callback when nodes are rendered", () => {
+    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 2);
+    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => createRandomMutableTreeModelNode(undefined, undefined, "test node"));
+    visibleNodesMock.setup((x) => x.getAtIndex(1)).returns(() => createRandomMutableTreeModelNode(undefined, undefined, "test node 1"));
+
+    const spy = sinon.spy();
+
+    const { getByText } = render(
+      <TreeRenderer
+        nodeLoader={nodeLoaderMock.object}
+        treeActions={treeActionsMock.object}
+        visibleNodes={visibleNodesMock.object}
+        nodeHeight={() => 50}
+        onItemsRendered={spy}
+      />);
+
+    getByText("test node 1");
+    expect(spy).to.be.calledOnceWith({ overscanStartIndex: 0, visibleStartIndex: 0, overscanStopIndex: 1, visibleStopIndex: 1 });
+  });
+
   it("scrolls to highlighted node", () => {
     const node2label = "Node 2";
     const node1 = createRandomMutableTreeModelNode();

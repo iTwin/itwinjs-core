@@ -14,7 +14,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { InteractiveEditingSession } from "../InteractiveEditingSession";
+import { GraphicalEditingScope } from "../GraphicalEditingScope";
 import { RenderSystem } from "../render/RenderSystem";
 import { GraphicBranch } from "../render/GraphicBranch";
 import {
@@ -66,33 +66,33 @@ function findElementChangesForModel(changes: Iterable<ModelGeometryChanges>, mod
   return undefined;
 }
 
-/** No interactive editing session is currently active. */
+/** No graphical editing scope is currently active. */
 class StaticState {
   public readonly type = "static";
   public readonly dispose: () => void;
 
   public constructor(root: RootTile) {
-    this.dispose = InteractiveEditingSession.onBegin.addOnce((session: InteractiveEditingSession) => {
-      root.transition(new InteractiveState(session, root));
+    this.dispose = GraphicalEditingScope.onEnter.addOnce((scope: GraphicalEditingScope) => {
+      root.transition(new InteractiveState(scope, root));
     });
   }
 }
 
-/** An interactive editing session is currently active, but no elements in the tile tree's model have been modified. */
+/** A graphical editing scope is currently active, but no elements in the tile tree's model have been modified. */
 class InteractiveState {
   public readonly type = "interactive";
   public readonly dispose: () => void;
 
-  public constructor(session: InteractiveEditingSession, root: RootTile) {
-    const removeEndingListener = session.onEnding.addOnce((_) => {
+  public constructor(scope: GraphicalEditingScope, root: RootTile) {
+    const removeEndingListener = scope.onExiting.addOnce((_) => {
       root.transition(new StaticState(root));
     });
 
-    const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>, _session: InteractiveEditingSession) => {
-      assert(session === _session);
+    const removeGeomListener = scope.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>, _scope: GraphicalEditingScope) => {
+      assert(scope === _scope);
       const elemChanges = findElementChangesForModel(changes, root.tree.modelId);
       if (elemChanges)
-        root.transition(new DynamicState(root, elemChanges, session));
+        root.transition(new DynamicState(root, elemChanges, scope));
     });
 
     this.dispose = () => {
@@ -102,7 +102,7 @@ class InteractiveState {
   }
 }
 
-/** Elements in the tile tree's model have been modified during the current interactive editing session. */
+/** Elements in the tile tree's model have been modified during the current editing scope. */
 class DynamicState {
   public readonly type = "dynamic";
   public readonly rootTile: DynamicIModelTile;
@@ -113,15 +113,15 @@ class DynamicState {
     this.rootTile.dispose();
   }
 
-  public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>, session: InteractiveEditingSession) {
+  public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>, scope: GraphicalEditingScope) {
     this.rootTile = DynamicIModelTile.create(root, elemChanges);
 
-    const removeEndingListener = session.onEnding.addOnce((_) => {
+    const removeEndingListener = scope.onExiting.addOnce((_) => {
       root.transition(new StaticState(root));
     });
 
-    const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>, _session: InteractiveEditingSession) => {
-      assert(session === _session);
+    const removeGeomListener = scope.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>, _scope: GraphicalEditingScope) => {
+      assert(scope === _scope);
       const elems = findElementChangesForModel(changes, root.tree.modelId);
       if (elems)
         this.rootTile.handleGeometryChanges(elems);
@@ -142,7 +142,7 @@ class DisposedState {
 
 const disposedState = new DisposedState();
 
-/** The current state of an [[IModelTileTree]]'s [[RootTile]]. The tile transitions between these states primarily in response to InteractiveEditingSession events. */
+/** The current state of an [[IModelTileTree]]'s [[RootTile]]. The tile transitions between these states primarily in response to GraphicalEditingScope events. */
 type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState;
 
 /** The root tile for an [[IModelTileTree]].
@@ -151,9 +151,9 @@ type RootTileState = StaticState | InteractiveState | DynamicState | DisposedSta
 export type RootIModelTile = Tile & { updateDynamicRange: (childTile: Tile) => void };
 
 /** Represents the root [[Tile]] of an [[IModelTileTree]]. The root tile has one or two direct child tiles which represent different branches of the tree:
- *  - The static branch, containing tiles that represent the state of the model's geometry as of the beginning of the current [[InteractiveEditingSession]].
- *  - The dynamic branch, containing tiles representing the geometry of elements that have been modified during the current [[InteractiveEditingSession]].
- * If no editing session is currently active, the dynamic branch does not exist, and the static branch represents the current state of all elements in the model.
+ *  - The static branch, containing tiles that represent the state of the model's geometry as of the beginning of the current [[GraphicalEditingScope]].
+ *  - The dynamic branch, containing tiles representing the geometry of elements that have been modified during the current [[GraphicalEditingScope]].
+ * If no editing scope is currently active, the dynamic branch does not exist, and the static branch represents the current state of all elements in the model.
  */
 class RootTile extends Tile {
   public readonly staticBranch: IModelTile;
@@ -181,12 +181,12 @@ class RootTile extends Tile {
       this._contentRange = this.staticBranch.contentRange.clone();
 
     // Determine initial state.
-    const session = InteractiveEditingSession.get(tree.iModel);
-    if (undefined === session) {
+    const scope = tree.iModel.isBriefcaseConnection() ? tree.iModel.editingScope : undefined;
+    if (undefined === scope) {
       this._tileState = new StaticState(this);
     } else {
-      const changes = session.getGeometryChangesForModel(tree.modelId);
-      this._tileState = changes ? new DynamicState(this, changes, session) : new InteractiveState(session, this);
+      const changes = scope.getGeometryChangesForModel(tree.modelId);
+      this._tileState = changes ? new DynamicState(this, changes, scope) : new InteractiveState(scope, this);
     }
 
     // Load the children immediately.

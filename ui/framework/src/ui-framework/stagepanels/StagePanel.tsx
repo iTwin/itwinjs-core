@@ -41,7 +41,7 @@ import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
  */
 
 /** Properties of a Stage Panel Zone
- * @beta
+ * @public
  */
 export interface StagePanelZoneProps {
   /** Properties for the Widgets in this Zone.
@@ -54,7 +54,7 @@ export interface StagePanelZoneProps {
 }
 
 /** Properties of the Stage Panel Zones
- * @beta
+ * @public
  */
 export interface StagePanelZonesProps {
   /** Properties for the Widgets in the Start section. */
@@ -67,12 +67,12 @@ export interface StagePanelZonesProps {
 
 /** Available units of panel maximum size. Pixels or percentage of 9-Zone App size.
  * @note Percentage of 9-Zone `height` is used for top/bottom panel and percentage of 9-Zone `width` is used for left/right panel.
- * @beta
+ * @public
  */
 export type StagePanelMaxSizeSpec = number | { percentage: number };
 
 /** Properties of a [[StagePanel]] component
- * @beta
+ * @public
  */
 export interface StagePanelProps {
   /** Describes which zones are allowed in this stage panel. */
@@ -107,7 +107,7 @@ export interface StagePanelProps {
 }
 
 /** Default properties of [[StagePanel]] component.
- * @beta
+ * @public
  */
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
@@ -134,7 +134,7 @@ interface StagePanelComponentState {
 }
 
 /** Frontstage Panel React component.
- * @beta
+ * @public
  */
 export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {
   public static readonly defaultProps: StagePanelDefaultProps = {

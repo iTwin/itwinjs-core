@@ -5,3 +5,5 @@ alpha;EditCommandIpc
 alpha;editorBuiltInCmdIds:
 internal;editorChannel = "editor"
 alpha;EditorIpc
+alpha;InsertGeometricElementData
+alpha;InsertGeometryPartData

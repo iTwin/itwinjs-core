@@ -13,9 +13,13 @@ import {
 } from "@bentley/imodeljs-backend";
 import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 
-const CHORD_TOL = 0.001;
-const ANGLE_TOL = Angle.degreesToRadians(45);
-const MIN_BREP_SIZE = 0.01;
+const exportGraphicsDetailOptions = {
+  chordTol: 0.001,
+  angleTol: Angle.degreesToRadians(45),
+  decimationTol: 0.001,
+  minBRepFeatureSize: 0.01,
+  minLineStyleComponentSize: 0.1,
+};
 
 class GltfGlobals {
   public static iModel: SnapshotDb;
@@ -296,9 +300,7 @@ function exportElements(elementIdArray: Id64Array, partInstanceArray: ExportPart
     addLines(info.lines, info.color);
   };
   GltfGlobals.iModel.exportGraphics({
-    chordTol: CHORD_TOL,
-    angleTol: ANGLE_TOL,
-    minBRepFeatureSize: MIN_BREP_SIZE,
+    ...exportGraphicsDetailOptions,
     onGraphics,
     onLineGraphics,
     elementIdArray,
@@ -373,9 +375,7 @@ function exportInstances(partInstanceArray: ExportPartInstanceInfo[]) {
       displayProps: instanceList[0].displayProps,
       onPartGraphics: onPartGraphics(meshIndices),
       onPartLineGraphics: onPartLineGraphics(meshIndices),
-      chordTol: CHORD_TOL,
-      angleTol: ANGLE_TOL,
-      minBRepFeatureSize: MIN_BREP_SIZE,
+      ...exportGraphicsDetailOptions,
     });
     for (const instance of instanceList) {
       // It is legal for different GeometryPartInstances of the same GeometryPart to have different

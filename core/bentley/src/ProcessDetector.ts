@@ -6,10 +6,8 @@
  * @module ProcessDetector
  */
 
-// Portions modified from package 'detect-gpu': https://github.com/TimvanScherpenzeel/detect-gpu/blob/master/src/index.ts
-
-/** Functions to determine the type of JavaScript process currently executing
- * @beta
+/** Functions to determine the type of JavaScript process currently executing.
+ * @public
  */
 export class ProcessDetector {
 
@@ -60,13 +58,13 @@ export class ProcessDetector {
    * @note this indicates that this is a browser process started by an iTwin mobile application.
    * It will return `false` when running user-launched web browsers on a mobile device.
    */
-  public static get isMobileAppFrontend() { return this.isBrowserProcess && window.location.hash.indexOf("platform=") !== -1; }
+  public static get isMobileAppFrontend() { return this.isAndroidAppFrontend || this.isIOSAppFrontend; }
 
   /** Is this process the frontend of an iOS mobile application? */
-  public static get isIOSAppFrontend() { return this.isMobileAppFrontend && window.location.hash.indexOf("platform=ios") !== -1; }
+  public static get isIOSAppFrontend() { return this.isBrowserProcess && window.location.hash.indexOf("platform=ios") !== -1; }
 
   /** Is this process the frontend of an Android mobile application? */
-  public static get isAndroidAppFrontend() { return this.isMobileAppFrontend && window.location.hash.indexOf("platform=android") !== -1; }
+  public static get isAndroidAppFrontend() { return this.isBrowserProcess && window.location.hash.indexOf("platform=android") !== -1; }
 
   /** Is this process the backend of an iOS mobile application? */
   public static get isIOSAppBackend() { return this.isNodeProcess && (process.platform as any) === "ios"; }
@@ -76,4 +74,7 @@ export class ProcessDetector {
 
   /**  Is this process a mobile app backend? */
   public static get isMobileAppBackend() { return this.isIOSAppBackend || this.isAndroidAppBackend; }
+
+  /** Is this process the frontend of a native (Electron or Mobile) app? */
+  public static get isNativeAppFrontend() { return this.isElectronAppFrontend || this.isMobileAppFrontend; }
 }

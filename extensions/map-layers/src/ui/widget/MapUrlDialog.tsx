@@ -28,13 +28,14 @@ interface MapUrlDialogProps {
   activeViewport?: ScreenViewport;
   isOverlay: boolean;
   onOkResult: () => void;
+  onCancelResult?: () => void;
   mapTypesOptions?: MapTypesOptions;
 
   // An optional layer definition can be provide to enable the edit mpde
   layerToEdit?: MapLayerProps;
 
   // Dialog will disabled all fields except username/password, and
-  // will force user to provider
+  //  will force user to provider
   askForCredentialsOnly?: boolean;
 }
 
@@ -46,7 +47,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [dialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate(props.layerToEdit ? "mapLayers:CustomAttach.EditCustomLayer" : "mapLayers:CustomAttach.AttachCustomLayer"));
   const [typeLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Type"));
   const [nameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Name"));
+  const [nameInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.NameInputPlaceHolder"));
   const [urlLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.URL"));
+  const [urlInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.UrlInputPlaceHolder"));
   const [projectSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnProjectSettings"));
   const [modelSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnModelSettings"));
   const [missingCredentialsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MissingCredentials"));
@@ -61,10 +64,22 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [password, setPassword] = React.useState("");
   const [noSaveSettingsWarning] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.NoSaveSettingsWarning"));
   const [passwordLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.Password"));
+  const [passwordRequiredLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.PasswordRequired"));
   const [userNameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.Username"));
+  const [userNameRequiredLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.UsernameRequired"));
   const [settingsStorage, setSettingsStorageRadio] = React.useState("Project");
 
   const [mapType, setMapType] = React.useState(props.layerToEdit?.formatId ?? MAP_TYPES.arcGis);
+
+  // 'isMounted' is used to prevent any async operation once the hook has been
+  // unloaded.  Otherwise we get a 'Can't perform a React state update on an unmounted component.' warning in the console.
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const [mapTypes] = React.useState((): string[] => {
     const types = [MAP_TYPES.arcGis, MAP_TYPES.wms, MAP_TYPES.wmts];
@@ -126,8 +141,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [setMapType]);
 
   const handleCancel = React.useCallback(() => {
+    if (props.onCancelResult) {
+      props.onCancelResult();
+      return;
+    }
     ModalDialogManager.closeDialog();
-  }, []);
+  }, [props]);
 
   const onUsernameChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setUserName(event.target.value);
@@ -157,7 +176,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           || validation.status === MapLayerSourceStatus.InvalidCredentials) {
           const sourceRequireAuth = (validation.status === MapLayerSourceStatus.RequireAuth);
           const invalidCredentials = (validation.status === MapLayerSourceStatus.InvalidCredentials);
-          resolve(!sourceRequireAuth && !invalidCredentials);
+          const closeDialog = !sourceRequireAuth && !invalidCredentials;
+          resolve(closeDialog);
 
           if (sourceRequireAuth && !serverRequireCredentials) {
             setServerRequireCredentials(true);
@@ -198,24 +218,30 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                 const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
                 IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
               } else {
-                const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachError");
-                const error = "Conversion to layer settings failed";
-                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${msg} ${source.url}-${error}`));
+                const msgError = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerLayerSettingsConversionError");
+                const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", {error: msgError, sourceUrl: source.url} );
+                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
               }
-
             }
 
             vp.invalidateRenderPlan();
           }
-          onOkResult();
+
+          if (closeDialog) {
+            // This handler will close the layer source handler, and therefore the MapUrl dialog.
+            // don't call it if the dialog needs to remains open.
+            onOkResult();
+          }
+
         } else {
           const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.ValidationError");
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${msg} ${source.url}`));
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `${msg} ${source.url}`));
           resolve(true);
         }
+        resolve(false);
       }).catch((error) => {
-        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachError");
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${msg} ${source.url}-${error}`));
+        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", {error, sourceUrl: source.url} );
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
         resolve(true);
       });
     });
@@ -234,10 +260,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [setMapUrl]);
 
   const handleOk = React.useCallback(() => {
-    let closeDialogImmediately = true;
-
+    let source: MapLayerSource|undefined;
     if (mapUrl && mapName) {
-      const source = MapLayerSource.fromJSON({
+      source = MapLayerSource.fromJSON({
         url: mapUrl,
         name: mapName,
         formatId: mapType,
@@ -245,22 +270,37 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         password,
       });
 
-      if (source) {
+      if (source === undefined) {
+        // Close the dialog and inform end user something went wrong.
+        ModalDialogManager.closeDialog();
+        const msgError = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerLayerSourceCreationFailed");
+        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", {error: msgError, sourceUrl: mapUrl} );
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
+        return;
+      }
 
-        closeDialogImmediately = false;
-        setLayerAttachPending(true);
-        doAttach(source).then((closeDialog) => {
-          setLayerAttachPending(false);
+      setLayerAttachPending(true);
+
+      // Code below is executed in the an async manner but
+      // I don't necessarily  want to mark the handler as async
+      // so Im wrapping it un in a void wrapper.
+      void (async () => {
+        try {
+          const closeDialog = await doAttach(source);
+          if (isMounted.current) {
+            setLayerAttachPending(false);
+          }
+
+          // In theory the modal dialog should always get closed by the parent
+          // AttachLayerPanel's 'onOkResult' handler.  We close it here just in case.
           if (closeDialog) {
             ModalDialogManager.closeDialog();
           }
-        }).catch(() => {
+        } catch (_error) {
           ModalDialogManager.closeDialog();
-        });
-      }
+        }
+      })();
 
-      if (closeDialogImmediately)
-        ModalDialogManager.closeDialog();
     }
   }, [doAttach, mapName, mapUrl, mapType, userName, password]);
 
@@ -306,18 +346,18 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             <span className="map-layer-source-label">{typeLabel}</span>
             <Select className="map-manager-base-select" options={mapTypes} value={mapType} disabled={props.askForCredentialsOnly} onChange={handleMapTypeSelection} />
             <span className="map-layer-source-label">{nameLabel}</span>
-            <Input placeholder="Enter Map Name" onChange={onNameChange} value={props.layerToEdit?.name || layerToEdit?.name} disabled={props.askForCredentialsOnly} />
+            <Input placeholder={nameInputPlaceHolder} onChange={onNameChange} value={props.layerToEdit?.name || layerToEdit?.name} disabled={props.askForCredentialsOnly} />
             <span className="map-layer-source-label">{urlLabel}</span>
-            <Input placeholder="Enter Map Source URL" onKeyPress={handleOnKeyDown} onChange={onUrlChange} value={props.layerToEdit?.url || layerToEdit?.url} disabled={props.askForCredentialsOnly} />
+            <Input placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} value={props.layerToEdit?.url || layerToEdit?.url} disabled={props.askForCredentialsOnly} />
             {isAuthSupported() &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
-                <LabeledInput placeholder={serverRequireCredentials ? "Username required" : userNameLabel}
+                <LabeledInput placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
                   status={!userName && serverRequireCredentials ? InputStatus.Warning : undefined}
                   onChange={onUsernameChange} />
 
                 <span className="map-layer-source-label">{passwordLabel}</span>
-                <LabeledInput type="password" placeholder={serverRequireCredentials ? "Password required" : passwordLabel}
+                <LabeledInput type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
                   status={!password && serverRequireCredentials ? InputStatus.Warning : undefined}
                   onChange={onPasswordChange}
                   onKeyPress={handleOnKeyDown} />

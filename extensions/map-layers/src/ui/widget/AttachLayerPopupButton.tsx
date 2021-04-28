@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { IModelApp, MapLayerSettingsService, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { Button, ButtonType, Input, Listbox, ListboxItem, LoadingSpinner, OutsideClickEvent, Popup, SpinnerSize, useOnOutsideClick, WebFontIcon } from "@bentley/ui-core";
+import * as UiCore from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { useSourceMapContext } from "./MapLayerManager";
 import { MapUrlDialog } from "./MapUrlDialog";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { ConfirmMessageDialog } from "./ConfirmMessageDialog";
 
 // cSpell:ignore droppable Sublayer
 
@@ -26,13 +27,32 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
   const [addCustomLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Custom"));
   const [addCustomLayerToolTip] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachCustomLayer"));
   const [loadingMapSources] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.LoadingMapSources"));
+  const [removeLayerDefButtonTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefButtonTitle"));
+  const [removeLayerDefDialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefDialogTitle"));
   const [loading, setLoading] = React.useState(false);
+  const [layerNameUnderCursor, setLayerNameUnderCursor] = React.useState<string | undefined>();
+
+  // 'isMounted' is used to prevent any async operation once the hook has been
+  // unloaded.  Otherwise we get a 'Can't perform a React state update on an unmounted component.' warning in the console.
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+
+      // We close any open dialogs that we might have opened
+      // This was added because the modal dialog remained remained displayed after the session expired.
+      ModalDialogManager.closeDialog();
+    };
+  }, []);
 
   const handleFilterTextChanged = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setSourceFilterString(event.target.value);
   }, []);
 
-  const { sources, activeViewport, backgroundLayers, overlayLayers, mapTypesOptions } = useSourceMapContext();
+  const { loadingSources, sources, activeViewport, backgroundLayers, overlayLayers, mapTypesOptions } = useSourceMapContext();
+  const contextId = activeViewport?.iModel?.contextId;
+  const iModelId = activeViewport?.iModel?.iModelId;
 
   const styleContainsLayer = React.useCallback((name: string) => {
     if (backgroundLayers) {
@@ -51,6 +71,12 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     onLayerAttached();
   }, [onLayerAttached]);
 
+  const handleModalUrlDialogCancel = React.useCallback(() => {
+    // close popup and refresh UI
+    setLoading(false);
+    ModalDialogManager.closeDialog();
+  }, []);
+
   React.useEffect(() => {
     async function attemptToAddLayer(layerName: string) {
       if (layerName && activeViewport) {
@@ -62,7 +88,10 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
           }
 
           try {
-            setLoading(true);
+            if (isMounted.current) {
+              setLoading(true);
+            }
+
             const { status, subLayers } = await mapLayerSettings.validateSource();
             if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
 
@@ -80,30 +109,37 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
                   IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
                 }
 
-              } else if (status === MapLayerSourceStatus.RequireAuth) {
+                if (isMounted.current) {
+                  setLoading(false);
+                }
+                if (onLayerAttached) {
+                  onLayerAttached();
+                }
+
+              } else if (status === MapLayerSourceStatus.RequireAuth && isMounted.current) {
                 ModalDialogManager.openDialog(
                   <MapUrlDialog
                     activeViewport={activeViewport}
                     isOverlay={isOverlay}
                     layerToEdit={mapLayerSettings.toJSON()}
                     onOkResult={handleModalUrlDialogOk}
+                    onCancelResult={handleModalUrlDialogCancel}
                     mapTypesOptions={mapTypesOptions}
                     askForCredentialsOnly={true} />
                 );
               }
 
-              setLoading(false);
-              if (onLayerAttached) {
-                onLayerAttached();
-              }
-
             } else {
               const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerValidationFailed", { sourceUrl: mapLayerSettings.url });
               IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
-              setLoading(false);
+              if (isMounted.current) {
+                setLoading(false);
+              }
             }
           } catch (err) {
-            setLoading(false);
+            if (isMounted.current) {
+              setLoading(false);
+            }
             const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttachError", { error: err, sourceUrl: mapLayerSettings.url });
             IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
           }
@@ -115,9 +151,12 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 
     if (layerNameToAdd) {
       attemptToAddLayer(layerNameToAdd); // eslint-disable-line @typescript-eslint/no-floating-promises
-      setLayerNameToAdd(undefined);
+
+      if (isMounted.current) {
+        setLayerNameToAdd(undefined);
+      }
     }
-  }, [setLayerNameToAdd, layerNameToAdd, activeViewport, sources, backgroundLayers, isOverlay, overlayLayers, onLayerAttached, handleModalUrlDialogOk, mapTypesOptions]);
+  }, [setLayerNameToAdd, layerNameToAdd, activeViewport, sources, backgroundLayers, isOverlay, overlayLayers, onLayerAttached, handleModalUrlDialogOk, mapTypesOptions, handleModalUrlDialogCancel]);
 
   const options = React.useMemo(() => sources?.filter((source) => !styleContainsLayer(source.name)).map((value) => value.name), [sources, styleContainsLayer]);
   const filteredOptions = React.useMemo(() => {
@@ -152,26 +191,86 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     setLayerNameToAdd(mapName);
   }, []);
 
+  const handleNoConfirmation = React.useCallback((_layerName: string) => {
+    ModalDialogManager.closeDialog();
+  }, []);
+
+  const handleYesConfirmation = React.useCallback(async (layerName: string)  => {
+
+    if (!!contextId && !!iModelId) {
+      if (await MapLayerSettingsService.deleteSharedSettingsByName(layerName, contextId, iModelId)) {
+        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefSuccess", { layerName });
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+      } else {
+        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefError", { layerName });
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
+      }
+    }
+
+    ModalDialogManager.closeDialog();
+  }, [contextId, iModelId]);
+
+  const onItemRemoveButtonClicked = React.useCallback((event) => {
+    event.stopPropagation();  // We don't want the owning ListBox to react on mouse click.
+
+    const layerName = event?.currentTarget?.parentNode?.dataset?.value;
+
+    const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefDialogMessage", { layerName });
+    ModalDialogManager.openDialog(
+      <ConfirmMessageDialog
+        className="map-sources-delete-confirmation"
+        title = {removeLayerDefDialogTitle}
+        message = {msg}
+        maxWidth={400}
+        onClose={() => handleNoConfirmation(layerName)}
+        onEscape={() => handleNoConfirmation(layerName)}
+        onYesResult={async () => handleYesConfirmation(layerName)}
+        onNoResult={() => handleNoConfirmation(layerName)}
+      />
+    );
+  }, [handleNoConfirmation, handleYesConfirmation, removeLayerDefDialogTitle]);
+
   return (
     <div className="map-manager-header">
-      {loading && <LoadingSpinner size={SpinnerSize.Medium} message={loadingMapSources} />}
+      {(loading || loadingSources) && <UiCore.LoadingSpinner size={UiCore.SpinnerSize.Medium} message={loadingMapSources} />}
       <div className="map-manager-source-listbox-header">
-        <Input type="text" className="map-manager-source-list-filter"
+        <UiCore.Input type="text" className="map-manager-source-list-filter"
           placeholder={placeholderLabel}
           value={sourceFilterString}
           onChange={handleFilterTextChanged} />
-        <Button className="map-manager-add-source-button" buttonType={ButtonType.Hollow} title={addCustomLayerToolTip} onClick={handleAddNewMapSource}>
-          {addCustomLayerLabel}</Button>
+        <UiCore.Button className="map-manager-add-source-button" buttonType={UiCore.ButtonType.Hollow} title={addCustomLayerToolTip} onClick={handleAddNewMapSource}>
+          {addCustomLayerLabel}</UiCore.Button>
       </div>
       <div className="map-manager-sources">
-        <Listbox id="map-sources" className="map-manager-source-list" onKeyPress={handleKeypressOnSourceList} onListboxValueChange={onListboxValueChange}  >
+        <UiCore.Listbox
+          id="map-sources"
+          selectedValue={layerNameToAdd}
+          className="map-manager-source-list"
+          onKeyPress={handleKeypressOnSourceList}
+          onListboxValueChange={onListboxValueChange} >
           {
             filteredOptions?.map((mapName) =>
-              <ListboxItem key={mapName} className="map-source-list-entry" value={mapName}>
+              <UiCore.ListboxItem
+                key={mapName}
+                className="map-source-list-entry"
+                value={mapName}
+                onMouseEnter={() => setLayerNameUnderCursor(mapName)}
+                onMouseLeave={() => setLayerNameUnderCursor(undefined)}>
                 <span className="map-source-list-entry-name" title={mapName}>{mapName}</span>
-              </ListboxItem>)
+
+                { // Display the delete icon only when the mouse over a specific item
+                  // otherwise list feels cluttered.
+                  (!!contextId && !!iModelId && layerNameUnderCursor &&  layerNameUnderCursor === mapName) &&
+                  <UiCore.Button
+                    className="map-source-delete-button"
+                    title={removeLayerDefButtonTitle}
+                    onClick={onItemRemoveButtonClicked}>
+                    <UiCore.Icon iconSpec="icon-delete" />
+                  </UiCore.Button> }
+              </UiCore.ListboxItem>
+            )
           }
-        </Listbox>
+        </UiCore.Listbox>
       </div>
     </div>
 
@@ -194,8 +293,20 @@ export interface AttachLayerPopupButtonProps {
 export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
   const [showAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Attach"));
   const [hideAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Close"));
+  const [addCustomLayerButtonLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AddCustomLayerButtonLabel"));
   const [popupOpen, setPopupOpen] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const panelRef =React.useRef<HTMLDivElement>(null);
+
+  // 'isMounted' is used to prevent any async operation once the hook has been
+  // unloaded.  Otherwise we get a 'Can't perform a React state update on an unmounted component.' warning in the console.
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const togglePopup = React.useCallback(() => {
     setPopupOpen(!popupOpen);
@@ -205,16 +316,46 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
     setPopupOpen(false);
   }, []);
 
-  const isOutsideEvent = React.useCallback((e: OutsideClickEvent) => {
-    // if clicking on button that open panel - don't trigger outside click processing
-    return !!buttonRef.current && (e.target instanceof Node) && !buttonRef.current.contains(e.target);
+  const isInsideCoreDialog =  React.useCallback((element: HTMLElement) => {
+    if (element.nodeName === "DIV") {
+      if (element.classList && element.classList.contains("core-dialog"))
+        return true;
+      if (element.parentElement && isInsideCoreDialog(element.parentElement))
+        return true;
+    } else {
+      // istanbul ignore else
+      if (element.parentElement && isInsideCoreDialog(element.parentElement))
+        return true;
+    }
+    return false;
   }, []);
 
-  const panelRef = useOnOutsideClick<HTMLDivElement>(handleClosePopup, isOutsideEvent);
+  const handleOutsideClick = React.useCallback((event: MouseEvent) => {
+    if (isInsideCoreDialog(event.target as HTMLElement)) {
+      return;
+    }
+
+    // If clicking on button that open panel -  don't trigger outside click processing
+    if (buttonRef?.current && buttonRef?.current.contains(event.target as Node)) {
+      return;
+    }
+
+    // If clicking the panel, this is not an outside clicked
+    if (panelRef.current && panelRef?.current.contains(event.target as Node)) {
+      return;
+    }
+
+    // If we reach this point, we got an outside clicked, no close the popup
+    setPopupOpen(false);
+
+  }, [isInsideCoreDialog]);
 
   const { refreshFromStyle } = useSourceMapContext();
 
   const handleLayerAttached = React.useCallback(() => {
+    if (!isMounted.current) {
+      return;
+    }
     setPopupOpen(false);
     refreshFromStyle();
   }, [refreshFromStyle]);
@@ -226,7 +367,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
       button = (
         <button ref={buttonRef} className="map-manager-attach-layer-button" title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
           onClick={togglePopup}>
-          <WebFontIcon iconName="icon-add" />
+          <UiCore.WebFontIcon iconName="icon-add" />
         </button>
       );
     } else {
@@ -242,7 +383,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
       }
       button = (
         <button ref={buttonRef} className={typeClassName} title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
-          onClick={togglePopup}>Add Layer</button>
+          onClick={togglePopup}>{addCustomLayerButtonLabel}</button>
       );
     }
 
@@ -252,16 +393,18 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
   return (
     <>
       {renderButton()}
-      <Popup
+      <UiCore.Popup
         isOpen={popupOpen}
         position={RelativePosition.BottomRight}
         onClose={handleClosePopup}
+        onOutsideClick={handleOutsideClick}
         target={buttonRef.current}
+        closeOnEnter={false}
       >
         <div ref={panelRef} className="map-sources-popup-panel" >
-          <AttachLayerPanel isOverlay={props.isOverlay} onLayerAttached={handleLayerAttached} />
+          <AttachLayerPanel isOverlay={props.isOverlay} onLayerAttached={handleLayerAttached}/>
         </div>
-      </Popup >
+      </UiCore.Popup >
     </>
   );
 }

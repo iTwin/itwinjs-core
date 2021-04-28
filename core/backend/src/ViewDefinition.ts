@@ -46,7 +46,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     for (const [id] of this.settings.subCategoryOverrides) {
@@ -57,7 +57,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
       predecessorIds.add(excludedElementId);
   }
 
-  /** @alpha */
+  /** @internal */
   protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
 
@@ -181,7 +181,7 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
   }
 
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     const skyBoxImageProps: SkyBoxImageProps | undefined = this.settings.environment?.sky?.image;
@@ -202,7 +202,7 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
       }
     }
   }
-  /** @alpha */
+  /** @internal */
   protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels) {
@@ -246,7 +246,7 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
    * @throws [[IModelError]] if unable to create the element.
    */
   public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d {
-    options = options ?? { };
+    options = options ?? {};
     let viewflags = options.viewFlags?.toJSON();
     if (!viewflags)
       viewflags = options.viewflags ?? new ViewFlags().toJSON();
@@ -305,7 +305,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     val.models = this.models;
     return val;
   }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     this.models.forEach((modelId: Id64String) => predecessorIds.add(modelId));
@@ -371,7 +371,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     val.categories = this.categories;
     return val;
   }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     this.categories.forEach((categoryId: Id64String) => predecessorIds.add(categoryId));
@@ -456,7 +456,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     return json;
   }
 
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.categorySelectorId);
@@ -467,7 +467,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     }
   }
 
-  /** @alpha */
+  /** @internal */
   protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.viewDetails) {
@@ -493,9 +493,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   /** Load this view's CategorySelector from the IModelDb. */
   public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement<CategorySelector>(this.categorySelectorId); }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public abstract get details(): ViewDetails;
 
   /** The Id of the AuxiliaryCoordinateSystem for this ViewDefinition, or an invalid Id if no ACS is defined. */
@@ -561,9 +559,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     return val;
   }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public get details(): ViewDetails3d { return this._details; }
 
   /** Load this view's DisplayStyle3d from the IModelDb. */
@@ -595,7 +591,7 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     json.modelSelectorId = this.modelSelectorId;
     return json;
   }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.modelSelectorId);
@@ -766,15 +762,13 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     return val;
   }
 
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.baseModelId);
   }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public get details(): ViewDetails { return this._details; }
 
   /** Load this view's DisplayStyle2d from the IModelDb. */
@@ -942,7 +936,7 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
     this.view = new RelatedElement(props.view);
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.view.id);

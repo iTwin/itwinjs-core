@@ -41,26 +41,4 @@ export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForegr
 */
 export interface MobileAppFunctions {
   reconnect: (connection: number) => Promise<void>;
-  /**
-   * Initiate a sign in on backend. This will emit an onUserStateChange() event.
-   */
-  authSignIn: () => Promise<void>;
-
-  /**
-   * Sign out the user on the backend. This will emit an onUserStateChange() event.
-   */
-  authSignOut: () => Promise<void>;
-
-  /**
-   * Get access token and perform silent refresh as needed
-   * @note returns OIDC token
-   */
-  authGetAccessToken: () => Promise<string>;
-
-  /**
-   * Initialize OIDC client
-   * @param _issuer URL for issuer.
-   * @param _config configuration for oidc client
-   */
-  authInitialize: (_issuer: string, _config: any) => Promise<void>;
 }

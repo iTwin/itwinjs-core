@@ -20,6 +20,7 @@ There are numerous React components and TypeScript classes in the `@bentley/ui-f
 - [Dialogs](./Dialogs.md)
 - [Workflows and Tasks](./TasksWorkflows.md)
 - [KeyboardShortcut]($ui-framework:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
+- [UI Settings](./UiSettings.md)
 
 ## Other Topics
 

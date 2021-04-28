@@ -6,7 +6,6 @@
  * @module UnifiedSelection
  */
 
-import { once } from "lodash";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
@@ -18,9 +17,6 @@ import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const HILITE_RULESET: Ruleset = require("./HiliteRules.json");
-
-/** The function registers `HILITE_RULESET` the first time it's called and does nothing on other calls */
-const registerRuleset = once(async () => Presentation.presentation.rulesets().add(HILITE_RULESET));
 
 /**
  * A set of model, subcategory and element ids that can be used for specifying
@@ -70,7 +66,7 @@ export class HiliteSetProvider {
     };
     const options = {
       imodel: this._imodel,
-      rulesetOrId: HILITE_RULESET.id,
+      rulesetOrId: HILITE_RULESET,
       descriptor,
     };
     const contentPromises = new Array<Promise<Content | undefined>>();
@@ -110,7 +106,6 @@ export class HiliteSetProvider {
    * for the same input doesn't cost.
    */
   public async getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet> {
-    await registerRuleset();
     if (!this._cached || this._cached.keysGuid !== selection.guid) {
       // need to create a new set without transients
       const transientIds = new Array<Id64String>();

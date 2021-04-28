@@ -16,12 +16,11 @@ import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
 import {
-  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory,
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory,
   PresentationProps as PresentationBackendProps,
 } from "@bentley/presentation-backend";
 import { RequestPriority } from "@bentley/presentation-common";
-import { PresentationComponentsLoggerCategory } from "@bentley/presentation-components";
-import { PresentationFrontendLoggerCategory, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
+import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
 
 chai.use(sinonChai);
@@ -72,15 +71,8 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
-  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation, LogLevel.Info);
-  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation_Localization, LogLevel.Info);
-  Logger.setLevel(PresentationBackendLoggerCategory.Package, LogLevel.Info);
-  Logger.setLevel(PresentationFrontendLoggerCategory.Package, LogLevel.Info);
-  Logger.setLevel(PresentationComponentsLoggerCategory.Package, LogLevel.Info);
 
   const libDir = path.resolve("lib");
-  console.log(`Backend's lib directory path: ${libDir}`); // eslint-disable-line no-console
-
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
@@ -112,7 +104,6 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   await initializeTesting(presentationTestingInitProps);
-  console.log(`Backend PID: ${process.pid}`); // eslint-disable-line no-console
 };
 
 export const initialize = async (backendTimeout: number = 0) => {

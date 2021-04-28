@@ -8,12 +8,12 @@ import * as sinon from "sinon";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import {
   AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, StageUsage, StatusBarLabelSide, StatusBarSection, UiItemsManager,
-  UiItemsProvider,
+  UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
 import { fireEvent, render } from "@testing-library/react";
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
-  StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, WidgetState, withMessageCenterFieldProps, withStatusFieldProps,
+  StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, withMessageCenterFieldProps, withStatusFieldProps,
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 import { createDOMRect } from "../Utils";

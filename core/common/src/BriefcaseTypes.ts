@@ -25,10 +25,59 @@ export enum DownloadBriefcaseStatus {
   Error,
 }
 
-/** Operations allowed when synchronizing changes between the Briefcase and iModelHub
+/** Values of BriefcaseId that have special meaning.
+ * @see [[BriefcaseId]]
  * @public
  */
-export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }
+export enum BriefcaseIdValue {
+  /** Indicates an invalid/illegal BriefcaseId */
+  Illegal = 0xffffffff,
+
+  /** BriefcaseIds must be less than this value */
+  Max = 1 << 24,
+
+  /** All valid iModelHub issued BriefcaseIds will be equal or higher than this */
+  FirstValid = 2,
+
+  /** All valid iModelHub issued BriefcaseIds will be equal or lower than this */
+  LastValid = BriefcaseIdValue.Max - 11,
+
+  /**
+   * The briefcase has not been assigned a unique Id by iModelHub. Only briefcases that have been assigned a unique BriefcaseId may create changesets,
+   * because BriefcaseId is used to create unique ElementIds for new elements.
+   *
+   * The `Unassigned` briefcaseId is used for several purposes:
+   *  - **Snapshots**. Snapshot files are immutable copies of an iModel for archival or data exchange purposes. They can neither generate nor accept new changesets.
+   *  - **Checkpoints**. Checkpoints are Snapshots that represent a specific version on an iModel's timeline.
+   *  - **PullOnly**. A local briefcase file that may be used to "slide" along a timeline by applying incoming changesets.
+   * They are always opened readonly except to apply changesets.
+   *  - **Standalone**. Standalone iModels are local files that are not connected to iModelHub, and therefore cannot accept or create changesets.
+   */
+  Unassigned = 0,
+
+  /** Alias for `Unassigned`.
+   * @deprecated use Unassigned
+   */
+  Standalone = 0,
+
+  /**
+   * @internal
+   * @deprecated use Unassigned
+   */
+  DeprecatedStandalone = 1,
+}
+
+/** Whether a briefcase is editable or may only accept incoming changesets from iModelHub
+ * @public
+ */
+export enum SyncMode {
+  /** Use a fixed version (i.e. a checkpoint). See [CheckpointManager]($backend) for preferred approach to using checkpoint files. */
+  FixedVersion = 1,
+  /** A briefcase that can be edited. A unique briefcaseId must be assigned by iModelHub. */
+  PullAndPush = 2,
+  /** use [BriefcaseIdValue.Unassigned](%backend). This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
+  PullOnly = 3,
+}
 
 /**
  * Options to open a previously downloaded briefcase
@@ -78,8 +127,13 @@ export interface LocalBriefcaseProps {
   /** The briefcaseId. */
   briefcaseId: number;
 
-  /** The current changeSetId. */
-  changeSetId: GuidString;
+  /** The current changeSetId.
+   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
+   */
+  changeSetId: string;
+
+  /** Size of the briefcase file in bytes  */
+  fileSize: number;
 }
 
 /** Properties for downloading a briefcase to a local file, from iModelHub.

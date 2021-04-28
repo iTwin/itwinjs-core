@@ -24,8 +24,12 @@ alpha;class IntrospectionResponseCache
 internal;LocalhostHandler 
 alpha;MemoryIntrospectionResponseCache 
 beta;OidcAgentClient = AgentAuthorizationClient
+deprecated;OidcAgentClient = AgentAuthorizationClient
 beta;OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration
+deprecated;OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration
 beta;OidcDelegationClient = DelegationAuthorizationClient
+deprecated;OidcDelegationClient = DelegationAuthorizationClient
 beta;OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration
+deprecated;OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration
 internal;StorageServiceFileHandler 
 internal;UrlFileHandler 

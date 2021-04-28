@@ -1,10 +1,13 @@
 sep=;
 Release Tag;API Item
 beta;AccessToken
+beta;AccessTokenProps
 beta;AuthenticationError 
 beta;AuthorizationClient
 public;AuthorizedClientRequestContext 
-public;AuthorizedClientRequestContextProps 
+beta;AuthorizedClientRequestContextProps 
+beta;AuthorizedSession 
+beta;AuthorizedSessionProps 
 beta;CancelRequest
 beta;ChangeState = "new" | "modified" | "deleted" | "existing"
 beta;ChunkedQueryContext
@@ -37,13 +40,17 @@ beta;RequestTimeoutOptions
 beta;Response
 beta;ResponseError 
 internal;SamlAccessToken 
+deprecated;SamlAccessToken 
 internal;SamlAuthorizationToken 
+deprecated;SamlAuthorizationToken 
 internal;class SamlToken
+deprecated;class SamlToken
 beta;SasUrlExpired 
 internal;TokenPrefix(prefix: string): (constructor: any) => void
 internal;UrlDiscoveryClient 
 internal;UserCancelledError 
 beta;UserInfo
+beta;UserInfoProps
 beta;class WsgClient 
 beta;WsgError 
 beta;class WsgInstance 

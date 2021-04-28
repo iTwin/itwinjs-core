@@ -158,6 +158,9 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       case 200: return RpcRequestStatus.Resolved;
       case 500: return RpcRequestStatus.Rejected;
       case 204: return RpcRequestStatus.NoContent;
+      case 502: return RpcRequestStatus.BadGateway;
+      case 503: return RpcRequestStatus.ServiceUnavailable;
+      case 504: return RpcRequestStatus.GatewayTimeout;
       default: return RpcRequestStatus.Unknown;
     }
   }
@@ -170,6 +173,9 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       case RpcRequestStatus.Resolved: return 200;
       case RpcRequestStatus.Rejected: return 500;
       case RpcRequestStatus.NoContent: return 204;
+      case RpcRequestStatus.BadGateway: return 502;
+      case RpcRequestStatus.ServiceUnavailable: return 503;
+      case RpcRequestStatus.GatewayTimeout: return 504;
       default: return 501;
     }
   }

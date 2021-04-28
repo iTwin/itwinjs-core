@@ -8,30 +8,39 @@
 
 import { ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import {
-  BriefcasePushAndPullNotifications, IModelChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
-  IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds,
+  EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, IModelVersionProps,
+  IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
+  RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
- * Options for [[IpcHost.startup]]
- * @beta
- */
-export interface IpcHostOptions {
-  /** The Ipc socket to use for communications with frontend. Allows undefined only for headless tests. */
-  socket?: IpcSocketBackend;
+  * Options for [[IpcHost.startup]]
+  * @beta
+  */
+export interface IpcHostOpts {
+  iModelHost?: IModelHostConfiguration;
+  ipcHost?: {
+    /** The Ipc socket to use for communications with frontend. Allows undefined only for headless tests. */
+    socket?: IpcSocketBackend;
+
+    /** don't send stack information on exceptions */
+    exceptions?: {
+      noStack?: boolean;
+    };
+  };
 }
 
 /**
  * Used by applications that have a dedicated backend. IpcHosts may send messages to their corresponding IpcApp.
  * @note if either end terminates, the other must too.
  * @beta
-*/
+ */
 export class IpcHost {
+  public static noStack = false;
   private static _ipc: IpcSocketBackend | undefined;
   /** Get the implementation of the [IpcSocketBackend]($common) interface. */
   private static get ipc(): IpcSocketBackend { return this._ipc!; }
@@ -80,22 +89,38 @@ export class IpcHost {
   }
 
   /** @internal */
-  public static notifyIModelChanges<T extends keyof IModelChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<IModelChangeNotifications[T]>) {
-    this.notify(IpcAppChannel.IModelChanges, briefcase, methodName, ...args);
+  public static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>) {
+    return IpcHost.send(IpcAppChannel.AppNotify, methodName, ...args);
   }
 
   /** @internal */
-  public static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>) {
-    this.notify(IpcAppChannel.PushPull, briefcase, methodName, ...args);
+  public static notifyTxns<T extends keyof TxnNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<TxnNotifications[T]>) {
+    this.notify(IpcAppChannel.Txns, briefcase, methodName, ...args);
   }
 
-  public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
+  /** @internal */
+  public static notifyEditingScope<T extends keyof EditingScopeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingScopeNotifications[T]>) {
+    this.notify(IpcAppChannel.EditingScope, briefcase, methodName, ...args);
+  }
+
+  /**
+   * Start the backend of an Ipc app.
+   * @param opt
+   * @note this method calls [[IModelHost.startup]] internally.
+   */
+  public static async startup(opt?: IpcHostOpts): Promise<void> {
     this._ipc = opt?.ipcHost?.socket;
-    if (this.isValid) // for tests, we use IpcHost but don't have a frontend
+    if (opt?.ipcHost?.exceptions?.noStack)
+      this.noStack = true;
+
+    if (this.isValid) { // for tests, we use IpcHost but don't have a frontend
       IpcAppHandler.register();
+    }
+
     await IModelHost.startup(opt?.iModelHost);
   }
 
+  /** Shutdown IpcHost backend. Also calls [[IModelHost.shutdown]] */
   public static async shutdown(): Promise<void> {
     this._ipc = undefined;
     await IModelHost.shutdown();
@@ -134,7 +159,10 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err) {
-        return { error: { name: err.constructor.name, message: err.message ?? "", errorNumber: err.errorNumber ?? 0 } };
+        const ret: IpcInvokeReturn = { error: { name: err.constructor.name, message: err.message ?? "", errorNumber: err.errorNumber ?? 0 } };
+        if (!IpcHost.noStack)
+          ret.error.stack = err.stack ?? "";
+        return ret;
       }
     });
   }
@@ -145,6 +173,7 @@ export abstract class IpcHandler {
  */
 class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public get channelName() { return IpcAppChannel.Functions; }
+
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
     Logger.logRaw(level, category, message, () => metaData);
   }
@@ -152,13 +181,11 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return cancelTileContentRequests(tokenProps, contentIds);
   }
   public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
-    const iModel = IModelDb.findByKey(key);
-    return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
+    return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
   }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
-    const requestContext = ClientRequestContext.current;
+    const requestContext = args.readonly === true ? new ClientRequestContext() : await IModelHost.getAuthorizedContext();
     const db = await BriefcaseDb.open(requestContext, args);
-    requestContext.enter();
     return db.toJSON();
   }
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
@@ -173,45 +200,54 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.hasPendingTxns();
   }
-  public async pullAndMergeChanges(key: string): Promise<IModelConnectionProps> {
-    const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    await iModelDb.pullAndMergeChanges(requestContext);
-    return iModelDb.getConnectionProps();
+
+  public async isUndoPossible(key: string): Promise<boolean> {
+    return IModelDb.findByKey(key).nativeDb.isUndoPossible();
   }
-  public async pushChanges(key: string, description: string): Promise<IModelConnectionProps> {
+  public async isRedoPossible(key: string): Promise<boolean> {
+    return IModelDb.findByKey(key).nativeDb.isRedoPossible();
+  }
+  public async getUndoString(key: string, allowCrossSessions?: boolean): Promise<string> {
+    return IModelDb.findByKey(key).nativeDb.getUndoString(allowCrossSessions);
+  }
+  public async getRedoString(key: string): Promise<string> {
+    return IModelDb.findByKey(key).nativeDb.getUndoString();
+  }
+
+  public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<string> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = await IModelHost.getAuthorizedContext();
+    return iModelDb.pullAndMergeChanges(requestContext, version ? IModelVersion.fromJSON(version) : undefined);
+  }
+  public async pushChanges(key: string, description: string): Promise<string> {
+    const iModelDb = BriefcaseDb.findByKey(key);
+    const requestContext = await IModelHost.getAuthorizedContext();
     await iModelDb.pushChanges(requestContext, description);
-    return iModelDb.getConnectionProps();
+    return iModelDb.changeSetId;
   }
-  public async toggleInteractiveEditingSession(key: string, startSession: boolean): Promise<boolean> {
-    const imodel = IModelDb.findByKey(key);
-    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
+
+  public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {
+    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key).nativeDb.setGeometricModelTrackingEnabled(startSession);
     if (val.error)
-      throw new IModelError(val.error.status, "Failed to toggle interactive editing session");
+      throw new IModelError(val.error.status, "Failed to toggle graphical editing scope");
 
     return val.result!;
   }
-  public async isInteractiveEditingSupported(key: string): Promise<boolean> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.isGeometricModelTrackingSupported();
+  public async isGraphicalEditingSupported(key: string): Promise<boolean> {
+    return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
   }
-  public async reverseSingleTxn(key: string): Promise<IModelStatus> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.reverseTxns(1);
+
+  public async reverseTxns(key: string, numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus> {
+    return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations, allowCrossSessions);
   }
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.reverseAll();
+    return IModelDb.findByKey(key).nativeDb.reverseAll();
   }
   public async reinstateTxn(key: string): Promise<IModelStatus> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.reinstateTxn();
+    return IModelDb.findByKey(key).nativeDb.reinstateTxn();
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
     return IModelHost.platform.queryConcurrency(pool);
   }
 }
-

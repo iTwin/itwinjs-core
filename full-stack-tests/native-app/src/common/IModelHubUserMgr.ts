@@ -13,14 +13,14 @@ export class IModelHubUserMgr implements FrontendAuthorizationClient {
   public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
   }
 
-  public async signIn(_requestContext: ClientRequestContext): Promise<void> {
-    _requestContext.enter();
+  public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
+    _requestContext?.enter();
     this._token = await getAccessTokenFromBackend(this._userCredentials);
     this.onUserStateChanged.raiseEvent(this._token);
   }
 
-  public async signOut(_requestContext: ClientRequestContext): Promise<void> {
-    _requestContext.enter();
+  public async signOut(_requestContext?: ClientRequestContext): Promise<void> {
+    _requestContext?.enter();
     this._token = undefined;
     this.onUserStateChanged.raiseEvent(this._token);
   }

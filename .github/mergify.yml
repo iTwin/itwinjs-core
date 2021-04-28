@@ -4,21 +4,25 @@
 
 pull_request_rules:
 
-  # - name: Run Azure CI job once ready to merge
-  #   conditions:
-  #     - "#approved-reviews-by>=1"
-  #     - "#changes-requested-reviews-by=0"
-  #     - "check-success=license/cla"
-  #     - -closed
-  #     - -conflict
-  #   actions:
-  #     comments:
-  #       message: /azp run
-
   - name: update all PRs
     conditions:
       - "#changes-requested-reviews-by=0"
       - -draft
-      - base=master
+      - base~=master|release/*
+      - check-success=iModel.js
+      - check-success=iModel.js Integration - GitHub
+      - check-success=iModelJs Docs
+      - check-success=license/cla
     actions:
       update: {}
+
+  # - name: automatic merge of native addon updates
+  #   conditions:
+  #     - head~=native/*
+  #     - base=master
+  #     # Mergify requests required status checks so no need to check here
+  #   actions:
+  #     merge:
+  #       method: merge
+  #       strict: true
+  #       commit_message: "Update @bentley/imodeljs-native"

@@ -10,8 +10,14 @@ import { DialogItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
+import { Id64Arg } from '@bentley/bentleyjs-core';
+import { Id64String } from '@bentley/bentleyjs-core';
+import { IModelConnection } from '@bentley/imodeljs-frontend';
+import { Placement } from '@bentley/imodeljs-common';
 import { Point3d } from '@bentley/geometry-core';
 import { PropertyDescription } from '@bentley/ui-abstract';
+import { RenderGraphic } from '@bentley/imodeljs-frontend';
+import { RenderGraphicOwner } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { Transform } from '@bentley/geometry-core';
@@ -28,6 +34,8 @@ export class DeleteElementsTool extends ElementSetTool {
     static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
@@ -63,6 +71,8 @@ export class EditTools {
 export class MoveElementsTool extends TransformElementsTool {
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
@@ -104,6 +114,8 @@ export class RotateElementsTool extends TransformElementsTool {
     // (undocumented)
     protected havePivotPoint: boolean;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
@@ -134,6 +146,10 @@ export class RotateElementsTool extends TransformElementsTool {
     // (undocumented)
     static toolId: string;
     // (undocumented)
+    protected transformAgenda(transform: Transform): Promise<void>;
+    // (undocumented)
+    protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
     protected get wantAdditionalInput(): boolean;
     // (undocumented)
     protected wantProcessAgenda(ev: BeButtonEvent): boolean;
@@ -162,13 +178,19 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
+    protected clearAgendaGraphics(): Promise<void>;
+    // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)
     protected createAgendaGraphics(changed: boolean): Promise<void>;
     // (undocumented)
+    protected _graphicsProvider?: TransformGraphicsProvider;
+    // (undocumented)
     protected initAgendaDynamics(): Promise<boolean>;
     // (undocumented)
     protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onCleanup(): void;
     // (undocumented)
     onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
     // (undocumented)
@@ -177,6 +199,8 @@ export abstract class TransformElementsTool extends ElementSetTool {
     processAgenda(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
     // (undocumented)
     protected transformAgenda(transform: Transform): Promise<void>;
     // (undocumented)
@@ -189,6 +213,37 @@ export abstract class TransformElementsTool extends ElementSetTool {
     protected get wantDynamics(): boolean;
     // (undocumented)
     protected get wantMakeCopy(): boolean;
+}
+
+// @alpha (undocumented)
+export interface TransformGraphicsData {
+    // (undocumented)
+    graphic: RenderGraphicOwner;
+    // (undocumented)
+    id: Id64String;
+    // (undocumented)
+    placement: Placement;
+}
+
+// @alpha (undocumented)
+export class TransformGraphicsProvider {
+    constructor(iModel: IModelConnection, prefix: string);
+    // (undocumented)
+    addGraphics(transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
+    addSingleGraphic(graphic: RenderGraphic, transform: Transform, context: DynamicsContext): void;
+    chordTolerance: number;
+    cleanupGraphics(): Promise<void>;
+    createGraphics(elements: Id64Arg): void;
+    createSingleGraphic(id: Id64String): Promise<boolean>;
+    // (undocumented)
+    readonly data: TransformGraphicsData[];
+    // (undocumented)
+    readonly iModel: IModelConnection;
+    // (undocumented)
+    readonly pending: Map<Id64String, string>;
+    // (undocumented)
+    readonly prefix: string;
 }
 
 // @alpha

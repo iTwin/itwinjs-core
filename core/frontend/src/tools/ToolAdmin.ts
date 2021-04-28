@@ -15,7 +15,6 @@ import { LocateOptions } from "../ElementLocateManager";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { IpcApp } from "../IpcApp";
 import { linePlaneIntersect } from "../LinePlaneIntersect";
 import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
@@ -36,7 +35,7 @@ import { ViewTool } from "./ViewTool";
 /** @public */
 export enum StartOrResume { Start = 1, Resume = 2 }
 
-/** @alpha */
+/** @public */
 export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 } // eslint-disable-line no-restricted-syntax
@@ -817,7 +816,6 @@ export class ToolAdmin {
   /**
    * Event raised by tools that support edit manipulators like the SelectTool.
    * @param tool The current tool
-   * @alpha
    */
   public readonly manipulatorToolEvent = new BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>();
 
@@ -1268,14 +1266,18 @@ export class ToolAdmin {
       if (await activeTool.undoPreviousStep())
         return true;
     }
+
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
-    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
-    if (IModelStatus.Success !== await IpcApp.callIpcHost("reverseSingleTxn", imodel.key))
+
+    if (IModelStatus.Success !== await imodel.txns.reverseSingleTxn())
       return false;
+
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== this._primitiveTool)
       this._primitiveTool.onRestartTool();
+
     return true;
   }
 
@@ -1287,14 +1289,18 @@ export class ToolAdmin {
       if (await activeTool.redoPreviousStep())
         return true;
     }
+
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
-    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
-    if (IModelStatus.Success !== await IpcApp.callIpcHost("reinstateTxn", imodel.key))
+
+    if (IModelStatus.Success !== await imodel.txns.reinstateTxn())
       return false;
+
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== this._primitiveTool)
       this._primitiveTool.onRestartTool();
+
     return true;
   }
 
@@ -1302,6 +1308,7 @@ export class ToolAdmin {
     const tool = this.activeTool;
     if (tool === undefined)
       return;
+
     tool.onUnsuspend();
     this.activeToolChanged.raiseEvent(tool, StartOrResume.Resume);
   }
@@ -1565,7 +1572,15 @@ export class ToolAdmin {
     viewport.drawLocateCursor(context, ev.viewPoint, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
   }
 
-  public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse && this._canvasDecoration === undefined; }
+  public get isLocateCircleOn(): boolean {
+    if (!this.toolState.locateCircleOn || undefined !== this._canvasDecoration)
+      return false;
+
+    if (InputSource.Mouse === this.currentInputState.inputSource)
+      return true;
+
+    return (InputSource.Touch === this.currentInputState.inputSource && undefined !== IModelApp.accuSnap.touchCursor);
+  }
 
   /** @internal */
   public beginDynamics(): void {

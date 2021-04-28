@@ -120,8 +120,11 @@ export class PropertyGridCommons {
     if (foundLink && foundLink.url) {
       if (foundLink.schema === "mailto:" || foundLink.schema === "pw:")
         location.href = foundLink.url;
-      else
-        window.open(foundLink.url, "_blank")!.focus();
+      else {
+        const windowOpen = window.open(foundLink.url, "_blank");
+        if (windowOpen)
+          windowOpen.focus();
+      }
     }
   }
 

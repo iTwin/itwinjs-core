@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyUpdateInfo, HierarchyUpdateInfoJSON, Node, NodeDeletionInfo, NodeDeletionInfoJSON,
+  ExpandedNodeUpdateRecord,
+  ExpandedNodeUpdateRecordJSON,
+  HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyUpdateInfo, HierarchyUpdateInfoJSON, HierarchyUpdateRecord, HierarchyUpdateRecordJSON, Node, NodeDeletionInfo, NodeDeletionInfoJSON,
   NodeInsertionInfo, NodeInsertionInfoJSON, NodeJSON, NodeUpdateInfo, NodeUpdateInfoJSON, PartialHierarchyModification, StandardNodeTypes, UpdateInfo,
   UpdateInfoJSON,
 } from "../presentation-common";
@@ -50,8 +52,7 @@ describe("UpdateInfo", () => {
         ["test_imodel_2"]: {
           ["test_ruleset_3"]: {
             hierarchy: [{
-              type: "Delete",
-              node: testNode,
+              nodesCount: 1,
             }],
           },
         },
@@ -74,8 +75,7 @@ describe("UpdateInfo", () => {
         ["test_imodel_2"]: {
           ["test_ruleset_3"]: {
             hierarchy: [{
-              type: "Delete",
-              node: testNodeJson,
+              nodesCount: 1,
             }],
           },
         },
@@ -94,8 +94,7 @@ describe("HierarchyUpdateInfo", () => {
 
     it("serializes partial `HierarchyUpdateInfo` to JSON", () => {
       const info: HierarchyUpdateInfo = [{
-        type: "Delete",
-        node: testNode,
+        nodesCount: 1,
       }];
       expect(HierarchyUpdateInfo.toJSON(info)).to.matchSnapshot();
     });
@@ -109,21 +108,82 @@ describe("HierarchyUpdateInfo", () => {
 
     it("deserializes partial `HierarchyUpdateInfo` from JSON", () => {
       const json: HierarchyUpdateInfoJSON = [{
-        type: "Delete",
-        node: testNodeJson,
+        nodesCount: 1,
       }];
       expect(HierarchyUpdateInfo.fromJSON(json)).to.matchSnapshot();
     });
   });
 });
 
+describe("ExpandedNodeUpdateRecord", () => {
+  describe("toJSON", () => {
+    it("serializes partial `ExpandedNodeUpdateRecord` to JSON", () => {
+      const info: ExpandedNodeUpdateRecord = {
+        node: testNode,
+        position: 1,
+      };
+      expect(ExpandedNodeUpdateRecord.toJSON(info)).to.matchSnapshot();
+    });
+  });
+
+  describe("fromJSON", () => {
+    it("deserializes partial `ExpandedNodeUpdateRecord` from JSON", () => {
+      const json: ExpandedNodeUpdateRecordJSON = {
+        node: testNodeJson,
+        position: 1,
+      };
+      expect(ExpandedNodeUpdateRecord.fromJSON(json)).to.matchSnapshot();
+    });
+  });
+});
+
+describe("HierarchyUpdateRecord", () => {
+  describe("toJSON", () => {
+    it("serializes partial `HierarchyUpdateRecord` to JSON", () => {
+      const info: HierarchyUpdateRecord = {
+        parent: testNode.key,
+        nodesCount: 2,
+        expandedNodes: [{
+          node: testNode,
+          position: 0,
+        }],
+      };
+      expect(HierarchyUpdateRecord.toJSON(info)).to.matchSnapshot();
+    });
+  });
+
+  describe("fromJSON", () => {
+    it("deserializes partial `HierarchyUpdateRecord` from JSON", () => {
+      const json: HierarchyUpdateRecordJSON = {
+        parent: testNodeJson.key,
+        nodesCount: 2,
+        expandedNodes: [{
+          node: testNodeJson,
+          position: 0,
+        }],
+      };
+      expect(HierarchyUpdateRecord.fromJSON(json)).to.matchSnapshot();
+    });
+  });
+});
+
 describe("PartialHierarchyModification", () => {
   describe("toJSON", () => {
-    it("serializes `NodeInsertionInfo`", () => {
+    it("serializes `NodeInsertionInfo` without parent", () => {
       const info: NodeInsertionInfo = {
-        node: testNode,
-        position: 123,
         type: "Insert",
+        position: 123,
+        node: testNode,
+      };
+      expect(PartialHierarchyModification.toJSON(info)).to.matchSnapshot();
+    });
+
+    it("serializes `NodeInsertionInfo` with parent", () => {
+      const info: NodeInsertionInfo = {
+        type: "Insert",
+        parent: testNode.key,
+        position: 123,
+        node: testNode,
       };
       expect(PartialHierarchyModification.toJSON(info)).to.matchSnapshot();
     });
@@ -131,12 +191,10 @@ describe("PartialHierarchyModification", () => {
     it("serializes `NodeUpdateInfo`", () => {
       const info: NodeUpdateInfo = {
         type: "Update",
-        node: testNode,
-        changes: [{
-          name: "test",
-          old: "old value",
-          new: "new value",
-        }],
+        target: testNode.key,
+        changes: {
+          backColor: "new value",
+        },
       };
       expect(PartialHierarchyModification.toJSON(info)).to.matchSnapshot();
     });
@@ -144,16 +202,26 @@ describe("PartialHierarchyModification", () => {
     it("serializes `NodeDeletionInfo`", () => {
       const info: NodeDeletionInfo = {
         type: "Delete",
-        node: testNode,
+        target: testNode.key,
       };
       expect(PartialHierarchyModification.toJSON(info)).to.matchSnapshot();
     });
   });
 
   describe("fromJSON", () => {
-    it("deserializes `NodeInsertionInfo` from JSON", () => {
+    it("deserializes `NodeInsertionInfo` without parent from JSON", () => {
       const info: NodeInsertionInfoJSON = {
         type: "Insert",
+        position: 123,
+        node: testNodeJson,
+      };
+      expect(PartialHierarchyModification.fromJSON(info)).to.matchSnapshot();
+    });
+
+    it("deserializes `NodeInsertionInfo` with parent from JSON", () => {
+      const info: NodeInsertionInfoJSON = {
+        type: "Insert",
+        parent: testNodeJson.key,
         position: 123,
         node: testNodeJson,
       };
@@ -163,12 +231,10 @@ describe("PartialHierarchyModification", () => {
     it("deserializes `NodeUpdateInfo` from JSON", () => {
       const info: NodeUpdateInfoJSON = {
         type: "Update",
-        node: testNodeJson,
-        changes: [{
-          name: "test",
-          old: "old value",
-          new: "new value",
-        }],
+        target: testNode.key,
+        changes: {
+          backColor: "new value",
+        },
       };
       expect(PartialHierarchyModification.fromJSON(info)).to.matchSnapshot();
     });
@@ -176,7 +242,7 @@ describe("PartialHierarchyModification", () => {
     it("deserializes `NodeDeletionInfo` from JSON", () => {
       const info: NodeDeletionInfoJSON = {
         type: "Delete",
-        node: testNodeJson,
+        target: testNodeJson.key,
       };
       expect(PartialHierarchyModification.fromJSON(info)).to.matchSnapshot();
     });
@@ -195,16 +261,14 @@ describe("HierarchyCompareInfo", () => {
           },
           {
             type: "Update",
-            node: testNode,
-            changes: [{
-              name: "test",
-              old: "old value",
-              new: "new value",
-            }],
+            target: testNode.key,
+            changes: {
+              backColor: "new value",
+            },
           },
           {
             type: "Delete",
-            node: testNode,
+            target: testNode.key,
           },
         ],
         continuationToken: {
@@ -227,16 +291,14 @@ describe("HierarchyCompareInfo", () => {
           },
           {
             type: "Update",
-            node: testNodeJson,
-            changes: [{
-              name: "test",
-              old: "old value",
-              new: "new value",
-            }],
+            target: testNodeJson.key,
+            changes: {
+              backColor: "new value",
+            },
           },
           {
             type: "Delete",
-            node: testNodeJson,
+            target: testNodeJson.key,
           },
         ],
         continuationToken: {

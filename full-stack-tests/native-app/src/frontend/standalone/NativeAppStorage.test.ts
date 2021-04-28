@@ -39,7 +39,7 @@ describe("NativeApp Storage frontend", () => {
       }
     }
     assert.equal((await test1.getKeys()).length, dataset.length);
-    await test1.close(true);
+    await NativeApp.closeStorage(test1, true);
   });
 
   it("Override and type check", async () => {
@@ -80,6 +80,7 @@ describe("NativeApp Storage frontend", () => {
     assert.equal((await test1.getData("key1") as Uint8Array).length, testArray.length);
     await test1.removeData("key1");
     assert.isUndefined(await test1.getData("key1"));
+    await NativeApp.closeStorage(test1, true);
   });
 
 });

@@ -6,7 +6,7 @@ import * as chai from "chai";
 import { Config, Guid } from "@bentley/bentleyjs-core";
 import { ContextType } from "@bentley/context-registry-client";
 import {
-  ChangeSetCreatedEvent, GetEventOperationType, GlobalCheckpointCreatedEvent, GlobalEventSAS, GlobalEventSubscription, GlobalEventType, HardiModelDeleteEvent, HubIModel,
+  ChangeSetCreatedEvent, GetEventOperationType, GlobalCheckpointCreatedEvent, GlobalCheckpointV2CreatedEvent, GlobalEventSAS, GlobalEventSubscription, GlobalEventType, HardiModelDeleteEvent, HubIModel,
   IModelClient, IModelCreatedEvent, IModelHubGlobalEvent, NamedVersionCreatedEvent, SoftiModelDeleteEvent,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -119,7 +119,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
   let globalEventSas: GlobalEventSAS;
   let projectId: string;
   const imodelName = "imodeljs-clients GlobalEvents test";
-  const imodelHubClient: IModelClient = utils.getDefaultClient();
+  let imodelHubClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
   let serviceAccountRequestContext: AuthorizedClientRequestContext;
   let serviceAccount1: TestUserCredentials;
@@ -128,6 +128,8 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
     projectId = await utils.getProjectId(requestContext);
+
+    imodelHubClient = utils.getDefaultClient();
 
     serviceAccount1 = {
       email: Config.App.getString("imjs_test_serviceAccount1_user_name"),
@@ -310,6 +312,24 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     const typedEvent = event as GlobalCheckpointCreatedEvent;
     chai.assert(!!typedEvent);
     chai.expect(!typedEvent.versionId);
+    chai.expect(typedEvent.changeSetId).to.be.eq(changeSetId);
+    chai.expect(typedEvent.changeSetIndex).to.be.eq(changeSetIndex);
+  });
+
+  it("should receive Global Event CheckpointV2CreatedEvent (#unit)", async () => {
+    const versionId: string = Guid.createValue();
+    const changeSetId: string = "changeSetId";
+    const changeSetIndex: string = "5";
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${Guid.createValue()}","iModelId":"${Guid.createValue()}","VersionId":"${versionId}","ChangeSetId":"${changeSetId}","ChangeSetIndex":"${changeSetIndex}"}`;
+    mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "CheckpointV2CreatedEvent");
+
+    const event = await imodelHubClient.globalEvents.getEvent(requestContext, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
+
+    chai.expect(event).to.be.instanceof(GlobalCheckpointV2CreatedEvent);
+    chai.assert(!!event!.iModelId);
+    const typedEvent = event as GlobalCheckpointV2CreatedEvent;
+    chai.assert(!!typedEvent);
+    chai.expect(typedEvent.versionId).to.be.equal(versionId);
     chai.expect(typedEvent.changeSetId).to.be.eq(changeSetId);
     chai.expect(typedEvent.changeSetIndex).to.be.eq(changeSetIndex);
   });

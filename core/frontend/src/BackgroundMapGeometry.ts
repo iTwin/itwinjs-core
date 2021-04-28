@@ -25,6 +25,45 @@ const scratchSilhouetteNormal = Vector3d.create();
 const scratchCartoRectangle = new GrowableXYZArray();
 const scratchWorkArray = new GrowableXYZArray();
 
+function accumulateDepthRange(point: Point3d, viewRotation: Matrix3d, range: Range3d) {
+  viewRotation.multiplyXYZtoXYZ(point, scratchPoint);
+  range.extend(scratchPoint);
+}
+
+function accumulateFrustumPlaneDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal, viewRotation: Matrix3d, range: Range3d, eyePoint?: Point3d) {
+  let includeHorizon = false;
+  for (let i = 0; i < 4; i++) {
+    const frustumRay = Ray3d.createStartEnd(eyePoint ? eyePoint : frustum.points[i + 4], frustum.points[i]);
+    const thisFraction = frustumRay.intersectionWithPlane(plane, scratchPoint);
+    if (undefined !== thisFraction && (!eyePoint || thisFraction > 0))
+      accumulateDepthRange(scratchPoint, viewRotation, range);
+    else
+      includeHorizon = true;
+  }
+  if (includeHorizon) {
+    if (eyePoint !== undefined) {
+      const eyeHeight = plane.altitude(eyePoint);
+      if (eyeHeight < 0)
+        accumulateDepthRange(eyePoint, viewRotation, range);
+      else {
+        const viewZ = viewRotation.getRow(2);
+        const horizonDistance = Math.sqrt(eyeHeight * eyeHeight + 2 * eyeHeight * Constant.earthRadiusWGS84.equator);
+        accumulateDepthRange(eyePoint.plusScaled(viewZ, -horizonDistance, scratchPoint), viewRotation, range);
+      }
+    }
+  }
+}
+
+/** @internal */
+export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d {
+  const eyePoint = frustum.getEyePoint(scratchEyePoint);
+  const viewRotation = frustum.getRotation(scratchViewRotation)!;
+  const intersectRange = Range3d.createNull();
+  accumulateFrustumPlaneDepthRange(frustum, plane, viewRotation, intersectRange, eyePoint);
+
+  return intersectRange.isNull ? Range1d.createNull(): Range1d.createXX(intersectRange.low.z, intersectRange.high.z);
+}
+
 /** Geometry of background map - either an ellipsoid or a plane as defined by GlobeMode.
  * @internal
  */
@@ -102,7 +141,7 @@ export class BackgroundMapGeometry {
     } else {
       db = this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
     }
-    return this.cartesianRange.containsPoint(db) ? this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
+    return (!this._iModel.noGcsDefined && this.cartesianRange.containsPoint(db)) ? this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
   }
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
     if (this.globeMode === GlobeMode.Plane) {
@@ -173,42 +212,23 @@ export class BackgroundMapGeometry {
     }
   }
 
-  public getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, doGlobalScope?: boolean): Range1d {
+  /** @internal */
+  public getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d {
     const clipPlanes = frustum.getRangePlanes(false, false, 0);
     const eyePoint = frustum.getEyePoint(scratchEyePoint);
     const viewRotation = frustum.getRotation(scratchViewRotation)!;
     const viewZ = viewRotation.getRow(2);
     const cartoRange = this.cartesianTransitionRange;
     const intersectRange = Range3d.createNull();
-    const doAccumulate = ((point: Point3d) => {
-      viewRotation.multiplyXYZtoXYZ(point, scratchPoint);
-      intersectRange.extend(scratchPoint);
-    });
+    const doAccumulate = ((point: Point3d) => accumulateDepthRange(point, viewRotation, intersectRange));
+
+    if (gridPlane)
+      accumulateFrustumPlaneDepthRange(frustum, gridPlane, viewRotation, intersectRange, eyePoint);
     if (this.geometry instanceof Plane3dByOriginAndUnitNormal) {
       // Intersection with a planar background projection...
-      let includeHorizon = false;
       const heights = heightRange ? [heightRange.low, heightRange.high] : [0];
       for (const height of heights) {
-        const plane = this.getPlane(height);
-        for (let i = 0; i < 4; i++) {
-          const frustumRay = Ray3d.createStartEnd(eyePoint ? eyePoint : frustum.points[i + 4], frustum.points[i]);
-          const thisFraction = frustumRay.intersectionWithPlane(plane, scratchPoint);
-          if (undefined !== thisFraction && (!eyePoint || thisFraction > 0))
-            doAccumulate(scratchPoint);
-          else
-            includeHorizon = true;
-        }
-        if (includeHorizon) {
-          if (eyePoint !== undefined) {
-            const eyeHeight = plane.altitude(eyePoint);
-            if (eyeHeight < 0)
-              doAccumulate(eyePoint);
-            else {
-              const horizonDistance = Math.sqrt(eyeHeight * eyeHeight + 2 * eyeHeight * Constant.earthRadiusWGS84.equator);
-              doAccumulate(eyePoint.plusScaled(viewZ, -horizonDistance, scratchPoint));
-            }
-          }
-        }
+        accumulateFrustumPlaneDepthRange(frustum, this.getPlane(height), viewRotation, intersectRange, eyePoint);
       }
     } else {
       const minOffset = heightRange ? heightRange.low : 0, maxOffset = (heightRange ? heightRange.high : 0) + this.cartesianChordHeight;
@@ -364,7 +384,10 @@ export class BackgroundMapGeometry {
   }
 }
 
-/** @internal */
+/** Calculate the ECEF to database (IModel) coordinate transform at a provided location, using the GCS of the iModel.
+ *  The transform will exactly represent the GCS at the provided location.
+ * @public
+ */
 export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise<Transform | undefined> {
   const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
   if (geoConverter === undefined)

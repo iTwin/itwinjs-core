@@ -8,8 +8,7 @@
  */
 
 import { UserManager, UserManagerSettings } from "oidc-client";
-import { assert, Logger } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
+import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
 import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
 
@@ -81,29 +80,24 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
    * When called successfully within an iframe or popup, the host frame will automatically be destroyed.
    * @throws [[Error]] when this attempt fails for any reason.
    */
-  private async handleSigninCallback(): Promise<void> {
+  private async handleSigninCallbackInternal(): Promise<void> {
     const userManager = await this.getUserManager();
-    try {
-      // oidc-client-js uses an over-eager regex to parse the url, which may match values from the hash string when targeting the query string (and vice-versa)
-      // To ensure that this mismatching doesn't occur, we strip the unnecessary portion away here first.
-      const urlSuffix = userManager.settings.response_mode === "query"
-        ? window.location.search
-        : window.location.hash;
-      const url = `${window.location.origin}${window.location.pathname}${urlSuffix}`;
+    // oidc-client-js uses an over-eager regex to parse the url, which may match values from the hash string when targeting the query string (and vice-versa)
+    // To ensure that this mismatching doesn't occur, we strip the unnecessary portion away here first.
+    const urlSuffix = userManager.settings.response_mode === "query"
+      ? window.location.search
+      : window.location.hash;
+    const url = `${window.location.origin}${window.location.pathname}${urlSuffix}`;
 
-      const user = await userManager.signinCallback(url); // For silent or popup callbacks, execution effectively ends here, since the context will be destroyed.
-      assert(user && !user.expired, "Expected userManager.signinRedirectCallback to always resolve to authorized user");
+    const user = await userManager.signinCallback(url); // For silent or popup callbacks, execution effectively ends here, since the context will be destroyed.
+    if (!user || user.expired)
+      throw new BentleyError(AuthStatus.Error, "userManager.signinRedirectCallback does not resolve to authorized user");
 
-      if (user.state) {
-        const state = user.state as BrowserAuthorizationClientRedirectState;
-        if (state.successRedirectUrl) { // Special case for signin via redirect used to return to the original location
-          window.location.replace(state.successRedirectUrl);
-        }
+    if (user.state) {
+      const state = user.state as BrowserAuthorizationClientRedirectState;
+      if (state.successRedirectUrl) { // Special case for signin via redirect used to return to the original location
+        window.location.replace(state.successRedirectUrl);
       }
-    } catch (err) {
-      const message = `SigninCallback error - failed to process signin request in callback: ${err.message}`;
-      Logger.logError(FrontendAuthorizationClientLoggerCategory.Authorization, message);
-      throw new Error(message);
     }
   }
 
@@ -113,18 +107,15 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
    * @throws [[Error]] when a token cannot be obtained from the URL.
    * @param redirectUrl Checked against the current window's URL. If the given redirectUrl and the window's path don't match, no attempt is made to parse the URL for a token.
    */
-  public static async handleSigninCallback(redirectUrl?: string): Promise<void> {
-    if (redirectUrl) {
-      const url = new URL(redirectUrl);
-      if (url.pathname !== window.location.pathname) {
-        return;
-      }
-    }
+  public static async handleSigninCallback(redirectUrl: string): Promise<void> {
+    const url = new URL(redirectUrl);
+    if (url.pathname !== window.location.pathname)
+      return;
 
     let errorMessage = "";
     let callbackHandler = new BrowserAuthorizationCallbackHandler({ responseMode: "fragment" });
     try {
-      await callbackHandler.handleSigninCallback();
+      await callbackHandler.handleSigninCallbackInternal();
       return;
     } catch (err) {
       errorMessage += `${err.message}\n`;
@@ -132,13 +123,13 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
 
     callbackHandler = new BrowserAuthorizationCallbackHandler({ responseMode: "query" });
     try {
-      await callbackHandler.handleSigninCallback();
+      await callbackHandler.handleSigninCallbackInternal();
       return;
     } catch (err) {
       errorMessage += `${err.message}\n`;
     }
 
-    if (window.parent) { // simply destroy the window if a failure is detected in an iframe.
+    if (window.self !== window.top) { // simply destroy the window if a failure is detected in an iframe.
       window.close();
       return;
     }

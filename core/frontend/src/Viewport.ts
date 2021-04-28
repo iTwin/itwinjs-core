@@ -17,13 +17,13 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
+  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, NpcCenter, Placement, Placement2d,
+  Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
   SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
-import { ChangeFlag, ChangeFlags } from "./ChangeFlags";
+import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
 import { CoordSystem } from "./CoordSystem";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
@@ -84,7 +84,9 @@ export interface ViewportDecorator {
   decorate(context: DecorateContext): void;
 }
 
-/** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
+/** Source of depth point returned by [[Viewport.pickDepthPoint]].
+ * @public
+ */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
   Geometry, // eslint-disable-line @typescript-eslint/no-shadow
@@ -104,7 +106,9 @@ export enum DepthPointSource {
   Map,
 }
 
-/** @alpha Options to control behavior of [[Viewport.pickDepthPoint]]. */
+/** Options to control behavior of [[Viewport.pickDepthPoint]].
+ * @public
+ */
 export interface DepthPointOptions {
   /** If true, geometry with the "non-locatable" flag set will not be selected. */
   excludeNonLocatable?: boolean;
@@ -145,16 +149,21 @@ export interface ChangeViewedModel2dOptions {
   doFit?: boolean;
 }
 
-/** @beta Event type for Viewport.onViewUndoRedo */
+/** Describes an undo or redo event for a [[Viewport]].
+ * @see [[Viewport.onViewUndoRedo]].
+ * @public
+ */
 export enum ViewUndoEvent { Undo = 0, Redo = 1 }
 
-/** @beta
- * Options for OpenStreetMap building display
+/** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
+ * @see [[Viewport.setOSMBuildingDisplay=]].
+   * @public
  */
 export interface OsmBuildingDisplayOptions {
   /**  If defined will turn the display of the OpenStreetMap buildings on or off by attaching or detaching the OSM reality model. */
+  /** If `true`, enables display of OpenStreetMap buildings within the viewport. */
   onOff?: boolean;
-  /** If defined will apply appearance overrides to to the OpenStreetMap building reality model. Has no effect if the OSM reality model is not displayed. */
+  /** If defined, overrides aspects of the appearance of the OpenStreetMap building meshes. */
   appearanceOverrides?: FeatureAppearance;
 }
 
@@ -199,49 +208,39 @@ export abstract class Viewport implements IDisposable {
    * @see [[onChangeView]] for an event raised specifically when a different [[ViewState]] becomes associated with the viewport.
    */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called after reversing the most recent change to the Viewport from the undo stack or reapplying the most recently undone change to the Viewport from the redo stack.
-   * @beta
+  /** Event called after reversing the most recent change to the Viewport from the undo stack or reapplying the
+   * most recently undone change to the Viewport from the redo stack.
    */
   public readonly onViewUndoRedo = new BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>();
-  /** Event called on the next frame after this viewport's set of always-drawn elements changes.
-   */
+  /** Event called on the next frame after this viewport's set of always-drawn elements changes. */
   public readonly onAlwaysDrawnChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's set of never-drawn elements changes.
-   */
+  /** Event called on the next frame after this viewport's set of never-drawn elements changes. */
   public readonly onNeverDrawnChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's [[DisplayStyleState]] or its members change.
    * Aspects of the display style include [ViewFlags]($common), [SubCategoryOverride]($common)s, and [[Environment]] settings.
    */
   public readonly onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's set of displayed categories changes.
-   */
+  /** Event called on the next frame after this viewport's set of displayed categories changes. */
   public readonly onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's set of [[PerModelCategoryVisibility.Overrides]] changes.
-   */
+  /** Event called on the next frame after this viewport's set of [[PerModelCategoryVisibility.Overrides]] changes. */
   public readonly onViewedCategoriesPerModelChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's set of displayed models changes.
-   */
+  /** Event called on the next frame after this viewport's set of displayed models changes. */
   public readonly onViewedModelsChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's [[FeatureOverrideProvider]] changes, or the internal state of the provider changes such that the overrides needed to be recomputed.
+  /** Event called on the next frame after this viewport's [[FeatureOverrideProvider]] changes,
+   * or the internal state of the provider changes such that the overrides needed to be recomputed.
    */
   public readonly onFeatureOverrideProviderChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's [[FeatureSymbology.Overrides]] change.
-   */
+  /** Event called on the next frame after this viewport's [[FeatureSymbology.Overrides]] change. */
   public readonly onFeatureOverridesChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after any of the viewport's [[ChangeFlags]] changes.
-   * @beta
-   */
+  /** Event called on the next frame after any of the viewport's [[ChangeFlags]] changes. */
   public readonly onViewportChanged = new BeEvent<(vp: Viewport, changed: ChangeFlags) => void>();
-  /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one.
-   */
+  /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one. */
   public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
   /** Event invoked immediately when the viewport is disposed.
    * @see [[Viewport.dispose]].
-   * @beta
    */
   public readonly onDisposed = new BeEvent<(vp: Viewport) => void>();
   /** Event invoked after [[renderFrame]] detects that the dimensions of the viewport's [[ViewRect]] have changed.
-   * @beta
    */
   public readonly onResized = new BeEvent<(vp: Viewport) => void>();
 
@@ -339,7 +338,7 @@ export abstract class Viewport implements IDisposable {
 
   private _animator?: Animator;
   /** @internal */
-  protected _changeFlags = new ChangeFlags();
+  protected _changeFlags = new MutableChangeFlags();
   private _selectionSetDirty = true;
   private readonly _perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   private _tileSizeModifier?: number;
@@ -417,8 +416,6 @@ export abstract class Viewport implements IDisposable {
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
-  private _outsideClipColor?: ColorDef;
-  private _insideClipColor?: ColorDef;
 
   /** @see [DisplayStyle3dSettings.lights]($common) */
   public get lightSettings(): LightSettings | undefined {
@@ -438,7 +435,7 @@ export abstract class Viewport implements IDisposable {
       this.view.displayStyle.solarShadows = settings;
   }
 
-  /** @internal */
+  /** @public */
   public get viewingSpace(): ViewingSpace { return this._viewingSpace; }
 
   /** This viewport's rotation matrix. */
@@ -447,6 +444,8 @@ export abstract class Viewport implements IDisposable {
   public get viewDelta(): Vector3d { return this._viewingSpace.viewDelta; }
   /** Provides conversions between world and view coordinates. */
   public get worldToViewMap(): Map4d { return this._viewingSpace.worldToViewMap; }
+  /** Provides conversions between world and Npc (non-dimensional perspective) coordinates. */
+  public get worldToNpcMap(): Map4d { return this._viewingSpace.worldToNpcMap; }
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
 
@@ -511,13 +510,9 @@ export abstract class Viewport implements IDisposable {
    */
   public get isGridOn(): boolean { return this.viewFlags.grid; }
 
-  /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered.
-   * @note Do **not** modify the ViewFlags directly. Instead do something like:
-   * ```ts
-   *   const vf = viewport.viewFlags.clone();
-   *   vf.backgroundMap = true; // Or any other modifications
-   *   viewport.viewFlags = vf;
-   * @see [DisplayStyleSettings.viewFlags]($common)
+  /** Flags controlling aspects of how the contents of this viewport are rendered.
+   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
+   * @see [DisplayStyleSettings.viewFlags]($common).
    */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   public set viewFlags(viewFlags: ViewFlags) {
@@ -569,28 +564,6 @@ export abstract class Viewport implements IDisposable {
       return false;
 
     return this.displayStyle.globeMode === GlobeMode.Ellipsoid && view.isGlobalView;
-  }
-
-  /** This setting controls the color override for pixels outside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
-   * @note The transparency component of the color object is ignored.
-   * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
-   * @beta
-   */
-  public get outsideClipColor(): ColorDef | undefined { return this._outsideClipColor; }
-  public set outsideClipColor(color: ColorDef | undefined) {
-    this._outsideClipColor = color === undefined ? undefined : color;
-    this.invalidateRenderPlan();
-  }
-
-  /** This setting controls the color override for pixels inside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
-   * @note The transparency component of the color object is ignored.
-   * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
-   * @beta
-   */
-  public get insideClipColor(): ColorDef | undefined { return this._insideClipColor; }
-  public set insideClipColor(color: ColorDef | undefined) {
-    this._insideClipColor = color === undefined ? undefined : color;
-    this.invalidateRenderPlan();
   }
 
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
@@ -737,10 +710,8 @@ export abstract class Viewport implements IDisposable {
     return this.displayStyle.getRealityModelIndexFromTransientId(id);
   }
 
-  /** @beta
-   * Set the display of the OpenStreetMap worldwide building layer in this viewport by attaching or detaching the reality model displaying the buildings.
-   * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
-   * The options [[OsmBuildingDisplayOptions]] control the display and appearance overrides.
+  /** Change the display of worldwide [OpenStreetMap Building](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/) meshes within this viewport.
+   * The building meshes are supplied by [Cesium ION](https://cesium.com/content/cesium-osm-buildings/).
    */
   public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions) {
     // ###TODO events from DisplayStyle
@@ -800,13 +771,13 @@ export abstract class Viewport implements IDisposable {
   }
 
   private enableAllSubCategories(categoryIds: Id64Arg): void {
-    Id64.forEach(categoryIds, (categoryId) => {
+    for (const categoryId of Id64.iterable(categoryIds)) {
       const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
       if (undefined !== subCategoryIds) {
         for (const subCategoryId of subCategoryIds)
           this.changeSubCategoryDisplay(subCategoryId, true);
       }
-    });
+    }
   }
 
   /** @internal */
@@ -944,9 +915,8 @@ export abstract class Viewport implements IDisposable {
     this.view.markModelSelectorChanged();
   }
 
-  /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
+  /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes. Chiefly for debugging.
    * @see [[TileBoundingBoxes]]
-   * @internal
    */
   public get debugBoundingBoxes(): TileBoundingBoxes { return this._debugBoundingBoxes; }
   public set debugBoundingBoxes(boxes: TileBoundingBoxes) {
@@ -1837,9 +1807,8 @@ export abstract class Viewport implements IDisposable {
    * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
    */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
-    const toPlacement = (placement: Placement2dProps | Placement3dProps): Placement2d | Placement3d => {
-      const props = placement as any;
-      return undefined !== props.angle ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
+    const toPlacement = (props: PlacementProps): Placement => {
+      return isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
     };
 
     const indexOfFirstValidPlacement = placementProps.findIndex((props) => toPlacement(props).isValid);
@@ -1932,7 +1901,7 @@ export abstract class Viewport implements IDisposable {
   /** Set or clear the animator for this Viewport.
    * @param animator The new animator for this Viewport, or undefined to remove current animator.
    * @note current animator's `interrupt` method will be called (if it has not completed yet)
-   * @beta
+   * @public
    */
   public setAnimator(animator?: Animator) {
     this._animator?.interrupt();
@@ -2140,7 +2109,7 @@ export abstract class Viewport implements IDisposable {
   public renderFrame(): void {
     const changeFlags = this._changeFlags;
     if (changeFlags.hasChanges)
-      this._changeFlags = new ChangeFlags(ChangeFlag.None);
+      this._changeFlags = new MutableChangeFlags(ChangeFlag.None);
 
     const view = this.view;
     const target = this.target;
@@ -2368,9 +2337,12 @@ export abstract class Viewport implements IDisposable {
       this.npcToWorld(npc, npc);
 
       // If this is a plan projection model, invert the elevation applied to its display transform.
+      // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
       const modelId = pixels.getPixel(x, y).featureTable?.modelId;
-      if (undefined !== modelId)
+      if (undefined !== modelId) {
         npc.z -= this.view.getModelElevation(modelId);
+        this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+      }
     }
 
     return npc;
@@ -2446,7 +2418,7 @@ export abstract class Viewport implements IDisposable {
    * The effects are applied to the image in the order in which they appear in the list. Any names not corresponding to a registered effect are ignored.
    * This may have no effect if the Viewport's [[RenderTarget]] does not support screen-space effects.
    * @see [[RenderSystem.createScreenSpaceEffectBuilder]] to create and register new effects.
-   * @beta
+   * @public
    */
   public get screenSpaceEffects(): Iterable<string> {
     return this.target.screenSpaceEffects;
@@ -2458,7 +2430,7 @@ export abstract class Viewport implements IDisposable {
 
   /** Append a screen-space effect to the list of effects applied to this Viewport.
    * @see [[Viewport.screenSpaceEffects]].
-   * @beta
+   * @public
    */
   public addScreenSpaceEffect(effectName: string): void {
     this.screenSpaceEffects = [...this.screenSpaceEffects, effectName];
@@ -2466,7 +2438,7 @@ export abstract class Viewport implements IDisposable {
 
   /** Remove all screen-space effects from this Viewport.
    * @see [[Viewport.screenSpaceEffects]].
-   * @beta
+   * @public
    */
   public removeScreenSpaceEffects(): void {
     this.screenSpaceEffects = [];
@@ -2767,6 +2739,9 @@ export class ScreenViewport extends Viewport {
     return result;
   }
 
+  /** @internal */
+  public picker = new ElementPicker(); // Picker used in pickDepthPoint below so it hangs around and can be querried later.
+
   /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
    * If no geometry is selected, return the point projected to the most appropriate reference plane.
    * @param pickPoint Point to search about, in world coordinates
@@ -2774,7 +2749,6 @@ export class ScreenViewport extends Viewport {
    * @param options Optional settings to control what can be selected.
    * @returns A plane with origin from closest geometry point or reference plane projection and the source of the depth point.
    * @note The result plane normal is valid when the source is not geometry or a reality model.
-   * @alpha
    */
   public pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, sourceId?: string } {
     if (!this.view.is3d())
@@ -2783,14 +2757,14 @@ export class ScreenViewport extends Viewport {
     if (undefined === radius)
       radius = this.pixelsFromInches(ToolSettings.viewToolPickRadiusInches);
 
-    const picker = new ElementPicker();
+    this.picker.empty();
     const locateOpts = new LocateOptions();
     locateOpts.allowNonLocatable = (undefined === options || !options.excludeNonLocatable);
     locateOpts.allowDecorations = (undefined === options || !options.excludeDecorations);
     locateOpts.allowExternalIModels = (undefined === options || !options.excludeExternalIModels);
 
-    if (0 !== picker.doPick(this, pickPoint, radius, locateOpts)) {
-      const hitDetail = picker.getHit(0)!;
+    if (0 !== this.picker.doPick(this, pickPoint, radius, locateOpts)) {
+      const hitDetail = this.picker.getHit(0)!;
       const hitPoint = hitDetail.getPoint();
       if (hitDetail.isModelHit)
         return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Model, sourceId: hitDetail.sourceId };
@@ -2853,6 +2827,7 @@ export class ScreenViewport extends Viewport {
     if (this._lastPose && this._currentBaseline)
       this.setAnimator(new FrustumAnimator(options ? options : {}, this, this._lastPose, this.view.savePose()));
   }
+
   /** Animate the view frustum from a starting frustum to the current view frustum. In other words,
    * save a starting frustum (presumably what the user is currently looking at), then adjust the view to
    * a different location and call synchWithView, then call this method. After the animation the viewport
@@ -2864,11 +2839,8 @@ export class ScreenViewport extends Viewport {
     this.animateFrustumChange(/* start, this.getFrustum(), */ options);
   }
 
-  /** Animate the view frustum to a destination location the earth from the current frustum.
-   * @internal
-   */
+  /** Animate the view frustum to a destination location the earth from the current frustum. */
   public async animateFlyoverToGlobalLocation(destination: GlobalLocation) {
-
     const animator = await GlobeAnimator.create(this, destination);
     this.setAnimator(animator);
   }
@@ -2929,6 +2901,7 @@ export class ScreenViewport extends Viewport {
     super.validateRenderPlan();
     this._lastPose = this.view.savePose();
   }
+
   /** Change the ViewState of this Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    * @param opts options for how the view change operation should work

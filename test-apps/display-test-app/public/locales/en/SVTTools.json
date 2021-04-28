@@ -10,6 +10,9 @@
         "keyin": "dta classifyclip selected"
       }
     },
+    "GridSettings": {
+      "keyin": "dta grid settings"
+    },
     "Markup": {
       "keyin": "dta markup",
       "TestSelect": {
@@ -106,11 +109,17 @@
     "ApplyModelTransform": {
       "keyin": "dta model transform"
     },
+    "ApplyModelDisplayScale": {
+      "keyin": "dta model scale"
+    },
     "EditingSession": {
       "keyin": "dta edit"
     },
     "PlaceLineString": {
       "keyin": "dta place line string"
+    },
+    "SyncViewports": {
+      "keyin": "dta viewport sync"
     }
   }
 }

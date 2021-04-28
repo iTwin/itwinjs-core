@@ -73,6 +73,7 @@ import { TimeDisplay } from '@bentley/ui-abstract';
 import { TimeFormat } from '@bentley/ui-core';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
+import { UiSettingsStorage } from '@bentley/ui-core';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
 import { Vector3d } from '@bentley/geometry-core';
@@ -751,7 +752,7 @@ export interface BreadcrumbUpdateEventArgs {
     oldDataProvider: TreeDataProvider;
 }
 
-// @alpha
+// @beta
 export interface CategorizedPropertyItem extends FlatGridItemBase {
     // (undocumented)
     readonly derivedRecord: PropertyRecord;
@@ -765,10 +766,10 @@ export interface CategorizedPropertyItem extends FlatGridItemBase {
     readonly type: CategorizedPropertyTypes;
 }
 
-// @alpha
+// @beta
 export type CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct;
 
-// @alpha
+// @beta
 export interface CategoryRecordsDict {
     // (undocumented)
     [categoryName: string]: PropertyRecord[];
@@ -938,9 +939,7 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
 export interface ColumnDescription {
     editable?: boolean;
     filterable?: boolean;
-    // (undocumented)
     filterCaseSensitive?: boolean;
-    // @beta
     filterRenderer?: FilterRenderer;
     icon?: boolean;
     key: string;
@@ -948,16 +947,14 @@ export interface ColumnDescription {
     propertyDescription?: PropertyDescription;
     resizable?: boolean;
     secondarySortColumn?: number;
-    // (undocumented)
     showDistinctValueFilters?: boolean;
-    // (undocumented)
     showFieldFilters?: boolean;
     sortable?: boolean;
     sortIgnoreCase?: boolean;
     width?: number;
 }
 
-// @beta
+// @public
 export interface ColumnFilterDescriptor extends FilterDescriptor {
     distinctFilter: DistinctValuesFilterDescriptor;
     fieldFilter: FieldFilterDescriptor;
@@ -1003,19 +1000,20 @@ export interface CompletionObserver<T> {
     next?: (value: T) => void;
 }
 
-// @beta
+// @public
 export interface CompositeFilterDescriptor extends FilterDescriptor {
     filterDescriptorCollection: FilterDescriptorCollection;
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
-// @beta
+// @public
 export interface CompositeFilterDescriptorCollection {
     add(item: FilterDescriptor): void;
     clear(): void;
     count: number;
     evaluateRow(row: RowItem): boolean;
     getColumnFilterDescriptor(columnKey: string): ColumnFilterDescriptor | undefined;
+    // @alpha
     getFilterExpression(): string;
     isColumnFilterActive(columnKey: string): boolean;
     logicalOperator: FilterCompositionLogicalOperator;
@@ -1029,7 +1027,7 @@ export enum CompositeFilterType {
     Or = 1
 }
 
-// @alpha
+// @beta
 export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
     constructor(_leftFilterer: IPropertyDataFilterer, _operator: CompositeFilterType, _rightFilterer: IPropertyDataFilterer);
     // (undocumented)
@@ -1094,6 +1092,8 @@ export interface ControlledTreeProps extends CommonProps {
     noDataRenderer?: () => React.ReactElement;
     nodeHighlightingProps?: HighlightableTreeProps;
     nodeLoader: ITreeNodeLoader;
+    // @alpha
+    onItemsRendered?: (items: RenderedItemsRange) => void;
     selectionMode: SelectionMode;
     spinnerRenderer?: () => React.ReactElement;
     treeEvents: TreeEvents;
@@ -1414,7 +1414,7 @@ export class DirectionHelpers {
     static readonly TOP_CLASS_NAME = "components-direction-top";
 }
 
-// @alpha
+// @beta
 export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -1426,15 +1426,15 @@ export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFilterer
     recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult>;
 }
 
-// @beta
+// @public
 export class DistinctValueCollection {
     constructor();
     // (undocumented)
-    get values(): any[];
-    set values(values: any[]);
+    get values(): TableDistinctValue[];
+    set values(values: TableDistinctValue[]);
     }
 
-// @beta
+// @public
 export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
     addDistinctValue(distinctValue: any): void;
     distinctValues: DistinctValueCollection;
@@ -1809,7 +1809,7 @@ export interface FavoritePropertyListProps {
     propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
-// @beta
+// @public
 export interface FieldFilterDescriptor extends FilterDescriptor {
     addFieldValue(fieldValue: any, operator: FilterOperator, isCaseSensitive?: boolean): void;
     filterDescriptorCollection: OperatorValueFilterDescriptorCollection;
@@ -1818,11 +1818,12 @@ export interface FieldFilterDescriptor extends FilterDescriptor {
     tryFindDescriptor(fieldValue: any, operator: FilterOperator): FilterDescriptor | undefined;
 }
 
-// @beta
+// @public
 export interface FilterableColumn {
     columnFilterDescriptor: ColumnFilterDescriptor;
     createSimpleFilterDescriptor(value: any, filterOperator: FilterOperator): OperatorValueFilterDescriptor;
     filterableTable: FilterableTable;
+    filterCaseSensitive: boolean;
     filterMemberKey: string;
     filterMemberType: string;
     getDistinctValues(maximumValueCount?: number): Promise<DistinctValueCollection>;
@@ -1831,13 +1832,13 @@ export interface FilterableColumn {
     showFieldFilters: boolean;
 }
 
-// @beta
+// @public
 export interface FilterableTable {
     filterDescriptors: CompositeFilterDescriptorCollection;
     getPropertyDisplayValueExpression(property: string): string;
 }
 
-// @beta
+// @public
 export enum FilterCompositionLogicalOperator {
     // (undocumented)
     And = 0,
@@ -1845,20 +1846,21 @@ export enum FilterCompositionLogicalOperator {
     Or = 1
 }
 
-// @beta
+// @public
 export interface FilterDescriptor {
     clear(): void;
     evaluateRow(row: RowItem): boolean;
+    // @alpha
     getFilterExpression(): string;
     isActive: boolean;
     isFilterForColumn(columnKey: string): boolean;
 }
 
-// @beta
+// @public
 export class FilterDescriptorCollection extends FilterDescriptorCollectionBase<FilterDescriptor> {
 }
 
-// @beta
+// @public
 export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterDescriptor> {
     constructor();
     add(item: TDescriptor): void;
@@ -1913,7 +1915,7 @@ export enum FilteringInputStatus {
     ReadyToFilter = 0
 }
 
-// @alpha
+// @beta
 export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDisposable {
     constructor(_dataProvider: IPropertyDataProvider, _filterer: IPropertyDataFilterer);
     // (undocumented)
@@ -1924,7 +1926,7 @@ export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDi
     onDataChanged: PropertyDataChangeEvent;
 }
 
-// @beta
+// @public
 export enum FilterOperator {
     // (undocumented)
     Contains = 9,
@@ -1962,10 +1964,12 @@ export enum FilterOperator {
     StartsWith = 7
 }
 
-// @beta
+// @public
 export enum FilterRenderer {
     // (undocumented)
     MultiSelect = 2,
+    // (undocumented)
+    MultiValue = 5,
     // (undocumented)
     Numeric = 1,
     // (undocumented)
@@ -1974,10 +1978,10 @@ export enum FilterRenderer {
     Text = 4
 }
 
-// @alpha
+// @beta
 export type FlatGridItem = CategorizedPropertyItem | GridCategoryItem;
 
-// @alpha
+// @beta
 export interface FlatGridItemBase {
     // (undocumented)
     readonly depth: number;
@@ -2009,7 +2013,7 @@ export interface FlatGridItemBase {
     readonly type: FlatGridItemType;
 }
 
-// @alpha
+// @beta
 export enum FlatGridItemType {
     // (undocumented)
     Array = 2,
@@ -2123,13 +2127,16 @@ export interface FormatUnitsProps extends CommonProps {
 // @public
 export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
 
+// @internal (undocumented)
+export function getCSSColorFromDef(colorDef: ColorDef): string;
+
 // @beta @deprecated
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
 
 // @internal (undocumented)
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
-// @alpha
+// @beta
 export interface GridCategoryItem extends FlatGridItemBase {
     // (undocumented)
     readonly derivedCategory: PropertyCategory;
@@ -2340,7 +2347,7 @@ export interface ImmediatelyLoadedTreeNodeItem extends TreeNodeItem {
     children?: TreeNodeItem[];
 }
 
-// @alpha
+// @beta
 export interface IMutableCategorizedPropertyItem extends IMutableFlatPropertyGridItem {
     // (undocumented)
     readonly derivedRecord: PropertyRecord;
@@ -2354,10 +2361,10 @@ export interface IMutableCategorizedPropertyItem extends IMutableFlatPropertyGri
     readonly type: CategorizedPropertyTypes;
 }
 
-// @alpha
+// @beta
 export type IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem;
 
-// @alpha
+// @beta
 export interface IMutableFlatPropertyGridItem {
     // (undocumented)
     readonly depth: number;
@@ -2389,7 +2396,7 @@ export interface IMutableFlatPropertyGridItem {
     readonly type: FlatGridItemType;
 }
 
-// @alpha
+// @beta
 export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
     // (undocumented)
     derivedCategory: PropertyCategory;
@@ -2405,7 +2412,7 @@ export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
     type: FlatGridItemType.Category;
 }
 
-// @alpha
+// @beta
 export interface IMutableGridItemFactory {
     // (undocumented)
     createCategorizedProperty: (record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string) => IMutableCategorizedPropertyItem;
@@ -2413,7 +2420,7 @@ export interface IMutableGridItemFactory {
     createGridCategory: (category: PropertyCategory, recordsDict: CategoryRecordsDict, parentSelectionKey?: string, depth?: number) => IMutableGridCategoryItem;
 }
 
-// @alpha
+// @beta
 export interface IMutablePropertyGridModel {
     // (undocumented)
     getFlatGrid: () => IMutableFlatGridItem[];
@@ -2505,13 +2512,13 @@ export interface IPropertyDataProvider {
     onDataChanged: PropertyDataChangeEvent;
 }
 
-// @alpha
+// @beta
 export interface IPropertyGridEventHandler {
     // (undocumented)
     onExpansionToggled: (selectionKey: string) => void;
 }
 
-// @alpha
+// @beta
 export interface IPropertyGridModel {
     // (undocumented)
     getFlatGrid: () => FlatGridItem[];
@@ -2523,7 +2530,7 @@ export interface IPropertyGridModel {
     getVisibleFlatGrid: () => FlatGridItem[];
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface IPropertyGridModelSource {
     // (undocumented)
     getModel(): IPropertyGridModel | undefined;
@@ -2611,7 +2618,7 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
     readonly dataProvider: TDataProvider;
 }
 
-// @alpha
+// @beta
 export class LabelPropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -2758,7 +2765,7 @@ export interface MultiSelectionHandler<TItem> {
     updateSelection: (selections: TItem[], deselections: TItem[]) => void;
 }
 
-// @alpha
+// @beta
 export class MutableCategorizedArrayProperty extends MutableCategorizedProperty implements IMutableCategorizedPropertyItem {
     constructor(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, gridItemFactory: IMutableGridItemFactory, overrideName?: string, overrideDisplayLabel?: string);
     // (undocumented)
@@ -2767,7 +2774,7 @@ export class MutableCategorizedArrayProperty extends MutableCategorizedProperty 
     get type(): FlatGridItemType.Array;
 }
 
-// @alpha
+// @beta
 export class MutableCategorizedPrimitiveProperty extends MutableCategorizedProperty implements IMutableCategorizedPropertyItem {
     constructor(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string);
     // (undocumented)
@@ -2776,7 +2783,7 @@ export class MutableCategorizedPrimitiveProperty extends MutableCategorizedPrope
     get type(): FlatGridItemType.Primitive;
 }
 
-// @alpha
+// @beta
 export abstract class MutableCategorizedProperty extends MutableFlatPropertyGridItem implements Partial<IMutableCategorizedPropertyItem> {
     constructor(type: CategorizedPropertyTypes, record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string);
     get derivedRecord(): PropertyRecord;
@@ -2795,7 +2802,7 @@ export abstract class MutableCategorizedProperty extends MutableFlatPropertyGrid
     abstract type: CategorizedPropertyTypes;
     }
 
-// @alpha
+// @beta
 export class MutableCategorizedStructProperty extends MutableCategorizedProperty implements IMutableCategorizedPropertyItem {
     constructor(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, gridItemFactory: IMutableGridItemFactory, overrideName?: string, overrideDisplayLabel?: string);
     // (undocumented)
@@ -2816,7 +2823,7 @@ export interface MutableCheckBoxInfo extends CheckBoxInfo {
     tooltip?: string;
 }
 
-// @alpha
+// @beta
 export abstract class MutableFlatPropertyGridItem implements IMutableFlatPropertyGridItem {
     // (undocumented)
     [immerable]: boolean;
@@ -2862,7 +2869,7 @@ export abstract class MutableFlatPropertyGridItem implements IMutableFlatPropert
     abstract type: FlatGridItemType;
 }
 
-// @alpha
+// @beta
 export class MutableGridCategory extends MutableFlatPropertyGridItem implements IMutableGridCategoryItem {
     constructor(category: PropertyCategory, recordsDict: CategoryRecordsDict, gridItemFactory: IMutableGridItemFactory, parentSelectionKey?: string, depth?: number);
     // (undocumented)
@@ -2888,7 +2895,7 @@ export class MutableGridCategory extends MutableFlatPropertyGridItem implements 
     get type(): FlatGridItemType.Category;
 }
 
-// @alpha
+// @beta
 export class MutableGridItemFactory implements IMutableGridItemFactory {
     // (undocumented)
     protected createArrayProperty(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string): MutableCategorizedArrayProperty;
@@ -2900,7 +2907,7 @@ export class MutableGridItemFactory implements IMutableGridItemFactory {
     protected createStructProperty(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string): MutableCategorizedStructProperty;
 }
 
-// @alpha
+// @beta
 export class MutablePropertyGridModel implements IPropertyGridModel, IMutablePropertyGridModel {
     // (undocumented)
     [immerable]: boolean;
@@ -2948,6 +2955,7 @@ export class MutableTreeModel implements TreeModel {
     getRootNode(): TreeModelRootNode;
     insertChild(parentId: string | undefined, childNodeInput: TreeModelNodeInput, offset: number): void;
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
+    moveNode(sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): boolean;
     removeChild(parentId: string | undefined, childId: string): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
     setNumChildren(parentId: string | undefined, numChildren: number | undefined): void;
@@ -3101,7 +3109,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // (undocumented)
-    get hasFocus(): boolean;
+    hasFocus: boolean;
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
@@ -3112,6 +3120,8 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 
 // @beta
 export class NumericInputPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesEnter(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
@@ -3154,7 +3164,7 @@ export interface OperatorProcessor {
     isNotEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
-// @beta
+// @public
 export interface OperatorValueFilterDescriptor extends FilterDescriptor {
     isCaseSensitive: boolean;
     memberKey: string;
@@ -3163,7 +3173,7 @@ export interface OperatorValueFilterDescriptor extends FilterDescriptor {
     value: any;
 }
 
-// @beta
+// @public
 export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {
 }
 
@@ -3332,7 +3342,7 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
 
 // @public
 export interface PropertyCategory {
-    // @alpha (undocumented)
+    // @beta (undocumented)
     childCategories?: PropertyCategory[];
     // (undocumented)
     expand: boolean;
@@ -3363,7 +3373,7 @@ export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFilte
     recordMatchesFilter(): Promise<PropertyDataFilterResult>;
 }
 
-// @alpha
+// @beta
 export class PropertyCategoryLabelFilterer extends PropertyCategoryDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -3538,7 +3548,7 @@ export interface PropertyGridContextMenuArgs {
     propertyRecord: PropertyRecord;
 }
 
-// @alpha
+// @beta
 export class PropertyGridEventHandler {
     constructor(_modelSource: IPropertyGridModelSource);
     onExpansionToggled: (selectionKey: string) => void;
@@ -3560,14 +3570,14 @@ export interface PropertyGridEventsRelatedPropsSupplierProps extends Pick<Common
     children: (context: PropertyGridEventsRelatedProps) => React.ReactNode;
 }
 
-// @alpha
+// @beta
 export class PropertyGridModelChangeEvent extends BeEvent<PropertyGridModelChangeListener> {
 }
 
-// @alpha
+// @beta
 export type PropertyGridModelChangeListener = () => void;
 
-// @alpha
+// @beta
 export class PropertyGridModelSource implements IPropertyGridModelSource {
     constructor(_gridFactory: IMutableGridItemFactory);
     getModel(): IPropertyGridModel | undefined;
@@ -3729,7 +3739,21 @@ export interface QuantityProps extends CommonProps {
 
 // @public
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
+    // (undocumented)
+    filterableColumn?: FilterableColumn;
     icon?: boolean;
+}
+
+// @alpha
+export interface RenderedItemsRange {
+    // (undocumented)
+    overscanStartIndex: number;
+    // (undocumented)
+    overscanStopIndex: number;
+    // (undocumented)
+    visibleStartIndex: number;
+    // (undocumented)
+    visibleStopIndex: number;
 }
 
 // @public
@@ -4156,6 +4180,8 @@ export class SparseTree<T extends Node> {
     // (undocumented)
     insertChild(parentId: string | undefined, child: T, offset: number): void;
     // (undocumented)
+    moveNode(sourceParentId: string | undefined, sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): void;
+    // (undocumented)
     removeChild(parentId: string | undefined, childId: string): void;
     // (undocumented)
     setChildren(parentId: string | undefined, children: T[], offset: number): void;
@@ -4437,10 +4463,8 @@ export type TableDataChangesListener = () => void;
 
 // @public
 export interface TableDataProvider {
-    // @beta
     applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
     getColumns(): Promise<ColumnDescription[]>;
-    // @beta
     getDistinctValues?: (columnKey: string, maximumValueCount?: number) => Promise<DistinctValueCollection>;
     // @alpha
     getPropertyDisplayValueExpression?: (property: string) => string;
@@ -4451,7 +4475,7 @@ export interface TableDataProvider {
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
 }
 
-// @beta
+// @public
 export interface TableDistinctValue {
     // (undocumented)
     label: string;
@@ -4494,6 +4518,7 @@ export interface TableProps extends CommonProps {
     hideHeader?: boolean;
     isCellSelected?: (rowIndex: number, cell: CellItem) => boolean;
     isRowSelected?: (row: RowItem) => boolean;
+    maximumDistinctValues?: number;
     // @internal (undocumented)
     onApplyFilter?: () => void;
     // @beta
@@ -4519,9 +4544,11 @@ export interface TableProps extends CommonProps {
     scrollToRow?: number;
     selectionMode?: SelectionMode;
     settingsIdentifier?: string;
+    settingsStorage?: UiSettingsStorage;
     showHideColumns?: boolean;
     stripedRows?: boolean;
     tableSelectionTarget?: TableSelectionTarget;
+    // @deprecated
     uiSettings?: UiSettings;
 }
 
@@ -4917,6 +4944,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
 }
 
 // @internal (undocumented)
+export function toRxjsObservable<T>(observable: Observable<T>): Observable_2<T>;
+
+// @internal (undocumented)
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
 
 // @beta
@@ -5061,6 +5091,8 @@ export class TreeImageLoader implements ITreeImageLoader {
 // @beta
 export interface TreeModel {
     // (undocumented)
+    getChildOffset(parentId: string | undefined, childId: string): number | undefined;
+    // (undocumented)
     getChildren(parentId: string | undefined): SparseArray<string> | undefined;
     // (undocumented)
     getNode(id: string): TreeModelNode | undefined;
@@ -5164,7 +5196,7 @@ export interface TreeModelRootNode {
 
 // @beta
 export class TreeModelSource {
-    constructor();
+    constructor(_model?: MutableTreeModel);
     getModel(): TreeModel;
     getVisibleNodes(): VisibleTreeNodes;
     modifyModel(callback: (model: MutableTreeModel) => void): void;
@@ -5384,6 +5416,8 @@ export interface TreeRendererProps {
     // (undocumented)
     nodeLoader: ITreeNodeLoader;
     nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+    // @alpha
+    onItemsRendered?: (renderedItems: RenderedItemsRange) => void;
     // @internal
     onNodeEditorClosed?: () => void;
     // (undocumented)
@@ -5485,7 +5519,7 @@ export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (
 // @beta
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;
 
-// @alpha
+// @beta
 export function usePropertyData(props: {
     dataProvider: IPropertyDataProvider;
     onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
@@ -5494,17 +5528,17 @@ export function usePropertyData(props: {
     inProgress: boolean;
 };
 
-// @alpha
+// @beta
 export function usePropertyGridEventHandler(props: {
     modelSource: IPropertyGridModelSource;
 }): PropertyGridEventHandler;
 
-// @alpha
+// @beta
 export function usePropertyGridModel(props: {
     modelSource: IPropertyGridModelSource;
 }): IPropertyGridModel | undefined;
 
-// @alpha
+// @beta
 export function usePropertyGridModelSource(props: {
     dataProvider: IPropertyDataProvider;
     onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
@@ -5663,7 +5697,7 @@ export interface ViewRotationChangeEventArgs {
 // @public
 export type ViewStateProp = ViewState | (() => ViewState);
 
-// @alpha
+// @beta
 export class VirtualizedPropertyGrid extends React.Component<VirtualizedPropertyGridProps, VirtualizedPropertyGridState> {
     // @internal
     constructor(props: VirtualizedPropertyGridProps);
@@ -5730,7 +5764,7 @@ export const
  */
 VirtualizedPropertyGridContextProvider: React.ProviderExoticComponent<React.ProviderProps<VirtualizedPropertyGridContext>>;
 
-// @alpha
+// @beta
 export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     // (undocumented)
     eventHandler: IPropertyGridEventHandler;
@@ -5742,10 +5776,10 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     model: IPropertyGridModel;
 }
 
-// @alpha
+// @beta
 export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element;
 
-// @alpha
+// @beta
 export interface VirtualizedPropertyGridWithDataProviderProps extends CommonPropertyGridProps {
     // (undocumented)
     dataProvider: IPropertyDataProvider;

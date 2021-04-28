@@ -12,11 +12,12 @@ import { GuidString } from '@bentley/bentleyjs-core';
 import * as https from 'https';
 import { HttpStatus } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
+import { SessionProps } from '@bentley/bentleyjs-core';
 
 // @beta
 export class AccessToken {
     constructor(tokenString?: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo);
-    static fromJson(jsonObj: any): AccessToken;
+    static fromJson(jsonObj: AccessTokenProps): AccessToken;
     // @internal
     static fromTokenResponseJson(tokenResponse: any, userProfileResponse?: any): AccessToken;
     static fromTokenString(tokenStr: string): AccessToken;
@@ -27,6 +28,7 @@ export class AccessToken {
     // @internal (undocumented)
     getUserInfo(): UserInfo | undefined;
     initFromTokenString(tokenStr: string): void;
+    isExpired(buffer: number): boolean;
     // (undocumented)
     protected _prefix: string;
     // (undocumented)
@@ -34,9 +36,23 @@ export class AccessToken {
     // @internal (undocumented)
     setUserInfo(userInfo: UserInfo): void;
     // (undocumented)
-    protected _tokenString?: string;
+    toJSON(): AccessTokenProps;
+    // (undocumented)
+    protected _tokenString: string;
     toTokenString(includePrefix?: IncludePrefix): string;
     }
+
+// @beta
+export interface AccessTokenProps {
+    // (undocumented)
+    expiresAt?: string;
+    // (undocumented)
+    startsAt?: string;
+    // (undocumented)
+    tokenString: string;
+    // (undocumented)
+    userInfo?: UserInfoProps;
+}
 
 // @beta
 export class AuthenticationError extends ResponseError {
@@ -45,23 +61,37 @@ export class AuthenticationError extends ResponseError {
 // @beta
 export interface AuthorizationClient {
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    isAuthorized: boolean;
+    readonly isAuthorized: boolean;
 }
 
 // @public
-export class AuthorizedClientRequestContext extends ClientRequestContext implements AuthorizedClientRequestContextProps {
+export class AuthorizedClientRequestContext extends ClientRequestContext {
     // @beta
     constructor(accessToken: AccessToken, activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
     // @beta
     accessToken: AccessToken;
     // @internal (undocumented)
+    static fromJSON(json: AuthorizedClientRequestContextProps): AuthorizedClientRequestContext;
+    // @internal (undocumented)
     toJSON(): AuthorizedClientRequestContextProps;
 }
 
-// @public
+// @beta
 export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
     // (undocumented)
-    accessToken: any;
+    accessToken: AccessTokenProps;
+}
+
+// @beta (undocumented)
+export interface AuthorizedSession extends SessionProps {
+    // (undocumented)
+    accessToken?: AccessToken;
+}
+
+// @beta
+export interface AuthorizedSessionProps extends SessionProps {
+    // (undocumented)
+    accessTokenProps: AccessTokenProps;
 }
 
 // @beta
@@ -93,6 +123,7 @@ export interface ClassKeyMapInfo {
 export abstract class Client {
     protected constructor();
     protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void;
+    protected baseUrl?: string;
     protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
     getUrl(requestContext: ClientRequestContext): Promise<string>;
     protected abstract getUrlSearchKey(): string;
@@ -436,7 +467,7 @@ export class UserInfo {
         ultimateSite: string;
         usageCountryIso: string;
     } | undefined;
-    static fromJson(jsonObj: any): UserInfo;
+    static fromJson(jsonObj: UserInfoProps): UserInfo;
     // @internal
     static fromTokenResponseJson(jsonObj: any): UserInfo;
     id: string;
@@ -450,6 +481,34 @@ export class UserInfo {
         name?: string | undefined;
         preferredUserName?: string | undefined;
     } | undefined;
+}
+
+// @beta (undocumented)
+export interface UserInfoProps {
+    // (undocumented)
+    email?: {
+        id: string;
+        isVerified?: boolean;
+    };
+    // (undocumented)
+    featureTracking?: {
+        ultimateSite: string;
+        usageCountryIso: string;
+    };
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    organization?: {
+        id: string;
+        name: string;
+    };
+    // (undocumented)
+    profile?: {
+        firstName: string;
+        lastName: string;
+        name?: string;
+        preferredUserName?: string;
+    };
 }
 
 // @beta

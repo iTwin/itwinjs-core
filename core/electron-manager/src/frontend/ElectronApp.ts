@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { IpcListener, IpcSocketFrontend } from "@bentley/imodeljs-common";
-import { AsyncMethodsOf, IModelAppOptions, IpcApp, NativeApp, PromiseReturnType } from "@bentley/imodeljs-frontend";
+import { AsyncMethodsOf, IpcApp, NativeApp, NativeAppOpts, PromiseReturnType } from "@bentley/imodeljs-frontend";
 import { ITwinElectronApi } from "../backend/ElectronPreload";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
 
@@ -33,6 +33,9 @@ class ElectronIpc implements IpcSocketFrontend {
   }
 }
 
+/** @beta */
+export type ElectronAppOpts = NativeAppOpts;
+
 /**
  * Frontend of an Electron App.
  * @beta
@@ -46,14 +49,14 @@ export class ElectronApp {
    * @param opts Options for your ElectronApp
    * @note This method must only be called from the frontend of an Electron app (i.e. when [ProcessDetector.isElectronAppFrontend]($bentley) is `true`).
    */
-  public static async startup(opts?: { iModelApp?: IModelAppOptions }) {
+  public static async startup(opts?: ElectronAppOpts) {
     if (!ProcessDetector.isElectronAppFrontend)
       throw new Error("Not running under Electron");
     if (!this.isValid) {
       this._ipc = new ElectronIpc();
       ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces);
     }
-    await NativeApp.startup({ ipcApp: { ipc: this._ipc! }, ...opts });
+    await NativeApp.startup(this._ipc!, opts);
   }
 
   public static async shutdown() {

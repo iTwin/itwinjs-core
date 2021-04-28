@@ -321,59 +321,6 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("should combine models", async () => {
-    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "source-separate-models.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Separate Models" } });
-    const sourceCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "Category", {});
-    const sourceModelId1 = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "M1");
-    const sourceModelId2 = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "M2");
-    const elementProps11: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: sourceModelId1,
-      code: Code.createEmpty(),
-      userLabel: "PhysicalObject-M1-E1",
-      category: sourceCategoryId,
-      geom: IModelTransformerUtils.createBox(new Point3d(1, 1, 1)),
-      placement: Placement3d.fromJSON({ origin: { x: 1, y: 1 }, angles: {} }),
-    };
-    const sourceElementId11 = sourceDb.elements.insertElement(elementProps11);
-    const elementProps21: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: sourceModelId2,
-      code: Code.createEmpty(),
-      userLabel: "PhysicalObject-M2-E1",
-      category: sourceCategoryId,
-      geom: IModelTransformerUtils.createBox(new Point3d(2, 2, 2)),
-      placement: Placement3d.fromJSON({ origin: { x: 2, y: 2 }, angles: {} }),
-    };
-    const sourceElementId21 = sourceDb.elements.insertElement(elementProps21);
-    sourceDb.saveChanges();
-
-    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "target-combined-model.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Combined Model" } });
-    const targetModelId = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "PhysicalModel-Combined");
-
-    const transformer = new IModelTransformer(sourceDb, targetDb);
-    transformer.context.remapElement(sourceModelId1, targetModelId);
-    transformer.context.remapElement(sourceModelId2, targetModelId);
-    transformer.importer.doNotUpdateElementIds.add(targetModelId); // don't want the target partition CodeValue, etc. to be updated from either source partition
-    await transformer.processAll();
-    targetDb.saveChanges();
-
-    const targetElement11 = targetDb.elements.getElement(transformer.context.findTargetElementId(sourceElementId11));
-    assert.equal(targetElement11.userLabel, "PhysicalObject-M1-E1");
-    assert.equal(targetElement11.model, targetModelId);
-    const targetElement21 = targetDb.elements.getElement(transformer.context.findTargetElementId(sourceElementId21));
-    assert.equal(targetElement21.userLabel, "PhysicalObject-M2-E1");
-    assert.equal(targetElement21.model, targetModelId);
-    const targetPartition = targetDb.elements.getElement(targetModelId);
-    assert.equal(targetPartition.code.value, "PhysicalModel-Combined", "Original CodeValue should be retained");
-
-    transformer.dispose();
-    sourceDb.close();
-    targetDb.close();
-  });
-
   it("should import everything below a Subject", async () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
@@ -495,6 +442,62 @@ describe("IModelTransformer", () => {
     assert.deepEqual(targetModelExtents, new Range3d(101, 200, 0, 110, 209, 1));
     assert.deepEqual(targetModelExtents, transform3d.multiplyRange(sourceModelExtents));
     // clean up
+    transformer.dispose();
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("should combine models", async () => {
+    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "source-separate-models.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Separate Models" } });
+    const sourceCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "Category", {});
+    const sourceModelId1 = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "M1");
+    const sourceModelId2 = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "M2");
+    const elementProps11: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: sourceModelId1,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject-M1-E1",
+      category: sourceCategoryId,
+      geom: IModelTransformerUtils.createBox(new Point3d(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 1, y: 1 }, angles: {} }),
+    };
+    const sourceElementId11 = sourceDb.elements.insertElement(elementProps11);
+    const elementProps21: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: sourceModelId2,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject-M2-E1",
+      category: sourceCategoryId,
+      geom: IModelTransformerUtils.createBox(new Point3d(2, 2, 2)),
+      placement: Placement3d.fromJSON({ origin: { x: 2, y: 2 }, angles: {} }),
+    };
+    const sourceElementId21 = sourceDb.elements.insertElement(elementProps21);
+    sourceDb.saveChanges();
+    assert.equal(count(sourceDb, PhysicalPartition.classFullName), 2);
+    assert.equal(count(sourceDb, PhysicalModel.classFullName), 2);
+    assert.equal(count(sourceDb, PhysicalObject.classFullName), 2);
+
+    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "target-combined-model.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Combined Model" } });
+    const targetModelId = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "PhysicalModel-Combined");
+
+    const transformer = new PhysicalModelConsolidator(sourceDb, targetDb, targetModelId);
+    await transformer.processAll();
+    targetDb.saveChanges();
+
+    const targetElement11 = targetDb.elements.getElement(transformer.context.findTargetElementId(sourceElementId11));
+    assert.equal(targetElement11.userLabel, "PhysicalObject-M1-E1");
+    assert.equal(targetElement11.model, targetModelId);
+    const targetElement21 = targetDb.elements.getElement(transformer.context.findTargetElementId(sourceElementId21));
+    assert.equal(targetElement21.userLabel, "PhysicalObject-M2-E1");
+    assert.equal(targetElement21.model, targetModelId);
+    const targetPartition = targetDb.elements.getElement(targetModelId);
+    assert.equal(targetPartition.code.value, "PhysicalModel-Combined", "Original CodeValue should be retained");
+    assert.equal(count(targetDb, PhysicalPartition.classFullName), 1);
+    assert.equal(count(targetDb, PhysicalModel.classFullName), 1);
+    assert.equal(count(targetDb, PhysicalObject.classFullName), 2);
+
     transformer.dispose();
     sourceDb.close();
     targetDb.close();
@@ -628,7 +631,7 @@ describe("IModelTransformer", () => {
     assert.notEqual(sourceDb1.iModelId, sourceDb2.iModelId); // iModelId must be different to detect provenance scope conflicts
 
     const targetDbFile = IModelTestUtils.prepareOutputFile("IModelTransformer", "ConflictingScopes.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Conflicting Scopes Test" }});
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Conflicting Scopes Test" } });
 
     const transformer1 = new IModelTransformer(sourceDb1, targetDb); // did not set targetScopeElementId
     const transformer2 = new IModelTransformer(sourceDb2, targetDb); // did not set targetScopeElementId

@@ -396,36 +396,40 @@
       "ruleType": "ContentModifier",
       "class": {
         "schemaName": "BisCore",
-        "className": "PhysicalElement"
+        "className": "GeometricElement3d"
       },
       "relatedProperties": [
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "PhysicalElementIsOfType"
-            ]
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GeometricElement3dHasTypeDefinition"
+            },
+            "direction": "Forward"
           },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "PhysicalType"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "isPolymorphic": true,
+          "handleTargetClassPolymorphically": true,
           "relationshipMeaning": "RelatedInstance",
           "nestedRelatedProperties": [
             {
-              "relationships": {
-                "schemaName": "BisCore",
-                "classNames": [
-                  "ElementOwnsMultiAspects",
-                  "ElementOwnsUniqueAspects"
-                ]
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsUniqueAspect"
+                },
+                "direction": "Forward"
               },
-              "requiredDirection": "Forward",
-              "isPolymorphic": true,
+              "handleTargetClassPolymorphically": true,
+              "relationshipMeaning": "SameInstance"
+            },
+            {
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsMultiAspects"
+                },
+                "direction": "Forward"
+              },
+              "handleTargetClassPolymorphically": true,
               "relationshipMeaning": "SameInstance"
             }
           ]
@@ -436,36 +440,40 @@
       "ruleType": "ContentModifier",
       "class": {
         "schemaName": "BisCore",
-        "className": "SpatialLocationElement"
+        "className": "GeometricElement2d"
       },
       "relatedProperties": [
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SpatialLocationIsOfType"
-            ]
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GeometricElement2dHasTypeDefinition"
+            },
+            "direction": "Forward"
           },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SpatialLocationType"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "isPolymorphic": true,
+          "handleTargetClassPolymorphically": true,
           "relationshipMeaning": "RelatedInstance",
           "nestedRelatedProperties": [
             {
-              "relationships": {
-                "schemaName": "BisCore",
-                "classNames": [
-                  "ElementOwnsMultiAspects",
-                  "ElementOwnsUniqueAspects"
-                ]
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsUniqueAspect"
+                },
+                "direction": "Forward"
               },
-              "requiredDirection": "Forward",
-              "isPolymorphic": true,
+              "handleTargetClassPolymorphically": true,
+              "relationshipMeaning": "SameInstance"
+            },
+            {
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsMultiAspects"
+                },
+                "direction": "Forward"
+              },
+              "handleTargetClassPolymorphically": true,
               "relationshipMeaning": "SameInstance"
             }
           ]

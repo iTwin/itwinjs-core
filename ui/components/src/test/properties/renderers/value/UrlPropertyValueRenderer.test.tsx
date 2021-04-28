@@ -83,7 +83,7 @@ describe("UrlPropertyValueRenderer", () => {
         const renderer = new UrlPropertyValueRenderer();
         const stringProperty = TestUtils.createURIProperty("Label", "Random Test property");
         spy = sinon.stub(window, "open");
-        spy.returns(moq.Mock.ofType<Window>().object);
+        spy.returns(null);
 
         const element = renderer.render(stringProperty);
         const renderedElement = render(<>{element}</>);
@@ -123,6 +123,27 @@ describe("UrlPropertyValueRenderer", () => {
 
         fireEvent.click(linkElement);
         expect(locationMockRef.object.href).to.be.equal("mailto:Test property");
+      });
+
+      it("calls window.open.focus if window.open returns not null", () => {
+        const renderer = new UrlPropertyValueRenderer();
+        const stringProperty = TestUtils.createURIProperty("Label", "Random Test property");
+        const windowMock = moq.Mock.ofType<Window>();
+        windowMock.setup((x) => x.focus());
+
+        spy = sinon.stub(window, "open");
+        spy.returns(windowMock.object);
+
+        const element = renderer.render(stringProperty);
+        const renderedElement = render(<>{element}</>);
+
+        const linkElement = renderedElement.container.getElementsByClassName("core-underlined-button")[0];
+
+        expect(linkElement.textContent).to.be.eq("Random Test property");
+
+        fireEvent.click(linkElement);
+        expect(spy).to.be.calledOnceWith("Random Test property", "_blank");
+        windowMock.verify((x) => x.focus(), moq.Times.once());
       });
     });
   });

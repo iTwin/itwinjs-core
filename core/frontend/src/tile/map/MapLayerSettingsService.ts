@@ -6,7 +6,7 @@
 import { MapLayerSource } from "./MapLayerSources";
 import { AuthorizedFrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
-import { SettingsMapResult, SettingsStatus } from "@bentley/product-settings-client";
+import { SettingsMapResult, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { BeEvent, GuidString } from "@bentley/bentleyjs-core";
 
@@ -23,6 +23,8 @@ export interface MapLayerSetting {
 export class MapLayerSettingsService {
 
   public static readonly onNewCustomLayerSource = new BeEvent<(source: MapLayerSource) => void>(); // Used to notify the frontend that it needs to update its list of available layers
+  public static readonly onCustomLayerNameRemoved = new BeEvent<(name: string) => void>(); // Used to notify the frontend that it needs to update its list of available layers
+
   /**
    * Store the source in the settings service. Returns false if the settings object would override some other settings object in a larger scope i.e. storing settings on model when
    * a project setting exists with same name or map layer url.
@@ -52,6 +54,29 @@ export class MapLayerSettingsService {
     }
 
   }
+
+  // This method will first attempt to deleted shared setting for the provided projectId and iModelid.  If it fails it will make a
+  // second attempt to delete the shared setting at the project level
+  public static async deleteSharedSettingsByName(name: string, projectId: GuidString, iModelId: GuidString): Promise<boolean> {
+    let result: SettingsResult = new SettingsResult(SettingsStatus.UnknownError);
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+    result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, name, true, projectId, iModelId);
+    requestContext.enter();
+
+    // Make a second attempt at project level
+    if (result.status === SettingsStatus.SettingNotFound) {
+      result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, name, true, projectId, undefined);
+      requestContext.enter();
+    }
+
+    if (result.status === SettingsStatus.Success) {
+      MapLayerSettingsService.onCustomLayerNameRemoved.raiseEvent(name);
+
+    }
+    return result.status === SettingsStatus.Success;
+  }
+
   // This method prevents users from overwriting project settings with model settings. If setting to be added is in same scope as the setting that it collides with
   // then it can be overwritten. This method knows scope of setting to be added is model if storeOnIModel is true
   // returns false if we should not save the setting the user added because we output an error to the user here saying it cannot be done

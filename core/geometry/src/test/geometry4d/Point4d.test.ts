@@ -46,7 +46,7 @@ describe("Point4d", () => {
     ck.testTrue(pointC.isAlmostEqualXYZW(dataD[0], dataD[1], dataD[2], dataD[3]));
     const q = 1.0 + e;
     ck.testTrue(pointC.isAlmostEqualXYZW(dataD[0] * q, dataD[1] * q + e, dataD[2] / q, dataD[3] / q + e));
-    const f = 1.0e-3; // much bigger than coordinte tolerance . . .
+    const f = 1.0e-3; // much bigger than coordinate tolerance . . .
     ck.testFalse(pointC.isAlmostEqualXYZW(dataD[0], dataD[1], dataD[2], dataD[3] - f));
     ck.testFalse(pointC.isAlmostEqualXYZW(dataD[0], dataD[1], dataD[2] + f, dataD[3]));
     ck.testFalse(pointC.isAlmostEqualXYZW(dataD[0], dataD[1] - 2 * f, dataD[2], dataD[3]));
@@ -74,7 +74,7 @@ describe("Point4d", () => {
     const e = 22.8231237123719;
     for (let i = 0; i < 4; i++) {
       const pointB = pointA.clone();
-      const q = pointB.xyzw[i] + e; // we know that this is the maxabs !!!
+      const q = pointB.xyzw[i] + e; // we know that this is the maxAbs !!!
       pointB.xyzw[i] = q;
       ck.testCoordinate(pointA.distanceXYZW(pointB), e, "single component distance", pointA, pointB);
       ck.testCoordinate(pointA.distanceSquaredXYZW(pointB), e * e, "single component squared distance");
@@ -208,8 +208,8 @@ describe("Point4d", () => {
 
     const perp20 = Point4d.perpendicularPoint4dPlane(quat0, quat20, quat1);  // The three inputs are in a plane.  Quat should be zero?
     const perp80 = Point4d.perpendicularPoint4dPlane(quat0, quat80, quat1);  // The three inputs are in a plane.  Quat should be zero?
-    ck.testCoordinate(0.0, perp20.magnitudeXYZW(), "coplanar quats have 0 cross product.");
-    ck.testCoordinate(0.0, perp80.magnitudeXYZW(), "coplanar quats have 0 cross product.");
+    ck.testCoordinate(0.0, perp20.magnitudeXYZW(), "coplanar quaternions have 0 cross product.");
+    ck.testCoordinate(0.0, perp80.magnitudeXYZW(), "coplanar quaternions have 0 cross product.");
     const epsilon = 0.000001;
     const nearly1 = 1.0 - epsilon;
     const quatQ0 = Point4d.interpolateQuaternions(quat0, epsilon, quat1);

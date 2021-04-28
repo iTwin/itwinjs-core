@@ -1,95 +1,154 @@
-# 2.12.0 Change Notes
+# 2.14.0 Change Notes
 
-## Custom particle effects
+## New Settings UI Features
 
- The display system now makes it easy to implement [particle effects](https://en.wikipedia.org/wiki/Particle_system) using [decorators](../learning/frontend/ViewDecorations.md). Particle effects simulate phenomena like fire, smoke, snow, and rain by animating hundreds or thousands of small particles. The new [ParticleCollectionBuilder]($frontend) API allows such collections to be efficiently created and rendered.
+The @bentley/ui-core package has added the [SettingsManager]($ui-core) class that allows any number of `SettingsProvider` classes to be registered. These providers provide [SettingsTabEntry]($ui-core) definitions used to populate the [SettingsContainer]($ui-core) UI component with setting pages used to manage application settings. These new classes are marked as beta in this release and are subject to minor modifications in future releases.
 
- The frontend-devtools package contains an example [SnowEffect]($frontend-devtools), as illustrated in the still image below. When applied to a viewport, the effect is animated, of course.
- ![Snow particle effect](./assets/snow.jpg)
+### Add Settings Page to set Quantity Formatting Overrides
 
-## Updated version of Electron
-
-Updated recommended version of Electron from 10.1.3 to 11.1.0. Note that Electron is specified as a peer dependency in iModel.js - so it's recommended but not mandatory that applications migrate to this electron version.
-
-## IpcSocket for use with dedicated backends
-
-For cases where a frontend and backend are explicitly paired (e.g. desktop and mobile apps), a more direct communication path is now supported via the [IpcSocket api]($docs/learning/IpcInterface.md). See the [Rpc vs Ipc learning article]($docs/learning/RpcVsIpc.md) for more details.
-
-## External textures
-
-By default, a tile containing textured materials embeds the texture images as JPEGs or PNGs. This increases the size of the tile, wasting bandwidth. A new alternative requires only the Id of the texture element to be included in the tile; the image can be requested separately. Texture images are cached, so the image need only be requested once no matter how many tiles reference it.
-
-This feature is currently disabled by default. Enabling it requires the use of APIs currently marked `@alpha`. Pass to [IModelApp.startup]($frontend) a `TileAdmin` with the feature enabled as follows:
+The `QuantityFormatSettingsPanel` component has been added to the @bentley/ui-framework package to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This panel can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core). Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
 
 ```ts
-  const tileAdminProps: TileAdmin.Props = { enableExternalTextures: true };
-  const tileAdmin = TileAdmin.create(tileAdminProps);
-  IModelApp.startup({ tileAdmin });
+// Sample settings provider that dynamically adds settings into the setting stage
+export class AppSettingsProvider implements SettingsProvider {
+  public readonly id = "AppSettingsProvider";
+
+  public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
+    return [
+      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
+    ];
+  }
+
+  public static initializeAppSettingProvider() {
+    UiFramework.settingsManager.addSettingsProvider(new AppSettingsProvider());
+  }
+}
+
 ```
 
-## Changes to [IModelDb.close]($backend) and [IModelDb.saveChanges]($backend)
+The `QuantityFormatSettingsPanel` is marked as alpha in this release and is subject to minor modifications in future releases.
 
-Previously, [IModelDb.close]($backend) would save any uncommitted changes to disk before closing the iModel. It no longer does so - instead, if uncommitted changes exist when the iModel is closed, they will be discarded. Applications should explicitly call either [IModelDb.saveChanges]($backend) to commit the changes or [IModelDb.abandonChanges]($backend) to discard them before calling `close`.
+## Breaking Api Changes
 
-In rare circumstances, [IModelDb.saveChanges]($backend) may now throw an exception. This indicates a fatal condition like exhaustion of memory or disk space. Applications should wrap calls to `saveChanges` in a `try-catch` block and handle exceptions by terminating without making further use of the iModel. In particular, they should not attempt to call `close`, `saveChanges`, or `abandonChanges` after such an exception has occurred.
+### @bentley/ui-abstract package
 
-## Breaking API Changes
+Property `onClick` in [LinkElementsInfo]($ui-abstract) was changed to be mandatory. Also, the first [PropertyRecord]($ui-abstract) argument was removed from the method. Suggested ways to resolve:
 
-### Electron Initialization
+- If you have a function `myFunction(record: PropertyRecord, text: string)` and use the first argument, the issue can be resolved with a lambda:
 
-The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronBackend` and `ElectronFrontend`.
+  ```ts
+  record.links = {
+    onClick: (text) => myFunction(record, text),
+  };
+  ```
 
-To create an Electron application, you should initialize your frontend via:
+- If you were omitting the `onClick` method to get the default behavior, it can still be achieved by not setting `PropertyRecord.links` at all. It's only valid to expect default click behavior when default matcher is used, but if a custom matcher is used, then the click handled can be as simple as this:
+
+  ```ts
+  record.links = {
+    onClick: (text) => { window.open(text, "_blank"); },
+  };
+  ```
+
+### @bentley/imodeljs-frontend package
+
+#### Initializing TileAdmin
+
+The previously-`alpha` [IModelAppOptions.tileAdmin]($frontend) property has been promoted to `beta` and its type has changed from [TileAdmin]($frontend) to [TileAdmin.Props]($frontend). [TileAdmin.create]($frontend) has become `async`. Replace code like the following:
 
 ```ts
-  import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
-  ElectronFrontend.initialize({ rpcInterfaces });
+  IModelApp.startup({ tileAdmin: TileAdmin.create(props) });
 ```
 
-And your backend via:
+with:
 
 ```ts
-  import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
-  ElectronBackend.initialize({ rpcInterfaces });
+  IModelApp.startup({ tileAdmin: props });
 ```
 
-> Note that the class `ElectronRpcManager` is now initialized internally by the calls above, and you do not need to initialize it directly.
+#### Tile request channels
 
-### Update element behavior
+[Tile]($frontend)s are now required to report the [TileRequestChannel]($frontend) via which requests for their content should be executed, by implementing the new abstract [Tile.channel]($frontend) property. The channel needs to specify a name and a concurrency. The name must be unique among all registered channels, so choose something unlikely to conflict. The concurrency specifies the maximum number of requests that can be simultaneously active on the channel. For example, when using HTTP 1.1 modern browsers allow no more than 6 simultaneous connections to a given hostname, so 6 is a good concurrency for HTTP 1.1-based channels and the hostname is a decent choice for the channel's name.
 
-In order to support partial updates and clearing an existing value, the update element behavior has been enhanced/changed with regard to how `undefined` values are handled.
-The new behavior is documented as part of the method documentation here:
-
-[IModelDb.Elements.updateElement]($backend)
-
-## GPU memory limits
-
-The [RenderGraphic]($frontend)s used to represent a [Tile]($frontend)'s contents consume WebGL resources - chiefly, GPU memory. If the amount of GPU memory consumed exceeds that available, the WebGL context will be lost, causing an error dialog to be displayed and all rendering to cease. The [TileAdmin]($frontend) can now be configured with a strategy for managing the amount of GPU memory consumed and avoiding context loss. Each strategy defines a maximum amount of GPU memory permitted to be allocated to tile graphics; when that limit is exceeded, graphics for tiles that are not currently being displayed by any [Viewport]($frontend) are discarded one by one until the limit is satisfied or no more tiles remain to be discarded. Graphics are discarded in order from least-recently- to most-recently-displayed, and graphics currently being displayed will not be discarded. The available strategies are:
-
-- "default" - a "reasonable" amount of GPU memory can be consumed.
-- "aggressive" - a conservative amount of GPU memory can be consumed.
-- "relaxed" - a generous amount of GPU memory can be consumed.
-- "none" - an unbounded amount of GPU memory can be consumed - no maximum is imposed.
-
-The precise amount of memory permitted by each strategy varies based on whether or not the client is running on a mobile device; see [TileAdmin.mobileGpuMemoryLimits]($frontend) and [TileAdmin.nonMobileGpuMemoryLimits]($frontend) for precise values. The application can also specify an exact amount in number of bytes instead.
-
-The limit defaults to "default" for mobile devices and "none" for non-mobile devices. To configure the limit when calling [IModelApp.startup]($frontend), specify [TileAdmin.Props.gpuMemoryLimits]($frontend). For example:
+Typically all tiles in the same [TileTree]($frontend) use the same channel. Your implementation of `Tile.channel` will depend on the mechanism by which the content is obtained. If it uses HTTP, it's easy:
 
 ```ts
-  IModelApp.startup({ tileAdmin: TileAdmin.create({ gpuMemoryLimits: "aggressive" }) });
+  public get channel() { return IModelApp.tileAdmin.getForHttp("my-unique-channel-name"); }
 ```
 
-Separate limits for mobile and non-mobile devices can be specified at startup if desired; the appropriate limit will be selected based on the type of device the client is running on:
+If your tile never requests content, you can implement like so:
 
 ```ts
-  IModelApp.startup({ tileAdmin: TileAdmin.create({
-    gpuMemoryLimits: {
-      mobile: "default",
-      nonMobile: "relaxed",
-    }),
+  public get channel() { throw new Error("This tile never has content so this property should never be invoked"); }
+```
+
+If your tile uses the `alpha` `TileAdmin.requestElementGraphics` API, use the dedicated channel for such requests:
+
+```ts
+  public get channel() { return IModelApp.tileAdmin.channels.elementGraphicsRpc; }
+```
+
+Otherwise, you must register a channel ahead of time. Choose an appropriate concurrency:
+
+- If the tile requests content from some custom [RpcInterface]($common), use `IModelApp.tileAdmin.channels.rpcConcurrency`.
+- Otherwise, choose a reasonably small limit to prevent too much work from being done at one time. Remember that tile requests are frequently canceled shortly after they are enqueued as the user navigates the view. A concurrency somewhere around 6-10 is probably reasonable.
+
+To register a channel at startup:
+
+```ts
+  await IModelApp.startup();
+  const channel = new TileRequestChannel("my-unique-channel-name", IModelApp.tileAdmin.rpcConcurrency);
+  IModelApp.tileAdmin.channels.add(channel);
+```
+
+If you store `channel` from the above snippet in a global variable, you can implement your `channel` property to return it directly; otherwise you must look it up:
+
+```ts
+  public get channel() {
+    const channel = IModelApp.tileAdmin.channels.get("my-unique-channel-name");
+    assert(undefined !== channel);
+    return channel;
+  }
+```
+
+### Authentication changes for Electron and Mobile apps
+
+For desktop and mobile applications, all authentication happens on the backend. The frontend process merely initiates the login process and waits for notification that it succeeds. Previously the steps required to set up the process were somewhat complicated.
+
+Now, to configure your electron or mobile application for authorization, pass the `authConfig` option to `ElectronApp.startup` or `IOSApp.startup` to specify your authorization configuration.
+
+Then, if you want a method that can be awaited for the user to sign in, use something like:
+
+```ts
+// returns `true` after successful login.
+async function signIn(): Promise<boolean> {
+  const auth = IModelApp.authorizationClient!;
+  if (auth.isAuthorized)
+    return true; // make sure not already signed in
+
+  return new Promise<boolean>((resolve, reject) => {
+    auth.onUserStateChanged.addOnce((token?: AccessToken) => resolve(token !== undefined)); // resolve Promise with `onUserStateChanged` event
+    auth.signIn().catch((err) => reject(err)); // initiate the sign in process (forwarded to the backend)
   });
+}
 ```
 
-To adjust the limit after startup, assign to [TileAdmin.gpuMemoryLimit]($frontend).
+### @bentley/imodeljs-quantity package
 
-This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThreshold` option.
+#### UnitProps property name change
+
+The interface [UnitProps]($quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.
+
+## Enhancements to exportGraphics
+
+[IModelDb.exportGraphics]($imodeljs-backend) and [IModelDb.exportPartGraphics]($imodeljs-backend) have new options that provide more control
+over the amount of detail in their output. See `decimationTol` and `minLineStyleComponentSize` in [ExportGraphicsOptions]($imodeljs-backend)
+for details.
+
+## Deprecation and removal of @bentley/forms-data-management-client
+
+The current @bentley/forms-data-management-client package is being deprecated and immediately removed from the source. While this is technically a breaking change outside of the major release cycle, no one is able to use this client due to the required OIDC scopes not being published.
+
+## @bentley/imodeljs-quantity package
+
+The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.

@@ -225,8 +225,9 @@ These keysins control the planar masking of reality models.
 
 ### Other key-ins
 
-* `fdt save view` - Copies to the clipboard a JSON representation of the view currently displayed in the active viewport.
-* `fdt apply view` - Accepts an unquoted JSON representation of a view, e.g., as obtained from `fdt save view`, and applies that view to the active viewport.
+* `fdt save view` - Copies to the clipboard a JSON representation of the view currently displayed in the active viewport. Accepts a single optional argument:
+  * `quote=1`: format the result so it can be directly parsed by `fdt apply view` as a single quoted string argument.
+* `fdt apply view` - Given a saved view as a JSON string (see `fdt save view`), applies it to the active view. Takes a single required argument: the JSON string, in quotes, with interior quotation marks escaped as `""`. Use the `quote=1` argument to `fdt save view` to enquote and escape the JSON.
 * `fdt apply viewid` - Accepts the Id of a persistent ViewDefinition in hexadecimal format and applies that view to the active viewport.
 * `fdt save rendering style` - Outputs selected aspects of the active viewport's display style as JSON. See `DisplayStyleSettings.toOverrides`. Each argument is of the format "option=value" where `value` is 0 for false or 1 for true. All arguments default to false.
   * `all`: include all settings.
@@ -284,7 +285,13 @@ These keysins control the planar masking of reality models.
   * "batched": Display only un-instanced (batched) geometry.
   * "all": Display all geometry.
 * `fdt aspect skew` - Change the aspect ratio skew of the active viewport. Accepts the floating point skew; defaults to 1.
-
+* `fdt subcat ovr` - Change the appearance overrides for one or more subcategories in the active viewport. All arguments except the list of Ids are optional.
+  * "ids=<comma separated list of subcategory Ids>"
+  * "priority=<integer>"
+  * "visible=<0|1>"
+  * "color=<decimal integer TBGR>" (see ColorDef)
+  * "weight=<integer>"
+  * "transparency=<float>" from 0 (fully opaque) to 1 (fully transparent)
 * `fdt layer dump` - Dump to the notification manager a JSON representation of the current plan projection settings for the selected viewport. Optional argument `copy` also copies the JSON to the clipboard.
 * `fdt layer set` - change plan projection settings for the selected viewport. The first argument is required and specifies the plan projection model(s) to be affected, either as `all` or as a comma-separated list of model Ids (e.g., `0x1c,0x9a`). Subsequent arguments are optional and are used to build a PlanProjectionSettings. Any arguments omitted will get their default values. Only the first character of each argument is significant; the name of the setting is separated from the value by an `=` sign:
   * `transparency=`: transparency in [0..1].

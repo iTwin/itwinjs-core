@@ -7,19 +7,13 @@
 import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
-import { DesktopAuthorizationClient } from '@bentley/imodeljs-backend';
-import { IModelAppOptions } from '@bentley/imodeljs-frontend';
-import { IModelHostConfiguration } from '@bentley/imodeljs-backend';
 import { IpcHandler } from '@bentley/imodeljs-backend';
+import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
+import { NativeAppOpts } from '@bentley/imodeljs-frontend';
+import { NativeHostOpts } from '@bentley/imodeljs-backend';
 import { PromiseReturnType } from '@bentley/imodeljs-frontend';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
-
-// @internal
-export class DesktopAuthorizationClientIpc {
-    static get desktopAuthorizationClient(): DesktopAuthorizationClient | undefined;
-    static initializeIpc(): void;
-    }
 
 // @beta
 export class ElectronApp {
@@ -30,10 +24,11 @@ export class ElectronApp {
     static get isValid(): boolean;
     // (undocumented)
     static shutdown(): Promise<void>;
-    static startup(opts?: {
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(opts?: ElectronAppOpts): Promise<void>;
 }
+
+// @beta (undocumented)
+export type ElectronAppOpts = NativeAppOpts;
 
 // @beta
 export class ElectronHost {
@@ -45,24 +40,26 @@ export class ElectronHost {
     static get electron(): typeof Electron;
     // (undocumented)
     static frontendURL: string;
+    static getWindowMaximizedSetting(windowName: string): boolean | undefined;
+    static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined;
     // (undocumented)
     static get ipcMain(): Electron.IpcMain;
     // (undocumented)
     static get isValid(): boolean;
     static get mainWindow(): BrowserWindow | undefined;
-    static openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
+    static openMainWindow(windowOptions?: ElectronHostWindowOptions): Promise<void>;
     // (undocumented)
     static rpcConfig: RpcConfiguration;
-    static startup(opts?: {
-        electronHost?: ElectronHostOptions;
-        iModelHost?: IModelHostConfiguration;
-    }): Promise<void>;
+    static startup(opts?: ElectronHostOpts): Promise<void>;
     // (undocumented)
     static webResourcesPath: string;
 }
 
 // @beta
 export interface ElectronHostOptions {
+    // (undocumented)
+    applicationName?: never;
+    authConfig?: NativeAppAuthorizationConfiguration;
     developmentServer?: boolean;
     frontendPort?: number;
     frontendURL?: string;
@@ -70,6 +67,30 @@ export interface ElectronHostOptions {
     ipcHandlers?: (typeof IpcHandler)[];
     rpcInterfaces?: RpcInterfaceDefinition[];
     webResourcesPath?: string;
+}
+
+// @beta (undocumented)
+export interface ElectronHostOpts extends NativeHostOpts {
+    // (undocumented)
+    electronHost?: ElectronHostOptions;
+}
+
+// @beta (undocumented)
+export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
+    // (undocumented)
+    storeWindowName?: string;
+}
+
+// @beta
+export interface WindowSizeAndPositionProps {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    width: number;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
 }
 
 

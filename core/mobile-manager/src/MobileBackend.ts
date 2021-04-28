@@ -8,6 +8,6 @@
 export * from "./backend/AndroidHost";
 export * from "./backend/iOSHost";
 export * from "./backend/MobileHost";
-export * from "./backend/AuthorizationBackend";
+export * from "./backend/MobileAuthorizationBackend";
 export * from "./common/MobileRpcManager";
 

@@ -9,9 +9,6 @@ import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 
-const testProjectName = "iModelJsIntegrationTest";
-const testIModelName = "ReadWriteTest";
-
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
   for await (const row of iModel.query(ecsql, bindings)) {
@@ -30,7 +27,7 @@ describe("ChangeSummary (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
 
     const options: IModelAppOptions = {
       authorizationClient,
@@ -42,8 +39,8 @@ describe("ChangeSummary (#integration)", () => {
 
     assert(IModelApp.authorizationClient);
 
-    testProjectId = await TestUtility.getTestProjectId(testProjectName);
-    testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+    testProjectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    testIModelId = await TestUtility.queryIModelIdbyName(testProjectId, TestUtility.testIModelNames.readWrite);
 
     iModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId);
   });
@@ -67,8 +64,7 @@ describe("ChangeSummary (#integration)", () => {
     assert.equal(changeSetRows[0].cnt, 0);
   }).timeout(99999);
 
-  // FIXME: This test has apparently been failing for a while now...
-  it.skip("Change cache file generation during change summary extraction", async () => {
+  it("Change cache file generation during change summary extraction", async () => {
     assert.exists(iModel);
     // for now, imodel must be open read/write for changesummary extraction
     await iModel.close();

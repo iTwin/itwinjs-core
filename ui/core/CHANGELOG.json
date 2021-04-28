@@ -2,6 +2,105 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.14.4",
+      "tag": "@bentley/ui-core_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@bentley/ui-core_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix z-index of statusbar overflow panel to show footer popups."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/ui-core_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/ui-core_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/ui-core_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SettingsManager and SettingsContainer for displaying app settings UI."
+          },
+          {
+            "comment": "fix height in number control."
+          },
+          {
+            "comment": "Fix for listbox not rerendering when selectedVaue prop is changed."
+          },
+          {
+            "comment": "Add option to show/hide settings category header text."
+          },
+          {
+            "comment": "Improved ui-components test coverage to 100%"
+          },
+          {
+            "comment": "Support for Focus into Tool Settings"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@bentley/ui-core_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Keep hideIconContainer prop from bleeding into div."
+          },
+          {
+            "comment": "Add right mouse click on TreeNode"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Floating widget opacity for UI 2.0. Slider formatMin, formatMax props."
+          },
+          {
+            "comment": "Support for conditionally disabling/hiding keyboard shortcuts"
+          },
+          {
+            "comment": "Add margin and padding top labeled-themed-select."
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/ui-core_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/ui-core_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:53 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/ui-core_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
@@ -24,6 +123,18 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@bentley/ui-core_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/ui-core_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
     },
     {
       "version": "2.11.0",

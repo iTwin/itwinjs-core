@@ -59,12 +59,12 @@ export type FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentField
 
 /** Is supplied field a properties field. */
 const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON | PropertiesField => {
-  return (field as any).properties;
+  return !!(field as any).properties;
 };
 
 /** Is supplied field a nested content field. */
 const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON | NestedContentField => {
-  return (field as any).nestedFields;
+  return !!(field as any).nestedFields;
 };
 
 /**
@@ -131,7 +131,6 @@ export class Field {
    */
   public get parent(): NestedContentField | undefined { return this._parent; }
 
-  /** @alpha */
   public clone() {
     const clone = new Field(
       this.category,
@@ -217,7 +216,7 @@ export class Field {
 
   /**
    * Get descriptor for this field.
-   * @beta
+   * @public
    */
   public getFieldDescriptor(): FieldDescriptor {
     return {
@@ -264,7 +263,6 @@ export class PropertiesField extends Field {
     this.properties = properties;
   }
 
-  /** @alpha */
   public clone() {
     const clone = new PropertiesField(
       this.category,
@@ -312,7 +310,7 @@ export class PropertiesField extends Field {
 
   /**
    * Get descriptor for this field.
-   * @beta
+   * @public
    */
   public getFieldDescriptor(): FieldDescriptor {
     const pathFromPropertyToSelectClass = new Array<RelatedClassInfo>();
@@ -386,7 +384,6 @@ export class NestedContentField extends Field {
     this.actualPrimaryClassIds = [];
   }
 
-  /** @alpha */
   public clone() {
     const clone = new NestedContentField(
       this.category,
@@ -486,7 +483,7 @@ export const getFieldByName = (fields: Field[], name: string, recurse?: boolean)
 
 /**
  * Types of different field descriptors.
- * @beta
+ * @public
  */
 export enum FieldDescriptorType {
   Name = "name",
@@ -495,7 +492,7 @@ export enum FieldDescriptorType {
 
 /**
  * Base for a field descriptor
- * @beta
+ * @public
  */
 export interface FieldDescriptorBase {
   type: FieldDescriptorType;
@@ -503,10 +500,10 @@ export interface FieldDescriptorBase {
 
 /**
  * A union of all possible field descriptor types
- * @beta
+ * @public
  */
 export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor;
-/** @beta */
+/** @public */
 export namespace FieldDescriptor { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is this a named field descriptor */
   export function isNamed(d: FieldDescriptor): d is NamedFieldDescriptor {
@@ -520,7 +517,7 @@ export namespace FieldDescriptor { // eslint-disable-line @typescript-eslint/no-
 
 /**
  * Field descriptor that identifies a content field by its unique name.
- * @beta
+ * @public
  */
 export interface NamedFieldDescriptor extends FieldDescriptorBase {
   type: FieldDescriptorType.Name;
@@ -530,7 +527,7 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
 /**
  * Field descriptor that identifies a properties field using a list of
  * properties that the field contains.
- * @beta
+ * @public
  */
 export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
   type: FieldDescriptorType.Properties;

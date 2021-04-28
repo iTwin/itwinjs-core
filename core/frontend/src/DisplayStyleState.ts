@@ -727,7 +727,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  /** The ViewFlags associated with this style.
+  /** Flags controlling various aspects of the display style.
+   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
    * @see [DisplayStyleSettings.viewFlags]($common)
    */
   public get viewFlags(): ViewFlags { return this.settings.viewFlags; }
@@ -738,7 +739,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public set backgroundColor(val: ColorDef) { this.settings.backgroundColor = val; }
 
   /** The color used to draw geometry in monochrome mode.
-   * @see [[ViewFlags.monochrome]] for enabling monochrome mode.
+   * @see [ViewFlags.monochrome]($common) for enabling monochrome mode.
    */
   public get monochromeColor(): ColorDef { return this.settings.monochromeColor; }
   public set monochromeColor(val: ColorDef) { this.settings.monochromeColor = val; }

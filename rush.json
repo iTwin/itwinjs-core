@@ -64,13 +64,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/forms-data-management-client",
-      "projectFolder": "clients/forms-data-management",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/frontend-authorization-client",
       "projectFolder": "clients/frontend-authorization",
       "reviewCategory": "frontend",
@@ -438,6 +431,27 @@
       "packageName": "@bentley/express-server",
       "projectFolder": "core/express-server",
       "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/ecschema-rpcinterface-common",
+      "projectFolder": "core/ecschema-rpc/common",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/ecschema-rpcinterface-impl",
+      "projectFolder": "core/ecschema-rpc/impl",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/ecschema-rpcinterface-tests",
+      "projectFolder": "full-stack-tests/ecschema-rpc-interface",
+      "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },

@@ -15,7 +15,7 @@ import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import {
   DialogItem, DialogLayoutDataProvider, DialogProperty, DialogPropertyItem, DialogPropertySyncItem,
   EnumerationChoice, InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus,
-  PropertyDescriptionHelper, PropertyEditorParamTypes, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
+  PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
 } from "@bentley/ui-abstract";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
 
@@ -191,6 +191,17 @@ export class ToolWithSettings extends PrimitiveTool {
   public coordinateProperty = new DialogProperty<string>(
     PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Coordinate")),
     "0.0, 0.0, 0.0", undefined);
+
+  // ------------- text based edit field ---------------
+  public numberProperty = new DialogProperty<number>(
+    PropertyDescriptionHelper.buildNumberEditorDescription("numberVal", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Number"),
+      {
+        type: PropertyEditorParamTypes.Range,
+        step: 2,
+        precision: 0,
+        minimum: 0,
+        maximum: 1000,
+      } as RangeEditorParams), 14.0 );
 
   // ------------- display station value as text  ---------------
   private _stationFormatterSpec?: FormatterSpec;
@@ -384,8 +395,9 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push(this.cityProperty.toDialogItem({ rowPriority: 10, columnIndex: 2 }));
     toolSettings.push(this.stateProperty.toDialogItem({ rowPriority: 10, columnIndex: 4 }));
     toolSettings.push(this.coordinateProperty.toDialogItem({ rowPriority: 15, columnIndex: 2 }));
-    toolSettings.push(this.stationProperty.toDialogItem({ rowPriority: 16, columnIndex: 2 }));
-    const lengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 20, columnIndex: 0 });
+    toolSettings.push(this.numberProperty.toDialogItem({ rowPriority: 16, columnIndex: 2 }));
+    toolSettings.push(this.stationProperty.toDialogItem({ rowPriority: 17, columnIndex: 2 }));
+    const lengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 18, columnIndex: 0 });
     toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 20, columnIndex: 2 }, lengthLock));
     toolSettings.push(this.surveyLengthProperty.toDialogItem({ rowPriority: 21, columnIndex: 2 }));
     toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 25, columnIndex: 2 }));
@@ -430,6 +442,9 @@ export class ToolWithSettings extends PrimitiveTool {
       this.syncLengthState();
     } else if (updatedValue.propertyName === this.lengthProperty.name) {
       this.lengthProperty.value = updatedValue.value.value as number;
+      this.showInfoFromUi(updatedValue);
+    } else if (updatedValue.propertyName === this.numberProperty.name) {
+      this.numberProperty.value = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
     } else if (updatedValue.propertyName === this.surveyLengthProperty.name) {
       this.surveyLengthProperty.value = updatedValue.value.value as number;

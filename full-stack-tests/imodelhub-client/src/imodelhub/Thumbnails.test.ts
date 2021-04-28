@@ -49,7 +49,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
   let projectId: string;
   let imodelId: GuidString;
   let versions: Version[];
-  const imodelHubClient: IModelClient = utils.getDefaultClient();
+  let imodelHubClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
@@ -61,6 +61,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     projectId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
     imodelId = await getIModelId(requestContext, utils.sharedimodelName, projectId);
+    imodelHubClient = utils.getDefaultClient();
 
     if (TestConfig.enableMocks) {
       versions = Array(3).fill(0).map(() => utils.generateVersion());

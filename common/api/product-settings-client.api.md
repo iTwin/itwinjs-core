@@ -33,6 +33,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     // (undocumented)
     getSharedSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsMapResult>;
     getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
+    // (undocumented)
     protected getUrlSearchKey(): string;
     // (undocumented)
     getUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;

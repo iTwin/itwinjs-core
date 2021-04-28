@@ -7,18 +7,17 @@
 // be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
 // will do the necessary `require("electron")`
 // IMPORTANT: Do not call or construct any of these imports. Otherwise, a require("electron") call will be emitted at top level.
-// Instead, access using `ElectronHost.electron.<type>` at point of use in the code.
+// Instead, use `ElectronHost.electron.<type>`
 import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
-
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
+import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
+import { IModelError, IpcListener, IpcSocketBackend, NativeAppAuthorizationConfiguration, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { IModelHostConfiguration, IpcHandler, IpcHost, NativeHost } from "@bentley/imodeljs-backend";
+import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
-// cSpell:ignore signin devserver webcontents copyfile
+// cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
 class ElectronIpc implements IpcSocketBackend {
   public addListener(channel: string, listener: IpcListener): RemoveFunction {
@@ -58,6 +57,29 @@ export interface ElectronHostOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** list of [IpcHandler]($common) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
+  /** Authorization configuration */
+  authConfig?: NativeAppAuthorizationConfiguration;
+  applicationName?: never; // this should be supplied in NativeHostOpts
+}
+
+/** @beta */
+export interface ElectronHostOpts extends NativeHostOpts {
+  electronHost?: ElectronHostOptions;
+}
+
+/** @beta */
+export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
+  storeWindowName?: string;
+}
+
+/** the size and position of a window as stored in the settings file.
+ * @beta
+ */
+export interface WindowSizeAndPositionProps {
+  width: number;
+  height: number;
+  x: number;
+  y: number;
 }
 
 /**
@@ -92,7 +114,6 @@ export class ElectronHost {
     let assetPath = requestedUrl.substr(this._electronFrontend.length);
     if (assetPath.length === 0)
       assetPath = "index.html";
-    assetPath = assetPath.replace(/(#|\?).*$/, "");
 
     // NEEDS_WORK: Remove this after migration to DesktopAuthorizationClient
     assetPath = assetPath.replace("signin-callback", "index.html");
@@ -106,22 +127,29 @@ export class ElectronHost {
       // eslint-disable-next-line no-console
       // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }
+    if (!assetPath.startsWith(this.webResourcesPath))
+      throw new Error(`Access to files outside installation directory (${this.webResourcesPath}) is prohibited`);
     return assetPath;
   }
 
-  private static _openWindow(options: BrowserWindowConstructorOptions = {}) {
+  private static _openWindow(options?: ElectronHostWindowOptions) {
     const opts: BrowserWindowConstructorOptions = {
+      ...options,
       autoHideMenuBar: true,
+      icon: this.appIconPath,
       webPreferences: {
+        ...options?.webPreferences,
+
+        // These web preference variables should not be overriden by the ElectronHostWindowOptions
         preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
-        nodeIntegration: false,
         experimentalFeatures: false,
-        enableRemoteModule: false,
+        nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
+        enableRemoteModule: false,
+        nodeIntegrationInWorker: false,
+        nodeIntegrationInSubFrames: false,
       },
-      icon: this.appIconPath,
-      ...options, // overrides everything above
     };
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);
@@ -129,18 +157,53 @@ export class ElectronHost {
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
 
-    // Setup handlers for IPC calls to support Authorization
-    DesktopAuthorizationClientIpc.initializeIpc();
+    /** Monitors and saves main window size, position and maximized state */
+    if (options?.storeWindowName) {
+      const mainWindow = this._mainWindow;
+      const name = options.storeWindowName;
+      const saveWindowPosition = () => {
+        const resolution = mainWindow.getSize();
+        const position = mainWindow.getPosition();
+        const pos: WindowSizeAndPositionProps = {
+          width: resolution[0],
+          height: resolution[1],
+          x: position[0],
+          y: position[1],
+        };
+        NativeHost.settingsStore.setData(`windowPos-${name}`, JSON.stringify(pos));
+      };
+      const saveMaximized = (maximized: boolean) => {
+        if (!maximized)
+          saveWindowPosition();
+        NativeHost.settingsStore.setData(`windowMaximized-${name}`, maximized);
+      };
+
+      mainWindow.on("resized", () => saveWindowPosition());
+      mainWindow.on("moved", () => saveWindowPosition());
+      mainWindow.on("maximize", () => saveMaximized(true));
+      mainWindow.on("unmaximize", () => saveMaximized(false));
+    }
   }
 
   /** The "main" BrowserWindow for this application. */
   public static get mainWindow() { return this._mainWindow; }
 
+  /** Gets window size and position for a window, by name, from settings file, if present */
+  public static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined {
+    const saved = NativeHost.settingsStore.getString(`windowPos-${windowName}`);
+    return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
+  }
+
+  /** Gets "window maximized" flag for a window, by name, from settings file if present */
+  public static getWindowMaximizedSetting(windowName: string): boolean | undefined {
+    return NativeHost.settingsStore.getBoolean(`windowMaximized-${windowName}`);
+  }
+
   /**
    * Open the main Window when the app is ready.
    * @param windowOptions Options for constructing the main BrowserWindow. See: https://electronjs.org/docs/api/browser-window#new-browserwindowoptions
    */
-  public static async openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
+  public static async openMainWindow(windowOptions?: ElectronHostWindowOptions): Promise<void> {
     const app = this.app;
     // quit the application when all windows are closed (unless we're running on MacOS)
     app.on("window-all-closed", () => {
@@ -177,6 +240,7 @@ export class ElectronHost {
 
     this._openWindow(windowOptions);
   }
+
   public static get isValid() { return this._ipc !== undefined; }
 
   /**
@@ -186,7 +250,7 @@ export class ElectronHost {
    * @param opts Options that control aspects of your backend.
    * @note This method must only be called from the backend of an Electron app (i.e. when [ProcessDetector.isElectronAppBackend]($bentley) is `true`).
    */
-  public static async startup(opts?: { electronHost?: ElectronHostOptions, iModelHost?: IModelHostConfiguration }) {
+  public static async startup(opts?: ElectronHostOpts) {
     if (!ProcessDetector.isElectronAppBackend)
       throw new Error("Not running under Electron");
 
@@ -205,21 +269,27 @@ export class ElectronHost {
       this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
       this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
     }
-    await NativeHost.startup({ ipcHost: { socket: this._ipc }, iModelHost: opts?.iModelHost });
+
+    opts = opts ?? {};
+    opts.ipcHost = opts.ipcHost ?? {};
+    opts.ipcHost.socket = this._ipc;
+    await NativeHost.startup(opts);
     if (IpcHost.isValid) {
       ElectronAppHandler.register();
-      opts?.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
+      opts.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
+    IModelHost.authorizationClient = new ElectronAuthorizationBackend(opts.electronHost?.authConfig);
   }
 }
 
 class ElectronAppHandler extends IpcHandler {
   public get channelName() { return "electron-safe"; }
   public async callElectron(member: string, method: string, ...args: any) {
-    const func = (ElectronHost.electron as any)[member][method];
+    const electronMember = (ElectronHost.electron as any)[member];
+    const func = electronMember[method];
     if (typeof func !== "function")
       throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member}`);
 
-    return func.call(...args);
+    return func.call(electronMember, ...args);
   }
 }

@@ -26,6 +26,13 @@ describe("Node", () => {
     });
   });
 
+  describe("toPartialJSON", () => {
+    it("serializes partial Node", () => {
+      const json = Node.toPartialJSON(testNode);
+      expect(json).to.deep.equal(testNodeJson);
+    });
+  });
+
   describe("fromJSON", () => {
     it("creates valid Node from JSON", () => {
       const node = Node.fromJSON(testNodeJson);
@@ -34,6 +41,13 @@ describe("Node", () => {
 
     it("creates valid Node from serialized JSON", () => {
       const node = Node.fromJSON(JSON.stringify(testNodeJson));
+      expect(node).to.deep.equal(testNode);
+    });
+  });
+
+  describe("fromPartialJSON", () => {
+    it("creates partial Node from serialized partial JSON", () => {
+      const node = Node.fromPartialJSON(testNodeJson);
       expect(node).to.deep.equal(testNode);
     });
   });

@@ -15,7 +15,7 @@ import {
 import { System } from "../System";
 import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
 import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
-import { decodeDepthRgb } from "./Decode";
+import { decodeDepthRgb, decodeUint24 } from "./Decode";
 import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
@@ -56,13 +56,17 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
 const computeInstanceFeatureIndex = `a_featureId`;
-function computeFeatureIndex(instanced: boolean): string {
-  return `g_featureIndex = ${instanced ? computeInstanceFeatureIndex : computeLUTFeatureIndex};`;
+function computeFeatureIndex(vertex: VertexShaderBuilder): string {
+  if (vertex.usesInstancedGeometry)
+    return `g_featureIndex = ${computeInstanceFeatureIndex};`;
+  else if (vertex.usesVertexTable)
+    return `g_featureIndex = ${computeLUTFeatureIndex};`;
+  else return "";
 }
-function getFeatureIndex(instanced: boolean): string {
+function getFeatureIndex(vertex: VertexShaderBuilder): string {
   return `
 float getFeatureIndex() {
-  ${computeFeatureIndex(instanced)};
+  ${computeFeatureIndex(vertex)}
   return decodeUInt24(g_featureIndex);
 }
 `;
@@ -125,9 +129,11 @@ float computeLineCode() {
 
 function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addGlobal("g_featureIndex", VariableType.Vec3);
-  vert.addFunction(getFeatureIndex(vert.usesInstancedGeometry));
 
-  if (!vert.usesInstancedGeometry)
+  vert.addFunction(decodeUint24);
+  vert.addFunction(getFeatureIndex(vert));
+
+  if (vert.usesVertexTable && !vert.usesInstancedGeometry)
     addFeatureAndMaterialLookup(vert);
 }
 
@@ -165,7 +171,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   if (!haveOverrides) {
     // For pick output we must compute g_featureIndex...
     if (FeatureMode.Pick === mode)
-      vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureIndex(vert.usesInstancedGeometry));
+      vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureIndex(vert));
 
     return true;
   }

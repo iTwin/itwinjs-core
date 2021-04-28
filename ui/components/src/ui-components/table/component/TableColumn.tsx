@@ -6,15 +6,15 @@
  * @module Table
  */
 
-// import * as React from "react";
-
 // Matches how react-data-grid is exported
 // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
 import ReactDataGrid = require("react-data-grid");
 
-import { DistinctValueCollection, FilterableTable } from "../columnfiltering/ColumnFiltering";
+import { DistinctValueCollection, FilterableColumn, FilterableTable } from "../columnfiltering/ColumnFiltering";
 import { FilterableColumnBase } from "../columnfiltering/FilterableColumnBase";
 import { ColumnDescription, TableDataProvider } from "../TableDataProvider";
+
+// cSpell:ignore columnfiltering
 
 /** ReactDataGrid.Column with additional properties
  * @public
@@ -22,6 +22,8 @@ import { ColumnDescription, TableDataProvider } from "../TableDataProvider";
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
   /** Indicates whether the display value for the cell is treated as an icon spec. */
   icon?: boolean;
+  /* Table column filtering info */
+  filterableColumn?: FilterableColumn;
 }
 
 /** Table Column used by the [[Table]] component

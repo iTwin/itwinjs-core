@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Views
  */
+
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
 import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
@@ -18,8 +19,7 @@ import { PlanarClipMaskState } from "./imodeljs-frontend";
 import { SpatialModelState } from "./ModelState";
 import { SpatialClassifiers } from "./SpatialClassifiers";
 import {
-  createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils,
-  TileTreeReference,
+  createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference,
 } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
@@ -72,7 +72,7 @@ export class ContextRealityModelState {
         orbitGtBlob: props.orbitGtBlob,
         name: props.name,
         classifiers,
-        displayStyle,
+        source: displayStyle,
       });
   }
 
@@ -97,32 +97,6 @@ export class ContextRealityModelState {
     };
   }
 
-  /** ###TODO this is ridiculously slow (like, 10s of seconds) and downloads megabytes of data to extract range and throw it all away.
-   * findAvailableRealityModels() already TAKES the project extents as a cartographic range to exclude so...
-   */
-  public async intersectsProjectExtents(): Promise<boolean> {
-    if (undefined === this.iModel.ecefLocation)
-      return false;
-
-    const accessToken = await getAccessToken();
-    if (!accessToken)
-      return false;
-
-    const client = new RealityModelTileClient(this.url, accessToken, this.iModel.contextId);
-    const json = await client.getRootDocument(this.url);
-    let tileTreeRange, tileTreeTransform;
-    if (json === undefined ||
-      undefined === json.root ||
-      undefined === (tileTreeRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)) ||
-      undefined === (tileTreeTransform = RealityModelTileUtils.transformFromJson(json.root.transform)))
-      return false;
-
-    const treeCartographicRange = new CartographicRange(tileTreeRange.range, tileTreeTransform);
-    const projectCartographicRange = new CartographicRange(this.iModel.projectExtents, this.iModel.ecefLocation.getTransform());
-
-    return treeCartographicRange.intersectsRange(projectCartographicRange);
-  }
-
   public matches(other: ContextRealityModelState): boolean {
     return this.matchesNameAndUrl(other.name, other.url);
   }
@@ -131,29 +105,44 @@ export class ContextRealityModelState {
     return this.name === name && this.url === url;
   }
 }
-/**
- * Returns a list of reality data associated to the given iTwin context
- * @param contextId id of associated iTwin context
- * @param modelCartographicRange optional cartographic range of the model that can limit the spatial range for the search
- * @returns a list of reality model properties associated with the project
- * @alpha
+
+/** Criteria used to query for reality data associated with an iTwin context.
+ * @see [[queryRealityData]].
+ * @public
  */
-export async function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
-  return findAvailableUnattachedRealityModels(contextId, undefined, modelCartographicRange);
+export interface RealityDataQueryCriteria {
+  /** The Id of the iTwin context. */
+  contextId: GuidString;
+  /** If supplied, only reality data overlapping this range will be included. */
+  range?: CartographicRange;
+  /** If supplied, reality data already referenced by a [[GeometricModelState]] within this iModel will be excluded. */
+  filterIModel?: IModelConnection;
 }
 
-/**
- * Returns a list of reality data associated to the given iTwin context - but filters out any reality sets that are directly attached to the iModel.
- * @param contextId id of associated iTwin context
- * @param iModel the iModel -- reality data sets attached to this model will be excluded from the returned list.
- * @param modelCartographicRange optional cartographic range of the model that can limit the spatial range for the search
- * @returns a list of reality model properties associated with the project
- * @alpha
+/** @deprecated Use queryRealityData
+ * @internal
+ */
+export async function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
+  return queryRealityData({ contextId, range: modelCartographicRange });
+}
+
+/** @deprecated Use queryRealityData
+ * @internal
  */
 export async function findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
+  return queryRealityData({ contextId, filterIModel: iModel, range: modelCartographicRange });
+}
+
+/** Query for reality data associated with an iTwin context.
+ * @param criteria Criteria by which to query.
+ * @returns Properties of reality data associated with the context, filtered according to the criteria.
+ * @public
+ */
+export async function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]> {
+  const contextId = criteria.contextId;
   const availableRealityModels: ContextRealityModelProps[] = [];
 
-  const accessToken: AccessToken | undefined = await getAccessToken();
+  const accessToken = await getAccessToken();
   if (!accessToken)
     return availableRealityModels;
 
@@ -163,8 +152,8 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
   const client = new RealityDataClient();
 
   let realityData: RealityData[];
-  if (modelCartographicRange) {
-    const iModelRange = modelCartographicRange.getLongitudeLatitudeBoundingBox();
+  if (criteria.range) {
+    const iModelRange = criteria.range.getLongitudeLatitudeBoundingBox();
     realityData = await client.getRealityDataInProjectOverlapping(requestContext, contextId, Angle.radiansToDegrees(iModelRange.low.x),
       Angle.radiansToDegrees(iModelRange.high.x),
       Angle.radiansToDegrees(iModelRange.low.y),
@@ -172,13 +161,14 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
   } else {
     realityData = await client.getRealityDataInProject(requestContext, contextId);
   }
+
   requestContext.enter();
 
   // Get set of URLs that are directly attached to the model.
   const modelRealityDataIds = new Set<string>();
-  if (iModel) {
+  if (criteria.filterIModel) {
     const query = { from: SpatialModelState.classFullName, wantPrivate: false };
-    const props = await iModel.models.queryProps(query);
+    const props = await criteria.filterIModel.models.queryProps(query);
     for (const prop of props)
       if (prop.jsonProperties !== undefined && prop.jsonProperties.tilesetUrl) {
         const realityDataId = client.getRealityDataIdFromUrl(prop.jsonProperties.tilesetUrl);
@@ -225,5 +215,6 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
         });
     }
   }
+
   return availableRealityModels;
 }

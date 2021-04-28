@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
@@ -12,17 +13,16 @@ import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
   DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor,
-  FieldDescriptorType, HierarchyCompareInfoJSON, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node,
-  NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError,
-  PresentationIpcEvents,
-  PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset,
-  RulesetVariable, UpdateInfo, VariableValueTypes,
+  FieldDescriptorType, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition,
+  LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationError, PresentationIpcEvents,
+  PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, UpdateInfo, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomBaseNodeKey, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeJSON,
   createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, createRandomTransientId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {
   buildPagedResponse, IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager,
@@ -30,7 +30,6 @@ import {
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
-import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { StateTracker } from "../presentation-frontend/StateTracker";
 
 describe("PresentationManager", () => {
@@ -165,14 +164,6 @@ describe("PresentationManager", () => {
       manager.dispose();
       rpcRequestsHandlerMock.verify((x) => x.dispose(), moq.Times.once());
     });
-
-    // it("stops listening to update events", async () => {
-    //   sinon.stub(IpcApp, "isValid").get(() => true);
-    //   const offSpy = sinon.stub();
-    //   const addListenerSpy = sinon.stub(IpcApp, "addListener").returns(offSpy);
-    //   using(PresentationManager.create(), (_) => { });
-    //   expect(offSpy).to.be.calledOnce;
-    // });
 
   });
 
@@ -618,35 +609,6 @@ describe("PresentationManager", () => {
 
   });
 
-  describe("loadHierarchy", () => {
-
-    it("calls loadHierarchy through proxy with default 'preload' priority", async () => {
-      const options: HierarchyRequestOptions<IModelConnection> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-      };
-      rpcRequestsHandlerMock.setup(async (x) => x.loadHierarchy({ ...prepareOptions(options), priority: RequestPriority.Preload }))
-        .returns(async () => { })
-        .verifiable();
-      await manager.loadHierarchy(options);
-      rpcRequestsHandlerMock.verifyAll();
-    });
-
-    it("calls loadHierarchy through proxy with specified priority", async () => {
-      const options: HierarchyRequestOptions<IModelConnection> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-        priority: 999,
-      };
-      rpcRequestsHandlerMock.setup(async (x) => x.loadHierarchy({ ...prepareOptions(options), priority: 999 }))
-        .returns(async () => { })
-        .verifiable();
-      await manager.loadHierarchy(options);
-      rpcRequestsHandlerMock.verifyAll();
-    });
-
-  });
-
   describe("getContentDescriptor", () => {
 
     it("[deprecated] requests descriptor from proxy", async () => {
@@ -1013,67 +975,77 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.verifyAll();
     });
 
-    it("handles case when partial request does not return items", async () => {
-      const keyset = new KeySet();
-      const descriptor = createRandomDescriptor();
-      const options: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-        paging: { start: 0, size: 5 },
-        descriptor: descriptor.createDescriptorOverrides(),
-        keys: keyset,
-      };
-      rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedContent(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: 0, size: 5 } })))
-        .returns(async () => ({ descriptor: descriptor.toJSON(), contentSet: { total: 1, items: [] } }))
-        .verifiable();
-      const loggerSpy = sinon.spy(Logger, "logError");
-      const actualResult = await manager.getContentAndSize(options);
-      expect(actualResult).to.deep.eq({
-        size: 0,
-        content: {
-          descriptor,
-          contentSet: [],
-        },
-      });
-      rpcRequestsHandlerMock.verifyAll();
-      expect(loggerSpy).to.be.calledOnce;
-    });
-
   });
 
   describe("[deprecated] getDistinctValues", () => {
 
     it("requests distinct values", async () => {
-      const keyset = new KeySet();
+      const keys = new KeySet();
       const descriptor = createRandomDescriptor();
       const fieldName = faker.random.word();
       const maximumValueCount = faker.random.number();
-      const result = [faker.random.word(), faker.random.word()];
-      const options: ContentRequestOptions<IModelConnection> = {
+      const fieldDescriptor: FieldDescriptor = {
+        type: FieldDescriptorType.Name,
+        fieldName,
+      };
+      const rpcHandlerResult = {
+        total: 1,
+        items: [{
+          displayValue: "aaa",
+          groupedRawValues: [faker.random.word(), faker.random.word()],
+        }, {
+          displayValue: null,
+          groupedRawValues: [faker.random.word()],
+        }],
+      };
+      const managerOptions: ContentRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
       };
+      const rpcHandlerOptions = {
+        ...prepareOptions(managerOptions),
+        descriptor: descriptor.createDescriptorOverrides(),
+        keys: keys.toJSON(),
+        fieldDescriptor,
+        paging: { start: 0, size: maximumValueCount },
+      };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getDistinctValues(prepareOptions(options),
-          moq.deepEquals(descriptor.createDescriptorOverrides()),
-          moq.deepEquals(keyset.toJSON()), fieldName, maximumValueCount))
-        .returns(async () => result)
+        .setup(async (x) => x.getPagedDistinctValues(rpcHandlerOptions))
+        .returns(async () => rpcHandlerResult)
         .verifiable();
-      const actualResult = await manager.getDistinctValues(options, descriptor, keyset, fieldName, maximumValueCount);
+      const actualResult = await manager.getDistinctValues(managerOptions, descriptor, keys, fieldName, maximumValueCount);
       rpcRequestsHandlerMock.verifyAll();
-      expect(actualResult).to.deep.eq(result);
+      expect(actualResult).to.deep.eq(["aaa", ""]);
     });
 
     it("passes 0 for maximumValueCount by default", async () => {
-      const options: ContentRequestOptions<IModelConnection> = {
+      const keys = new KeySet();
+      const descriptor = createRandomDescriptor();
+      const fieldName = faker.random.word();
+      const fieldDescriptor: FieldDescriptor = {
+        type: FieldDescriptorType.Name,
+        fieldName,
+      };
+      const rpcHandlerResult = {
+        total: 0,
+        items: [],
+      };
+      const managerOptions: ContentRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
       };
+      const rpcHandlerOptions = {
+        ...prepareOptions(managerOptions),
+        descriptor: descriptor.createDescriptorOverrides(),
+        keys: keys.toJSON(),
+        fieldDescriptor,
+        paging: { start: 0, size: 0 },
+      };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getDistinctValues(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAnyString(), 0))
+        .setup(async (x) => x.getPagedDistinctValues(rpcHandlerOptions))
+        .returns(async () => rpcHandlerResult)
         .verifiable();
-      await manager.getDistinctValues(options, createRandomDescriptor(), new KeySet(), "");
+      await manager.getDistinctValues(managerOptions, descriptor, keys, fieldName);
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -1253,7 +1225,7 @@ describe("PresentationManager", () => {
   describe("compareHierarchies", () => {
 
     it("returns empty result when neither ruleset nor variables changed", async () => {
-      const options: PresentationDataCompareOptions<IModelConnection, NodeKey> = {
+      const options: HierarchyCompareOptions<IModelConnection, NodeKey> = {
         imodel: testData.imodelMock.object,
         prev: {},
         rulesetOrId: "test",
@@ -1264,7 +1236,7 @@ describe("PresentationManager", () => {
     });
 
     it("returns empty result when comparison is canceled", async () => {
-      const options: PresentationDataCompareOptions<IModelConnection, NodeKey> = {
+      const options: HierarchyCompareOptions<IModelConnection, NodeKey> = {
         imodel: testData.imodelMock.object,
         prev: {
           rulesetOrId: "test1",
@@ -1281,7 +1253,7 @@ describe("PresentationManager", () => {
     });
 
     it("throws when request handler throws non-cancellation exception", async () => {
-      const options: PresentationDataCompareOptions<IModelConnection, NodeKey> = {
+      const options: HierarchyCompareOptions<IModelConnection, NodeKey> = {
         imodel: testData.imodelMock.object,
         prev: {
           rulesetVariables: [],
@@ -1297,7 +1269,7 @@ describe("PresentationManager", () => {
     });
 
     it("requests hierarchy comparison and returns result", async () => {
-      const options: PresentationDataCompareOptions<IModelConnection, NodeKey> = {
+      const options: HierarchyCompareOptions<IModelConnection, NodeKey> = {
         imodel: testData.imodelMock.object,
         prev: {
           rulesetOrId: "test1",
@@ -1326,7 +1298,7 @@ describe("PresentationManager", () => {
     });
 
     it("makes multiple requests until collects all results", async () => {
-      const options: PresentationDataCompareOptions<IModelConnection, NodeKey> = {
+      const options: HierarchyCompareOptions<IModelConnection, NodeKey> = {
         imodel: testData.imodelMock.object,
         prev: {
           rulesetOrId: "test1",
@@ -1371,7 +1343,7 @@ describe("PresentationManager", () => {
     });
 
     it("avoid infinitely requesting if continuation token returned with no changes", async () => {
-      const options: PresentationDataCompareOptions<IModelConnection, NodeKey> = {
+      const options: HierarchyCompareOptions<IModelConnection, NodeKey> = {
         imodel: testData.imodelMock.object,
         prev: {
           rulesetOrId: "test1",
@@ -1619,6 +1591,28 @@ describe("PresentationManager", () => {
       expect(getter.firstCall).to.be.calledWith({ start: 1, size: 0 });
       expect(getter.secondCall).to.be.calledWith({ start: 3, size: 0 });
       expect(result).to.deep.eq({ total: 5, items: [2, 3, 4, 5] });
+    });
+
+    it("logs a warning when page start index is larger than total number of items", async () => {
+      const loggerSpy = sinon.spy(Logger, "logWarning");
+      const getter = sinon.stub();
+      getter.resolves({ total: 5, items: [] });
+      const result = await buildPagedResponse({ start: 9 }, getter);
+      expect(getter).to.be.calledOnce;
+      expect(getter).to.be.calledWith({ start: 9, size: 0 });
+      expect(result).to.deep.eq({ total: 0, items: [] });
+      expect(loggerSpy).to.be.calledOnce;
+    });
+
+    it("logs an error when partial request returns no items", async () => {
+      const loggerSpy = sinon.spy(Logger, "logError");
+      const getter = sinon.stub();
+      getter.resolves({ total: 5, items: [] });
+      const result = await buildPagedResponse({ start: 1 }, getter);
+      expect(getter).to.be.calledOnce;
+      expect(getter).to.be.calledWith({ start: 1, size: 0 });
+      expect(result).to.deep.eq({ total: 0, items: [] });
+      expect(loggerSpy).to.be.calledOnce;
     });
 
   });

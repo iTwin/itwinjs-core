@@ -1,24 +1,26 @@
 sep=;
 Release Tag;API Item
+alpha;consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void
+alpha;createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]): (scopeLogs: DiagnosticsScopeLogs[]) => void
 internal;createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[]
-beta;FavoritePropertiesManager 
-beta;FavoritePropertiesOrderInfo
-beta;FavoritePropertiesScope
+public;FavoritePropertiesManager 
+public;FavoritePropertiesOrderInfo
+public;FavoritePropertiesScope
 internal;getFieldInfos: (field: Field) => Set
 public;getScopeId(scope: SelectionScope | string | undefined): string
 public;HiliteSet
 public;HiliteSetProvider
 public;HiliteSetProviderProps
-beta;IFavoritePropertiesStorage
+public;IFavoritePropertiesStorage
 alpha;IModelContentChangeEventArgs
 alpha;IModelHierarchyChangeEventArgs
 public;ISelectionProvider
 internal;NodeIdentifier
 public;Presentation
-beta;PresentationFrontendLoggerCategory
+public;PresentationFrontendLoggerCategory
 public;PresentationManager 
 public;PresentationManagerProps
-beta;PropertyFullName = string
+public;PropertyFullName = string
 public;RulesetManager
 public;RulesetVariablesManager
 public;SelectionChangeEvent 

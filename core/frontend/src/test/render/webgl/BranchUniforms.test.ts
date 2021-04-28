@@ -7,10 +7,11 @@ import { dispose } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { IModelApp } from "../../../IModelApp";
 import { ViewRect } from "../../../ViewRect";
-import { createEmptyRenderPlan, RenderPlan } from "../../../render/RenderPlan";
+import { createEmptyRenderPlan } from "../../../render/RenderPlan";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Branch } from "../../../render/webgl/Graphic";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
+import { ClipStack } from "../../../render/webgl/ClipStack";
 import { Target } from "../../../render/webgl/Target";
 
 function makeClipVolume(): ClipVolume {
@@ -23,13 +24,13 @@ function makeClipVolume(): ClipVolume {
 
 interface ClipInfo {
   clip?: ClipVolume;
-  showClip?: boolean; // undefined means inherit from top of branch stack
+  noViewClip?: boolean; // undefined means inherit from parent on branch stack
 }
 
 function makeBranch(info: ClipInfo): Branch {
   const branch = new GraphicBranch();
-  if (undefined !== info.showClip)
-    branch.viewFlagOverrides.setShowClipVolume(info.showClip);
+  if (undefined !== info.noViewClip)
+    branch.viewFlagOverrides.setShowClipVolume(!info.noViewClip);
 
   const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { clipVolume: info.clip });
   expect(graphic instanceof Branch).to.be.true;
@@ -41,41 +42,57 @@ function makeTarget(): Target {
   return IModelApp.renderSystem.createOffscreenTarget(rect) as Target;
 }
 
-function expectCurrentClipVolume(target: Target, volume: ClipVolume | undefined): void {
-  expect(target.currentClipVolume?.clipVector).to.equal(volume?.clipVector);
+function expectClipStack(target: Target, expected: Array<{ numRows: number }>): void {
+  const actual = target.uniforms.branch.clipStack.clips;
+  expect(actual.length).to.equal(expected.length);
+  expect(actual.length).least(1);
+
+  const actualView = actual[0];
+  const expectedView = expected[0];
+  expect(actualView.numRows).to.equal(expectedView.numRows);
+  expect(actualView instanceof ClipVolume).to.equal(expectedView instanceof ClipVolume);
+  if (actualView instanceof ClipVolume && expectedView instanceof ClipVolume)
+    expect(actualView.clipVector).to.equal(expectedView.clipVector);
+
+  for (let i = 1; i < actual.length; i++)
+    expect(actual[i]).to.equal(expected[i]);
 }
 
-// Inputs:
-//  The clip info for the RenderPlan;
-//  Clip info for any number of branches to be pushed;
-//  Expected active ClipVolume when each branch is on the top of the stack.
-function testClipVolumes(target: Target, viewClip: ClipVolume | undefined, enableViewClip: boolean, branches: ClipInfo[], expectedClips: Array<ClipVolume | undefined>): void {
-  const activeClipSettings = viewClip ? { clipVector: viewClip.clipVector } : undefined;
-  const plan: RenderPlan = { ...createEmptyRenderPlan(), activeClipSettings };
-  plan.viewFlags.clipVolume = enableViewClip;
+/** Inputs:
+ * - The view clip and ViewFlags.clipVolume
+ * - A stack of branches to be pushed
+ * - The expected stack of ClipVolumes on the ClipStack, including the view clip, after pushing all branches.
+ * - Whether we expect the view's clip to apply to the top branch.
+ */
+function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: boolean, expectedClips: Array<{ numRows: number }>): void {
+  const plan = { ...createEmptyRenderPlan(), clip: viewClip.clip?.clipVector };
+  plan.viewFlags.clipVolume = true !== viewClip.noViewClip;
+
+  const target = makeTarget();
   target.changeRenderPlan(plan);
-
-  expect(expectedClips.length).to.equal(branches.length + 1);
-
-  expectCurrentClipVolume(target, undefined);
   target.pushViewClip();
-  expect(target.uniforms.branch.length).to.equal(1);
-  expectCurrentClipVolume(target, expectedClips[0]);
 
-  for (let i = 0; i < branches.length; i++) {
-    const branch = makeBranch(branches[i]);
-    target.pushBranch(branch);
-    expectCurrentClipVolume(target, expectedClips[i + 1]);
-  }
+  const uniforms = target.uniforms.branch;
+  expect(uniforms.length).to.equal(1);
+  const prevClips = [ ...uniforms.clipStack.clips ];
+  const hadClip = uniforms.clipStack.hasClip;
+  const hadViewClip = uniforms.clipStack.hasViewClip;
 
-  for (let i = branches.length - 1; i >= 0; i--) {
+  for (const branch of branches)
+    target.pushBranch(makeBranch(branch));
+
+  expect(uniforms.clipStack.hasViewClip).to.equal(expectViewClip);
+  expect(uniforms.clipStack.hasClip).to.equal(expectViewClip || expectedClips.length > 1);
+  expectClipStack(target, expectedClips);
+
+  for (const _branch of branches)
     target.popBranch();
-    expectCurrentClipVolume(target, expectedClips[i]);
-  }
 
-  expect(target.uniforms.branch.length).to.equal(1);
-  target.popViewClip();
-  expectCurrentClipVolume(target, undefined);
+  expect(uniforms.clipStack.hasViewClip).to.equal(hadViewClip);
+  expect(uniforms.clipStack.hasClip).to.equal(hadClip);
+  expectClipStack(target, prevClips);
+
+  dispose(target);
 }
 
 describe("BranchUniforms", async () => {
@@ -88,67 +105,38 @@ describe("BranchUniforms", async () => {
   });
 
   it("should set view clip based on RenderPlan", () => {
-    const target = makeTarget();
-    testClipVolumes(target, undefined, true, [], [ undefined ]);
-    testClipVolumes(target, undefined, false, [], [ undefined ]);
+    testBranches({ }, [], false, [ ClipStack.emptyViewClip ]);
+    testBranches({ noViewClip: true }, [], false, [ ClipStack.emptyViewClip ]);
 
-    const viewClip = makeClipVolume();
-    testClipVolumes(target, viewClip, true, [], [ viewClip ]);
-    testClipVolumes(target, viewClip, false, [], [ undefined ]);
-
-    dispose(target);
-  });
-
-  it("should propagate view clip to branches based on RenderPlan", () => {
-    const target = makeTarget();
-    const viewClip = makeClipVolume();
-    testClipVolumes(target, viewClip, true, [ { } ], [ viewClip, viewClip ]);
-    testClipVolumes(target, viewClip, false, [ { } ], [ undefined, undefined ]);
-
-    dispose(target);
-  });
-
-  it("should propagate view clip to branches based on their view flags", () => {
-    const target = makeTarget();
-    const viewClip = makeClipVolume();
-    testClipVolumes(target, viewClip, true, [ { showClip: false } ], [ viewClip, undefined ]);
-    testClipVolumes(target, viewClip, true, [ { showClip: true } ], [ viewClip, viewClip ]);
-
-    dispose(target);
-  });
-
-  it("should replace previous clip if branch has its own clip", () => {
-    const target = makeTarget();
     const clip = makeClipVolume();
-    testClipVolumes(target, undefined, false, [ { clip, showClip: true } ], [ undefined, clip ]);
-    testClipVolumes(target, undefined, true, [ { clip, showClip: true } ], [ undefined, clip ]);
-
-    const viewClip = makeClipVolume();
-    testClipVolumes(target, viewClip, true, [ { clip, showClip: true } ], [ viewClip, clip ]);
-    testClipVolumes(target, viewClip, false, [ { clip, showClip: true } ], [ undefined, clip ]);
-
-    dispose(target);
+    testBranches({ clip }, [], true, [ clip ]);
+    testBranches({ clip, noViewClip: true }, [], false, [ clip ]);
   });
 
-  it("should turn off clip if branch has its own clip but its view flags disable clipping", () => {
-    const target = makeTarget();
+  it("should propagate view clip to branches based on view flags", () => {
     const clip = makeClipVolume();
-    testClipVolumes(target, undefined, false, [ { clip, showClip: false } ], [ undefined, undefined ]);
-    testClipVolumes(target, undefined, true, [ { clip, showClip: false } ], [ undefined, undefined ]);
-
-    const viewClip = makeClipVolume();
-    testClipVolumes(target, viewClip, true, [ { clip, showClip: false } ], [ viewClip, undefined ]);
-    testClipVolumes(target, viewClip, false, [ { clip, showClip: false } ], [ undefined, undefined ]);
-
-    dispose(target);
+    testBranches({ clip }, [{}], true, [clip]);
+    testBranches({ clip, noViewClip: true }, [{}], false, [clip]);
+    testBranches({ clip }, [{ noViewClip: true }], false, [clip]);
+    testBranches({ clip }, [{ noViewClip: true }, { noViewClip: false }], true, [clip]);
+    testBranches({ clip }, [{ noViewClip: false }, {noViewClip: true }], false, [clip]);
   });
 
-  it("should apply grandparent clip only if parent view flags do not turn clip off", () => {
-    const target = makeTarget();
+  it("should apply branch clips regardless of view flags", () => {
     const viewClip = makeClipVolume();
-    testClipVolumes(target, viewClip, true, [ { showClip: true }, { showClip: true } ], [ viewClip, viewClip, viewClip ]);
-    testClipVolumes(target, viewClip, true, [ { showClip: false }, { showClip: true } ], [ viewClip, undefined, undefined ]);
+    const branchClip = makeClipVolume();
+    testBranches({ clip: viewClip }, [{ clip: branchClip }], true, [viewClip, branchClip]);
+    testBranches({ clip: viewClip, noViewClip: true }, [{ clip: branchClip }], false, [viewClip, branchClip]);
+    testBranches({ clip: viewClip }, [{ clip: branchClip, noViewClip: true }], false, [viewClip, branchClip]);
+    testBranches({ clip: viewClip }, [{ clip: branchClip, noViewClip: true }, { }], false, [viewClip, branchClip]);
+    testBranches({ clip: viewClip }, [{ clip: branchClip, noViewClip: true }, { noViewClip: true }], false, [viewClip, branchClip]);
+  });
 
-    dispose(target);
+  it("should nest clip volumes", () => {
+    const viewClip = makeClipVolume();
+    const outerClip = makeClipVolume();
+    const innerClip = makeClipVolume();
+
+    testBranches({ clip: viewClip }, [{ clip: outerClip }, { clip: innerClip }], true, [viewClip, outerClip, innerClip]);
   });
 });

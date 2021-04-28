@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbOpcode, Id64String } from "@bentley/bentleyjs-core";
+import { assert } from "chai";
+import { DbOpcode, GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
@@ -14,11 +13,9 @@ import { InformationPartitionElement, Subject } from "../../Element";
 import { BriefcaseDb, IModelDb } from "../../IModelDb";
 import { AuthorizedBackendRequestContext, ChannelRootAspect, IModelHost } from "../../imodeljs-backend";
 import { DictionaryModel } from "../../Model";
-import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
+import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
-const assert = chai.assert;
-chai.use(chaiAsPromised);
 function createAndInsertSpatialCategory(testIModel: IModelDb, name: string): Id64String {
   const dictionary: DictionaryModel = testIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, name);
@@ -26,8 +23,7 @@ function createAndInsertSpatialCategory(testIModel: IModelDb, name: string): Id6
 }
 
 describe("Channel Control (#integration)", () => {
-  let readWriteTestIModel: TestIModelInfo;
-  let readWriteTestIModelName: string;
+  let readWriteTestIModelId: GuidString;
   let testProjectId: string;
   let managerRequestContext: AuthorizedBackendRequestContext;
   let m2: Id64String;
@@ -40,27 +36,19 @@ describe("Channel Control (#integration)", () => {
 
   before(async () => {
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    testProjectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
-    readWriteTestIModelName = HubUtility.generateUniqueName("ChannelControlIModel");
-    const existingIModel = await HubUtility.queryIModelByName(managerRequestContext, testProjectId, readWriteTestIModelName);
-    if (existingIModel !== undefined && existingIModel.id !== undefined)
-      await IModelHost.iModelClient.iModels.delete(managerRequestContext, testProjectId, existingIModel.id);
-    await IModelHost.iModelClient.iModels.create(managerRequestContext, testProjectId, readWriteTestIModelName, { description: "Channel Control Test" });
-    readWriteTestIModel = await IModelTestUtils.getTestModelInfo(managerRequestContext, testProjectId, readWriteTestIModelName);
-
-    // Purge briefcases that are close to reaching the acquire limit
-    await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, readWriteTestIModel.id, () => { });
+    testProjectId = await HubUtility.getTestContextId(managerRequestContext);
+    readWriteTestIModelId = await HubUtility.recreateIModel(managerRequestContext, testProjectId, HubUtility.generateUniqueName("ChannelControlIModel"));
   });
 
   after(async () => {
     try {
-      await HubUtility.deleteIModel(managerRequestContext, "iModelJsIntegrationTest", readWriteTestIModelName);
+      await IModelHost.iModelClient.iModels.delete(managerRequestContext, testProjectId, readWriteTestIModelId);
     } catch (err) {
     }
   });
 
   it("should create channels (#integration)", async () => {
-    const props = await BriefcaseManager.downloadBriefcase(managerRequestContext, { contextId: testProjectId, iModelId: readWriteTestIModel.id });
+    const props = await BriefcaseManager.downloadBriefcase(managerRequestContext, { contextId: testProjectId, iModelId: readWriteTestIModelId });
     managerRequestContext.enter();
     const imodel1 = await BriefcaseDb.open(managerRequestContext, { fileName: props.fileName });
     managerRequestContext.enter();

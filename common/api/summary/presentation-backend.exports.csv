@@ -1,6 +1,5 @@
 sep=;
 Release Tag;API Item
-alpha;BackendDiagnosticsOptions 
 beta;DiskHierarchyCacheConfig 
 beta;DuplicateRulesetHandlingStrategy
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
@@ -10,16 +9,17 @@ beta;HierarchyCacheMode
 beta;HybridCacheConfig 
 beta;MemoryHierarchyCacheConfig 
 public;Presentation
-beta;PresentationBackendLoggerCategory
-beta;PresentationBackendNativeLoggerCategory
+public;PresentationBackendLoggerCategory
+public;PresentationBackendNativeLoggerCategory
 public;PresentationManager
 public;PresentationManagerMode
 public;PresentationManagerProps
 public;PresentationProps = PresentationPropsDeprecated | PresentationPropsNew
 public;PresentationPropsDeprecated 
+deprecated;PresentationPropsDeprecated 
 public;PresentationPropsNew 
 beta;RulesetEmbedder
 public;RulesetEmbedderProps
 public;RulesetManager
 public;RulesetVariablesManager
-beta;WithClientRequestContext
+public;WithClientRequestContext
