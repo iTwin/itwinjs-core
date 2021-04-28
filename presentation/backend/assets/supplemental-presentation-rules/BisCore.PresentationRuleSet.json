@@ -694,45 +694,35 @@
       "ruleType": "ContentModifier",
       "class": {
         "schemaName": "BisCore",
-        "className": "PhysicalType"
+        "className": "TypeDefinitionElement"
       },
       "propertyOverrides": [
         {
-          "name": "*",
+          "name": "IsPrivate",
           "isDisplayed": false
         },
         {
-          "name": "CodeValue",
-          "isDisplayed": true,
-          "doNotHideOtherPropertiesOnDisplayOverride": true
-        },
-        {
-          "name": "UserLabel",
-          "isDisplayed": true,
-          "doNotHideOtherPropertiesOnDisplayOverride": true
+          "name": "Recipe",
+          "isDisplayed": false
         }
       ]
     },
     {
       "ruleType": "ContentModifier",
+      "requiredSchemas": [
+        {
+          "name": "BisCore",
+          "minVersion": "1.0.11"
+        }
+      ],
       "class": {
         "schemaName": "BisCore",
-        "className": "SpatialLocationType"
+        "className": "PhysicalType"
       },
       "propertyOverrides": [
         {
-          "name": "*",
-          "isDisplayed": false
-        },
-        {
-          "name": "CodeValue",
-          "isDisplayed": true,
-          "doNotHideOtherPropertiesOnDisplayOverride": true
-        },
-        {
-          "name": "UserLabel",
-          "isDisplayed": true,
-          "doNotHideOtherPropertiesOnDisplayOverride": true
+          "name": "PhysicalMaterial",
+          "labelOverride": "Physical Material"
         }
       ]
     },
