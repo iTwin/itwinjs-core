@@ -157,7 +157,6 @@ import { Loop } from '@bentley/geometry-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { Map4d } from '@bentley/geometry-core';
-import { MapImagerySettings } from '@bentley/imodeljs-common';
 import { MapLayerKey } from '@bentley/imodeljs-common';
 import { MapLayerProps } from '@bentley/imodeljs-common';
 import { MapLayerSettings } from '@bentley/imodeljs-common';
@@ -1371,7 +1370,6 @@ export class BackgroundMapGeometry {
 
 // @internal (undocumented)
 export class BackgroundMapLocation {
-    constructor(iModel: IModelConnection);
     // (undocumented)
     get geodeticToSeaLevel(): number;
     // (undocumented)
@@ -2453,10 +2451,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal
     moveMapLayerToTop(index: number, isOverlay: boolean): void;
     get name(): string;
-    // @internal
-    readonly onMapImageryChanged: BeEvent<(mapImagery: MapImagerySettings) => void>;
-    // @internal
-    readonly onMapSettingsChanged: BeEvent<(mapSettings: BackgroundMapSettings) => void>;
     // @internal (undocumented)
     get overlayMapLayers(): MapLayerSettings[];
     // @beta
@@ -5668,6 +5662,8 @@ export class MapTileTreeReference extends TileTreeReference {
     isOverlay: boolean;
     // (undocumented)
     layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined;
+    // (undocumented)
+    get layerSettings(): MapLayerSettings[];
     // (undocumented)
     get planarclipMaskPriority(): number;
     // (undocumented)
@@ -12045,6 +12041,7 @@ export abstract class Viewport implements IDisposable {
     set antialiasSamples(numSamples: number);
     // @internal
     applyViewState(val: ViewState): void;
+    // @internal
     get areAllTileTreesLoaded(): boolean;
     // @beta
     attachRealityModel(props: ContextRealityModelProps): void;
@@ -12121,7 +12118,7 @@ export abstract class Viewport implements IDisposable {
     flashIntensity: number;
     // @internal
     flashUpdateTime?: BeTimePoint;
-    // (undocumented)
+    // @internal (undocumented)
     forEachMapTreeRef(func: (ref: TileTreeReference) => void): void;
     // @alpha (undocumented)
     forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
