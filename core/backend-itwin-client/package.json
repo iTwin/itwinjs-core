@@ -71,7 +71,6 @@
     "@types/js-base64": "^2.3.1",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/mocha": "^5.2.5",
-    "@types/nock": "^11.1.0",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
     "@types/sinon": "^9.0.0",
