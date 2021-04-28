@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "comment": "Fix call to test on viewport if tiles are loaded (map tiles on viewport now)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "rbbentley@users.noreply.github.com"
+}
