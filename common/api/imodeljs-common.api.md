@@ -2857,8 +2857,8 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 // @public
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
-    // (undocumented)
     geom?: GeometryStreamProps;
+    placement?: PlacementProps;
 }
 
 // @public
@@ -4078,7 +4078,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
+    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<string>;
     pushChanges: (key: string, description: string) => Promise<string>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
@@ -4203,6 +4203,12 @@ export abstract class IpcWebSocketTransport {
 
 // @internal
 export function isKnownTileFormat(format: number): boolean;
+
+// @public
+export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps;
+
+// @public
+export function isPlacement3dProps(props: PlacementProps): props is Placement3dProps;
 
 // @public
 export function isPowerOfTwo(num: number): boolean;
@@ -5119,6 +5125,9 @@ export interface PhysicalTypeProps extends TypeDefinitionElementProps {
 }
 
 // @public
+export type Placement = Placement2d | Placement3d;
+
+// @public
 export class Placement2d implements Placement2dProps {
     constructor(origin: Point2d, angle: Angle, bbox: ElementAlignedBox2d);
     // (undocumented)
@@ -5128,6 +5137,7 @@ export class Placement2d implements Placement2dProps {
     calculateRange(): AxisAlignedBox3d;
     static fromJSON(json?: Placement2dProps): Placement2d;
     getWorldCorners(out?: Frustum): Frustum;
+    get is3d(): boolean;
     get isValid(): boolean;
     multiplyTransform(other: Transform): void;
     // (undocumented)
@@ -5157,6 +5167,7 @@ export class Placement3d implements Placement3dProps {
     calculateRange(): AxisAlignedBox3d;
     static fromJSON(json?: Placement3dProps): Placement3d;
     getWorldCorners(out?: Frustum): Frustum;
+    get is3d(): boolean;
     get isValid(): boolean;
     multiplyTransform(other: Transform): void;
     // (undocumented)

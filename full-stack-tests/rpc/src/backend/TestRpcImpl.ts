@@ -7,7 +7,7 @@ import {
   IModelRpcProps, NoContentError, RpcInterface, RpcInvocation, RpcManager, RpcOperationsProfile, RpcPendingResponse, RpcRequest,
 } from "@bentley/imodeljs-common";
 import {
-  AttachedInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3,
+  AttachedInterface, MobileTestInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3,
   TokenValues, WebRoutingInterface, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 
@@ -243,9 +243,22 @@ export class WebRoutingInterfaceImpl extends RpcInterface implements WebRoutingI
   }
 }
 
+export class MobileTestInterfaceImpl extends RpcInterface implements MobileTestInterface {
+  public static register() {
+    RpcManager.registerImpl(MobileTestInterface, MobileTestInterfaceImpl);
+  }
+
+  public async multipart(a: number, b: Uint8Array): Promise<number> {
+    let s = a;
+    b.forEach((v) => s += v);
+    return s;
+  }
+}
+
 TestRpcImpl.register();
 TestRpcImpl3.register();
 TestZeroMajorRpcImpl.register();
 RpcTransportTestImpl.register();
 MultipleClientsImpl.register();
 WebRoutingInterfaceImpl.register();
+MobileTestInterfaceImpl.register();

@@ -269,7 +269,7 @@ export function stubRaf() {
 
   before(() => {
     window.requestAnimationFrame = (cb: FrameRequestCallback) => {
-      return window.setTimeout(cb, 1);
+      return window.setTimeout(cb, 0);
     };
     window.cancelAnimationFrame = (handle: number) => {
       window.clearTimeout(handle);

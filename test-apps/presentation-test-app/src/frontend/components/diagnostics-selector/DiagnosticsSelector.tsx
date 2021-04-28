@@ -31,6 +31,12 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
     },
   }), [shouldMeasurePerformance, editorSeverity, devSeverity]);
 
+  React.useEffect(() => {
+    onDiagnosticsOptionsChanged(result);
+    // note: intentionally empty dependency list - we only want `onDiagnosticsOptionsChanged` to be called on first render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [position, setPosition] = React.useState<PointProps>();
   const onClose = React.useCallback(() => {
     setPosition(undefined);
