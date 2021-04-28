@@ -119,11 +119,7 @@ export class ElectronHost {
     let assetPath = requestedUrl.substr(this._electronFrontend.length);
     if (assetPath.length === 0)
       assetPath = "index.html";
-
-    // NEEDS_WORK: Remove this after migration to DesktopAuthorizationClient
-    assetPath = assetPath.replace("signin-callback", "index.html");
     assetPath = path.normalize(`${this.webResourcesPath}/${assetPath}`);
-
     // File protocols don't follow symlinks, so we need to resolve this to a real path.
     // However, if the file doesn't exist, it's fine to return an invalid path here - the request will just fail with net::ERR_FILE_NOT_FOUND
     try {
