@@ -2,20 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import "./RulesetSelector.css";
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { Select } from "@bentley/ui-core";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
 
 export interface RulesetSelectorProps {
-  onRulesetSelected?: (rulesetId?: string) => void;
+  onRulesetSelected: (rulesetId?: string) => void;
+  activeRulesetId?: string;
 }
 export interface RulesetSelectorState {
   availableRulesets?: string[];
-  activeRulesetId?: string;
 }
-export default class RulesetSelector extends React.Component<RulesetSelectorProps, RulesetSelectorState> {
+export class RulesetSelector extends React.Component<RulesetSelectorProps, RulesetSelectorState> {
   constructor(props: RulesetSelectorProps) {
     super(props);
     this.state = {};
@@ -26,16 +25,11 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
   }
   private async initAvailableRulesets() {
     const rulesetIds = await MyAppFrontend.getAvailableRulesets();
-    const activeRulesetId = rulesetIds.length > 0 ? rulesetIds[0] : undefined;
-    this.setState({ availableRulesets: rulesetIds, activeRulesetId });
-  }
-  public componentDidUpdate(_prevProps: RulesetSelectorProps, prevState: RulesetSelectorState) {
-    if (this.props.onRulesetSelected && this.state.activeRulesetId !== prevState.activeRulesetId)
-      this.props.onRulesetSelected(this.state.activeRulesetId);
+    this.setState({ availableRulesets: rulesetIds });
   }
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onSelectedRulesetIdChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    this.setState({ activeRulesetId: e.target.value });
+    this.props.onRulesetSelected(e.target.value);
   };
   public render() {
     if (!this.state.availableRulesets)
@@ -44,13 +38,12 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
       return (<div className="RulesetSelector">{IModelApp.i18n.translate("Sample:controls.notifications.no-available-rulesets")}</div>);
     return (
       <div className="RulesetSelector">
-        {IModelApp.i18n.translate("Sample:controls.notifications.select-ruleset")}:
-        {/* eslint-disable-next-line jsx-a11y/no-onchange */}
-        <select onChange={this.onSelectedRulesetIdChanged}>
-          {this.state.availableRulesets.map((rulesetId: string) => (
-            <option value={rulesetId} key={rulesetId}>{rulesetId}</option>
-          ))}
-        </select>
+        <Select
+          options={this.state.availableRulesets}
+          defaultValue={this.props.activeRulesetId}
+          placeholder={IModelApp.i18n.translate("Sample:controls.notifications.select-ruleset")}
+          onChange={this.onSelectedRulesetIdChanged}
+        />
       </div>
     );
   }

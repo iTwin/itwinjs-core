@@ -14,31 +14,36 @@ import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleTable = tableWithUnifiedSelection(Table);
 
-export interface Props {
+export interface GridWidgetProps {
   imodel: IModelConnection;
-  rulesetId: string;
+  rulesetId?: string;
 }
-
-export interface State {
-  dataProvider: PresentationTableDataProvider;
-}
-
-export default function GridWidget(props: Props) {
-  const { imodel, rulesetId } = props;
+export function GridWidget(props: GridWidgetProps) {
   const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
-
-  const dataProvider = useDisposable(React.useCallback(
-    () => new PresentationTableDataProvider({ imodel, ruleset: rulesetId, ...diagnosticsOptions }),
-    [imodel, rulesetId, diagnosticsOptions],
-  ));
-
   return (
     <div className="gridwidget">
       <h3>{IModelApp.i18n.translate("Sample:controls.grid")}</h3>
       <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
       <div className="gridwidget-content">
-        <SampleTable dataProvider={dataProvider} />
+        {props.rulesetId
+          ? <Grid imodel={props.imodel} rulesetId={props.rulesetId} diagnostics={diagnosticsOptions} />
+          : null
+        }
       </div>
     </div>
   );
+}
+
+interface GridProps {
+  imodel: IModelConnection;
+  rulesetId: string;
+  diagnostics: DiagnosticsProps;
+}
+function Grid(props: GridProps) {
+  const { imodel, rulesetId, diagnostics } = props;
+  const dataProvider = useDisposable(React.useCallback(
+    () => new PresentationTableDataProvider({ imodel, ruleset: rulesetId, ...diagnostics }),
+    [imodel, rulesetId, diagnostics],
+  ));
+  return (<SampleTable dataProvider={dataProvider} />);
 }

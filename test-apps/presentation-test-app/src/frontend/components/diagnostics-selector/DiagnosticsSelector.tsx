@@ -31,6 +31,10 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
     },
   }), [shouldMeasurePerformance, editorSeverity, devSeverity]);
 
+  React.useEffect(() => {
+    onDiagnosticsOptionsChanged(result);
+  });
+
   const [position, setPosition] = React.useState<PointProps>();
   const onClose = React.useCallback(() => {
     setPosition(undefined);
