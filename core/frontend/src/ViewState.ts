@@ -256,8 +256,8 @@ export abstract class ViewState extends ElementState {
       await subcategories.promise;
   }
 
-  /** Returns true if all [[TileTree]]s required by this view have been loaded. */
-  public get areAllTileTreesLoaded(): boolean {
+  /** Returns true if all [[TileTree]]s required by this view have been loaded.  Note that the map tile trees associated to the viewport rather than the view. */
+  public get areAllViewTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeRef((ref) => {
       allLoaded = allLoaded && ref.isLoadingComplete;

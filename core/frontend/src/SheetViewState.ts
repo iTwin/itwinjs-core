@@ -447,8 +447,8 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal override */
-  public get areAllTileTreesLoaded(): boolean {
-    return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
+  public get areAllViewTileTreesLoaded(): boolean {
+    return super.areAllViewTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
   }
 
   /** Create a sheet border decoration graphic. */
@@ -771,7 +771,7 @@ class OrthographicAttachment {
   }
 
   public get areAllTileTreesLoaded(): boolean {
-    return this.view.areAllTileTreesLoaded;
+    return this.view.areAllViewTileTreesLoaded;
   }
 
   public collectStatistics(_stats: RenderMemory.Statistics): void {
@@ -806,7 +806,7 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
       super.renderFrame();
 
       if (undefined !== this._sceneContext) {
-        this._isSceneReady = !this._sceneContext.hasMissingTiles && this.view.areAllTileTreesLoaded;
+        this._isSceneReady = !this._sceneContext.hasMissingTiles && this.view.areAllViewTileTreesLoaded;
         if (this._isSceneReady)
           this._attachment.produceGraphics(this._sceneContext);
 
@@ -869,7 +869,7 @@ class RasterAttachment {
   }
 
   public get areAllTileTreesLoaded() {
-    return this._viewport?.view.areAllTileTreesLoaded ?? true;
+    return this._viewport?.areAllTileTreesLoaded ?? true;
   }
 
   public addToScene(context: SceneContext): void {

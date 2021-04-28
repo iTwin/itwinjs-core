@@ -41,6 +41,9 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
       this.backgroundDrapeMap.setBaseLayerSettings(mapBase);
       this.backgroundMap.clearLayers();
       this.backgroundDrapeMap.clearLayers();
+      this.backgroundMap.settings = settings;
+      this.overlayMap.settings = settings;
+      this.backgroundDrapeMap.settings = settings;
     }));
     removals.push(displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
       this.backgroundMap.setBaseLayerSettings(imagery.backgroundBase);
@@ -48,10 +51,6 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
       this.backgroundDrapeMap.setBaseLayerSettings(mapImagery.backgroundBase);
       this.backgroundDrapeMap.setLayerSettings(mapImagery.backgroundLayers);
       this.overlayMap.setLayerSettings(imagery.overlayLayers);
-    }));
-    removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings: BackgroundMapSettings) => {
-      this.backgroundMap.settings = this.overlayMap.settings = settings;
-      this.backgroundDrapeMap.settings = mapSettings;
     }));
   }
 

@@ -44,7 +44,7 @@ class TileLoadTimer {
 
   private onRender(): void {
     // ###TODO: May be intermediate frames during which children props have been asynchronously requested but no outstanding tile requests.
-    if (!this._vp.view.areAllTileTreesLoaded || 0 < this._vp.numRequestedTiles)
+    if (!this._vp.areAllTileTreesLoaded || 0 < this._vp.numRequestedTiles)
       return;
 
     this._stopwatch.stop();
