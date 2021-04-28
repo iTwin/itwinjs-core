@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { BackendRequestContext, IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
-import { IModel, IModelReadRpcInterface, IModelTileRpcInterface, InternetConnectivityStatus, NativeAppAuthorizationConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
+import { IModelReadRpcInterface, IModelTileRpcInterface, InternetConnectivityStatus, NativeAppAuthorizationConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";

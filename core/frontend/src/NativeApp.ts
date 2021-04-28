@@ -182,11 +182,12 @@ export class NativeApp {
       await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
 
-    const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig);
+    const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig); // eslint-disable-line deprecation/deprecation
     IModelApp.authorizationClient = auth;
     const connStatus = await NativeApp.checkInternetConnectivity();
-    if (opts?.nativeApp?.authConfig && true !== opts?.nativeApp?.noInitializeAuthClient && connStatus === InternetConnectivityStatus.Online)
+    if (opts?.nativeApp?.authConfig && true !== opts?.nativeApp?.noInitializeAuthClient && connStatus === InternetConnectivityStatus.Online) { // eslint-disable-line deprecation/deprecation
       await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
+    }
   }
 
   public static async shutdown() {

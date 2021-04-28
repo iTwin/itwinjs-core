@@ -11,8 +11,8 @@
 // cSpell:ignore openid appauth signin Pkce Signout
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger, SessionProps } from "@bentley/bentleyjs-core";
-import { IModelHost, NativeAppAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { IModelHost, NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
 import {
@@ -52,12 +52,12 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    */
   public async initialize(config?: NativeAppAuthorizationConfiguration): Promise<void> {
     await super.initialize(config);
-    assert(this.config !== undefined && this.issuerUrl != undefined, "URL of authorization provider was not initialized");
+    assert(this.config !== undefined && this.issuerUrl !== undefined, "URL of authorization provider was not initialized");
 
-    this._tokenStore = new ElectronTokenStore(this.config!.clientId);
+    this._tokenStore = new ElectronTokenStore(this.config.clientId);
 
     const tokenRequestor = new NodeRequestor(); // the Node.js based HTTP client
-    this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(this.issuerUrl!, tokenRequestor);
+    this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(this.issuerUrl, tokenRequestor);
     Logger.logTrace(loggerCategory, "Initialized service configuration", () => ({ configuration: this._configuration }));
 
     // Attempt to load the access token from store

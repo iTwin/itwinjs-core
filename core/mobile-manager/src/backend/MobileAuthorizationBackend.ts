@@ -6,7 +6,7 @@
  * @module OIDC
  */
 
-import { assert, ClientRequestContext, SessionProps } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
@@ -26,7 +26,7 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
   /** Used to initialize the client - must be awaited before any other methods are called */
   public async initialize(config?: NativeAppAuthorizationConfiguration): Promise<void> {
     await super.initialize(config);
-    assert(this.config !== undefined && this.issuerUrl != undefined, "URL of authorization provider was not initialized");
+    assert(this.config !== undefined && this.issuerUrl !== undefined, "URL of authorization provider was not initialized");
 
     MobileHost.device.authStateChanged = (tokenString?: string) => {
       let token: AccessToken | undefined;

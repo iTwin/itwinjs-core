@@ -56,7 +56,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
   public async initialize(config?: NativeAppAuthorizationConfiguration) {
     this.config = config ?? this.config;
     if (!this.config)
-      throw new IModelError(AuthStatus.Error, 'Must specify a valid configuration when initializing authorization');
+      throw new IModelError(AuthStatus.Error, "Must specify a valid configuration when initializing authorization");
     if (this.config.expiryBuffer)
       this.expireSafety = this.config.expiryBuffer;
     this.issuerUrl = this.config.issuerUrl ?? await this.getUrl(this.getClientRequestContext());

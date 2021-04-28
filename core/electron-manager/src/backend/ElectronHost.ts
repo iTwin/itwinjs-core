@@ -286,7 +286,7 @@ export class ElectronHost {
 
     const authorizationBackend = new ElectronAuthorizationBackend(opts.electronHost?.authConfig);
     const connectivityStatus = NativeHost.checkInternetConnectivity();
-    if (opts.electronHost?.authConfig && true != opts.electronHost?.noInitializeAuthClient && connectivityStatus === InternetConnectivityStatus.Online) {
+    if (opts.electronHost?.authConfig && true !== opts.electronHost?.noInitializeAuthClient && connectivityStatus === InternetConnectivityStatus.Online) {
       await authorizationBackend.initialize(opts.electronHost?.authConfig);
     }
     IModelHost.authorizationClient = authorizationBackend;
