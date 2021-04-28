@@ -22,7 +22,7 @@ import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtil
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
-describe.only("IModelTransformerHub (#integration)", () => {
+describe("IModelTransformerHub (#integration)", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformerHub");
 
   before(async () => {
