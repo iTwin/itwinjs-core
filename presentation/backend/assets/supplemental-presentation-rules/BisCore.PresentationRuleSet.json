@@ -215,8 +215,14 @@
       },
       "propertyCategories": [
         {
-          "id": "source_file_information",
-          "label": "@BisCore:Categories.SourceFileInformation@"
+          "id": "source_information",
+          "label": "@BisCore:Categories.SourceInformation@"
+        },
+        {
+          "id": "model_source",
+          "label": "@BisCore:Categories.SourceInformationModelSource@",
+          "parentId": "source_information",
+          "autoExpand": true
         }
       ],
       "relatedProperties": [
@@ -361,20 +367,19 @@
                     {
                       "name": "Url",
                       "overridesPriority": 1001,
-                      "labelOverride": "@BisCore:Properties.SourceFilePath@",
-                      "categoryId": "source_file_information",
+                      "labelOverride": "@BisCore:Properties.SourceInformation.Path@",
+                      "categoryId": "model_source",
                       "isDisplayed": true
                     },
                     {
                       "name": "UserLabel",
                       "overridesPriority": 1001,
-                      "labelOverride": "@BisCore:Properties.SourceFileName@",
-                      "categoryId": "source_file_information",
+                      "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+                      "categoryId": "model_source",
                       "isDisplayed": true
                     }
                   ],
-                  "relationshipMeaning": "SameInstance",
-                  "autoExpand": true
+                  "relationshipMeaning": "SameInstance"
                 }
               ]
             }
@@ -396,8 +401,8 @@
       },
       "propertyCategories": [
         {
-          "id": "source_file_information",
-          "label": "@BisCore:Categories.SourceFileInformation@"
+          "id": "source_information",
+          "label": "@BisCore:Categories.SourceInformation@"
         }
       ],
       "relatedProperties": [
@@ -420,9 +425,134 @@
             {
               "name": "Identifier",
               "overridesPriority": 1001,
-              "labelOverride": "@BisCore:Properties.SourceElementId@",
-              "categoryId": "source_file_information",
+              "categoryId": "source_information",
+              "labelOverride": "@BisCore:Properties.SourceInformation.ElementId@",
               "isDisplayed": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "requiredSchemas": [
+        {
+          "name": "BisCore",
+          "minVersion": "1.0.13"
+        }
+      ],
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Element"
+      },
+      "propertyCategories": [
+        {
+          "id": "source_information",
+          "label": "@BisCore:Categories.SourceInformation@",
+          "autoExpand": true
+        },
+        {
+          "id": "secondary_sources",
+          "label": "@BisCore:Categories.SourceInformationSecondarySources@",
+          "parentId": "source_information",
+          "autoExpand": true
+        }
+      ],
+      "relatedProperties": [
+        {
+          "relationshipMeaning": "SameInstance",
+          "propertiesSource": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ElementOwnsMultiAspects"
+              },
+              "direction": "Forward",
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "ExternalSourceAspect"
+              }
+            }
+          ],
+          "properties": "_none_",
+          "autoExpand": true,
+          "nestedRelatedProperties": [
+            {
+              "relationshipMeaning": "SameInstance",
+              "autoExpand": true,
+              "propertiesSource": [
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ElementIsFromSource"
+                  },
+                  "direction": "Forward"
+                },
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ExternalSourceIsInRepository"
+                  },
+                  "direction": "Forward"
+                }
+              ],
+              "properties": [
+                {
+                  "name": "UserLabel",
+                  "categoryId": "source_information",
+                  "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+                  "isDisplayed": true
+                },
+                {
+                  "name": "Url",
+                  "categoryId": "source_information",
+                  "labelOverride": "@BisCore:Properties.SourceInformation.Path@"
+                }
+              ]
+            },
+            {
+              "relationshipMeaning": "SameInstance",
+              "autoExpand": true,
+              "propertiesSource": [
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ElementIsFromSource"
+                  },
+                  "direction": "Forward",
+                  "targetClass": {
+                    "schemaName": "BisCore",
+                    "className": "ExternalSourceGroup"
+                  }
+                },
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ExternalSourceGroupGroupsSources"
+                  },
+                  "direction": "Forward"
+                },
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ExternalSourceIsInRepository"
+                  },
+                  "direction": "Forward"
+                }
+              ],
+              "properties": [
+                {
+                  "name": "UserLabel",
+                  "categoryId": "secondary_sources",
+                  "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+                  "isDisplayed": true
+                },
+                {
+                  "name": "Url",
+                  "categoryId": "secondary_sources",
+                  "labelOverride": "@BisCore:Properties.SourceInformation.Path@"
+                }
+              ]
             }
           ]
         }
@@ -564,45 +694,35 @@
       "ruleType": "ContentModifier",
       "class": {
         "schemaName": "BisCore",
-        "className": "PhysicalType"
+        "className": "TypeDefinitionElement"
       },
       "propertyOverrides": [
         {
-          "name": "*",
+          "name": "IsPrivate",
           "isDisplayed": false
         },
         {
-          "name": "CodeValue",
-          "isDisplayed": true,
-          "doNotHideOtherPropertiesOnDisplayOverride": true
-        },
-        {
-          "name": "UserLabel",
-          "isDisplayed": true,
-          "doNotHideOtherPropertiesOnDisplayOverride": true
+          "name": "Recipe",
+          "isDisplayed": false
         }
       ]
     },
     {
       "ruleType": "ContentModifier",
+      "requiredSchemas": [
+        {
+          "name": "BisCore",
+          "minVersion": "1.0.11"
+        }
+      ],
       "class": {
         "schemaName": "BisCore",
-        "className": "SpatialLocationType"
+        "className": "PhysicalType"
       },
       "propertyOverrides": [
         {
-          "name": "*",
-          "isDisplayed": false
-        },
-        {
-          "name": "CodeValue",
-          "isDisplayed": true,
-          "doNotHideOtherPropertiesOnDisplayOverride": true
-        },
-        {
-          "name": "UserLabel",
-          "isDisplayed": true,
-          "doNotHideOtherPropertiesOnDisplayOverride": true
+          "name": "PhysicalMaterial",
+          "labelOverride": "Physical Material"
         }
       ]
     },
