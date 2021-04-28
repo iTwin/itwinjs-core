@@ -169,7 +169,6 @@ export class ChangedElementsDb implements IDisposable {
     return status;
   }
 
-
   /** Get changed elements between two changesets
    * @param startChangesetId Start Changeset Id
    * @param endChangesetId End Changeset Id
