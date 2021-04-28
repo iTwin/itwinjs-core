@@ -8,7 +8,7 @@
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { BackgroundMapSettings, MapImagerySettings, MapLayerSettings } from "@bentley/imodeljs-common";
-import { DisplayStyleState, MapLayerImageryProvider, Viewport, ViewState } from "../../imodeljs-frontend";
+import { MapLayerImageryProvider, Viewport, ViewState } from "../../imodeljs-frontend";
 import { TiledGraphicsProvider } from "../TiledGraphicsProvider";
 import { TileTreeReference } from "../TileTreeReference";
 import { MapTileTreeReference } from "./MapTileTree";
@@ -62,11 +62,11 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
       if (layers1.length !== layers2.length)
         return false;
 
-    for (let i = 0; i < layers1.length; i++)
-      if (!layers1[i].displayMatches(layers2[i]))
-        return false;
+      for (let i = 0; i < layers1.length; i++)
+        if (!layers1[i].displayMatches(layers2[i]))
+          return false;
 
-    return true;
+      return true;
     });
     const mapImagery = newView.displayStyle.settings.mapImagery;
     if (!newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings) || !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings)) {
