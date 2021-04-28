@@ -2365,7 +2365,6 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
     jsonProperties?: any;
     kind: string;
     scope: RelatedElementProps;
-    // (undocumented)
     source?: RelatedElementProps;
     version?: string;
 }
