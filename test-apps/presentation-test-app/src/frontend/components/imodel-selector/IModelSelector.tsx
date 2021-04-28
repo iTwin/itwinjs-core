@@ -15,6 +15,7 @@ export interface Props {
 }
 
 export interface State {
+  activeIModel?: IModelConnection;
   availableImodels: SelectOption[];
   error?: any;
 }
@@ -41,17 +42,17 @@ export class IModelSelector extends React.Component<Props, State> {
   }
 
   private async doOpenIModel(imodelPath: string) {
-    if (MyAppFrontend.iModel) {
-      await MyAppFrontend.iModel.close();
+    if (this.state.activeIModel) {
+      await this.state.activeIModel.close();
     }
 
     let imodel: IModelConnection | undefined;
     if (imodelPath) {
       try {
         imodel = await MyAppFrontend.openIModel(imodelPath);
-        this.setState({ error: undefined });
+        this.setState({ activeIModel: imodel, error: undefined });
       } catch (err) {
-        this.setState({ error: err });
+        this.setState({ activeIModel: undefined, error: err });
       }
     }
     this.props.onIModelSelected(imodel, imodelPath);
