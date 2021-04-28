@@ -14,7 +14,7 @@ import { rpcInterfaces } from "../../common/RpcInterfaces";
 import { usingOfflineScope } from "./HttpRequestHook";
 import { TestUtility } from "./TestUtility";
 
-describe.only("NativeApp (offline)", () => {
+describe("NativeApp (offline)", () => {
   before(async () => {
     await ElectronApp.startup({
       iModelApp: {
