@@ -14,9 +14,9 @@ import {
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
-  ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteringInput,
-  FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer, PropertyData,
-  PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
+  ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteredPropertyData,
+  FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
+  PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
 } from "@bentley/ui-components";
 import { HighlightInfo } from "@bentley/ui-components/lib/ui-components/common/HighlightingComponentProps";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle, useDisposable } from "@bentley/ui-core";
@@ -26,52 +26,107 @@ const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
 
 export interface Props {
   imodel: IModelConnection;
-  rulesetId: string;
+  rulesetId?: string;
   onFindSimilar?: (propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord) => void;
 }
 
 export function PropertiesWidget(props: Props) {
-  const { imodel, rulesetId, onFindSimilar: onFindSimilarProp } = props;
+  const { imodel, rulesetId, onFindSimilar } = props;
   const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
+
+  const [filterText, setFilterText] = React.useState("");
+  const [isFavoritesFilterActive, setIsFavoritesFilterActive] = React.useState(false);
+  const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
+  const [activeHighlight, setActiveHighlight] = React.useState<HighlightInfo>();
+
+  const setFilter = React.useCallback((filter) => {
+    if (filter !== filterText)
+      setFilterText(filter);
+  }, [filterText]);
+
+  const [filteringResult, setFilteringResult] = React.useState<FilteredPropertyData>();
+  const resultSelectorProps = React.useMemo(() => {
+    return filteringResult?.matchesCount !== undefined ? {
+      onSelectedChanged: (index: React.SetStateAction<number>) => setActiveMatchIndex(index),
+      resultCount: filteringResult.matchesCount,
+    } : undefined;
+  }, [filteringResult]);
+
+  const onFilteringStateChanged = React.useCallback((newFilteringResult: FilteredPropertyData | undefined) => {
+    setFilteringResult(newFilteringResult);
+    if (newFilteringResult?.getMatchByIndex)
+      setActiveHighlight(newFilteringResult.getMatchByIndex(activeMatchIndex));
+  }, [activeMatchIndex]);
+
+  return (
+    <div className="PropertiesWidget">
+      <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
+      <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
+      {rulesetId
+        ? (<div className="SearchBar">
+          <FilteringInput
+            onFilterCancel={() => { setFilter(""); }}
+            onFilterClear={() => { setFilter(""); }}
+            onFilterStart={(newFilter) => { setFilter(newFilter); }}
+            style={{ flex: "auto" }}
+            resultSelectorProps={resultSelectorProps}
+            status={filterText.length !== 0 ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter}
+          />
+          <Toggle
+            title="Favorites"
+            onChange={(on) => setIsFavoritesFilterActive(on)}
+          />
+        </div>)
+        : null}
+      <div className="ContentContainer">
+        {rulesetId
+          ? <PropertyGrid
+            imodel={imodel}
+            rulesetId={rulesetId}
+            filtering={{ filter: filterText, onlyFavorites: isFavoritesFilterActive, activeHighlight, onFilteringStateChanged }}
+            onFindSimilar={onFindSimilar}
+            diagnostics={diagnosticsOptions}
+          />
+          : null
+        }
+      </div>
+    </div>
+  );
+}
+
+interface PropertyGridProps {
+  imodel: IModelConnection;
+  rulesetId: string;
+  diagnostics: DiagnosticsProps;
+  filtering: {
+    filter: string;
+    onlyFavorites: boolean;
+    activeHighlight?: HighlightInfo;
+    onFilteringStateChanged: (result: FilteredPropertyData | undefined) => void;
+  };
+  onFindSimilar?: (propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord) => void;
+}
+function PropertyGrid(props: PropertyGridProps) {
+  const { imodel, rulesetId, diagnostics, filtering, onFindSimilar: onFindSimilarProp } = props;
 
   const dataProvider = useDisposable(React.useCallback(
     () => {
-      const provider = new AutoExpandingPropertyDataProvider({ imodel, ruleset: rulesetId, ...diagnosticsOptions });
+      const provider = new AutoExpandingPropertyDataProvider({ imodel, ruleset: rulesetId, ...diagnostics });
       provider.isNestedPropertyCategoryGroupingEnabled = true;
       return provider;
-    }, [imodel, rulesetId, diagnosticsOptions]));
-
-  const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
-  const [filteringProvDataChanged, setFilteringProvDataChanged] = React.useState({});
-  const [activeHighlight, setActiveHighlight] = React.useState<HighlightInfo>();
+    }, [imodel, rulesetId, diagnostics]));
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider });
 
   const renderFavoritesActionButton = React.useCallback((buttonProps: ActionButtonRendererProps) => (<FavoritePropertyActionButton {...buttonProps} dataProvider={dataProvider} />), [dataProvider]);
   const renderCopyActionButton = React.useCallback(() => <CopyActionButton />, []);
 
-  const [contextMenuArgs, setContextMenuArgs] = React.useState<PropertyGridContextMenuArgs>();
-  const onPropertyContextMenu = React.useCallback((args: PropertyGridContextMenuArgs) => {
-    args.event.persist();
-    setContextMenuArgs(args);
-  }, []);
-  const onCloseContextMenu = React.useCallback(() => {
-    setContextMenuArgs(undefined);
-  }, []);
-
-  const onFindSimilar = React.useCallback((property: PropertyRecord) => {
-    if (onFindSimilarProp)
-      onFindSimilarProp(dataProvider, property);
-    setContextMenuArgs(undefined);
-  }, [onFindSimilarProp, dataProvider]);
-
-  const [filterText, setFilterText] = React.useState("");
-  const [isFavoritesFilterActive, setIsFavoritesFilterActive] = React.useState(false);
-
+  const { filter: filterText, onlyFavorites, activeHighlight, onFilteringStateChanged } = filtering;
+  const [filteringProvDataChanged, setFilteringProvDataChanged] = React.useState({});
   const filteringDataProvider = useDisposable(React.useCallback(() => {
     const valueFilterer = new DisplayValuePropertyDataFilterer(filterText);
     const labelFilterer = new LabelPropertyDataFilterer(filterText);
     const categoryFilterer = new PropertyCategoryLabelFilterer(filterText);
-    const favoriteFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: isFavoritesFilterActive });
+    const favoriteFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: onlyFavorites });
 
     const recordFilterer = new CompositePropertyDataFilterer(labelFilterer, CompositeFilterType.Or, valueFilterer);
     const textFilterer = new CompositePropertyDataFilterer(recordFilterer, CompositeFilterType.Or, categoryFilterer);
@@ -81,75 +136,47 @@ export function PropertiesWidget(props: Props) {
       setFilteringProvDataChanged({});
     });
     return filteringDataProv;
-  }, [dataProvider, filterText, isFavoritesFilterActive]));
+  }, [dataProvider, filterText, onlyFavorites]));
 
   const { value: filteringResult } = useDebouncedAsyncValue(React.useCallback(async () => {
-    const result = await filteringDataProvider.getData();
-    return result;
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteringDataProvider, filteringProvDataChanged]));
-
-  const resultSelectorProps = React.useMemo(() => {
-    return filteringResult?.matchesCount !== undefined ? {
-      onSelectedChanged: (index: React.SetStateAction<number>) => setActiveMatchIndex(index),
-      resultCount: filteringResult.matchesCount,
-    } : undefined;
-  }, [filteringResult]);
-
+    return filteringDataProvider.getData();
+  }, [filteringDataProvider, filteringProvDataChanged])); // eslint-disable-line react-hooks/exhaustive-deps
   React.useEffect(() => {
-    if (filteringResult?.getMatchByIndex)
-      setActiveHighlight(filteringResult.getMatchByIndex(activeMatchIndex));
-  }, [activeMatchIndex, filteringDataProvider, filteringResult]);
+    onFilteringStateChanged(filteringResult);
+  }, [filteringResult, onFilteringStateChanged]);
 
-  const setFilter = React.useCallback((filter) => {
-    if (filter !== filterText) {
-      setFilterText(filter);
-    }
-  }, [filterText]);
+  const [contextMenuArgs, setContextMenuArgs] = React.useState<PropertyGridContextMenuArgs>();
+  const onPropertyContextMenu = React.useCallback((args: PropertyGridContextMenuArgs) => {
+    args.event.persist();
+    setContextMenuArgs(args);
+  }, []);
+  const onCloseContextMenu = React.useCallback(() => {
+    setContextMenuArgs(undefined);
+  }, []);
+  const onFindSimilar = React.useCallback((property: PropertyRecord) => {
+    if (onFindSimilarProp)
+      onFindSimilarProp(dataProvider, property);
+    setContextMenuArgs(undefined);
+  }, [onFindSimilarProp, dataProvider]);
 
-  let content;
-  if (isOverLimit) {
-    content = (<FillCentered>{IModelApp.i18n.translate("Sample:property-grid.too-many-elements-selected")}</FillCentered>);
-  } else {
-    content = (<VirtualizedPropertyGridWithDataProvider
+  if (isOverLimit)
+    return (<FillCentered>{IModelApp.i18n.translate("Sample:property-grid.too-many-elements-selected")}</FillCentered>);
+
+  return <>
+    <VirtualizedPropertyGridWithDataProvider
       dataProvider={filteringDataProvider}
       isPropertyHoverEnabled={true}
       onPropertyContextMenu={onPropertyContextMenu}
       actionButtonRenderers={[renderFavoritesActionButton, renderCopyActionButton]}
       orientation={Orientation.Horizontal}
       horizontalOrientationMinWidth={500}
-      highlight={filterText && filterText.length !== 0 ?
-        { highlightedText: filterText, activeHighlight, filteredTypes: filteringResult?.filteredTypes }:
-        undefined
+      highlight={(filterText && filterText.length !== 0)
+        ? { highlightedText: filterText, activeHighlight, filteredTypes: filteringResult?.filteredTypes }
+        : undefined
       }
-    />);
-  }
-
-  return (
-    <div className="PropertiesWidget">
-      <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
-      <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
-      <div className="SearchBar" >
-        <FilteringInput
-          onFilterCancel={() => { setFilter(""); }}
-          onFilterClear={() => { setFilter(""); }}
-          onFilterStart={(newFilter) => { setFilter(newFilter); }}
-          style={{ flex: "auto" }}
-          resultSelectorProps={resultSelectorProps}
-          status={filterText.length !== 0 ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter}
-        />
-        <Toggle
-          title="Favorites"
-          onChange={(on) => setIsFavoritesFilterActive(on)}
-        />
-      </div>
-      <div className="ContentContainer">
-        {content}
-      </div>
-      {contextMenuArgs && <PropertiesWidgetContextMenu args={contextMenuArgs} dataProvider={dataProvider} onFindSimilar={onFindSimilar} onCloseContextMenu={onCloseContextMenu} />}
-    </div>
-  );
+    />
+    {contextMenuArgs && <PropertiesWidgetContextMenu args={contextMenuArgs} dataProvider={dataProvider} onFindSimilar={onFindSimilar} onCloseContextMenu={onCloseContextMenu} />}
+  </>;
 }
 
 type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };

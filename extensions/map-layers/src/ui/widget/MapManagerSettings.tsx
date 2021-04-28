@@ -7,10 +7,26 @@
 import * as React from "react";
 import { NumberInput, Select, Slider, Toggle } from "@bentley/ui-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, ViewState3d } from "@bentley/imodeljs-frontend";
-import { BackgroundMapProps, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
+import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+
+enum MapMaskingOption
+  {
+  None,
+  AllModels
+}
+
+function getMapMaskingFromBackgroundMapSetting(backgroundMapSettings: BackgroundMapSettings): MapMaskingOption {
+  if (backgroundMapSettings.planarClipMask.mode === PlanarClipMaskMode.Priority && backgroundMapSettings.planarClipMask.priority) {
+    if (backgroundMapSettings.planarClipMask.priority >= PlanarClipMaskPriority.BackgroundMap) {
+      return  MapMaskingOption.AllModels;
+    }
+
+  }
+  return MapMaskingOption.None;
+}
 
 function getHeightOriginModeKey(mode: TerrainHeightOriginMode): string {
   if (TerrainHeightOriginMode.Geodetic === mode)
@@ -53,6 +69,17 @@ export function MapManagerSettings() {
     ground: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGround"),
   });
 
+  const updateMaskingSettings = React.useCallback((option: MapMaskingOption) => {
+    if (option === MapMaskingOption.AllModels) {
+      activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap } });
+    }
+    if (option === MapMaskingOption.None) {
+      activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } });
+    }
+
+    activeViewport!.invalidateRenderPlan();
+  }, [activeViewport]);
+
   const updateTerrainSettings = React.useCallback((props: TerrainProps) => {
     activeViewport!.changeBackgroundMapProps({ terrainSettings: props });
     activeViewport!.invalidateRenderPlan();
@@ -71,6 +98,14 @@ export function MapManagerSettings() {
       setHeightOriginMode(event.target.value);
     }
   }, [updateTerrainSettings]);
+
+  const [masking, setMasking] = React.useState(() => getMapMaskingFromBackgroundMapSetting(backgroundMapSettings));
+
+  const onMaskingToggle = React.useCallback((checked: boolean) => {
+    const maskingOption = checked ? MapMaskingOption.AllModels : MapMaskingOption.None;
+    updateMaskingSettings(maskingOption);
+    setMasking(maskingOption);
+  }, [updateMaskingSettings]);
 
   const handleElevationChange = React.useCallback((value: number | undefined, _stringValue: string) => {
     if (value === null) {
@@ -140,6 +175,7 @@ export function MapManagerSettings() {
   const [heightOriginLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.HeightOrigin"));
   const [exaggerationLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Exaggeration"));
   const [locatableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Locatable"));
+  const [maskingLabel] =  React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Mask"));
 
   return (
     <>
@@ -150,6 +186,9 @@ export function MapManagerSettings() {
 
         <span className="map-manager-settings-label">{locatableLabel}</span>
         <Toggle onChange={onLocatableToggle} isOn={isLocatable} />
+
+        <span className="map-manager-settings-label">{maskingLabel}</span>
+        <Toggle onChange={onMaskingToggle} isOn={masking !== MapMaskingOption.None} />
 
         <span className="map-manager-settings-label">{terrainLabel}</span>
         <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />

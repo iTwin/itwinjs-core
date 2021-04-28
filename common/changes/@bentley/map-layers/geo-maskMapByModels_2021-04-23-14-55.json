@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/map-layers",
+      "comment": "Exposed the map masking option in the map layers settings UI.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/map-layers",
+  "email": "mdastous-bentley@users.noreply.github.com"
+}

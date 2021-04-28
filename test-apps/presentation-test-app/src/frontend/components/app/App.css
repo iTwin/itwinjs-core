@@ -5,7 +5,7 @@
 
 .app {
   display: grid;
-  grid-template-rows: 80px 30px 30px 30px calc(100vh - 80px - 30px - 30px - 30px);
+  grid-template-rows: 30px 40px calc(100vh - 30px - 40px);
   height: 100vh;
   position: relative;
   overflow: hidden;
@@ -15,6 +15,25 @@
   background-color: #222;
   color: white;
   padding-left: 20px;
+}
+
+.app-header h2 {
+  margin: 0;
+}
+
+.app-pickers {
+  display: grid;
+  grid-template-columns: auto 20% 10% 10%;
+  padding: 5px;
+  column-gap: 5px;
+}
+
+.app-pickers > div {
+  width: 100%;
+}
+
+.app-pickers > div > select {
+  width: 100%;
 }
 
 .app-content {

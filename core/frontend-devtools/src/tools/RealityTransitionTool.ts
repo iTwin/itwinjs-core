@@ -13,11 +13,16 @@ import { IModelApp, RenderScheduleState, Tool } from "@bentley/imodeljs-frontend
 
 enum FadeMode { X, Y, Z, Transparent }
 
-/** @alpha */
+/** This tool applies a transition in X, Y, Z, or transparency.
+ * @beta
+ */
 export class RealityTransitionTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
   public static toolId = "RealityTransition";
+  /** This method runs the tool, applying a transition in X, Y, Z, or transparency.
+   * @param fadeMode whether to apply the transition in X, Y, Z, or transparency
+   */
   public run(fadeMode: FadeMode = FadeMode.X): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
@@ -75,6 +80,10 @@ export class RealityTransitionTool extends Tool {
     vp.timePoint = script.computeDuration().low;
     return true;
   }
+  /** Executes this tool's run method.
+   * @param args the first entry of this array contains either "x", "y", "z", or "transparent", indicating the type of transition to apply.
+   * @see [[run]]
+   */
   public parseAndRun(...args: string[]): boolean {
     const transitionNames = [
       "x",
