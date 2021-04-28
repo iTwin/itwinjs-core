@@ -54,6 +54,7 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
 export class NativeAppAuthorization {
   private _config?: NativeAppAuthorizationConfiguration;
   private _cachedToken?: AccessToken;
+  private _refreshingToken = false;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
   public get hasSignedIn() { return this._cachedToken !== undefined; }
@@ -93,8 +94,15 @@ export class NativeAppAuthorization {
    */
   public async getAccessToken(): Promise<AccessToken> {
     // if we have a valid token, return it. Otherwise call backend to refresh the token.
-    if (!this.isAuthorized)
+    if (!this.isAuthorized) {
+      if (this._refreshingToken) {
+        return Promise.reject(); // short-circuits any recursive use of this function
+      }
+
+      this._refreshingToken = true;
       this._cachedToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
+      this._refreshingToken = false;
+    }
 
     return this._cachedToken!;
   }
