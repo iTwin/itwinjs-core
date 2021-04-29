@@ -13,7 +13,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
-  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, ModelClipGroups, Npc, RenderMaterial,
+  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, ModelClipGroups, Npc, RenderMaterial, RenderSchedule,
   SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -211,6 +211,14 @@ export abstract class ViewState extends ElementState {
 
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
   public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.settings.analysisStyle; }
+
+  /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
+   * @see [[DisplayStyleState.scheduleScript]].
+   * @beta
+   */
+  public get scheduleScript(): RenderSchedule.Script | undefined {
+    return this.displayStyle.scheduleScript;
+  }
 
   /** @internal */
   public get scheduleState(): RenderScheduleState | undefined {
