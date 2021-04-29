@@ -576,6 +576,7 @@ export class ChangedElementsDb implements IDisposable {
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+    processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
 // @internal
@@ -3694,6 +3695,8 @@ export interface ProcessChangesetOptions {
     startChangesetId: string;
     // (undocumented)
     tempDir?: string;
+    // (undocumented)
+    wantBriefcaseRoll?: boolean;
     // (undocumented)
     wantParents?: boolean;
     // (undocumented)
