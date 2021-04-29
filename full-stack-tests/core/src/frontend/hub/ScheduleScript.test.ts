@@ -3,8 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { DisplayStyleProps, RenderSchedule } from "@bentley/imodeljs-common";
-import { CheckpointConnection, IModelApp, IModelConnection, RenderScheduleState, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import {
+  Code, DisplayStyleProps, DisplayStyle3dProps, ElementProps, RenderSchedule, RenderTimelineProps,
+} from "@bentley/imodeljs-common";
+import {
+  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, RenderScheduleState, SpatialViewState, ViewState,
+} from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
@@ -75,11 +79,7 @@ describe("Schedule script (#integration)", () => {
   });
 
   it("excludes element Ids if specified", async () => {
-    const hasNonEmptyElementIds = (styleProps: DisplayStyleProps) => {
-      expect(styleProps.jsonProperties).not.to.be.undefined;
-      expect(styleProps.jsonProperties!.styles).not.to.be.undefined;
-      const script = styleProps.jsonProperties!.styles!.scheduleScript!;
-      expect(script).not.to.be.undefined;
+    const scriptHasNonEmptyElementIds = (script: RenderSchedule.ScriptProps) => {
       expect(script.length).least(1);
       let numElementIdProps = 0;
       let numNonEmptyElementIdProps = 0;
@@ -97,32 +97,51 @@ describe("Schedule script (#integration)", () => {
       return numNonEmptyElementIdProps > 0;
     };
 
-    const test = async (imodel: IModelConnection) => {
+    const styleHasNonEmptyElementIds = (styleProps: DisplayStyleProps) => {
+      expect(styleProps.jsonProperties).not.to.be.undefined;
+      expect(styleProps.jsonProperties!.styles).not.to.be.undefined;
+      const script = styleProps.jsonProperties!.styles!.scheduleScript!;
+      expect(script).not.to.be.undefined;
+      return scriptHasNonEmptyElementIds(script!);
+    };
+
+    const timelineHasNonEmptyElementIds = (props: ElementProps | undefined) => {
+      expect(props).not.to.be.undefined;
+      return scriptHasNonEmptyElementIds(JSON.parse((props as RenderTimelineProps).script));
+    };
+
+    const testStyle = async (imodel: IModelConnection) => {
       const styles = await imodel.elements.getProps(embedStyleId);
       expect(styles.length).to.equal(1);
-      expect(hasNonEmptyElementIds(styles[0] as DisplayStyleProps)).to.be.true;
+      expect(styleHasNonEmptyElementIds(styles[0] as DisplayStyleProps)).to.be.true;
 
       const view = await imodel.views.load(viewId);
       expect(view.displayStyle.id).to.equal(embedStyleId);
-      expect(hasNonEmptyElementIds(view.displayStyle.toJSON())).to.be.false;
+      expect(styleHasNonEmptyElementIds(view.displayStyle.toJSON())).to.be.false;
 
       let style = await imodel.elements.loadProps(embedStyleId, { displayStyle: { omitScheduleScriptElementIds: true } });
       expect(style).not.to.be.undefined;
-      expect(hasNonEmptyElementIds(style!)).to.be.false;
+      expect(styleHasNonEmptyElementIds(style!)).to.be.false;
 
       style = await imodel.elements.loadProps(embedStyleId, { displayStyle: { omitScheduleScriptElementIds: false } });
       expect(style).not.to.be.undefined;
-      expect(hasNonEmptyElementIds(style!)).to.be.true;
+      expect(styleHasNonEmptyElementIds(style!)).to.be.true;
 
       style = await imodel.elements.loadProps(embedStyleId);
       expect(style).not.to.be.undefined;
-      expect(hasNonEmptyElementIds(style!)).to.be.true;
+      expect(styleHasNonEmptyElementIds(style!)).to.be.true;
     };
 
-    await test(dbOld);
-    await test(dbNew);
+    await testStyle(dbOld);
+    await testStyle(dbNew);
 
-    // ###TODO load timelines
+    const timelines = await dbNew.elements.getProps(timelineId);
+    expect(timelines.length).to.equal(1);
+    expect(timelineHasNonEmptyElementIds(timelines[0] as RenderTimelineProps)).to.be.true;
+
+    expect(timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId))).to.be.true;
+    expect(timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: false } }))).to.be.true;
+    expect(timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: true } }))).to.be.false;
   });
 
   it("creates an additional tile tree per animation transform node", async () => {
@@ -188,5 +207,81 @@ describe("Schedule script (#integration)", () => {
 
     view.markModelSelectorChanged();
     expect(countTileTrees(view)).to.equal(2);
+  });
+
+  async function loadDisplayStyle(styleId: string, imodel: IModelConnection, load = true): Promise<DisplayStyle3dState> {
+    const props = (await imodel.elements.getProps(styleId))[0] as DisplayStyle3dProps;
+    expect(props).not.to.be.undefined;
+    const style = new DisplayStyle3dState(props, imodel);
+    if (load)
+      await style.load();
+
+    return style;
+  }
+
+  it("load script asynchronously", async () => {
+    let style = await loadDisplayStyle(embedStyleId, dbNew, false);
+    expect(style.scheduleScript).to.be.undefined;
+
+    style = await loadDisplayStyle(refStyleId, dbNew, false);
+    expect(style.scheduleScript).to.be.undefined;
+
+    style = await loadDisplayStyle(embedStyleId, dbNew);
+    expect(style.scheduleScript).not.to.be.undefined;
+
+    style = await loadDisplayStyle(refStyleId, dbNew);
+    expect(style.scheduleScript).not.to.be.undefined;
+  });
+
+  it("is cloned when display style is cloned", async () => {
+    const embedStyle = await loadDisplayStyle(embedStyleId, dbNew);
+    expect(embedStyle.scheduleScript).not.to.be.undefined;
+    const embedClone = embedStyle.clone();
+    expect(embedClone.scheduleScript).to.equal(embedStyle.scheduleScript);
+
+    const refStyle = await loadDisplayStyle(refStyleId, dbNew);
+    expect(refStyle.scheduleScript).not.to.be.undefined;
+    const refClone = refStyle.clone();
+    expect(refClone.scheduleScript).to.equal(refStyle.scheduleScript);
+  });
+
+  it("can be associated with a non-persistent display style by RenderTimeline", async () => {
+    const props: DisplayStyle3dProps = {
+      classFullName: DisplayStyle3dState.classFullName,
+      model: "",
+      code: Code.createEmpty(),
+      jsonProperties: {
+        styles: {
+          renderTimeline: timelineId,
+        },
+      },
+    };
+
+    const style = new DisplayStyle3dState(props, dbNew);
+    expect(style.scheduleScript).to.be.undefined;
+    await style.load();
+    expect(style.scheduleScript).not.to.be.undefined;
+  });
+
+  it("can be associated with a non-persistent display style by embedding script and supplying persistent display style Id", async () => {
+    const persistentStyle = await loadDisplayStyle(embedStyleId, dbOld);
+    const scheduleScript = persistentStyle.scheduleScript!.toJSON();
+
+    const props: DisplayStyle3dProps = {
+      id: embedStyleId,
+      classFullName: DisplayStyle3dState.classFullName,
+      model: "",
+      code: Code.createEmpty(),
+      jsonProperties: {
+        styles: {
+          scheduleScript,
+        },
+      },
+    };
+
+    const style = new DisplayStyle3dState(props, dbOld);
+    expect(style.scheduleScript).to.be.undefined;
+    await style.load();
+    expect(style.scheduleScript).not.to.be.undefined;
   });
 });
