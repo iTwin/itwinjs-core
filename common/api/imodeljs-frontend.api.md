@@ -1045,14 +1045,11 @@ export class AnimatedTreeReference extends PrimaryTreeReference {
 }
 
 // @internal
-export class AnimationBranchState {
-    constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean);
+export interface AnimationBranchState {
     // (undocumented)
     readonly clip?: RenderClipVolume;
     // (undocumented)
     readonly omit?: boolean;
-    // (undocumented)
-    readonly transform?: Transform;
 }
 
 // @internal
@@ -2301,11 +2298,9 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
 // @public
 export class DisplayStyle3dState extends DisplayStyleState {
-    constructor(props: DisplayStyleProps, iModel: IModelConnection);
+    constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    clone(iModel?: IModelConnection): this;
     get environment(): Environment;
     set environment(env: Environment);
     // (undocumented)
@@ -2327,7 +2322,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
 // @public
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
-    constructor(props: DisplayStyleProps, iModel: IModelConnection);
+    constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState);
     // @internal (undocumented)
     anyMapLayersVisible(overlay: boolean): boolean;
     // @internal (undocumented)
@@ -2363,6 +2358,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean): void;
     // (undocumented)
     changeMapSubLayerProps(props: MapSubLayerProps, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
+    // @beta
+    changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // @internal
@@ -2431,6 +2428,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
+    // @beta
+    load(): Promise<void>;
     // @internal (undocumented)
     mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined;
     // @internal (undocumented)
@@ -2448,6 +2447,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal
     moveMapLayerToTop(index: number, isOverlay: boolean): void;
     get name(): string;
+    // @beta
+    readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
     // @internal (undocumented)
     get overlayMap(): MapTileTreeReference;
     // @internal (undocumented)
@@ -2463,11 +2464,16 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
+    // @beta
+    get scheduleScript(): RenderSchedule.Script | undefined;
+    // @beta
+    get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     // @internal (undocumented)
-    get scheduleScript(): RenderScheduleState.Script | undefined;
-    set scheduleScript(script: RenderScheduleState.Script | undefined);
+    get scheduleState(): RenderScheduleState | undefined;
     // @beta
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
+    // @internal
+    setScheduleState(state: RenderScheduleState | undefined): void;
     abstract get settings(): DisplayStyleSettings;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
@@ -7867,179 +7873,22 @@ export abstract class RenderRealityMeshGeometry implements IDisposable, RenderMe
     abstract dispose(): void;
 }
 
-// @internal (undocumented)
-export namespace RenderScheduleState {
+// @internal
+export class RenderScheduleState extends RenderSchedule.ScriptReference {
     // (undocumented)
-    export class ColorEntry extends TimelineEntry implements RenderSchedule.ColorEntryProps {
-        constructor(props: RenderSchedule.ColorEntryProps);
-        // (undocumented)
-        toJSON(): RenderSchedule.ColorEntryProps;
-        // (undocumented)
-        value: {
-            red: number;
-            green: number;
-            blue: number;
-        };
-    }
+    get containsFeatureOverrides(): boolean;
     // (undocumented)
-    export class CuttingPlaneEntry extends TimelineEntry implements RenderSchedule.CuttingPlaneEntryProps {
-        constructor(props: RenderSchedule.CuttingPlaneEntryProps);
-        // (undocumented)
-        toJSON(): RenderSchedule.CuttingPlaneEntryProps;
-        // (undocumented)
-        value: RenderSchedule.CuttingPlaneProps;
-    }
+    get duration(): Range1d;
     // (undocumented)
-    export class ElementTimeline extends Timeline implements RenderSchedule.ElementTimelineProps {
-        // (undocumented)
-        batchId: number;
-        // (undocumented)
-        get containsClipping(): boolean;
-        // (undocumented)
-        get containsFeatureOverrides(): boolean;
-        // (undocumented)
-        get containsTransform(): boolean;
-        // (undocumented)
-        elementIds: Id64String[] | CompressedId64Set;
-        // (undocumented)
-        static fromJSON(json?: RenderSchedule.ElementTimelineProps): ElementTimeline;
-        // (undocumented)
-        getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number): void;
-        // (undocumented)
-        get isValid(): boolean;
-        // (undocumented)
-        toJSON(): RenderSchedule.ElementTimelineProps;
-    }
+    getAnimationBranches(time: number): AnimationBranchStates | undefined;
     // (undocumented)
-    export class Interval {
-        constructor(index0?: number, index1?: number, fraction?: number);
-        // (undocumented)
-        fraction: number;
-        // (undocumented)
-        index0: number;
-        // (undocumented)
-        index1: number;
-        // (undocumented)
-        init(index0: number, index1: number, fraction: number): void;
-    }
+    getModelAnimationId(modelId: Id64String): Id64String | undefined;
     // (undocumented)
-    export class ModelTimeline extends Timeline implements RenderSchedule.ModelTimelineProps {
-        // (undocumented)
-        computeDuration(): Range1d;
-        // (undocumented)
-        containsElementClipping: boolean;
-        // (undocumented)
-        containsFeatureOverrides: boolean;
-        // (undocumented)
-        containsModelClipping: boolean;
-        // (undocumented)
-        containsTransform: boolean;
-        // (undocumented)
-        elementTimelines: ElementTimeline[];
-        // (undocumented)
-        static fromJSON(json?: RenderSchedule.ModelTimelineProps, displayStyle?: DisplayStyleState): ModelTimeline;
-        // (undocumented)
-        getAnimationBranches(branches: AnimationBranchStates, scheduleTime: number): void;
-        // (undocumented)
-        getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number): void;
-        // (undocumented)
-        getTransform(nodeId: number, time: number): Transform | undefined;
-        // (undocumented)
-        getTransformNodeIds(): number[] | undefined;
-        // (undocumented)
-        modelId: Id64String;
-        // (undocumented)
-        realityModelUrl?: string;
-        // (undocumented)
-        toJSON(): RenderSchedule.ModelTimelineProps;
-    }
+    getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number): void;
     // (undocumented)
-    export class Script {
-        constructor(displayStyleId: Id64String);
-        // (undocumented)
-        computeDuration(): Range1d;
-        // (undocumented)
-        containsElementClipping: boolean;
-        // (undocumented)
-        get containsFeatureOverrides(): boolean;
-        // (undocumented)
-        containsModelClipping: boolean;
-        // (undocumented)
-        containsTransform: boolean;
-        // (undocumented)
-        displayStyleId: Id64String;
-        // (undocumented)
-        static fromJSON(displayStyleId: Id64String, modelTimelines: Readonly<RenderSchedule.ModelTimelineProps[]>): Script | undefined;
-        // (undocumented)
-        getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
-        getCachedDuration(): Range1d;
-        // (undocumented)
-        getModelAnimationId(modelId: Id64String): Id64String | undefined;
-        // (undocumented)
-        getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number): void;
-        // (undocumented)
-        getTransform(modelId: Id64String, nodeId: number, time: number): Transform | undefined;
-        // (undocumented)
-        getTransformNodeIds(modelId: Id64String): number[] | undefined;
-        // (undocumented)
-        modelTimelines: ModelTimeline[];
-        // (undocumented)
-        toJSON(): RenderSchedule.ModelTimelineProps[];
-    }
+    getTransform(modelId: Id64String, nodeId: number, time: number): Readonly<Transform> | undefined;
     // (undocumented)
-    export class Timeline implements RenderSchedule.TimelineProps {
-        // (undocumented)
-        colorTimeline?: ColorEntry[];
-        // (undocumented)
-        computeDuration(): Range1d;
-        // (undocumented)
-        cuttingPlaneTimeline?: CuttingPlaneEntry[];
-        // (undocumented)
-        extractTimelinesFromJSON(json: RenderSchedule.TimelineProps): void;
-        // (undocumented)
-        static findTimelineInterval(interval: Interval, time: number, timeline?: TimelineEntry[]): boolean;
-        // (undocumented)
-        getAnimationClip(time: number, interval: Interval): RenderClipVolume | undefined;
-        // (undocumented)
-        getAnimationTransform(time: number, interval: Interval): Transform | undefined;
-        // (undocumented)
-        getColorOverride(time: number, interval: Interval): RgbColor | undefined;
-        // (undocumented)
-        getVisibilityOverride(time: number, interval: Interval): number;
-        // (undocumented)
-        toJSON(): RenderSchedule.TimelineProps;
-        // (undocumented)
-        transformTimeline?: TransformEntry[];
-        // (undocumented)
-        visibilityTimeline?: VisibilityEntry[];
-    }
-    // (undocumented)
-    export class TimelineEntry implements RenderSchedule.TimelineEntryProps {
-        constructor(props: RenderSchedule.TimelineEntryProps);
-        // (undocumented)
-        interpolation: number;
-        // (undocumented)
-        time: number;
-        // (undocumented)
-        toJSON(): RenderSchedule.TimelineEntryProps;
-    }
-    // (undocumented)
-    export class TransformEntry extends TimelineEntry implements RenderSchedule.TransformEntryProps {
-        constructor(props: RenderSchedule.TransformEntryProps);
-        // (undocumented)
-        toJSON(): RenderSchedule.TransformEntryProps;
-        // (undocumented)
-        value: RenderSchedule.TransformProps;
-    }
-    // (undocumented)
-    export class VisibilityEntry extends TimelineEntry implements RenderSchedule.VisibilityEntryProps {
-        constructor(props: RenderSchedule.VisibilityEntryProps);
-        // (undocumented)
-        toJSON(): RenderSchedule.VisibilityEntryProps;
-        // (undocumented)
-        value: number;
-    }
-    {};
+    getTransformNodeIds(modelId: Id64String): ReadonlyArray<number> | undefined;
 }
 
 // @public
@@ -12588,8 +12437,10 @@ export abstract class ViewState extends ElementState {
     resetExtentLimits(): void;
     // @internal (undocumented)
     abstract savePose(): ViewPose;
-    // @internal
-    get scheduleScript(): RenderScheduleState.Script | undefined;
+    // @beta
+    get scheduleScript(): RenderSchedule.Script | undefined;
+    // @internal (undocumented)
+    get scheduleState(): RenderScheduleState | undefined;
     // @internal
     get secondaryViewports(): Iterable<Viewport>;
     setAspectRatioSkew(val: number): void;

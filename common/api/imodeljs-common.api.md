@@ -1928,7 +1928,7 @@ export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestPro
 export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
     readonly categoryId: Id64String;
     readonly elementId?: Id64String;
-    readonly geometry: GeometryStreamProps;
+    readonly geometry: JsonGeometryStream | FlatBufferGeometryStream;
     readonly modelId?: Id64String;
 }
 
@@ -2688,6 +2688,14 @@ export enum FillFlags {
     Blanking = 6,
     ByView = 1,
     None = 0
+}
+
+// @beta
+export interface FlatBufferGeometryStream {
+    // @alpha (undocumented)
+    data: ElementGeometryDataEntry[];
+    // (undocumented)
+    format: "flatbuffer";
 }
 
 // @public
@@ -4222,6 +4230,14 @@ export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
 // @beta
 export const iTwinChannel: (channel: string) => string;
+
+// @beta
+export interface JsonGeometryStream {
+    // (undocumented)
+    data: GeometryStreamProps;
+    // (undocumented)
+    format: "json";
+}
 
 // @public (undocumented)
 export interface LatAndLong {
@@ -5818,13 +5834,15 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
         readonly batchId: number;
-        // @internal
-        get containsClipping(): boolean;
         get containsFeatureOverrides(): boolean;
         get containsTransform(): boolean;
         get elementIds(): Iterable<Id64String>;
         // (undocumented)
         static fromJSON(props?: ElementTimelineProps): ElementTimeline;
+        // @internal (undocumented)
+        static getElementIds(ids: Id64String[] | CompressedId64Set): Iterable<Id64String>;
+        // @internal
+        get requiresBatching(): boolean;
         // (undocumented)
         toJSON(): ElementTimelineProps;
     }
@@ -5848,7 +5866,6 @@ export namespace RenderSchedule {
     export class ModelTimeline extends Timeline {
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
-        readonly containsElementClipping: boolean;
         readonly containsFeatureOverrides: boolean;
         readonly containsModelClipping: boolean;
         readonly containsTransform: boolean;
@@ -5860,6 +5877,8 @@ export namespace RenderSchedule {
         readonly modelId: Id64String;
         // @internal (undocumented)
         readonly realityModelUrl?: string;
+        // @internal
+        readonly requiresBatching: boolean;
         // (undocumented)
         toJSON(): ModelTimelineProps;
         // @internal (undocumented)
@@ -5875,10 +5894,11 @@ export namespace RenderSchedule {
         protected constructor(props: Readonly<ScriptProps>);
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
-        readonly containsElementClipping: boolean;
         readonly containsFeatureOverrides: boolean;
         readonly containsModelClipping: boolean;
         readonly containsTransform: boolean;
+        // @internal
+        discloseIds(ids: Id64Set): void;
         readonly duration: Range1d;
         find(modelId: Id64String): ModelTimeline | undefined;
         // (undocumented)
@@ -5888,6 +5908,8 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         getTransformBatchIds(modelId: Id64String): ReadonlyArray<number> | undefined;
         readonly modelTimelines: ReadonlyArray<ModelTimeline>;
+        // @internal
+        readonly requiresBatching: boolean;
         // (undocumented)
         toJSON(): ScriptProps;
     }
@@ -6027,7 +6049,7 @@ export interface RenderTimelineLoadProps {
     omitScriptElementIds?: boolean;
 }
 
-// @alpha
+// @beta
 export interface RenderTimelineProps extends ElementProps {
     description?: string;
     script: string;
