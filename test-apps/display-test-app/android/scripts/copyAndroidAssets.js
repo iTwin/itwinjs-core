@@ -5,13 +5,22 @@
 const path = require("path");
 const fs = require("fs-extra");
 
-const app = path.join(process.env.SrcRoot, "imodel02/iModelJsMobile/nonport/android/HelloNode/app/src/main/assets");
-const backend = path.join(app, "backend")
-const frontend = path.join(app, "frontend")
+const app = path.join(__dirname, "../imodeljs-test-app/app/src/main/assets");
 
-fs.copySync(path.join(__dirname, "lib/ios/main.js"), path.join(backend, "main.js"))
+if (fs.existsSync(app)) {
+  fs.removeSync(app);
+}
 
-const mobileAssets = path.join(__dirname, "lib/ios/assets/");
+fs.mkdirSync(app);
+
+const backend = path.join(app, "backend");
+const frontend = path.join(app, "frontend");
+
+fs.mkdirSync(backend);
+
+fs.copySync(path.join(__dirname, "lib/android/main.js"), path.join(backend, "main.js"));
+
+const mobileAssets = path.join(__dirname, "lib/android/assets/");
 for (const asset of fs.readdirSync(mobileAssets)) {
   fs.copySync(path.join(mobileAssets, asset), path.join(backend, "Assets", asset));
 }
