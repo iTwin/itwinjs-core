@@ -6,7 +6,9 @@
  * @module Elements
  */
 
-import { assert, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import {
+  assert, CompressedId64Set, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array,
+} from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import { LockLevel } from "@bentley/imodelhub-client";
 import {
@@ -1621,6 +1623,7 @@ export class RenderTimeline extends InformationRecordElement {
     if (!Array.isArray(input))
       return scriptProps;
 
+    const elementIds = new OrderedId64Array();
     for (const model of input) {
       const modelId = context.findTargetElementId(model.modelId);
       if (!Id64.isValid(modelId))
@@ -1629,16 +1632,14 @@ export class RenderTimeline extends InformationRecordElement {
       model.modelId = modelId;
       scriptProps.push(model);
       for (const element of model.elementTimelines) {
-        // NB: Neither the connector that imports the schedule scripts into the iModel nor the non-iModel.js renderers that consume them
-        // actually support compressed element Ids. Until they do, produce the big fat array instead.
-        const elementIds: Id64String[] = [];
+        elementIds.clear();
         for (const sourceId of RenderSchedule.ElementTimeline.getElementIds(element.elementIds)) {
           const targetId = context.findTargetElementId(sourceId);
           if (Id64.isValid(targetId))
-            elementIds.push(targetId);
+            elementIds.insert(targetId);
         }
 
-        element.elementIds = elementIds;
+        element.elementIds = CompressedId64Set.compressIds(elementIds);
       }
     }
 
