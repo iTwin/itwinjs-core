@@ -360,6 +360,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: "Master" } });
     populateMaster(masterSeedDb, state0);
     assert.isTrue(IModelJsFs.existsSync(masterSeedFileName));
+    masterSeedDb.nativeDb.saveProjectGuid(projectId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
     masterSeedDb.close();
     const masterIModelId = await HubUtility.pushIModel(requestContext, projectId, masterSeedFileName, masterIModelName, true);
