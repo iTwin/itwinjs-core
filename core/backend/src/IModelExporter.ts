@@ -120,9 +120,10 @@ export abstract class IModelExportHandler {
   protected onExportSchema(_schema: Schema): void { }
 
   /** This method is called when IModelExporter has made incremental progress based on the [[IModelExporter.progressInterval]] setting.
+   * This method is `async` to make it easier to integrate with asynchronous status and health reporting services.
    * @note A subclass may override this method to report custom progress. The base implementation does nothing.
    */
-  protected onProgress(): void { }
+  protected async onProgress(): Promise<void> { }
 
   /** Helper method that allows IModelExporter to call protected methods in IModelExportHandler.
    * @internal
@@ -351,7 +352,7 @@ export class IModelExporter {
     if (this.handler.callProtected.shouldExportCodeSpec(codeSpec)) {
       Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})${this.getChangeOpSuffix(isUpdate)}`);
       this.handler.callProtected.onExportCodeSpec(codeSpec, isUpdate);
-      this.trackProgress();
+      return this.trackProgress();
     }
   }
 
@@ -403,7 +404,7 @@ export class IModelExporter {
     const font: FontProps | undefined = this.sourceDb.fontMap.getFont(fontNumber);
     if (undefined !== font) {
       this.handler.callProtected.onExportFont(font, isUpdate);
-      this.trackProgress();
+      return this.trackProgress();
     }
   }
 
@@ -418,7 +419,7 @@ export class IModelExporter {
     const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportModel(${modeledElementId})`);
     if (this.shouldExportElement(modeledElement)) {
-      this.exportModelContainer(model);
+      await this.exportModelContainer(model);
       if (this.visitElements) {
         await this.exportModelContents(modeledElementId);
       }
@@ -427,7 +428,7 @@ export class IModelExporter {
   }
 
   /** Export the model (the container only) from the source iModel. */
-  private exportModelContainer(model: Model): void {
+  private async exportModelContainer(model: Model): Promise<void> {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
       if (this._sourceDbChanges.model.insertIds.has(model.id)) {
@@ -439,7 +440,7 @@ export class IModelExporter {
       }
     }
     this.handler.callProtected.onExportModel(model, isUpdate);
-    this.trackProgress();
+    return this.trackProgress();
   }
 
   /** Export the model contents.
@@ -563,8 +564,8 @@ export class IModelExporter {
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
       this.handler.callProtected.onExportElement(element, isUpdate);
-      this.trackProgress();
-      this.exportElementAspects(elementId);
+      await this.trackProgress();
+      await this.exportElementAspects(elementId);
       return this.exportChildElements(elementId);
     }
   }
@@ -616,26 +617,26 @@ export class IModelExporter {
   }
 
   /** Export ElementAspects from the specified element from the source iModel. */
-  private exportElementAspects(elementId: Id64String): void {
+  private async exportElementAspects(elementId: Id64String): Promise<void> {
     // ElementUniqueAspects
     let uniqueAspects: ElementUniqueAspect[] = this.sourceDb.elements._queryAspects(elementId, ElementUniqueAspect.classFullName, this._excludedElementAspectClassFullNames);
     if (uniqueAspects.length > 0) {
       uniqueAspects = uniqueAspects.filter((a) => this.shouldExportElementAspect(a));
       if (uniqueAspects.length > 0) {
-        uniqueAspects.forEach((uniqueAspect: ElementUniqueAspect) => {
+        uniqueAspects.forEach(async (uniqueAspect: ElementUniqueAspect) => {
           if (undefined !== this._sourceDbChanges) { // is changeSet information available?
             if (this._sourceDbChanges.aspect.insertIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, false);
-              this.trackProgress();
+              await this.trackProgress();
             } else if (this._sourceDbChanges.aspect.updateIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, true);
-              this.trackProgress();
+              await this.trackProgress();
             } else {
               // not in changeSet, don't export
             }
           } else {
             this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, undefined);
-            this.trackProgress();
+            await this.trackProgress();
           }
         });
       }
@@ -646,7 +647,7 @@ export class IModelExporter {
       multiAspects = multiAspects.filter((a) => this.shouldExportElementAspect(a));
       if (multiAspects.length > 0) {
         this.handler.callProtected.onExportElementMultiAspects(multiAspects);
-        this.trackProgress();
+        return this.trackProgress();
       }
     }
   }
@@ -698,15 +699,15 @@ export class IModelExporter {
     // relationship has passed standard exclusion rules, now give handler a chance to accept/reject export
     if (this.handler.callProtected.shouldExportRelationship(relationship)) {
       this.handler.callProtected.onExportRelationship(relationship, isUpdate);
-      this.trackProgress();
+      await this.trackProgress();
     }
   }
 
   /** Tracks incremental progress */
-  private trackProgress(): void {
+  private async trackProgress(): Promise<void> {
     this._progressCounter++;
     if (0 === (this._progressCounter % this.progressInterval)) {
-      this.handler.callProtected.onProgress();
+      return this.handler.callProtected.onProgress();
     }
   }
 }
