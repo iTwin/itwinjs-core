@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "fix parsing of buddi fallback for clients. imjs_buddi_resolve_url_using_region should support both strings and numbers",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client",
+  "email": "aruniverse@users.noreply.github.com"
+}
