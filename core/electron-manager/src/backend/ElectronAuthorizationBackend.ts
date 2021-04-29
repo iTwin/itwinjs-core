@@ -12,7 +12,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost, NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
+import { IModelHost, NativeAppAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
 import {
@@ -86,6 +86,24 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   }
 
   /**
+   * Sign-in completely.
+   * This is a wrapper around [[signIn]] - the only difference is that the promise resolves
+   * with the access token after sign in is complete and successful.
+   */
+  public async signInComplete(): Promise<AccessToken> {
+    return new Promise<AccessToken>((resolve, reject) => {
+      NativeHost.onUserStateChanged.addOnce((token) => {
+        if (token !== undefined) {
+          resolve(token);
+        } else {
+          reject(new Error("Failed to sign in"));
+        }
+      });
+      this.signIn().catch((err) => reject(err));
+    });
+  }
+
+  /**
    * Start the sign-in process
    * - calls the onUserStateChanged() call back after the authorization completes
    * or if there is an error.
@@ -143,7 +161,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     });
 
     // Start the signin
-    await authorizationHandler.performAuthorizationRequest(this._configuration!, authorizationRequest);
+    await authorizationHandler.performAuthorizationRequest(this._configuration, authorizationRequest);
   }
 
   private async _onAuthorizationResponse(authRequest: AuthorizationRequest, authResponse: AuthorizationResponse | null, authError: AuthorizationError | null): Promise<TokenResponse | undefined> {
@@ -177,6 +195,24 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    */
   public async signOut(): Promise<void> {
     await this.makeRevokeTokenRequest();
+  }
+
+  /**
+   * Sign out completely
+   * This is a wrapper around [[signOut]] - the only difference is that the promise resolves
+   * after the sign out is complete.
+   */
+  public async signOutComplete(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      NativeHost.onUserStateChanged.addOnce((token) => {
+        if (token === undefined) {
+          resolve();
+        } else {
+          reject(new Error("Failed to sign out"));
+        }
+      });
+      this.signOut().catch((err) => reject(err));
+    });
   }
 
   private async getUserProfile(tokenResponse: TokenResponse): Promise<any | undefined> {
