@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   Code, DisplayStyleProps, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,
@@ -175,11 +175,13 @@ describe("RenderTimeline", () => {
 
     expect(targetTimeline.scriptProps[0].elementTimelines.length).to.equal(1);
     const timeline = targetTimeline.scriptProps[0].elementTimelines[0];
-    expect(timeline.elementIds.length).to.equal(3);
 
-    for (let i = 0; i < 3; i++) {
-      expect(timeline.elementIds[i]).not.to.equal(scriptProps[0].elementTimelines[0].elementIds[i]);
-      expect(targetDb.elements.getElement<PhysicalObject>(timeline.elementIds[i])).instanceof(PhysicalObject);
+    let numElements = 0;
+    expect(typeof timeline.elementIds).to.equal("string"); // remapping also compresses Ids if they weren't already.
+    for (const elementId of CompressedId64Set.iterable(timeline.elementIds as string)) {
+      ++numElements;
+      expect(targetDb.elements.getElement<PhysicalObject>(elementId)).instanceof(PhysicalObject);
     }
+    expect(numElements).to.equal(3);
   });
 });
