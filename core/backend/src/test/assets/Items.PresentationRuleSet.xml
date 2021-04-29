@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PresentationRuleSet RuleSetId="Items" VersionMajor="1" VersionMinor="3" SupportedSchemas="Generic,BisCore" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  
+  <!-- Root Subject -->
+  <RootNodeRule>
+    <CustomNode Type="TYPE_Subjects" Label="@Sample:presentation.subjects.label@" Description="@Sample:presentation.subjects.description@" ImageId="subjects" />
+  </RootNodeRule>
+  <ChildNodeRule Condition='ParentNode.Type = "TYPE_Subjects"'>
+    <InstancesOfSpecificClasses ClassNames='BisCore:Subject' ArePolymorphic='false' InstanceFilter='this.Parent = NULL' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <!-- Navigation of Subject / Subject and Subject / InformationPartitionElement hierarchy -->
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("Subject", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:SubjectOwnsSubjects' RequiredDirection='Forward' RelatedClassNames='BisCore:Subject' GroupByClass='false' GroupByLabel='false' />
+    <RelatedInstances RelationshipClassNames='BisCore:SubjectOwnsPartitionElements' RequiredDirection='Forward' RelatedClassNames='BisCore:InformationPartitionElement' GroupByClass='false' GroupByLabel='false' />
+  </ChildNodeRule>
+  <!-- Navigation of InformationPartitionElement / Model hierarchy -->
+  <ChildNodeRule Condition='ParentNode.IsInstanceNode ANDALSO ParentNode.ECInstance.IsOfClass("InformationPartitionElement", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelModelsElement' RequiredDirection='Backward' RelatedClassNames='BisCore:Model' GroupByClass='false' GroupByLabel='false' HideNodesInHierarchy='true' />
+  </ChildNodeRule>
+  <!-- Navigation of GeometricModel2d -->
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("GeometricModel2d", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' RelatedClassNames='BisCore:GeometricElement2d' InstanceFilter='this.Parent = NULL' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <GroupingRule ClassName='GeometricElement2d' SchemaName='BisCore' Condition='ParentNode.IsInstanceNode ANDALSO ParentNode.ECInstance.IsOfClass("GeometricModel2d", "BisCore")'>
+    <PropertyGroup PropertyName='Category' CreateGroupForSingleItem='true'/>
+  </GroupingRule>
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("GeometricElement2d", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ElementOwnsChildElements' RequiredDirection='Forward' RelatedClassNames='BisCore:GeometricElement2d' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <!-- Navigation of GeometricModel3d -->
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("GeometricModel3d", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' RelatedClassNames='BisCore:GeometricElement3d' InstanceFilter='this.Parent = NULL' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <GroupingRule ClassName='GeometricElement3d' SchemaName='BisCore' Condition='ParentNode.IsInstanceNode ANDALSO ParentNode.ECInstance.IsOfClass("GeometricModel3d", "BisCore")'>
+    <PropertyGroup PropertyName='Category' CreateGroupForSingleItem='true'/>
+  </GroupingRule>
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("GeometricElement3d", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ElementOwnsChildElements' RequiredDirection='Forward' RelatedClassNames='BisCore:GeometricElement3d' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <!-- Navigation of DefinitionModel -->
+  <ChildNodeRule Condition='ParentNode.IsInstanceNode ANDALSO ParentNode.ECInstance.IsOfClass("DefinitionModel", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' RelatedClassNames='BisCore:DefinitionElement' InstanceFilter='this.Parent = NULL' GroupByClass='true' GroupByLabel='false'>
+      <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("RecipeDefinitionElement", "BisCore")'>
+        <RelatedInstances RelationshipClassNames='BisCore:ModelModelsElement' RequiredDirection='Backward' RelatedClassNames='BisCore:Model' GroupByClass='false' GroupByLabel='false' HideNodesInHierarchy='true' />
+      </ChildNodeRule>
+    </RelatedInstances>
+  </ChildNodeRule>
+  <ChildNodeRule Condition='ParentNode.IsInstanceNode ANDALSO ParentNode.ECInstance.IsOfClass("Category", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:CategoryOwnsSubCategories' RequiredDirection='Forward' RelatedClassNames='BisCore:SubCategory' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <ChildNodeRule Condition='ParentNode.IsInstanceNode ANDALSO ParentNode.ECInstance.IsOfClass("RenderMaterial", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:RenderMaterialOwnsRenderMaterials' RequiredDirection='Forward' RelatedClassNames='BisCore:RenderMaterial' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <!-- Navigation of DocumentListModel -->
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("DocumentListModel", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' RelatedClassNames='BisCore:Document' GroupByClass='true' GroupByLabel='false'>
+      <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("Document", "BisCore")'>
+        <RelatedInstances RelationshipClassNames='BisCore:ModelModelsElement' RequiredDirection='Backward' RelatedClassNames='BisCore:Model' GroupByClass='false' GroupByLabel='false' HideNodesInHierarchy='true' />
+      </ChildNodeRule>
+    </RelatedInstances>
+  </ChildNodeRule>
+  <!-- Navigation of GroupInformationModel -->
+  <ChildNodeRule Condition='ParentNode.IsInstanceNode ANDALSO ParentNode.ECInstance.IsOfClass("GroupInformationModel", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' RelatedClassNames='BisCore:GroupInformationElement' GroupByClass='false' GroupByLabel='false'>
+      <ChildNodeRule Condition='ParentNode.IsInstanceNode ANDALSO ParentNode.ECInstance.IsOfClass("GroupInformationElement", "BisCore")'>
+        <RelatedInstances RelationshipClassNames='BisCore:ElementGroupsMembers' RequiredDirection='Forward' RelatedClassNames='BisCore:Element' GroupByClass='false' GroupByLabel='false'/>
+      </ChildNodeRule>
+    </RelatedInstances>
+  </ChildNodeRule>
+  <!-- Navigation of InformationRecordModel -->
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("InformationRecordModel", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' RelatedClassNames='BisCore:InformationRecordElement' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <!-- Navigation of LinkModel -->
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("LinkModel", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' RelatedClassNames='BisCore:LinkElement' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <!-- Navigation of PlanningModel -->
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("PlanningModel", "Planning")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' RelatedClassNames='Planning:WorkBreakdown' InstanceFilter='this.Parent = NULL' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <ChildNodeRule Condition='ParentNode.IsInstanceNode ANDALSO ParentNode.ECInstance.IsOfClass("WorkBreakdown", "Planning")'>
+    <RelatedInstances RelationshipClassNames='Planning:WorkBreakdownOwnsWorkBreakdowns' RequiredDirection='Forward' RelatedClassNames='Planning:WorkBreakdown' GroupByClass='false' GroupByLabel='false'/>
+    <RelatedInstances RelationshipClassNames='Planning:WorkBreakdownOwnsActivities' RequiredDirection='Forward' RelatedClassNames='Planning:Activity' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+  <!-- Navigation of RoleModel -->
+  <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("RoleModel", "BisCore")'>
+    <RelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' RelatedClassNames='BisCore:Element' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
+
+  <!-- Content rules -->
+  <!-- Grid / DGN view -->
+  <ContentRule Condition='(ContentDisplayType = "Grid" OR ContentDisplayType = "Graphics") ANDALSO SelectedNode.ECInstance.IsOfClass("Model", "BisCore")' OnlyIfNotHandled='true'>
+    <ContentRelatedInstances RelationshipClassNames='BisCore:ModelContainsElements' RequiredDirection='Forward' />
+  </ContentRule>
+  <ContentRule Condition='(ContentDisplayType = "Grid" OR ContentDisplayType = "Graphics") ANDALSO SelectedNode.ECInstance.IsOfClass("Category", "BisCore")' OnlyIfNotHandled='true'>
+    <ContentRelatedInstances RelationshipClassNames='BisCore:GeometricElement2dIsInCategory,GeometricElement3dIsInCategory' RequiredDirection='Backward' />
+  </ContentRule>
+  <ContentRule Condition='(ContentDisplayType = "Grid" OR ContentDisplayType = "Graphics") ANDALSO SelectedNode.ECInstance.IsOfClass("Element", "BisCore")' OnlyIfNotHandled='true'>
+    <ContentRelatedInstances RelationshipClassNames='BisCore:ElementOwnsChildElements' RelatedClassNames='BisCore:Element' RequiredDirection='Forward' IsRecursive='true' />
+    <SelectedNodeInstances />
+  </ContentRule>
+  <!-- Any other (property pane, list, other) -->
+  <ContentRule OnlyIfNotHandled='true'>
+    <SelectedNodeInstances />
+  </ContentRule>
+
+</PresentationRuleSet>
