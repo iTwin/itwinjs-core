@@ -1621,11 +1621,12 @@ export class RenderTimeline extends InformationRecordElement {
     if (!Array.isArray(input))
       return scriptProps;
 
-    for (const model of scriptProps) {
+    for (const model of input) {
       const modelId = context.findTargetElementId(model.modelId);
       if (!Id64.isValid(modelId))
         continue;
 
+      model.modelId = modelId;
       scriptProps.push(model);
       for (const element of model.elementTimelines) {
         // NB: Neither the connector that imports the schedule scripts into the iModel nor the non-iModel.js renderers that consume them
