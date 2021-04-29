@@ -13,7 +13,7 @@ import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";
-import { Transformer } from "./Transformer";
+import { Transformer, TransformerOptions } from "./Transformer";
 
 const loggerCategory = "imodel-transformer";
 
@@ -37,6 +37,8 @@ interface CommandLineArgs {
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
   deleteUnusedGeometryParts?: boolean;
+  noProvenance?: boolean;
+  includeSourceProvenance?: boolean;
   excludeSubCategories?: string;
   excludeCategories?: string;
 }
@@ -81,6 +83,8 @@ void (async () => {
     Yargs.option("deleteUnusedGeometryParts", { desc: "Delete unused GeometryParts from the target iModel", type: "boolean", default: false });
     Yargs.option("excludeSubCategories", { desc: "Exclude geometry in the specified SubCategories (names with comma separators) from the target iModel", type: "string" });
     Yargs.option("excludeCategories", { desc: "Exclude a categories (names with comma separators) and their elements from the target iModel", type: "string" });
+    Yargs.option("noProvenance", { desc: "If true, IModelTransformer should not record its provenance.", type: "boolean", default: false });
+    Yargs.option("includeSourceProvenance", { desc: "Include existing provenance from the source iModel in the target iModel", type: "boolean", default: false });
 
     const args = Yargs.parse() as Yargs.Arguments<CommandLineArgs>;
 
@@ -220,12 +224,14 @@ void (async () => {
     const excludeSubCategories = args.excludeSubCategories?.split(",");
     const excludeCategories = args.excludeCategories?.split(",");
 
-    const transformerOptions = {
+    const transformerOptions: TransformerOptions = {
       simplifyElementGeometry: args.simplifyElementGeometry,
       combinePhysicalModels: args.combinePhysicalModels,
       deleteUnusedGeometryParts: args.deleteUnusedGeometryParts,
       excludeSubCategories,
       excludeCategories,
+      noProvenance: args.noProvenance,
+      includeSourceProvenance: args.includeSourceProvenance,
     };
 
     if (processChanges) {

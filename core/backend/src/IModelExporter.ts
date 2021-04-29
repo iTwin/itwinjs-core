@@ -6,7 +6,7 @@
  * @module iModels
  */
 import * as path from "path";
-import { DbResult, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Schema } from "@bentley/ecschema-metadata";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
@@ -239,10 +239,7 @@ export class IModelExporter {
   public async exportAll(): Promise<void> {
     await this.exportCodeSpecs();
     await this.exportFonts();
-    this.exportModelContainer(this.sourceDb.models.getModel(IModel.repositoryModelId));
-    await this.exportElement(IModel.rootSubjectId);
-    await this.exportRepositoryLinks();
-    await this.exportSubModels(IModel.repositoryModelId);
+    await this.exportModel(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
   }
 
@@ -269,7 +266,7 @@ export class IModelExporter {
     requestContext.enter();
     await this.exportCodeSpecs();
     await this.exportFonts();
-    await this.exportElement(IModel.rootSubjectId);
+    await this.exportModelContents(IModel.repositoryModelId);
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
     // handle deletes
@@ -424,8 +421,8 @@ export class IModelExporter {
       this.exportModelContainer(model);
       if (this.visitElements) {
         await this.exportModelContents(modeledElementId);
-        await this.exportSubModels(modeledElementId);
       }
+      await this.exportSubModels(modeledElementId);
     }
   }
 
@@ -446,9 +443,17 @@ export class IModelExporter {
   }
 
   /** Export the model contents.
+   * @param modelId The only required parameter
+   * @param elementClassFullName Can be optionally specified if the goal is to export a subset of the model contents
+   * @param skipRootSubject Decides whether or not to export the root Subject. It is normally left undefined except for internal implementation purposes.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public async exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName): Promise<void> {
+  public async exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName, skipRootSubject?: boolean): Promise<void> {
+    if (skipRootSubject) {
+      // NOTE: IModelTransformer.processAll should skip the root Subject since it is specific to the individual iModel and is not part of the changes that need to be synchronized
+      // NOTE: IModelExporter.exportAll should not skip the root Subject since the goal is to export everything
+      assert(modelId === IModel.repositoryModelId); // flag is only relevant when processing the RepositoryModel
+    }
     if (!this.visitElements) {
       Logger.logTrace(loggerCategory, `visitElements=false, skipping exportModelContents(${modelId})`);
       return;
@@ -459,9 +464,17 @@ export class IModelExporter {
       }
     }
     Logger.logTrace(loggerCategory, `exportModelContents(${modelId})`);
-    const sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
+    let sql: string;
+    if (skipRootSubject) {
+      sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId AND ECInstanceId!=:rootSubjectId ORDER BY ECInstanceId`;
+    } else {
+      sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
+    }
     await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
       statement.bindId("modelId", modelId);
+      if (skipRootSubject) {
+        statement.bindId("rootSubjectId", IModel.rootSubjectId);
+      }
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         await this.exportElement(statement.getValue(0).getId());
       }
@@ -573,7 +586,9 @@ export class IModelExporter {
     }
   }
 
-  /** Export RepositoryLinks in the RepositoryModel. */
+  /** Export RepositoryLinks in the RepositoryModel.
+   * @deprecated The entire RepositoryModel contents are now exported, so RepositoryLinks do no need to be handled separately.
+   */
   public async exportRepositoryLinks(): Promise<void> {
     if (!this.visitElements) {
       Logger.logTrace(loggerCategory, `visitElements=false, skipping exportRepositoryLinks()`);
