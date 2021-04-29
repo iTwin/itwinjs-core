@@ -352,7 +352,7 @@ export class IModelExporter {
     if (this.handler.callProtected.shouldExportCodeSpec(codeSpec)) {
       Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})${this.getChangeOpSuffix(isUpdate)}`);
       this.handler.callProtected.onExportCodeSpec(codeSpec, isUpdate);
-      this.trackProgress();
+      return this.trackProgress();
     }
   }
 
@@ -404,7 +404,7 @@ export class IModelExporter {
     const font: FontProps | undefined = this.sourceDb.fontMap.getFont(fontNumber);
     if (undefined !== font) {
       this.handler.callProtected.onExportFont(font, isUpdate);
-      this.trackProgress();
+      return this.trackProgress();
     }
   }
 
@@ -419,7 +419,7 @@ export class IModelExporter {
     const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportModel(${modeledElementId})`);
     if (this.shouldExportElement(modeledElement)) {
-      this.exportModelContainer(model);
+      await this.exportModelContainer(model);
       if (this.visitElements) {
         await this.exportModelContents(modeledElementId);
       }
@@ -428,7 +428,7 @@ export class IModelExporter {
   }
 
   /** Export the model (the container only) from the source iModel. */
-  private exportModelContainer(model: Model): void {
+  private async exportModelContainer(model: Model): Promise<void> {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
       if (this._sourceDbChanges.model.insertIds.has(model.id)) {
@@ -440,7 +440,7 @@ export class IModelExporter {
       }
     }
     this.handler.callProtected.onExportModel(model, isUpdate);
-    this.trackProgress();
+    return this.trackProgress();
   }
 
   /** Export the model contents.
@@ -564,8 +564,8 @@ export class IModelExporter {
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
       this.handler.callProtected.onExportElement(element, isUpdate);
-      this.trackProgress();
-      this.exportElementAspects(elementId);
+      await this.trackProgress();
+      await this.exportElementAspects(elementId);
       return this.exportChildElements(elementId);
     }
   }
@@ -617,26 +617,26 @@ export class IModelExporter {
   }
 
   /** Export ElementAspects from the specified element from the source iModel. */
-  private exportElementAspects(elementId: Id64String): void {
+  private async exportElementAspects(elementId: Id64String): Promise<void> {
     // ElementUniqueAspects
     let uniqueAspects: ElementUniqueAspect[] = this.sourceDb.elements._queryAspects(elementId, ElementUniqueAspect.classFullName, this._excludedElementAspectClassFullNames);
     if (uniqueAspects.length > 0) {
       uniqueAspects = uniqueAspects.filter((a) => this.shouldExportElementAspect(a));
       if (uniqueAspects.length > 0) {
-        uniqueAspects.forEach((uniqueAspect: ElementUniqueAspect) => {
+        uniqueAspects.forEach(async (uniqueAspect: ElementUniqueAspect) => {
           if (undefined !== this._sourceDbChanges) { // is changeSet information available?
             if (this._sourceDbChanges.aspect.insertIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, false);
-              this.trackProgress();
+              await this.trackProgress();
             } else if (this._sourceDbChanges.aspect.updateIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, true);
-              this.trackProgress();
+              await this.trackProgress();
             } else {
               // not in changeSet, don't export
             }
           } else {
             this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, undefined);
-            this.trackProgress();
+            await this.trackProgress();
           }
         });
       }
@@ -647,7 +647,7 @@ export class IModelExporter {
       multiAspects = multiAspects.filter((a) => this.shouldExportElementAspect(a));
       if (multiAspects.length > 0) {
         this.handler.callProtected.onExportElementMultiAspects(multiAspects);
-        this.trackProgress();
+        return this.trackProgress();
       }
     }
   }
