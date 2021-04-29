@@ -12041,7 +12041,6 @@ export abstract class Viewport implements IDisposable {
     set antialiasSamples(numSamples: number);
     // @internal
     applyViewState(val: ViewState): void;
-    // @internal
     get areAllTileTreesLoaded(): boolean;
     // @beta
     attachRealityModel(props: ContextRealityModelProps): void;

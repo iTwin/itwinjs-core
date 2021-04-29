@@ -1392,7 +1392,7 @@ export abstract class Viewport implements IDisposable {
     this.forEachMapTreeRef(func);
   }
 
-  /** @internal
+  /**
    * Returns true if all [[TileTree]]s required by this viewport have been loaded.
    */
   public get areAllTileTreesLoaded(): boolean {
