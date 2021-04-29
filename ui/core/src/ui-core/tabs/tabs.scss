@@ -39,9 +39,6 @@
       cursor:         pointer;
 
       .uicore-tabs-inline-label {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        align-items: center;
 
         &.core-tab-item-disabled {
           color: $buic-foreground-disabled;

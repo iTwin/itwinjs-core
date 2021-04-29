@@ -38,7 +38,7 @@ function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
     {
       itemPriority: 10, tabId: "Quantity", pageWillHandleCloseRequest: true, label: "Quantity", tooltip: "Quantity Format Settings", icon: "icon-measure",
-      page: <QuantityFormatSettingsPage initialQuantityType={QuantityType.Length} availableUnitSystems={new Set(["metric","imperial","usCustomary","usSurvey"])} />,
+      page: <QuantityFormatSettingsPage initialQuantityType={QuantityType.Length} availableUnitSystems={new Set(["metric", "imperial", "usCustomary", "usSurvey"])} />,
     },
     {
       itemPriority: 20, tabId: "Accudraw", label: "Accudraw", tooltip: "Accudraw Settings", icon: "icon-paintbrush",
@@ -990,7 +990,11 @@ export class ComponentExamplesProvider {
     return {
       title: "Tabs",
       examples: [
-        createComponentExample("Horizontal Tabs", undefined, <HorizontalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} />),
+        createComponentExample("Horizontal Tabs", undefined,
+          <div className="uicore-full-width">
+            <HorizontalTabs className="component-examples-horizontal-tabs" labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} />
+          </div>
+        ),
         createComponentExample("Green Horizontal Tabs", "with green prop", <HorizontalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} green />),
         createComponentExample("Vertical Tabs", undefined, <VerticalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} />),
         createComponentExample("Green Vertical Tabs", "with green prop", <VerticalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} green />),

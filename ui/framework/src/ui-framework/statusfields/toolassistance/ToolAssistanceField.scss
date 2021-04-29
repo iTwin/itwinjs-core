@@ -5,7 +5,7 @@
 @import "~@bentley/ui-core/lib/ui-core/style/breakpoints";
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@itwin/itwinui-css/scss/style/typography";
-@import "~@bentley/ui-core/lib/ui-core/text/leading";
+@import "~@itwin/itwinui-css/scss/text/leading";
 
 $image-size: 22px;
 $image-size-wide: 30px;
@@ -183,7 +183,7 @@ $key-size-modifier: 24px;
 }
 
 .uifw-toolAssistance-tabs {
-  @include uicore-text-leading;
+  @include iui-text-leading;
   > li {
     width: 50%;
   }

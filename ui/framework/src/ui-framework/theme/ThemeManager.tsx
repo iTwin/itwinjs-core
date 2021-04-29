@@ -8,7 +8,8 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
-import { ThemeProvider, ThemeType } from "@itwin/itwinui-react";
+import { ThemeType } from "@itwin/itwinui-react/cjs/core/utils/hooks/useTheme";
+import { ThemeProvider } from "@itwin/itwinui-react/cjs/core/ThemeProvider";
 import { FrameworkState } from "../redux/FrameworkState";
 import { UiFramework } from "../UiFramework";
 

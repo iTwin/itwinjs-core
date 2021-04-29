@@ -7,8 +7,9 @@
  */
 
 import * as React from "react";
-import { Icon, SmallText, UiCore } from "@bentley/ui-core";
+import { Icon, UiCore } from "@bentley/ui-core";
 import { Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
+import { Small } from "@itwin/itwinui-react/cjs/core/Typography/Small";
 import { UiFramework } from "../UiFramework";
 import { ActivityMessageEventArgs } from "../messages/MessageManager";
 import { HollowIcon } from "./HollowIcon";
@@ -65,7 +66,7 @@ export function ActivityMessage(props: ActivityMessageProps) {
           {<MessageLabel message={props.activityMessageInfo.message} className="uifw-statusbar-message-brief" />}
           {
             (messageDetails && messageDetails.showPercentInMessage) &&
-            <SmallText>{props.activityMessageInfo.percentage + percentCompleteLabel}</SmallText>
+            <Small>{props.activityMessageInfo.percentage + percentCompleteLabel}</Small>
           }
         </div>
       </MessageLayout>

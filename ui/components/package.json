@@ -41,7 +41,7 @@
     "@bentley/imodeljs-quantity": "^2.16.0-dev.18",
     "@bentley/ui-abstract": "2.16.0-dev.18",
     "@bentley/ui-core": "^2.16.0-dev.18",
-    "@itwin/itwinui-css": "^0.9.0",
+    "@itwin/itwinui-css": "^0.10.0",
     "@itwin/itwinui-react": "^1.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
