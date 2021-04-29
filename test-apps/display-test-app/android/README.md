@@ -13,6 +13,12 @@ Next, within **display-test-app**, `npm run build:android`.
 
 To run the app, open the **imodeljs-test-app** project (a directory peer of this readme file) in Android Studio and select `Run 'app'` or `Debug 'app'` from the **Run** menu.
 
+## Displaying an iModel
+
+First, upload a .ibim file to the `/data/data/com.bentley.imodeljs_test_app/files/` directory on your device.
+
+Next, modify line 22 in `app/src/main/java/com/bentley/imodeljs_test_app/MainActivity.java` where `MobileFrontend` is being configured to specify the filename for your uploaded iModel.
+
 ## Debugging
 
 You can use a local build of the addon to enable native debugging in this app.
