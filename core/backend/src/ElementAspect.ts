@@ -171,11 +171,14 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   public version?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   public jsonProperties?: string;
+  /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
+  public source?: RelatedElement;
 
   /** @internal */
   constructor(props: ExternalSourceAspectProps, iModel: IModelDb) {
     super(props, iModel);
     this.scope = RelatedElement.fromJSON(props.scope)!;
+    this.source = RelatedElement.fromJSON(props.source);
     this.identifier = props.identifier;
     this.kind = props.kind;
     this.checksum = props.checksum;
@@ -205,6 +208,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   public toJSON(): ExternalSourceAspectProps {
     const val = super.toJSON() as ExternalSourceAspectProps;
     val.scope = this.scope;
+    val.source = this.source;
     val.identifier = this.identifier;
     val.kind = this.kind;
     val.checksum = this.checksum;
