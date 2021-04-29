@@ -1862,6 +1862,7 @@ export interface PropertyCategorySpecification {
     description?: string;
     id: string;
     label: string;
+    parentId?: string;
     priority?: number;
     renderer?: CustomRendererSpecification;
 }

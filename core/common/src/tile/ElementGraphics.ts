@@ -61,6 +61,7 @@ export interface JsonGeometryStream {
  */
 export interface FlatBufferGeometryStream {
   format: "flatbuffer";
+  /** @alpha */
   data: ElementGeometryDataEntry[];
 }
 
