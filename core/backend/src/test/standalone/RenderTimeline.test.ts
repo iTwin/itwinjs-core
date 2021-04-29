@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { CompressedId64Set, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, DisplayStyleProps, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,
+  Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,
 } from "@bentley/imodeljs-common";
 import {
-  DisplayStyle, GenericSchema, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, StandaloneDb, SpatialCategory, SubjectOwnsPartitionElements,
+  GenericSchema, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 

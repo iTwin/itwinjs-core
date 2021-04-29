@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  Code, DisplayStyleProps, DisplayStyle3dProps, ElementProps, RenderSchedule, RenderTimelineProps,
+  Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps,
 } from "@bentley/imodeljs-common";
 import {
-  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, RenderScheduleState, SpatialViewState, ViewState,
+  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
@@ -100,9 +100,9 @@ describe("Schedule script (#integration)", () => {
     const styleHasNonEmptyElementIds = (styleProps: DisplayStyleProps) => {
       expect(styleProps.jsonProperties).not.to.be.undefined;
       expect(styleProps.jsonProperties!.styles).not.to.be.undefined;
-      const script = styleProps.jsonProperties!.styles!.scheduleScript!;
+      const script = styleProps.jsonProperties!.styles!.scheduleScript!; // eslint-disable-line deprecation/deprecation
       expect(script).not.to.be.undefined;
-      return scriptHasNonEmptyElementIds(script!);
+      return scriptHasNonEmptyElementIds(script);
     };
 
     const timelineHasNonEmptyElementIds = (props: ElementProps | undefined) => {
@@ -150,7 +150,7 @@ describe("Schedule script (#integration)", () => {
 
     expect(countTileTrees(view)).to.equal(2);
 
-    view.displayStyle.settings.scheduleScriptProps = undefined;
+    view.displayStyle.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
     expect(view.displayStyle.scheduleScript).to.be.undefined;
     expect(countTileTrees(view)).to.equal(1);
 
@@ -169,7 +169,7 @@ describe("Schedule script (#integration)", () => {
       }],
     }];
 
-    view.displayStyle.settings.scheduleScriptProps = json;
+    view.displayStyle.settings.scheduleScriptProps = json; // eslint-disable-line deprecation/deprecation
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
     expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(embedStyleId);
     expect(countTileTrees(view)).to.equal(3);
@@ -183,16 +183,16 @@ describe("Schedule script (#integration)", () => {
     expect(countTileTrees(view)).to.equal(2);
 
     const script = view.displayStyle.scheduleScript!;
-    view.displayStyle.settings.scheduleScriptProps = undefined;
+    view.displayStyle.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
     expect(view.displayStyle.scheduleScript).to.be.undefined;
     expect(countTileTrees(view)).to.equal(1);
 
-    view.displayStyle.settings.scheduleScriptProps = script.toJSON();
+    view.displayStyle.settings.scheduleScriptProps = script.toJSON(); // eslint-disable-line deprecation/deprecation
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
     expect(countTileTrees(view)).to.equal(2);
 
     const style = view.displayStyle.clone();
-    style.settings.scheduleScriptProps = undefined;
+    style.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
     view.displayStyle = style;
     expect(countTileTrees(view)).to.equal(1);
   });

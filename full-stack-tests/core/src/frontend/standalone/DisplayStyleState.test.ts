@@ -141,6 +141,7 @@ describe("DisplayStyle", () => {
       if (undefined !== expected.contextRealityModels)
         compareRealityModels(style, expected);
 
+      // eslint-disable-next-line deprecation/deprecation
       if (undefined !== expected.scheduleScript)
         compareScheduleScripts(style, expected);
     };

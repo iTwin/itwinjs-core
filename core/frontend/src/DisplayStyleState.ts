@@ -270,6 +270,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public setScheduleState(state: RenderScheduleState | undefined): void {
     this.onScheduleScriptReferenceChanged.raiseEvent(state);
     this._scheduleState = state;
+
+    // eslint-disable-next-line deprecation/deprecation
     this.settings.scheduleScriptProps = state?.script.toJSON();
   }
 
