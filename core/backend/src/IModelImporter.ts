@@ -218,9 +218,11 @@ export class IModelImporter {
   }
 
   /** Import the collection of ElementMultiAspects into the target iModel.
-   * @note For insert vs. update reasons, it is important to process all ElementMultiAspects owned by an Element at once.
+   * @param aspectPropsArray The ElementMultiAspects to import
+   * @param filterFunc Optional filter func that is used to exclude target ElementMultiAspects that were added during iModel transformation from the update detection logic.
+   * @note For insert vs. update reasons, it is important to process all ElementMultiAspects owned by an Element at once since we don't have aspect-specific provenance.
    */
-  public importElementMultiAspects(aspectPropsArray: ElementAspectProps[]): void {
+  public importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): void {
     if (aspectPropsArray.length === 0) {
       return;
     }
@@ -233,7 +235,10 @@ export class IModelImporter {
     // Handle ElementMultiAspects in groups by class
     aspectClassFullNames.forEach((aspectClassFullName: string) => {
       const proposedAspects = aspectPropsArray.filter((aspectProps) => aspectClassFullName === aspectProps.classFullName);
-      const currentAspects: ElementMultiAspect[] = this.targetDb.elements.getAspects(elementId, aspectClassFullName);
+      let currentAspects: ElementMultiAspect[] = this.targetDb.elements.getAspects(elementId, aspectClassFullName);
+      if (filterFunc) {
+        currentAspects = currentAspects.filter((a) => filterFunc(a)); // any aspects added by IModelTransformer must not be considered for update
+      }
       if (proposedAspects.length >= currentAspects.length) {
         let index = 0;
         proposedAspects.forEach((aspectProps: ElementAspectProps) => {
