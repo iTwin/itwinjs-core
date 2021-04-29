@@ -15,7 +15,7 @@ function countTileTrees(view: ViewState): number {
 }
 // eslint-disable-file deprecation/deprecation
 
-describe("Animated tile trees (#integration)", () => {
+describe("Schedule script (#integration)", () => {
   const viewId = "0x100000004d9";
   const styleId = "0x100000004d8";
   const modelId = "0x10000000001";
@@ -38,11 +38,11 @@ describe("Animated tile trees (#integration)", () => {
     await IModelApp.shutdown();
   });
 
-  it("obtains tile tree by Id", async () => {
+  it("obtains tile tree with script source Id", async () => {
     // f_1-A:0x100000004d8_#ffffffff_E:0_0x10000000001
     // f_1-A:0x100000004d8_#f_E:0_0x10000000001
-    const expectTileTreeProps = async (displayStyleId: string, nodeId: number, expectValid: boolean) => {
-      const treeId = `f_1-A:${displayStyleId}_#${nodeId.toString(16)}_${modelId}`;
+    const expectTileTreeProps = async (scriptSourceId: string, nodeId: number, expectValid: boolean) => {
+      const treeId = `f_1-A:${scriptSourceId}_#${nodeId.toString(16)}_${modelId}`;
       let treeProps;
       let threw = false;
       try {
@@ -61,7 +61,7 @@ describe("Animated tile trees (#integration)", () => {
     await expectTileTreeProps("0xbadf00d", 123, false);
   });
 
-  it("excludes element Ids from schedule scripts", async () => {
+  it("excludes element Ids if specified", async () => {
     const hasNonEmptyElementIds = (styleProps: DisplayStyleProps) => {
       expect(styleProps.jsonProperties).not.to.be.undefined;
       expect(styleProps.jsonProperties!.styles).not.to.be.undefined;
@@ -136,7 +136,7 @@ describe("Animated tile trees (#integration)", () => {
     expect(countTileTrees(view)).to.equal(3);
   });
 
-  it("updates tile tree references when schedule script changes", async () => {
+  it("updates tile tree references when script changes", async () => {
     const view = await imodel.views.load(viewId) as SpatialViewState;
     expect(view instanceof SpatialViewState).to.be.true;
 
@@ -158,7 +158,7 @@ describe("Animated tile trees (#integration)", () => {
     expect(countTileTrees(view)).to.equal(1);
   });
 
-  it("applies current schedule script to newly-added tile tree references", async () => {
+  it("applies to newly-added tile tree references", async () => {
     const view = await imodel.views.load(viewId) as SpatialViewState;
     view.modelSelector.models.clear();
     expect(countTileTrees(view)).to.equal(0);
