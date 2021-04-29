@@ -123,7 +123,7 @@ describe("DisplayStyle", () => {
     expect(style.settings.thematic.range.isNull).to.be.true;
   });
 
-  it("should override selected settings", () => {
+  it("should override selected settings", async () => {
     const style = new DisplayStyle3dState(styleProps, imodel);
     const test = (overrides: DisplayStyle3dSettingsProps, changed?: DisplayStyle3dSettingsProps) => {
       const originalSettings = { ...style.settings.toJSON() };
@@ -312,6 +312,7 @@ describe("DisplayStyle", () => {
 
     // Also, while we have one constructed, test creation with reality model and script.
     const newStyle = new DisplayStyle3dState(style.toJSON(), imodel);
+    await newStyle.load();
     expect(newStyle.equals(style)).to.be.true;
     compareRealityModels(newStyle, style.settings.toJSON());
     compareScheduleScripts(newStyle, style.settings.toJSON());

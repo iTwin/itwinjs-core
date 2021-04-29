@@ -536,7 +536,9 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
 
   const fakeViewState = {
     iModel: model.iModel,
-    scheduleState,
+    displayStyle: {
+      scheduleState,
+    },
     viewFlags: {
       renderMode: RenderMode.SmoothShade,
       visibleEdges: edgesRequired,
