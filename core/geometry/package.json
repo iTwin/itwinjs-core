@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "2.16.0-dev.18",
+  "version": "2.16.0-dev.19",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
@@ -32,12 +32,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.18"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.19"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.18",
-    "@bentley/build-tools": "2.16.0-dev.18",
-    "@bentley/eslint-plugin": "2.16.0-dev.18",
+    "@bentley/bentleyjs-core": "2.16.0-dev.19",
+    "@bentley/build-tools": "2.16.0-dev.19",
+    "@bentley/eslint-plugin": "2.16.0-dev.19",
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^5.2.5",

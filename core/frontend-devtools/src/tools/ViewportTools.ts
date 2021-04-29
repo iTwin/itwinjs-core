@@ -100,12 +100,17 @@ export class ShowTileVolumesTool extends Tool {
   }
 }
 
-/** @alpha */
+/** This tool sets the aspect ratio skew for the selected viewport.
+ * @beta
+ */
 export class SetAspectRatioSkewTool extends Tool {
   public static toolId = "SetAspectRatioSkew";
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
+  /** This method runs the tool, setting the aspect ratio skew for the selected viewport.
+   * @param skew the aspect ratio (x/y) skew value; 1.0 or undefined removes any skew
+   */
   public run(skew?: number): boolean {
     if (undefined === skew)
       skew = 1.0;
@@ -119,6 +124,10 @@ export class SetAspectRatioSkewTool extends Tool {
     return true;
   }
 
+  /** Executes this tool's run method.
+   * @param args the first entry of this array contains the `skew` argument
+   * @see [[run]]
+   */
   public parseAndRun(...args: string[]): boolean {
     const skew = args.length > 0 ? parseFloat(args[0]) : 1.0;
     return !Number.isNaN(skew) && this.run(skew);
@@ -238,13 +247,16 @@ export class FadeOutTool extends ViewportToggleTool {
 }
 
 /** Sets the default tile size modifier used for all viewports that don't explicitly override it.
- * @alpha
+ * @beta
  */
 export class DefaultTileSizeModifierTool extends Tool {
   public static toolId = "DefaultTileSizeMod";
   public static get minArgs() { return 1; }
   public static get maxArgs() { return 1; }
 
+  /** This method runs the tool, setting the default tile size modifier used for all viewports that don't explicitly override it.
+   * @param modifier the tile size modifier to use; if undefined, do not set modifier
+   */
   public run(modifier?: number): boolean {
     if (undefined !== modifier)
       IModelApp.tileAdmin.defaultTileSizeModifier = modifier;
@@ -252,19 +264,25 @@ export class DefaultTileSizeModifierTool extends Tool {
     return true;
   }
 
+  /** Executes this tool's run method with args[0] containing `modifier`.
+   * @see [[run]]
+   */
   public parseAndRun(...args: string[]): boolean {
     return this.run(Number.parseFloat(args[0]));
   }
 }
 
 /** Sets or clears the tile size modifier override for the selected viewport.
- * @alpha
+ * @beta
  */
 export class ViewportTileSizeModifierTool extends Tool {
   public static toolId = "ViewportTileSizeMod";
   public static get minArgs() { return 1; }
   public static get maxArgs() { return 1; }
 
+  /** This method runs the tool, setting the tile size modifier used for the selected viewport.
+   * @param modifier the tile size modifier to use; if undefined, reset the modifier
+   */
   public run(modifier?: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
@@ -273,6 +291,9 @@ export class ViewportTileSizeModifierTool extends Tool {
     return true;
   }
 
+  /** Executes this tool's run method with args[0] containing the `modifier` argument or the string "reset" in order to reset the modifier.
+   * @see [[run]]
+   */
   public parseAndRun(...args: string[]): boolean {
     const arg = args[0].toLowerCase();
     const modifier = "reset" === arg ? undefined : Number.parseFloat(args[0]);
@@ -280,14 +301,17 @@ export class ViewportTileSizeModifierTool extends Tool {
   }
 }
 
-/** Sets or clears the tile size modifier override for the selected viewport.
- * @alpha
+/** This tool adds a reality model to the viewport.
+ * @beta
  */
 export class ViewportAddRealityModel extends Tool {
   public static toolId = "ViewportAddRealityModel";
   public static get minArgs() { return 1; }
   public static get maxArgs() { return 1; }
 
+  /** This method runs the tool, adding a reality model to the viewport
+   * @param url the URL which points to the reality model tileset
+   */
   public run(url: string): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
@@ -296,13 +320,16 @@ export class ViewportAddRealityModel extends Tool {
     return true;
   }
 
+  /** Executes this tool's run method with args[0] containing the `url` argument.
+   * @see [[run]]
+   */
   public parseAndRun(...args: string[]): boolean {
     return this.run(args[0]);
   }
 }
 
 /** Changes the `allow3dManipulations` flag for the selected viewport if the viewport is displaying a `ViewState3d`.
- * @alpha
+ * @beta
  */
 export class Toggle3dManipulationsTool extends ViewportToggleTool {
   public static toolId = "Toggle3dManipulations";

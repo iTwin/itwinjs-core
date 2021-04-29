@@ -195,12 +195,13 @@ class ParticleSystem {
   }
 }
 
-/** A temporary effect used for testing [ParticleCollectionBuilder]($frontend), to be replaced by a more useful/interesting example later.
- * @alpha
+/** This tool applies an explosion particle effect used for testing [ParticleCollectionBuilder]($frontend).
+ * @beta
  */
 export class ExplosionEffect extends Tool {
   public static toolId = "ExplosionEffect";
 
+  /** This method runs the tool, applying an explosion particle effect. */
   public run(): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)

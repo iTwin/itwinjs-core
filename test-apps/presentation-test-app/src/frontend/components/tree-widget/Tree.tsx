@@ -3,34 +3,33 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./TreeWidget.css";
-import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import React from "react";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   DiagnosticsProps, useControlledPresentationTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler,
 } from "@bentley/presentation-components";
-import { ControlledTree, FilteringInput, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
-import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
+import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
 
 const PAGING_SIZE = 10;
 
 interface Props {
   imodel: IModelConnection;
   rulesetId: string;
+  diagnostics: DiagnosticsProps;
+  filtering: {
+    filter: string;
+    activeMatchIndex: number;
+    onFilteringStateChange: (isFiltering: boolean, matchesCount: number | undefined) => void;
+  };
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const Tree: React.FC<Props> = (props: Props) => {
-  const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
-
+export function Tree(props: Props) {
   const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.imodel,
     ruleset: props.rulesetId,
     pagingSize: PAGING_SIZE,
-    ...diagnosticsOptions,
+    ...props.diagnostics,
   });
-
-  const [filter, setFilter] = React.useState("");
-  const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
 
   const {
     filteredModelSource,
@@ -38,38 +37,24 @@ export const Tree: React.FC<Props> = (props: Props) => {
     isFiltering,
     matchesCount,
     nodeHighlightingProps,
-  } = useControlledPresentationTreeFiltering({ nodeLoader, filter, activeMatchIndex });
+  } = useControlledPresentationTreeFiltering({ nodeLoader, filter: props.filtering.filter, activeMatchIndex: props.filtering.activeMatchIndex });
+
+  const { onFilteringStateChange } = props.filtering;
+  React.useEffect(() => {
+    onFilteringStateChange(isFiltering, matchesCount);
+  }, [isFiltering, matchesCount, onFilteringStateChange]);
+
   const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader: filteredNodeLoader, collapsedChildrenDisposalEnabled: true, name: "TreeWithHooks" });
   const visibleNodes = useVisibleTreeNodes(filteredModelSource);
 
-  const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : null;
-
   return (
-    <div className="treewidget">
-      <div className="treewidget-header">
-        <h3>{IModelApp.i18n.translate("Sample:controls.tree")}</h3>
-        <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
-        <FilteringInput
-          filteringInProgress={isFiltering}
-          onFilterCancel={() => { setFilter(""); }}
-          onFilterClear={() => { setFilter(""); }}
-          onFilterStart={(newFilter) => { setFilter(newFilter); }}
-          resultSelectorProps={{
-            onSelectedChanged: (index) => setActiveMatchIndex(index),
-            resultCount: matchesCount || 0,
-          }} />
-      </div>
-      <div className="filteredTree">
-        <ControlledTree
-          visibleNodes={visibleNodes}
-          treeEvents={eventHandler}
-          nodeLoader={filteredNodeLoader}
-          selectionMode={SelectionMode.Extended}
-          nodeHighlightingProps={nodeHighlightingProps}
-          iconsEnabled={true}
-        />
-        {overlay}
-      </div>
-    </div>
+    <ControlledTree
+      visibleNodes={visibleNodes}
+      treeEvents={eventHandler}
+      nodeLoader={filteredNodeLoader}
+      selectionMode={SelectionMode.Extended}
+      nodeHighlightingProps={nodeHighlightingProps}
+      iconsEnabled={true}
+    />
   );
-};
+}
