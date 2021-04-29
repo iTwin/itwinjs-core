@@ -16,10 +16,13 @@ function countTileTrees(view: ViewState): number {
 // eslint-disable-file deprecation/deprecation
 
 describe("Schedule script (#integration)", () => {
+  let dbOld: IModelConnection; // BisCore 1.0.8. No RenderTimeline element.
+  let dbNew: IModelConnection; // BisCore 1.0.13. RenderTimeline element and DisplayStyle pointing to it.
   const viewId = "0x100000004d9";
-  const styleId = "0x100000004d8";
+  const embedStyleId = "0x100000004d8"; // Style with script embedded in jsonProperties.
+  const refStyleId = "0x12"; // Style with script stored on RenderTimeline element. Present only in dbNew.
+  const timelineId = "0x11"; // RenderTimeline element hosting a schedule script. Present only in dbNew.
   const modelId = "0x10000000001";
-  let imodel: IModelConnection;
 
   before(async () => {
     await IModelApp.shutdown();
@@ -28,20 +31,24 @@ describe("Schedule script (#integration)", () => {
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
+
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);
-    imodel = await CheckpointConnection.openRemote(contextId, iModelId);
+    const oldIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);
+    dbOld = await CheckpointConnection.openRemote(contextId, oldIModelId);
+    const newIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchroNew);
+    dbNew = await CheckpointConnection.openRemote(contextId, newIModelId);
   });
 
   after(async () => {
-    await imodel.close();
+    await dbOld.close();
+    await dbNew.close();
     await IModelApp.shutdown();
   });
 
   it("obtains tile tree with script source Id", async () => {
     // f_1-A:0x100000004d8_#ffffffff_E:0_0x10000000001
     // f_1-A:0x100000004d8_#f_E:0_0x10000000001
-    const expectTileTreeProps = async (scriptSourceId: string, nodeId: number, expectValid: boolean) => {
+    const expectTileTreeProps = async (scriptSourceId: string, nodeId: number, imodel: IModelConnection, expectValid: boolean) => {
       const treeId = `f_1-A:${scriptSourceId}_#${nodeId.toString(16)}_${modelId}`;
       let treeProps;
       let threw = false;
@@ -55,10 +62,16 @@ describe("Schedule script (#integration)", () => {
       expect(undefined !== treeProps).to.equal(expectValid);
     };
 
-    await expectTileTreeProps(styleId, 0xffffffff, true);
-    await expectTileTreeProps(styleId, 123, true);
-    await expectTileTreeProps("0xbadf00d", 0xffffffff, false);
-    await expectTileTreeProps("0xbadf00d", 123, false);
+    await expectTileTreeProps(embedStyleId, 0xffffffff, dbOld, true);
+    await expectTileTreeProps(embedStyleId, 123, dbOld, true);
+    await expectTileTreeProps(embedStyleId, 0xffffffff, dbNew, true);
+    await expectTileTreeProps(embedStyleId, 123, dbNew, true);
+    await expectTileTreeProps(timelineId, 0xffffffff, dbNew, true);
+    await expectTileTreeProps(timelineId, 123, dbNew, true);
+    await expectTileTreeProps(refStyleId, 0xffffffff, dbNew, false);
+    await expectTileTreeProps(refStyleId, 123, dbNew, false);
+    await expectTileTreeProps("0xbadf00d", 0xffffffff, dbOld, false);
+    await expectTileTreeProps("0xbadf00d", 123, dbNew, false);
   });
 
   it("excludes element Ids if specified", async () => {
@@ -84,29 +97,36 @@ describe("Schedule script (#integration)", () => {
       return numNonEmptyElementIdProps > 0;
     };
 
-    const styles = await imodel.elements.getProps(styleId);
-    expect(styles.length).to.equal(1);
-    expect(hasNonEmptyElementIds(styles[0] as DisplayStyleProps)).to.be.true;
+    const test = async (imodel: IModelConnection) => {
+      const styles = await imodel.elements.getProps(embedStyleId);
+      expect(styles.length).to.equal(1);
+      expect(hasNonEmptyElementIds(styles[0] as DisplayStyleProps)).to.be.true;
 
-    const view = await imodel.views.load(viewId);
-    expect(view.displayStyle.id).to.equal(styleId);
-    expect(hasNonEmptyElementIds(view.displayStyle.toJSON())).to.be.false;
+      const view = await imodel.views.load(viewId);
+      expect(view.displayStyle.id).to.equal(embedStyleId);
+      expect(hasNonEmptyElementIds(view.displayStyle.toJSON())).to.be.false;
 
-    let style = await imodel.elements.loadProps(styleId, { displayStyle: { omitScheduleScriptElementIds: true } });
-    expect(style).not.to.be.undefined;
-    expect(hasNonEmptyElementIds(style!)).to.be.false;
+      let style = await imodel.elements.loadProps(embedStyleId, { displayStyle: { omitScheduleScriptElementIds: true } });
+      expect(style).not.to.be.undefined;
+      expect(hasNonEmptyElementIds(style!)).to.be.false;
 
-    style = await imodel.elements.loadProps(styleId, { displayStyle: { omitScheduleScriptElementIds: false } });
-    expect(style).not.to.be.undefined;
-    expect(hasNonEmptyElementIds(style!)).to.be.true;
+      style = await imodel.elements.loadProps(embedStyleId, { displayStyle: { omitScheduleScriptElementIds: false } });
+      expect(style).not.to.be.undefined;
+      expect(hasNonEmptyElementIds(style!)).to.be.true;
 
-    style = await imodel.elements.loadProps(styleId);
-    expect(style).not.to.be.undefined;
-    expect(hasNonEmptyElementIds(style!)).to.be.true;
+      style = await imodel.elements.loadProps(embedStyleId);
+      expect(style).not.to.be.undefined;
+      expect(hasNonEmptyElementIds(style!)).to.be.true;
+    };
+
+    await test(dbOld);
+    await test(dbNew);
+
+    // ###TODO load timelines
   });
 
   it("creates an additional tile tree per animation transform node", async () => {
-    const view = await imodel.views.load(viewId);
+    const view = await dbOld.views.load(viewId);
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
 
     expect(countTileTrees(view)).to.equal(2);
@@ -132,12 +152,12 @@ describe("Schedule script (#integration)", () => {
 
     view.displayStyle.settings.scheduleScriptProps = json;
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
-    expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(styleId);
+    expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(embedStyleId);
     expect(countTileTrees(view)).to.equal(3);
   });
 
   it("updates tile tree references when script changes", async () => {
-    const view = await imodel.views.load(viewId) as SpatialViewState;
+    const view = await dbOld.views.load(viewId) as SpatialViewState;
     expect(view instanceof SpatialViewState).to.be.true;
 
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
@@ -159,7 +179,7 @@ describe("Schedule script (#integration)", () => {
   });
 
   it("applies to newly-added tile tree references", async () => {
-    const view = await imodel.views.load(viewId) as SpatialViewState;
+    const view = await dbOld.views.load(viewId) as SpatialViewState;
     view.modelSelector.models.clear();
     expect(countTileTrees(view)).to.equal(0);
 
