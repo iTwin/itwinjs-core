@@ -120,6 +120,7 @@ export abstract class IModelExportHandler {
   protected onExportSchema(_schema: Schema): void { }
 
   /** This method is called when IModelExporter has made incremental progress based on the [[IModelExporter.progressInterval]] setting.
+   * This method is `async` to make it easier to integrate with asynchronous status and health reporting services.
    * @note A subclass may override this method to report custom progress. The base implementation does nothing.
    */
   protected async onProgress(): Promise<void> { }
