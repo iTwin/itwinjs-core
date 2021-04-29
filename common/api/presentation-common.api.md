@@ -2276,8 +2276,11 @@ export interface RuleBase {
 // @public
 export interface Ruleset {
     id: string;
+    // @beta
+    requiredSchemas?: RequiredSchemaSpecification[];
     rules: Rule[];
     supplementationInfo?: SupplementationInfo;
+    // @deprecated
     supportedSchemas?: SchemasSpecification;
     vars?: VariablesGroup[];
 }
