@@ -32,6 +32,7 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
   return (
     <NZ_BackstageItem
       icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
+      isActive={ConditionalBooleanValue.getValue(item.isActive)}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
       subtitle={ConditionalStringValue.getValue(item.subtitle)}
@@ -58,10 +59,11 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
     FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [manager, item.stageId]);
   const activeFrontstageId = useActiveFrontstageId();
+  const isActive = ConditionalBooleanValue.getValue(item.isActive ?? item.stageId === activeFrontstageId);
   return (
     <NZ_BackstageItem
       icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
-      isActive={item.stageId === activeFrontstageId}
+      isActive={isActive}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
       subtitle={ConditionalStringValue.getValue(item.subtitle)}
