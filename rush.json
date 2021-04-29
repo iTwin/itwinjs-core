@@ -551,12 +551,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "iot-demo",
-      "projectFolder": "extensions/iot-demo",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "display-test-app",
       "projectFolder": "test-apps/display-test-app",
       "reviewCategory": "internal",
