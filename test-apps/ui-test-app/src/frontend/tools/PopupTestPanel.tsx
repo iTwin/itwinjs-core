@@ -66,11 +66,13 @@ export function PopupTestPanel() {
       <Button style={{ width: "180px" }} onClick={handleOpenModalClick}>Open Modal</Button>
       <Button style={{ width: "180px" }} onClick={handleOpenModelessClick}>Open Modeless</Button>
       <Button style={{ width: "180px" }} onClick={handleShowToolbarClick}>Open Toolbar</Button>
-      <div className="test-table-widget-container">
-        <BeDragDropContext>
-          <TableDemoWidget iModelConnection={UiFramework.getIModelConnection()} />
-        </BeDragDropContext>
-      </div>
+      {false &&
+        <div className="test-table-widget-container">
+          <BeDragDropContext>
+            <TableDemoWidget iModelConnection={UiFramework.getIModelConnection()} />
+          </BeDragDropContext>
+        </div>
+      }
     </div>
   );
 }

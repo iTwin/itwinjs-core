@@ -184,7 +184,8 @@ export class SampleAppIModelApp {
       await WebViewerApp.startup(opts);
 
     window.onerror = function (error) {
-      alert(error);
+      // eslint-disable-next-line no-console
+      console.log(error);
     };
 
     // For testing local extensions only, should not be used in production.
