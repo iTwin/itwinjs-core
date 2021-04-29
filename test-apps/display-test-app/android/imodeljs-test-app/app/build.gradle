@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
+    ndkVersion "18.1.5063045"
 
     defaultConfig {
         applicationId "com.bentley.imodeljs_test_app"
@@ -26,4 +27,5 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'com.bentley.itwin:iTwinAndroidLibrary-release:1.0@aar'
 }

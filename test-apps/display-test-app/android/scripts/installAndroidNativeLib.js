@@ -2,7 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-return;
+if (process.env.IMODELJS_LOCAL_ADDON) {
+  return;
+}
+
 const exec = require("child_process").exec;
 const path = require("path");
 const fs = require("fs-extra");

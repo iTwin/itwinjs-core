@@ -17,8 +17,8 @@ allprojects {
         google()
         jcenter()
         flatDir {
+            dirs "${projectDir}/../../node_modules/@bentley/imodeljs-backend/node_modules/@bentley/imodeljs-native/"
             dirs "${System.env.OutRoot}AndroidARM64/imodeljsnodeaddon_pkgs/imodeljs-android-arm64"
-            //dirs "${projectDir}/../../node_modules/@bentley/imodeljs-backend/node_modules/@bentley/imodeljs-native/"
         }
     }
 }
