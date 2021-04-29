@@ -122,7 +122,7 @@ export abstract class IModelExportHandler {
   /** This method is called when IModelExporter has made incremental progress based on the [[IModelExporter.progressInterval]] setting.
    * @note A subclass may override this method to report custom progress. The base implementation does nothing.
    */
-  protected onProgress(): void { }
+  protected async onProgress(): Promise<void> { }
 
   /** Helper method that allows IModelExporter to call protected methods in IModelExportHandler.
    * @internal
@@ -698,15 +698,15 @@ export class IModelExporter {
     // relationship has passed standard exclusion rules, now give handler a chance to accept/reject export
     if (this.handler.callProtected.shouldExportRelationship(relationship)) {
       this.handler.callProtected.onExportRelationship(relationship, isUpdate);
-      this.trackProgress();
+      await this.trackProgress();
     }
   }
 
   /** Tracks incremental progress */
-  private trackProgress(): void {
+  private async trackProgress(): Promise<void> {
     this._progressCounter++;
     if (0 === (this._progressCounter % this.progressInterval)) {
-      this.handler.callProtected.onProgress();
+      return this.handler.callProtected.onProgress();
     }
   }
 }
