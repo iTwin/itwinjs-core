@@ -6,50 +6,61 @@
 import "./IModelSelector.css";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { Select, SelectOption } from "@bentley/ui-core";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
 
 export interface Props {
-  onIModelSelected: (imodel?: IModelConnection) => void;
+  onIModelSelected: (imodel?: IModelConnection, path?: string) => void;
+  activeIModelPath?: string;
 }
 
 export interface State {
-  availableImodels: string[];
-  activeImodel?: string;
+  activeIModel?: IModelConnection;
+  availableImodels: SelectOption[];
   error?: any;
 }
 
-export default class IModelSelector extends React.Component<Props, State> {
+export class IModelSelector extends React.Component<Props, State> {
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: Props) {
+    super(props);
     this.state = { availableImodels: [] };
   }
 
-  public async componentWillMount() { // eslint-disable-line react/no-deprecated
+  public async componentDidMount() {
     const imodels = await MyAppFrontend.getSampleImodels();
     imodels.splice(0, 0, "");
-    this.setState({ availableImodels: imodels });
+    this.setState({
+      availableImodels: imodels.map((path: string) => ({
+        label: path.split(/[\\/]/).pop() ?? "",
+        value: path,
+      })),
+    });
+    if (this.props.activeIModelPath && imodels.includes(this.props.activeIModelPath)) {
+      await this.doOpenIModel(this.props.activeIModelPath);
+    }
+  }
+
+  private async doOpenIModel(imodelPath: string) {
+    if (this.state.activeIModel) {
+      await this.state.activeIModel.close();
+    }
+
+    let imodel: IModelConnection | undefined;
+    if (imodelPath) {
+      try {
+        imodel = await MyAppFrontend.openIModel(imodelPath);
+        this.setState({ activeIModel: imodel, error: undefined });
+      } catch (err) {
+        this.setState({ activeIModel: undefined, error: err });
+      }
+    }
+    this.props.onIModelSelected(imodel, imodelPath);
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onImodelSelected = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const imodelPath = e.currentTarget.value;
-    if (MyAppFrontend.iModel) {
-      await MyAppFrontend.iModel.close();
-    }
-
-    let imodel: IModelConnection | undefined;
-    if (!imodelPath || "" === imodelPath) {
-      this.setState((prev: State) => ({ ...prev, imodel: undefined, error: undefined }));
-    } else {
-      try {
-        imodel = await MyAppFrontend.openIModel(imodelPath);
-        this.setState((prev: State) => ({ ...prev, activeImodel: imodelPath, error: undefined }));
-      } catch (err) {
-        this.setState((prev: State) => ({ ...prev, activeImodel: undefined, error: err }));
-      }
-    }
-    this.props.onIModelSelected(imodel);
+    await this.doOpenIModel(e.currentTarget.value);
   };
 
   public render() {
@@ -59,13 +70,12 @@ export default class IModelSelector extends React.Component<Props, State> {
 
     return (
       <div className="IModelSelector">
-        {IModelApp.i18n.translate("Sample:controls.notifications.select-imodel")}:
-        {/* eslint-disable-next-line jsx-a11y/no-onchange */}
-        <select onChange={this.onImodelSelected}>
-          {this.state.availableImodels.map((path: string) => (
-            <option key={path} value={path}>{path.split(/[\\/]/).pop()}</option>
-          ))}
-        </select>
+        <Select
+          options={this.state.availableImodels}
+          defaultValue={this.props.activeIModelPath}
+          placeholder={IModelApp.i18n.translate("Sample:controls.notifications.select-imodel")}
+          onChange={this.onImodelSelected}
+        />
         {error}
       </div>
     );

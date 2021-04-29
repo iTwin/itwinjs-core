@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { using } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, RuleTypes } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
+import { Presentation } from "@bentley/presentation-frontend";
 import { PropertyCategory } from "@bentley/ui-components";
 import { initialize, terminate } from "../../IntegrationTests";
 
@@ -151,5 +153,25 @@ describe("PropertyDataProvider", async () => {
 
   runTests("with flat property categories", () => provider.isNestedPropertyCategoryGroupingEnabled = false);
   runTests("with nested property categories", () => provider.isNestedPropertyCategoryGroupingEnabled = true);
+
+  it("gets property data after re-initializing Presentation", async () => {
+    const checkDataProvider = async () => {
+      await using(new PresentationPropertyDataProvider({ imodel }), async (p) => {
+        p.keys = new KeySet([physicalModelProps]);
+        const properties = await p.getData();
+        expect(properties.categories).to.not.be.empty;
+      });
+    };
+
+    // first request something to make sure we get data back
+    await checkDataProvider();
+
+    // re-initialize
+    Presentation.terminate();
+    await Presentation.initialize();
+
+    // repeat request
+    await checkDataProvider();
+  });
 
 });
