@@ -86,7 +86,7 @@ describe("ContentBuilder", () => {
           [field.name]: "some display value",
         };
         const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({field}, item);
+        const record = ContentBuilder.createPropertyRecord({ field }, item);
         expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
       });
 
@@ -114,7 +114,7 @@ describe("ContentBuilder", () => {
 
       it("creates record with nested primitive value", () => {
         const nestedField = createTestSimpleContentField();
-        const field = createTestNestedContentField({ name: "root-field",  nestedFields: [nestedField] });
+        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
         const values = {
           [field.name]: [{
             primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
@@ -146,7 +146,7 @@ describe("ContentBuilder", () => {
 
       it("creates record with nested primitive value when nested content value is not set", () => {
         const nestedField = createTestSimpleContentField({ name: "nested-field" });
-        const field = createTestNestedContentField({ name: "root-field",  nestedFields: [nestedField] });
+        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
         const values = {
           [field.name]: undefined,
         };
@@ -160,8 +160,8 @@ describe("ContentBuilder", () => {
 
       it("creates record with deeply nested primitive value", () => {
         const deeplyNestedField = createTestSimpleContentField({ name: "deeply-nested-field" });
-        const nestedField = createTestNestedContentField({ name: "nested-field",  nestedFields: [deeplyNestedField] });
-        const field = createTestNestedContentField({ name: "root-field",  nestedFields: [nestedField] });
+        const nestedField = createTestNestedContentField({ name: "nested-field", nestedFields: [deeplyNestedField] });
+        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
         const values = {
           [field.name]: [{
             primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
@@ -203,7 +203,7 @@ describe("ContentBuilder", () => {
       it("creates record with deeply nested primitive value when nested value is not set", () => {
         const deeplyNestedField = createTestSimpleContentField({ name: "deeply-nested-field" });
         const nestedField = createTestNestedContentField({ name: "nested-field", nestedFields: [deeplyNestedField] });
-        const field = createTestNestedContentField({ name: "root-field",  nestedFields: [nestedField] });
+        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
         const values = {
           [field.name]: [{
             primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
@@ -290,7 +290,7 @@ describe("ContentBuilder", () => {
             memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "MyType" },
           },
         });
-        const field = createTestNestedContentField({ name: "root-field",  nestedFields: [nestedField] });
+        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
         const values = {
           [field.name]: [{
             primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
@@ -401,7 +401,7 @@ describe("ContentBuilder", () => {
           }],
         };
         const nestedField = createTestSimpleContentField({ name: "nested-struct-field", type: typeDescription });
-        const field = createTestNestedContentField({ name: "root-field",  nestedFields: [nestedField] });
+        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
         const values = {
           [field.name]: [{
             primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
@@ -444,8 +444,12 @@ describe("ContentBuilder", () => {
     describe("with nested content", () => {
 
       it("creates record for nested content value with single deeply nested content value", () => {
-        const deeplyNestedField = createTestSimpleContentField({
+        const deeplyNestedField = createTestPropertiesContentField({
           name: "deeply-nested-field",
+          properties: [{
+            property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 1, label: "One" }], isStrict: true } }),
+            relatedClassPath: [],
+          }],
           renderer: {
             name: "test-renderer",
           },
@@ -491,8 +495,12 @@ describe("ContentBuilder", () => {
       });
 
       it("creates record for a single deeply nested content value", () => {
-        const deeplyNestedField = createTestSimpleContentField({
+        const deeplyNestedField = createTestPropertiesContentField({
           name: "deeply-nested-field",
+          properties: [{
+            property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 1, label: "One" }], isStrict: true } }),
+            relatedClassPath: [],
+          }],
           renderer: {
             name: "test-renderer",
           },
@@ -538,8 +546,12 @@ describe("ContentBuilder", () => {
       });
 
       it("creates record for nested content value with multiple nested content values", () => {
-        const nestedField = createTestSimpleContentField({
+        const nestedField = createTestPropertiesContentField({
           name: "nested-field",
+          properties: [{
+            property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 1, label: "One" }], isStrict: true } }),
+            relatedClassPath: [],
+          }],
           renderer: {
             name: "test-renderer",
           },
@@ -548,7 +560,7 @@ describe("ContentBuilder", () => {
             params: undefined,
           },
         });
-        const field = createTestNestedContentField({ name: "root-field",  nestedFields: [nestedField] });
+        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
         const values = {
           [field.name]: [{
             primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
@@ -579,8 +591,12 @@ describe("ContentBuilder", () => {
       });
 
       it("creates record for multiple nested content values", () => {
-        const nestedField = createTestSimpleContentField({
+        const nestedField = createTestPropertiesContentField({
           name: "nested-field",
+          properties: [{
+            property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 1, label: "One" }], isStrict: true } }),
+            relatedClassPath: [],
+          }],
           renderer: {
             name: "test-renderer",
           },
@@ -621,7 +637,7 @@ describe("ContentBuilder", () => {
 
       it("creates record for empty root nested content value", () => {
         const nestedField = createTestNestedContentField({ name: "nested-field", nestedFields: [] });
-        const rootField = createTestNestedContentField({ name: "root-field",  nestedFields: [nestedField] });
+        const rootField = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
         const values = {
           [rootField.name]: [{
             primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
@@ -681,7 +697,7 @@ describe("ContentBuilder", () => {
 
       it("creates record for merged nesting content value", () => {
         const nestedField = createTestSimpleContentField({ name: "nested-field" });
-        const field = createTestNestedContentField({ name: "root-field",  nestedFields: [nestedField] });
+        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
         const values = {
           [field.name]: undefined,
         };
@@ -695,7 +711,7 @@ describe("ContentBuilder", () => {
 
       it("handles undefined display value of merged nested content value", async () => {
         const nestedField = createTestSimpleContentField({ name: "nested-field" });
-        const field = createTestNestedContentField({ name: "root-field",  nestedFields: [nestedField] });
+        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
         const values = {
           [field.name]: undefined,
         };
