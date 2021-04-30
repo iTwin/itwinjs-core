@@ -57,7 +57,8 @@
     "nyc": "^14.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "memfs": "^3.2.2"
+    "memfs": "^3.2.2",
+    "unionfs": "^4.4.0"
   },
   "eslintConfig": {
     "plugins": [

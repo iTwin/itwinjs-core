@@ -59,9 +59,6 @@ export function getRequireExternalConfig(srcFile: any, pluginToTest: any) {
       "@bentley/imodeljs-native",
     ],
     optimization: { minimize: false, runtimeChunk: true },
-    module: {
-      rules: [copyFilesRule],
-    }
   };
 }
 

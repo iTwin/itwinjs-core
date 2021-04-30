@@ -22,7 +22,7 @@ interface MagicCommentHandlerConfig {
    *
    * For example, if a handler were to transform:
    * ```
-   *    const x = require.resolve(/﻿* foo *﻿/"bar.txt");
+   *    const x = require.resolve(/* foo *﻿/"bar.txt");
    *    // to:
    *    const x = require.resolve("file-loader!bar.txt");
    * ```
