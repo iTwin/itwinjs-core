@@ -90,8 +90,8 @@ Array [
     },
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 8388863,
-        "color": 4278190335,
+        "backgroundColor": 32768,
+        "color": 16711680,
       },
       "isBold": true,
       "isItalic": true,
@@ -130,8 +130,8 @@ Array [
     },
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 8388863,
-        "color": 4278190335,
+        "backgroundColor": 32768,
+        "color": 16711680,
       },
       "isBold": true,
       "isItalic": true,
