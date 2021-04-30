@@ -255,7 +255,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Defines a [ClippingPlane]($geometry-core) associated with a [[CuttingPlaneEntry]]. */
+  /** Defines a [ClipPlane]($geometry-core) associated with a [[CuttingPlaneEntry]]. */
   export class CuttingPlane {
     /** A point on the plane. */
     public readonly position: XYAndZ;

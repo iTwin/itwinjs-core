@@ -36,7 +36,7 @@ Name | Required? | Type | Default | Meaning
 Name | Required? | Type | Default | Meaning
 -|-|-|-|-
 `propertyName` | Yes | `string` | | Name of the property whose value should be used.
-`propertySource` | No | `RelationshipPathSpecification` | Empty path | [Specification of the relationship path](./RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the property.
+`propertySource` | No | `RelationshipPathSpecification` | Empty path | [Specification of the relationship path](../RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the property.
 
 ### String
 
@@ -72,7 +72,7 @@ Name | Required? | Type | Default | Meaning
 
 Name | Required? | Type | Default | Meaning
 -|-|-|-|-
-`pathToRelatedInstance` | Yes | `RelationshipPathSpecification` | | [Specification of the relationship path](./RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the related instance.
+`pathToRelatedInstance` | Yes | `RelationshipPathSpecification` | | [Specification of the relationship path](../RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the related instance.
 
 ## Example
 
