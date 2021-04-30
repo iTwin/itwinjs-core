@@ -356,7 +356,6 @@ function createPropertyRecordPropsFromFieldHierarchy(fieldHierarchy: FieldHierar
       enum: getFieldEnumInfo(fieldHierarchy.field),
       isReadonly: fieldHierarchy.field.isReadonly || isFieldMerged,
     }),
-    description: ContentBuilder.createPropertyDescription(fieldHierarchy.field, { namePrefix }),
     isMerged: isFieldMerged,
     autoExpand: fieldHierarchy.field.parent?.autoExpand,
   };

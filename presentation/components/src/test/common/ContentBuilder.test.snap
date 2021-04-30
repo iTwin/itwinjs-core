@@ -59,7 +59,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "SimpleField",
-      "typename": "myarray[]",
+      "typename": "MyArray[]",
     },
     "value": Object {
       "items": Array [
@@ -124,7 +124,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "root-field$nested-array-field",
-      "typename": "myarray[][]",
+      "typename": "MyArray[][]",
     },
     "value": Object {
       "items": Array [
@@ -221,7 +221,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "SimpleField",
-      "typename": "myarray[]",
+      "typename": "MyArray[]",
     },
     "value": Object {
       "displayValue": "",
@@ -888,7 +888,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "root-field$nested-struct-field",
-      "typename": "mystruct[][]",
+      "typename": "MyStruct[][]",
     },
     "value": Object {
       "items": Array [
@@ -957,7 +957,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "SimpleField",
-      "typename": "mystruct[]",
+      "typename": "MyStruct[]",
     },
     "value": Object {
       "members": Object {
@@ -988,7 +988,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "SimpleField",
-      "typename": "mystruct[]",
+      "typename": "MyStruct[]",
     },
     "value": Object {
       "displayValue": "",
