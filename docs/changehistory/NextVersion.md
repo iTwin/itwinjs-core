@@ -51,6 +51,7 @@ The following APIs have been promoted to `public`. Public APIs are guaranteed to
 * [WebGLRenderCompatibilityStatus]($webgl-compatibility) for describing a general compatiblity rating of a client system.
 * [GraphicsDriverBugs]($webgl-compatibility) for describing any known graphics driver bugs for which iTwin.js will apply workarounds.
 * [ContextCreator]($webgl-compatibility) for describing a function that creates and returns a WebGLContext for [queryRenderCompatibility]($webgl-compatibility).
+
 ## Breaking API changes
 
 ### @bentley/imodeljs-backend package
@@ -65,3 +66,7 @@ In addition, new protected static methods were added:
 
 * [Element]($backend) `[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]`
 * [Model]($backend) `[onInsertElement, onInsertedElement, onUpdateElement, onUpdatedElement, onDeleteElement, onDeletedElement]`
+
+The following method is now `async` to make it easier to integrate with asynchronous status and health reporting services:
+
+* [IModelExportHandler.onProgress]($backend)

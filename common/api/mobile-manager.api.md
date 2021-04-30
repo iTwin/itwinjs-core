@@ -4,11 +4,13 @@
 
 ```ts
 
+import { AccessToken } from '@bentley/itwin-client';
 import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CancelRequest } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { IModelAppOptions } from '@bentley/imodeljs-frontend';
+import { NativeAppAuthorizationBackend } from '@bentley/imodeljs-backend';
 import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { NativeAppOpts } from '@bentley/imodeljs-frontend';
 import { NativeHostOpts } from '@bentley/imodeljs-backend';
@@ -150,6 +152,8 @@ export abstract class MobileDevice {
 
 // @beta (undocumented)
 export class MobileHost {
+    // @internal (undocumented)
+    static get authorization(): MobileAuthorizationBackend;
     // (undocumented)
     static get device(): MobileDevice;
     // @internal (undocumented)
@@ -178,6 +182,7 @@ export interface MobileHostOpts extends NativeHostOpts {
         device?: MobileDevice;
         rpcInterfaces?: RpcInterfaceDefinition[];
         authConfig?: NativeAppAuthorizationConfiguration;
+        noInitializeAuthClient?: boolean;
     };
 }
 
