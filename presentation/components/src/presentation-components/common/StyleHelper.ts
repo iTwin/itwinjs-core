@@ -173,7 +173,7 @@ export class StyleHelper {
   /** Get color number from a named color. @see `colors` map for available names. */
   private static getColorFromColorName(name: string): number {
     if (colors.hasOwnProperty(name))
-      return colors[name];
+      return colors[name] >>> 8;
     throw new Error("Invalid color name");
   }
 
@@ -184,15 +184,13 @@ export class StyleHelper {
     const r: number = Number(components[0]);
     const g: number = Number(components[1]);
     const b: number = Number(components[2]);
-    return r << 24 | g << 16 | b << 8 | 255;
+    return r << 16 | g << 8 | b;
   }
 
   /** Get color number from HEX format: `#ff3300` */
   private static getColorFromHex(name: string): number {
     name = name.substr(1, 7);
-    let color: number = parseInt(`0x${name}`, 16);
-    color = color << 8 | 255;
-    return color;
+    return parseInt(`0x${name}`, 16);
   }
 
   public static isBold(node: Partial<Node>): boolean {
