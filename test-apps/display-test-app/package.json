@@ -32,7 +32,11 @@
     "build:ios-backend": "npm run build:backend && webpack --config ./ios/backend.config --env.outdir=./lib/ios --env.entry=./lib/backend/MobileMain.js --env.bundlename=main",
     "install-ios-lib": "node ./ios/scripts/installIosNativeLib.js",
     "copy:ios-frontend": "mkdir -p ./lib/ios && rm -rf ./lib/ios/www && cp -R ./build ./lib/ios/www",
-    "build:ios": "npm run install-ios-lib && npm run build:frontend && npm run build:ios-backend && npm run copy:ios-frontend"
+    "build:ios": "npm run install-ios-lib && npm run build:frontend && npm run build:ios-backend && npm run copy:ios-frontend",
+    "build:android-backend": "npm run build:backend && webpack --config ./android/backend.config --env.outdir=./lib/android --env.entry=./lib/backend/MobileMain.js --env.bundlename=main",
+    "install-android-lib": "node ./android/scripts/installAndroidNativeLib.js",
+    "copy:android-assets": "node ./android/scripts/copyAndroidAssets.js",
+    "build:android": "npm run install-android-lib && npm run build:frontend && npm run build:android-backend && npm run copy:android-assets"
   },
   "repository": {},
   "dependencies": {
