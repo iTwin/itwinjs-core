@@ -41,8 +41,8 @@
 
   --buic-foreground-body-rgb:                 var(--iui-text-color-rgb);
   --buic-foreground-body:                     var(--iui-text-color);
-  // --buic-foreground-body-reverse-rgb:         var(--iui-color-foreground-body-invert-rgb);
-  --buic-foreground-body-reverse:             rgba(var(--buic-foreground-body-reverse-rgb), var(--iui-opacity-2));
+  --buic-foreground-body-reverse-rgb:         var(--iui-color-foreground-body-invert-rgb);
+  --buic-foreground-body-reverse:             rgba(var(--iui-color-foreground-body-invert-rgb), var(--iui-opacity-2));
   --buic-foreground-muted:                    var(--iui-text-color-muted);
   --buic-foreground-disabled:                 var(--iui-text-color-placeholder);
   --buic-foreground-activehover:              var(--iui-icons-color-actionable-hover);

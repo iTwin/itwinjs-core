@@ -7,7 +7,6 @@ dependencies:
   '@bentley/imodeljs-native': 2.16.0
   '@bentley/react-scripts': 3.4.9_50a9a52775dfbe3fbd64ccf8e2a3fa32
   '@bentley/units-schema': 1.0.6
-  '@itwin/itwinui-react': 1.0.0_react-dom@16.14.0+react@16.14.0
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': 2.6.1
   '@openid/appauth': 1.3.0_debug@2.6.9
@@ -2148,6 +2147,24 @@ packages:
       react-dom: ^16.8.6 || ^17.0.0
     resolution:
       integrity: sha512-IyBLOZf8PqEoSOEmt3sV6LvEA+ogTdtQIkC9b5jSQpQuGTJpv8ksb/zEtmSIRJCFbHaAQJwVQPYTrS3tHiqqZQ==
+  /@itwin/itwinui-react/1.2.0_react-dom@16.14.0+react@16.14.0:
+    dependencies:
+      '@itwin/itwinui-css': 0.11.0
+      '@itwin/itwinui-icons-react': 0.1.0_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-illustrations-react': 0.1.0_react-dom@16.14.0+react@16.14.0
+      '@tippyjs/react': 4.2.5_react-dom@16.14.0+react@16.14.0
+      '@types/react-table': 7.0.29
+      classnames: 2.2.6
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
+      react-table: 7.6.3_react@16.14.0
+      react-transition-group: 4.4.1_react-dom@16.14.0+react@16.14.0
+    dev: false
+    peerDependencies:
+      react: ^16.8.6 || ^17.0.0
+      react-dom: ^16.8.6 || ^17.0.0
+    resolution:
+      integrity: sha512-wO9Gggc3G5HjVLbqgbn73npx/hAa7Sn0h+J74ij9ZZPqxx+Q/UgzKxHqCttVS1Qo954JiRtw1bIMKLka7xqJEw==
   /@jest/console/24.9.0:
     dependencies:
       '@jest/source-map': 24.9.0
@@ -21568,7 +21585,7 @@ packages:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/react-scripts': 3.4.9_50a9a52775dfbe3fbd64ccf8e2a3fa32
       '@itwin/itwinui-css': 0.11.0
-      '@itwin/itwinui-react': 1.0.0_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.2.0_react-dom@16.14.0+react@16.14.0
       '@types/bunyan': 1.8.6
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.12
@@ -21595,7 +21612,7 @@ packages:
     peerDependencies:
       webpack-cli: '*'
     resolution:
-      integrity: sha512-RsscYBfOBjH8mq1ce3zAgDLrUFlAbMhJ2N1xgE39dBgTneAuNRaNv1Uwl9/b69P3kuOWhS23t2YgBB8CR8DH8A==
+      integrity: sha512-BgzmnZJteYjL0lXIpEE4GYQcYc0WyPpXVCNOsPoWf+Z1xVnX1E36k0QMwc9bWXOgeX2d4c/IQXeynKEiTGq8bA==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz_jsdom@11.12.0':
@@ -21859,7 +21876,7 @@ packages:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.11.0
-      '@itwin/itwinui-react': 1.0.0_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.2.0_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.16
@@ -21941,7 +21958,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-components'
     resolution:
-      integrity: sha512-K4SZsskp+BdkU8i+Drhp8swc5IyhcmAoj9tE/pViXb+UMi5zC1QHrcuMbevjnrfbsQlH5yFrMSCGxbIngyAKrw==
+      integrity: sha512-RH6/CsW+tpwZPdOgDtX9hCubF4FTZUd6nrGoWL4WrJNVN0RIIRS+ejByStP9bIzVXCXLu0Pg0txtIgwMzr0LaA==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz_2f645c1465aea7f802b6a9a8594dc28f':
@@ -21949,7 +21966,7 @@ packages:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/react-scripts': 3.4.9_50a9a52775dfbe3fbd64ccf8e2a3fa32
       '@itwin/itwinui-css': 0.11.0
-      '@itwin/itwinui-react': 1.0.0_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.2.0_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.16
@@ -22011,7 +22028,7 @@ packages:
       webpack: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-yPIauB2RGxtxmGHwX7dDYDVv/ev+ROsj9pg/FxWaz1U4D6RZWdshEgbSp0p4KlWp0EjVMAh0doOb+weUy0OGmw==
+      integrity: sha512-Et+qY/NVo+5u+n2JOxi4EVgukmsS8MtuKo5DwMcw8+o48z5/UsfvfsO5HSvQvvmvR3XGDjwkUpGyjSoC3J86MQ==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz_2f645c1465aea7f802b6a9a8594dc28f':
@@ -22020,7 +22037,7 @@ packages:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/react-scripts': 3.4.9_50a9a52775dfbe3fbd64ccf8e2a3fa32
       '@itwin/itwinui-css': 0.10.0
-      '@itwin/itwinui-react': 1.0.0_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.2.0_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.16
@@ -22087,13 +22104,13 @@ packages:
       webpack: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-o4fT6DjjGGKNDmCAQ59A3Z9BT/dleSvOKJK72wzVt8FfC5bBTDuVVO+obPXHv9MHCxd22c21qI91/cEAMo6lGg==
+      integrity: sha512-PhFX0lXxSegPB9PzsoYhw2OEiTPGnHW6S6QVYsZelMZ3bjqLKRCdBgjbq4yJrDtjShYgFLPt3a8THuDU2KbBfA==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz_react-test-renderer@16.14.0':
     dependencies:
       '@itwin/itwinui-css': 0.11.0
-      '@itwin/itwinui-react': 1.0.0_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.2.0_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.16
@@ -22140,7 +22157,7 @@ packages:
     peerDependencies:
       react-test-renderer: '*'
     resolution:
-      integrity: sha512-nO1LfDZHlqadpm2ekZRwGqw3qpPXFxjj4KtlfKVcQJ4dnWZTAHgJI8dnVizGaHn7S9Pd1siCqbRTKS/UTxE3aA==
+      integrity: sha512-2O+33VOJQtalgGAa8LuGBeC+rohZdrL1EXsayvtP4RDLqFFUW6cvroyF3FgRFKHhpItF1PLsB2G4rccIhq/qxw==
       tarball: 'file:projects/ui-ninezone.tgz'
     version: 0.0.0
   'file:projects/ui-test-app.tgz_webpack-cli@3.3.12':
@@ -22150,7 +22167,7 @@ packages:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/react-scripts': 3.4.9_50a9a52775dfbe3fbd64ccf8e2a3fa32
       '@itwin/itwinui-css': 0.11.0
-      '@itwin/itwinui-react': 1.0.0_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.2.0_react-dom@16.14.0+react@16.14.0
       '@types/classnames': 2.2.11
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
@@ -22191,7 +22208,7 @@ packages:
     peerDependencies:
       webpack-cli: '*'
     resolution:
-      integrity: sha512-2D+fEpOZL+rUEo9BEmXdAf2VvmQnkUBEI+PZqEmov+K40LH5G0TVZyE15DllAQw7NVyPluwatxSM9mUviCXNmg==
+      integrity: sha512-eb80cC0GauLoBdZwXH0RZTGnQmiIs/7xow2KYEKP++CBhwiERhNeGrBp0btAw/Svtd/MfhoIey7s4Ktag8aGLQ==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/ui-test-extension.tgz_webpack@4.42.0':
@@ -22294,7 +22311,6 @@ specifiers:
   '@bentley/imodeljs-native': 2.16.0
   '@bentley/react-scripts': 3.4.9
   '@bentley/units-schema': ^1.0.5
-  '@itwin/itwinui-react': ^1.0.0
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': ^2.5.5
   '@openid/appauth': ^1.2.6

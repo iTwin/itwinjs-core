@@ -115,7 +115,7 @@
     "@bentley/ui-framework": "2.16.0-dev.19",
     "@bentley/map-layers": "2.16.0-dev.19",
     "@itwin/itwinui-css": "^0.11.0",
-    "@itwin/itwinui-react": "^1.0.0",
+    "@itwin/itwinui-react": "^1.2.0",
     "classnames": "2.2.6",
     "lorem-ipsum": "^2.0.3",
     "mobx": "^5.8.0",
