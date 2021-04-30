@@ -383,7 +383,7 @@ class GraphicsTile extends Tile {
 
     const tree = this.tree;
     assert(tree instanceof IModelTileTree);
-    const reader = ImdlReader.create(stream, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, undefined, this.contentId);
+    const reader = ImdlReader.create(stream, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, undefined, { tileId: this.contentId });
 
     let content: TileContent = { isLeaf: true };
     if (reader) {

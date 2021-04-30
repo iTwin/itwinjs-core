@@ -5,8 +5,8 @@
 
 import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
-  ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions, InformationPartitionElement,
-  PhysicalModel, PhysicalPartition, Relationship, SubCategory,
+  Category, ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions,
+  InformationPartitionElement, PhysicalModel, PhysicalPartition, Relationship, SubCategory,
 } from "@bentley/imodeljs-backend";
 import { ElementProps, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -18,6 +18,7 @@ export interface TransformerOptions extends IModelTransformOptions {
   combinePhysicalModels?: boolean;
   deleteUnusedGeometryParts?: boolean;
   excludeSubCategories?: string[];
+  excludeCategories?: string[];
 }
 
 export class Transformer extends IModelTransformer {
@@ -80,6 +81,9 @@ export class Transformer extends IModelTransformer {
     if (options?.excludeSubCategories) {
       this.excludeSubCategories(options.excludeSubCategories);
     }
+    if (options?.excludeCategories) {
+      this.excludeCategories(options.excludeCategories);
+    }
 
     // query for and log the number of source Elements that will be processed
     this._numSourceElements = this.sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
@@ -110,6 +114,23 @@ export class Transformer extends IModelTransformer {
             this.context.filterSubCategory(subCategoryId); // filter out geometry entries in this SubCategory from the target iModel
             this.exporter.excludeElement(subCategoryId); // exclude the SubCategory Element itself from the target iModel
           }
+        }
+      });
+    }
+  }
+
+  /** Initialize IModelTransformer to exclude Category Elements and geometry entries in a Category from the target iModel.
+   * @param CategoryNames Array of Category names to exclude
+   */
+  private excludeCategories(categoryNames: string[]): void {
+    const sql = `SELECT ECInstanceId FROM ${Category.classFullName} WHERE CodeValue=:categoryName`;
+    for (const categoryName of categoryNames) {
+      this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+        statement.bindString("categoryName", categoryName);
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          const categoryId = statement.getValue(0).getId();
+          this.exporter.excludeElementCategory(categoryId);
+          this.exporter.excludeElement(categoryId);
         }
       });
     }
@@ -147,7 +168,7 @@ export class Transformer extends IModelTransformer {
     return super.shouldExportRelationship(relationship);
   }
 
-  protected onProgress(): void {
+  protected async onProgress(): Promise<void> {
     if (this._numSourceElementsProcessed > 0) {
       Logger.logInfo(progressLoggerCategory, `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`);
     }
@@ -156,8 +177,7 @@ export class Transformer extends IModelTransformer {
     }
     this.logElapsedTime();
     this.logChangeTrackingMemoryUsed();
-    // this.targetDb.saveChanges();
-    super.onProgress();
+    return super.onProgress();
   }
 
   private logElapsedTime(): void {

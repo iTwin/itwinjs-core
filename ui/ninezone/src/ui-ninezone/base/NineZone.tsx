@@ -196,6 +196,7 @@ const Measurer = React.forwardRef<HTMLDivElement>(function Measurer(_, ref) { //
   const size = React.useRef<{ height?: number, width?: number }>({});
   const dispatch = React.useContext(NineZoneDispatchContext);
   const handleResize = React.useCallback((width, height) => {
+    // istanbul ignore next
     if (size.current.width === width && size.current.height === height)
       return;
     size.current.height = height;

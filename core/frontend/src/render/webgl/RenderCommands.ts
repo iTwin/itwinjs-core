@@ -40,6 +40,7 @@ export class RenderCommands {
   private _stack: BranchStack; // refers to the Target's BranchStack
   private _batchState: BatchState; // refers to the Target's BatchState
   private _forcedRenderPass: RenderPass = RenderPass.None;
+  private _addLayersAsNormalGraphics = false;
   private _opaqueOverrides = false;
   private _translucentOverrides = false;
   private _addTranslucentAsOpaque = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
@@ -101,6 +102,15 @@ export class RenderCommands {
     this._stack = stack;
     this._batchState = batchState;
     this.clear();
+  }
+
+  public collectGraphicsForPlanarProjection(scene: GraphicList): void {
+    assert(this._forcedRenderPass === RenderPass.None);
+    assert(!this._addLayersAsNormalGraphics);
+
+    this._addLayersAsNormalGraphics = true;
+    this.addGraphics(scene);
+    this._addLayersAsNormalGraphics = false;
   }
 
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
@@ -285,6 +295,16 @@ export class RenderCommands {
   }
 
   public addLayerCommands(layer: Layer): void {
+    if (this._addLayersAsNormalGraphics) {
+      // GraphicsCollectorDrawArgs wants to collect graphics to project to a plane for masking.
+      // It bypasses PlanProjectionTreeReference.createDrawArgs which would otherwise wrap the graphics in a LayerContainer.
+      assert(this._forcedRenderPass === RenderPass.None);
+      this._forcedRenderPass = RenderPass.OpaqueGeneral;
+      layer.graphic.addCommands(this);
+      this._forcedRenderPass = RenderPass.None;
+      return;
+    }
+
     assert(this.isDrawingLayers);
     if (!this.isDrawingLayers)
       return;
@@ -301,8 +321,8 @@ export class RenderCommands {
   }
 
   public addHiliteLayerCommands(graphic: Graphic, pass: RenderPass): void {
-    assert(this.isDrawingLayers);
-    if (!this.isDrawingLayers)
+    assert(this.isDrawingLayers || this._addLayersAsNormalGraphics);
+    if (!this.isDrawingLayers && !this._addLayersAsNormalGraphics)
       return;
 
     const prevPass = this._forcedRenderPass;

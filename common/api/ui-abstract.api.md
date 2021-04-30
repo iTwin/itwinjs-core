@@ -899,6 +899,7 @@ export interface CommonBackstageItem extends ProvidedItem {
     readonly icon?: string | ConditionalStringValue;
     readonly id: string;
     readonly internalData?: Map<string, any>;
+    readonly isActive?: boolean | ConditionalBooleanValue;
     readonly isDisabled?: boolean | ConditionalBooleanValue;
     readonly isHidden?: boolean | ConditionalBooleanValue;
     readonly itemPriority: number;

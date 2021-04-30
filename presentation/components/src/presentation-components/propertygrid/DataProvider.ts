@@ -7,7 +7,6 @@
  */
 
 import { inPlaceSort } from "fast-sort";
-import { once } from "lodash";
 import memoize from "micro-memoize";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -35,9 +34,6 @@ const labelsComparer = new Intl.Collator(undefined, { sensitivity: "base" }).com
  */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset = require("./DefaultPropertyGridRules.json");
-
-/** The function registers DEFAULT_PROPERTY_GRID_RULESET the first time it's called and does nothing on other calls */
-const registerDefaultRuleset = once(async () => Presentation.presentation.rulesets().add(DEFAULT_PROPERTY_GRID_RULESET));
 
 /**
  * Interface for presentation rules-driven property data provider.
@@ -76,7 +72,6 @@ export interface PresentationPropertyDataProviderProps extends DiagnosticsProps 
  */
 export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
   public onDataChanged = new PropertyDataChangeEvent();
-  private _useDefaultRuleset: boolean;
   private _includeFieldsWithNoValues: boolean;
   private _includeFieldsWithCompositeValues: boolean;
   private _isNestedPropertyCategoryGroupingEnabled: boolean;
@@ -89,13 +84,12 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   constructor(props: PresentationPropertyDataProviderProps) {
     super({
       imodel: props.imodel,
-      ruleset: props.ruleset ? props.ruleset : DEFAULT_PROPERTY_GRID_RULESET.id,
+      ruleset: props.ruleset ? props.ruleset : DEFAULT_PROPERTY_GRID_RULESET,
       displayType: DefaultContentDisplayTypes.PropertyPane,
       enableContentAutoUpdate: props.enableContentAutoUpdate,
       ruleDiagnostics: props.ruleDiagnostics,
       devDiagnostics: props.devDiagnostics,
     });
-    this._useDefaultRuleset = !props.ruleset;
     this._includeFieldsWithNoValues = true;
     this._includeFieldsWithCompositeValues = true;
     this._isNestedPropertyCategoryGroupingEnabled = false;
@@ -220,9 +214,6 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   protected getMemoizedData = memoize(async (): Promise<PropertyData> => {
-    if (this._useDefaultRuleset)
-      await registerDefaultRuleset();
-
     const content = await this.getContent();
     if (!content || 0 === content.contentSet.length)
       return createDefaultPropertyData();

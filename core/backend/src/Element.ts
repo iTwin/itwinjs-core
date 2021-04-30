@@ -352,7 +352,7 @@ export class Element extends Entity implements ElementProps {
    * @param _sourceProps The ElementProps for the source Element that was cloned.
    * @param _targetProps The ElementProps that are a result of the clone. These can be further modified.
    * @note If you override this method, you must call super.
-   * @alpha
+   * @beta
    */
   protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
 
@@ -397,10 +397,13 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Collect the Ids of this element's *predecessors* at this level of the class hierarchy.
-   * A *predecessor* is an element that had to be inserted before this element could have been inserted. This is important for cloning operations.
-   * @note This should be overridden at each level the class hierarchy that introduces predecessors.
+   * A *predecessor* is an element that had to be inserted before this element could have been inserted.
+   * This is important for cloning operations but can be useful in other situations as well.
+   * @param predecessorIds The Id64Set to populate with predecessor Ids.
+   * @note In order to clone/transform an element, all predecessor elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
+   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces predecessors.
    * @see getPredecessorIds
-   * @alpha
+   * @beta
    */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     predecessorIds.add(this.model); // The modeledElement is a predecessor
@@ -411,9 +414,9 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Get the Ids of this element's *predecessors*. A *predecessor* is an element that had to be inserted before this element could have been inserted.
-   * This is important for cloning operations.
+   * This is important for cloning operations but can be useful in other situations as well.
    * @see collectPredecessorIds
-   * @alpha
+   * @beta
    */
   public getPredecessorIds(): Id64Set {
     const predecessorIds = new Set<Id64String>();
@@ -440,7 +443,7 @@ export class Element extends Entity implements ElementProps {
   public setJsonProperty(nameSpace: string, value: any) { this.jsonProperties[nameSpace] = value; }
 
   /** Get a display label for this Element. By default returns userLabel if present, otherwise code value. */
-  public getDisplayLabel(): string { return this.userLabel ? this.userLabel : this.code.value; }
+  public getDisplayLabel(): string { return this.userLabel ?? this.code.value; }
 
   /** Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
    * Any instances of the pattern `%{tag}` will be replaced by the localized value of tag.
@@ -511,7 +514,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
       val.geom = this.geom;
     return val;
   }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.category);
@@ -545,7 +548,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
     return val;
   }
 
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
@@ -587,7 +590,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
     return val;
   }
 
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
@@ -916,7 +919,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
   public border?: Id64String;
   /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.border) { predecessorIds.add(this.border); }
@@ -941,7 +944,7 @@ export class Sheet extends Document implements SheetProps {
     this.scale = props.scale;
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.sheetTemplate) { predecessorIds.add(this.sheetTemplate); }
@@ -1103,7 +1106,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
   public recipe?: RelatedElement;
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.recipe) { predecessorIds.add(this.recipe.id); }

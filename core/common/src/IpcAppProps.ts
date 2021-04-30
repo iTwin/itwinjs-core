@@ -125,7 +125,7 @@ export interface IpcAppFunctions {
   getRedoString: (key: string) => Promise<string>;
 
   /** see BriefcaseConnection.pullAndMergeChanges */
-  pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
+  pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<string>;
   /** see BriefcaseConnection.pushChanges */
   pushChanges: (key: string, description: string) => Promise<string>;
   /** Cancels currently pending or active generation of tile content.  */

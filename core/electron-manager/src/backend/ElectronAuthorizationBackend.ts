@@ -11,7 +11,7 @@
 // cSpell:ignore openid appauth signin Pkce Signout
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { AuthStatus, BentleyError, ClientRequestContext, Logger, SessionProps } from "@bentley/bentleyjs-core";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost, NativeAppAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
@@ -30,7 +30,7 @@ const loggerCategory = "electron-auth";
 
 /**
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
- * @internal
+ * @beta
  */
 export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend {
   public static defaultRedirectUri = "http://localhost:3000/signin-callback";
@@ -40,24 +40,23 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   public get tokenStore() { return this._tokenStore!; }
 
   public constructor(config?: NativeAppAuthorizationConfiguration) {
-    super();
-    this.config = config ?? {
-      clientId: NativeHost.applicationName ?? "electron-app",
-      scope: "openid email profile organization offline_access",
-    };
+    super(config);
   }
-  public get redirectUri() { return this.config.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri; }
+
+  public get redirectUri() { return this.config?.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri; }
+
   /**
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public async initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void> {
-    await super.initialize(props, config);
+  public async initialize(config?: NativeAppAuthorizationConfiguration): Promise<void> {
+    await super.initialize(config);
+    assert(this.config !== undefined && this.issuerUrl !== undefined, "URL of authorization provider was not initialized");
+
     this._tokenStore = new ElectronTokenStore(this.config.clientId);
 
-    const url = await this.getUrl(ClientRequestContext.fromJSON(props));
     const tokenRequestor = new NodeRequestor(); // the Node.js based HTTP client
-    this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(url, tokenRequestor);
+    this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(this.issuerUrl, tokenRequestor);
     Logger.logTrace(loggerCategory, "Initialized service configuration", () => ({ configuration: this._configuration }));
 
     // Attempt to load the access token from store
@@ -87,6 +86,24 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   }
 
   /**
+   * Sign-in completely.
+   * This is a wrapper around [[signIn]] - the only difference is that the promise resolves
+   * with the access token after sign in is complete and successful.
+   */
+  public async signInComplete(): Promise<AccessToken> {
+    return new Promise<AccessToken>((resolve, reject) => {
+      NativeHost.onUserStateChanged.addOnce((token) => {
+        if (token !== undefined) {
+          resolve(token);
+        } else {
+          reject(new Error("Failed to sign in"));
+        }
+      });
+      this.signIn().catch((err) => reject(err));
+    });
+  }
+
+  /**
    * Start the sign-in process
    * - calls the onUserStateChanged() call back after the authorization completes
    * or if there is an error.
@@ -97,6 +114,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   public async signIn(): Promise<void> {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+    assert(this.config !== undefined);
 
     // Attempt to load the access token from store
     const token = await this.loadAccessToken();
@@ -179,6 +197,24 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     await this.makeRevokeTokenRequest();
   }
 
+  /**
+   * Sign out completely
+   * This is a wrapper around [[signOut]] - the only difference is that the promise resolves
+   * after the sign out is complete.
+   */
+  public async signOutComplete(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      NativeHost.onUserStateChanged.addOnce((token) => {
+        if (token === undefined) {
+          resolve();
+        } else {
+          reject(new Error("Failed to sign out"));
+        }
+      });
+      this.signOut().catch((err) => reject(err));
+    });
+  }
+
   private async getUserProfile(tokenResponse: TokenResponse): Promise<any | undefined> {
     const options: RequestOptions = {
       method: "GET",
@@ -229,6 +265,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private async swapAuthorizationCodeForTokens(authCode: string, codeVerifier: string): Promise<TokenResponse> {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+    assert(this.config !== undefined);
 
     const nativeConfig = this.config;
     const extras: StringMap = { code_verifier: codeVerifier };
@@ -249,6 +286,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private async makeRefreshAccessTokenRequest(refreshToken: string): Promise<TokenResponse> {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+    assert(this.config !== undefined);
 
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
@@ -266,6 +304,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private async makeRevokeTokenRequest(): Promise<void> {
     if (!this._tokenResponse)
       throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful", Logger.logError, loggerCategory);
+    assert(this.config !== undefined);
 
     const refreshToken = this._tokenResponse.refreshToken!;
 

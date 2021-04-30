@@ -103,7 +103,10 @@ export class TypeDefinition extends RelatedElement {
 export interface GeometricElementProps extends ElementProps {
   /** The id of the category for this geometric element. */
   category: Id64String;
+  /** The geometry stream properties */
   geom?: GeometryStreamProps;
+  /** The placement properties */
+  placement?: PlacementProps;
 }
 
 /** Properties of a [[Placement3d]]
@@ -126,6 +129,20 @@ export interface Placement2dProps {
 
 /** @public */
 export type PlacementProps = Placement2dProps | Placement3dProps;
+
+/** determine if this is Placement2dProps
+ * @public
+ */
+export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps {
+  return (props as Placement2dProps).angle !== undefined;
+}
+
+/** determine if this is Placement3dProps
+ * @public
+ */
+export function isPlacement3dProps(props: PlacementProps): props is Placement3dProps {
+  return !isPlacement2dProps(props);
+}
 
 /** Properties that define a [GeometricElement3d]($backend)
  * @public
@@ -368,6 +385,7 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   checksum?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   jsonProperties?: any;
+  /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   source?: RelatedElementProps;
 }
 

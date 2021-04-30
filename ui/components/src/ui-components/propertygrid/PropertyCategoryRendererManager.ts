@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { VirtualizedPropertyGridContext } from "./component/VirtualizedPropertyGrid";
-import { GridCategoryItem } from "./internal/flat-items/FlatGridItem";
-
 /** @packageDocumentation
  * @module PropertyGrid
  */
+
+import * as React from "react";
+import { VirtualizedPropertyGridContext } from "./component/VirtualizedPropertyGrid";
+import { GridCategoryItem } from "./internal/flat-items/FlatGridItem";
 
 /**
  * Props that property category renderer receives.

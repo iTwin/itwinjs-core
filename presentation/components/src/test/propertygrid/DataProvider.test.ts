@@ -6,11 +6,11 @@ import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment
 import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { BeEvent, Guid } from "@bentley/bentleyjs-core";
+import { BeEvent, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat, RegisteredRuleset,
+  ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
   RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
 } from "@bentley/presentation-common";
 import {
@@ -20,16 +20,14 @@ import {
 import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import {
-  FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager, RulesetManager,
-} from "@bentley/presentation-frontend";
+import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "@bentley/ui-components";
 import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";
-import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
+import { DEFAULT_PROPERTY_GRID_RULESET, PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 
 /**
@@ -50,7 +48,6 @@ describe("PropertyDataProvider", () => {
 
   let rulesetId: string;
   let provider: Provider;
-  let rulesetsManagerMock: moq.IMock<RulesetManager>;
   let presentationManagerMock: moq.IMock<PresentationManager>;
   let favoritePropertiesManagerMock: moq.IMock<FavoritePropertiesManager>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -61,12 +58,11 @@ describe("PropertyDataProvider", () => {
 
   beforeEach(async () => {
     const mocks = mockPresentationManager();
-    rulesetsManagerMock = mocks.rulesetsManager;
     presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
 
     favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
-    favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => moq.Mock.ofType<BeEvent<() => void>>().object);
+    favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => new BeEvent());
 
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
@@ -79,10 +75,17 @@ describe("PropertyDataProvider", () => {
   });
 
   afterEach(() => {
+    provider.dispose();
     Presentation.terminate();
   });
 
   describe("constructor", () => {
+
+    it("uses default ruleset if not given through props", () => {
+      using(new PresentationPropertyDataProvider({ imodel: imodelMock.object }), (p) => {
+        expect(p.rulesetId).to.eq(DEFAULT_PROPERTY_GRID_RULESET.id);
+      });
+    });
 
     it("sets `includeFieldsWithNoValues` to true", () => {
       expect(provider.includeFieldsWithNoValues).to.be.true;
@@ -276,24 +279,6 @@ describe("PropertyDataProvider", () => {
         properties: [property],
       });
     };
-
-    it("registers default ruleset once if `rulesetId` not specified when creating the provider", async () => {
-      provider = new Provider({ imodel: imodelMock.object });
-      rulesetsManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async (x) => new RegisteredRuleset(x, Guid.createValue(), () => { }));
-
-      // verify ruleset is registered on first call
-      await provider.getData();
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
-
-      // verify ruleset is not registered on subsequent calls on the same provider
-      await provider.getData();
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
-
-      // verify ruleset is not registered on subsequent calls on different providers
-      const provider2 = new Provider({ imodel: imodelMock.object });
-      await provider2.getData();
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
-    });
 
     it("returns empty data object when receives undefined content", async () => {
       (provider as any).getContent = async () => undefined;
