@@ -212,10 +212,11 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     }
 
     return (
-      <PropertyGridEventsRelatedPropsSupplier isPropertySelectionEnabled={this.props.isPropertySelectionEnabled}
+      <PropertyGridEventsRelatedPropsSupplier
+        isPropertySelectionEnabled={this.props.isPropertySelectionEnabled ?? false}
         isPropertySelectionOnRightClickEnabled={this.props.isPropertySelectionOnRightClickEnabled}
         isPropertyEditingEnabled={this.props.isPropertyEditingEnabled}
-        isPropertyHoverEnabled={this.props.isPropertyHoverEnabled}
+        isPropertyHoverEnabled={this.props.isPropertyHoverEnabled ?? false}
         onPropertyContextMenu={this.props.onPropertyContextMenu}
         onPropertyUpdated={this.props.onPropertyUpdated}
         onPropertySelectionChanged={this.props.onPropertySelectionChanged}

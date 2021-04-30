@@ -6,15 +6,17 @@
  * @module Elements
  */
 
-import { assert, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import {
+  assert, CompressedId64Set, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array,
+} from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps,
-  SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
+  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
@@ -1557,5 +1559,93 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
    */
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     return new Code({ spec: iModel.codeSpecs.getByName(BisCodeSpec.lineStyle).id, scope: scopeModelId, value: codeValue });
+  }
+}
+
+/** Describes how to animate a view of a [[GeometricModel]] to show change over time using a [RenderSchedule.Script]($common).
+ * @note This class was introduced in version 01.00.13 of the BisCore ECSchema. It should only be used with [[IModelDb]]s containing that version or newer.
+ * @beta
+ */
+export class RenderTimeline extends InformationRecordElement {
+  /** @internal */
+  public static get className(): string { return "RenderTimeline"; }
+  /** A human-readable description of the timeline, which may be an empty string. */
+  public description: string;
+  /** The JSON representation of the instructions for visualizing change over time.
+   * @see [RenderSchedule.Script]($common) for the API for working with the script.
+   */
+  public scriptProps: RenderSchedule.ScriptProps;
+
+  /** @internal */
+  protected constructor(props: RenderTimelineProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.description = props.description ?? "";
+    this.scriptProps = RenderTimeline.parseScriptProps(props.script);
+  }
+
+  public static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline {
+    return new RenderTimeline(props, iModel);
+  }
+
+  public toJSON(): RenderTimelineProps {
+    const props = super.toJSON() as RenderTimelineProps;
+    if (this.description.length > 0)
+      props.description = this.description;
+
+    props.script = JSON.stringify(this.scriptProps);
+    return props;
+  }
+
+  private static parseScriptProps(json: string): RenderSchedule.ScriptProps {
+    try {
+      return JSON.parse(json);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /** @alpha */
+  protected collectPredecessorIds(ids: Id64Set): void {
+    super.collectPredecessorIds(ids);
+    const script = RenderSchedule.Script.fromJSON(this.scriptProps);
+    script?.discloseIds(ids);
+  }
+
+  /** @alpha */
+  protected static onCloned(context: IModelCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
+    super.onCloned(context, sourceProps, targetProps);
+    if (context.isBetweenIModels)
+      targetProps.script = JSON.stringify(this.remapScript(context, this.parseScriptProps(targetProps.script)));
+  }
+
+  /** Remap Ids when cloning a RenderSchedule.Script between iModels on a DisplayStyle or RenderTimeline.
+   * @internal
+   */
+  public static remapScript(context: IModelCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+    const scriptProps: RenderSchedule.ScriptProps = [];
+    if (!Array.isArray(input))
+      return scriptProps;
+
+    const elementIds = new OrderedId64Array();
+    for (const model of input) {
+      const modelId = context.findTargetElementId(model.modelId);
+      if (!Id64.isValid(modelId))
+        continue;
+
+      model.modelId = modelId;
+      scriptProps.push(model);
+      for (const element of model.elementTimelines) {
+        elementIds.clear();
+        for (const sourceId of RenderSchedule.ElementTimeline.getElementIds(element.elementIds)) {
+          const targetId = context.findTargetElementId(sourceId);
+          if (Id64.isValid(targetId))
+            elementIds.insert(targetId);
+        }
+
+        element.elementIds = CompressedId64Set.compressIds(elementIds);
+      }
+    }
+
+    return scriptProps;
   }
 }

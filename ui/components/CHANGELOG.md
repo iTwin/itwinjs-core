@@ -1,6 +1,20 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 22 Apr 2021 21:07:34 GMT and should not be manually modified.
+This log was last generated on Fri, 30 Apr 2021 12:36:58 GMT and should not be manually modified.
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Update to use UiSettingsStorage.
+- Fix color picker hue display in DR by removing webkit prefix. Adjust max slider value.
+- 'TreeModel': Fixed 'changeNodeId' to set new id on TreeModelNode
+- 'TreeNodeLoader': Changed nodes loading to avoid removing subtrees of existing expanded nodes
+- Added ability to track rendered nodes in ControlledTree
+- Fix number editor so it can process Enter key and call OnCommit processing.
+- Fix compatibility issue when multiple versions of `rxjs` are in use.
+- Fix a crash when clicking on a `ControlledTree` node when the tree contains placeholder nodes and using `SelectionMode.Multiple`
 
 ## 2.14.4
 Thu, 22 Apr 2021 21:07:33 GMT

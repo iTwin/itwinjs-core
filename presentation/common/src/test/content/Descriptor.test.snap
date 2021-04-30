@@ -176,6 +176,7 @@ Object {
         },
       ],
       "priority": 19765,
+      "relationshipMeaning": "RelatedInstance",
       "renderer": Object {
         "name": "custom_renderer",
       },
@@ -686,6 +687,7 @@ Object {
         },
       ],
       "priority": 75880,
+      "relationshipMeaning": "RelatedInstance",
       "renderer": Object {
         "name": "custom_renderer",
       },
@@ -1168,6 +1170,7 @@ Object {
         },
       ],
       "priority": 82740,
+      "relationshipMeaning": "RelatedInstance",
       "renderer": Object {
         "name": "custom_renderer",
       },

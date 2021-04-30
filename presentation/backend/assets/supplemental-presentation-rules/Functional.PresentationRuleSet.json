@@ -4,12 +4,14 @@
   "supplementationInfo": {
     "supplementationPurpose": "Functional specific customization rules"
   },
-  "supportedSchemas": {
-    "schemaNames": [
-      "BisCore",
-      "Functional"
-    ]
-  },
+  "requiredSchemas": [
+    {
+      "name": "BisCore"
+    },
+    {
+      "name": "Functional"
+    }
+  ],
   "rules": [
     {
       "ruleType": "ContentModifier",

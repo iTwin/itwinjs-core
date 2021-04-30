@@ -175,6 +175,7 @@ internal;FeatureTableHeader
 public;FilePropertyProps
 public;FillDisplay
 public;FillFlags
+beta;FlatBufferGeometryStream
 public;FontMap
 public;FontMapProps
 public;FontProps
@@ -296,6 +297,7 @@ public;isPlacement3dProps(props: PlacementProps): props is Placement3dProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 beta;iTwinChannel: (channel: string) => string
+beta;JsonGeometryStream
 public;LatAndLong
 public;LatLongAndHeight 
 internal;LightLocationProps 
@@ -336,7 +338,7 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-alpha;NativeAppAuthorizationConfiguration
+beta;NativeAppAuthorizationConfiguration
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications
@@ -430,8 +432,11 @@ beta;RenderMaterial
 beta;RenderMaterialProps 
 public;RenderMode
 beta;RenderSchedule
+internal;Interval
 beta;class RenderTexture 
 beta;RenderTexture
+beta;RenderTimelineLoadProps
+beta;RenderTimelineProps 
 public;RepositoryLinkProps 
 beta;RequestNewBriefcaseProps
 public;ResponseLike 
