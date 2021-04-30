@@ -94,7 +94,7 @@ export class RealityTransitionTool extends Tool {
   /** Executes this tool's run method.
    * @param args the first entry of this array contains either "x", "y", "z", or "transparent", indicating the type of transition to apply.
    * @see [[run]]
-
+   */
   public parseAndRun(...args: string[]): boolean {
     const transitionNames = [
       "x",
