@@ -146,16 +146,6 @@ export class PushBranchCommand {
     if (undefined === anim)
       return;
 
-    if (undefined !== anim.transform) {
-      let transform = anim.transform;
-      const prevLocalToWorld = target.currentTransform;
-      const prevWorldToLocal = prevLocalToWorld.inverse();
-      if (prevLocalToWorld && prevWorldToLocal)
-        transform = prevWorldToLocal.multiplyTransformTransform(transform.multiplyTransformTransform(prevLocalToWorld));
-
-      this.branch.localToWorldTransform = transform;
-    }
-
     if (anim.clip !== undefined) {
       this.branch.clips = anim.clip as ClipVolume;
       if (undefined === PushBranchCommand._viewFlagOverrides) {

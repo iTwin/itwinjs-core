@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { RenderMode, ServerTimeoutError } from "@bentley/imodeljs-common";
+import { ServerTimeoutError } from "@bentley/imodeljs-common";
 import {
-  IModelApp, IModelTile, IModelTileTree, IpcApp, SnapshotConnection, Tile, TileLoadStatus, TileRequestChannel, Viewport, ViewState,
+  IModelApp, IModelTile, IModelTileTree, IpcApp, SnapshotConnection, Tile, TileLoadStatus, TileRequestChannel, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
+import { fakeViewState } from "./TileIO.test";
 
 describe("CloudStorageCacheChannel", () => {
   let imodel: SnapshotConnection;
@@ -36,15 +37,7 @@ describe("CloudStorageCacheChannel", () => {
   async function getTile(): Promise<IModelTile> {
     await imodel.models.load("0x1c");
     const model = imodel.models.getLoaded("0x1c")!.asGeometricModel!;
-    const view = {
-      iModel: imodel,
-      viewFlags: {
-        renderMode: RenderMode.SmoothShade,
-        visibleEdges: false,
-      },
-      is3d: () => true,
-    } as unknown as ViewState;
-
+    const view = fakeViewState(imodel);
     const ref = model.createTileTreeReference(view);
     const tree = (await ref.treeOwner.loadTree()) as IModelTileTree;
 

@@ -151,7 +151,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
       return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
 
     const type = active.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
-    const script = source.scheduleScript;
+    const script = source.scheduleState;
     const animationId = (undefined !== script) ? script.getModelAnimationId(active.modelId) : undefined;
     return {
       modelId: active.modelId,
