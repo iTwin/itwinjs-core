@@ -63,7 +63,6 @@ dependencies:
   '@rush-temp/imodeljs-markup': 'file:projects/imodeljs-markup.tgz'
   '@rush-temp/imodeljs-quantity': 'file:projects/imodeljs-quantity.tgz'
   '@rush-temp/internal-tools': 'file:projects/internal-tools.tgz'
-  '@rush-temp/iot-demo': 'file:projects/iot-demo.tgz_webpack@4.42.0'
   '@rush-temp/itwin-client': 'file:projects/itwin-client.tgz'
   '@rush-temp/linear-referencing-backend': 'file:projects/linear-referencing-backend.tgz'
   '@rush-temp/linear-referencing-common': 'file:projects/linear-referencing-common.tgz'
@@ -20950,26 +20949,6 @@ packages:
       integrity: sha512-8EQqjqBFLrQyMDIO3v28F08f2TuLh5+xRhfZbhNlqIvVQjou+UK0udiTRPuPr8xlAeSQJ60v2bfh07sHsYlAeg==
       tarball: 'file:projects/internal-tools.tgz'
     version: 0.0.0
-  'file:projects/iot-demo.tgz_webpack@4.42.0':
-    dependencies:
-      '@types/classnames': 2.2.11
-      '@types/react': 16.9.43
-      classnames: 2.2.6
-      cpx: 1.5.0
-      eslint: 6.8.0
-      react: 16.14.0
-      rimraf: 3.0.2
-      svg-sprite-loader: 4.2.1_webpack@4.42.0
-      typescript: 4.1.5
-    dev: false
-    id: 'file:projects/iot-demo.tgz'
-    name: '@rush-temp/iot-demo'
-    peerDependencies:
-      webpack: '*'
-    resolution:
-      integrity: sha512-NS/tOgzdh34skNy/y9SIZ74kWyA1opfJHAc0Qi1nJsRyYZuY4UarBCm+RVtXYWY2Vc0GXaUOlzkf8R3kWZsfDA==
-      tarball: 'file:projects/iot-demo.tgz'
-    version: 0.0.0
   'file:projects/itwin-client.tgz':
     dependencies:
       '@types/chai': 4.2.17
@@ -22231,7 +22210,6 @@ specifiers:
   '@rush-temp/imodeljs-markup': 'file:./projects/imodeljs-markup.tgz'
   '@rush-temp/imodeljs-quantity': 'file:./projects/imodeljs-quantity.tgz'
   '@rush-temp/internal-tools': 'file:./projects/internal-tools.tgz'
-  '@rush-temp/iot-demo': 'file:./projects/iot-demo.tgz'
   '@rush-temp/itwin-client': 'file:./projects/itwin-client.tgz'
   '@rush-temp/linear-referencing-backend': 'file:./projects/linear-referencing-backend.tgz'
   '@rush-temp/linear-referencing-common': 'file:./projects/linear-referencing-common.tgz'
