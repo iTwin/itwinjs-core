@@ -261,6 +261,15 @@ Object {
               "name": "test-editor",
               "params": Array [],
             },
+            "enum": Object {
+              "choices": Array [
+                Object {
+                  "label": "One",
+                  "value": 1,
+                },
+              ],
+              "isStrict": true,
+            },
             "name": "root-field$nested-field$deeply-nested-field",
             "renderer": Object {
               "name": "test-renderer",
@@ -415,6 +424,15 @@ Object {
               "name": "test-editor",
               "params": Array [],
             },
+            "enum": Object {
+              "choices": Array [
+                Object {
+                  "label": "One",
+                  "value": 1,
+                },
+              ],
+              "isStrict": true,
+            },
             "name": "root-field$nested-field",
             "renderer": Object {
               "name": "test-renderer",
@@ -434,6 +452,15 @@ Object {
             "editor": Object {
               "name": "test-editor",
               "params": Array [],
+            },
+            "enum": Object {
+              "choices": Array [
+                Object {
+                  "label": "One",
+                  "value": 1,
+                },
+              ],
+              "isStrict": true,
             },
             "name": "root-field$nested-field",
             "renderer": Object {
@@ -483,6 +510,15 @@ Object {
                     "name": "test-editor",
                     "params": Array [],
                   },
+                  "enum": Object {
+                    "choices": Array [
+                      Object {
+                        "label": "One",
+                        "value": 1,
+                      },
+                    ],
+                    "isStrict": true,
+                  },
                   "name": "root-field$nested-field",
                   "renderer": Object {
                     "name": "test-renderer",
@@ -514,6 +550,15 @@ Object {
                   "editor": Object {
                     "name": "test-editor",
                     "params": Array [],
+                  },
+                  "enum": Object {
+                    "choices": Array [
+                      Object {
+                        "label": "One",
+                        "value": 1,
+                      },
+                    ],
+                    "isStrict": true,
                   },
                   "name": "root-field$nested-field",
                   "renderer": Object {
@@ -589,6 +634,15 @@ Object {
                               "editor": Object {
                                 "name": "test-editor",
                                 "params": Array [],
+                              },
+                              "enum": Object {
+                                "choices": Array [
+                                  Object {
+                                    "label": "One",
+                                    "value": 1,
+                                  },
+                                ],
+                                "isStrict": true,
                               },
                               "name": "root-field$nested-field$deeply-nested-field",
                               "renderer": Object {
