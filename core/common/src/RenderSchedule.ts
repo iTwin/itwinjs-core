@@ -27,9 +27,9 @@ function interpolateRgb(start: RgbColor, end: RgbColor, fraction: number): RgbCo
  * @beta
  */
 export namespace RenderSchedule {
-  /** Defines how two interpolate between two entries in a [[Timeline]].
+  /** Defines how two interpolate between two entries in a [[RenderSchedule.Timeline]].
    * @note Currently only Linear and Step are supported. Any other value is treated as Step.
-   * @see [[TimelineEntry]].
+   * @see [[RenderSchedule.TimelineEntry]].
    */
   export enum Interpolation {
     /** Each timeline entry's value is discrete - the timeline jumps from one entry's value directly to another. */
@@ -40,18 +40,18 @@ export namespace RenderSchedule {
     Linear = 2,
   }
 
-  /** JSON representation of a [[TimelineEntry]]. */
+  /** JSON representation of a [[RenderSchedule.TimelineEntry]]. */
   export interface TimelineEntryProps {
     /** The time point in seconds in the [Unix Epoch](https://en.wikipedia.org/wiki/Unix_time). */
     time: number;
     /** How to interpolate from this entry to the next entry in the timeline.
-     * Currently, anything other than [[Interpolation.Linear]] is treated as [[Interpolation.Step]].
+     * Currently, anything other than [[RenderSchedule.Interpolation.Linear]] is treated as [[RenderSchedule.Interpolation.Step]].
      * Additional interpolation modes may become supported in the future.
      */
     interpolation?: Interpolation;
   }
 
-  /** JSON representation of a [[VisibilityEntry]]. */
+  /** JSON representation of a [[RenderSchedule.VisibilityEntry]]. */
   export interface VisibilityEntryProps extends TimelineEntryProps {
     /** Visibility of the geometry from 0 (invisible) to 100 (fully visible), with intermediate values appearing increasingly less transparent.
      * Default: 100 (fully visible).
@@ -59,7 +59,7 @@ export namespace RenderSchedule {
     value?: number;
   }
 
-  /** JSON representation of a [[ColorEntry]]. */
+  /** JSON representation of a [[RenderSchedule.ColorEntry]]. */
   export interface ColorEntryProps extends TimelineEntryProps {
     /** The color applied to the geometry, with each component specified as an integer in [0, 255].
      * e.g., (0, 0, 0) represents black and (255, 255, 255) represents white.
@@ -68,7 +68,7 @@ export namespace RenderSchedule {
     value?: { red: number, green: number, blue: number };
   }
 
-  /** JSON representation of a [[CuttingPlane]]. */
+  /** JSON representation of a [[RenderSchedule.CuttingPlane]]. */
   export interface CuttingPlaneProps {
     /** (x,y,z) of a point on the plane. */
     position: number[];
@@ -80,13 +80,13 @@ export namespace RenderSchedule {
     hidden?: boolean;
   }
 
-  /** JSON representation of a [[CuttingPlaneEntry]]. */
+  /** JSON representation of a [[RenderSchedule.CuttingPlaneEntry]]. */
   export interface CuttingPlaneEntryProps extends TimelineEntryProps {
     /** The clip plane, or undefined if the geometry is not clipped. */
     value?: CuttingPlaneProps;
   }
 
-  /** JSON representation of a [Transform]($geometry-core) associated with a [[TransformEntryProps]]. */
+  /** JSON representation of a [Transform]($geometry-core) associated with a [[RenderSchedule.TransformEntryProps]]. */
   export interface TransformProps {
     /** (x, y, z) of position  - applied after rotation.
      * This property is preserved but unused by iTwin.js.
@@ -110,13 +110,13 @@ export namespace RenderSchedule {
     transform?: number[][];
   }
 
-  /** JSON representation of a [[TransformEntry]]. */
+  /** JSON representation of a [[RenderSchedule.TransformEntry]]. */
   export interface TransformEntryProps extends TimelineEntryProps {
     /** The transformation matrix, with `undefined` corresponding to an identity matrix. */
     value?: TransformProps;
   }
 
-  /** JSON representation of a [[Timeline]]. */
+  /** JSON representation of a [[RenderSchedule.Timeline]]. */
   export interface TimelineProps {
     /** Timeline controlling the visibility of the associated geometry. */
     visibilityTimeline?: VisibilityEntryProps[];
@@ -128,9 +128,9 @@ export namespace RenderSchedule {
     cuttingPlaneTimeline?: CuttingPlaneEntryProps[];
   }
 
-  /** JSON representation of an [[ElementTimeline]]. */
+  /** JSON representation of an [[RenderSchedule.ElementTimeline]]. */
   export interface ElementTimelineProps extends TimelineProps {
-    /** A positive integer that uniquely identifies this timeline among all element timelines in the [[Script]]. */
+    /** A positive integer that uniquely identifies this timeline among all element timelines in the [[RenderSchedule.Script]]. */
     batchId: number;
     /** The Ids of the elements to which this timeline applies.
      * @note Prefer the compressed representation - lists of element Ids can be comparatively enormous.
@@ -140,7 +140,7 @@ export namespace RenderSchedule {
     elementIds: Id64String[] | CompressedId64Set;
   }
 
-  /** JSON representation of a [[ModelTimeline]]. */
+  /** JSON representation of a [[RenderSchedule.ModelTimeline]]. */
   export interface ModelTimelineProps extends TimelineProps {
     /** The Id of the [GeometricModelState]($frontend) to which the timeline applies. */
     modelId: Id64String;
@@ -150,14 +150,14 @@ export namespace RenderSchedule {
     elementTimelines: ElementTimelineProps[];
   }
 
-  /** JSON representation of a [[Script]]. */
+  /** JSON representation of a [[RenderSchedule.Script]]. */
   export type ScriptProps = ModelTimelineProps[];
 
-  /** Describes the value of some property at a specific point along a [[Timeline]].
-   * @see [[VisibilityEntry]]
-   * @see [[ColorEntry]]
-   * @see [[TransformEntry]]
-   * @see [[CuttingPlaneEntry]]
+  /** Describes the value of some property at a specific point along a [[RenderSchedule.Timeline]].
+   * @see [[RenderSchedule.VisibilityEntry]]
+   * @see [[RenderSchedule.ColorEntry]]
+   * @see [[RenderSchedule.TransformEntry]]
+   * @see [[RenderSchedule.CuttingPlaneEntry]]
    */
   export class TimelineEntry {
     /** The time point in seconds in the [Unix Epoch](https://en.wikipedia.org/wiki/Unix_time). */
@@ -255,7 +255,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Defines a [ClipPlane]($geometry-core) associated with a [[CuttingPlaneEntry]]. */
+  /** Defines a [ClipPlane]($geometry-core) associated with a [[RenderSchedule.CuttingPlaneEntry]]. */
   export class CuttingPlane {
     /** A point on the plane. */
     public readonly position: XYAndZ;
@@ -309,7 +309,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Identifies a fractional position along a [[Timeline]] between any two [[TimelineEntry]]'s within a [[TimelineEntryList]].
+  /** Identifies a fractional position along a [[RenderSchedule.Timeline]] between any two [[RenderSchedule.TimelineEntry]]'s within a [[RenderSchedule.TimelineEntryList]].
    * @internal
    */
   export class Interval {
@@ -331,7 +331,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** A list of the [[TimelineEntry]] objects within a [[Timeline]]. The type parameters are:
+  /** A list of the [[RenderSchedule.TimelineEntry]] objects within a [[RenderSchedule.Timeline]]. The type parameters are:
    *  - T, a subclass of TimelineEntry with a `value` property specifying the value of the property controlled by the timeline at that entry's time point.
    *  - P, the JSON representation from which T is to be constructed.
    *  - V, the type of `T.value`.
@@ -412,7 +412,7 @@ export namespace RenderSchedule {
 
   const scratchInterval = new Interval();
 
-  /** A list of [[VisibilityEntry]]s within a [[Timeline]]. */
+  /** A list of [[RenderSchedule.VisibilityEntry]]s within a [[RenderSchedule.Timeline]]. */
   export class VisibilityTimelineEntries extends TimelineEntryList<VisibilityEntry, VisibilityEntryProps, number> {
     /** Returns the visibility value for the entry at the specified position in the list, or 100 (fully-visible) if no such entry exists. */
     public getValue(index: number): number {
@@ -420,7 +420,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** A list of [[TransformEntry]]s within a [[Timeline]]. */
+  /** A list of [[RenderSchedule.TransformEntry]]s within a [[RenderSchedule.Timeline]]. */
   export class TransformTimelineEntries extends TimelineEntryList<TransformEntry, TransformEntryProps, Readonly<Transform>> {
     /** Returns the transform for the entry at the specified position in the list, or an identity transform if no such entry exists. */
     public getValue(index: number): Readonly<Transform> {
@@ -428,9 +428,9 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Specifies how to animate a set of geometry over time within a [[Script]].
-   * A [[Script]] can contain any number of [[Timeline]]s, each affecting different sets of geometry.
-   * @see [[ElementTimeline]] and [[ModelTimeline]].
+  /** Specifies how to animate a set of geometry over time within a [[RenderSchedule.Script]].
+   * A [[RenderSchedule.Script]] can contain any number of [[RenderSchedule.Timeline]]s, each affecting different sets of geometry.
+   * @see [[RenderSchedule.ElementTimeline]] and [[RenderSchedule.ModelTimeline]].
    */
   export class Timeline {
     /** Sequence controlling the visibility of the geometry. */
@@ -557,7 +557,7 @@ export namespace RenderSchedule {
       return Plane3dByOriginAndUnitNormal.create(position, direction);
     }
 
-    /** Create a ClipVector from the [[CuttingPlane]] applied to the geometry at the specified time point, if any. */
+    /** Create a ClipVector from the [[RenderSchedule.CuttingPlane]] applied to the geometry at the specified time point, if any. */
     public getClipVector(time: number): ClipVector | undefined {
       const plane = this.getCuttingPlane(time);
       if (!plane)
@@ -577,9 +577,9 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Specifies how to animate the geometry belonging to a set of [GeometricElement]($backend)s as part of a [[Script]]. */
+  /** Specifies how to animate the geometry belonging to a set of [GeometricElement]($backend)s as part of a [[RenderSchedule.Script]]. */
   export class ElementTimeline extends Timeline {
-    /** A positive integer that uniquely identififes this timeline among all ElementTimelines in the [[Script]]. */
+    /** A positive integer that uniquely identififes this timeline among all ElementTimelines in the [[RenderSchedule.Script]]. */
     public readonly batchId: number;
     private readonly _elementIds: Id64String[] | CompressedId64Set;
 
@@ -653,7 +653,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Specifies how to animate the geometry within a [GeometricModel]($backend) as part of a [[Script]]. */
+  /** Specifies how to animate the geometry within a [GeometricModel]($backend) as part of a [[RenderSchedule.Script]]. */
   export class ModelTimeline extends Timeline {
     /** The Id of the [GeometricModel]($backend) to be animated. */
     public readonly modelId: Id64String;
@@ -746,7 +746,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Specifies how to animate the contents of a [ViewState]($frontend) over time. The script contains any number of [[ModelTimeline]]s, each describing how
+  /** Specifies how to animate the contents of a [ViewState]($frontend) over time. The script contains any number of [[RenderSchedule.ModelTimeline]]s, each describing how
    * to animate one of the models in the view.
    * @see [RenderTimeline]($backend) to create an [Element]($backend) to host a script.
    * @see [[DisplayStyleSettings.renderTimeline]] to associate a [RenderTimeline]($backend)'s script with a [DisplayStyle]($backend).
@@ -841,7 +841,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** A reference to a [[Script]] indicating the persistent [Element]($backend) from which the script was obtained.
+  /** A reference to a [[RenderSchedule.Script]] indicating the persistent [Element]($backend) from which the script was obtained.
    * Prior to the introduction of the [RenderTimeline]($backend) class in version 01.00.13 of the BisCore ECSchema, scripts were
    * stored in the JSON properties of [DisplayStyle]($backend) elements. Now they are stored in the Script property of a RenderTimeline element.
    * The `sourceId` can refer to either a DisplayStyle or a RenderTimeline.
