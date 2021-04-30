@@ -829,7 +829,7 @@ Object {
         "property": Object {
           "displayLabel": "Simple Field",
           "name": "SimpleField",
-          "typename": "myarray[]",
+          "typename": "MyArray[]",
         },
         "value": Object {
           "items": Array [
@@ -941,7 +941,7 @@ Object {
         "property": Object {
           "displayLabel": "Simple Field",
           "name": "SimpleField",
-          "typename": "mystruct",
+          "typename": "MyStruct",
         },
         "value": Object {
           "members": Object {
@@ -1812,7 +1812,7 @@ Object {
         "property": Object {
           "displayLabel": "Simple Field",
           "name": "SimpleField",
-          "typename": "myarray[]",
+          "typename": "MyArray[]",
         },
         "value": Object {
           "items": Array [
@@ -1926,7 +1926,7 @@ Object {
         "property": Object {
           "displayLabel": "Simple Field",
           "name": "SimpleField",
-          "typename": "mystruct",
+          "typename": "MyStruct",
         },
         "value": Object {
           "members": Object {
