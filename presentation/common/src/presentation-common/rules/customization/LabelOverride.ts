@@ -17,6 +17,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  *
  * @see [More details]($docs/learning/presentation/Customization/LabelOverride.md)
  * @public
+ * @deprecated Use [[InstanceLabelOverride]]
  */
 export interface LabelOverride extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */

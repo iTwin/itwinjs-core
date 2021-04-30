@@ -8,11 +8,12 @@ import { ByteStream } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
   BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, IModelTileRpcInterface, iModelTileTreeIdToString,
-  RenderMode, TileMetadata, TileProps, TileTreeMetadata,
+  TileMetadata, TileProps, TileTreeMetadata,
 } from "@bentley/imodeljs-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus, ViewState,
+  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
 } from "@bentley/imodeljs-frontend";
+import { fakeViewState } from "./TileIO.test";
 
 describe("Tile tolerance", () => {
   let imodel: IModelConnection;
@@ -118,17 +119,8 @@ describe("Tile tolerance", () => {
     expect(model).not.to.be.undefined;
     expect(model).instanceof(GeometricModelState);
 
-    // Gross.
-    const fakeViewState = {
-      iModel: imodel,
-      viewFlags: {
-        renderMode: RenderMode.SmoothShade,
-        visibleEdges: false,
-      },
-      is3d: () => true,
-    } as ViewState;
-
-    const treeRef = model.createTileTreeReference(fakeViewState);
+    const view = fakeViewState(imodel);
+    const treeRef = model.createTileTreeReference(view);
     const tree = (await treeRef.treeOwner.loadTree())!;
     expect(tree).not.to.be.undefined;
 

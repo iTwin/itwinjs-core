@@ -23,6 +23,7 @@ import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { ClipVectorProps } from '@bentley/geometry-core';
 import { CompressedId64Set } from '@bentley/bentleyjs-core';
+import { Constructor } from '@bentley/bentleyjs-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
@@ -1806,7 +1807,9 @@ export class DisplayStyleSettings {
     readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>;
     // @beta
     readonly onRealityModelPlanarClipMaskChanged: BeEvent<(idOrIndex: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => void>;
-    // @internal
+    // @beta
+    readonly onRenderTimelineChanged: BeEvent<(newRenderTimeline: Id64String | undefined) => void>;
+    // @internal @deprecated
     readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
     readonly onSubCategoryOverridesChanged: BeEvent<() => void>;
@@ -1820,7 +1823,10 @@ export class DisplayStyleSettings {
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     raiseRealityModelPlanarClipMaskChangedEvent(idOrIndex: Id64String | number, ovr?: PlanarClipMaskSettings): void;
-    // @internal (undocumented)
+    // @beta
+    get renderTimeline(): Id64String | undefined;
+    set renderTimeline(id: Id64String | undefined);
+    // @internal @deprecated (undocumented)
     get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
     set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined);
     get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
@@ -1856,6 +1862,8 @@ export interface DisplayStyleSettingsProps {
     // @beta
     planarClipOvr?: DisplayStyleRealityModelPlanarClipMaskProps[];
     // @beta
+    renderTimeline?: Id64String;
+    // @internal @deprecated
     scheduleScript?: RenderSchedule.ModelTimelineProps[];
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
     // @beta
@@ -1920,7 +1928,7 @@ export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestPro
 export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
     readonly categoryId: Id64String;
     readonly elementId?: Id64String;
-    readonly geometry: GeometryStreamProps;
+    readonly geometry: JsonGeometryStream | FlatBufferGeometryStream;
     readonly modelId?: Id64String;
 }
 
@@ -2265,6 +2273,8 @@ export interface ElementIdsAndRangesProps {
 // @public
 export interface ElementLoadOptions {
     displayStyle?: DisplayStyleLoadProps;
+    // @beta
+    renderTimeline?: RenderTimelineLoadProps;
     wantBRepData?: boolean;
     wantGeometry?: boolean;
 }
@@ -2677,6 +2687,14 @@ export enum FillFlags {
     Blanking = 6,
     ByView = 1,
     None = 0
+}
+
+// @beta
+export interface FlatBufferGeometryStream {
+    // @alpha (undocumented)
+    data: ElementGeometryDataEntry[];
+    // (undocumented)
+    format: "flatbuffer";
 }
 
 // @public
@@ -4217,6 +4235,14 @@ export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
 // @beta
 export const iTwinChannel: (channel: string) => string;
+
+// @beta
+export interface JsonGeometryStream {
+    // (undocumented)
+    data: GeometryStreamProps;
+    // (undocumented)
+    format: "json";
+}
 
 // @public (undocumented)
 export interface LatAndLong {
@@ -5776,17 +5802,36 @@ export enum RenderMode {
 
 // @beta
 export namespace RenderSchedule {
-    export interface ColorEntryProps extends TimelineEntryProps {
+    export class ColorEntry extends TimelineEntry {
+        constructor(props: ColorEntryProps);
         // (undocumented)
-        value: {
+        toJSON(): ColorEntryProps;
+        readonly value: RgbColor | undefined;
+    }
+    export interface ColorEntryProps extends TimelineEntryProps {
+        value?: {
             red: number;
             green: number;
             blue: number;
         };
     }
-    export interface CuttingPlaneEntryProps extends TimelineEntryProps {
+    export class CuttingPlane {
+        constructor(props: CuttingPlaneProps);
+        readonly direction: XYAndZ;
+        readonly hidden: boolean;
+        readonly position: XYAndZ;
         // (undocumented)
-        value: CuttingPlaneProps;
+        toJSON(): CuttingPlaneProps;
+        readonly visible: boolean;
+    }
+    export class CuttingPlaneEntry extends TimelineEntry {
+        constructor(props: CuttingPlaneEntryProps);
+        // (undocumented)
+        toJSON(): CuttingPlaneEntryProps;
+        readonly value: CuttingPlane | undefined;
+    }
+    export interface CuttingPlaneEntryProps extends TimelineEntryProps {
+        value?: CuttingPlaneProps;
     }
     export interface CuttingPlaneProps {
         direction: number[];
@@ -5794,46 +5839,175 @@ export namespace RenderSchedule {
         position: number[];
         visible?: boolean;
     }
-    export interface ElementTimelineProps extends TimelineProps {
+    export class ElementTimeline extends Timeline {
+        // @internal (undocumented)
+        addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
+        readonly batchId: number;
+        get containsFeatureOverrides(): boolean;
+        get containsTransform(): boolean;
+        get elementIds(): Iterable<Id64String>;
         // (undocumented)
+        static fromJSON(props?: ElementTimelineProps): ElementTimeline;
+        // @internal (undocumented)
+        static getElementIds(ids: Id64String[] | CompressedId64Set): Iterable<Id64String>;
+        // @internal
+        get requiresBatching(): boolean;
+        // (undocumented)
+        toJSON(): ElementTimelineProps;
+    }
+    export interface ElementTimelineProps extends TimelineProps {
         batchId: number;
         elementIds: Id64String[] | CompressedId64Set;
     }
+    export enum Interpolation {
+        Linear = 2,
+        Step = 1
+    }
+    // @internal
+    export class Interval {
+        constructor(lower?: number, upper?: number, fraction?: number);
+        fraction: number;
+        // (undocumented)
+        init(lower?: number, upper?: number, fraction?: number): void;
+        lowerIndex: number;
+        upperIndex: number;
+    }
+    export class ModelTimeline extends Timeline {
+        // @internal (undocumented)
+        addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
+        readonly containsFeatureOverrides: boolean;
+        readonly containsModelClipping: boolean;
+        readonly containsTransform: boolean;
+        readonly elementTimelines: ReadonlyArray<ElementTimeline>;
+        findByBatchId(batchId: number): ElementTimeline | undefined;
+        // (undocumented)
+        static fromJSON(props?: ModelTimelineProps): ModelTimeline;
+        getTransform(batchId: number, time: number): Readonly<Transform> | undefined;
+        readonly modelId: Id64String;
+        // @internal (undocumented)
+        readonly realityModelUrl?: string;
+        // @internal
+        readonly requiresBatching: boolean;
+        // (undocumented)
+        toJSON(): ModelTimelineProps;
+        // @internal (undocumented)
+        readonly transformBatchIds: ReadonlyArray<number>;
+    }
     export interface ModelTimelineProps extends TimelineProps {
-        // (undocumented)
         elementTimelines: ElementTimelineProps[];
-        // (undocumented)
         modelId: Id64String;
-        // (undocumented)
+        // @alpha (undocumented)
         realityModelUrl?: string;
     }
+    export class Script {
+        protected constructor(props: Readonly<ScriptProps>);
+        // @internal (undocumented)
+        addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
+        readonly containsFeatureOverrides: boolean;
+        readonly containsModelClipping: boolean;
+        readonly containsTransform: boolean;
+        // @internal
+        discloseIds(ids: Id64Set): void;
+        readonly duration: Range1d;
+        find(modelId: Id64String): ModelTimeline | undefined;
+        // (undocumented)
+        static fromJSON(props: Readonly<ScriptProps>): Script | undefined;
+        // @internal (undocumented)
+        getTransform(modelId: Id64String, batchId: number, time: number): Readonly<Transform> | undefined;
+        // @internal (undocumented)
+        getTransformBatchIds(modelId: Id64String): ReadonlyArray<number> | undefined;
+        readonly modelTimelines: ReadonlyArray<ModelTimeline>;
+        // @internal
+        readonly requiresBatching: boolean;
+        // (undocumented)
+        toJSON(): ScriptProps;
+    }
+    export type ScriptProps = ModelTimelineProps[];
+    export class ScriptReference {
+        constructor(sourceId: Id64String, script: Script);
+        readonly script: Script;
+        readonly sourceId: Id64String;
+    }
+    export class Timeline {
+        constructor(props: TimelineProps);
+        readonly color?: TimelineEntryList<ColorEntry, ColorEntryProps, RgbColor | undefined>;
+        readonly cuttingPlane?: TimelineEntryList<CuttingPlaneEntry, CuttingPlaneEntryProps, CuttingPlane | undefined>;
+        readonly duration: Range1d;
+        getAnimationTransform(time: number): Readonly<Transform>;
+        getClipVector(time: number): ClipVector | undefined;
+        getColor(time: number): RgbColor | undefined;
+        getCuttingPlane(time: number): Plane3dByOriginAndUnitNormal | undefined;
+        // @internal (undocumented)
+        protected getFeatureAppearance(visibility: number, time: number): FeatureAppearance | undefined;
+        getVisibility(time: number): number;
+        // (undocumented)
+        toJSON(): TimelineProps;
+        readonly transform?: TransformTimelineEntries;
+        readonly visibility?: VisibilityTimelineEntries;
+    }
+    export class TimelineEntry {
+        constructor(props: TimelineEntryProps);
+        readonly interpolation: Interpolation;
+        readonly time: number;
+        // (undocumented)
+        toJSON(): TimelineEntryProps;
+    }
+    export class TimelineEntryList<T extends TimelineEntry & {
+        readonly value: V;
+    }, P extends TimelineEntryProps, V> implements Iterable<T> {
+        [Symbol.iterator](): Iterator<T>;
+        constructor(props: P[], ctor: Constructor<T>);
+        readonly duration: Range1d;
+        // @internal (undocumented)
+        findInterval(time: number, interval?: Interval): Interval | undefined;
+        getEntry(index: number): T | undefined;
+        getValue(index: number): V | undefined;
+        get length(): number;
+        // (undocumented)
+        toJSON(): P[];
+    }
     export interface TimelineEntryProps {
-        interpolation: number;
+        interpolation?: Interpolation;
         time: number;
     }
     export interface TimelineProps {
-        // (undocumented)
         colorTimeline?: ColorEntryProps[];
-        // (undocumented)
         cuttingPlaneTimeline?: CuttingPlaneEntryProps[];
-        // (undocumented)
         transformTimeline?: TransformEntryProps[];
-        // (undocumented)
         visibilityTimeline?: VisibilityEntryProps[];
     }
-    export interface TransformEntryProps extends TimelineEntryProps {
+    export class TransformEntry extends TimelineEntry {
+        constructor(props: TransformEntryProps);
         // (undocumented)
-        value: TransformProps;
+        toJSON(): TransformEntryProps;
+        readonly value: Readonly<Transform>;
+        }
+    export interface TransformEntryProps extends TimelineEntryProps {
+        value?: TransformProps;
     }
     export interface TransformProps {
-        orientation: number[];
-        pivot: number[];
-        position: number[];
-        transform: number[][];
+        // @internal
+        orientation?: number[];
+        // @internal
+        pivot?: number[];
+        // @internal
+        position?: number[];
+        transform?: number[][];
+    }
+    export class TransformTimelineEntries extends TimelineEntryList<TransformEntry, TransformEntryProps, Readonly<Transform>> {
+        getValue(index: number): Readonly<Transform>;
+    }
+    export class VisibilityEntry extends TimelineEntry {
+        constructor(props: VisibilityEntryProps);
+        // (undocumented)
+        toJSON(): VisibilityEntryProps;
+        readonly value: number;
     }
     export interface VisibilityEntryProps extends TimelineEntryProps {
-        // (undocumented)
-        value: number;
+        value?: number;
+    }
+    export class VisibilityTimelineEntries extends TimelineEntryList<VisibilityEntry, VisibilityEntryProps, number> {
+        getValue(index: number): number;
     }
 }
 
@@ -5877,6 +6051,17 @@ export namespace RenderTexture {
         ThematicGradient = 5,
         TileSection = 2
     }
+}
+
+// @beta
+export interface RenderTimelineLoadProps {
+    omitScriptElementIds?: boolean;
+}
+
+// @beta
+export interface RenderTimelineProps extends ElementProps {
+    description?: string;
+    script: string;
 }
 
 // @public
