@@ -37,7 +37,7 @@ export namespace XmlSerializationUtils {
     if (!caClass.properties)
       return caElement;
 
-    for (const property of caClass.properties)
+    for (const property of caClass.properties.values())
       await writeInstanceProperty(property, customAttribute, caElement, schemaDoc);
 
     return caElement;
@@ -108,7 +108,7 @@ export namespace XmlSerializationUtils {
     if (!structClass.properties)
       return;
 
-    for (const propertyMetadata of structClass.properties)
+    for (const propertyMetadata of structClass.properties.values())
       await writeInstanceProperty(propertyMetadata, propertyValue, structElement, schemaDoc);
   }
 
