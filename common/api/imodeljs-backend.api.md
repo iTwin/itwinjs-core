@@ -3407,10 +3407,11 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 
 // @internal (undocumented)
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
+    protected constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
     // (undocumented)
-    config: NativeAppAuthorizationConfiguration;
+    config?: NativeAppAuthorizationConfiguration;
     // (undocumented)
     expireSafety: number;
     // (undocumented)
@@ -3418,9 +3419,11 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
-    initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void>;
+    initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
     get isAuthorized(): boolean;
+    // (undocumented)
+    issuerUrl?: string;
     // (undocumented)
     protected abstract refreshToken(): Promise<AccessToken>;
     // (undocumented)
