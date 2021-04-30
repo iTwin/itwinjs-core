@@ -13,6 +13,7 @@ import { DelayedSpinner } from "../../common/DelayedSpinner";
 import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { FilteredType } from "../dataproviders/filterers/PropertyDataFiltererBase";
 import { usePropertyGridEventHandler, usePropertyGridModel, usePropertyGridModelSource } from "../internal/PropertyGridHooks";
+import { PropertyCategoryRendererManager } from "../PropertyCategoryRendererManager";
 import { IPropertyDataProvider } from "../PropertyDataProvider";
 import { CommonPropertyGridProps } from "./PropertyGridCommons";
 import { VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
@@ -22,7 +23,10 @@ import { VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
  */
 export interface VirtualizedPropertyGridWithDataProviderProps extends CommonPropertyGridProps {
   dataProvider: IPropertyDataProvider;
-  highlight?: HighlightingComponentProps & {filteredTypes?: FilteredType[]};
+  highlight?: HighlightingComponentProps & {
+    filteredTypes?: FilteredType[];
+  };
+  propertyCategoryRendererManager?: PropertyCategoryRendererManager;
 }
 
 /**
