@@ -12,8 +12,7 @@ import {
   ValuesArray, ValuesDictionary, ValuesMap,
 } from "@bentley/presentation-common";
 import {
-  ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValue, StructValue,
-  PropertyValueFormat as UiPropertyValueFormat,
+  ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValue, StructValue, PropertyValueFormat as UiPropertyValueFormat,
 } from "@bentley/ui-abstract";
 import { Omit } from "@bentley/ui-core";
 
@@ -190,7 +189,7 @@ export class ContentBuilder {
       label: field.label,
       editor: field.editor,
       renderer: field.renderer,
-      enum: (field.type.valueFormat === PresentationPropertyValueFormat.Primitive && "enum" === field.type.typeName && field.isPropertiesField()) ? field.properties[0].property.enumerationInfo : undefined,
+      enum: getFieldEnumInfo(field),
     });
   }
 }
@@ -290,6 +289,12 @@ function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy
   return convertedFieldHierarchy;
 }
 
+function getFieldEnumInfo(field: Field): EnumerationInfo | undefined {
+  if (field.isPropertiesField())
+    return field.properties[0].property.enumerationInfo;
+  return undefined;
+}
+
 interface FieldInfo {
   type: TypeDescription;
   name: string;
@@ -314,7 +319,7 @@ function createPropertyDescriptionFromFieldInfo(info: FieldInfo) {
     descr.editor = { name: info.editor.name, params: [] } as PropertyEditorInfo;
   }
 
-  if (info.enum) {
+  if (info.type.valueFormat === PresentationPropertyValueFormat.Primitive && info.enum) {
     descr.enum = {
       choices: info.enum.choices,
       isStrict: info.enum.isStrict,
@@ -348,9 +353,9 @@ function createPropertyRecordPropsFromFieldHierarchy(fieldHierarchy: FieldHierar
       label: fieldHierarchy.field.label,
       renderer: fieldHierarchy.field.renderer,
       editor: fieldHierarchy.field.editor,
+      enum: getFieldEnumInfo(fieldHierarchy.field),
       isReadonly: fieldHierarchy.field.isReadonly || isFieldMerged,
     }),
-    description: ContentBuilder.createPropertyDescription(fieldHierarchy.field, { namePrefix }),
     isMerged: isFieldMerged,
     autoExpand: fieldHierarchy.field.parent?.autoExpand,
   };

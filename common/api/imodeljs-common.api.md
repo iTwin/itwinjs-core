@@ -2365,7 +2365,6 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
     jsonProperties?: any;
     kind: string;
     scope: RelatedElementProps;
-    // (undocumented)
     source?: RelatedElementProps;
     version?: string;
 }
@@ -4708,11 +4707,10 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
-// @alpha
+// @beta
 export interface NativeAppAuthorizationConfiguration {
     readonly clientId: string;
     readonly expiryBuffer?: number;
-    // (undocumented)
     issuerUrl?: string;
     readonly redirectUri?: string;
     readonly scope: string;
@@ -4735,10 +4733,10 @@ export interface NativeAppFunctions {
     initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
+    // (undocumented)
+    setAccessTokenProps: (token: AccessTokenProps) => Promise<void>;
     signIn: () => Promise<void>;
     signOut: () => Promise<void>;
-    // (undocumented)
-    silentLogin: (token: AccessTokenProps) => Promise<void>;
     storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
     storageKeys: (_storageId: string) => Promise<string[]>;
     storageMgrClose: (_storageId: string, _deleteOnClose: boolean) => Promise<void>;

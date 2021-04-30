@@ -1,6 +1,6 @@
 {
   "name": "@bentley/rbac-client",
-  "version": "2.16.0-dev.19",
+  "version": "2.16.0-dev.20",
   "description": "iModel.js RBAC Client",
   "main": "lib/rbac-client.js",
   "typings": "lib/rbac-client",
@@ -36,19 +36,19 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.19"
+    "@bentley/bentleyjs-core": "2.16.0-dev.20"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.16.0-dev.19"
+    "@bentley/itwin-client": "^2.16.0-dev.20"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.19",
-    "@bentley/certa": "2.16.0-dev.19",
-    "@bentley/config-loader": "2.16.0-dev.19",
-    "@bentley/context-registry-client": "2.16.0-dev.19",
-    "@bentley/eslint-plugin": "2.16.0-dev.19",
-    "@bentley/itwin-client": "2.16.0-dev.19",
-    "@bentley/oidc-signin-tool": "2.16.0-dev.19",
+    "@bentley/build-tools": "2.16.0-dev.20",
+    "@bentley/certa": "2.16.0-dev.20",
+    "@bentley/config-loader": "2.16.0-dev.20",
+    "@bentley/context-registry-client": "2.16.0-dev.20",
+    "@bentley/eslint-plugin": "2.16.0-dev.20",
+    "@bentley/itwin-client": "2.16.0-dev.20",
+    "@bentley/oidc-signin-tool": "2.16.0-dev.20",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

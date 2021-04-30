@@ -370,6 +370,7 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   checksum?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   jsonProperties?: any;
+  /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   source?: RelatedElementProps;
 }
 

@@ -5,6 +5,7 @@
 import { assert } from "chai";
 import { Config, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+
 import { BriefcaseDownloader, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, IModelApp, NativeApp, NativeAppAuthorization, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
@@ -12,6 +13,39 @@ import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/
 import { rpcInterfaces } from "../../common/RpcInterfaces";
 import { usingOfflineScope } from "./HttpRequestHook";
 import { TestUtility } from "./TestUtility";
+
+describe("NativeApp (offline)", () => {
+  before(async () => {
+    await ElectronApp.startup({
+      iModelApp: {
+        rpcInterfaces,
+        applicationId: "1234",
+        applicationVersion: "testappversion",
+        sessionId: "testsessionid",
+      },
+    });
+  });
+
+  it("must startup offline without errors", async () => {
+    await ElectronApp.shutdown();
+
+    await usingOfflineScope(async () => {
+      await ElectronApp.startup({
+        iModelApp: {
+          rpcInterfaces,
+          applicationId: "1234",
+          applicationVersion: "testappversion",
+          sessionId: "testsessionid",
+        },
+      });
+      assert.isTrue(ElectronApp.isValid);
+    });
+  });
+
+  after(async () => {
+    await ElectronApp.shutdown();
+  });
+});
 
 describe("NativeApp (#integration)", () => {
   let testProjectName: string;
@@ -29,7 +63,7 @@ describe("NativeApp (#integration)", () => {
       },
     });
 
-    await NativeApp.callNativeHost("silentLogin", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
+    await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
     IModelApp.authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
 
     testProjectName = Config.App.get("imjs_test_project_name");

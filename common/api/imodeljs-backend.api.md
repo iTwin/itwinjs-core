@@ -1993,6 +1993,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     jsonProperties?: string;
     kind: string;
     scope: RelatedElement;
+    source?: RelatedElement;
     // @internal (undocumented)
     toJSON(): ExternalSourceAspectProps;
     version?: string;
@@ -2697,9 +2698,10 @@ export class IModelExporter {
     exportFontByNumber(fontNumber: number): Promise<void>;
     exportFonts(): Promise<void>;
     exportModel(modeledElementId: Id64String): Promise<void>;
-    exportModelContents(modelId: Id64String, elementClassFullName?: string): Promise<void>;
+    exportModelContents(modelId: Id64String, elementClassFullName?: string, skipRootSubject?: boolean): Promise<void>;
     exportRelationship(relClassFullName: string, relInstanceId: Id64String): Promise<void>;
     exportRelationships(baseRelClassFullName: string): Promise<void>;
+    // @deprecated
     exportRepositoryLinks(): Promise<void>;
     exportSchemas(): Promise<void>;
     exportSubModels(parentModelId: Id64String): Promise<void>;
@@ -2730,7 +2732,7 @@ export abstract class IModelExportHandler {
     protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     protected onExportSchema(_schema: Schema_2): void;
-    protected onProgress(): void;
+    protected onProgress(): Promise<void>;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
@@ -2850,7 +2852,7 @@ export class IModelImporter {
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
     importElement(elementProps: ElementProps): Id64String;
-    importElementMultiAspects(aspectPropsArray: ElementAspectProps[]): void;
+    importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): void;
     importElementUniqueAspect(aspectProps: ElementAspectProps): void;
     importModel(modelProps: ModelProps): void;
     importRelationship(relationshipProps: RelationshipProps): Id64String;
@@ -2955,7 +2957,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
     protected onTransformElement(sourceElement: Element): ElementProps;
-    protected onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
+    protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
@@ -2985,6 +2987,7 @@ export class IModelTransformer extends IModelExportHandler {
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
+    includeSourceProvenance?: boolean;
     isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
@@ -3404,10 +3407,11 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 
 // @internal (undocumented)
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
+    protected constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
     // (undocumented)
-    config: NativeAppAuthorizationConfiguration;
+    config?: NativeAppAuthorizationConfiguration;
     // (undocumented)
     expireSafety: number;
     // (undocumented)
@@ -3415,9 +3419,11 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
-    initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void>;
+    initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
     get isAuthorized(): boolean;
+    // (undocumented)
+    issuerUrl?: string;
     // (undocumented)
     protected abstract refreshToken(): Promise<AccessToken>;
     // (undocumented)
