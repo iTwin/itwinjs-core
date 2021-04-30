@@ -1223,12 +1223,12 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
     // (undocumented)
     abstract get settings(): DisplayStyleSettings;
@@ -1252,11 +1252,11 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
     constructor(props: DisplayStyle3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
@@ -3700,8 +3700,6 @@ export interface ProcessChangesetOptions {
     startChangesetId: string;
     // (undocumented)
     tempDir?: string;
-    // (undocumented)
-    wantBriefcaseRoll?: boolean;
     // (undocumented)
     wantParents?: boolean;
     // (undocumented)
