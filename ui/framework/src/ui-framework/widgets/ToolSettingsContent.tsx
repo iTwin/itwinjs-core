@@ -9,7 +9,7 @@
 import "./ToolSettingsContent.scss";
 import classnames from "classnames";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import { ResizableContainerObserver } from "@bentley/ui-core";
 import { HorizontalAnchor, ToolSettingsWidgetMode, WidgetContent } from "@bentley/ui-ninezone";
 
 /** @internal */
@@ -48,7 +48,7 @@ export class ToolSettingsContent extends React.PureComponent<ToolSettingsContent
         }}>
           {this.props.children}
           <div className="uifw-zone-measurer">
-            <ReactResizeDetector handleWidth onResize={this._handleResize} />
+            <ResizableContainerObserver onResize={this._handleResize} />
           </div>
           <div className="uifw-measurer" ref={this._measurer} />
           <div className="uifw-expander" />

@@ -75,21 +75,19 @@ export class ChildWindowManager {
       childWindow.document.documentElement.setAttribute("data-theme", UiFramework.getColorTheme());
       setImmediate(() => {
         ReactDOM.render(
-          <React.StrictMode>
-            <Provider store={StateManager.store} >
-              <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
-                <div className="uifw-child-window-container-host">
-                  <PopupRenderer />
-                  <ModalDialogRenderer />
-                  <ModelessDialogRenderer />
-                  <CursorPopupMenu />
-                  <div className="uifw-child-window-container nz-widget-widget">
-                    {content}
-                  </div>
+          <Provider store={StateManager.store} >
+            <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
+              <div className="uifw-child-window-container-host">
+                <PopupRenderer />
+                <ModalDialogRenderer />
+                <ModelessDialogRenderer />
+                <CursorPopupMenu />
+                <div className="uifw-child-window-container nz-widget-widget">
+                  {content}
                 </div>
-              </UiSettingsProvider>
-            </Provider>
-          </React.StrictMode>,
+              </div>
+            </UiSettingsProvider>
+          </Provider>,
           reactConnectionDiv
         );
       });

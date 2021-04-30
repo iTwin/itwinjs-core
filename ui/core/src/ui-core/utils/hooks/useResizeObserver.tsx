@@ -18,12 +18,23 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
   const resizeObserver = React.useRef<ResizeObserver | null>(null);
   const rafRef = React.useRef(0);  // set to non-zero when requestAnimationFrame processing is active
   const isMountedRef = React.useRef(false);
+  const owningWindowRef = React.useRef<any>(null);
+
+  const resizeObserverCleanup = () => {
+    if (rafRef.current)
+      owningWindowRef.current.cancelAnimationFrame(rafRef.current);
+
+    resizeObserver.current?.disconnect();
+    resizeObserver.current = null;
+  };
+
   React.useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       if (rafRef.current)
-        window.cancelAnimationFrame(rafRef.current);
+        owningWindowRef.current.cancelAnimationFrame(rafRef.current);
+      owningWindowRef.current?.removeEventListener("beforeunload", resizeObserverCleanup);
     };
   }, []);
 
@@ -41,9 +52,17 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
       return;
     }
     const target = entries[0].target as HTMLElement;
-    // using requestAnimationFrame to stop the "ResizeObserver loop completed with undelivered notifications." and
-    // "ResizeObserver loop limit exceeded" messages reported to window.onError
-    rafRef.current = window.requestAnimationFrame(() => processResize(target));
+    if (owningWindowRef.current)
+      owningWindowRef.current.removeEventListener("beforeunload", resizeObserverCleanup);
+
+    owningWindowRef.current = target.ownerDocument.defaultView;
+    if (owningWindowRef.current) {
+      owningWindowRef.current.addEventListener("beforeunload", resizeObserverCleanup);
+
+      // using requestAnimationFrame to stop the "ResizeObserver loop completed with undelivered notifications." and
+      // "ResizeObserver loop limit exceeded" messages reported to window.onError
+      rafRef.current = owningWindowRef.current.requestAnimationFrame(() => processResize(target));
+    }
   }, [processResize]);
 
   const observerRef = useRefEffect((instance: T | null) => {
@@ -65,4 +84,93 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
 
   const ref = useRefs(handleRef, observerRef);
   return ref;
+}
+
+/** Uses ResizeObserver API to notify about element bound changes.
+  * @internal
+  */
+export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onResize?: (width: number, height: number) => void) {
+  const [bounds, setBounds] = React.useState({ width: 0, height: 0 });
+  const resizeObserver = React.useRef<ResizeObserver | null>(null);
+  const rafRef = React.useRef(0);  // set to non-zero when requestAnimationFrame processing is active
+  const isMountedRef = React.useRef(false);
+  const owningWindowRef = React.useRef<any>(null);
+
+  const resizeObserverCleanup = () => {
+    if (rafRef.current)
+      owningWindowRef.current.cancelAnimationFrame(rafRef.current);
+
+    resizeObserver.current?.disconnect();
+    resizeObserver.current = null;
+  };
+
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (rafRef.current)
+        owningWindowRef.current.cancelAnimationFrame(rafRef.current);
+      owningWindowRef.current?.removeEventListener("beforeunload", resizeObserverCleanup);
+    };
+  }, []);
+
+  const processResize = React.useCallback((target: HTMLElement) => {
+    const newBounds = target.getBoundingClientRect();
+    if (isMountedRef.current && bounds.width !== newBounds.width || bounds.height !== newBounds.height) {
+      onResize && onResize(newBounds.width, newBounds.height);
+      setBounds(newBounds);
+    }
+  }, [bounds.height, bounds.width, onResize]);
+
+  const handleResize = React.useCallback((entries: any[]) => {
+    // istanbul ignore else
+    if (!isMountedRef.current || !Array.isArray(entries) || 0 === entries.length) {
+      return;
+    }
+    const target = entries[0].target as HTMLElement;
+    if (owningWindowRef.current)
+      owningWindowRef.current.removeEventListener("beforeunload", resizeObserverCleanup);
+
+    owningWindowRef.current = target.ownerDocument.defaultView;
+    if (owningWindowRef.current) {
+      owningWindowRef.current.addEventListener("beforeunload", resizeObserverCleanup);
+
+      // using requestAnimationFrame to stop the "ResizeObserver loop completed with undelivered notifications." and
+      // "ResizeObserver loop limit exceeded" messages reported to window.onError
+      rafRef.current = owningWindowRef.current.requestAnimationFrame(() => processResize(target));
+    }
+  }, [processResize]);
+
+  React.useLayoutEffect(() => {
+    if (!ref.current) {
+      return;
+    }
+    resizeObserver.current = new ResizeObserver(handleResize);
+    resizeObserver.current.observe(ref.current);
+    return () => {
+      resizeObserver.current?.disconnect();
+      resizeObserver.current = null;
+    };
+  }, [handleResize, ref]);
+
+  return [bounds.width, bounds.height];
+}
+
+/** Provides func props functionality similar to ReactResizeDetector but this component works in child windows.
+ *  @alpha
+ */
+export function ElementResizeObserver({ watchedElement, render }: { watchedElement: React.RefObject<HTMLElement>, render: (width: number, height?: number) => JSX.Element }) {
+  const [width, height] = useLayoutResizeObserver(watchedElement);
+  return render(width, height);
+}
+
+/** @alpha */
+export function ResizableContainerObserver({ onResize, children }: { onResize: (width: number, height: number) => void, children?: React.ReactNode }) {
+  const containerRef = React.useRef<HTMLDivElement>(null);  // set to non-zero when requestAnimationFrame processing is active
+  useLayoutResizeObserver(containerRef, onResize);
+  return (
+    <div ref={containerRef} className="ui-core-resizable-container">
+      {children}
+    </div>
+  );
 }

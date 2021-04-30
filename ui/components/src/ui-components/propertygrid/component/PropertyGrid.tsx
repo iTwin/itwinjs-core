@@ -10,10 +10,9 @@ import "./PropertyGrid.scss";
 import classnames from "classnames";
 import { produce } from "immer";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { Orientation, SpinnerSize } from "@bentley/ui-core";
+import { Orientation, ResizableContainerObserver, SpinnerSize } from "@bentley/ui-core";
 import { DelayedSpinner } from "../../common/DelayedSpinner";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { ColumnResizeRelatedPropertyListProps, ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier";
@@ -176,8 +175,8 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     return (this.props.orientation !== undefined) ? this.props.orientation : Orientation.Horizontal;
   }
 
-  private _onResize = (width: number, _height: number) => {
-    this.updateOrientation(width);
+  private _onResize = (width: number) => {
+    this.updateOrientation(width ?? 0);
   };
 
   private _onCategoryExpansionToggled = (categoryName: string) => {
@@ -239,7 +238,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
                 }
               </div>
             </div>
-            <ReactResizeDetector handleWidth handleHeight onResize={this._onResize} />
+            <ResizableContainerObserver onResize={this._onResize} />
           </div>
         )}
       </PropertyGridEventsRelatedPropsSupplier>

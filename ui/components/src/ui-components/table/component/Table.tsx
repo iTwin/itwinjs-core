@@ -11,11 +11,10 @@ import "../columnfiltering/ColumnFiltering.scss";
 import classnames from "classnames";
 import { memoize } from "lodash";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import {
-  CommonProps, Dialog, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage,
+  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage,
   Orientation, SortDirection, UiSettings, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import {
@@ -286,7 +285,7 @@ const enum UpdateStatus { // eslint-disable-line no-restricted-syntax
  * @public
  */
 export class Table extends React.Component<TableProps, TableState> {
-
+  private _gridContainerRef = React.createRef<HTMLDivElement>();
   private _pageAmount = 100;
   private _disposableListeners = new DisposableList();
   private _isMounted = false;
@@ -1639,7 +1638,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     return (
       <>
-        <div className={tableClassName} style={this.props.style}
+        <div ref={this._gridContainerRef} className={tableClassName} style={this.props.style}
           onMouseDown={this._onMouseDown}
           onContextMenu={this.props.showHideColumns ? this._handleShowHideContextMenu : undefined}
           onKeyDown={this._onKeyDown}
@@ -1655,8 +1654,8 @@ export class Table extends React.Component<TableProps, TableState> {
               onClose={this._hideContextMenu}
               onShowHideChange={this._handleShowHideChange} />
           }
-          <ReactResizeDetector handleWidth handleHeight
-            render={({ width, height }) => (
+          <ElementResizeObserver watchedElement={this._gridContainerRef}
+            render={(width, height) => (
               <ReactDataGrid
                 ref={this._gridRef}
                 columns={visibleColumns}

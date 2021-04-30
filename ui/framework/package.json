@@ -101,7 +101,6 @@
     "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",
     "@types/react-redux": "^7.0.1",
-    "@types/react-resize-detector": "^5.0.0",
     "@types/rimraf": "^2.0.2",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
@@ -146,7 +145,7 @@
     "lodash": "^4.17.10",
     "react-dnd": "^11.1.3",
     "react-dnd-html5-backend": "^11.1.3",
-    "react-resize-detector": "^5.1.0",
+    "react-resize-detector": "^6.7.0",
     "react-split-pane": "0.1.92",
     "rxjs": "^6.6.2",
     "svg-sprite-loader": "4.2.1"

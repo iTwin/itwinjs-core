@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { BeDragDropContext, DatePickerPopupButton, DatePickerPopupButtonProps } from "@bentley/ui-components";
+import { DatePickerPopupButton, DatePickerPopupButtonProps } from "@bentley/ui-components";
 import { Button } from "@bentley/ui-core";
 import { ModalDialogManager, ModelessDialogManager, PopupManager, UiFramework } from "@bentley/ui-framework";
 import { SampleModelessDialog } from "../appui/dialogs/SampleModelessDialog";
 import { TestModalDialog } from "../appui/dialogs/TestModalDialog";
 
 import { SamplePopupContextMenu } from "../appui/frontstages/component-examples/SamplePopupContextMenu";
-import { TableDemoWidget } from "../appui/widgets/TableDemoWidget";
+import { TableExampleContent } from "../appui/contentviews/TableExampleContent";
 import "./PopupTestPanel.scss";
 import { AbstractToolbarProps, BadgeType, RelativePosition } from "@bentley/ui-abstract";
+import { WeightPickerHost } from "../appui/frontstages/component-examples/ComponentExamplesProvider";
 
 export function DatePickerHost(props: DatePickerPopupButtonProps) {
   const { onDateChange, selected, ...otherProp } = props;
@@ -66,13 +67,10 @@ export function PopupTestPanel() {
       <Button style={{ width: "180px" }} onClick={handleOpenModalClick}>Open Modal</Button>
       <Button style={{ width: "180px" }} onClick={handleOpenModelessClick}>Open Modeless</Button>
       <Button style={{ width: "180px" }} onClick={handleShowToolbarClick}>Open Toolbar</Button>
-      {false &&
-        <div className="test-table-widget-container">
-          <BeDragDropContext>
-            <TableDemoWidget iModelConnection={UiFramework.getIModelConnection()} />
-          </BeDragDropContext>
-        </div>
-      }
+      <WeightPickerHost activeWeight={3} onLineWeightPick={() => { }} />
+      {false && <div className="test-table-widget-container">
+        <TableExampleContent />
+      </div>}
     </div>
   );
 }
