@@ -528,15 +528,17 @@ async function getTileTree(imodel: IModelConnection, modelId: Id64String, edgesR
 }
 
 async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = true, animationId?: Id64String): Promise<IModelTileTree> {
-  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and scheduleScript.getModelAnimationId(modelId) and for access to its IModelConnection.
+  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and scheduleState.getModelAnimationId(modelId) and for access to its IModelConnection.
   // ###TODO Make that an interface instead of requiring a ViewState.
-  let scheduleScript;
+  let scheduleState;
   if (undefined !== animationId)
-    scheduleScript = { getModelAnimationId: () => animationId };
+    scheduleState = { getModelAnimationId: () => animationId };
 
   const fakeViewState = {
     iModel: model.iModel,
-    scheduleScript,
+    displayStyle: {
+      scheduleState,
+    },
     viewFlags: {
       renderMode: RenderMode.SmoothShade,
       visibleEdges: edgesRequired,

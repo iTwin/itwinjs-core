@@ -22,7 +22,7 @@
     "@bentley/build-tools": "2.16.0-dev.12",
     "@bentley/eslint-plugin": "2.16.0-dev.12",
     "@bentley/react-scripts": "3.4.9",
-    "@types/classnames": "^2.2.3",
+    "@types/classnames": "~2.2.3",
     "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",
     "@types/react-router-dom": "^5.1.5",
