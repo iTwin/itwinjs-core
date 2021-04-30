@@ -579,7 +579,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const getDrawCommands = (graphics: RenderGraphic[]) => {
       this._batchState.reset();
       renderCommands.reset(target, this._branchStack, this._batchState);
-      renderCommands.addGraphics(graphics);
+      renderCommands.collectGraphicsForPlanarProjection(graphics);
 
       // Draw the classifiers into our attachments.
       // When using Display.ElementColor, the color and transparency come from the classifier geometry. Therefore we may need to draw the classified geometry
