@@ -926,6 +926,7 @@ Object {
         },
       ],
       "priority": 94204,
+      "relationshipMeaning": "RelatedInstance",
       "renderer": undefined,
       "type": Object {
         "members": Array [
@@ -1271,6 +1272,7 @@ Object {
         },
       ],
       "priority": 41525,
+      "relationshipMeaning": "RelatedInstance",
       "renderer": undefined,
       "type": Object {
         "members": Array [

@@ -119,7 +119,6 @@ import { LockLevel } from '@bentley/imodelhub-client';
 import { LockType } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
-import { MapImageryProps } from '@bentley/imodeljs-common';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
@@ -160,6 +159,7 @@ import { RelationshipProps } from '@bentley/imodeljs-common';
 import { RemoveFunction } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
+import { RenderTimelineProps } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { RequestNewBriefcaseProps } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
@@ -574,6 +574,7 @@ export class ChangedElementsDb implements IDisposable {
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+    processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
 // @internal
@@ -1225,6 +1226,8 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     // @internal (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // (undocumented)
+    loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
     // @internal (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
     // (undocumented)
@@ -1263,9 +1266,6 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
 export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
     // (undocumented)
     backgroundColor?: ColorDef | number;
-    // (undocumented)
-    mapImagery?: MapImageryProps;
-    scheduleScript?: object | RenderSchedule.ModelTimelineProps[];
     viewFlags?: ViewFlags;
 }
 
@@ -3701,6 +3701,8 @@ export interface ProcessChangesetOptions {
     // (undocumented)
     tempDir?: string;
     // (undocumented)
+    wantBriefcaseRoll?: boolean;
+    // (undocumented)
     wantParents?: boolean;
     // (undocumented)
     wantPropertyChecksums?: boolean;
@@ -3795,6 +3797,26 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
+}
+
+// @beta
+export class RenderTimeline extends InformationRecordElement {
+    // @internal
+    protected constructor(props: RenderTimelineProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(ids: Id64Set): void;
+    description: string;
+    // (undocumented)
+    static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
+    // @alpha (undocumented)
+    protected static onCloned(context: IModelCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void;
+    // @internal
+    static remapScript(context: IModelCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps;
+    scriptProps: RenderSchedule.ScriptProps;
+    // (undocumented)
+    toJSON(): RenderTimelineProps;
 }
 
 // @public

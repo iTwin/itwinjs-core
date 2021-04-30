@@ -127,7 +127,7 @@ export namespace FeatureSymbology {
           this.overrideModel(realityModel.modelId, realityModel.appearanceOverrides);
       });
 
-      const script = style.scheduleScript;
+      const script = style.scheduleState;
       if (script)
         script.getSymbologyOverrides(this, style.settings.timePoint ?? 0);
 
