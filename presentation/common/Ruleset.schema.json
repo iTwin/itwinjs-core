@@ -3381,6 +3381,13 @@
       "minLength": 1,
       "type": "string"
     },
+    "requiredSchemas": {
+      "description": "Schema requirements for this ruleset. The ruleset is not used if the requirements are not met.",
+      "items": {
+        "$ref": "#/definitions/RequiredSchemaSpecification"
+      },
+      "type": "array"
+    },
     "rules": {
       "description": "Presentation rules used to create hierarchies and content",
       "items": {

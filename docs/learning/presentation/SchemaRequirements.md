@@ -12,6 +12,25 @@ interfaces. The attribute accepts a list of ECSchema names along with optional m
 
 ## Examples
 
+### Specifying required schemas for the ruleset
+
+The below ruleset contains a content modifier for `Functional.FunctionalElement` class - we need to make sure the iModel supports all the ECSchemas that are
+used in it.
+
+```JSON
+{
+  "id": "my-ruleset",
+  "requiredSchemas": [{
+    "name": "Functional"
+  }],
+  "rules": [{
+    "ruleType": "ContentModifier",
+    "class": { "schemaName": "Functional", "className": "FunctionalElement" },
+    // ... some overrides for Functional.FunctionalElement
+  }]
+}
+```
+
 ### Specifying required schema in hierarchy rule
 
 The below rule requests `FunctionalElement` instances to be loaded from `Functional` schema. We want to make sure the `Functional` schema is available in the iModel,

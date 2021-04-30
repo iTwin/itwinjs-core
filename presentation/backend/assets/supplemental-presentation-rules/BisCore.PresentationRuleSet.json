@@ -4,11 +4,11 @@
   "supplementationInfo": {
     "supplementationPurpose": "BisCore specific customization rules"
   },
-  "supportedSchemas": {
-    "schemaNames": [
-      "BisCore"
-    ]
-  },
+  "requiredSchemas": [
+    {
+      "name": "BisCore"
+    }
+  ],
   "rules": [
     {
       "ruleType": "InstanceLabelOverride",
