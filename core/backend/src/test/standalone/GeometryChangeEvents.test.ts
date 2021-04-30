@@ -48,7 +48,6 @@ describe("Model geometry changes", () => {
 
   function expectChanges(expected: GeometricModelChange | undefined): void {
     if (!expected) {
-
       expect(lastChanges).to.be.undefined;
       return;
     }
