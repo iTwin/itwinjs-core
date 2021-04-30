@@ -1,6 +1,18 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Thu, 22 Apr 2021 21:07:34 GMT and should not be manually modified.
+This log was last generated on Fri, 30 Apr 2021 12:36:58 GMT and should not be manually modified.
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Add UiSettingsPage, AppUiSettings, and ability to register UserSettingsProvider to provide default settings from UsSettingsStorage.
+- Properly declare changeSetId variables as string.
+- Adding ability to open Message Center on demand
+- Cache element ids when determining visbility in ModelsTree
+- Fix compatibility issue when multiple versions of `rxjs` are in use.
+- Publish APIs used bu iTwinViewer.
 
 ## 2.14.4
 Thu, 22 Apr 2021 21:07:34 GMT
