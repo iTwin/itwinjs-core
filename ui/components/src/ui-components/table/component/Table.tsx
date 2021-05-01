@@ -285,7 +285,6 @@ const enum UpdateStatus { // eslint-disable-line no-restricted-syntax
  * @public
  */
 export class Table extends React.Component<TableProps, TableState> {
-  private _gridContainerRef = React.createRef<HTMLDivElement>();
   private _pageAmount = 100;
   private _disposableListeners = new DisposableList();
   private _isMounted = false;
@@ -301,6 +300,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _pressedItemSelected: boolean = false;
   private _tableRef = React.createRef<HTMLDivElement>();
   private _gridRef = React.createRef<ReactDataGrid<any>>();
+  private _gridContainerRef = React.createRef<HTMLDivElement>();
   private _filterDescriptors?: TableFilterDescriptorCollection;
   private _filterRowShown = false;
 
@@ -425,6 +425,14 @@ export class Table extends React.Component<TableProps, TableState> {
   public componentDidMount() {
     this._isMounted = true;
 
+    // The previously used ReactResizeDetector, which does not work in popout/child windows, used deprecated React.findDomNode
+    // which is now deprecated so, so new ElementResizeObserver requires you to pass the element to observe. So get the
+    // same HTMLDivElement from grid as was used previously by ReactResizeDetector.
+    if (this._gridRef.current) {
+      const grid = this._gridRef.current as any;
+      // hack force the _gridContainerRef to hold the proper DOM node
+      (this._gridContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = grid.getDataGridDOMNode();
+    }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.update();
   }
@@ -1638,7 +1646,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     return (
       <>
-        <div ref={this._gridContainerRef} className={tableClassName} style={this.props.style}
+        <div className={tableClassName} style={this.props.style}
           onMouseDown={this._onMouseDown}
           onContextMenu={this.props.showHideColumns ? this._handleShowHideContextMenu : undefined}
           onKeyDown={this._onKeyDown}
