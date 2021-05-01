@@ -59,6 +59,7 @@ import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { DecorationsCache } from "./DecorationsCache";
+import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -2273,6 +2274,7 @@ export abstract class Viewport implements IDisposable {
     else
       this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
   }
+
   /** @internal */
   public isPixelSelectable(pixel: Pixel.Data) {
     if (undefined === pixel.featureTable || undefined === pixel.elementId)
@@ -2346,6 +2348,13 @@ export abstract class Viewport implements IDisposable {
     }
 
     return npc;
+  }
+
+  /**
+   * @beta
+   */
+  public queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void {
+    return queryVisibleFeatures(this, options, callback);
   }
 
   /** @internal */
