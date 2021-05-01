@@ -67,12 +67,18 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
 
   const observerRef = useRefEffect((instance: T | null) => {
     resizeObserver.current = new ResizeObserver(handleResize);
-    instance && resizeObserver.current.observe(instance);
+    if (instance) {
+      resizeObserver.current.observe(instance);
+      const newBounds = instance.getBoundingClientRect();
+      onResize && onResize(newBounds.width, newBounds.height);
+      setBounds(newBounds);
+    }
+
     return () => {
       instance && resizeObserver.current!.unobserve(instance);
       resizeObserver.current = null;
     };
-  }, [handleResize]);
+  }, [handleResize, onResize]);
 
   const handleRef = React.useCallback((instance: Element | null) => {
     const newBounds = instance && instance.getBoundingClientRect();
@@ -108,6 +114,7 @@ export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onRes
     isMountedRef.current = true;
     if (ref.current) {
       const newBounds = ref.current.getBoundingClientRect();
+      onResize && onResize(newBounds.width, newBounds.height);
       setBounds(newBounds);
     }
 
@@ -117,7 +124,7 @@ export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onRes
         owningWindowRef.current.cancelAnimationFrame(rafRef.current);
       owningWindowRef.current?.removeEventListener("beforeunload", resizeObserverCleanup);
     };
-  }, [ref]);
+  }, [onResize, ref]);
 
   const processResize = React.useCallback((target: HTMLElement) => {
     const newBounds = target.getBoundingClientRect();
