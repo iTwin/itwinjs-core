@@ -68,7 +68,7 @@ export function PopupTestPanel() {
       <Button style={{ width: "180px" }} onClick={handleOpenModelessClick}>Open Modeless</Button>
       <Button style={{ width: "180px" }} onClick={handleShowToolbarClick}>Open Toolbar</Button>
       <WeightPickerHost activeWeight={3} onLineWeightPick={() => { }} />
-      {false && <div className="test-table-widget-container">
+      {true && <div className="test-table-widget-container">
         <TableExampleContent />
       </div>}
     </div>

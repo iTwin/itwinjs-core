@@ -106,13 +106,18 @@ export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onRes
 
   React.useEffect(() => {
     isMountedRef.current = true;
+    if (ref.current) {
+      const newBounds = ref.current.getBoundingClientRect();
+      setBounds(newBounds);
+    }
+
     return () => {
       isMountedRef.current = false;
       if (rafRef.current)
         owningWindowRef.current.cancelAnimationFrame(rafRef.current);
       owningWindowRef.current?.removeEventListener("beforeunload", resizeObserverCleanup);
     };
-  }, []);
+  }, [ref]);
 
   const processResize = React.useCallback((target: HTMLElement) => {
     const newBounds = target.getBoundingClientRect();
