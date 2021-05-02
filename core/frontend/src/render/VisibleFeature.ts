@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, compareNumbers, compareStrings, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { GeometryClass } from "@bentley/imodeljs-common";
 import { ViewRect } from "../ViewRect";
 import { Viewport } from "../Viewport";
@@ -34,6 +34,7 @@ export interface QueryTileFeaturesOptions {
 
 export type QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions;
 export type QueryVisibleFeaturesCallback = (features: Iterable<VisibleFeature>) => void;
+export type QueryUniqueVisibleFeaturesOptions = QueryVisibleFeaturesOptions & { exclude?: (feature: VisibleFeature) => boolean };
 
 class ExpiringIterable implements Iterable<VisibleFeature> {
   private _features: Iterable<VisibleFeature>;
@@ -118,4 +119,33 @@ export function queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFe
       callback([]);
       break;
   }
+}
+
+function compareVisibleFeatures(a: VisibleFeature, b: VisibleFeature): number {
+  let cmp = compareStrings(a.elementId, b.elementId);
+  if (!cmp) {
+    cmp = compareStrings(a.subCategoryId, b.subCategoryId);
+    if (!cmp) {
+      cmp = compareStrings(a.modelId, b.modelId);
+      if (!cmp) {
+        cmp = compareNumbers(a.geometryClass, b.geometryClass);
+        if (!cmp && a.iModel !== b.iModel)
+          cmp = compareStrings(a.iModel.key, b.iModel.key);
+      }
+    }
+  }
+
+  return cmp;
+}
+
+export function queryUniqueVisibleFeatures(viewport: Viewport, options: QueryUniqueVisibleFeaturesOptions): VisibleFeature[] {
+  const unique = new SortedArray<VisibleFeature>(compareVisibleFeatures);
+  const exclude = options.exclude;
+  queryVisibleFeatures(viewport, options, (features) => {
+    for (const feature of features)
+      if (undefined === exclude || !exclude(feature))
+        unique.insert(feature);
+  });
+
+  return unique.extractArray();
 }
