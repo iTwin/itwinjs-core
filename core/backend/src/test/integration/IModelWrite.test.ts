@@ -1050,7 +1050,7 @@ describe("IModelWriteTest (#integration)", () => {
     managerRequestContext.enter();
 
     // Validate state after upgrade
-    const schemaLocks = await IModelHost.iModelClient.locks.get(managerRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
+    let schemaLocks = await IModelHost.iModelClient.locks.get(managerRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
     managerRequestContext.enter();
     assert.isTrue(schemaLocks.length === 0); // Validate no schema locks held by the hub
     iModel = await BriefcaseDb.open(managerRequestContext, { fileName: managerBriefcaseProps.fileName });
@@ -1060,6 +1060,8 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
     assert.isFalse(iModel.concurrencyControl.locks.hasSchemaLock);
     assert.isFalse(iModel.nativeDb.hasUnsavedChanges());
+    const iModelFilename = iModel.pathName;
+    iModel.close();
 
     /* User "super" can get the upgrade "manager" made */
 
@@ -1082,20 +1084,31 @@ describe("IModelWriteTest (#integration)", () => {
     // Open briefcase and pull change sets to upgrade
     const superIModel = await BriefcaseDb.open(superRequestContext, { fileName: superBriefcaseProps.fileName });
     superRequestContext.enter();
-    await superIModel.pullAndMergeChanges(superRequestContext);
+    superBriefcaseProps.changeSetId = await superIModel.pullAndMergeChanges(superRequestContext);
     superRequestContext.enter();
     const superVersion = superIModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
-    assert.isFalse(iModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made
+    assert.isFalse(superIModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made
     assert.isFalse(superIModel.nativeDb.hasPendingTxns()); // Validate no changes were made
+    const superFilename = superIModel.pathName;
+    superIModel.close();
+
+    // Validate that there are no upgrades required
+    schemaState = BriefcaseDb.validateSchemas(superBriefcaseProps.fileName, true);
+    assert.strictEqual(schemaState, SchemaState.UpToDate);
+
+    // Upgrade the schemas - ensure this is a no-op
+    await BriefcaseDb.upgradeSchemas(superRequestContext, superBriefcaseProps);
+    superRequestContext.enter();
+
+    // Ensure there are no schema locks
+    schemaLocks = await IModelHost.iModelClient.locks.get(superRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
+    superRequestContext.enter();
+    assert.isTrue(schemaLocks.length === 0); // Validate no schema locks held by the hub
 
     /* Cleanup after test */
-    const filename = iModel.pathName;
-    const superName = superIModel.pathName;
-    iModel.close();
-    await BriefcaseManager.deleteBriefcaseFiles(filename, managerRequestContext); // delete from local disk
-    superIModel.close();
-    await BriefcaseManager.deleteBriefcaseFiles(superName, superRequestContext); // delete from local disk
+    await BriefcaseManager.deleteBriefcaseFiles(iModelFilename, managerRequestContext); // delete from local disk
+    await BriefcaseManager.deleteBriefcaseFiles(superFilename, superRequestContext); // delete from local disk
     managerRequestContext.enter();
     await IModelHost.iModelClient.iModels.delete(managerRequestContext, projectId, iModelId); // delete from hub
     managerRequestContext.enter();
