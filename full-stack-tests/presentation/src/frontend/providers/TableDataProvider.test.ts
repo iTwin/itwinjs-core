@@ -72,6 +72,12 @@ describe("TableDataProvider", async () => {
       expect(columns).to.matchSnapshot();
     });
 
+    it("returns extracted columns from instances which have SameInstance relationshipMeaning", async () => {
+      provider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" } ]);
+      const columns = await provider.getColumns();
+      expect(columns.length).to.eq(32);
+    });
+
   });
 
   describe("getRowsCount", () => {
@@ -97,6 +103,12 @@ describe("TableDataProvider", async () => {
       provider.keys = new KeySet([instances.physicalModel]);
       const row = await provider.getRow(0);
       expect(row).to.matchSnapshot();
+    });
+
+    it("returns row with extracted cells from instances which have SameInstance relationshipMeaning", async () => {
+      provider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
+      const row = await provider.getRow(0);
+      expect(row.cells.length).to.eq(32);
     });
 
     it("returns undefined when requesting row with invalid index", async () => {

@@ -392,9 +392,6 @@ export class Table extends React.Component<TableProps, TableState> {
     this._rowSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
     this._cellSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
 
-    if (previousState.hiddenColumns.length !== this.state.hiddenColumns.length)
-      this.forceUpdate();
-
     if (previousProps.dataProvider !== this.props.dataProvider) {
       this._disposableListeners.dispose();
       this._disposableListeners.add(this.props.dataProvider.onColumnsChanged.addListener(this._onColumnsChanged));
@@ -406,6 +403,10 @@ export class Table extends React.Component<TableProps, TableState> {
       this.update();
       return;
     }
+
+    // When hiddenColumns length is changed, we need to re-render component so that cell widths would be calculated appropriately.
+    if (previousState.hiddenColumns.length !== this.state.hiddenColumns.length)
+      this.forceUpdate();
 
     if (this.props.isCellSelected !== previousProps.isCellSelected
       || this.props.isRowSelected !== previousProps.isRowSelected
@@ -1055,12 +1056,8 @@ export class Table extends React.Component<TableProps, TableState> {
     let foundHiddenColumns = 0;
 
     // istanbul ignore else
-    if (this._gridRef.current) {
-      const grid = this._gridRef.current as any;
-      // istanbul ignore else
-      if (grid.getDataGridDOMNode)
-        gridColumns = grid.getDataGridDOMNode().querySelectorAll(".react-grid-HeaderCell");
-    }
+    if (this._gridRef.current && (this._gridRef.current as any).getDataGridDOMNode)
+      gridColumns = (this._gridRef.current as any).getDataGridDOMNode().querySelectorAll(".react-grid-HeaderCell");
 
     for (let index = 0; index < this.state.columns.length; index++) {
       const column = this.state.columns[index];
@@ -1115,7 +1112,7 @@ export class Table extends React.Component<TableProps, TableState> {
           foundHiddenColumns++;
         }
 
-        if (i > 0)
+        if (i > 0) {
           cells[col.key] = (
             <TableCell
               className={className}
@@ -1126,6 +1123,7 @@ export class Table extends React.Component<TableProps, TableState> {
             >
             </TableCell>
           );
+        }
       }
       index += mergedAdjacentCellsCount;
 

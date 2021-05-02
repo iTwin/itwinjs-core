@@ -110,7 +110,6 @@ export function createTestNestedContentField(props: {
     props.nestedFields,
     props.editor,
     !!props.autoExpand,
-    undefined,
     props.renderer,
   );
   if (props.relationshipMeaning)
