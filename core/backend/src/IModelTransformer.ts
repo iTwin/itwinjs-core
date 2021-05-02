@@ -742,7 +742,10 @@ export class IModelTransformer extends IModelExportHandler {
     try {
       this.sourceDb.nativeDb.exportSchemas(schemasDir);
       const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
-      await this.targetDb.importSchemas(requestContext, schemaFiles.map((fileName) => path.join(schemasDir, fileName)));
+      // some system schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
+      const filteredImportSchemas = schemaFiles.filter((schemaFile) => !/(ECDbMap|ECDbSchemaPolicies)\.\d+\.\d+(.\d+)?/.test(schemaFile));
+      const importSchemasFullPaths = filteredImportSchemas.map((schema) => path.join(schemasDir, schema));
+      await this.targetDb.importSchemas(requestContext, importSchemasFullPaths);
     } finally {
       requestContext.enter();
       IModelJsFs.removeSync(schemasDir);
