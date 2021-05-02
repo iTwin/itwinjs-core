@@ -1,0 +1,215 @@
+{
+  "$schema": "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+  "name": "TestSchema",
+  "version": "1.2.3",
+  "items": {
+    "testStruct": {
+      "schemaItemType": "StructClass"
+    },
+    "testClass": {
+      "schemaItemType": "EntityClass",
+      "properties": [
+        {
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "name": "testPrimProp1"
+        },
+        {
+          "type": "StructProperty",
+          "name": "testStructProp1",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string",
+          "name": "testPrimArrProp1"
+        },
+        {
+          "type": "StructArrayProperty",
+          "name": "testStructArrProp1",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "name": "testPrimProp2"
+        },
+        {
+          "type": "StructProperty",
+          "name": "testStructProp2",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string",
+          "name": "testPrimArrProp2"
+        },
+        {
+          "type": "StructArrayProperty",
+          "name": "testStructArrProp2",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "name": "testPrimProp3"
+        },
+        {
+          "type": "StructProperty",
+          "name": "testStructProp3",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string",
+          "name": "testPrimArrProp3"
+        },
+        {
+          "type": "StructArrayProperty",
+          "name": "testStructArrProp3",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "name": "testPrimProp4"
+        },
+        {
+          "type": "StructProperty",
+          "name": "testStructProp4",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string",
+          "name": "testPrimArrProp4"
+        },
+        {
+          "type": "StructArrayProperty",
+          "name": "testStructArrProp4",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "name": "testPrimProp5"
+        },
+        {
+          "type": "StructProperty",
+          "name": "testStructProp5",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string",
+          "name": "testPrimArrProp5"
+        },
+        {
+          "type": "StructArrayProperty",
+          "name": "testStructArrProp5",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "name": "testPrimProp6"
+        },
+        {
+          "type": "StructProperty",
+          "name": "testStructProp6",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string",
+          "name": "testPrimArrProp6"
+        },
+        {
+          "type": "StructArrayProperty",
+          "name": "testStructArrProp6",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "name": "testPrimProp7"
+        },
+        {
+          "type": "StructProperty",
+          "name": "testStructProp7",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string",
+          "name": "testPrimArrProp7"
+        },
+        {
+          "type": "StructArrayProperty",
+          "name": "testStructArrProp7",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "name": "testPrimProp8"
+        },
+        {
+          "type": "StructProperty",
+          "name": "testStructProp8",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string",
+          "name": "testPrimArrProp8"
+        },
+        {
+          "type": "StructArrayProperty",
+          "name": "testStructArrProp8",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "name": "testPrimProp9"
+        },
+        {
+          "type": "StructProperty",
+          "name": "testStructProp9",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string",
+          "name": "testPrimArrProp9"
+        },
+        {
+          "type": "StructArrayProperty",
+          "name": "testStructArrProp9",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "name": "testPrimProp10"
+        },
+        {
+          "type": "StructProperty",
+          "name": "testStructProp10",
+          "typeName": "TestSchema.testStruct"
+        },
+        {
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string",
+          "name": "testPrimArrProp10"
+        },
+        {
+          "type": "StructArrayProperty",
+          "name": "testStructArrProp10",
+          "typeName": "TestSchema.testStruct"
+        }
+      ]
+    }
+  }
+}
