@@ -7,6 +7,7 @@
  */
 
 import "./InputField.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
@@ -15,7 +16,6 @@ import { InputFieldMessageEventArgs, MessageManager } from "../messages/MessageM
 import { MessageDiv } from "./MessageSpan";
 import { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
-import classnames = require("classnames");
 /** Properties of [[InputFieldMessage]] component.
  * @public
  */
@@ -25,7 +25,7 @@ interface InputFieldMessageProps {
 
 /** [[InputFieldMessage]] state.
  * @internal
- */
+ */
 interface InputFieldMessageState {
   isVisible: boolean;
   priority: OutputMessagePriority;

@@ -48,9 +48,12 @@ export interface NativeAppNotifications {
 
 /**
  * Client configuration to generate OIDC/OAuth tokens for native applications
- * @alpha
+ * @beta
  */
 export interface NativeAppAuthorizationConfiguration {
+  /**
+   * The OAuth token issuer URL. Defaults to Bentley's auth URL if undefined.
+   */
   issuerUrl?: string;
 
   /**
@@ -79,7 +82,7 @@ export interface NativeAppAuthorizationConfiguration {
  * @internal
  */
 export interface NativeAppFunctions {
-  silentLogin: (token: AccessTokenProps) => Promise<void>;
+  setAccessTokenProps: (token: AccessTokenProps) => Promise<void>;
 
   /** returns expirySafety, in seconds */
   initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;

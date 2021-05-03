@@ -119,7 +119,6 @@ import { LockLevel } from '@bentley/imodelhub-client';
 import { LockType } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
-import { MapImageryProps } from '@bentley/imodeljs-common';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
@@ -160,6 +159,7 @@ import { RelationshipProps } from '@bentley/imodeljs-common';
 import { RemoveFunction } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
+import { RenderTimelineProps } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { RequestNewBriefcaseProps } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
@@ -574,6 +574,7 @@ export class ChangedElementsDb implements IDisposable {
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+    processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
 // @internal
@@ -1222,10 +1223,12 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @internal (undocumented)
+    // (undocumented)
+    loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
+    // @alpha (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
     // (undocumented)
     abstract get settings(): DisplayStyleSettings;
@@ -1249,11 +1252,11 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
     constructor(props: DisplayStyle3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
@@ -1263,9 +1266,6 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
 export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
     // (undocumented)
     backgroundColor?: ColorDef | number;
-    // (undocumented)
-    mapImagery?: MapImageryProps;
-    scheduleScript?: object | RenderSchedule.ModelTimelineProps[];
     viewFlags?: ViewFlags;
 }
 
@@ -1993,6 +1993,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     jsonProperties?: string;
     kind: string;
     scope: RelatedElement;
+    source?: RelatedElement;
     // @internal (undocumented)
     toJSON(): ExternalSourceAspectProps;
     version?: string;
@@ -2697,9 +2698,10 @@ export class IModelExporter {
     exportFontByNumber(fontNumber: number): Promise<void>;
     exportFonts(): Promise<void>;
     exportModel(modeledElementId: Id64String): Promise<void>;
-    exportModelContents(modelId: Id64String, elementClassFullName?: string): Promise<void>;
+    exportModelContents(modelId: Id64String, elementClassFullName?: string, skipRootSubject?: boolean): Promise<void>;
     exportRelationship(relClassFullName: string, relInstanceId: Id64String): Promise<void>;
     exportRelationships(baseRelClassFullName: string): Promise<void>;
+    // @deprecated
     exportRepositoryLinks(): Promise<void>;
     exportSchemas(): Promise<void>;
     exportSubModels(parentModelId: Id64String): Promise<void>;
@@ -2730,7 +2732,7 @@ export abstract class IModelExportHandler {
     protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     protected onExportSchema(_schema: Schema_2): void;
-    protected onProgress(): void;
+    protected onProgress(): Promise<void>;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
@@ -2850,7 +2852,7 @@ export class IModelImporter {
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
     importElement(elementProps: ElementProps): Id64String;
-    importElementMultiAspects(aspectPropsArray: ElementAspectProps[]): void;
+    importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): void;
     importElementUniqueAspect(aspectProps: ElementAspectProps): void;
     importModel(modelProps: ModelProps): void;
     importRelationship(relationshipProps: RelationshipProps): Id64String;
@@ -2955,7 +2957,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
     protected onTransformElement(sourceElement: Element): ElementProps;
-    protected onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
+    protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
@@ -2985,6 +2987,7 @@ export class IModelTransformer extends IModelExportHandler {
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
+    includeSourceProvenance?: boolean;
     isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
@@ -3404,10 +3407,11 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 
 // @internal (undocumented)
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
+    protected constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
     // (undocumented)
-    config: NativeAppAuthorizationConfiguration;
+    config?: NativeAppAuthorizationConfiguration;
     // (undocumented)
     expireSafety: number;
     // (undocumented)
@@ -3415,9 +3419,11 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
-    initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void>;
+    initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
     get isAuthorized(): boolean;
+    // (undocumented)
+    issuerUrl?: string;
     // (undocumented)
     protected abstract refreshToken(): Promise<AccessToken>;
     // (undocumented)
@@ -3789,6 +3795,26 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
+}
+
+// @beta
+export class RenderTimeline extends InformationRecordElement {
+    // @internal
+    protected constructor(props: RenderTimelineProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(ids: Id64Set): void;
+    description: string;
+    // (undocumented)
+    static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
+    // @alpha (undocumented)
+    protected static onCloned(context: IModelCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void;
+    // @internal
+    static remapScript(context: IModelCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps;
+    scriptProps: RenderSchedule.ScriptProps;
+    // (undocumented)
+    toJSON(): RenderTimelineProps;
 }
 
 // @public
