@@ -101,12 +101,11 @@ function * commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
 }
 
 function * iterator(features: VisibleTileFeatures) {
-  features.target.pushViewClip();
-
-  for (const pass of clippedPasses)
-    yield * commandIterator(features, pass);
-
-  features.target.popViewClip();
-
-  // ###TODO
+  try {
+    features.target.pushViewClip();
+    for (const pass of clippedPasses)
+      yield * commandIterator(features, pass);
+  } finally {
+    features.target.popViewClip();
+  }
 }
