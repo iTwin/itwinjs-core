@@ -941,7 +941,7 @@ export class ChildWindowManager {
     // (undocumented)
     findChildWindowId(contentWindow: Window | undefined | null): string | undefined;
     // (undocumented)
-    openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps): boolean;
+    openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useBlankUrl?: boolean): boolean;
     // (undocumented)
     get openChildWindows(): OpenChildWindowInfo[];
     }
@@ -7484,7 +7484,7 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "targetRef" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
 
 // @alpha
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
