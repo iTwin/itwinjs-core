@@ -684,6 +684,12 @@ export const DivWithOutsideClick: {
     contextType?: React.Context<any> | undefined;
 };
 
+// @beta
+export function ElementResizeObserver({ watchedElement, render }: {
+    watchedElement: React.RefObject<HTMLElement>;
+    render: (props: RenderPropsArgs) => JSX.Element;
+}): JSX.Element;
+
 // @public
 export const ElementSeparator: (props: ElementSeparatorProps) => JSX.Element;
 
@@ -1849,6 +1855,20 @@ export interface RectangleProps {
     readonly top: number;
 }
 
+// @beta
+export interface RenderPropsArgs {
+    // (undocumented)
+    height?: number;
+    // (undocumented)
+    width?: number;
+}
+
+// @beta
+export function ResizableContainerObserver({ onResize, children }: {
+    onResize: (width: number, height: number) => void;
+    children?: React.ReactNode;
+}): JSX.Element;
+
 // @internal (undocumented)
 export const ResizeObserver: ResizeObserverType;
 
@@ -2577,6 +2597,9 @@ export function useDisposable<TDisposable extends IDisposable>(createDisposable:
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 
 // @internal
+export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onResize?: (width?: number, height?: number) => void): (number | undefined)[];
+
+// @internal
 export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
 outsideEventPredicate?: (e: OutsideClickEvent) => boolean): React.RefObject<T>;
 
@@ -2596,7 +2619,7 @@ export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T |
 export function useRefState<T>(): [React.Ref<T>, T | undefined];
 
 // @internal
-export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
+export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: Element | null) => void;
 
 // @beta
 export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void;
