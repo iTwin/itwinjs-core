@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Guid, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseManager, IModelHost } from "@bentley/imodeljs-backend";
-import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
+import { DbResult, Guid, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelHost } from "@bentley/imodeljs-backend";
+import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 
 let prefix = "";
 
@@ -36,6 +36,10 @@ function log(msg: string) {
   npm run build:backend
   node lib\backend\SetToStandalone.js [iModel-filename]
 ```
+   or, to change all .bim files in a directory and all its subdirectories. recursively:
+```
+  node lib\backend\SetToStandalone.js [directory-name]
+```
 */
 function setToStandalone(iModelName: string) {
   log(`Setting ${iModelName} to standalone...`);
@@ -47,19 +51,12 @@ function setToStandalone(iModelName: string) {
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, `Could not open iModel [${iModelName}]`);
 
-    nativeDb.saveProjectGuid(Guid.empty);
-
-    if (!BriefcaseManager.isStandaloneBriefcaseId(nativeDb.getBriefcaseId())) {
-      if (nativeDb.hasPendingTxns()) {
-        log("Local Txns found - deleting them");
-        nativeDb.deleteAllTxns();
-        nativeDb.saveChanges();
-      }
-
-      nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-      nativeDb.saveChanges();
-      nativeDb.closeIModel();
-    }
+    nativeDb.saveProjectGuid(Guid.empty); // empty projectId means "standalone"
+    nativeDb.saveChanges(); // save change to ProjectId
+    nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
+    nativeDb.saveChanges(); // save change to briefcaseId
+    nativeDb.closeIModel();
   } catch (err) {
     log(err.message);
   }

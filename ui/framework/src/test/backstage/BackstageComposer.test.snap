@@ -53,6 +53,7 @@ exports[`BackstageComposerItem BackstageComposerActionItem should render 1`] = `
       iconSpec={undefined}
     />
   }
+  isActive={false}
   isDisabled={false}
   onClick={[Function]}
 >
@@ -85,22 +86,6 @@ exports[`BackstageComposerItem BackstageComposerItem should render stage launche
       "label": "Custom Label",
       "stageId": "stage-1",
       "type": 2,
-    }
-  }
-/>
-`;
-
-exports[`BackstageComposerItem BackstageComposerItem should render with badge 1`] = `
-<BackstageComposerActionItem
-  item={
-    Object {
-      "badgeType": 1,
-      "execute": [Function],
-      "groupPriority": 100,
-      "id": "Action",
-      "itemPriority": 50,
-      "label": "Custom Label",
-      "type": 1,
     }
   }
 />

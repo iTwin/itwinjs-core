@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform, TransformProps, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
   BatchType, Cartographic, ColorDef, Feature,
   FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d, Quantization,
@@ -19,7 +19,6 @@ import {
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@bentley/orbitgt-core";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
-import { DisplayStyleState } from "../DisplayStyleState";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -27,13 +26,11 @@ import { Mesh, PointCloudArgs } from "../render-primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderMemory } from "../render/RenderMemory";
 import { RenderSystem } from "../render/RenderSystem";
-import { SpatialClassifiers } from "../SpatialClassifiers";
-import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  createClassifierTileTreeReference, DisclosedTileTreeSet, RealityModelTileTree, SpatialClassifierTileTreeReference, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeReference, TileTreeSupplier,
+  RealityModelTileTree, Tile, TileContent,
+  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier,
 } from "./internal";
 import { TileUsageMarker } from "./TileUsageMarker";
 
@@ -337,13 +334,8 @@ export class OrbitGtTileTree extends TileTree {
 /** @internal */
 // eslint-disable-next-line no-redeclare
 export namespace OrbitGtTileTree {
-  export interface ReferenceProps {
+  export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
     orbitGtBlob: OrbitGtBlobProps;
-    iModel: IModelConnection;
-    tilesetToDbTransform?: TransformProps;
-    name?: string;
-    classifiers?: SpatialClassifiers;
-    displayStyle: DisplayStyleState;
     modelId?: Id64String;
   }
 
@@ -417,49 +409,15 @@ export namespace OrbitGtTileTree {
  */
 class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
-  private readonly _name: string; // tslint:disable-line
-  private readonly _classifier?: SpatialClassifierTileTreeReference;
-  private _mapDrapeTree?: TileTreeReference;
   public get castsShadows() { return false; }
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
-    super(props.modelId, props.iModel);
+    super(props);
 
     const ogtTreeId: OrbitGtTreeId = { orbitGtProps: props.orbitGtBlob, modelId: this.modelId };
     this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);
-    this._name = undefined !== props.name ? props.name : "";
-
-    if (undefined !== props.classifiers)
-      this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.displayStyle);
   }
 
-  public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
-
-  public addToScene(context: SceneContext): void {
-    // NB: The classifier must be added first, so we can find it when adding our own tiles.
-    if (undefined !== this._classifier)
-      this._classifier.addToScene(context);
-
-    super.addToScene(context);
-  }
-
-  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
-    super.discloseTileTrees(trees);
-
-    if (undefined !== this._classifier)
-      this._classifier.discloseTileTrees(trees);
-
-    if (undefined !== this._mapDrapeTree)
-      this._mapDrapeTree.discloseTileTrees(trees);
-  }
-
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    super.collectStatistics(stats);
-
-    const tree = undefined !== this._classifier ? this._classifier.treeOwner.tileTree : undefined;
-    if (undefined !== tree)
-      tree.collectStatistics(stats);
-  }
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree;
     if (undefined === tree || hit.iModel !== tree.iModel)

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Fix `PresentationPropertyDataProvider` not working after Presentation re-initialization",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}
