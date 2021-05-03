@@ -253,7 +253,7 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
         </span>
         <div ref={this._timelineRef} className="ui-component-solar-slider-sizer">
           <ElementResizeObserver watchedElement={this._timelineRef}
-            render={(width) => (
+            render={({ width }) => (
               <Slider
                 mode={(curr, next) => {
                   // hodgepodge way to get around type issue in react-compound-slider package

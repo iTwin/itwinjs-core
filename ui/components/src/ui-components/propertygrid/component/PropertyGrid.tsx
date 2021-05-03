@@ -176,7 +176,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 
   private _onResize = (width: number) => {
-    this.updateOrientation(width ?? 0);
+    this.updateOrientation(width);
   };
 
   private _onCategoryExpansionToggled = (categoryName: string) => {

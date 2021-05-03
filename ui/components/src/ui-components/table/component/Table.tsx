@@ -1663,7 +1663,7 @@ export class Table extends React.Component<TableProps, TableState> {
               onShowHideChange={this._handleShowHideChange} />
           }
           <ElementResizeObserver watchedElement={this._gridContainerRef}
-            render={(width, height) => (
+            render={({ width, height }) => (
               <ReactDataGrid
                 ref={this._gridRef}
                 columns={visibleColumns}

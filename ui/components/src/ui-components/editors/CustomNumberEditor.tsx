@@ -11,7 +11,6 @@
 import "./CustomNumberEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {

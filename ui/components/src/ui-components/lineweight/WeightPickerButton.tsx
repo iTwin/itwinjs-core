@@ -208,7 +208,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
             onClick={this._togglePopup} />
         </div>
         <ElementResizeObserver watchedElement={this._target} render=
-          {(width) => (
+          {({ width }) => (
             <Popup
               className="components-weightpicker-popup"
               style={{ width: `${width}px` }}

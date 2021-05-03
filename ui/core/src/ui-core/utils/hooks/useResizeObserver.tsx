@@ -20,6 +20,7 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
   const isMountedRef = React.useRef(false);
   const owningWindowRef = React.useRef<any>(null);
 
+  // istanbul ignore next
   const resizeObserverCleanup = () => {
     if (rafRef.current)
       owningWindowRef.current.cancelAnimationFrame(rafRef.current);
@@ -40,6 +41,7 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
 
   const processResize = React.useCallback((target: HTMLElement) => {
     const newBounds = target.getBoundingClientRect();
+    // istanbul ignore else
     if (isMountedRef.current && bounds.width !== newBounds.width || bounds.height !== newBounds.height) {
       setBounds(newBounds);
       onResize && onResize(newBounds.width, newBounds.height);
@@ -47,15 +49,16 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
   }, [onResize, bounds.height, bounds.width]);
 
   const handleResize = React.useCallback((entries: any[]) => {
-    // istanbul ignore else
+    // istanbul ignore if
     if (!isMountedRef.current || !Array.isArray(entries) || 0 === entries.length) {
       return;
     }
     const target = entries[0].target as HTMLElement;
-    if (owningWindowRef.current)
-      owningWindowRef.current.removeEventListener("beforeunload", resizeObserverCleanup);
+    // istanbul ignore next
+    owningWindowRef.current && owningWindowRef.current.removeEventListener("beforeunload", resizeObserverCleanup);
 
     owningWindowRef.current = target.ownerDocument.defaultView;
+    // istanbul ignore else
     if (owningWindowRef.current) {
       owningWindowRef.current.addEventListener("beforeunload", resizeObserverCleanup);
 
@@ -92,11 +95,12 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
   return ref;
 }
 
-/** Uses ResizeObserver API to notify about element bound changes.
+/** Uses ResizeObserver API to notify about element bound changes. Note: to work like earlier used
+ * ResizeDetector width and height must initialize to undefined and call
   * @internal
   */
-export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onResize?: (width: number, height: number) => void) {
-  const [bounds, setBounds] = React.useState({ width: 0, height: 0 });
+export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onResize?: (width?: number, height?: number) => void) {
+  const [bounds, setBounds] = React.useState<{ width?: number, height?: number }>({});
   const resizeObserver = React.useRef<ResizeObserver | null>(null);
   const rafRef = React.useRef(0);  // set to non-zero when requestAnimationFrame processing is active
   const isMountedRef = React.useRef(false);
@@ -114,8 +118,10 @@ export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onRes
     isMountedRef.current = true;
     if (ref.current) {
       const newBounds = ref.current.getBoundingClientRect();
-      onResize && onResize(newBounds.width, newBounds.height);
-      setBounds(newBounds);
+      if (newBounds.width || newBounds.height) {
+        onResize && onResize(newBounds.width, newBounds.height);
+        setBounds(newBounds);
+      }
     }
 
     return () => {
@@ -168,20 +174,31 @@ export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onRes
   return [bounds.width, bounds.height];
 }
 
+/** @alpha */
+export interface RenderPropsArgs {
+  width?: number;
+  height?: number;
+}
+
 /** Provides func props functionality similar to ReactResizeDetector but this component works in child windows.
  *  @alpha
  */
-export function ElementResizeObserver({ watchedElement, render }: { watchedElement: React.RefObject<HTMLElement>, render: (width: number, height?: number) => JSX.Element }) {
+export function ElementResizeObserver({ watchedElement, render }: { watchedElement: React.RefObject<HTMLElement>, render: (props: RenderPropsArgs) => JSX.Element }) {
   const [width, height] = useLayoutResizeObserver(watchedElement);
-  return render(width, height);
+  return render({ width, height });
 }
 
 /** @alpha */
 export function ResizableContainerObserver({ onResize, children }: { onResize: (width: number, height: number) => void, children?: React.ReactNode }) {
   const containerRef = React.useRef<HTMLDivElement>(null);  // set to non-zero when requestAnimationFrame processing is active
-  useLayoutResizeObserver(containerRef, onResize);
+
+  const processResize = React.useCallback((width?: number, height?: number) => {
+    onResize(width ?? 0, height ?? 0);
+  }, [onResize]);
+
+  useLayoutResizeObserver(containerRef, processResize);
   return (
-    <div ref={containerRef} className="ui-core-resizable-container">
+    <div ref={containerRef} className="uicore-resizable-container" style={{ width: "100%", height: "100%" }}>
       {children}
     </div>
   );

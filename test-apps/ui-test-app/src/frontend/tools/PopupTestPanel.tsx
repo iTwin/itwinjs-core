@@ -26,7 +26,7 @@ export function DatePickerHost(props: DatePickerPopupButtonProps) {
   }, [onDateChange]);
 
   return (
-    <DatePickerPopupButton selected={currentDate} onDateChange={handleOnDateChange} {...otherProp} />
+    <DatePickerPopupButton style={{ width: "fit-content" }} selected={currentDate} onDateChange={handleOnDateChange} {...otherProp} />
   );
 }
 
@@ -61,16 +61,18 @@ export function PopupTestPanel() {
   }, []);
 
   return (
-    <div className="test-popup-test-panel" ref={divRef}>
-      <SamplePopupContextMenu />
-      <DatePickerHost selected={new Date()} />
-      <Button style={{ width: "180px" }} onClick={handleOpenModalClick}>Open Modal</Button>
-      <Button style={{ width: "180px" }} onClick={handleOpenModelessClick}>Open Modeless</Button>
-      <Button style={{ width: "180px" }} onClick={handleShowToolbarClick}>Open Toolbar</Button>
-      <WeightPickerHost activeWeight={3} onLineWeightPick={() => { }} />
-      {true && <div className="test-table-widget-container">
-        <TableExampleContent />
-      </div>}
+    <div className="test-popup-test-panel-container" ref={divRef}>
+      <div className="test-popup-test-panel">
+        <SamplePopupContextMenu />
+        <DatePickerHost selected={new Date()} />
+        <Button style={{ width: "180px" }} onClick={handleOpenModalClick}>Open Modal</Button>
+        <Button style={{ width: "180px" }} onClick={handleOpenModelessClick}>Open Modeless</Button>
+        <Button style={{ width: "180px" }} onClick={handleShowToolbarClick}>Open Toolbar</Button>
+        <WeightPickerHost activeWeight={3} onLineWeightPick={() => { }} />
+        {true && <div className="test-table-widget-container">
+          <TableExampleContent />
+        </div>}
+      </div>
     </div>
   );
 }
