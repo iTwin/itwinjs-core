@@ -13,31 +13,6 @@ import { ScreenViewport } from "../../Viewport";
 import { TiledGraphicsProvider } from "../../tile/TiledGraphicsProvider";
 import { createBlankConnection } from "../createBlankConnection";
 
-/*
-interface ViewTilerOptions {
-  readonly viewport: ScreenViewport;
-  readonly treeSize: XAndY;
-  readonly iModel?: IModelConnection;
-  readonly numElementsPerTile: number;
-}
-*/
-
-/** Produces a view-space tile tree that sub-divides a view rect into a regular grid of differently-colored rectangles.
- * A tile's color is determined by its position along the X and Y axes: red increases from 0 to 1 along X and green from 0 to 1 along Y.
- * Each tile is sub-divided into the same number of elements, where each element is drawn as a vertical slice of the tile.
- */
-class ViewTiler /* implements TiledGraphicsProvider */ {
-  /*
-  public readonly iModel: IModelConnection;
-  public readonly modelId: Id64String;
-
-  public constructor(options: ViewTilerOptions) {
-    this.iModel = options.iModel ?? options.viewport.iModel;
-    this.modelId = iModel.transientIds.next();
-  }
-  */
-}
-
 describe("Visible feature query", () => {
   let imodel: IModelConnection;
   let viewport: ScreenViewport | undefined;
