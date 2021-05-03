@@ -13,6 +13,7 @@ import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
+import { IModelConnection } from "../IModelConnection";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
@@ -25,6 +26,7 @@ import { RenderPlan } from "./RenderPlan";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
+import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback, VisibleFeature } from "./VisibleFeature";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].
@@ -140,4 +142,11 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
    */
   public abstract get screenSpaceEffects(): Iterable<string>;
   public abstract set screenSpaceEffects(_effectNames: Iterable<string>);
+
+  /** Implementation for [[Viewport.queryVisibleFeatures]]. Not intended for direct usage. The returned iterable remains valid only for the duration of the
+   * Viewport.queryVisibleFeatures call.
+   */
+  public queryVisibleTileFeatures(_options: QueryTileFeaturesOptions, _iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void {
+    callback([]);
+  }
 }

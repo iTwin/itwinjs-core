@@ -96,26 +96,18 @@ class ScreenFeatures implements Iterable<VisibleFeature> {
   }
 }
 
-function queryVisibleScreenFeatures(viewport: Viewport, callback: QueryVisibleFeaturesCallback, options: QueryScreenFeaturesOptions): void {
-  const rect = options.rect ?? viewport.viewRect;
-  viewport.readPixels(rect, Pixel.Selector.Feature, (pixels) => invokeCallback(pixels ? new ScreenFeatures(pixels, rect, viewport) : [], callback), true !== options.includeNonLocatable);
-}
-
-function queryVisibleTileFeatures(_viewport: Viewport, callback: QueryVisibleFeaturesCallback, _options: QueryTileFeaturesOptions): void {
-  invokeCallback([], callback);
-}
-
 export function queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void {
   assert("screen" === options.source || "tiles" === options.source);
   switch (options.source) {
     case "screen":
-      queryVisibleScreenFeatures(viewport, callback, options);
+      const rect = options.rect ?? viewport.viewRect;
+      viewport.readPixels(rect, Pixel.Selector.Feature, (pixels) => invokeCallback(pixels ? new ScreenFeatures(pixels, rect, viewport) : [], callback), true !== options.includeNonLocatable);
       break;
     case "tiles":
-      queryVisibleTileFeatures(viewport, callback, options);
+      viewport.target.queryVisibleTileFeatures(options, viewport.iModel, (features) => invokeCallback(features, callback));
       break;
     default:
-      callback([]);
+      invokeCallback([], callback);
       break;
   }
 }
