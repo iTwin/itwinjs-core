@@ -59,7 +59,7 @@ import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { DecorationsCache } from "./DecorationsCache";
-import { queryVisibleFeatures, queryUniqueVisibleFeatures, QueryUniqueVisibleFeaturesOptions, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions, VisibleFeature } from "./render/VisibleFeature";
+import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -2355,13 +2355,6 @@ export abstract class Viewport implements IDisposable {
    */
   public queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void {
     return queryVisibleFeatures(this, options, callback);
-  }
-
-  /**
-   * @beta
-   */
-  public queryUniqueVisibleFeatures(options: QueryUniqueVisibleFeaturesOptions): VisibleFeature[] {
-    return queryUniqueVisibleFeatures(this, options);
   }
 
   /** @internal */

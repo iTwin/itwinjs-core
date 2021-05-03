@@ -312,7 +312,7 @@ export abstract class IModel implements IModelProps {
    */
   protected _fileKey: string;
   /** Get the key that was used to open this iModel. This is the value used for Rpc and Ipc communications. */
-  public get key(): string { return this._fileKey; }
+  public get key() { return this._fileKey; }
 
   /** @internal */
   protected _contextId?: GuidString;
