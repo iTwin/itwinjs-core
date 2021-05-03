@@ -19,8 +19,8 @@ import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartition
 import { IModelTestUtils } from "../IModelTestUtils";
 
 let iModelDb: StandaloneDb;
-let insertedLabel = "inserted label";
-let updatedLabel = "updated label";
+const insertedLabel = "inserted label";
+const updatedLabel = "updated label";
 
 /** test schema for supplying element/model/aspect classes */
 class TestSchema extends FunctionalSchema {
@@ -233,7 +233,7 @@ describe("Functional Domain", () => {
     sinonRestore();
   });
 
-  it.only("should populate FunctionalModel and test Element, Model, and ElementAspect callbacks", async () => {
+  it("should populate FunctionalModel and test Element, Model, and ElementAspect callbacks", async () => {
     iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",
