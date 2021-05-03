@@ -3541,7 +3541,7 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
 
 // @beta
 export interface OnElementPropsArg extends OnElementArg {
-    props: Readonly<ElementProps>;
+    props: ElementProps;
 }
 
 // @beta
