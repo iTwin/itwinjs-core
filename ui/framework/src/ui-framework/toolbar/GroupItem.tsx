@@ -6,6 +6,7 @@
  * @module Item
  */
 
+import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@bentley/ui-abstract";
@@ -26,8 +27,6 @@ import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDis
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
-
-import classnames = require("classnames");
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);

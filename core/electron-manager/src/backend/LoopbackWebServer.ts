@@ -71,7 +71,7 @@ export class LoopbackWebServer {
   }
 
   /** Listen/Handle browser events */
-  private static onBrowserRequest(httpRequest: Http.IncomingMessage, _httpResponse: Http.ServerResponse): void {
+  private static onBrowserRequest(httpRequest: Http.IncomingMessage, httpResponse: Http.ServerResponse): void {
     if (!httpRequest.url)
       return;
 
@@ -99,8 +99,13 @@ export class LoopbackWebServer {
       const errorUri = searchParams.get("error_uri") || undefined;
       const errorDescription = searchParams.get("error_description") || undefined;
       authorizationError = { error, error_description: errorDescription, error_uri: errorUri, state }; // eslint-disable-line @typescript-eslint/naming-convention
+      httpResponse.write("<h1>Sign in error!</h1>"); // TODO: Needs localization
+      httpResponse.end();
     } else {
       authorizationResponse = { code: code!, state };
+      httpResponse.writeHead(200, { "Content-Type": "text/html" }); //  eslint-disable-line @typescript-eslint/naming-convention
+      httpResponse.write("<h1>Sign in was successful!</h1>You can close this browser window and return to the application"); // TODO: Needs localization
+      httpResponse.end();
     }
     authorizationEvents.onAuthorizationResponse.raiseEvent(authorizationError, authorizationResponse);
 

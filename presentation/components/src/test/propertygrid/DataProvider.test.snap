@@ -128,19 +128,6 @@ Object {
   "records": Object {
     "Category1": Array [
       PropertyRecord {
-        "description": "display value 4",
-        "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "nested-field-4",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "display value 4",
-          "value": "value 4",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
         "description": "display value 1",
         "property": Object {
           "displayLabel": "Simple Field",
@@ -153,21 +140,21 @@ Object {
           "valueFormat": 0,
         },
       },
-    ],
-    "Category2": Array [
       PropertyRecord {
-        "description": "display value 3",
+        "description": "display value 4",
         "property": Object {
           "displayLabel": "Simple Field",
-          "name": "root-field$nested-field-3",
+          "name": "nested-field-4",
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "display value 3",
-          "value": "value 3",
+          "displayValue": "display value 4",
+          "value": "value 4",
           "valueFormat": 0,
         },
       },
+    ],
+    "Category2": Array [
       PropertyRecord {
         "property": Object {
           "displayLabel": "Nested Content",
@@ -193,6 +180,19 @@ Object {
           "valueFormat": 2,
         },
       },
+      PropertyRecord {
+        "description": "display value 3",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-3",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 3",
+          "value": "value 3",
+          "valueFormat": 0,
+        },
+      },
     ],
   },
   "reusePropertyDataState": true,
@@ -203,14 +203,14 @@ exports[`PropertyDataProvider getData with flat categories nested content handli
 Object {
   "categories": Array [
     Object {
-      "expand": false,
-      "label": "Test Category",
-      "name": "Category1",
-    },
-    Object {
       "expand": true,
       "label": "Test Category",
       "name": "Category2",
+    },
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category1",
     },
   ],
   "description": undefined,
@@ -228,19 +228,6 @@ Object {
   },
   "records": Object {
     "Category1": Array [
-      PropertyRecord {
-        "description": "display value",
-        "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "root-sibling",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "display value",
-          "value": "value",
-          "valueFormat": 0,
-        },
-      },
       PropertyRecord {
         "property": Object {
           "displayLabel": "Nested Content",
@@ -329,6 +316,19 @@ Object {
             },
           },
           "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "display value",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-sibling",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value",
+          "value": "value",
+          "valueFormat": 0,
         },
       },
     ],
@@ -451,12 +451,12 @@ Object {
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category1",
+      "name": "Category2",
     },
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category2",
+      "name": "Category1",
     },
   ],
   "description": undefined,
@@ -514,12 +514,12 @@ Object {
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category1",
+      "name": "Category2",
     },
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category2",
+      "name": "Category1",
     },
   ],
   "description": undefined,
@@ -537,19 +537,6 @@ Object {
   },
   "records": Object {
     "Category1": Array [
-      PropertyRecord {
-        "description": "display value 3",
-        "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "sibling-root-field",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "display value 3",
-          "value": "value 3",
-          "valueFormat": 0,
-        },
-      },
       PropertyRecord {
         "property": Object {
           "displayLabel": "Nested Content",
@@ -575,6 +562,19 @@ Object {
           "valueFormat": 2,
         },
       },
+      PropertyRecord {
+        "description": "display value 3",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "sibling-root-field",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 3",
+          "value": "value 3",
+          "valueFormat": 0,
+        },
+      },
     ],
     "Category2": Array [
       PropertyRecord {
@@ -587,6 +587,219 @@ Object {
         "value": Object {
           "displayValue": "display value 2",
           "value": "value 2",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with deeply nested content as structs array when there are multiple nested content items 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "middle-field": PropertyRecord {
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Nested Content",
+                "name": "root-field$middle-field",
+                "typename": "NestedContentFieldType[]",
+              },
+              "value": Object {
+                "items": Array [
+                  PropertyRecord {
+                    "property": Object {
+                      "displayLabel": "Nested Content",
+                      "name": "root-field$middle-field",
+                      "typename": "NestedContentFieldType",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "primitive-field-3": PropertyRecord {
+                          "description": "display value 1",
+                          "property": Object {
+                            "displayLabel": "Simple Field",
+                            "name": "root-field$middle-field$primitive-field-3",
+                            "typename": "string",
+                          },
+                          "value": Object {
+                            "displayValue": "display value 1",
+                            "value": "value 1",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                  PropertyRecord {
+                    "property": Object {
+                      "displayLabel": "Nested Content",
+                      "name": "root-field$middle-field",
+                      "typename": "NestedContentFieldType",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "primitive-field-3": PropertyRecord {
+                          "description": "display value 2",
+                          "property": Object {
+                            "displayLabel": "Simple Field",
+                            "name": "root-field$middle-field$primitive-field-3",
+                            "typename": "string",
+                          },
+                          "value": Object {
+                            "displayValue": "display value 2",
+                            "value": "value 2",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                ],
+                "itemsTypeName": "NestedContentFieldType",
+                "valueFormat": 1,
+              },
+            },
+            "primitive-field-2": PropertyRecord {
+              "description": "test",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$primitive-field-2",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "test",
+                "value": "test",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "test",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "primitive-field-1",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "test",
+          "value": "test",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with destructured deeply nested content 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "primitive-field-2": PropertyRecord {
+              "description": "test",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$primitive-field-2",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "test",
+                "value": "test",
+                "valueFormat": 0,
+              },
+            },
+            "primitive-field-3": PropertyRecord {
+              "description": "display value 1",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field$primitive-field-3",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "display value 1",
+                "value": "value 1",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "test",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "primitive-field-1",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "test",
+          "value": "test",
           "valueFormat": 0,
         },
       },
@@ -624,6 +837,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
+          "hideCompositePropertyLabel": true,
           "name": "root-field",
           "typename": "NestedContentFieldType[]",
         },
@@ -758,19 +972,6 @@ Object {
   "records": Object {
     "test-category": Array [
       PropertyRecord {
-        "description": "display value 3",
-        "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "sibling-root-field",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "display value 3",
-          "value": "value 3",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
         "property": Object {
           "displayLabel": "Nested Content",
           "name": "root-field",
@@ -793,6 +994,87 @@ Object {
             },
           },
           "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 3",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "sibling-root-field",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 3",
+          "value": "value 3",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with flat categories nested content handling returns nothing for deeply nested content with no values 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "primitive-field-2": PropertyRecord {
+              "description": "p2",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$primitive-field-2",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "p2",
+                "value": "p2",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "p1",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "primitive-field-1",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "p1",
+          "value": "p1",
+          "valueFormat": 0,
         },
       },
     ],
@@ -829,7 +1111,7 @@ Object {
         "property": Object {
           "displayLabel": "Simple Field",
           "name": "SimpleField",
-          "typename": "myarray[]",
+          "typename": "MyArray[]",
         },
         "value": Object {
           "items": Array [
@@ -941,7 +1223,7 @@ Object {
         "property": Object {
           "displayLabel": "Simple Field",
           "name": "SimpleField",
-          "typename": "mystruct",
+          "typename": "MyStruct",
         },
         "value": Object {
           "members": Object {
@@ -976,6 +1258,7 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1019,6 +1302,7 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "Category2",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1076,12 +1360,14 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "Category1",
+      "renderer": undefined,
     },
     Object {
       "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category2",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1179,12 +1465,14 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "Category1",
+      "renderer": undefined,
     },
     Object {
       "childCategories": Array [],
       "expand": true,
       "label": "Test Category",
       "name": "Category2",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1384,6 +1672,7 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "Category2",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1428,12 +1717,14 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "Category1",
+      "renderer": undefined,
     },
     Object {
       "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category2",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1493,12 +1784,14 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "Category1",
+      "renderer": undefined,
     },
     Object {
       "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category2",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1575,6 +1868,223 @@ Object {
 }
 `;
 
+exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with deeply nested content as structs array when there are multiple nested content items 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+      "renderer": undefined,
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "middle-field": PropertyRecord {
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Nested Content",
+                "name": "root-field$middle-field",
+                "typename": "NestedContentFieldType[]",
+              },
+              "value": Object {
+                "items": Array [
+                  PropertyRecord {
+                    "property": Object {
+                      "displayLabel": "Nested Content",
+                      "name": "root-field$middle-field",
+                      "typename": "NestedContentFieldType",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "primitive-field-3": PropertyRecord {
+                          "description": "display value 1",
+                          "property": Object {
+                            "displayLabel": "Simple Field",
+                            "name": "root-field$middle-field$primitive-field-3",
+                            "typename": "string",
+                          },
+                          "value": Object {
+                            "displayValue": "display value 1",
+                            "value": "value 1",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                  PropertyRecord {
+                    "property": Object {
+                      "displayLabel": "Nested Content",
+                      "name": "root-field$middle-field",
+                      "typename": "NestedContentFieldType",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "primitive-field-3": PropertyRecord {
+                          "description": "display value 2",
+                          "property": Object {
+                            "displayLabel": "Simple Field",
+                            "name": "root-field$middle-field$primitive-field-3",
+                            "typename": "string",
+                          },
+                          "value": Object {
+                            "displayValue": "display value 2",
+                            "value": "value 2",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                ],
+                "itemsTypeName": "NestedContentFieldType",
+                "valueFormat": 1,
+              },
+            },
+            "primitive-field-2": PropertyRecord {
+              "description": "test",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$primitive-field-2",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "test",
+                "value": "test",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "test",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "primitive-field-1",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "test",
+          "value": "test",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with destructured deeply nested content 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+      "renderer": undefined,
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "primitive-field-2": PropertyRecord {
+              "description": "test",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$primitive-field-2",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "test",
+                "value": "test",
+                "valueFormat": 0,
+              },
+            },
+            "primitive-field-3": PropertyRecord {
+              "description": "display value 1",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field$primitive-field-3",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "display value 1",
+                "value": "value 1",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "test",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "primitive-field-1",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "test",
+          "value": "test",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
 exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with multiple nested records as struct array 1`] = `
 Object {
   "categories": Array [
@@ -1583,6 +2093,7 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1604,6 +2115,7 @@ Object {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
+          "hideCompositePropertyLabel": true,
           "name": "root-field",
           "typename": "NestedContentFieldType[]",
         },
@@ -1678,6 +2190,7 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1722,6 +2235,7 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1783,6 +2297,76 @@ Object {
 }
 `;
 
+exports[`PropertyDataProvider getData with nested categories nested content handling returns nothing for deeply nested content with no values 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+      "renderer": undefined,
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "primitive-field-2": PropertyRecord {
+              "description": "p2",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$primitive-field-2",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "p2",
+                "value": "p2",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "p1",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "primitive-field-1",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "p1",
+          "value": "p1",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
 exports[`PropertyDataProvider getData with nested categories returns array property data 1`] = `
 Object {
   "categories": Array [
@@ -1791,6 +2375,7 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1812,7 +2397,7 @@ Object {
         "property": Object {
           "displayLabel": "Simple Field",
           "name": "SimpleField",
-          "typename": "myarray[]",
+          "typename": "MyArray[]",
         },
         "value": Object {
           "items": Array [
@@ -1861,6 +2446,7 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1905,6 +2491,7 @@ Object {
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
+      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1926,7 +2513,7 @@ Object {
         "property": Object {
           "displayLabel": "Simple Field",
           "name": "SimpleField",
-          "typename": "mystruct",
+          "typename": "MyStruct",
         },
         "value": Object {
           "members": Object {

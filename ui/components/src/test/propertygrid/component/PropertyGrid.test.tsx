@@ -642,6 +642,20 @@ describe("PropertyGrid", () => {
 
   });
 
+  describe("property hover", () => {
+    it("enables property hovering", async () => {
+      const { findByText, getByRole } = render(
+        <PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider}
+          isPropertyHoverEnabled={true}
+        />);
+
+      await findByText("Group 1");
+      expect([...getByRole("presentation").classList.values()]).to.contain("components--hoverable");
+    });
+  });
+
   describe("context menu", () => {
 
     it("calls onPropertyContextMenu callback when right clicked on a property", async () => {

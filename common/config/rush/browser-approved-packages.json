@@ -11,8 +11,7 @@
     {
       "name": "@azure/storage-blob",
       "allowedCategories": [
-        "backend",
-        "frontend"
+        "backend"
       ]
     },
     {
@@ -1018,6 +1017,12 @@
       "name": "fast-sha256",
       "allowedCategories": [
         "tools"
+      ]
+    },
+    {
+      "name": "fast-sort",
+      "allowedCategories": [
+        "frontend"
       ]
     },
     {
