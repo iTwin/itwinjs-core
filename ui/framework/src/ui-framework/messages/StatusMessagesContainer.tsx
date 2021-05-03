@@ -35,14 +35,25 @@ export interface StatusMessagesContainerProps {
  */
 export function StatusMessagesContainer(props: StatusMessagesContainerProps) {
   const messages = props.messages;
-  const maxHeight = Math.floor(window.innerHeight * 0.66);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [, height] = useLayoutResizeObserver(containerRef);
+  const [addScroll, setAddScroll] = React.useState(false);
+
+  React.useLayoutEffect(() => {
+    // istanbul ignore else
+    if (containerRef.current) {
+      // istanbul ignore next
+      const windowHeight = containerRef.current.ownerDocument.defaultView?.innerHeight ?? 800;
+      const maxHeight = Math.floor(windowHeight * .66);
+      setAddScroll((height ?? 0) >= maxHeight);
+    }
+  }, [height]);
+
   if (!(props.activityMessageInfo && props.isActivityMessageVisible) && props.messages.length === 0)
     return null;
 
   return (
-    <div className={classnames("uifw-statusbar-messages-container", (height ?? 10 >= maxHeight) && /* istanbul ignore next */ "uifw-scrollable")}>
+    <div ref={containerRef} className={classnames("uifw-statusbar-messages-container", addScroll && "uifw-scrollable")}>
       <ul className="uifw-statusbar-message-list">
         {messages.length > 0 &&
           messages.map((message: StatusMessage) => {
