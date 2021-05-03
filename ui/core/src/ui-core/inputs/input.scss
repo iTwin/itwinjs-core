@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index";
 @import "./variables";
+@import "~@itwin/itwinui-css/scss/style/space";
 @import "~@itwin/itwinui-css/scss/style/speed";
 @import "~@itwin/itwinui-css/scss/style/typography";
 @import "~@itwin/itwinui-css/scss/style/variables";
@@ -51,4 +52,9 @@
     border-color:       $buic-foreground-focus-border;
     box-shadow:         $uicore-inputs-focus-boxshadow;
   }
+
+  &.iui-input {
+    padding: $uicore-iui-input-padding;
+  }
+
 }

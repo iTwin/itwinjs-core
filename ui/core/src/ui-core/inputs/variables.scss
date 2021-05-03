@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../style/baseline";
 @import "../style/themecolors";
+@import "~@itwin/itwinui-css/scss/style/space";
 
 // cspell:ignore unbordered
 
@@ -24,3 +25,5 @@ $uicore-inputs-margin-large: ($uicore-line-height * 3 - $uicore-inputs-height-la
 $uicore-inputs-border-color: $buic-inputs-border;
 
 $uicore-inputs-focus-boxshadow: $buic-focus-boxshadow 0px 0px 0px 2px;
+
+$uicore-iui-input-padding: $iui-xxs $iui-s;

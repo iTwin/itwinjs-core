@@ -277,7 +277,6 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       onFocus: this._onFocus,
       setFocus: this.shouldSetFocus(),
       nativeKeyHandler: this._onKeyPress,
-      ref: this._inputElement,
     };
 
     let reactNode: React.ReactNode;
@@ -286,6 +285,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       reactNode = (
         <IconInput
           {...inputProps}
+          ref={this._inputElement}
           icon={icon}
           data-testid="components-customnumber-editor"
         />
@@ -294,6 +294,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       reactNode = (
         <Input
           {...inputProps}
+          ref={this._inputElement}
           data-testid="components-customnumber-editor"
         />
       );

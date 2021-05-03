@@ -47,4 +47,9 @@
     outline:            0px;
     box-shadow:         $uicore-inputs-focus-boxshadow;
   }
+
+  &.iui-textarea {
+    padding: $uicore-iui-input-padding;
+  }
+
 }
