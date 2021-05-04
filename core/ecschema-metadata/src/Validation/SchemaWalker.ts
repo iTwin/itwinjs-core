@@ -54,7 +54,7 @@ export class SchemaWalker {
 
   private async traverseClass(ecClass: ECClass): Promise<void> {
     if (ecClass.properties) {
-      for (const property of ecClass.properties.values()) {
+      for (const property of ecClass.properties) {
         await this._visitorHelper.visitSchemaPart(property);
       }
     }

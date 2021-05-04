@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { SchemaContext } from "../../Context";
-import { EntityClass } from "../../Metadata/EntityClass";
 import { Schema } from "../../Metadata/Schema";
 
 interface TestTime {
@@ -12,8 +11,8 @@ interface TestTime {
   time: number;
 }
 
-describe("measuring deserialization performance with 400 properties", () => {
-  const TEST_REPS = 5;
+describe("measuring deserialization performance with hundreds of properties", () => {
+  const TEST_REPS = 10;
   const PROPERTIES_REPS = 100;
   let testTimes: TestTime[] = [];
 
@@ -33,7 +32,7 @@ describe("measuring deserialization performance with 400 properties", () => {
     testTimes = [];
     for (let i = 0; i < TEST_REPS; i++) {
       const properties = [];
-      for (let j = 0; j < PROPERTIES_REPS; j++) {
+      for (let j = 0; j < PROPERTIES_REPS * (i + 1); j++) {
         properties.push(              {
           type: "PrimitiveProperty",
           typeName: "double",
@@ -74,22 +73,10 @@ describe("measuring deserialization performance with 400 properties", () => {
       const startTime = new Date().getTime();
       const ecSchema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testEntity = ecSchema.getItemSync<EntityClass>("testClass");
-      assert.isDefined(testEntity);
-      for (let j = 0; j < PROPERTIES_REPS; j++) {
-        const testPrimProp = testEntity!.getPropertySync(`testPrimProp${j}`);
-        assert.isDefined(testPrimProp);
-        const testPrimArrProp = testEntity!.getPropertySync(`testPrimArrProp${j}`);
-        assert.isDefined(testPrimArrProp);
-        const testStructProp = testEntity!.getPropertySync(`testStructProp${j}`);
-        assert.isDefined(testStructProp);
-        const testStructArrProp = testEntity!.getPropertySync(`testStructArrProp${j}`);
-        assert.isDefined(testStructArrProp);
-      }
 
       const endTime = new Date().getTime();
       testTimes.push({
-        msg: `Synchronous deserialization test ${i+1} took ~${endTime - startTime}ms`,
+        msg: `Synchronous deserialization test ${i+1} with ${PROPERTIES_REPS * (i + 1) * 4} properites took ~${endTime - startTime}ms`,
         time: endTime - startTime,
       });
     }
@@ -97,9 +84,9 @@ describe("measuring deserialization performance with 400 properties", () => {
 
   it.skip("asynchronous deserialization", async () => {
     testTimes = [];
-    for (let i = 0; i < TEST_REPS; i++) {
+    for (let i = 0; i < TEST_REPS ; i++) {
       const properties = [];
-      for (let j = 0; j < PROPERTIES_REPS; j++) {
+      for (let j = 0; j < PROPERTIES_REPS * (i + 1); j++) {
         properties.push(              {
           type: "PrimitiveProperty",
           typeName: "double",
@@ -140,22 +127,10 @@ describe("measuring deserialization performance with 400 properties", () => {
       const startTime = new Date().getTime();
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testEntity = await ecSchema.getItem<EntityClass>("testClass");
-      assert.isDefined(testEntity);
 
-      const getPropertiesAsync = [];
-      for (let j = 0; j < PROPERTIES_REPS; j++) {
-        getPropertiesAsync.push(testEntity!.getProperty(`testPrimProp${j}`));
-        getPropertiesAsync.push(testEntity!.getProperty(`testPrimArrProp${j}`));
-        getPropertiesAsync.push(testEntity!.getProperty(`testStructProp${j}`));
-        getPropertiesAsync.push(testEntity!.getProperty(`testStructArrProp${j}`));
-      }
-
-      const props = await Promise.all(getPropertiesAsync);
-      props.forEach((prop) => assert.isDefined(prop));
       const endTime = new Date().getTime();
       testTimes.push({
-        msg: `Asynchronous deserialization test ${i+1} took ~${endTime - startTime}ms`,
+        msg: `Asynchronous deserialization test ${i+1} with ${PROPERTIES_REPS * (i + 1) * 4} properites took ~${endTime - startTime}ms`,
         time: endTime - startTime,
       });
     }

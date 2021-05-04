@@ -36,7 +36,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public get modifier() { return this._modifier; }
   public get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
   public set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
-  public get properties(): Map<string, Property> | undefined { return this._properties; }
+  public get properties(): IterableIterator<Property> | undefined { return this._properties?.values(); }
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
@@ -74,10 +74,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param name
    */
   public async getProperty(name: string, includeInherited: boolean = false): Promise<Property | undefined> {
-    if (this.properties) {
+    if (this._properties) {
       const upperKey = name.toUpperCase();
-      if (this.properties.has(upperKey))
-        return this.properties.get(upperKey);
+      const property = this._properties.get(upperKey);
+      if (property)
+        return property;
     }
 
     if (!includeInherited) {
@@ -92,10 +93,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param name
    */
   public getPropertySync(name: string, includeInherited: boolean = false): Property | undefined {
-    if (this.properties) {
+    if (this._properties) {
       const upperKey = name.toUpperCase();
-      if (this.properties.has(upperKey))
-        return this.properties.get(upperKey);
+      const property = this._properties.get(upperKey);
+      if (property)
+        return property;
     }
 
     if (!includeInherited) {
@@ -333,8 +335,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       schemaJson.modifier = classModifierToString(this.modifier);
     if (this.baseClass !== undefined)
       schemaJson.baseClass = this.baseClass.fullName;
-    if (this.properties !== undefined && this.properties.size > 0)
-      schemaJson.properties = [...this.properties.values()].map((prop) => prop.toJSON());
+    if (this._properties !== undefined && this._properties.size > 0)
+      schemaJson.properties = [...this.properties!].map((prop) => prop.toJSON());
 
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
@@ -358,7 +360,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
 
     if (undefined !== this.properties) {
-      for (const prop of this.properties.values()) {
+      for (const prop of this.properties) {
         const propXml = await prop.toXml(schemaXml);
         itemElement.appendChild(propXml);
       }
@@ -485,7 +487,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (!this.properties)
       return;
 
-    ECClass.mergeProperties(result, existingValues, [...this.properties.values()], true);
+    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
   }
 
   protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
@@ -501,7 +503,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (!this.properties)
       return;
 
-    ECClass.mergeProperties(result, existingValues, [...this.properties.values()], true);
+    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
   }
 
   /**
