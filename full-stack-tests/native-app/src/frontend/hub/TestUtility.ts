@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { BriefcaseQuery, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
-import { AsyncMethodsOf, AuthorizedFrontendRequestContext, IModelApp, IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
+import { IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
+import { AsyncMethodsOf, AuthorizedFrontendRequestContext, IpcApp } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 import { testIpcChannel, TestIpcInterface } from "../../common/IpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
@@ -19,11 +19,6 @@ export class TestUtility {
 
   public static async callBackend<T extends AsyncMethodsOf<TestIpcInterface>>(methodName: T, ...args: Parameters<TestIpcInterface[T]>) {
     return IpcApp.callIpcChannel(testIpcChannel, methodName, ...args);
-  }
-
-  public static async getAuthorizedClientRequestContext(user: TestUserCredentials): Promise<AuthorizedClientRequestContext> {
-    const accessToken = await getAccessTokenFromBackend(user);
-    return new AuthorizedClientRequestContext(accessToken);
   }
 
   public static async initializeTestProject(testProjectName: string, user: TestUserCredentials): Promise<FrontendAuthorizationClient> {
@@ -60,31 +55,6 @@ export class TestUtility {
     assert(iModels[0].wsgId);
 
     return iModels[0].wsgId;
-  }
-
-  public static async getModelLockLevel(iModel: IModelConnection, modelId: Id64String): Promise<LockLevel> {
-    const req = new AuthorizedClientRequestContext(await IModelApp.authorizationClient!.getAccessToken());
-    const lockedModels = await IModelApp.iModelClient.locks.get(req, iModel.iModelId!, new LockQuery().byObjectId(modelId));
-    if (lockedModels.length === 0 || lockedModels[0].lockLevel === undefined)
-      return LockLevel.None;
-    return lockedModels[0].lockLevel;
-  }
-
-  /**
-   * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
-   */
-  public static async purgeAcquiredBriefcases(iModelId: string, acquireThreshold: number = 16): Promise<void> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    const briefcases = await IModelApp.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
-    if (briefcases.length > acquireThreshold) {
-      Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
-
-      const promises = new Array<Promise<void>>();
-      briefcases.forEach((briefcase) => {
-        promises.push(IModelApp.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
-      });
-      await Promise.all(promises);
-    }
   }
 
 }
