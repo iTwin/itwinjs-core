@@ -5,13 +5,12 @@
 import { assert } from "chai";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { NativeApp } from "@bentley/imodeljs-frontend";
-import { rpcInterfaces } from "../../common/RpcInterfaces";
 import { TestUtility } from "../hub/TestUtility";
 
 describe("NativeApp Storage frontend", () => {
   before(async () => {
-    await ElectronApp.startup({ iModelApp: { rpcInterfaces } });
-    await TestUtility.purgeStorageCache();
+    await ElectronApp.startup();
+    await TestUtility.callBackend("purgeStorageCache");
   });
 
   after(async () => {

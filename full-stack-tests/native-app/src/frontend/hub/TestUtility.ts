@@ -6,16 +6,20 @@ import { assert } from "chai";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { BriefcaseQuery, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
+import { AsyncMethodsOf, AuthorizedFrontendRequestContext, IModelApp, IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
-import { TestRpcInterface } from "../../common/RpcInterfaces";
+import { testIpcChannel, TestIpcInterface } from "../../common/IpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
 
 export class TestUtility {
   public static imodelCloudEnv: IModelCloudEnvironment;
+
+  public static async callBackend<T extends AsyncMethodsOf<TestIpcInterface>>(methodName: T, ...args: Parameters<TestIpcInterface[T]>) {
+    return IpcApp.callIpcChannel(testIpcChannel, methodName, ...args);
+  }
 
   public static async getAuthorizedClientRequestContext(user: TestUserCredentials): Promise<AuthorizedClientRequestContext> {
     const accessToken = await getAccessTokenFromBackend(user);
@@ -23,7 +27,7 @@ export class TestUtility {
   }
 
   public static async initializeTestProject(testProjectName: string, user: TestUserCredentials): Promise<FrontendAuthorizationClient> {
-    const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
+    const cloudParams = await TestUtility.callBackend("getCloudEnv");
     if (cloudParams.iModelBank) {
       this.imodelCloudEnv = new IModelBankCloudEnv(cloudParams.iModelBank.url, false);
     } else {
@@ -58,10 +62,6 @@ export class TestUtility {
     return iModels[0].wsgId;
   }
 
-  public static async purgeStorageCache() {
-    return TestRpcInterface.getClient().purgeStorageCache();
-  }
-
   public static async getModelLockLevel(iModel: IModelConnection, modelId: Id64String): Promise<LockLevel> {
     const req = new AuthorizedClientRequestContext(await IModelApp.authorizationClient!.getAccessToken());
     const lockedModels = await IModelApp.iModelClient.locks.get(req, iModel.iModelId!, new LockQuery().byObjectId(modelId));
@@ -75,12 +75,12 @@ export class TestUtility {
    */
   public static async purgeAcquiredBriefcases(iModelId: string, acquireThreshold: number = 16): Promise<void> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const briefcases: HubBriefcase[] = await IModelApp.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
+    const briefcases = await IModelApp.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > acquireThreshold) {
       Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
-      briefcases.forEach((briefcase: HubBriefcase) => {
+      briefcases.forEach((briefcase) => {
         promises.push(IModelApp.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);

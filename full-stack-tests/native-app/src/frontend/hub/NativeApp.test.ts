@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { BeDuration, Config, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, IModelApp, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection, IModelApp, NativeApp, NativeAppAuthorization, NativeAppOpts } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { usingOfflineScope } from "./HttpRequestHook";
