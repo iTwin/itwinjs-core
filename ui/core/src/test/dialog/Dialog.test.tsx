@@ -26,8 +26,7 @@ describe("Dialog", () => {
 
   describe("<GlobalDialog />", () => {
     it("should render with identifier", () => {
-      const wrapper = render(<GlobalDialog opened={true} identifier="test" />);
-      wrapper.debug();
+      render(<GlobalDialog opened={true} identifier="test" />);
     });
     it("should render", () => {
       render(<GlobalDialog opened={true} />);

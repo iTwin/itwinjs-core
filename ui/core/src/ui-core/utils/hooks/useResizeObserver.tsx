@@ -130,10 +130,8 @@ export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onRes
 
     return () => {
       isMountedRef.current = false;
-      // istanbul ignore else
-      if (rafRef.current)
-        owningWindowRef.current.cancelAnimationFrame(rafRef.current);
-      owningWindowRef.current.removeEventListener("beforeunload", resizeObserverCleanup);
+      (rafRef.current && owningWindowRef.current) && owningWindowRef.current.cancelAnimationFrame(rafRef.current);
+      owningWindowRef.current && owningWindowRef.current.removeEventListener("beforeunload", resizeObserverCleanup);
     };
   }, [onResize, ref]);
 
