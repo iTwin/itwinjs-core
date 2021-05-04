@@ -12,8 +12,8 @@ interface TestTime {
 }
 
 describe("measuring deserialization performance with hundreds of properties", () => {
-  const TEST_REPS = 10;
-  const PROPERTIES_REPS = 100;
+  const TEST_COUNT = 10;
+  const STARTING_PROP_COUNT = 5;
   let testTimes: TestTime[] = [];
 
   afterEach(() => {
@@ -23,35 +23,21 @@ describe("measuring deserialization performance with hundreds of properties", ()
       console.log(time.msg);
       totalTime += time.time;
     }
-    const averageTime = totalTime / TEST_REPS;
+    const averageTime = totalTime / TEST_COUNT;
     /* eslint-disable no-console */
     console.log(`Tests total time taken: ~${totalTime}ms; Tests average time: ~${averageTime}ms`);
   });
 
   it.skip("synchronous deserialization", () => {
     testTimes = [];
-    for (let i = 0; i < TEST_REPS; i++) {
+    for (let i = 0; i < TEST_COUNT; i++) {
       const properties = [];
-      for (let j = 0; j < PROPERTIES_REPS * (i + 1); j++) {
-        properties.push(              {
+      const PROP_COUNT = STARTING_PROP_COUNT * 2 ** i;
+      for (let j = 0; j < PROP_COUNT; j++) {
+        properties.push({
           type: "PrimitiveProperty",
           typeName: "double",
           name: `testPrimProp${j}`,
-        },
-        {
-          type: "StructProperty",
-          name: `testStructProp${j}`,
-          typeName: "TestSchema.testStruct",
-        },
-        {
-          type: "PrimitiveArrayProperty",
-          typeName: "string",
-          name: `testPrimArrProp${j}`,
-        },
-        {
-          type: "StructArrayProperty",
-          name: `testStructArrProp${j}`,
-          typeName: "TestSchema.testStruct",
         });
       }
 
@@ -76,7 +62,7 @@ describe("measuring deserialization performance with hundreds of properties", ()
 
       const endTime = new Date().getTime();
       testTimes.push({
-        msg: `Synchronous deserialization test ${i+1} with ${PROPERTIES_REPS * (i + 1) * 4} properites took ~${endTime - startTime}ms`,
+        msg: `Synchronous deserialization test ${i+1} with ${PROP_COUNT} properites took ~${endTime - startTime}ms`,
         time: endTime - startTime,
       });
     }
@@ -84,28 +70,14 @@ describe("measuring deserialization performance with hundreds of properties", ()
 
   it.skip("asynchronous deserialization", async () => {
     testTimes = [];
-    for (let i = 0; i < TEST_REPS ; i++) {
+    for (let i = 0; i < TEST_COUNT ; i++) {
       const properties = [];
-      for (let j = 0; j < PROPERTIES_REPS * (i + 1); j++) {
-        properties.push(              {
+      const PROP_COUNT = STARTING_PROP_COUNT * 2 ** i;
+      for (let j = 0; j < PROP_COUNT; j++) {
+        properties.push({
           type: "PrimitiveProperty",
           typeName: "double",
           name: `testPrimProp${j}`,
-        },
-        {
-          type: "StructProperty",
-          name: `testStructProp${j}`,
-          typeName: "TestSchema.testStruct",
-        },
-        {
-          type: "PrimitiveArrayProperty",
-          typeName: "string",
-          name: `testPrimArrProp${j}`,
-        },
-        {
-          type: "StructArrayProperty",
-          name: `testStructArrProp${j}`,
-          typeName: "TestSchema.testStruct",
         });
       }
 
@@ -130,7 +102,7 @@ describe("measuring deserialization performance with hundreds of properties", ()
 
       const endTime = new Date().getTime();
       testTimes.push({
-        msg: `Asynchronous deserialization test ${i+1} with ${PROPERTIES_REPS * (i + 1) * 4} properites took ~${endTime - startTime}ms`,
+        msg: `Asynchronous deserialization test ${i+1} with ${PROP_COUNT} properites took ~${endTime - startTime}ms`,
         time: endTime - startTime,
       });
     }
