@@ -345,7 +345,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     if (this._neverDrawn.has(elemIdLo, elemIdHi))
       return true;
     else
-      return 0 !== animationNodeId && this.neverDrawnAnimationNodes.has(animationNodeId);
+      return this.neverDrawnAnimationNodes.has(animationNodeId);
   }
   /** @internal */
   protected isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
@@ -369,7 +369,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   /** @internal */
   protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
     const app = this._elementOverrides.get(idLo, idHi);
-    if (app !== undefined || 0 === animationNodeId)
+    if (app !== undefined)
       return app;
 
     return this.animationNodeOverrides.get(animationNodeId);
@@ -395,13 +395,13 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   /** Returns the feature's appearance overrides, or undefined if the feature is not visible. */
-  public getFeatureAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary): FeatureAppearance | undefined {
+  public getFeatureAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary, animationNodeId = 0): FeatureAppearance | undefined {
     return this.getAppearance(
       Id64.getLowerUint32(feature.elementId), Id64.getUpperUint32(feature.elementId),
       Id64.getLowerUint32(feature.subCategoryId), Id64.getUpperUint32(feature.subCategoryId),
       feature.geometryClass,
       Id64.getLowerUint32(modelId), Id64.getUpperUint32(modelId),
-      type, 0);
+      type, animationNodeId);
   }
 
   private static readonly _weight1Appearance = FeatureAppearance.fromJSON({ weight: 1 });

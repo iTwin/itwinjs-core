@@ -2945,6 +2945,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     // @internal
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
     toJSON(vp: Viewport): EmphasizeElementsProps;
+    get unanimatedAppearance(): FeatureAppearance | undefined;
+    set unanimatedAppearance(appearance: FeatureAppearance | undefined);
     // @internal (undocumented)
     protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
     wantEmphasis: boolean;
@@ -2964,6 +2966,8 @@ export interface EmphasizeElementsProps {
     isAlwaysDrawnExclusive?: boolean;
     // (undocumented)
     neverDrawn?: Id64Array;
+    // (undocumented)
+    unanimatedAppearance?: FeatureAppearanceProps;
     // (undocumented)
     wantEmphasis?: boolean;
 }
