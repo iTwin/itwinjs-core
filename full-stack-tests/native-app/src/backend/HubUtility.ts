@@ -8,38 +8,11 @@ import { ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery } fr
 import { IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
-import * as path from "path";
 
 /** Utility to work with iModelHub */
 export class HubUtility {
 
   public static logCategory = "HubUtility";
-
-  private static makeDirectoryRecursive(dirPath: string) {
-    if (IModelJsFs.existsSync(dirPath))
-      return;
-    HubUtility.makeDirectoryRecursive(path.dirname(dirPath));
-    IModelJsFs.mkdirSync(dirPath);
-  }
-
-  private static deleteDirectoryRecursive(dirPath: string) {
-    if (!IModelJsFs.existsSync(dirPath))
-      return;
-    try {
-      IModelJsFs.readdirSync(dirPath).forEach((file) => {
-        const curPath = `${dirPath}/${file}`;
-        if (IModelJsFs.lstatSync(curPath)!.isDirectory) {
-          HubUtility.deleteDirectoryRecursive(curPath);
-        } else {
-          // delete file
-          IModelJsFs.unlinkSync(curPath);
-        }
-      });
-      IModelJsFs.rmdirSync(dirPath);
-    } catch (err) {
-      return; // todo: This seems to fail sometimes for no reason
-    }
-  }
 
   private static async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
     const project: Project = await getIModelProjectAbstraction().queryProject(requestContext, {

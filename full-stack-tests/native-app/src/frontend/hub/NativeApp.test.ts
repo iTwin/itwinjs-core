@@ -82,7 +82,6 @@ describe("NativeApp (#integration)", () => {
   });
 
   it("Download Briefcase (#integration)", async () => {
-    // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
 
     const downloader: BriefcaseDownloader = await NativeApp.requestDownloadBriefcase(testProjectId, testIModelId, { syncMode: SyncMode.PullOnly });
@@ -98,7 +97,6 @@ describe("NativeApp (#integration)", () => {
   });
 
   it("Download Briefcase Offline (#integration)", async () => {
-    // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
 
     await usingOfflineScope(async () => {
@@ -112,7 +110,6 @@ describe("NativeApp (#integration)", () => {
   });
 
   it("should be able to start and finish downloading a briefcase (#integration)", async () => {
-    // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
     const locTestIModelName = "Stadium Dataset 1";
     const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, locTestIModelName);
@@ -126,7 +123,6 @@ describe("NativeApp (#integration)", () => {
   });
 
   it("Progress event (#integration)", async () => {
-    // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
     const locTestIModelName = "Stadium Dataset 1";
     const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, locTestIModelName);

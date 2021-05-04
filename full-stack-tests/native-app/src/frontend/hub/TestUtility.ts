@@ -62,14 +62,6 @@ export class TestUtility {
     return TestRpcInterface.getClient().purgeStorageCache();
   }
 
-  public static async createIModel(name: string, contextId: string, deleteIfExists = false) {
-    return TestRpcInterface.getClient().createIModel(name, contextId, deleteIfExists);
-  }
-
-  public static async restartIModelHost() {
-    return TestRpcInterface.getClient().restartIModelHost();
-  }
-
   public static async getModelLockLevel(iModel: IModelConnection, modelId: Id64String): Promise<LockLevel> {
     const req = new AuthorizedClientRequestContext(await IModelApp.authorizationClient!.getAccessToken());
     const lockedModels = await IModelApp.iModelClient.locks.get(req, iModel.iModelId!, new LockQuery().byObjectId(modelId));
