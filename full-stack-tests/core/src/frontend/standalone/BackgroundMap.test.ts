@@ -37,12 +37,12 @@ describe("Background map", () => {
     async function isSameTileTree(vp: TestViewport, props: BackgroundMapProps): Promise<boolean> {
       expect(vp.viewFlags.backgroundMap).to.be.true;
       await vp.waitForAllTilesToRender();
-      const prevTree = vp.displayStyle.backgroundMap.treeOwner.tileTree!;
+      const prevTree = vp.backgroundMap!.treeOwner.tileTree!;
       expect(prevTree).not.to.be.undefined;
 
       vp.changeBackgroundMapProps(props);
       await vp.waitForAllTilesToRender();
-      const newTree = vp.displayStyle.backgroundMap.treeOwner.tileTree!;
+      const newTree = vp.backgroundMap!.treeOwner.tileTree!;
       expect(newTree).not.to.be.undefined;
 
       return newTree === prevTree;
