@@ -211,7 +211,7 @@ export function ResizableContainerObserver({ onResize, children }: { onResize: (
   useLayoutResizeObserver(containerRef, processResize);
   return (
     <div ref={containerRef} className="uicore-resizable-container" style={{ width: "100%", height: "100%" }}>
-      {children}
+      {!!children && children}
     </div>
   );
 }
