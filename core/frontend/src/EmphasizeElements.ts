@@ -151,7 +151,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   public get defaultAppearance(): FeatureAppearance | undefined { return this._defaultAppearance; }
   public set defaultAppearance(appearance: FeatureAppearance | undefined) { this._defaultAppearance = appearance; }
 
-  /** Establish a default appearance to apply to elements that are not animated by the view's [RenderSchedule.Script]($common).
+  /** Establish a default appearance to apply to elements that are not animated by the view's schedule script.
    * @note If this is the only change made to EmphasizeElements, you must call [[Viewport.setFeatureOverrideProviderChanged]] for
    * the change to take immediate effect.
    * @see [[createDefaultAppearance]] to create an appearance suitable for de-emphasizing the non-animated elements.
