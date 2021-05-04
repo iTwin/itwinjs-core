@@ -264,7 +264,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
     const className = classnames("components-cell-editor", "components-customnumber-editor", this.props.className);
 
-    const inputProps: InputProps = {
+    const inputProps: InputProps = {    // eslint-disable-line deprecation/deprecation
       className,
       style: this.props.style ? this.props.style : minWidthStyle,
       readOnly,

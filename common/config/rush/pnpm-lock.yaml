@@ -8,6 +8,7 @@ dependencies:
   '@bentley/react-scripts': 3.4.9_50a9a52775dfbe3fbd64ccf8e2a3fa32
   '@bentley/units-schema': 1.0.6
   '@itwin/itwinui-css': 0.11.0
+  '@itwin/itwinui-icons-react': 0.1.0_react-dom@16.14.0+react@16.14.0
   '@itwin/itwinui-react': 1.2.0_react-dom@16.14.0+react@16.14.0
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': 2.6.1
@@ -21129,6 +21130,7 @@ packages:
     dependencies:
       '@bentley/react-scripts': 3.4.9_50a9a52775dfbe3fbd64ccf8e2a3fa32
       '@itwin/itwinui-css': 0.11.0
+      '@itwin/itwinui-react': 1.2.0_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.16
@@ -21173,7 +21175,7 @@ packages:
       sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-ED4gNVB0Jlh8/rDQm/j/UpRdfIIGUg7yE7WtSPNLjJgYICW/ebvMFtLm0BGRjlppOHwJKFZ2HpaUosb/WTTKlw==
+      integrity: sha512-A7jeop/f2dRuR5C9nIoHo0Dr2VEsS32qxfWPXA0TYO0jQ8sAK1alF1qOUf1PnWuWaHQnZtfQgt4b72gL/Is32g==
       tarball: 'file:projects/map-layers.tgz'
     version: 0.0.0
   'file:projects/mobile-manager.tgz':
@@ -21985,6 +21987,7 @@ packages:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/react-scripts': 3.4.9_50a9a52775dfbe3fbd64ccf8e2a3fa32
       '@itwin/itwinui-css': 0.10.0
+      '@itwin/itwinui-icons-react': 0.1.0_react-dom@16.14.0+react@16.14.0
       '@itwin/itwinui-react': 1.2.0_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
@@ -22052,7 +22055,7 @@ packages:
       webpack: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-F25IlYFmGgKOv/UaODdV2bQPX1ebb+GA/wivfRMmRO35gfYBvLungLLRZP6HL8sJ7gt7gxNYyTAvqzNTjr3+Og==
+      integrity: sha512-sGavIL861M1PeeviltHJS1D/cBhSrz3maIbeyIzESnEjj9AamnO0fNEfvC/dYw/xXBieNoIEWgM4Ug37rUr6jA==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz_react-test-renderer@16.14.0':
@@ -22260,6 +22263,7 @@ specifiers:
   '@bentley/react-scripts': 3.4.9
   '@bentley/units-schema': ^1.0.5
   '@itwin/itwinui-css': ^0.11.0
+  '@itwin/itwinui-icons-react': ^0.1.0
   '@itwin/itwinui-react': ^1.2.0
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': ^2.5.5
