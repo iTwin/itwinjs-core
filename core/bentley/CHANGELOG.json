@@ -2,6 +2,21 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "2.15.0",
+      "tag": "@bentley/bentleyjs-core_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new error flags."
+          },
+          {
+            "comment": "Promote APIs to public."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.14.4",
       "tag": "@bentley/bentleyjs-core_v2.14.4",
       "date": "Thu, 22 Apr 2021 21:07:33 GMT",

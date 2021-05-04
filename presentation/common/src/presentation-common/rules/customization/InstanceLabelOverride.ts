@@ -7,6 +7,7 @@
  */
 
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
+import { RelationshipPathSpecification } from "../RelationshipPathSpecification";
 import { RuleBase, RuleTypes } from "../Rule";
 
 /**
@@ -46,6 +47,7 @@ export enum InstanceLabelOverrideValueSpecificationType {
   BriefcaseId = "BriefcaseId",
   LocalId = "LocalId",
   String = "String",
+  RelatedInstanceLabel = "RelatedInstanceLabel",
 }
 
 /**
@@ -87,11 +89,16 @@ export interface InstanceLabelOverridePropertyValueSpecification extends Instanc
 
   /**
    * Name of the property whose value should be used.
-   *
-   * @note A property with this name must exist on the
-   * parent `InstanceLabelOverride.class`.
+   * @note A property with this name must exist on the property class (see [[propertySource]]).
    */
   propertyName: string;
+
+  /**
+   * Path from `InstanceLabelOverride.class` to the property class. If omitted,
+   * `InstanceLabelOverride.class` is used as property class.
+   * @beta
+   */
+  propertySource?: RelationshipPathSpecification;
 }
 
 /**
@@ -141,6 +148,20 @@ export interface InstanceLabelOverrideStringValueSpecification extends InstanceL
 }
 
 /**
+ * Specification that uses label of a related instance as the label content.
+ * @public
+ */
+export interface InstanceLabelOverrideRelatedInstanceLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
+  specType: InstanceLabelOverrideValueSpecificationType.RelatedInstanceLabel;
+
+  /**
+   * Path from `InstanceLabelOverride.class` to the class of related instance whose label
+   * should be returned.
+   */
+  pathToRelatedInstance: RelationshipPathSpecification;
+}
+
+/**
  * Specification to define how the label for [[InstanceLabelOverride]] should be created.
  * @public
  */
@@ -148,4 +169,4 @@ export type InstanceLabelOverrideValueSpecification =
   InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification |
   InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification |
   InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification |
-  InstanceLabelOverrideLocalIdSpecification;
+  InstanceLabelOverrideLocalIdSpecification | InstanceLabelOverrideRelatedInstanceLabelSpecification;

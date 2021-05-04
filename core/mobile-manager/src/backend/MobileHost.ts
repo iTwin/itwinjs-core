@@ -64,7 +64,7 @@ export abstract class MobileDevice {
   public abstract authSignIn(ctx: ClientRequestContext, callback: (err?: string) => void): void;
   public abstract authSignOut(ctx: ClientRequestContext, callback: (err?: string) => void): void;
   public abstract authGetAccessToken(ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void): void;
-  public abstract authInit(ctx: ClientRequestContext, config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
+  public authInit(_ctx: ClientRequestContext, _config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void { callback(); }
   public abstract authStateChanged(accessToken?: string, err?: string): void;
 }
 

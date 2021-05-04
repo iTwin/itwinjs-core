@@ -60,6 +60,21 @@ export class FakeREProps implements RelatedElementProps {
   public constructor() { this.id = Id64.invalid; }
 }
 
+export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, renderMode?: RenderMode, is2d?: boolean, animationId?: Id64String }): ViewState {
+  const scheduleState = options?.animationId ? { getModelAnimationId: () => options.animationId } : undefined;
+  return {
+    iModel,
+    is3d: () => true !== options?.is2d,
+    viewFlags: {
+      renderMode: options?.renderMode ?? RenderMode.SmoothShade,
+      visibleEdges: options?.visibleEdges ?? false,
+    },
+    displayStyle: {
+      scheduleState,
+    },
+  } as ViewState;
+}
+
 function delta(a: number, b: number): number { return Math.abs(a - b); }
 type ProcessGraphic = (graphic: RenderGraphic) => void;
 
@@ -528,23 +543,10 @@ async function getTileTree(imodel: IModelConnection, modelId: Id64String, edgesR
 }
 
 async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = true, animationId?: Id64String): Promise<IModelTileTree> {
-  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and scheduleScript.getModelAnimationId(modelId) and for access to its IModelConnection.
+  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and scheduleState.getModelAnimationId(modelId) and for access to its IModelConnection.
   // ###TODO Make that an interface instead of requiring a ViewState.
-  let scheduleScript;
-  if (undefined !== animationId)
-    scheduleScript = { getModelAnimationId: () => animationId };
-
-  const fakeViewState = {
-    iModel: model.iModel,
-    scheduleScript,
-    viewFlags: {
-      renderMode: RenderMode.SmoothShade,
-      visibleEdges: edgesRequired,
-    },
-    is3d: () => true,
-  };
-
-  const ref = model.createTileTreeReference(fakeViewState as ViewState);
+  const view = fakeViewState(model.iModel, { animationId, visibleEdges: edgesRequired });
+  const ref = model.createTileTreeReference(view);
   const owner = ref.treeOwner;
   owner.load();
   await waitUntil(() => {
@@ -676,16 +678,8 @@ describe("mirukuru TileTree", () => {
     await imodel.models.load(modelId);
     const model = imodel.models.getLoaded(modelId) as GeometricModelState;
 
-    const viewState = {
-      iModel: imodel,
-      viewFlags: {
-        renderMode: RenderMode.SmoothShade,
-        visibleEdges: false,
-      },
-      is3d: () => true,
-    };
-
-    const treeRef = model.createTileTreeReference(viewState as ViewState);
+    const viewState = fakeViewState(imodel);
+    const treeRef = model.createTileTreeReference(viewState);
     const noEdges = treeRef.treeOwner;
 
     viewState.viewFlags.visibleEdges = true;
