@@ -41,7 +41,7 @@ export interface DatePickerPopupButtonProps extends CommonProps {
  * @alpha
  * */
 export function DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter,
-  buttonToolTip, fieldStyle, fieldClassName }: DatePickerPopupButtonProps) {
+  buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps) {
   const [workingDate, setWorkingDate] = React.useState(new Date(selected.getTime()));
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const timeLabelRef = React.useRef(UiComponents.translate("datepicker.time"));
@@ -93,7 +93,7 @@ export function DatePickerPopupButton({ displayEditField, timeDisplay, selected,
   const timeSpec: TimeSpec = { hours: workingDate.getHours(), minutes: workingDate.getMinutes(), seconds: workingDate.getSeconds() };
   return (
     <>
-      <button title={toolTipLabel} className="components-date-picker-calendar-popup-button" onKeyDown={handlePopupKeyDown}
+      <button title={toolTipLabel} style={style} className="components-date-picker-calendar-popup-button" onKeyDown={handlePopupKeyDown}
         data-testid="components-date-picker-calendar-popup-button" onPointerDown={togglePopupDisplay} ref={buttonRef}>
         <div className="datepicker-button">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
