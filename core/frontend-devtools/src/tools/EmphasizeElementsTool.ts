@@ -108,7 +108,7 @@ export class ClearIsolatedElementsTool extends EmphasizeElementsTool {
   }
 }
 
-/** Reset [EmphasizedElements]($frontend) for the active [Viewport]($frontend).
+/** Reset [EmphasizeElements]($frontend) for the active [Viewport]($frontend).
  * @beta
  */
 export class ClearEmphasizedElementsTool extends EmphasizeElementsTool {
