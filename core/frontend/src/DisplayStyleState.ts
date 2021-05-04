@@ -9,7 +9,7 @@ import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs
 import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
   BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps,
+  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -23,7 +23,7 @@ import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
+import { getCesiumOSMBuildingsUrl, MapCartoRectangle, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 
@@ -62,8 +62,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState) {
     super(props, iModel);
     const styles = this.jsonProperties.styles;
-        const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || {});
-    const mapImagery = MapImagerySettings.fromJSON(styles?.mapImagery, mapSettings.toJSON());
 
     if (source)
       this._scheduleState = source._scheduleState;
