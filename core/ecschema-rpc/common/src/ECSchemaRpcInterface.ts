@@ -15,7 +15,7 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
   /** The version of the RPC Interface. */
   public static version = "1.0.0";
 
-  public static readonly interfaceName = "SchemaRpcInterface";
+  public static readonly interfaceName = "ECSchemaRpcInterface";
   public static interfaceVersion = ECSchemaRpcInterface.version;
 
   /**
