@@ -168,7 +168,7 @@ export class Transformer extends IModelTransformer {
     return super.shouldExportRelationship(relationship);
   }
 
-  protected onProgress(): void {
+  protected async onProgress(): Promise<void> {
     if (this._numSourceElementsProcessed > 0) {
       Logger.logInfo(progressLoggerCategory, `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`);
     }
@@ -177,7 +177,7 @@ export class Transformer extends IModelTransformer {
     }
     this.logElapsedTime();
     this.logChangeTrackingMemoryUsed();
-    super.onProgress();
+    return super.onProgress();
   }
 
   private logElapsedTime(): void {

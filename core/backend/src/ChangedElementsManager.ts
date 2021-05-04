@@ -28,6 +28,7 @@ export class ChangedElementsManager {
       return this._entry.db;
     if (this._entry && this._entry.iModelId !== iModelId) {
       this._entry.db.closeDb();
+      this._entry.db.cleanCaches();
       this._entry = undefined;
     }
     if (!this._entry) {
@@ -45,6 +46,14 @@ export class ChangedElementsManager {
     }
 
     return undefined;
+  }
+
+  public static cleanUp() {
+    if (this._entry) {
+      this._entry.db.closeDb();
+      this._entry.db.cleanCaches();
+      this._entry = undefined;
+    }
   }
 
   /** Gets the changed elements from the cache if found

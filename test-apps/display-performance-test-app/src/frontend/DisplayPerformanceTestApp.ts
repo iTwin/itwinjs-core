@@ -1163,6 +1163,10 @@ async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise
   if (activeViewState.iModelConnection)
     await activeViewState.iModelConnection?.backgroundMapLocation.initialize(activeViewState.iModelConnection);
 
+  // Workaround for shifting map geometry when location is not initialized.
+  if (activeViewState.iModelConnection)
+    await activeViewState.iModelConnection?.backgroundMapLocation.initialize(activeViewState.iModelConnection);
+
   // open the specified view
   if (undefined !== testConfig.viewStatePropsString)
     await loadViewString(activeViewState, testConfig.viewStatePropsString, testConfig.selectedElements, testConfig.overrideElements);

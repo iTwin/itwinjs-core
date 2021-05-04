@@ -5,12 +5,12 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps,
-  DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode,
-  GroundPlane, LightSettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings, RenderTexture, SkyBoxImageType, SkyBoxProps,
+  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps,
+  MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
@@ -23,7 +23,7 @@ import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { getCesiumOSMBuildingsUrl, MapCartoRectangle, RealityModelTileTree, TileTreeReference } from "./tile/internal";
+import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 
@@ -39,11 +39,14 @@ export class TerrainDisplayOverrides {
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
   public static get className() { return "DisplayStyle"; }
-
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
-  private _scheduleScript?: RenderScheduleState.Script;
+  private _scheduleState?: RenderScheduleState;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
+  /** Event raised just before the [[scheduleScriptReference]] property is changed.
+   * @beta
+   */
+  public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
 
   /** The container for this display style's settings. */
   public abstract get settings(): DisplayStyleSettings;
@@ -54,23 +57,73 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Construct a new DisplayStyleState from its JSON representation.
    * @param props JSON representation of the display style.
    * @param iModel IModelConnection containing the display style.
+   * @param source If the constructor is being invoked from [[EntityState.clone]], the display style that is being cloned.
    */
-  constructor(props: DisplayStyleProps, iModel: IModelConnection) {
+  constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState) {
     super(props, iModel);
     const styles = this.jsonProperties.styles;
+        const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || {});
+    const mapImagery = MapImagerySettings.fromJSON(styles?.mapImagery, mapSettings.toJSON());
+
+    if (source)
+      this._scheduleState = source._scheduleState;
 
     if (styles) {
       if (styles.contextRealityModels)
         for (const contextRealityModel of styles.contextRealityModels)
           this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
 
-      if (styles.scheduleScript)
-        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, styles.scheduleScript);
-
       if (styles.planarClipOvr)
         for (const planarClipOvr of styles.planarClipOvr)
           if (Id64.isValid(planarClipOvr.modelId))
             this._attachedRealityModelPlanarClipMasks.set(planarClipOvr.modelId, PlanarClipMaskState.fromJSON(planarClipOvr));
+    }
+  }
+
+  /** Ensures all of the data required by the display style is loaded.
+   * @note This method is invoked by [[ViewState.load]].
+   * @beta
+   */
+  public async load(): Promise<void> {
+    // If we were cloned, we may already have a valid schedule state, and our display style Id may be invalid / different.
+    // Preserve it if still usable.
+    if (this._scheduleState) {
+      if (this.settings.renderTimeline === this._scheduleState.sourceId) {
+        // The script came from the same RenderTimeline element. Keep it.
+        return;
+      }
+
+      if (undefined === this.settings.renderTimeline) {
+        // The script cam from a display style's JSON properties. Keep it if (1) this style is not persistent or (2) this style has the same Id
+        if (this.id === this._scheduleState.sourceId || !Id64.isValidId64(this.id))
+          return;
+      }
+    }
+
+    this._scheduleState = await this.loadScheduleState();
+  }
+
+  private async loadScheduleState(): Promise<RenderScheduleState | undefined> {
+    // The script can be stored on a separate RenderTimeline element (new, preferred way); or stuffed into the display style's JSON properties (old, deprecated way).
+    try {
+      let script;
+      let sourceId;
+      if (this.settings.renderTimeline) {
+        const timeline = await this.iModel.elements.loadProps(this.settings.renderTimeline, { renderTimeline: { omitScriptElementIds: true } }) as RenderTimelineProps;
+        if (timeline) {
+          const scriptProps = JSON.parse(timeline.script);
+          script = RenderSchedule.Script.fromJSON(scriptProps);
+          sourceId = this.settings.renderTimeline;
+        }
+      } else if (this.settings.scheduleScriptProps) { // eslint-disable-line deprecation/deprecation
+        // eslint-disable-next-line deprecation/deprecation
+        script = RenderSchedule.Script.fromJSON(this.settings.scheduleScriptProps);
+        sourceId = this.id;
+      }
+
+      return (script && sourceId) ? new RenderScheduleState(sourceId, script) : undefined;
+    } catch (_) {
+      return undefined;
     }
   }
 
@@ -151,23 +204,56 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The name of this DisplayStyle */
   public get name(): string { return this.code.value; }
 
-  /** @internal */
-  public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }
-  public set scheduleScript(script: RenderScheduleState.Script | undefined) {
-    let json;
-    let newScript;
-    if (script) {
-      json = script.toJSON();
-      newScript = RenderScheduleState.Script.fromJSON(this.id, json);
-    }
+  /** Change the Id of the [RenderTimeline]($backend) element that hosts the [RenderSchedule.Script]($common) to be applied by this display style for
+   * animating the contents of the view.
+   * @beta
+   */
+  public async changeRenderTimeline(timelineId: Id64String | undefined): Promise<void> {
+    if (timelineId === this.settings.renderTimeline)
+      return;
 
-    this.settings.scheduleScriptProps = json;
-    this._scheduleScript = newScript;
+    const script = await this.loadScheduleState();
+    this.onScheduleScriptReferenceChanged.raiseEvent(script);
+    this._scheduleState = script;
+  }
+
+  /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
+   * @see [[changeRenderTimeline]] to change the script.
+   * @beta
+   */
+  public get scheduleScript(): RenderSchedule.Script | undefined {
+    return this._scheduleState?.script;
+  }
+
+  /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
+   * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
+   * @see [[changeRenderTimeline]] to change the script.
+   * @beta
+   */
+  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
+    return this._scheduleState;
+  }
+
+  /** @internal */
+  public get scheduleState(): RenderScheduleState | undefined {
+    return this._scheduleState;
+  }
+
+  /** This is only used by [RealityTransitionTool]($frontend-devtools). It basically can only work if the script contains nothing that requires special tiles to be generated -
+   * no symbology changes, transforms, or clipping - because the backend tile generator requires a *persistent* element to host the script for those features to work.
+   * @internal
+   */
+  public setScheduleState(state: RenderScheduleState | undefined): void {
+    this.onScheduleScriptReferenceChanged.raiseEvent(state);
+    this._scheduleState = state;
+
+    // eslint-disable-next-line deprecation/deprecation
+    this.settings.scheduleScriptProps = state?.script.toJSON();
   }
 
   /** @internal */
   public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined {
-    return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime);
+    return this.scheduleState?.getAnimationBranches(scheduleTime);
   }
 
   /**
@@ -798,8 +884,27 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   protected registerSettingsEventListeners(): void {
-    this.settings.onScheduleScriptPropsChanged.addListener((timeline) => {
-      this._scheduleScript = timeline ? RenderScheduleState.Script.fromJSON(this.id, timeline) : undefined;
+    // eslint-disable-next-line deprecation/deprecation
+    this.settings.onScheduleScriptPropsChanged.addListener((scriptProps) => {
+      let newState: RenderScheduleState | undefined;
+      if (scriptProps) {
+        const script = RenderSchedule.Script.fromJSON(scriptProps);
+        if (script)
+          newState = new RenderScheduleState(this.id, script);
+      }
+
+      if (newState !== this._scheduleState) {
+        this.onScheduleScriptReferenceChanged.raiseEvent(newState);
+        this._scheduleState = newState;
+      }
+    });
+
+    this.settings.onRenderTimelineChanged.addListener((newTimeline) => {
+      if (newTimeline !== this._scheduleState?.sourceId) {
+        // Loading the new script is asynchronous...people should really be using DisplayStyleState.changeRenderTimeline().
+        this.onScheduleScriptReferenceChanged.raiseEvent(undefined);
+        this._scheduleState = undefined;
+      }
     });
 
     this.settings.onRealityModelPlanarClipMaskChanged.addListener((id: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => {
@@ -1176,21 +1281,15 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _environment?: Environment;
   private _settings: DisplayStyle3dSettings;
 
-  /** @internal */
-  public clone(iModel?: IModelConnection): this {
-    const clone = super.clone(iModel);
-    if (undefined === iModel || this.iModel === iModel) {
-      clone._skyBoxParams = this._skyBoxParams;
-      clone._skyBoxParamsLoaded = this._skyBoxParamsLoaded;
-    }
-
-    return clone;
-  }
-
   public get settings(): DisplayStyle3dSettings { return this._settings; }
 
-  public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
-    super(props, iModel);
+  public constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState) {
+    super(props, iModel, source);
+    if (source && source.iModel === this.iModel) {
+      this._skyBoxParams = source._skyBoxParams;
+      this._skyBoxParamsLoaded = source._skyBoxParamsLoaded;
+    }
+
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
     this.registerSettingsEventListeners();
   }

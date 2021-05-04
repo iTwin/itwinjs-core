@@ -432,7 +432,7 @@ internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;class RenderRealityMeshGeometry 
-internal;RenderScheduleState
+internal;RenderScheduleState 
 public;class RenderSystem 
 public;RenderSystem
 beta;RenderSystemDebugControl

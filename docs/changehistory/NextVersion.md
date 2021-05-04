@@ -39,6 +39,34 @@ Clip volumes now nest. For example, if you define a view clip, a model clip grou
 
 The planar grid that is displayed when [ViewFlags.grid]($common) is now displayed with a shader rather than as explicit geometry.  This improved the overall appearance and efficiency of the grid display and corrects several anomalies when grid display was unstable at the horizon of a perspective view.  The view frustum is now expanded as necessary when grids are displayed to avoid truncating the grid to the displayed geometry.
 
+## Schedule script enhancements
+
+The [RenderSchedule]($common) API for defining how to animate the contents of a view over time has been cleaned up and expanded. A new [RenderTimeline]($backend) element class has been introduced with version 1.0.13 of the BisCore ECSchema, to host a [RenderSchedule.Script]($common). `DisplayStyleSettings.scheduleScriptProps` has been deprecated in favor of [DisplayStyleSettings.renderTimeline]($common) specifying the Id of the RenderTimeline element hosting the script to be applied to the display style. A [DisplayStyleState]($frontend)'s schedule script is now loaded asynchronously via [DisplayStyleState.load]($frontend) - this is done automatically by [ViewState.load]($frontend) but must be done manually for display styles obtained through other means.
+
+## Presentation changes
+
+### InstanceLabelOverride enhancements
+
+The [InstanceLabelOverride]($presentation-common) rule was enhanced with abilities to compose label using related instance values:
+
+* A `propertySource` attribute was added to [InstanceLabelOverridePropertyValueSpecification]($presentation-common) to allow picking a
+property value from a related instance.
+
+* A new [InstanceLabelOverrideRelatedInstanceLabelSpecification]($presentation-common) was added to allow taking label of a related
+instance. The related instance, possibly being a of a different ECClass, might have some different label overrides of its own.
+
+### Custom category renderers
+
+[VirtualizedPropertyGrid]($ui-components) now allows developers to fully customize displayed category contents, if the category is assigned a custom renderer via Presentation Rules. You can read more about that in our [Category customization learning page](../learning/presentation/Customization/PropertyCategoryRenderers.md).
+
+### Custom category nesting
+
+A new `parentId` attribute was added to [PropertyCategorySpecification]($presentation-common) to provide nesting abilities. See more details in our [property categorization page](../learning/presentation/Content/PropertyCategorization.md#category-nesting).
+
+### Presentation rule schema requirements
+
+A new `requiredSchemas` attribute was added to [Ruleset]($presentation-common), [Rule]($presentation-common) and [SubCondition]($presentation-common) definitions. The attribute allows specifying ECSchema requirements for rules and avoid using them when requirements are not met. See the [schema requirements page](../learning/presentation/SchemaRequirements.md) for more details.
+
 ## Map tile trees refactoring
 
 The map tile trees have been moved from [DisplayStyleState]($frontend) to [Viewport]($frontend).  This enables the maps to be maintained correctly when viewports are synchronized.  This will primarily not affect applications except calls to [ViewState.areAllTileTreesLoaded]($frontend) should replaced with [Viewport.areAllTileTreesLoaded]($frontend) if the map tile trees should be tested.
@@ -70,3 +98,7 @@ In addition, new protected static methods were added:
 
 * [Element]($backend) `[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]`
 * [Model]($backend) `[onInsertElement, onInsertedElement, onUpdateElement, onUpdatedElement, onDeleteElement, onDeletedElement]`
+
+The following method is now `async` to make it easier to integrate with asynchronous status and health reporting services:
+
+* [IModelExportHandler.onProgress]($backend)

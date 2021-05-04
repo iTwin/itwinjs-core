@@ -1101,7 +1101,8 @@ export abstract class Viewport implements IDisposable {
       this.setFeatureOverrideProviderChanged();
       IModelApp.requestNextAnimation();
     };
-    removals.push(settings.onScheduleScriptPropsChanged.addListener(scheduleChanged));
+
+    removals.push(style.onScheduleScriptReferenceChanged.addListener(scheduleChanged));
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
@@ -1116,7 +1117,6 @@ export abstract class Viewport implements IDisposable {
     // ###TODO detach/attach reality model
     // ###TODO reality model appearance overrides
     // ###TODO OSM Building display
-    // ###TODO map imagery?
 
     removals.push(settings.onBackgroundMapChanged.addListener(() => {
       this.invalidateController();
@@ -2204,13 +2204,13 @@ export abstract class Viewport implements IDisposable {
     if (!this._timePointValid) {
       isRedrawNeeded = true;
       this._timePointValid = true;
-      const scheduleScript = view.displayStyle.scheduleScript;
+      const scheduleScript = view.displayStyle.scheduleState;
       if (scheduleScript) {
-        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.getCachedDuration().low);
+        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.duration.low);
         if (scheduleScript.containsFeatureOverrides)
           overridesNeeded = true;
 
-        if (scheduleScript.containsTransform && !this._freezeScene)
+        if (scheduleScript.script.containsTransform && !this._freezeScene)
           this.invalidateScene();
       }
     }
