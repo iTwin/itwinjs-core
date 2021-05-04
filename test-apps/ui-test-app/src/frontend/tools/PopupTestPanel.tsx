@@ -6,7 +6,7 @@
 import * as React from "react";
 import { DatePickerPopupButton, DatePickerPopupButtonProps } from "@bentley/ui-components";
 import { Button } from "@bentley/ui-core";
-import { ModalDialogManager, ModelessDialogManager, PopupManager, UiFramework } from "@bentley/ui-framework";
+import { ModalDialogManager, ModelessDialogManager, PopupManager } from "@bentley/ui-framework";
 import { SampleModelessDialog } from "../appui/dialogs/SampleModelessDialog";
 import { TestModalDialog } from "../appui/dialogs/TestModalDialog";
 
