@@ -155,7 +155,6 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @note If this is the only change made to EmphasizeElements, you must call [[Viewport.setFeatureOverrideProviderChanged]] for
    * the change to take immediate effect.
    * @see [[createDefaultAppearance]] to create an appearance suitable for de-emphasizing the non-animated elements.
-   * @beta
    */
   public get unanimatedAppearance(): FeatureAppearance | undefined {
     return this._unanimatedAppearance;

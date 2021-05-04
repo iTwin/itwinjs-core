@@ -463,7 +463,7 @@ describe("EmphasizeElements tests", () => {
       const blue = FeatureAppearance.fromRgb(ColorDef.blue);
       emph.unanimatedAppearance = blue;
       expect(emph.unanimatedAppearance).not.to.be.undefined;
-      expect(JSON.stringify(emph.unanimatedAppearance!.toJSON())).to.equal(JSON.stringify(blue.toJSON()));
+      expect(JSON.stringify(emph.unanimatedAppearance.toJSON())).to.equal(JSON.stringify(blue.toJSON()));
 
       const ovrs = new FeatureSymbology.Overrides();
       const feature = new Feature("0x123");
