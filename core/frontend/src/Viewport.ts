@@ -1396,10 +1396,19 @@ export abstract class Viewport implements IDisposable {
    * Returns true if all [[TileTree]]s required by this viewport have been loaded.
    */
   public get areAllTileTreesLoaded(): boolean {
+    if (!this.view.areAllTileTreesLoaded)
+      return false;
+
     let allLoaded = true;
-    this.forEachTileTreeRef((ref) => {
-      allLoaded = allLoaded && ref.isLoadingComplete;
+    this.forEachMapTreeRef((ref) => {
+      allLoaded &&= ref.isLoadingComplete;
     });
+
+    if (allLoaded) {
+      this.forEachTiledGraphicsProviderTree((ref) => {
+        allLoaded &&= ref.isLoadingComplete;
+      });
+    }
 
     return allLoaded;
   }
