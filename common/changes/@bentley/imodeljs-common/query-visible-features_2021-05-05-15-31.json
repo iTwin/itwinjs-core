@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-common",
-      "comment": "FeatureOverrides can hide or override the symbology of unanimated nodes.",
+      "comment": "Add Viewport.queryVisibleFeatures to determine the set of features currently visible in a viewport.",
       "type": "none"
     }
   ],
