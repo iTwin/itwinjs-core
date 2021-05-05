@@ -3,7 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export interface CloudEnvProps {
+import { TestUserCredentials } from "@bentley/oidc-signin-tool";
+
+export interface TestProjectProps {
+  projectName: string;
   iModelBank?: {
     url: string;
   };
@@ -17,6 +20,6 @@ export interface TestIpcInterface {
   purgeStorageCache: () => Promise<void>;
   beginOfflineScope: () => Promise<void>;
   endOfflineScope: () => Promise<void>;
-  getCloudEnv: () => Promise<CloudEnvProps>;
+  getTestProjectProps: () => Promise<TestProjectProps>;
+  silentLogin: (user: TestUserCredentials) => Promise<void>;
 }
-

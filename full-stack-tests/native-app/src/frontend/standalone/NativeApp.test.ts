@@ -5,8 +5,8 @@
 import { assert } from "chai";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { NativeApp } from "@bentley/imodeljs-frontend";
-import { TestUtility } from "../hub/TestUtility";
-import { usingOfflineScope } from "../hub/HttpRequestHook";
+import { NativeAppTest } from "../NativeAppTest";
+import { usingOfflineScope } from "../HttpRequestHook";
 
 describe("NativeApp startup", () => {
   before(async () => ElectronApp.startup());
@@ -15,7 +15,7 @@ describe("NativeApp startup", () => {
   it("should startup offline without errors", async () => {
     await usingOfflineScope(async () => {
       await ElectronApp.shutdown();
-      await ElectronApp.startup();
+      await ElectronApp.startup(); // restart with no network available
       assert.isTrue(ElectronApp.isValid);
     });
   });
@@ -24,7 +24,7 @@ describe("NativeApp startup", () => {
 describe("NativeApp Storage", () => {
   before(async () => {
     await ElectronApp.startup();
-    await TestUtility.callBackend("purgeStorageCache");
+    await NativeAppTest.callBackend("purgeStorageCache");
   });
 
   after(async () => ElectronApp.shutdown());

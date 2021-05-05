@@ -3,17 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BeDuration, Config, GuidString } from "@bentley/bentleyjs-core";
+import { BeDuration, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, NativeApp } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { usingOfflineScope } from "./HttpRequestHook";
-import { TestUtility } from "./TestUtility";
+import { usingOfflineScope } from "../HttpRequestHook";
+import { NativeAppTest } from "../NativeAppTest";
 
 describe("NativeApp Download (#integration)", () => {
-  let testProjectName: string;
   let testProjectId: GuidString;
 
   before(async () => {
@@ -25,13 +23,7 @@ describe("NativeApp Download (#integration)", () => {
       },
     });
 
-    // perform silent login
-    await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
-
-    testProjectName = Config.App.get("imjs_test_project_name");
-
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
-    testProjectId = await TestUtility.getTestProjectId(testProjectName);
+    testProjectId = await NativeAppTest.initializeTestProject();
   });
 
   after(async () => ElectronApp.shutdown());
@@ -40,7 +32,7 @@ describe("NativeApp Download (#integration)", () => {
     let events = 0;
     let loaded = 0;
     let total = 0;
-    const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, "CodesPushTest");
+    const locTestIModelId = await NativeAppTest.getTestIModelId(testProjectId, "CodesPushTest");
     const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
       (progress: ProgressInfo) => {
         assert.isNumber(progress.loaded);
@@ -68,7 +60,7 @@ describe("NativeApp Download (#integration)", () => {
   });
 
   it("Should be able to cancel download (#integration)", async () => {
-    const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, "Stadium Dataset 1");
+    const locTestIModelId = await NativeAppTest.getTestIModelId(testProjectId, "Stadium Dataset 1");
     const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly });
 
     let cancelled1 = false;

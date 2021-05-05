@@ -3,18 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// Sets up certa to allow a method on the frontend to get an access token
+// required to get certa to read the .env file - should be reworked
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import * as nock from "nock";
 import * as path from "path";
 import { BentleyLoggerCategory, ClientRequestContext, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
-import { ElectronHost, ElectronHostOpts } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import { BackendLoggerCategory, IModelHostConfiguration, IModelJsFs, IpcHandler, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
 import { RpcConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { CloudEnvProps, testIpcChannel, TestIpcInterface } from "../common/IpcInterfaces";
+import { TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { testIpcChannel, TestIpcInterface, TestProjectProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 
 function initDebugLogLevels(reset?: boolean) {
@@ -39,14 +41,16 @@ export function setupDebugLogLevels() {
 class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public get channelName() { return testIpcChannel; }
 
-  public async getCloudEnv(): Promise<CloudEnvProps> {
+  public async getTestProjectProps(): Promise<TestProjectProps> {
+    const projectName = Config.App.get("imjs_test_project_name");
+
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     if (CloudEnv.cloudEnv.isIModelHub) {
       const region = Config.App.get("imjs_buddi_resolve_url_using_region") || "0";
-      return { iModelHub: { region } };
+      return { projectName, iModelHub: { region } };
     }
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(requestContext);
-    return { iModelBank: { url } };
+    return { projectName, iModelBank: { url } };
   }
 
   public async purgeStorageCache(): Promise<void> {
@@ -63,6 +67,11 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
 
   public async endOfflineScope(): Promise<void> {
     nock.cleanAll();
+  }
+
+  public async silentLogin(user: TestUserCredentials): Promise<void> {
+    const token = await TestUtility.getAccessToken(user);
+    NativeHost.authorization.setAccessToken(token);
   }
 }
 

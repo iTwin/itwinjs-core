@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { RequestGlobalOptions } from "@bentley/itwin-client";
-import { TestUtility } from "./TestUtility";
+import { NativeAppTest } from "./NativeAppTest";
 
 const NATIVE_XHR = Symbol.for("NATIVE_XHR");
 const NATIVE_FETCH = Symbol.for("NATIVE_FETCH");
@@ -387,9 +387,9 @@ export async function usingOfflineScope<TResult>(func: () => Promise<TResult>): 
   });
 }
 export async function usingBackendOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
-  await TestUtility.callBackend("beginOfflineScope");
+  await NativeAppTest.callBackend("beginOfflineScope");
   const endScope = async () => {
-    await TestUtility.callBackend("endOfflineScope");
+    await NativeAppTest.callBackend("endOfflineScope");
   };
   const result = func();
   result.then(endScope, endScope);
