@@ -6,10 +6,12 @@
  * @module Frontstage
  */
 
+// cSpell:ignore popout
+
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
-import { dockWidgetContainer, findTab, floatWidget, isFloatingLocation, NineZoneManagerProps, NineZoneState } from "@bentley/ui-ninezone";
+import { dockWidgetContainer, findTab, floatWidget, isFloatingLocation, isPopoutLocation, NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow } from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
@@ -534,6 +536,18 @@ export class FrontstageDef {
     FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
   }
 
+  public isPopoutWidget(widgetId: string) {
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const location = findTab(this.nineZoneState, widgetId);
+      // istanbul ignore else
+      if (location)
+        return isPopoutLocation(location);
+    }
+
+    return false;
+  }
+
   public isFloatingWidget(widgetId: string) {
     // istanbul ignore else
     if (this.nineZoneState) {
@@ -562,6 +576,31 @@ export class FrontstageDef {
       const state = floatWidget(this.nineZoneState, widgetId, point, size);
       if (state)
         this.nineZoneState = state;
+    }
+  }
+
+  /** Create a new popout/child window that contains the widget specified by its Id. Supported only when in
+   *  UI 2.0 or higher.
+   * @param widgetId case sensitive Wigdet Id
+   * @param point Position of top left corner of floating panel in pixels. If undefined {x:50, y:100} is used.
+   * @param size defines the width and height of the floating panel. If undefined and widget has been floated before
+   * the previous size is used, else {height:400, width:400} is used.
+   * @beta
+   */
+  public popoutWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
+    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
+      return;
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const location = findTab(this.nineZoneState, widgetId);
+      if (location) {
+        if (isPopoutLocation(location))
+          return;
+
+        const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, point, size);
+        if (state)
+          this.nineZoneState = state;
+      }
     }
   }
 
