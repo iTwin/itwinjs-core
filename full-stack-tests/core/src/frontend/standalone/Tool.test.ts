@@ -171,7 +171,8 @@ describe("HiliteSet", () => {
   });
 
   function expectHilitedElements(ids: Id64Arg) {
-    Id64.forEach(ids, (id) => expect(hilited.elements.hasId(id)).to.be.true);
+    for (const id of Id64.iterable(ids))
+      expect(hilited.elements.hasId(id)).to.be.true;
   }
 
   it("synchronizes with selection set", () => {

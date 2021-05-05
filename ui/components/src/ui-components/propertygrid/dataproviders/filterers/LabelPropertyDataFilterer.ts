@@ -12,7 +12,7 @@ import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase 
 
 /**
  * PropertyData filter which matches on any record type label and includes descendant nodes on match
- * @alpha
+ * @beta
  */
 export class LabelPropertyDataFilterer extends PropertyRecordDataFiltererBase {
   private _filterText: string = "";

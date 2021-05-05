@@ -5,6 +5,7 @@ exports[`SearchBox renders renders correctly 1`] = `
   className="core-searchbox"
 >
   <input
+    data-testid="core-searchbox-input"
     onChange={[Function]}
     onCut={[Function]}
     onKeyDown={[Function]}

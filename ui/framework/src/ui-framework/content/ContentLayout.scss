@@ -93,3 +93,7 @@ $resizer-size-large: 14px;
     @include uicore-full-size;
   }
 }
+
+div.uifw-contentlayout-full-size div.SplitPane div.Pane {
+  overflow: hidden;
+}

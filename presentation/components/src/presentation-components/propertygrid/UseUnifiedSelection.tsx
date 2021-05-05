@@ -16,7 +16,7 @@ const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;
 
 /**
  * Props for the [[usePropertyDataProviderWithUnifiedSelection]] hook
- * @beta
+ * @public
  */
 export interface PropertyDataProviderWithUnifiedSelectionProps {
   /** The data provider used by the property grid. */
@@ -38,8 +38,7 @@ export interface PropertyDataProviderWithUnifiedSelectionProps {
 
 /**
  * A React hook that adds unified selection functionality to the provided data provider.
- *
- * @beta
+ * @public
  */
 export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps) {
   const { dataProvider } = props;

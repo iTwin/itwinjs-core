@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import shortid from "shortid";
 import { immerable } from "immer";
+import shortid from "shortid";
 import { PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { PropertyCategory } from "../../PropertyDataProvider";
 
@@ -15,7 +14,7 @@ import { PropertyCategory } from "../../PropertyDataProvider";
  * Types of FlatGridItems for differentiating what property FlatGridItem is wrapping.
  * Category for PropertyCategory
  * (Primitive, Array, Struct) for PropertyRecord with valueFormats: (Primitive, Array, Struct)
- * @alpha
+ * @beta
  */
 export enum FlatGridItemType {
   Category,
@@ -26,13 +25,13 @@ export enum FlatGridItemType {
 
 /**
  * Type which extracts FlatGridItemTypes relevant for working with CategorizedProperties
- * @alpha
+ * @beta
  */
 export type CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct;
 
 /**
  * Base mutable data structure defining common methods and properties for both CategorizedProperties and GridCategoryItems
- * @alpha
+ * @beta
  */
 export interface IMutableFlatPropertyGridItem {
   readonly type: FlatGridItemType;
@@ -53,7 +52,7 @@ export interface IMutableFlatPropertyGridItem {
 
 /**
  * Base class for all FlatPropertyGrid items
- * @alpha
+ * @beta
  */
 export abstract class MutableFlatPropertyGridItem implements IMutableFlatPropertyGridItem {
   public [immerable] = true;
@@ -110,14 +109,20 @@ export abstract class MutableFlatPropertyGridItem implements IMutableFlatPropert
   }
 
   /**
-   * Gets a flat list of visible FlatGridItems beneath this flat grid item and itself in depth first visiting order.
+   * Gets a flat list of visible FlatGridItems beneath this flat grid item.
    */
-  public getVisibleDescendantsAndSelf(): IMutableFlatGridItem[] {
+  public getVisibleDescendants(): IMutableFlatGridItem[] {
     const descendants: IMutableFlatGridItem[] = [];
     if (this.isExpanded)
       this.getChildren().forEach((child) => descendants.push(...child.getVisibleDescendantsAndSelf()));
+    return descendants;
+  }
 
-    return [this.getSelf(), ...descendants];
+  /**
+   * Gets a flat list of visible FlatGridItems beneath this flat grid item and itself in depth first visiting order.
+   */
+  public getVisibleDescendantsAndSelf(): IMutableFlatGridItem[] {
+    return [this.getSelf(), ...this.getVisibleDescendants()];
   }
 
   /**
@@ -177,7 +182,7 @@ export abstract class MutableFlatPropertyGridItem implements IMutableFlatPropert
 
 /**
  * Data structure which describes methods and properties to be held by Mutable GridCategoryItems
- * @alpha
+ * @beta
  */
 export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
   type: FlatGridItemType.Category;
@@ -191,7 +196,7 @@ export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
 
 /**
  * Data structure which describes methods and properties to be held by Mutable CategorizedPropertyItems
- * @alpha
+ * @beta
  */
 export interface IMutableCategorizedPropertyItem extends IMutableFlatPropertyGridItem {
   readonly type: CategorizedPropertyTypes;
@@ -204,13 +209,13 @@ export interface IMutableCategorizedPropertyItem extends IMutableFlatPropertyGri
 
 /**
  * Type which describes mutable GridCategoryItem or CategorizedProperty
- * @alpha
+ * @beta
  */
 export type IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem;
 
 /**
  * Base class for all Mutable CategorizedProperties
- * @alpha
+ * @beta
  */
 export abstract class MutableCategorizedProperty extends MutableFlatPropertyGridItem implements Partial<IMutableCategorizedPropertyItem> {
   private _derivedRecord: PropertyRecord;

@@ -34,7 +34,7 @@ export class AccuDrawPopupManager {
     );
 
     const popupInfo: PopupInfo = {
-      id, pt, component,
+      id, pt, component, parentDocument: el.ownerDocument,
     };
     PopupManager.addOrUpdatePopup(popupInfo);
 
@@ -53,7 +53,7 @@ export class AccuDrawPopupManager {
     );
 
     const popupInfo: PopupInfo = {
-      id, pt, component,
+      id, pt, component, parentDocument: el.ownerDocument,
     };
     PopupManager.addOrUpdatePopup(popupInfo);
 

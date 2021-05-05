@@ -26,6 +26,7 @@ why the library is commonly called "presentation rules engine".
   - [Rules](./Customization/index.md)
   - [ECExpressions](./Customization/ECExpressions.md)
   - [Property value renderers](./Customization/PropertyValueRenderers.md)
+  - [Property category renderers](./Customization/PropertyCategoryRenderers.md)
 - [Default BIS Presentation Rules](./DefaultBisRules.md)
 - [Unified Selection](./Unified-Selection/index.md)
 - [ECExpressions](./ECExpressions.md)

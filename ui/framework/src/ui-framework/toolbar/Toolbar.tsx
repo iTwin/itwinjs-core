@@ -7,9 +7,8 @@
  */
 
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import { Logger } from "@bentley/bentleyjs-core";
-import { CommonProps, NoChildrenProps, Orientation, Size } from "@bentley/ui-core";
+import { CommonProps, NoChildrenProps, Orientation, ResizableContainerObserver, Size } from "@bentley/ui-core";
 import { Direction, Toolbar as NZ_Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";
@@ -257,7 +256,9 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
   }
 
   // istanbul ignore next - currently unable to replicate resizing in unit test
-  private _onResize = (width: number, height: number) => {
+  private _onResize = (width: number | undefined, height: number | undefined) => {
+    width = width ?? this._minToolbarSize;
+    height = height ?? this._minToolbarSize;
     // do allow toolbar to go to a size that doesn't show at least one button;
     if (width < this._minToolbarSize) width = this._minToolbarSize;
     if (height < this._minToolbarSize) height = this._minToolbarSize;
@@ -285,10 +286,8 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     }
 
     Logger.logTrace(UiFramework.loggerCategory(this), `---> render ${this._toolbarId} `);
-
     return (
-      <>
-        <ReactResizeDetector handleWidth handleHeight onResize={this._onResize} />
+      <ResizableContainerObserver onResize={this._onResize}>
         <NZ_Toolbar
           style={this.props.style}
           className={this.props.className}
@@ -300,7 +299,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
             </>
           }
         />
-      </>
+      </ResizableContainerObserver>
     );
   }
 }

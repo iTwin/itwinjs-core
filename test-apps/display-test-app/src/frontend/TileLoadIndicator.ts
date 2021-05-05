@@ -18,10 +18,10 @@ export class TileLoadIndicator {
   private update(): void {
     let ready = 0;
     let total = 0;
-    IModelApp.viewManager.forEachViewport((vp) => {
+    for (const vp of IModelApp.viewManager) {
       ready += vp.numReadyTiles;
       total += vp.numReadyTiles + vp.numRequestedTiles;
-    });
+    }
 
     const pctComplete = (total > 0) ? (ready / total) : 1.0;
     this._progress.value = pctComplete;

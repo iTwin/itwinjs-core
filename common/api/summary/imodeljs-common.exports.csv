@@ -21,8 +21,8 @@ public;BackgroundMapSettings
 public;BackgroundMapType
 public;Base64EncodedString = string
 public;Base64EncodedString
-alpha;BaseLayerProps = MapLayerProps | ColorDefProps
-alpha;BaseLayerSettings = MapLayerSettings | ColorDef
+beta;BaseLayerProps = MapLayerProps | ColorDefProps
+beta;BaseLayerSettings = MapLayerSettings | ColorDef
 public;BatchType
 public;class BentleyCloudRpcConfiguration 
 public;BentleyCloudRpcManager 
@@ -33,7 +33,7 @@ internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
 public;BoundingSphere
 alpha;BRepCutProps
-beta;BRepEntity
+public;BRepEntity
 alpha;BRepGeometryCreate
 alpha;BRepGeometryFunction = (info: BRepGeometryInfo) => void
 alpha;BRepGeometryInfo
@@ -45,7 +45,6 @@ alpha;BRepThickenProps
 beta;BriefcaseDownloader
 public;BriefcaseIdValue
 beta;BriefcaseProps
-internal;BriefcasePushAndPullNotifications
 public;calculateSolarAngles(date: Date, location: Cartographic):
 public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 public;calculateSolarDirectionFromAngles(azimuthElevation:
@@ -102,7 +101,7 @@ internal;CurrentImdlVersion
 beta;CustomAttribute
 public;CutStyle
 public;CutStyleProps
-beta;DecorationGeometryProps
+internal;DecorationGeometryProps
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 public;DeletedElementGeometryChange
@@ -148,7 +147,8 @@ alpha;ElementGeometryRequest
 alpha;ElementGeometryUpdate
 beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
-public;ElementLoadProps
+public;ElementLoadOptions
+public;ElementLoadProps 
 public;ElementProps 
 beta;EntityMetaData 
 beta;EntityMetaDataProps
@@ -175,6 +175,7 @@ internal;FeatureTableHeader
 public;FilePropertyProps
 public;FillDisplay
 public;FillFlags
+beta;FlatBufferGeometryStream
 public;FontMap
 public;FontMapProps
 public;FontProps
@@ -196,8 +197,8 @@ public;GeometricModel3dProps
 public;GeometricModelProps 
 public;GeometryAppearanceProps
 public;GeometryClass
-beta;GeometryContainmentRequestProps
-beta;GeometryContainmentResponseProps
+public;GeometryContainmentRequestProps
+public;GeometryContainmentResponseProps
 public;GeometryParams
 public;GeometryPartInstanceProps
 public;GeometryPartProps 
@@ -243,10 +244,10 @@ public;HttpServerResponse
 internal;I3dmHeader 
 public;ImageBuffer
 public;ImageBufferFormat
-beta;ImageGraphic
-beta;ImageGraphicCorners
-beta;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
-beta;ImageGraphicProps
+public;ImageGraphic
+public;ImageGraphicCorners
+public;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
+public;ImageGraphicProps
 public;ImagePrimitive
 public;ImageSource
 public;ImageSourceFormat
@@ -291,9 +292,12 @@ internal;IpcWebSocketMessage
 internal;IpcWebSocketMessageType
 internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
+public;isPlacement2dProps(props: PlacementProps): props is Placement2dProps
+public;isPlacement3dProps(props: PlacementProps): props is Placement3dProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 beta;iTwinChannel: (channel: string) => string
+beta;JsonGeometryStream
 public;LatAndLong
 public;LatLongAndHeight 
 internal;LightLocationProps 
@@ -301,30 +305,30 @@ public;LightSettings
 public;LightSettingsProps
 public;LinePixels
 public;LineStyle
-beta;LineStyleProps 
+public;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
 beta;LocalBriefcaseProps
-alpha;MapImageryProps
-alpha;MapImagerySettings
+beta;MapImageryProps
+beta;MapImagerySettings
 beta;MapLayerKey
-alpha;MapLayerProps
-alpha;MapLayerSettings
-alpha;MapSubLayerProps
-alpha;MapSubLayerSettings
+beta;MapLayerProps
+beta;MapLayerSettings
+beta;MapSubLayerProps
+beta;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
-beta;MassPropertiesOperation
-beta;MassPropertiesRequestProps
-beta;MassPropertiesResponseProps
+public;MassPropertiesOperation
+public;MassPropertiesRequestProps
+public;MassPropertiesResponseProps
 public;MaterialProps
 internal;MeshEdge
 internal;MeshEdges
 internal;MeshPolyline
 internal;MeshPolylineList 
-beta;ModelClipGroup
-beta;ModelClipGroupProps
-beta;ModelClipGroups
+public;ModelClipGroup
+public;ModelClipGroupProps
+public;ModelClipGroups
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
@@ -334,7 +338,7 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-alpha;NativeAppAuthorizationConfiguration
+beta;NativeAppAuthorizationConfiguration
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications
@@ -375,6 +379,7 @@ public;PartReference
 beta;PersistentGraphicsRequestProps 
 public;PhysicalElementProps 
 public;PhysicalTypeProps 
+public;Placement = Placement2d | Placement3d
 public;Placement2d 
 public;Placement2dProps
 public;Placement3d 
@@ -427,8 +432,11 @@ beta;RenderMaterial
 beta;RenderMaterialProps 
 public;RenderMode
 beta;RenderSchedule
+internal;Interval
 beta;class RenderTexture 
 beta;RenderTexture
+beta;RenderTimelineLoadProps
+beta;RenderTimelineProps 
 public;RepositoryLinkProps 
 beta;RequestNewBriefcaseProps
 public;ResponseLike 
@@ -509,8 +517,8 @@ public;SkyBoxImageProps
 public;SkyBoxImageType
 public;SkyBoxProps
 public;SkyCubeProps
-beta;SnapRequestProps
-beta;SnapResponseProps
+internal;SnapRequestProps
+internal;SnapResponseProps
 internal;class SnapshotIModelRpcInterface 
 public;SnapshotOpenOptions 
 public;SolarLight
@@ -527,7 +535,7 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
-alpha;SubLayerId = string | number
+beta;SubLayerId = string | number
 beta;SynchronizationConfigLinkProps 
 public;SyncMode
 public;TerrainHeightOriginMode

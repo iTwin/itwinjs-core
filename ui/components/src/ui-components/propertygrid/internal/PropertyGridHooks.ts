@@ -6,8 +6,8 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord } from "@bentley/ui-abstract";
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { useDebouncedAsyncValue } from "../../common/UseDebouncedAsyncValue";
 import { PropertyGridCommons } from "../component/PropertyGridCommons";
 import { IPropertyDataProvider } from "../PropertyDataProvider";
@@ -19,7 +19,7 @@ import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGri
 /**
  * Custom hook that gets propertyData from data provider and subscribes to further data changes.
  * Returned property data has links.onClick replaced by passed onPropertyLinkClick or default implementation
- * @alpha
+ * @beta
  */
 export function usePropertyData(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (property: PropertyRecord, text: string) => void }) {
   const { dataProvider, onPropertyLinkClick } = { ...props };
@@ -51,7 +51,7 @@ export function usePropertyData(props: { dataProvider: IPropertyDataProvider, on
 
 /**
  * Custom hook that creates a PropertyGridModelSource and subscribes it to data updates from the data provider.
- * @alpha
+ * @beta
  */
 export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (property: PropertyRecord, text: string) => void }) {
   const { value: propertyData } = usePropertyData(props);
@@ -71,7 +71,7 @@ export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataP
 
 /**
  * Custom hook that creates memoized version of PropertyGridEventHandler that modifies given modelSource
- * @alpha
+ * @beta
  */
 export function usePropertyGridEventHandler(props: { modelSource: IPropertyGridModelSource }) {
   return useMemo(() => new PropertyGridEventHandler(props.modelSource), [props.modelSource]);
@@ -79,7 +79,7 @@ export function usePropertyGridEventHandler(props: { modelSource: IPropertyGridM
 
 /**
  * Custom hook that automatically listens and retrieves latest model from model source
- * @alpha
+ * @beta
  */
 export function usePropertyGridModel(props: { modelSource: IPropertyGridModelSource }) {
   const { modelSource } = { ...props };

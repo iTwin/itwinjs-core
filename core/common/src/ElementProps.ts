@@ -103,7 +103,10 @@ export class TypeDefinition extends RelatedElement {
 export interface GeometricElementProps extends ElementProps {
   /** The id of the category for this geometric element. */
   category: Id64String;
+  /** The geometry stream properties */
   geom?: GeometryStreamProps;
+  /** The placement properties */
+  placement?: PlacementProps;
 }
 
 /** Properties of a [[Placement3d]]
@@ -126,6 +129,20 @@ export interface Placement2dProps {
 
 /** @public */
 export type PlacementProps = Placement2dProps | Placement3dProps;
+
+/** determine if this is Placement2dProps
+ * @public
+ */
+export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps {
+  return (props as Placement2dProps).angle !== undefined;
+}
+
+/** determine if this is Placement3dProps
+ * @public
+ */
+export function isPlacement3dProps(props: PlacementProps): props is Placement3dProps {
+  return !isPlacement2dProps(props);
+}
 
 /** Properties that define a [GeometricElement3d]($backend)
  * @public
@@ -285,35 +302,61 @@ export interface InformationPartitionElementProps extends DefinitionElementProps
   description?: string;
 }
 
-/** Options for loading a [[DisplayStyleProps]].
- * @see [[ViewStateLoadProps]].
+/** Options controlling which properties are included or excluded when querying [[DisplayStyleProps]].
+ * @see [[ViewStateLoadProps]] and [[ElementLoadOptions]].
  * @public
  */
 export interface DisplayStyleLoadProps {
-  /** If true, the element Ids in the display style's schedule script will be empty. The element Ids are not required on the frontend for display and can be quite large.
-   * @public
+  /** If true, the lists of element Ids in the display style's schedule script will be empty.
+   * The element Ids are not required on the frontend for display and can be quite large.
    */
   omitScheduleScriptElementIds?: boolean;
-  /** If true, the Ids of excluded elements will be compressed into a single string.
-   * @see [[DisplayStyleSettingsProps.excludedElements]]
-   * @public
+  /** If true, [[DisplayStyleSettingsProps.excludedElements]] will be compressed into a single compact string; otherwise they will be expanded into an array of strings.
+   * The number of Ids may be quite large, so the compressed format is preferred, especially when communicating between the backend and frontend.
    */
   compressExcludedElementIds?: boolean;
 }
 
-/** Parameters to specify what element to load for [IModelDb.Elements.getElementProps]($backend).
+/** Options controlling which properties are included or excluded when querying [[RenderTimelineProps]].
+ * @see [[ElementLoadOptions]].
+ * @beta
+ */
+export interface RenderTimelineLoadProps {
+  /** If true, the lists of element Ids in the schedule script will be empty.
+   * The element Ids can be extremely numerous and are not required on the frontend for display, so they are omitted by default by [DisplayStyleState.load]($frontend).
+   */
+  omitScriptElementIds?: boolean;
+}
+
+/** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
+ * [IModelDb.Elements.getElementProps]($backend) and [IModelConnection.Elements.loadProps]($frontend).
  * @public
  */
-export interface ElementLoadProps {
+export interface ElementLoadOptions {
+  /** If true, include the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
+   * Geometry streams can consist of many megabytes worth of JSON, so they are omitted by default.
+   */
+  wantGeometry?: boolean;
+  /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */
+  /** If true, include [[BRepEntity.DataProps.data]] in the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
+   * The data is a potentially large base-64-encoded opaque binary blob that cannot be directly inspected or manipulated on the frontend, so it is omitted by default.
+   */
+  wantBRepData?: boolean;
+  /** Options controlling which properties of [[DisplayStyleProps]] to include or exclude. */
+  displayStyle?: DisplayStyleLoadProps;
+  /** Options controlling which properties of [[RenderTimelineProps]] to include or exclude.
+   * @beta
+   */
+  renderTimeline?: RenderTimelineLoadProps;
+}
+
+/** Parameters to specify what element to load for functions like [IModelDb.Elements.getElementProps]($backend).
+ * @public
+ */
+export interface ElementLoadProps extends ElementLoadOptions {
   id?: Id64String;
   code?: CodeProps;
   federationGuid?: GuidString;
-  /** Whether to include geometry stream in GeometricElementProps and GeometryPartProps, false when undefined */
-  wantGeometry?: boolean;
-  /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */
-  wantBRepData?: boolean;
-  /** Properties to omit when loading a [[DisplayStyle]]. */
-  displayStyle?: DisplayStyleLoadProps;
 }
 
 /** Properties of an [ElementAspect]($backend)
@@ -342,6 +385,7 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   checksum?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   jsonProperties?: any;
+  /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   source?: RelatedElementProps;
 }
 
@@ -386,10 +430,11 @@ export interface ChannelRootAspectProps extends ElementAspectProps {
 }
 
 /** Properties of a [LineStyle]($backend)
- * @beta
+ * @public
  */
 export interface LineStyleProps extends DefinitionElementProps {
   description?: string;
+  /** The JSON string line style definition element data [LineStyleDefinition.StyleProps]($backend) */
   data: string;
 }
 
@@ -451,4 +496,16 @@ export interface RepositoryLinkProps extends UrlLinkProps {
  */
 export interface SynchronizationConfigLinkProps extends UrlLinkProps {
   lastSuccessfulRun?: string;
+}
+
+/** Wire format describing a [RenderTimeline]($backend).
+ * @beta
+ */
+export interface RenderTimelineProps extends ElementProps {
+  /** An optional human-readable description of the timeline. */
+  description?: string;
+  /** The stringified JSON representation of the instructions for visualizing change over time.
+   * @see [[RenderSchedule.ScriptProps]] for the JSON interface.
+   */
+  script: string;
 }

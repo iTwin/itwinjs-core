@@ -73,9 +73,9 @@ beta;BreadcrumbProps
 beta;BreadcrumbTreeUtils
 beta;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
-alpha;CategorizedPropertyItem 
-alpha;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
-alpha;CategoryRecordsDict
+beta;CategorizedPropertyItem 
+beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
+beta;CategoryRecordsDict
 beta;CellEditingEngine
 deprecated;CellEditingEngine
 public;CellItem
@@ -95,13 +95,13 @@ beta;ColorPropertyEditor
 beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
 beta;ColorSwatchProps 
 public;ColumnDescription
-beta;ColumnFilterDescriptor 
+public;ColumnFilterDescriptor 
 public;CommonPropertyGridProps 
 public;CompletionObserver
-beta;CompositeFilterDescriptor 
-beta;CompositeFilterDescriptorCollection
+public;CompositeFilterDescriptor 
+public;CompositeFilterDescriptorCollection
 beta;CompositeFilterType
-alpha;CompositePropertyDataFilterer 
+beta;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 internal;ContextMenu 
 internal;ContextMenuItem 
@@ -127,7 +127,7 @@ internal;DataRowItem
 internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
 internal;DateFieldProps 
 alpha;DatePicker(props: DatePickerProps): JSX.Element
-alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName }: DatePickerPopupButtonProps): JSX.Element
+alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): JSX.Element
 alpha;DatePickerPopupButtonProps 
 alpha;DatePickerProps
 internal;DateTimeEditor 
@@ -144,9 +144,9 @@ beta;DEPRECATED_withTreeDragDrop
 deprecated;DEPRECATED_withTreeDragDrop
 beta;Direction
 internal;DirectionHelpers
-alpha;DisplayValuePropertyDataFilterer 
-beta;DistinctValueCollection
-beta;DistinctValuesFilterDescriptor 
+beta;DisplayValuePropertyDataFilterer 
+public;DistinctValueCollection
+public;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
 internal;DragAction
 beta;DragDropArguments
@@ -190,24 +190,24 @@ internal;FaceCellProps
 beta;FavoritePropertiesRenderer
 alpha;FavoritePropertyList 
 alpha;FavoritePropertyListProps
-beta;FieldFilterDescriptor 
-beta;FilterableColumn
-beta;FilterableTable
-beta;FilterCompositionLogicalOperator
-beta;FilterDescriptor
-beta;FilterDescriptorCollection 
-beta;class FilterDescriptorCollectionBase
+public;FieldFilterDescriptor 
+public;FilterableColumn
+public;FilterableTable
+public;FilterCompositionLogicalOperator
+public;FilterDescriptor
+public;FilterDescriptorCollection 
+public;class FilterDescriptorCollectionBase
 beta;FilteredPropertyData 
 beta;FilteredType
 public;FilteringInput 
 public;FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps
 beta;FilteringInputStatus
-alpha;FilteringPropertyDataProvider 
-beta;FilterOperator
-beta;FilterRenderer
-alpha;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
-alpha;FlatGridItemBase
-alpha;FlatGridItemType
+beta;FilteringPropertyDataProvider 
+public;FilterOperator
+public;FilterRenderer
+beta;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
+beta;FlatGridItemBase
+beta;FlatGridItemType
 public;FloatTypeConverter 
 internal;formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined
 alpha;FormatPanel(props: FormatPanelProps): JSX.Element
@@ -227,7 +227,7 @@ internal;getCSSColorFromDef(colorDef: ColorDef): string
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 deprecated;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
-alpha;GridCategoryItem 
+beta;GridCategoryItem 
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
@@ -254,12 +254,12 @@ beta;ImageCheckBoxPropertyEditor
 public;ImageFileFormat = "png" | "jpg" | "jpge"
 public;ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon"
 public;ImmediatelyLoadedTreeNodeItem 
-alpha;IMutableCategorizedPropertyItem 
-alpha;IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem
-alpha;IMutableFlatPropertyGridItem
-alpha;IMutableGridCategoryItem 
-alpha;IMutableGridItemFactory
-alpha;IMutablePropertyGridModel
+beta;IMutableCategorizedPropertyItem 
+beta;IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem
+beta;IMutableFlatPropertyGridItem
+beta;IMutableGridCategoryItem 
+beta;IMutableGridItemFactory
+beta;IMutablePropertyGridModel
 internal;InlineEdit 
 internal;InputSwitchComponent 
 internal;InputSwitchProps
@@ -267,9 +267,9 @@ alpha;IntlFormatter
 public;IntTypeConverter 
 beta;IPropertyDataFilterer
 public;IPropertyDataProvider
-alpha;IPropertyGridEventHandler
-alpha;IPropertyGridModel
-alpha;IPropertyGridModelSource
+beta;IPropertyGridEventHandler
+beta;IPropertyGridModel
+beta;IPropertyGridModelSource
 public;IPropertyValueRenderer
 internal;isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem
 public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
@@ -286,7 +286,7 @@ public;ITreeDataProvider
 public;ITreeImageLoader 
 beta;ITreeNodeLoader
 beta;ITreeNodeLoaderWithProvider
-alpha;LabelPropertyDataFilterer 
+beta;LabelPropertyDataFilterer 
 public;LessGreaterOperatorProcessor
 beta;LineWeightSwatch 
 beta;LineWeightSwatchProps 
@@ -303,15 +303,15 @@ alpha;MilestoneRange
 alpha;MiscFormatOptions(props: MiscFormatOptionsProps): JSX.Element
 alpha;MiscFormatOptionsProps 
 internal;MultiSelectionHandler
-alpha;MutableCategorizedArrayProperty 
-alpha;MutableCategorizedPrimitiveProperty 
-alpha;class MutableCategorizedProperty 
-alpha;MutableCategorizedStructProperty 
+beta;MutableCategorizedArrayProperty 
+beta;MutableCategorizedPrimitiveProperty 
+beta;class MutableCategorizedProperty 
+beta;MutableCategorizedStructProperty 
 beta;MutableCheckBoxInfo 
-alpha;class MutableFlatPropertyGridItem 
-alpha;MutableGridCategory 
-alpha;MutableGridItemFactory 
-alpha;MutablePropertyGridModel 
+beta;class MutableFlatPropertyGridItem 
+beta;MutableGridCategory 
+beta;MutableGridItemFactory 
+beta;MutablePropertyGridModel 
 beta;MutableTableDataProvider 
 beta;MutableTreeDataProvider 
 beta;MutableTreeModel 
@@ -345,8 +345,8 @@ public;OnItemsDeselectedCallback
 public;OnItemsSelectedCallback
 public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
-beta;OperatorValueFilterDescriptor 
-beta;OperatorValueFilterDescriptorCollection 
+public;OperatorValueFilterDescriptor 
+public;OperatorValueFilterDescriptorCollection 
 alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 beta;PagedTreeNodeLoader
@@ -375,7 +375,10 @@ public;PropertyCategory
 public;PropertyCategoryBlock 
 public;PropertyCategoryBlockProps 
 beta;class PropertyCategoryDataFiltererBase 
-alpha;PropertyCategoryLabelFilterer 
+beta;PropertyCategoryLabelFilterer 
+beta;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType
+beta;PropertyCategoryRendererManager
+beta;PropertyCategoryRendererProps
 public;PropertyContainerType
 public;PropertyData
 public;PropertyDataChangeEvent 
@@ -394,13 +397,14 @@ public;PropertyGridCategory
 deprecated;PropertyGridCategory
 internal;PropertyGridCommons
 public;PropertyGridContextMenuArgs
-alpha;PropertyGridEventHandler
+beta;PropertyGridEventHandler
 internal;PropertyGridEventsRelatedProps = Pick
 internal;PropertyGridEventsRelatedPropsSupplier 
-internal;PropertyGridEventsRelatedPropsSupplierProps 
-alpha;PropertyGridModelChangeEvent 
-alpha;PropertyGridModelChangeListener = () => void
-alpha;PropertyGridModelSource 
+internal;PropertyGridEventsRelatedPropsSupplierProps = Pick
+internal;PropertyGridInternalContext
+beta;PropertyGridModelChangeEvent 
+beta;PropertyGridModelChangeListener = () => void
+beta;PropertyGridModelSource 
 public;PropertyGridProps 
 internal;PropertyLabelRenderer 
 public;PropertyLabelRendererProps
@@ -482,7 +486,7 @@ internal;TableColumn
 public;TableDataChangeEvent 
 public;TableDataChangesListener = () => void
 public;TableDataProvider
-beta;TableDistinctValue
+public;TableDistinctValue
 beta;TableDragDropProps
 deprecated;TableDragDropProps
 beta;TableDragDropType = {} | RowItem | TableDataProvider
@@ -596,10 +600,10 @@ public;Unsubscribable
 beta;useAsyncValue: 
 alpha;useDebouncedAsyncValue
 beta;usePagedTreeNodeLoader
-alpha;usePropertyData(props:
-alpha;usePropertyGridEventHandler(props:
-alpha;usePropertyGridModel(props:
-alpha;usePropertyGridModelSource(props:
+beta;usePropertyData(props:
+beta;usePropertyGridEventHandler(props:
+beta;usePropertyGridModel(props:
+beta;usePropertyGridModelSource(props:
 internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
 internal;useToolbarPopupContext(): ToolbarPopupContextProps
 internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
@@ -618,11 +622,11 @@ public;ViewportProps
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
 public;ViewStateProp = ViewState | (() => ViewState)
-alpha;VirtualizedPropertyGrid 
-internal;VirtualizedPropertyGridContext
-alpha;VirtualizedPropertyGridProps 
-alpha;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
-alpha;VirtualizedPropertyGridWithDataProviderProps 
+beta;VirtualizedPropertyGrid 
+beta;VirtualizedPropertyGridContext
+beta;VirtualizedPropertyGridProps 
+beta;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
+beta;VirtualizedPropertyGridWithDataProviderProps 
 beta;VisibleTreeNodes 
 beta;WeightEditor 
 beta;WeightPickerButton 

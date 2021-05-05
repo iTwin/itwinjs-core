@@ -12,9 +12,10 @@ import { IMutableGridItemFactory } from "./MutableGridItemFactory";
 
 /**
  * Mutable wrapper object for PropertyRecord with array valueFormat which provides methods for working with and managing record children hierarchies.
- * @alpha
+ * @beta
  */
 export class MutableCategorizedArrayProperty extends MutableCategorizedProperty implements IMutableCategorizedPropertyItem {
+  private _renderLabel: boolean;
   private _children: IMutableCategorizedPropertyItem[];
 
   public constructor(
@@ -27,12 +28,12 @@ export class MutableCategorizedArrayProperty extends MutableCategorizedProperty 
     overrideDisplayLabel?: string,
   ) {
     super(FlatGridItemType.Array, record, parentSelectionKey, parentCategorySelectionKey, depth, overrideName, overrideDisplayLabel);
-
+    this._renderLabel = !record.property.hideCompositePropertyLabel;
+    const childrenDepth = depth + (this._renderLabel ? 1 : 0);
     this._children = record.getChildrenRecords().map((child, index) => {
       const newName = `${child.property.name}_${index}`;
       const newDisplayLabel = `[${index + 1}]`;
-
-      return gridItemFactory.createCategorizedProperty(child, this.selectionKey, parentCategorySelectionKey, depth + 1, newName, newDisplayLabel);
+      return gridItemFactory.createCategorizedProperty(child, this.selectionKey, parentCategorySelectionKey, childrenDepth, newName, newDisplayLabel);
     });
   }
 
@@ -42,5 +43,13 @@ export class MutableCategorizedArrayProperty extends MutableCategorizedProperty 
 
   public getChildren(): IMutableCategorizedPropertyItem[] {
     return this._children;
+  }
+
+  public getDescendantsAndSelf() {
+    return this._renderLabel ? super.getDescendantsAndSelf() : this.getDescendants();
+  }
+
+  public getVisibleDescendantsAndSelf() {
+    return this._renderLabel ? super.getVisibleDescendantsAndSelf() : this.getVisibleDescendants();
   }
 }

@@ -104,22 +104,24 @@ export abstract class FilterableColumnBase implements FilterableColumn {
     return memberType;
   }
 
-  /** Determines if a filter is active.
-   */
+  /** Determines if a filter is active. */
   public get isFilterActive(): boolean {
     return this._filterableTable.filterDescriptors.isColumnFilterActive(this.filterMemberKey);
   }
 
-  /** Gets if the filter should show distinct values as a filter option
-   */
+  /** Determines if the filter should show distinct values as a filter option */
   public get showDistinctValueFilters(): boolean {
     return this._showDistinctValueFilters;
   }
 
-  /** Gets if the filter should show field filter options
-   */
+  /** Determines if the filter should show field filter options */
   public get showFieldFilters(): boolean {
     return this._showFieldFilters;
+  }
+
+  /** Determines if the filter is case-sensitive */
+  public get filterCaseSensitive(): boolean {
+    return this._filterCaseSensitive;
   }
 
   /** Gets the distinct values for a column.

@@ -7,15 +7,16 @@
  */
 
 import {
-  AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
+  AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
-import { Frustum, Npc, NpcCorners } from "@bentley/imodeljs-common";
+import { Frustum, GridOrientationType, Npc, NpcCorners } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 import { ViewState } from "./ViewState";
 import { Frustum2d } from "./Frustum2d";
+import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's frustum changes.
@@ -150,11 +151,33 @@ export class ViewingSpace {
       extents.setNull();
 
     let depthRange;
+    let gridPlane;
+    if (this.view.viewFlags.grid) {
+      const gridOrigin = this.view.isSpatialView() ? this.view.iModel.globalOrigin : Point3d.create();
+      switch(this.view.getGridOrientation()) {
+        case GridOrientationType.WorldXY:
+          gridPlane = Plane3dByOriginAndUnitNormal.create(gridOrigin, Vector3d.create(0, 0, 1));
+          break;
+        case GridOrientationType.WorldYZ:
+          gridPlane = Plane3dByOriginAndUnitNormal.create(gridOrigin, Vector3d.create(1, 0, 0));
+          break;
+        case GridOrientationType.WorldXZ:
+          gridPlane = Plane3dByOriginAndUnitNormal.create(gridOrigin, Vector3d.create(0, 1, 0));
+          break;
+
+        case GridOrientationType.AuxCoord:
+          if (this.view.auxiliaryCoordinateSystem)
+            gridPlane = Plane3dByOriginAndUnitNormal.create(gridOrigin, this.view.auxiliaryCoordinateSystem.getRotation().rowZ());
+
+          break;
+      }
+    }
     const globalGeometry = this.view.displayStyle.getGlobalGeometryAndHeightRange();
     if (undefined !== globalGeometry) {
       const viewZ = this.rotation.getRow(2);
       const eyeDepth = this.eyePoint ? viewZ.dotProduct(this.eyePoint) : undefined;
-      depthRange = globalGeometry.geometry.getFrustumIntersectionDepthRange(frustum, extents, globalGeometry.heightRange, this.view.maxGlobalScopeFactor > 1);
+
+      depthRange = globalGeometry.geometry.getFrustumIntersectionDepthRange(frustum, extents, globalGeometry.heightRange, gridPlane, this.view.maxGlobalScopeFactor > 1);
 
       if (eyeDepth !== undefined) {
         const maxBackgroundFrontBackRatio = 1.0E6;
@@ -164,7 +187,7 @@ export class ViewingSpace {
           depthRange.high = eyeDepth - backDist / maxBackgroundFrontBackRatio;
       }
     } else
-      depthRange = Range1d.createNull();
+      depthRange = gridPlane ? getFrustumPlaneIntersectionDepthRange(frustum, gridPlane) :  Range1d.createNull();
 
     if (!extents.isNull) {
       const viewZ = this.rotation.getRow(2);

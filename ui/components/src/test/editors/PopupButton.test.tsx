@@ -35,6 +35,20 @@ describe("<PopupButton />", () => {
       </PopupButton>).should.matchSnapshot();
   });
 
+  it("renders correctly with moveFocus", () => {
+    shallow(
+      <PopupButton label="Hello" moveFocus={false}>
+        <div>Hello World</div>
+      </PopupButton>).should.matchSnapshot();
+  });
+
+  it("renders correctly with placeholder", () => {
+    shallow(
+      <PopupButton label="Hello" placeholder="Test">
+        <div>Hello World</div>
+      </PopupButton>).should.matchSnapshot();
+  });
+
   it("calls onClick", async () => {
     const spyOnClick = sinon.spy();
     const component = render(
@@ -120,6 +134,25 @@ describe("<PopupButton />", () => {
     const button = wrapper.find(".components-popup-button");
     expect(button.length).to.eq(1);
     button.first().simulate("click");
+    await TestUtils.flushAsyncOperations();
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
+
+    spyOnClose.calledOnce.should.true;
+
+    wrapper.unmount();
+  });
+
+  it("closePopup() closes popup", async () => {
+    const spyOnClose = sinon.spy();
+    const popupButtonRef = React.createRef<PopupButton>();
+
+    const wrapper = mount(
+      <PopupButton label="Hello" onClose={spyOnClose} ref={popupButtonRef}>
+        <div>Hello World</div>
+      </PopupButton>);
+
+    popupButtonRef.current?.closePopup();
     await TestUtils.flushAsyncOperations();
 
     window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Escape" }));

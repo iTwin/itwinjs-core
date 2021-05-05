@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import {
   IModelConnectionProps, IModelError, IModelVersionProps, OpenBriefcaseProps,
   StandaloneOpenOptions,
@@ -15,14 +15,144 @@ import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { BriefcaseTxns } from "./BriefcaseTxns";
+import { IModelApp } from "./IModelApp";
+import { disposeTileTreesForGeometricModels } from "./tile/internal";
+
+/** Keeps track of changes to models, buffering them until synchronization points.
+ * While a GraphicalEditingScope is open, the changes are buffered until the scope exits, at which point they are processed.
+ * Otherwise, the buffered changes are processed after undo/redo, commit, or pull+merge changes.
+ */
+class ModelChangeMonitor {
+  private _editingScope?: GraphicalEditingScope;
+  private readonly _briefcase: BriefcaseConnection;
+  private readonly _deletedModels = new Set<string>();
+  private readonly _modelIdToGuid = new Map<string, string>();
+  private readonly _removals: VoidFunction[] = [];
+
+  public constructor(briefcase: BriefcaseConnection) {
+    this._briefcase = briefcase;
+
+    // Buffer updated geometry guids.
+    this._removals.push(briefcase.txns.onModelGeometryChanged.addListener((changes) => {
+      for (const change of changes) {
+        this._deletedModels.delete(change.id);
+        this._modelIdToGuid.set(change.id, change.guid);
+      }
+    }));
+
+    // Buffer deletions of models.
+    this._removals.push(briefcase.txns.onModelsChanged.addListener((changes) => {
+      if (changes.deleted) {
+        for (const id of CompressedId64Set.iterable(changes.deleted)) {
+          this._modelIdToGuid.delete(id);
+          this._deletedModels.add(id);
+        }
+      }
+    }));
+
+    // Outside of an editing scope, we want to update viewport contents after commit, undo/redo, or merging changes.
+    const maybeProcess = async () => {
+      if (this.editingScope)
+        return;
+
+      const modelIds = Array.from(this._modelIdToGuid.keys());
+      if (modelIds.length > 0)
+        await IModelApp.tileAdmin.purgeTileTrees(this._briefcase, modelIds);
+
+      this.processBuffered();
+    };
+
+    this._removals.push(briefcase.txns.onCommitted.addListener(maybeProcess));
+    this._removals.push(briefcase.txns.onAfterUndoRedo.addListener(maybeProcess));
+    this._removals.push(briefcase.txns.onChangesPulled.addListener(maybeProcess));
+  }
+
+  public async close(): Promise<void> {
+    for (const removal of this._removals)
+      removal();
+
+    this._removals.length = 0;
+
+    if (this._editingScope) {
+      await this._editingScope.exit();
+      this._editingScope = undefined;
+    }
+  }
+
+  public get editingScope(): GraphicalEditingScope | undefined {
+    return this._editingScope;
+  }
+
+  public async enterEditingScope(): Promise<GraphicalEditingScope> {
+    if (this._editingScope)
+      throw new Error("Cannot create an editing scope for an iModel that already has one");
+
+    this._editingScope = await GraphicalEditingScope.enter(this._briefcase);
+
+    const removeGeomListener = this._editingScope.onGeometryChanges.addListener((changes) => {
+      const modelIds = [];
+      for (const change of changes)
+        modelIds.push(change.id);
+
+      this.invalidateScenes(modelIds);
+    });
+
+    this._editingScope.onExited.addOnce((scope) => {
+      assert(scope === this._editingScope);
+      this._editingScope = undefined;
+      removeGeomListener();
+      this.processBuffered();
+    });
+
+    return this._editingScope;
+  }
+
+  private processBuffered(): void {
+    const models = this._briefcase.models;
+    for (const [id, guid] of this._modelIdToGuid) {
+      const model = models.getLoaded(id)?.asGeometricModel;
+      if (model)
+        model.geometryGuid = guid;
+    }
+
+    const modelIds = new Set<string>(this._modelIdToGuid.keys());
+    for (const deleted of this._deletedModels) {
+      modelIds.add(deleted);
+      models.unload(deleted);
+    }
+
+    this.invalidateScenes(modelIds);
+    disposeTileTreesForGeometricModels(modelIds, this._briefcase);
+
+    this._briefcase.onBufferedModelChanges.raiseEvent(modelIds);
+
+    this._modelIdToGuid.clear();
+    this._deletedModels.clear();
+  }
+
+  private invalidateScenes(changedModels: Iterable<Id64String>): void {
+    for (const vp of IModelApp.tileAdmin.viewports) {
+      if (vp.iModel === this._briefcase) {
+        for (const modelId of changedModels) {
+          if (vp.view.viewsModel(modelId)) {
+            vp.invalidateScene();
+            vp.setFeatureOverrideProviderChanged();
+            break;
+          }
+        }
+      }
+    }
+  }
+}
 
 /** A connection to an editable briefcase on the backend. This class uses [Ipc]($docs/learning/IpcInterface.md) to communicate
  * to the backend and may only be used by [[IpcApp]]s.
  * @public
  */
 export class BriefcaseConnection extends IModelConnection {
-  private _editingScope?: GraphicalEditingScope;
   protected _isClosed?: boolean;
+  private readonly _modelsMonitor: ModelChangeMonitor;
+
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
 
@@ -38,6 +168,7 @@ export class BriefcaseConnection extends IModelConnection {
   protected constructor(props: IModelConnectionProps) {
     super(props);
     this.txns = new BriefcaseTxns(this);
+    this._modelsMonitor = new ModelChangeMonitor(this);
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
@@ -69,10 +200,7 @@ export class BriefcaseConnection extends IModelConnection {
     if (this.isClosed)
       return;
 
-    if (this._editingScope) {
-      await this._editingScope.exit();
-      this._editingScope = undefined;
-    }
+    await this._modelsMonitor.close();
 
     this.beforeClose();
     this.txns.dispose();
@@ -100,15 +228,17 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
    * @param version The version to pull changes to. If `undefined`, pull all changes.
+   * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
   public async pullAndMergeChanges(version?: IModelVersionProps): Promise<void> {
     this.requireTimeline();
-    return IpcApp.callIpcHost("pullAndMergeChanges", this.key, version);
+    this._changeSetId = await IpcApp.callIpcHost("pullAndMergeChanges", this.key, version);
   }
 
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
    * @param description The description for the changeset
    * @returns the changesetId of the pushed changes
+   * @see [[BriefcaseTxns.onChangesPushed]] for the event dispatched after changes are pushed.
    */
   public async pushChanges(description: string): Promise<string> {
     this.requireTimeline();
@@ -119,7 +249,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @see [[enterEditingScope]] to begin graphical editing.
    */
   public get editingScope(): GraphicalEditingScope | undefined {
-    return this._editingScope;
+    return this._modelsMonitor.editingScope;
   }
 
   /** Return whether graphical editing is supported for this briefcase. It is not supported if the briefcase is read-only, or the briefcase contains a version of
@@ -137,11 +267,11 @@ export class BriefcaseConnection extends IModelConnection {
    * @see [[editingScope]] to obtain the current editing scope, if one is in progress.
    */
   public async enterEditingScope(): Promise<GraphicalEditingScope> {
-    if (this.editingScope)
-      throw new Error("Cannot create an editing scope for an iModel that already has one");
-
-    this._editingScope = await GraphicalEditingScope.enter(this);
-    this._editingScope.onExited.addOnce(() => this._editingScope = undefined);
-    return this._editingScope;
+    return this._modelsMonitor.enterEditingScope();
   }
+
+  /** Strictly for tests - dispatched from ModelChangeMonitor.processBuffered.
+   * @internal
+   */
+  public readonly onBufferedModelChanges = new BeEvent<(changedModelIds: Set<string>) => void>();
 }

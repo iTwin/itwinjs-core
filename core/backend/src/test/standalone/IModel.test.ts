@@ -639,9 +639,6 @@ describe("iModel", () => {
       [{ backgroundColor: ColorDef.from(1, 2, 3, 4) }, defaultViewFlags, false],
       [{ backgroundColor: ColorDef.blue.tbgr }, defaultViewFlags, false],
       [{ backgroundColor: ColorDef.from(1, 2, 3, 4).tbgr }, defaultViewFlags, false],
-      [{ scheduleScript: { someRandomProperty: "Not a valid schedule script" } }, defaultViewFlags, false],
-      [{ scheduleScript: [{ modelId: "0xabc", elementTimelines: [] }] }, defaultViewFlags, true],
-      [{ scheduleScript: [{ someRandomProperty: "but still an array" }] }, defaultViewFlags, true],
     ];
 
     let suffix = 123;
@@ -659,8 +656,6 @@ describe("iModel", () => {
       const expectedVf = ViewFlags.fromJSON(test[1]);
       const actualVf = ViewFlags.fromJSON(actual.viewflags);
       expect(actualVf.toJSON()).to.deep.equal(expectedVf.toJSON());
-
-      expect(undefined !== actual.scheduleScript).to.equal(test[2]);
 
       const expectedBGColor = expected.backgroundColor instanceof ColorDef ? expected.backgroundColor.toJSON() : expected.backgroundColor;
       expect(actual.backgroundColor).to.equal(expectedBGColor);
@@ -1295,6 +1290,9 @@ describe("iModel", () => {
       }
     });
 
+    // make sure queryEnityIds works fine when all params are specified
+    const physicalObjectIds = imodel2.queryEntityIds({ from: "generic.PhysicalObject", where: "codevalue is null", limit: 1, offset: 1, only: true, orderBy: "ecinstanceid desc" });
+    assert.equal(physicalObjectIds.size, 1);
   });
 
   it("validate BisCodeSpecs", async () => {
@@ -1941,7 +1939,7 @@ describe("iModel", () => {
 
   function hasClassView(db: IModelDb, name: string): boolean {
     try {
-      return db.withPreparedSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
+      return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
     } catch (e) {
       return false;
     }

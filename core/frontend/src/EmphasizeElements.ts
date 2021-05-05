@@ -47,6 +47,7 @@ export interface EmphasizeElementsProps {
   defaultAppearance?: FeatureAppearanceProps;
   appearanceOverride?: AppearanceOverrideProps[];
   wantEmphasis?: boolean;
+  unanimatedAppearance?: FeatureAppearanceProps;
 }
 
 /** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
@@ -54,6 +55,7 @@ export interface EmphasizeElementsProps {
  */
 export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureAppearance;
+  private _unanimatedAppearance?: FeatureAppearance;
   private _emphasizeIsolated?: Id64Set;
   private _overrideAppearance?: Map<number, Id64Set>;
   private readonly _emphasizedAppearance = FeatureAppearance.fromJSON({ emphasized: true });
@@ -71,6 +73,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
       const app = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
       emphasizedElements.forEach((id) => { overrides.overrideElement(id, app); });
     }
+
     const overriddenElements = this.getOverriddenElements();
     if (undefined !== overriddenElements) {
       if (undefined !== this._defaultAppearance)
@@ -79,6 +82,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
         const ovrApp = this.createAppearanceFromKey(key);
         ids.forEach((id) => { overrides.overrideElement(id, ovrApp); });
       }
+    }
+
+    if (this._unanimatedAppearance) {
+      if (this._unanimatedAppearance.isFullyTransparent)
+        overrides.neverDrawnAnimationNodes.add(0);
+      else
+        overrides.animationNodeOverrides.set(0, this._unanimatedAppearance);
     }
   }
 
@@ -135,11 +145,23 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   }
 
   /** Establish a default appearance to apply to elements without overrides. If changing the default appearance
-   * without also calling overrideElements, an explicit refresh must be requested for the change to take affect.
+   * without also calling overrideElements, an explicit refresh must be requested for the change to take effect.
    * @see [[Viewport.setFeatureOverrideProviderChanged]]
    */
   public get defaultAppearance(): FeatureAppearance | undefined { return this._defaultAppearance; }
   public set defaultAppearance(appearance: FeatureAppearance | undefined) { this._defaultAppearance = appearance; }
+
+  /** Establish a default appearance to apply to elements that are not animated by the view's [RenderSchedule.Script]($common).
+   * @note If this is the only change made to EmphasizeElements, you must call [[Viewport.setFeatureOverrideProviderChanged]] for
+   * the change to take immediate effect.
+   * @see [[createDefaultAppearance]] to create an appearance suitable for de-emphasizing the non-animated elements.
+   */
+  public get unanimatedAppearance(): FeatureAppearance | undefined {
+    return this._unanimatedAppearance;
+  }
+  public set unanimatedAppearance(appearance: FeatureAppearance | undefined) {
+    this._unanimatedAppearance = appearance;
+  }
 
   /** Create default appearance to use for emphasizeElements when not supplied by caller. */
   public createDefaultAppearance(): FeatureAppearance {
@@ -151,21 +173,44 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   }
 
   /** Get the IDs of the currently never drawn elements. */
-  public getNeverDrawnElements(vp: Viewport): Id64Set | undefined { return (undefined !== vp.neverDrawn && 0 !== vp.neverDrawn.size ? vp.neverDrawn : undefined); }
+  public getNeverDrawnElements(vp: Viewport): Id64Set | undefined {
+    return (undefined !== vp.neverDrawn && 0 !== vp.neverDrawn.size ? vp.neverDrawn : undefined);
+  }
+
   /** Get the IDs of the currently always drawn elements. */
-  public getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined { return (undefined !== vp.alwaysDrawn && 0 !== vp.alwaysDrawn.size ? vp.alwaysDrawn : undefined); }
+  public getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined {
+    return (undefined !== vp.alwaysDrawn && 0 !== vp.alwaysDrawn.size ? vp.alwaysDrawn : undefined);
+  }
+
   /** Get the IDs of the currently hidden elements. */
-  public getHiddenElements(vp: Viewport): Id64Set | undefined { return this.getNeverDrawnElements(vp); }
+  public getHiddenElements(vp: Viewport): Id64Set | undefined {
+    return this.getNeverDrawnElements(vp);
+  }
+
   /** Get the IDs of the currently isolated elements. */
-  public getIsolatedElements(vp: Viewport): Id64Set | undefined { return (vp.isAlwaysDrawnExclusive ? this.getAlwaysDrawnElements(vp) : undefined); }
+  public getIsolatedElements(vp: Viewport): Id64Set | undefined {
+    return (vp.isAlwaysDrawnExclusive ? this.getAlwaysDrawnElements(vp) : undefined);
+  }
+
   /** Get the IDs of the currently emphasized isolated elements. */
-  public getEmphasizedIsolatedElements(): Id64Set | undefined { return (undefined !== this._defaultAppearance && undefined !== this._emphasizeIsolated && 0 !== this._emphasizeIsolated.size ? this._emphasizeIsolated : undefined); }
+  public getEmphasizedIsolatedElements(): Id64Set | undefined {
+    return (undefined !== this._defaultAppearance && undefined !== this._emphasizeIsolated && 0 !== this._emphasizeIsolated.size ? this._emphasizeIsolated : undefined);
+  }
+
   /** Get the IDs of the currently emphasized elements. */
-  public getEmphasizedElements(vp: Viewport): Id64Set | undefined { return (undefined !== this.getEmphasizedIsolatedElements() ? this._emphasizeIsolated : (undefined !== this._defaultAppearance && !vp.isAlwaysDrawnExclusive ? this.getAlwaysDrawnElements(vp) : undefined)); }
+  public getEmphasizedElements(vp: Viewport): Id64Set | undefined {
+    return (undefined !== this.getEmphasizedIsolatedElements() ? this._emphasizeIsolated : (undefined !== this._defaultAppearance && !vp.isAlwaysDrawnExclusive ? this.getAlwaysDrawnElements(vp) : undefined));
+  }
+
   /** Get the map of current elements with color/transparency overrides. */
-  public getOverriddenElements(): Map<number, Id64Set> | undefined { return (undefined !== this._overrideAppearance && 0 !== this._overrideAppearance.size ? this._overrideAppearance : undefined); }
+  public getOverriddenElements(): Map<number, Id64Set> | undefined {
+    return (undefined !== this._overrideAppearance && 0 !== this._overrideAppearance.size ? this._overrideAppearance : undefined);
+  }
+
   /** Get the IDs of current elements with the specified color/transparency override. */
-  public getOverriddenElementsByKey(key: number): Id64Set | undefined { return (undefined !== this._overrideAppearance ? this._overrideAppearance.get(key) : undefined); }
+  public getOverriddenElementsByKey(key: number): Id64Set | undefined {
+    return (undefined !== this._overrideAppearance ? this._overrideAppearance.get(key) : undefined);
+  }
 
   /** Clear never drawn elements.
    * @return false if nothing to clear.
@@ -211,10 +256,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   public clearEmphasizedElements(vp: Viewport): boolean {
     if (undefined === this.getEmphasizedElements(vp))
       return false;
+
     if (this.clearEmphasizedIsolatedElements(vp, false))
       return true;
+
     if (!this.clearAlwaysDrawnElements(vp))
       return false;
+
     this._defaultAppearance = undefined;
     return true;
   }
@@ -227,8 +275,10 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     this._emphasizeIsolated = undefined; // Always clear in case default appearance was unset...
     if (undefined === emphasizedIsolated)
       return false;
+
     if (setToAlwaysDrawn && this.setAlwaysDrawnElements(emphasizedIsolated, vp, false))
       return true;
+
     this._defaultAppearance = undefined;
     vp.setFeatureOverrideProviderChanged();
     return true;
@@ -253,7 +303,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
 
         for (const [otherKey, otherIds] of this._overrideAppearance) {
           const oldSize = otherIds.size;
-          Id64.forEach(keyOrIds, (id) => otherIds.delete(id));
+          for (const id of Id64.iterable(keyOrIds))
+            otherIds.delete(id);
 
           if (oldSize !== otherIds.size)
             changed = true;
@@ -275,15 +326,20 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   /** @internal */
   protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined {
     const newIds = new Set<string>();
-    Id64.forEach(ids, (id) => newIds.add(id));
+    for (const id of Id64.iterable(ids))
+      newIds.add(id);
+
     if (0 === newIds.size)
       return undefined;
+
     const oldSize = (!replace && undefined !== existingIds ? existingIds.size : 0);
     if (0 !== oldSize && undefined !== existingIds)
       for (const id of existingIds)
         newIds.add(id);
+
     if (oldSize === newIds.size)
       return undefined;
+
     return newIds;
   }
 
@@ -360,8 +416,10 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const wasEmphasized = (undefined !== this.getEmphasizedElements(vp));
     if (!this.setAlwaysDrawnElements(ids, vp, true, replace))
       return false;
+
     if (wasEmphasized)
       this._defaultAppearance = this._emphasizeIsolated = undefined; // Don't clear defaultAppearance unless it was established by emphasize...
+
     return true;
   }
 
@@ -396,13 +454,16 @@ export class EmphasizeElements implements FeatureOverrideProvider {
       const emphasizeIds = this.updateIdSet(ids, replace, this._emphasizeIsolated);
       if (undefined === emphasizeIds)
         return false;
+
       this._emphasizeIsolated = emphasizeIds;
       vp.setFeatureOverrideProviderChanged();
     } else {
       if (!this.setAlwaysDrawnElements(ids, vp, false, replace))
         return false;
+
       this._emphasizeIsolated = undefined;
     }
+
     this._defaultAppearance = (undefined === defaultAppearance ? this.createDefaultAppearance() : defaultAppearance);
     return true;
   }
@@ -442,7 +503,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
       return false;
 
     const overrideIds = new Set<string>();
-    Id64.forEach(ids, (id) => overrideIds.add(id));
+    for (const id of Id64.iterable(ids))
+      overrideIds.add(id);
+
     if (0 === overrideIds.size)
       return false;
 
@@ -462,7 +525,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
         if (key === ovrKey) // Make sure these ids are unique to this color/transparency key...
           continue;
 
-        Id64.forEach(ids, (id) => otherIds.delete(id));
+        for (const id of Id64.iterable(ids))
+          otherIds.delete(id);
+
         if (0 !== otherIds.size)
           continue;
 
@@ -520,6 +585,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     if (undefined !== this.defaultAppearance)
       props.defaultAppearance = this.defaultAppearance; // emphasize (or specifically set for override)
 
+    if (this.unanimatedAppearance)
+      props.unanimatedAppearance = this.unanimatedAppearance;
+
     const overriddenElements = this.getOverriddenElements();
     if (undefined !== overriddenElements) {
       const appearanceOverride: AppearanceOverrideProps[] = [];
@@ -554,6 +622,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
 
     if (undefined !== props.defaultAppearance)
       this.defaultAppearance = FeatureAppearance.fromJSON(props.defaultAppearance); // changed status determined by setAlwaysDrawnElements or overrideElements...
+
+    if (props.unanimatedAppearance)
+      this.unanimatedAppearance = FeatureAppearance.fromJSON(props.unanimatedAppearance);
 
     if (undefined !== props.appearanceOverride) {
       for (const ovrApp of props.appearanceOverride) {
