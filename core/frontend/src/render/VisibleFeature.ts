@@ -31,6 +31,8 @@ export interface VisibleFeature {
 }
 
 /** Options specifying how to query for visible [Feature]($common)s by reading pixels rendered by a [[Viewport]].
+ * This method of determining visibility considers a feature "visible" if it lit up at least one pixel.
+ * @note A pixel that is behind another, transparent pixel is not considered visible.
  * @see [[QueryVisibleFeaturesOptions]].
  * @beta
  */
@@ -44,6 +46,11 @@ export interface QueryScreenFeaturesOptions {
 }
 
 /** Options specifying how to query for visible [Feature]($common)s by inspecting the [[Tile]]s selected for display by a [[Viewport]].
+ * This method of determining visibility considers a feature "visible" if it is included in at least one tile selected for display and is
+ * not otherwise rendered invisible by the view's [[CategorySelectorState]], [SubCategoryAppearance]($common) overrides, [FeatureOverrides]($common), or
+ * other means.
+ * @note If a clip volume is applied to the view, features contained in tiles that *intersect* the clip volume are considered visible regardless of whether
+ * their geometry would actually be entirely clipped out by the clip volume.
  * @see [[QueryVisibleFeaturesOptions]].
  * @beta
  */
