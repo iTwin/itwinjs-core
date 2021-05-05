@@ -192,7 +192,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
 
   /** @deprecated This is a noop now. Keeping just to avoid breaking the RPC interface. */
   public async loadHierarchy(_token: IModelRpcProps, _requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
-    return { statusCode: PresentationStatus.Error };
+    return { statusCode: PresentationStatus.Success };
   }
 
   public async getContentDescriptor(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions | ContentDescriptorRpcRequestOptions, displayType?: string, keys?: KeySetJSON, selection?: SelectionInfo): PresentationRpcResponse<DescriptorJSON | undefined> {
