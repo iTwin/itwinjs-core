@@ -743,7 +743,28 @@ export class IModelTransformer extends IModelExportHandler {
       this.sourceDb.nativeDb.exportSchemas(schemasDir);
       const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
       // some system schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
-      const filteredImportSchemas = schemaFiles.filter((schemaFile) => !/(ECDbMap|ECDbSchemaPolicies)\.\d+\.\d+(.\d+)?/.test(schemaFile));
+      const filteredImportSchemas = schemaFiles.filter((schemaFile) => {
+        const match = /^(?<name>[a-zA-Z0-9]+)\.(?<version>[.0-9]+)\.ecschema.xml$/.exec(schemaFile);
+        if (match === null)
+          return true;
+        const [_fullMatch, schemaName, versionString] = match;
+        const targetSchemaResult = this.targetDb.nativeDb.getSchema(schemaName);
+        if (targetSchemaResult.result !== undefined) {
+          try {
+            type VersionTuple = number[];
+            const parseVersion = (src: string): VersionTuple | undefined => /(\d+)\.(\d+)\.(\d+)/.exec(src)?.slice(1).map(Number);
+            const versionTupleEq = (v1: VersionTuple, v2: VersionTuple): boolean => v1.every((val, idx) => v2[idx] === val);
+            const schemaInTarget = JSON.parse(targetSchemaResult.result);
+            const versionInTarget = parseVersion(schemaInTarget.version);
+            const versionToImport = parseVersion(versionString);
+            if (versionInTarget && versionToImport && versionTupleEq(versionInTarget, versionToImport))
+              return false;
+          } catch (err) { // bad json, should be unreachable, but we'll try to not swallow errors
+            return true;
+          }
+        }
+        return true;
+      });
       const importSchemasFullPaths = filteredImportSchemas.map((schema) => path.join(schemasDir, schema));
       await this.targetDb.importSchemas(requestContext, importSchemasFullPaths);
     } finally {
