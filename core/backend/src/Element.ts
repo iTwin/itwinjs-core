@@ -6,14 +6,16 @@
  * @module Elements
  */
 
-import { assert, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import {
+  assert, CompressedId64Set, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array,
+} from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
+  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -22,6 +24,69 @@ import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
+
+/** Argument for the `Element.onXxx` static methods
+ * @beta
+ */
+export interface OnElementArg {
+  /** The iModel for the Element affected by this method. */
+  iModel: IModelDb;
+}
+
+/** Argument for the `Element.onXxx` static methods that supply the properties of an Element to be inserted or updated.
+ * @beta
+ */
+export interface OnElementPropsArg extends OnElementArg {
+  /** The new properties of the Element affected by this method. */
+  props: Readonly<ElementProps>;
+}
+
+/** Argument for the `Element.onXxx` static methods that only supply the Id of the affected Element.
+ * @beta
+ */
+export interface OnElementIdArg extends OnElementArg {
+  /** The Id of the Element affected by this method */
+  id: Id64String;
+}
+
+/** Argument for the `Element.onChildXxx` static methods
+ * @beta
+ */
+export interface OnChildElementArg extends OnElementArg {
+  parentId: Id64String;
+}
+
+/** Argument for the `Element.onChildXxx` static methods that supply the properties of the child Element to be inserted or updated.
+ * @beta
+ */
+export interface OnChildElementPropsArg extends OnChildElementArg {
+  /** The new properties of the child Element for this method. */
+  childProps: Readonly<ElementProps>;
+}
+
+/** Argument for the `Element.onChildXxx` static methods that only supply the Id of the child Element.
+ * @beta
+ */
+export interface OnChildElementIdArg extends OnChildElementArg {
+  /** The Id of the child element for this method */
+  childId: Id64String;
+}
+
+/** Argument for the `Element.onSubModelInsert` static method
+ * @beta
+ */
+export interface OnSubModelPropsArg extends OnElementArg {
+  /** The properties of the prospective sub-model */
+  subModelProps: ModelProps;
+}
+
+/** Argument for several `Element.onSubModelXxx` static methods
+ * @beta
+ */
+export interface OnSubModelIdArg extends OnElementArg {
+  /** The modelId of the sub Model */
+  subModelId: Id64String;
+}
 
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
  * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model
@@ -121,70 +186,173 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Called before a new Element is inserted.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note throw an exception to disallow the insert
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element to be inserted
    * @beta
    */
-  protected static onInsert(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert);
+  protected static onInsert(arg: OnElementPropsArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Insert);
     }
   }
-  /** Called before an Element is updated.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
-   * @beta
-   */
-  protected static onUpdate(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update);
-    }
-  }
-  /** Called before an Element is deleted.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
-   * @beta
-   */
-  protected static onDelete(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
-    }
-  }
+
   /** Called after a new Element was inserted.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was inserted
    * @beta
    */
-  protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert);
+  protected static onInserted(arg: OnElementIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Insert);
     }
   }
+
+  /** Called before an Element is updated.
+   * @note throw an exception to disallow the update
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element to be updated
+   * @beta
+   */
+  protected static onUpdate(arg: OnElementPropsArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Update);
+    }
+  }
+
   /** Called after an Element was updated.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was updated
    * @beta
    */
-  protected static onUpdated(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update);
+  protected static onUpdated(arg: OnElementIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Update);
     }
   }
-  /** Called after an Element was deleted.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+
+  /** Called before an Element is deleted.
+   * @note throw an exception to disallow the delete
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element to be deleted
    * @beta
    */
-  protected static onDeleted(_props: Readonly<ElementProps>, _iModel: IModelDb): void { }
+  protected static onDelete(arg: OnElementIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      const props = arg.iModel.elements.tryGetElementProps(arg.id);
+      if (props !== undefined)
+        arg.iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
+    }
+  }
+
+  /** Called after an Element was deleted.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was deleted
+   * @beta
+   */
+  protected static onDeleted(_arg: OnElementIdArg): void { }
+
+  /** Called when an element with an instance of this class as its parent is about to be deleted.
+   * @note throw an exception if the element should not be deleted
+   * @note implementers should not presume that the element was deleted if this method does not throw,
+   * since the delete may fail for other reasons. Instead, rely on [[onChildDeleted]] for that purpose.
+   * @note `this` is the class of the parent Element whose child will be deleted
+   * @beta
+   */
+  protected static onChildDelete(_arg: OnChildElementIdArg): void { }
+
+  /** Called after an element with an instance of this class as its parent was successfully deleted.
+   * @note `this` is the class of the parent Element whose child was deleted
+   * @beta
+   */
+  protected static onChildDeleted(_arg: OnChildElementIdArg): void { }
+
+  /** Called when a *new element* with an instance of this class as its parent is about to be inserted.
+   * @note throw an exception if the element should not be inserted
+   * @note `this` is the class of the prospective parent Element.
+   * @beta
+   */
+  protected static onChildInsert(_arg: OnChildElementPropsArg): void { }
+
+  /** Called after a *new element* with an instance of this class as its parent was inserted.
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
+  protected static onChildInserted(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an element with an instance of this class as its parent is about to be updated.
+   * @note throw an exception if the element should not be updated
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
+  protected static onChildUpdate(_arg: OnChildElementPropsArg): void { }
+
+  /** Called after an element with an instance of this the class as its parent was updated.
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
+  protected static onChildUpdated(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an *existing element* is about to be updated so that an instance of this class will become its new parent.
+   * @note throw an exception if the element should not be added
+   * @note `this` is the class of the prospective parent Element.
+   * @beta
+   */
+  protected static onChildAdd(_arg: OnChildElementPropsArg): void { }
+
+  /** Called after an *existing element* has been updated so that an instance of this class is its new parent.
+   * @note `this` is the class of the new parent Element.
+   * @beta
+   */
+  protected static onChildAdded(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an element with an instance of this class as its parent is about to be updated change to a different parent.
+   * @note throw an exception if the element should not be dropped
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
+  protected static onChildDrop(_arg: OnChildElementIdArg): void { }
+
+  /** Called after an element with an instance of this class as its previous parent was updated to have a new parent.
+   * @note `this` is the class of the previous parent Element.
+   * @beta
+   */
+  protected static onChildDropped(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an instance of this class is being *sub-modeled* by a new Model.
+   * @note throw an exception if model should not be inserted
+   * @note `this` is the class of Element to be sub-modeled.
+   * @beta
+   */
+  protected static onSubModelInsert(_arg: OnSubModelPropsArg): void { }
+
+  /** Called after an instance of this class was *sub-modeled* by a new Model.
+   * @note `this` is the class of Element that is now sub-modeled.
+   * @beta
+   */
+  protected static onSubModelInserted(_arg: OnSubModelIdArg): void { }
+
+  /** Called when a sub-model of an instance of this class is being deleted.
+   * @note throw an exception if model should not be deleted
+   * @note `this` is the class of Element that is sub-modeled.
+   * @beta
+   */
+  protected static onSubModelDelete(_arg: OnSubModelIdArg): void { }
+
+  /** Called after a sub-model of an instance of this class was deleted.
+   * @note `this` is the class of Element that was sub-modeled.
+   * @beta
+   */
+  protected static onSubModelDeleted(_arg: OnSubModelIdArg): void { }
+
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
    * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.
    * This callback is only meant to be overridden if there are other Ids in non-standard locations that need to be remapped or other data that needs to be fixed up after the clone.
    * @param _context The context that persists any remapping between the source iModel and target iModel.
    * @param _sourceProps The ElementProps for the source Element that was cloned.
    * @param _targetProps The ElementProps that are a result of the clone. These can be further modified.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
-   * @alpha
+   * @note If you override this method, you must call super.
+   * @beta
    */
   protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
 
@@ -229,10 +397,13 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Collect the Ids of this element's *predecessors* at this level of the class hierarchy.
-   * A *predecessor* is an element that had to be inserted before this element could have been inserted. This is important for cloning operations.
-   * @note This should be overridden at each level the class hierarchy that introduces predecessors.
+   * A *predecessor* is an element that had to be inserted before this element could have been inserted.
+   * This is important for cloning operations but can be useful in other situations as well.
+   * @param predecessorIds The Id64Set to populate with predecessor Ids.
+   * @note In order to clone/transform an element, all predecessor elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
+   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces predecessors.
    * @see getPredecessorIds
-   * @alpha
+   * @beta
    */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     predecessorIds.add(this.model); // The modeledElement is a predecessor
@@ -243,9 +414,9 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Get the Ids of this element's *predecessors*. A *predecessor* is an element that had to be inserted before this element could have been inserted.
-   * This is important for cloning operations.
+   * This is important for cloning operations but can be useful in other situations as well.
    * @see collectPredecessorIds
-   * @alpha
+   * @beta
    */
   public getPredecessorIds(): Id64Set {
     const predecessorIds = new Set<Id64String>();
@@ -272,7 +443,7 @@ export class Element extends Entity implements ElementProps {
   public setJsonProperty(nameSpace: string, value: any) { this.jsonProperties[nameSpace] = value; }
 
   /** Get a display label for this Element. By default returns userLabel if present, otherwise code value. */
-  public getDisplayLabel(): string { return this.userLabel ? this.userLabel : this.code.value; }
+  public getDisplayLabel(): string { return this.userLabel ?? this.code.value; }
 
   /** Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
    * Any instances of the pattern `%{tag}` will be replaced by the localized value of tag.
@@ -343,7 +514,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
       val.geom = this.geom;
     return val;
   }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.category);
@@ -377,7 +548,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
     return val;
   }
 
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
@@ -419,7 +590,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
     return val;
   }
 
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
@@ -748,7 +919,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
   public border?: Id64String;
   /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.border) { predecessorIds.add(this.border); }
@@ -773,7 +944,7 @@ export class Sheet extends Document implements SheetProps {
     this.scale = props.scale;
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.sheetTemplate) { predecessorIds.add(this.sheetTemplate); }
@@ -935,7 +1106,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
   public recipe?: RelatedElement;
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
-  /** @alpha */
+  /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.recipe) { predecessorIds.add(this.recipe.id); }
@@ -1388,5 +1559,93 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
    */
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     return new Code({ spec: iModel.codeSpecs.getByName(BisCodeSpec.lineStyle).id, scope: scopeModelId, value: codeValue });
+  }
+}
+
+/** Describes how to animate a view of a [[GeometricModel]] to show change over time using a [RenderSchedule.Script]($common).
+ * @note This class was introduced in version 01.00.13 of the BisCore ECSchema. It should only be used with [[IModelDb]]s containing that version or newer.
+ * @beta
+ */
+export class RenderTimeline extends InformationRecordElement {
+  /** @internal */
+  public static get className(): string { return "RenderTimeline"; }
+  /** A human-readable description of the timeline, which may be an empty string. */
+  public description: string;
+  /** The JSON representation of the instructions for visualizing change over time.
+   * @see [RenderSchedule.Script]($common) for the API for working with the script.
+   */
+  public scriptProps: RenderSchedule.ScriptProps;
+
+  /** @internal */
+  protected constructor(props: RenderTimelineProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.description = props.description ?? "";
+    this.scriptProps = RenderTimeline.parseScriptProps(props.script);
+  }
+
+  public static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline {
+    return new RenderTimeline(props, iModel);
+  }
+
+  public toJSON(): RenderTimelineProps {
+    const props = super.toJSON() as RenderTimelineProps;
+    if (this.description.length > 0)
+      props.description = this.description;
+
+    props.script = JSON.stringify(this.scriptProps);
+    return props;
+  }
+
+  private static parseScriptProps(json: string): RenderSchedule.ScriptProps {
+    try {
+      return JSON.parse(json);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /** @alpha */
+  protected collectPredecessorIds(ids: Id64Set): void {
+    super.collectPredecessorIds(ids);
+    const script = RenderSchedule.Script.fromJSON(this.scriptProps);
+    script?.discloseIds(ids);
+  }
+
+  /** @alpha */
+  protected static onCloned(context: IModelCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
+    super.onCloned(context, sourceProps, targetProps);
+    if (context.isBetweenIModels)
+      targetProps.script = JSON.stringify(this.remapScript(context, this.parseScriptProps(targetProps.script)));
+  }
+
+  /** Remap Ids when cloning a RenderSchedule.Script between iModels on a DisplayStyle or RenderTimeline.
+   * @internal
+   */
+  public static remapScript(context: IModelCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+    const scriptProps: RenderSchedule.ScriptProps = [];
+    if (!Array.isArray(input))
+      return scriptProps;
+
+    const elementIds = new OrderedId64Array();
+    for (const model of input) {
+      const modelId = context.findTargetElementId(model.modelId);
+      if (!Id64.isValid(modelId))
+        continue;
+
+      model.modelId = modelId;
+      scriptProps.push(model);
+      for (const element of model.elementTimelines) {
+        elementIds.clear();
+        for (const sourceId of RenderSchedule.ElementTimeline.getElementIds(element.elementIds)) {
+          const targetId = context.findTargetElementId(sourceId);
+          if (Id64.isValid(targetId))
+            elementIds.insert(targetId);
+        }
+
+        element.elementIds = CompressedId64Set.compressIds(elementIds);
+      }
+    }
+
+    return scriptProps;
   }
 }

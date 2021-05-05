@@ -6,14 +6,14 @@ alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
 beta;ApplyRenderingStyleTool 
 beta;ApplyViewByIdTool 
 beta;ApplyViewTool 
-alpha;AttachArcGISMapLayerByUrlTool 
+beta;AttachArcGISMapLayerByUrlTool 
 beta;AttachCesiumAssetTool 
-alpha;AttachMapLayerTool 
-alpha;AttachMapOverlayTool 
-alpha;AttachRealityModelTool 
-alpha;AttachTileURLMapLayerByUrlTool 
-alpha;AttachWmsMapLayerByUrlTool 
-alpha;AttachWmtsMapLayerByUrlTool 
+beta;AttachMapLayerTool 
+beta;AttachMapOverlayTool 
+beta;AttachRealityModelTool 
+beta;AttachTileURLMapLayerByUrlTool 
+beta;AttachWmsMapLayerByUrlTool 
+beta;AttachWmtsMapLayerByUrlTool 
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
@@ -21,17 +21,18 @@ beta;ChangeCameraTool
 beta;ChangeEmphasisSettingsTool 
 beta;ChangeHiliteSettingsTool 
 beta;class ChangeHiliteTool 
-alpha;class ChangePlanProjectionSettingsTool 
+beta;class ChangePlanProjectionSettingsTool 
 beta;ChangeUnitsTool 
 beta;ChangeViewFlagsTool 
 alpha;CheckBox
 alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
 alpha;CheckBoxProps
 beta;ClearEffectsTool 
+beta;ClearEmphasizedElementsTool 
 beta;ClearIsolatedElementsTool 
 beta;ClearModelAppearanceOverrides 
 beta;ClearRealityModelAppearanceOverrides 
-alpha;ClipColorTool 
+beta;ClipColorTool 
 alpha;ColorInput
 alpha;ColorInputHandler = (value: string) => void
 alpha;ColorInputProps
@@ -58,21 +59,22 @@ alpha;DataList
 alpha;DataListEntry
 alpha;DataListHandler = (list: HTMLDataListElement) => void
 alpha;DataListProps
-alpha;DefaultTileSizeModifierTool 
+beta;DefaultTileSizeModifierTool 
 beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
-alpha;DetachMapLayersTool 
+beta;DetachMapLayersTool 
 beta;DetachRealityModelTool 
 beta;DiagnosticsPanel
 beta;DiagnosticsPanelProps
 beta;class DisplayStyleTool 
-alpha;DumpPlanProjectionSettingsTool 
+beta;DumpPlanProjectionSettingsTool 
 beta;EdgeDetectionEffect 
 beta;ElementIdFromSourceAspectIdTool 
 beta;EmbossEffect 
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
-alpha;ExplosionEffect 
-internal;ExtensionServiceTool 
+beta;EmphasizeVisibleElementsTool 
+beta;ExplosionEffect 
+beta;ExtensionServiceTool 
 beta;FadeOutTool 
 beta;FlipImageConfig 
 beta;FlipImageEffect 
@@ -83,7 +85,7 @@ beta;FrontendDevTools
 beta;FrustumDecorator 
 beta;GaussianBlurEffect 
 alpha;GpuProfiler
-alpha;InspectElementTool 
+beta;InspectElementTool 
 beta;IsolateSelectedElementsTool 
 beta;KeyinField
 beta;KeyinFieldLocalization
@@ -93,13 +95,13 @@ alpha;LabeledNumericInputProps
 beta;LensDistortionConfig 
 beta;LensDistortionEffect 
 beta;LoseWebGLContextTool 
-alpha;MapBaseColorTool 
-alpha;MapBaseTransparencyTool 
-alpha;MapBaseVisibilityTool 
-alpha;MapLayerSubLayerVisiblityTool 
-alpha;MapLayerTransparencyTool 
-alpha;MapLayerVisibilityTool 
-alpha;MapLayerZoomTool 
+beta;MapBaseColorTool 
+beta;MapBaseTransparencyTool 
+beta;MapBaseVisibilityTool 
+beta;MapLayerSubLayerVisiblityTool 
+beta;MapLayerTransparencyTool 
+beta;MapLayerVisibilityTool 
+beta;MapLayerZoomTool 
 beta;MaskBackgroundMapByElementTool 
 beta;MaskBackgroundMapByExcludedElementTool 
 beta;MaskBackgroundMapByModelTool 
@@ -108,14 +110,14 @@ beta;MaskRealityModelByElementTool
 beta;MaskRealityModelByExcludedElementTool 
 beta;MaskRealityModelByModelTool 
 beta;MaskRealityModelBySubCategoryTool 
-alpha;MeasureTileLoadTimeTool 
+beta;MeasureTileLoadTimeTool 
 beta;MemoryTracker
 alpha;NestedMenu
 alpha;NestedMenuProps
 alpha;NestMenuHandler = (expanded: boolean) => void
 alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
 alpha;NumericInputProps
-alpha;class OverrideSubCategoryPriorityTool 
+beta;class OverrideSubCategoryPriorityTool 
 beta;OverrideSubCategoryTool 
 beta;parseArgs(args: string[]): ToolArgs
 beta;parseBoolean(arg: string | undefined): boolean | undefined
@@ -131,25 +133,25 @@ beta;randomFloatInRange(range: Range1d): number
 beta;randomInteger(min: number, max: number): number
 beta;randomIntegerInRange(range: Range1d): number
 beta;randomPositionInRange(range: Range3d): Point3d
-alpha;RealityTransitionTool 
+beta;RealityTransitionTool 
 beta;refreshViewportsForEffect(effectName: string): void
 beta;class RenderSystemDebugControlTool 
 beta;class RenderTargetDebugControlToggleTool 
 beta;class RenderTargetDebugControlTool 
-alpha;ReorderMapLayers 
+beta;ReorderMapLayers 
 beta;ReportWebGLCompatibilityTool 
 beta;SaturationConfig 
 beta;SaturationEffect 
-alpha;SaveRealityModelTool 
+beta;SaveRealityModelTool 
 beta;SaveRenderingStyleTool 
 beta;SaveViewTool 
 beta;SelectElementsByIdTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
-internal;SetAASamplesTool 
-alpha;SetAspectRatioSkewTool 
+beta;SetAASamplesTool 
+beta;SetAspectRatioSkewTool 
 beta;SetGpuMemoryLimitTool 
 beta;SetHigherPriorityRealityModelMasking 
-alpha;SetMapBaseTool 
+beta;SetMapBaseTool 
 beta;SetMapHigherPriorityMasking 
 beta;SetModelColorTool 
 beta;SetModelEmphasizedTool 
@@ -174,16 +176,16 @@ beta;SnowParams
 beta;SnowParticle 
 beta;SourceAspectIdFromElementIdTool 
 beta;class SourceAspectIdTool 
-alpha;TestClipStyleTool 
+beta;TestClipStyleTool 
 beta;TextBox
 alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
 beta;TileMemoryBreakdown
 beta;TileStatisticsTracker
-alpha;Toggle3dManipulationsTool 
+beta;Toggle3dManipulationsTool 
 beta;ToggleDPIForLODTool 
-alpha;ToggleDrapeFrustumTool 
+beta;ToggleDrapeFrustumTool 
 beta;ToggleDrawingGraphicsTool 
 beta;ToggleFrustumSnapshotTool 
 beta;ToggleOSMBuildingDisplay 
@@ -191,28 +193,28 @@ beta;TogglePrimitiveVisibilityTool
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
 beta;ToggleProjectExtentsTool 
 beta;ToggleReadPixelsTool 
-alpha;ToggleRealityTileBounds 
-alpha;ToggleRealityTileFreeze 
-alpha;ToggleRealityTileLogging 
-alpha;ToggleRealityTilePreload 
-alpha;ToggleSectionCutTool 
+beta;ToggleRealityTileBounds 
+beta;ToggleRealityTileFreeze 
+beta;ToggleRealityTileLogging 
+beta;ToggleRealityTilePreload 
+beta;ToggleSectionCutTool 
 beta;ToggleSectionDrawingSpatialViewTool 
 beta;ToggleSelectedViewFrustumTool 
 beta;ToggleShadowFrustumTool 
 beta;ToggleSkyboxTool 
-alpha;ToggleTerrainTool 
+beta;ToggleTerrainTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
 beta;ToggleViewAttachmentBoundariesTool 
 beta;ToggleViewAttachmentClipShapesTool 
 beta;ToggleViewAttachmentsTool 
-internal;ToggleVolClassIntersect 
+beta;ToggleVolClassIntersect 
 beta;ToggleWiremeshTool 
 beta;ToolArgs
 alpha;ToolSettingsTracker
 beta;UnmaskMapTool 
 beta;UnmaskRealityModelTool 
 beta;UnsharpenEffect 
-alpha;ViewportAddRealityModel 
-alpha;ViewportTileSizeModifierTool 
+beta;ViewportAddRealityModel 
+beta;ViewportTileSizeModifierTool 
 beta;class ViewportToggleTool 

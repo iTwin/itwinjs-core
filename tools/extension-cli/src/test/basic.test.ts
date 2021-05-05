@@ -6,7 +6,6 @@
 import * as chai from "chai";
 const assert = chai.assert;
 
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { signIn } from "../helpers";
 import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
@@ -16,9 +15,8 @@ describe.skip("ExtensionClient CLI (#integration)", () => {
     await IModelHost.startup();
 
     // Initialize an DesktopAuthorizationClient to delete refresh token from global store, then dispose it.
-    const requestContext = new ClientRequestContext();
     const client = new ElectronAuthorizationBackend();
-    await client.initialize(requestContext, {
+    await client.initialize({
       clientId: "imodeljs-extension-publisher",
       redirectUri: "",
       scope: "",

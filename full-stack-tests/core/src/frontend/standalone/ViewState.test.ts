@@ -365,7 +365,9 @@ describe("ViewState", () => {
     // Add 2d models to selector
     view.modelSelector.addModels(["0x24", "0x28"]);
     await imodel2.models.load(view.modelSelector.models);
+    // eslint-disable-next-line deprecation/deprecation
     assert.instanceOf(imodel2.models.loaded.get("0x24"), DrawingModelState);
+    // eslint-disable-next-line deprecation/deprecation
     assert.instanceOf(imodel2.models.loaded.get("0x28"), SheetModelState);
     expect(view.modelSelector.models.size).to.equal(numSpatialModels + 2);
 

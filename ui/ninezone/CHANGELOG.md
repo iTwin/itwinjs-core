@@ -1,6 +1,23 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Thu, 15 Apr 2021 15:13:16 GMT and should not be manually modified.
+This log was last generated on Wed, 05 May 2021 13:18:31 GMT and should not be manually modified.
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Specify grid-column in the scss for the Navigation and Tools widgets.
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:34 GMT
+
+_Version update only_
 
 ## 2.14.3
 Thu, 15 Apr 2021 15:13:16 GMT

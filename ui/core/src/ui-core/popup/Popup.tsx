@@ -82,6 +82,7 @@ interface PopupState {
   top: number;
   left: number;
   position: RelativePosition;
+  parentDocument: Document;
 }
 
 /** Popup React component displays a popup relative to an optional target element.
@@ -92,12 +93,14 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
   constructor(props: PopupProps) {
     super(props);
+    const parentDocument = this.props.target?.ownerDocument ?? document;
 
     this.state = {
       isOpen: this.props.isOpen,
       top: 0,
       left: 0,
       position: this.props.position,
+      parentDocument,
     };
   }
 
@@ -117,7 +120,23 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     }
   }
 
+  private getParentWindow() {
+    // istanbul ignore next
+    return this.state.parentDocument.defaultView ?? window;
+  }
+
   public componentDidUpdate(previousProps: PopupProps) {
+    if (this.props.target !== previousProps.target) {
+      // istanbul ignore next
+      {
+        const parentDocument = this.props.target?.ownerDocument ?? document;
+        if (parentDocument !== this.state.parentDocument) {
+          this._unBindWindowEvents();
+          this.setState({ parentDocument });
+        }
+      }
+    }
+
     if (this.props.isOpen === previousProps.isOpen) {
       if (this.props.isOpen) {
         const position = this._toggleRelativePosition();
@@ -148,21 +167,23 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _bindWindowEvents = () => {
-    window.addEventListener("pointerdown", this._handleOutsideClick);
-    window.addEventListener("resize", this._hide);
-    window.addEventListener("contextmenu", this._handleContextMenu);
-    window.addEventListener("scroll", this._hide);
-    window.addEventListener("wheel", this._handleWheel);
-    window.addEventListener("keydown", this._handleKeyboard);
+    const activeWindow = this.getParentWindow();
+    activeWindow.addEventListener("pointerdown", this._handleOutsideClick);
+    activeWindow.addEventListener("resize", this._hide);
+    activeWindow.addEventListener("contextmenu", this._handleContextMenu);
+    activeWindow.addEventListener("scroll", this._hide);
+    activeWindow.addEventListener("wheel", this._handleWheel);
+    activeWindow.addEventListener("keydown", this._handleKeyboard);
   };
 
   private _unBindWindowEvents = () => {
-    window.removeEventListener("pointerdown", this._handleOutsideClick);
-    window.removeEventListener("resize", this._hide);
-    window.removeEventListener("contextmenu", this._handleContextMenu);
-    window.removeEventListener("scroll", this._hide);
-    window.removeEventListener("wheel", this._handleWheel);
-    window.removeEventListener("keydown", this._handleKeyboard);
+    const activeWindow = this.getParentWindow();
+    activeWindow.removeEventListener("pointerdown", this._handleOutsideClick);
+    activeWindow.removeEventListener("resize", this._hide);
+    activeWindow.removeEventListener("contextmenu", this._handleContextMenu);
+    activeWindow.removeEventListener("scroll", this._hide);
+    activeWindow.removeEventListener("wheel", this._handleWheel);
+    activeWindow.removeEventListener("keydown", this._handleKeyboard);
   };
 
   private _handleWheel = (event: WheelEvent) => {
@@ -309,7 +330,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     let popupHeight = 0;
     // istanbul ignore else
     if (this._popup) {
-      const style = window.getComputedStyle(this._popup);
+      const activeWindow = this.getParentWindow();
+      const style = activeWindow.getComputedStyle(this._popup);
       const borderLeftWidth = parsePxString(style.borderLeftWidth);
       const borderRightWidth = parsePxString(style.borderRightWidth);
       const borderTopWidth = parsePxString(style.borderTopWidth);
@@ -322,8 +344,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _getPosition = (position: RelativePosition) => {
+    const activeWindow = this.getParentWindow();
     const { target, offset, top, left } = this.props;
-
     const offsetArrow = (this.props.showArrow) ? 6 : 0;
 
     // absolute position
@@ -336,10 +358,9 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return point;
 
     // relative position
-    const scrollY = (window.scrollY !== undefined) ? window.scrollY : /* istanbul ignore next */ window.pageYOffset;
-    const scrollX = (window.scrollX !== undefined) ? window.scrollX : /* istanbul ignore next */ window.pageXOffset;
+    const scrollY = (activeWindow.scrollY !== undefined) ? activeWindow.scrollY : /* istanbul ignore next */ activeWindow.pageYOffset;
+    const scrollX = (activeWindow.scrollX !== undefined) ? activeWindow.scrollX : /* istanbul ignore next */ activeWindow.pageXOffset;
 
-    // const popupRect = this._popup.getBoundingClientRect();
     const targetRect = target.getBoundingClientRect();
 
     const { popupWidth, popupHeight } = this._getPopupDimensions();
@@ -418,11 +439,13 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       bottom: number;
     }
 
+    const activeWindow = this.getParentWindow();
+
     // Note: Cannot use DOMRect yet since it's experimental and not available in all browsers (Nov. 2018)
-    const viewportRect: Rect = { left: window.scrollX, top: window.scrollY, right: window.scrollX + window.innerWidth, bottom: window.scrollY + window.innerHeight };
+    const viewportRect: Rect = { left: activeWindow.scrollX, top: activeWindow.scrollY, right: activeWindow.scrollX + activeWindow.innerWidth, bottom: activeWindow.scrollY + activeWindow.innerHeight };
     const targetRect = target.getBoundingClientRect();
     const { popupWidth, popupHeight } = this._getPopupDimensions();
-    const containerStyle = window.getComputedStyle(target);
+    const containerStyle = activeWindow.getComputedStyle(target);
     const offsetArrow = this.props.showArrow ? /* istanbul ignore next */ 10 : 2;
 
     const bottomMargin = parseMargin(containerStyle.marginBottom);
@@ -537,7 +560,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
             {this.props.children}
           </FocusTrap>
         </div>
-      ), document.body);
+      ), this.state.parentDocument.body);
   }
 }
 

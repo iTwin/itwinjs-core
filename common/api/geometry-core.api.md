@@ -1737,11 +1737,14 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     static createArema(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createAustralianRail(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createChineseCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
-    static createCzechCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    static createCzechCubic(localToWorld: Transform, nominalLx: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     // (undocumented)
     static createDirectHalfCosine(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createFromLengthAndRadius(spiralType: string, radius0: number | undefined, radius1: number | undefined, bearing0: Angle | undefined, _bearing1: Angle | undefined, arcLength: number | undefined, activeInterval: undefined | Segment1d, localToWorld: Transform): TransitionSpiral3d | undefined;
+    static createItalian(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createJapaneseCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    static createMXCubicAlongArc(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    static createPolishCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createTruncatedClothoid(spiralType: string, localToWorld: Transform, numXTerm: number, numYTerm: number, originalProperties: TransitionConditionalProperties | undefined, nominalL1: number, nominalR1: number, activeInterval: Segment1d | undefined): DirectSpiral3d | undefined;
     static createWesternAustralian(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     curveLength(): number;
@@ -1759,6 +1762,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     isAlmostEqual(other: any): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     isSameGeometryClass(other: any): boolean;
+    get nominalCurvature1(): number;
     get nominalL1(): number;
     get nominalR1(): number;
     quickLength(): number;
@@ -1769,7 +1773,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
 }
 
 // @public
-export type DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesterAustralian" | "Czech";
+export type DirectSpiralTypeName = "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesternAustralian" | "Czech" | "MXCubicAlongArc" | "Polish" | "Italian";
 
 // @public
 export enum DuplicateFacetClusterSelector {
@@ -5248,6 +5252,7 @@ export class Transform implements BeJSONFunctions {
     setMultiplyTransformTransform(transformA: Transform, transformB: Transform): void;
     setOriginAndMatrixColumns(origin: XYZ | undefined, vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ: Vector3d | undefined): void;
     toJSON(): TransformProps;
+    toRows(): number[][];
 }
 
 // @public
@@ -5526,7 +5531,7 @@ export class Vector3d extends XYZ {
     dotProductXYZ(x: number, y: number, z?: number): number;
     fractionOfProjectionToVector(target: Vector3d, defaultFraction?: number): number;
     static fromJSON(json?: XYZProps): Vector3d;
-    interpolate(fraction: number, vectorB: Vector3d, result?: Vector3d): Vector3d;
+    interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d;
     isParallelTo(other: Vector3d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean): boolean;
     isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength?: boolean): boolean;
     minus(vector: XYAndZ, result?: Vector3d): Vector3d;

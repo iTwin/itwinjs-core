@@ -91,6 +91,15 @@ describe("BackstageComposerItem", () => {
 
       spy.notCalled.should.true;
     });
+
+    it("should honor isActive prop override", () => {
+      const backstageManager = new BackstageManager();
+      sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
+      const sut = shallow(<BackstageComposerStageLauncher item={getStageLauncherItem({ isActive: true })} />);
+      const backstageItem = sut.find(NZ_BackstageItem);
+
+      backstageItem.prop("isActive")!.should.true;
+    });
   });
 
   describe("BackstageComposerItem", () => {

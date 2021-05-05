@@ -1,6 +1,26 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Thu, 15 Apr 2021 15:13:16 GMT and should not be manually modified.
+This log was last generated on Wed, 05 May 2021 13:18:31 GMT and should not be manually modified.
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Refactor the way presentation type of content is mapped to UI type of content. This is a more flexible approach and allowed to fix invalid properties display when an element had multiple aspects with categorized properties.
+- Change hierarchy auto updating after iModel data changes to reload only nodes visible in the tree
+- Disable hierarchy preloading
+- Fix compatibility issue when multiple versions of `rxjs` are in use.
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:33 GMT
+
+_Version update only_
 
 ## 2.14.3
 Thu, 15 Apr 2021 15:13:16 GMT

@@ -6,6 +6,7 @@
  * @module Table
  */
 
+import { sort } from "fast-sort";
 import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
@@ -18,7 +19,7 @@ import { ContentBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
 import { Page, PageContainer } from "../common/PageContainer";
-import { createLabelRecord, priorityAndNameSortFunction, translate } from "../common/Utils";
+import { createLabelRecord, translate } from "../common/Utils";
 
 interface PromisedPage<TItem> extends Page<TItem> {
   promise?: Promise<void>;
@@ -255,8 +256,10 @@ const createColumns = (descriptor: Readonly<Descriptor> | undefined): ColumnDesc
   if (descriptor.displayType === DefaultContentDisplayTypes.List)
     return [createLabelColumn()];
 
-  const sortedFields = [...descriptor.fields].sort(priorityAndNameSortFunction);
-  return sortedFields.map((field) => createColumn(field));
+  return sort(descriptor.fields).by([
+    { desc: (f) => f.priority },
+    { asc: (f) => f.label },
+  ]).map((f) => createColumn(f));
 };
 
 const createColumn = (field: Readonly<Field>): ColumnDescription => {

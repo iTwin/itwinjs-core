@@ -17,8 +17,8 @@ import { ContextMenuItem, ContextMenuItemProps } from "./ContextMenuItem";
 import { ContextSubMenu, ContextSubMenuProps } from "./ContextSubMenu";
 
 /** Properties for the [[ContextMenu]] component
- * @public
- */
+  * @public
+  */
 export interface ContextMenuProps extends CommonProps {
   /** Whether ContextMenu is currently opened. */
   opened: boolean;
@@ -56,10 +56,10 @@ interface ContextMenuState {
 }
 
 /**
- * A context menu populated with [[ContextMenuItem]] components.
- * Can be nested using [[ContextSubMenu]] component.
- * @public
- */
+  * A context menu populated with [[ContextMenuItem]] components.
+  * Can be nested using [[ContextSubMenu]] component.
+  * @public
+  */
 export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMenuState> {
   private _rootElement: HTMLElement | null = null;
   private _menuElement: HTMLElement | null = null;
@@ -289,10 +289,18 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     this._menuElement = el;
   };
 
+  private getWindow() {
+    const el = this._rootElement ? this._rootElement : /* istanbul ignore next */ this._menuElement;
+    const parentDocument = el!.ownerDocument;
+    // istanbul ignore next
+    return parentDocument.defaultView ?? window;
+  }
+
   /** @internal */
   public componentDidMount() {
-    window.addEventListener("focus", this._handleFocusChange);
-    window.addEventListener("mouseup", this._handleFocusChange);
+    const parentWindow = this.getWindow();
+    parentWindow.addEventListener("focus", this._handleFocusChange);
+    parentWindow.addEventListener("mouseup", this._handleFocusChange);
 
     this.checkRenderDirection();
 
@@ -302,19 +310,21 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   /** @internal */
   public componentWillUnmount() {
-    window.removeEventListener("focus", this._handleFocusChange);
-    window.removeEventListener("mouseup", this._handleFocusChange);
+    const parentWindow = this.getWindow();
+    parentWindow.removeEventListener("focus", this._handleFocusChange);
+    parentWindow.removeEventListener("mouseup", this._handleFocusChange);
   }
 
   private checkRenderDirection() {
     const { direction, autoflip, parentMenu } = this.props;
+    const parentWindow = this.getWindow();
 
     let renderDirection = parentMenu === undefined ? this.state.direction : direction;
 
     // check if menu should flip
-    if (autoflip && parentMenu === undefined) {
+    if (parentWindow && autoflip && parentMenu === undefined) {
       const menuRect = this.getRect();
-      renderDirection = ContextMenu.autoFlip(renderDirection!, menuRect, window.innerWidth, window.innerHeight);
+      renderDirection = ContextMenu.autoFlip(renderDirection!, menuRect, parentWindow.innerWidth, parentWindow.innerHeight);
       // istanbul ignore next
       if (renderDirection !== this.state.direction)
         this.setState({ direction: renderDirection });
@@ -356,7 +366,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>): void => {
     if (this.state.ignoreNextKeyUp) {
-      this.setState({ignoreNextKeyUp: false});
+      this.setState({ ignoreNextKeyUp: false });
       return;
     }
 
@@ -441,9 +451,9 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       this.setState((_, props) => ({ selectedIndex: props.selectedIndex! }));
     }
     if (!this.props.parentMenu) {
-      const direction = this.props.direction!;
-      if ((!this.props.opened && prevProps.opened && direction !== this.state.direction) || prevProps.direction !== direction)
-        this.checkRenderDirection();
+      // const direction = this.props.direction!;
+      // if ((!this.props.opened && prevProps.opened && direction !== this.state.direction) || prevProps.direction !== direction)
+      this.checkRenderDirection();
     }
   }
 }

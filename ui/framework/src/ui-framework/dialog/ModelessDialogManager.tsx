@@ -17,13 +17,14 @@ import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageTy
 
 /** Modeless Dialog Changed Event class.
  * @public
- */
+ */
 export class ModelessDialogChangedEvent extends DialogChangedEvent { }
 
 /** @internal */
 interface ModelessDialogInfo {
   reactNode: React.ReactNode;
   zIndex: number;
+  parentDocument: Document;
 }
 
 /** Used if the 'dialog' z-index CSS variable cannot be read */
@@ -31,7 +32,7 @@ const ZINDEX_DEFAULT = 12000;
 
 /** Modeless Dialog Manager class displays and manages multiple modeless dialogs
  * @public
- */
+ */
 export class ModelessDialogManager {
   /** Modeless Dialog Changed Event */
   public static readonly onModelessDialogChangedEvent = new ModelessDialogChangedEvent();
@@ -68,7 +69,7 @@ export class ModelessDialogManager {
    * @param dialog The Dialog to open
    * @param id The id of the Dialog to open
    */
-  public static openDialog(dialog: React.ReactNode, id: string): void {
+  public static openDialog(dialog: React.ReactNode, id: string, parentDocument = document): void {
     const dialogInfo = ModelessDialogManager._dialogMap.get(id);
     if (dialogInfo) {
       const message = `Dialog with id of '${id}' already opened`;
@@ -76,9 +77,9 @@ export class ModelessDialogManager {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, message, undefined, OutputMessageType.Toast));
       return;
     }
-    ModelessDialogManager._dialogMap.set(id, { reactNode: dialog, zIndex: ++ModelessDialogManager._topZIndex });
+    ModelessDialogManager._dialogMap.set(id, { reactNode: dialog, zIndex: ++ModelessDialogManager._topZIndex, parentDocument });
     ModelessDialogManager._idArray.push(id);
-    ModelessDialogManager.dialogManager.openDialog(dialog, id);
+    ModelessDialogManager.dialogManager.openDialog(dialog, id, parentDocument);
   }
 
   /** Close a modeless dialog
@@ -162,7 +163,7 @@ export class ModelessDialogManager {
 
 /** ModelessDialogRenderer React component renders modeless dialogs.
  * @public
- */
+ */
 export class ModelessDialogRenderer extends React.PureComponent<CommonProps> {
 
   constructor(props: CommonProps) {

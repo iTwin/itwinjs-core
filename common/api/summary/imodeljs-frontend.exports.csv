@@ -56,6 +56,7 @@ internal;BackgroundMapGeometry
 internal;BackgroundMapLocation
 beta;class BaseUnitFormattingSettingsProvider 
 internal;BatchedTileIdMap
+public;BatchOptions
 public;BeButton
 public;BeButtonEvent 
 public;BeButtonEventProps
@@ -124,6 +125,7 @@ public;DisclosedTileTreeSet
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
+internal;disposeTileTreesForGeometricModels(modelIds: Set
 beta;DownloadBriefcaseId =
 beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
 internal;DrawClipOptions
@@ -403,9 +405,14 @@ beta;QuantityTypeArg = QuantityType | string
 beta;QuantityTypeDefinition
 beta;QuantityTypeKey = string
 public;queryRealityData(criteria: RealityDataQueryCriteria): Promise
+beta;QueryScreenFeaturesOptions
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
+beta;QueryTileFeaturesOptions
+internal;queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void
+beta;QueryVisibleFeaturesCallback = (features: Iterable
+beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
-public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise
+public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 public;RealityDataQueryCriteria
 internal;RealityModelSource = ViewState | DisplayStyleState
@@ -430,7 +437,7 @@ internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;class RenderRealityMeshGeometry 
-internal;RenderScheduleState
+internal;RenderScheduleState 
 public;class RenderSystem 
 public;RenderSystem
 beta;RenderSystemDebugControl
@@ -594,10 +601,10 @@ internal;class ViewClipModifyTool
 internal;ViewClipPlanesModifyTool 
 internal;ViewClipShapeModifyTool 
 public;ViewClipTool 
-beta;ViewCreator2d
-beta;ViewCreator2dOptions
-beta;ViewCreator3d
-beta;ViewCreator3dOptions
+public;ViewCreator2d
+public;ViewCreator2dOptions
+public;ViewCreator3d
+public;ViewCreator3dOptions
 internal;viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight?: number, pitchAngleRadians?: number, location?: GlobalLocation): number
 internal;ViewGlobalLocationConstants
 public;ViewGlobeBirdTool 
@@ -627,6 +634,7 @@ public;ViewToggleCameraTool
 public;class ViewTool 
 public;ViewUndoEvent
 public;ViewUndoTool 
+beta;VisibleFeature
 public;WalkViewTool 
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 

@@ -328,6 +328,8 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     getData(): Promise<PropertyData>;
     protected getDescriptorOverrides(): DescriptorOverrides;
     protected getMemoizedData: import("micro-memoize").MicroMemoize.Memoized<() => Promise<PropertyData>>;
+    // @beta
+    getPropertyRecordInstanceKeys(record: PropertyRecord): Promise<InstanceKey[]>;
     get includeFieldsWithCompositeValues(): boolean;
     set includeFieldsWithCompositeValues(value: boolean);
     get includeFieldsWithNoValues(): boolean;
@@ -342,7 +344,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     protected shouldConfigureContentDescriptor(): boolean;
     protected sortCategories(categories: CategoryDescription[]): void;
     protected sortFields: (category: CategoryDescription, fields: Field[]) => void;
-    }
+}
 
 // @public
 export interface PresentationPropertyDataProviderProps extends DiagnosticsProps {

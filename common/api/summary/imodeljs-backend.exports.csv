@@ -229,6 +229,22 @@ internal;class NativeAppAuthorizationBackend
 beta;NativeAppStorage
 beta;NativeHost
 beta;NativeHostOpts 
+beta;OnAspectArg
+beta;OnAspectIdArg 
+beta;OnAspectPropsArg 
+beta;OnChildElementArg 
+beta;OnChildElementIdArg 
+beta;OnChildElementPropsArg 
+beta;OnElementArg
+beta;OnElementIdArg 
+beta;OnElementInModelIdArg 
+beta;OnElementInModelPropsArg 
+beta;OnElementPropsArg 
+beta;OnModelArg
+beta;OnModelIdArg 
+beta;OnModelPropsArg 
+beta;OnSubModelIdArg 
+beta;OnSubModelPropsArg 
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -251,6 +267,7 @@ public;Relationships
 public;RenderMaterialElement 
 public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
+beta;RenderTimeline 
 public;RepositoryLink 
 public;RepositoryModel 
 beta;RequestNewBriefcaseArg = RequestNewBriefcaseProps &

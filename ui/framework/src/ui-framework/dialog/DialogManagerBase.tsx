@@ -11,7 +11,7 @@ import { UiEvent } from "@bentley/ui-core";
 
 /** Dialog Stack Changed Event Args class.
  * @public
- */
+ */
 export interface DialogChangedEventArgs {
   dialogCount: number;
   activeDialog: React.ReactNode | undefined;
@@ -19,7 +19,7 @@ export interface DialogChangedEventArgs {
 
 /** Dialog Changed Event class.
  * @public
- */
+ */
 export class DialogChangedEvent extends UiEvent<DialogChangedEventArgs> { }
 
 /** Information maintained by a Dialog Manager about a dialog
@@ -28,11 +28,12 @@ export class DialogChangedEvent extends UiEvent<DialogChangedEventArgs> { }
 export interface DialogInfo {
   reactNode: React.ReactNode;
   id: string;
+  parentDocument: Document;
 }
 
 /** Dialog Manager class.
  * @internal
- */
+ */
 export class DialogManagerBase {
   private static _sId = 0;
   private _dialogs: DialogInfo[] = new Array<DialogInfo>();
@@ -46,11 +47,19 @@ export class DialogManagerBase {
 
   public get onDialogChangedEvent(): DialogChangedEvent { return this._onDialogChangedEvent; }
 
-  public openDialog(dialog: React.ReactNode, id?: string): void {
+  /**
+   * Triggers opening a dialog.
+   * @param dialog Dialog React component.
+   * @param id The unique Id the identifies the dialog.
+   * @param parentDocument Optional document required when displaying a dialog in a child popup window.
+   */
+  public openDialog(dialog: React.ReactNode, id?: string, parentDocument?: Document): void {
     if (!id)
       id = `Dialog-${++DialogManagerBase._sId}`;
 
-    this.pushDialog({ reactNode: dialog, id });
+    // istanbul ignore next
+    const owningDoc = parentDocument ?? document;
+    this.pushDialog({ reactNode: dialog, id, parentDocument: owningDoc });
   }
 
   /** @internal */
@@ -110,27 +119,40 @@ export interface DialogRendererProps {
   dialogManager: DialogManagerBase;
 }
 
+/** @internal */
+interface DialogRendererState {
+  parentDocument: Document | null;
+}
 /** DialogRenderer React component.
  * @internal
- */
-export class DialogRendererBase extends React.PureComponent<DialogRendererProps> {
+ */
+export class DialogRendererBase extends React.PureComponent<DialogRendererProps, DialogRendererState> {
+  /** @internal */
+  public readonly state: DialogRendererState = {
+    parentDocument: null,
+  };
+
+  private _handleRefSet = (popupDiv: HTMLElement | null) => {
+    this.setState({ parentDocument: popupDiv?.ownerDocument ?? null });
+  };
 
   public render(): React.ReactNode {
     if (this.props.dialogManager.dialogCount <= 0)
       return null;
 
     return (
-      <>
-        {
-          this.props.dialogManager.dialogs.map((dialogInfo: DialogInfo) => {
-            return (
-              <React.Fragment key={dialogInfo.id} >
-                {dialogInfo.reactNode}
-              </React.Fragment>
-            );
-          })
+      <div className="ui-framework-dialog-render-container" ref={this._handleRefSet}>
+        { this.state.parentDocument &&
+          this.props.dialogManager.dialogs.filter((info) => info.parentDocument === this.state.parentDocument)
+            .map((dialogInfo: DialogInfo) => {
+              return (
+                <React.Fragment key={dialogInfo.id} >
+                  {dialogInfo.reactNode}
+                </React.Fragment>
+              );
+            })
         }
-      </>
+      </div>
     );
   }
 

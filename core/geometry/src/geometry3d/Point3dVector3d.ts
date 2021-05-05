@@ -837,7 +837,7 @@ export class Vector3d extends XYZ {
    * @param vectorB second vector
    * @param result optional preallocated result.
    */
-  public interpolate(fraction: number, vectorB: Vector3d, result?: Vector3d): Vector3d {
+  public interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
     if (fraction <= 0.5) {
       result.x = this.x + fraction * (vectorB.x - this.x);

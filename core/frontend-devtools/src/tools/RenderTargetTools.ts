@@ -67,7 +67,7 @@ export class ToggleReadPixelsTool extends RenderTargetDebugControlToggleTool {
 }
 
 /** Turn on the display of the draping frustum.
- * @alpha
+ * @beta
  */
 export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleDrapeFrustum";
@@ -111,7 +111,7 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
 }
 
 /** Turn on display of reality tile boundaries.
- * @alpha
+ * @beta
  */
 export class ToggleRealityTileBounds extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleRealityTileBounds";
@@ -119,14 +119,14 @@ export class ToggleRealityTileBounds extends RenderTargetDebugControlToggleTool 
 }
 
 /** Turn on display of reality tile preload debugging.
- * @alpha
+ * @beta
  */
 export class ToggleRealityTilePreload extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleRealityTilePreload";
   public get aspect(): DebugControlBoolean { return "displayRealityTilePreload"; }
 }
 /** Freeze loading of reality tiles.
- * @alpha
+ * @beta
  */
 export class ToggleRealityTileFreeze extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleRealityTileFreeze";
@@ -134,7 +134,7 @@ export class ToggleRealityTileFreeze extends RenderTargetDebugControlToggleTool 
 }
 
 /** Turn on logging of console tile selection and loading (to console).
- * @alpha
+ * @beta
  */
 export class ToggleRealityTileLogging extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleRealityTileLogging";
@@ -142,7 +142,7 @@ export class ToggleRealityTileLogging extends RenderTargetDebugControlToggleTool
 }
 
 /** Toggles support for intersecting volume classifiers.
- * @internal
+ * @beta
  */
 export class ToggleVolClassIntersect extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleVCIntersect";
@@ -150,7 +150,7 @@ export class ToggleVolClassIntersect extends RenderTargetDebugControlToggleTool 
 }
 
 /** Set the number of antialiasing samples to use (<=1 for no antialiasing).
- * @internal
+ * @beta
  */
 export class SetAASamplesTool extends RenderTargetDebugControlTool {
   public static toolId = "SetAASamples";
@@ -167,6 +167,9 @@ export class SetAASamplesTool extends RenderTargetDebugControlTool {
       vp.antialiasSamples = this._aaSamples;
   }
 
+  /** Runs this tool, setting the number of antialiasing samples to use (<=1 for no antialiasing).
+   * @param args contains the arguments used by the tool's run method: args[0] contains the number of samples; optionally args[1] can contain the word "all" in order to set those number of samples for all viewports.
+   */
   public parseAndRun(...args: string[]): boolean {
     if (0 < args.length)
       this._aaSamples = parseInt(args[0], 10);

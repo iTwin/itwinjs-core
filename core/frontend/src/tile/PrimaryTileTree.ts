@@ -13,7 +13,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GraphicalEditingScope } from "../GraphicalEditingScope";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderScheduleState } from "../RenderScheduleState";
@@ -44,12 +43,6 @@ class PlanProjectionTileTree extends IModelTileTree {
 
 class PrimaryTreeSupplier implements TileTreeSupplier {
   public constructor() {
-    GraphicalEditingScope.onEnter.addListener((scope) => {
-      scope.onExited.addOnce((sesh) => {
-        assert(sesh === scope);
-        this.onExitScope(scope);
-      });
-    });
   }
 
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
@@ -100,25 +93,24 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   public getOwner(id: PrimaryTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(id, this);
   }
-
-  private onExitScope(scope: GraphicalEditingScope): void {
-    // Reset tile trees for any models that were modified within the scope.
-    const changes = scope.getGeometryChanges();
-    const trees = scope.iModel.tiles.getTreeOwnersForSupplier(this);
-    for (const kvp of trees) {
-      const id = kvp.id as PrimaryTreeId;
-      assert(undefined !== id.modelId);
-      for (const change of changes) {
-        if (change.id === id.modelId) {
-          kvp.owner.dispose();
-          break;
-        }
-      }
-    }
-  }
 }
 
 const primaryTreeSupplier = new PrimaryTreeSupplier();
+
+/** Find all extant tile trees associated with the specified model Ids and dispose of them.
+ * This is used by BriefcaseConnection when a GraphicalEditingScope is exited or after a change to the models' geometry guids
+ * is committed, undone, redone, or merged.
+ * @internal
+ */
+export function disposeTileTreesForGeometricModels(modelIds: Set<Id64String>, iModel: IModelConnection): void {
+  const trees = iModel.tiles.getTreeOwnersForSupplier(primaryTreeSupplier);
+  for (const kvp of trees) {
+    const id = kvp.id as PrimaryTreeId;
+    assert(undefined !== id.modelId);
+    if (modelIds.has(id.modelId))
+      kvp.owner.dispose();
+  }
+}
 
 class PrimaryTreeReference extends TileTreeReference {
   public readonly view: ViewState;
@@ -243,7 +235,7 @@ class PrimaryTreeReference extends TileTreeReference {
       this._viewFlagOverrides.setForceSurfaceDiscard(true);
     }
 
-    const script = view.scheduleScript;
+    const script = view.displayStyle.scheduleState;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
     const edgesRequired = true === IModelApp.tileAdmin.alwaysRequestEdges || this._viewFlagOverrides.edgesRequired(view.viewFlags);
     const sectionCut = this._sectionClip?.clipString;
@@ -269,7 +261,7 @@ export class AnimatedTreeReference extends PrimaryTreeReference {
     if (undefined === script || undefined === this._id.treeId.animationTransformNodeId)
       return tf;
 
-    const timePoint = style.settings.timePoint ?? script.getCachedDuration().low;
+    const timePoint = style.settings.timePoint ?? script.duration.low;
     const animTf = script.getTransform(this._id.modelId, this._id.treeId.animationTransformNodeId, timePoint);
     if (animTf)
       animTf.multiplyTransformTransform(tf, tf);
@@ -450,7 +442,7 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       yield this._sectionCutRef;
   }
 
-  public updateAnimated(script: RenderScheduleState.Script | undefined): void {
+  public updateAnimated(script: RenderScheduleState | undefined): void {
     const ref = this._primaryRef;
     if (!ref)
       return;
@@ -493,12 +485,12 @@ class SpatialRefs implements SpatialTileTreeReferences {
   private readonly _view: SpatialViewState;
   private _refs = new Map<Id64String, SpatialModelRefs>();
   private _swapRefs = new Map<Id64String, SpatialModelRefs>();
-  private _scheduleScript?: RenderScheduleState.Script;
+  private _scheduleScript?: RenderScheduleState;
   private _sectionCut?: StringifiedClipVector;
 
   public constructor(view: SpatialViewState) {
     this._view = view;
-    this._scheduleScript = view.displayStyle.scheduleScript;
+    this._scheduleScript = view.displayStyle.scheduleState;
     this._sectionCut = this.getSectionCutFromView();
   }
 
@@ -519,7 +511,7 @@ class SpatialRefs implements SpatialTileTreeReferences {
       this.updateModels();
     }
 
-    const script = this._view.displayStyle.scheduleScript;
+    const script = this._view.displayStyle.scheduleState;
     if (script !== this._scheduleScript) {
       this._scheduleScript = script;
       for (const ref of this._refs.values())

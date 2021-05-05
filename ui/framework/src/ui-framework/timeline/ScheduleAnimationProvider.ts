@@ -35,7 +35,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
         loop: true,
       });
 
-      const timeRange = script.computeDuration();
+      const timeRange = script.duration;
       this.start = new Date(timeRange.low * 1000);
       this.end = new Date(timeRange.high * 1000);
 
@@ -63,7 +63,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     if (this._viewport) {
       const script = this._viewport.displayStyle.scheduleScript;
       if (script)
-        this._viewport.timePoint = script.computeDuration().fractionToPoint(animationFraction);
+        this._viewport.timePoint = script.duration.fractionToPoint(animationFraction);
     }
   };
 
