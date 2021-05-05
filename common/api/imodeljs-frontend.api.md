@@ -1412,6 +1412,7 @@ export class BatchedTileIdMap {
 
 // @public
 export interface BatchOptions {
+    locateOnly?: boolean;
     noEmphasis?: boolean;
     noFlash?: boolean;
     noHilite?: boolean;
