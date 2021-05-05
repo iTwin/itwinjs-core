@@ -28,6 +28,7 @@ alpha;CheckBox
 alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
 alpha;CheckBoxProps
 beta;ClearEffectsTool 
+beta;ClearEmphasizedElementsTool 
 beta;ClearIsolatedElementsTool 
 beta;ClearModelAppearanceOverrides 
 beta;ClearRealityModelAppearanceOverrides 
@@ -71,6 +72,7 @@ beta;ElementIdFromSourceAspectIdTool
 beta;EmbossEffect 
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
+beta;EmphasizeVisibleElementsTool 
 beta;ExplosionEffect 
 beta;ExtensionServiceTool 
 beta;FadeOutTool 
