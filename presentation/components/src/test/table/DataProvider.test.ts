@@ -11,13 +11,13 @@ import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, FieldDescriptorType, Item, KeySet, NestedContentField, NestedContentValue, PresentationError, SortDirection as PresentationSortDirection, RelationshipMeaning,
+  Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError, SortDirection as PresentationSortDirection, RelationshipMeaning,
   ValuesDictionary,
 } from "@bentley/presentation-common";
 import { createTestContentDescriptor, createTestSimpleContentField } from "@bentley/presentation-common/lib/test/_helpers/Content";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomCategory, createRandomDescriptor, createRandomECInstanceKey, createRandomNestedContentField, createRandomNestedFieldJSON, createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomDescriptor, createRandomECInstanceKey, createRandomNestedContentField, createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { RowItem } from "@bentley/ui-components";
 import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
@@ -441,7 +441,7 @@ describe("TableDataProvider", () => {
       expect(row).to.matchSnapshot();
     });
 
-    it("extracts rows with nested sameInstace field and sets mergedFieldsCount if there was more than one value in the nestedField", async () => {
+    it("extracts rows with nested sameInstance field and sets mergedFieldsCount if there was more than one value in the nestedField", async () => {
       const fields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
       const nestedField = createRandomNestedContentField(fields);
       nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
@@ -508,7 +508,7 @@ describe("TableDataProvider", () => {
       expect(row.cells[1].alignment).to.be.undefined;
     });
 
-    it("extracts rows with nested sameInstace field and doesn't set mergedFieldsCount if there is only one value in the nestedField", async () => {
+    it("extracts rows with nested sameInstance field and doesn't set mergedFieldsCount if there is only one value in the nestedField", async () => {
       const childFields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
       const childNestedField = createRandomNestedContentField(childFields);
       childNestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
@@ -555,6 +555,36 @@ describe("TableDataProvider", () => {
           },
           mergedFieldNames: [],
         }] as DisplayValue[],
+      };
+      const record = new Item([createRandomECInstanceKey()],
+        faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
+      const row = await provider.getRow(0);
+      expect(row.cells.length).to.eq(4);
+
+      expect(row.cells[0].mergedCellsCount).to.be.undefined;
+      expect(row.cells[0].alignment).to.be.undefined;
+      expect(row.cells[1].mergedCellsCount).to.be.undefined;
+      expect(row.cells[1].alignment).to.be.undefined;
+      expect(row.cells[2].mergedCellsCount).to.be.undefined;
+      expect(row.cells[2].alignment).to.be.undefined;
+      expect(row.cells[3].mergedCellsCount).to.be.undefined;
+      expect(row.cells[3].alignment).to.be.undefined;
+    });
+
+    it("extracts rows with nested sameInstance field and doesn't set mergedFieldsCount if there are no values in the nestedFields", async () => {
+      const childFields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
+      const childNestedField = createRandomNestedContentField(childFields);
+      childNestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
+      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField(), childNestedField];
+      const nestedField = createRandomNestedContentField(fields);
+      nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
+      const descriptor = createRandomDescriptor(undefined, [nestedField]);
+      const values = {
+        [nestedField.name]: [],
+      };
+      const displayValues = {
+        [nestedField.name]: [],
       };
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);

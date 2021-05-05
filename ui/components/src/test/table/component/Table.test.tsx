@@ -10,11 +10,9 @@ import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
-
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
 import { HorizontalAlignment, LocalSettingsStorage } from "@bentley/ui-core";
-
 import {
   CellItem, ColumnDescription, PropertyUpdatedArgs, PropertyValueRendererManager, RowItem, SelectionMode, Table, TableDataChangeEvent,
   TableDataChangesListener, TableDataProvider, TableProps, TableSelectionTarget,
@@ -25,7 +23,6 @@ import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 import { createDOMRect } from "../../Utils";
-import { stub } from "sinon";
 
 describe("Table", () => {
 

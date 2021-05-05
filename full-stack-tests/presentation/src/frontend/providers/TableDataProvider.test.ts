@@ -9,10 +9,9 @@ import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { ContentSpecificationTypes, InstanceKey, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { PresentationTableDataProvider } from "@bentley/presentation-components";
-import { consoleDiagnosticsHandler, Presentation } from "@bentley/presentation-frontend";
+import { Presentation } from "@bentley/presentation-frontend";
 import { SortDirection } from "@bentley/ui-core";
 import { initialize, terminate } from "../../IntegrationTests";
-import { Direction } from "@bentley/ui-components";
 
 const RULESET_MODIFIER: Ruleset = {
   id: "ruleset",
@@ -25,25 +24,25 @@ const RULESET_MODIFIER: Ruleset = {
     ruleType: RuleTypes.ContentModifier,
     class: {
       schemaName: "BisCore",
-      className: "Model"
+      className: "Model",
     },
     relatedProperties: [
       {
         propertiesSource: {
           relationship: {
             schemaName: "BisCore",
-            className: "ModelContainsElements"
+            className: "ModelContainsElements",
           },
-          direction: RelationshipDirection.Forward
+          direction: RelationshipDirection.Forward,
         },
         handleTargetClassPolymorphically: true,
         relationshipMeaning: RelationshipMeaning.SameInstance,
         properties: [
           "UserLabel",
           "CodeValue",
-        ]
-      }
-    ]
+        ],
+      },
+    ],
   }],
 };
 

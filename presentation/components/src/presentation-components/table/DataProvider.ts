@@ -260,9 +260,9 @@ const createColumns = (descriptor: Readonly<Descriptor> | undefined): ColumnDesc
   // Return array of ColumnDescriptions created from fields which are sorted and with extracted SameInstanceFields
   return getFieldsWithExtractedSameInstanceFields(
     sort(descriptor.fields).by([
-    { desc: (f) => f.priority },
-    { asc: (f) => f.label },
-  ])
+      { desc: (f) => f.priority },
+      { asc: (f) => f.label },
+    ])
   ).map((f) => createColumn(f));
 };
 
@@ -301,9 +301,12 @@ const getFieldsWithExtractedSameInstanceFieldsAndCreateMap = (fields: Field[]) =
       const { firstExtractedFieldNameToNestedFieldMap: childFirstExtractedFieldToNestedFieldMap, updatedFields: childUpdatedFields } = getFieldsWithExtractedSameInstanceFieldsAndCreateMap(nestedFields);
       const deletedField = updatedFields.splice(i, 1, ...childUpdatedFields)[0];
 
-      // Map the first extracted field name to a nestedField from which the field was extracted.
-      firstExtractedFieldNameToNestedFieldMap[field.nestedFields[0].name] = deletedField;
-      firstExtractedFieldNameToNestedFieldMap = { ...firstExtractedFieldNameToNestedFieldMap, ...childFirstExtractedFieldToNestedFieldMap };
+      // Map the first extracted field name to a nestedField from which the field was extracted and merge it with the map found in child fields.
+      firstExtractedFieldNameToNestedFieldMap = {
+        ...firstExtractedFieldNameToNestedFieldMap,
+        ...childFirstExtractedFieldToNestedFieldMap,
+        [field.nestedFields[0].name]: deletedField,
+      };
 
       // Skip inserted fields
       i += childUpdatedFields.length - 1;
@@ -382,15 +385,15 @@ const createLabelColumn = (): ColumnDescription => {
 const createRows = (c: Readonly<Content> | undefined): RowItem[] => {
   if (!c)
     return [];
-  return c.contentSet.map((item) => createRow(c.descriptor, item));
+  const { firstExtractedFieldNameToNestedFieldMap: sameInstanceFieldsMap, updatedFields } = getFieldsWithExtractedSameInstanceFieldsAndCreateMap(c.descriptor.fields);
+  return c.contentSet.map((item) => createRow(c.descriptor, item, sameInstanceFieldsMap, updatedFields));
 };
 
-const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>): RowItem => {
+const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>, sameInstanceFieldsMap: {[fieldName: string]: Field}, updatedFields: Field[]): RowItem => {
   if (item.primaryKeys.length !== 1) {
     // note: for table view we expect the record to always have only 1 primary key
     throw new PresentationError(PresentationStatus.InvalidArgument, "item.primaryKeys");
   }
-  const { firstExtractedFieldNameToNestedFieldMap: sameInstanceFieldsMap, updatedFields } = getFieldsWithExtractedSameInstanceFieldsAndCreateMap(descriptor.fields);
   const { mergedFieldsCounts: mergedCellsCounts, updatedValues } = extractValues(item.values, Object.values(sameInstanceFieldsMap).map((field) => (field.name)));
   const updatedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, updatedValues, item.displayValues, item.mergedFieldNames, item.extendedData);
 
