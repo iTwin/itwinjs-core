@@ -5252,6 +5252,7 @@ export class Transform implements BeJSONFunctions {
     setMultiplyTransformTransform(transformA: Transform, transformB: Transform): void;
     setOriginAndMatrixColumns(origin: XYZ | undefined, vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ: Vector3d | undefined): void;
     toJSON(): TransformProps;
+    toRows(): number[][];
 }
 
 // @public
@@ -5530,7 +5531,7 @@ export class Vector3d extends XYZ {
     dotProductXYZ(x: number, y: number, z?: number): number;
     fractionOfProjectionToVector(target: Vector3d, defaultFraction?: number): number;
     static fromJSON(json?: XYZProps): Vector3d;
-    interpolate(fraction: number, vectorB: Vector3d, result?: Vector3d): Vector3d;
+    interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d;
     isParallelTo(other: Vector3d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean): boolean;
     isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength?: boolean): boolean;
     minus(vector: XYAndZ, result?: Vector3d): Vector3d;

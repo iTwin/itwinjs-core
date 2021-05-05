@@ -6,6 +6,7 @@
  * @module Toolbar
  */
 
+import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
@@ -23,7 +24,6 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
 
-import classnames = require("classnames");
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

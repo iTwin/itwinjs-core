@@ -85,8 +85,8 @@ Object {
   },
   "style": Object {
     "colorOverrides": Object {
-      "backgroundColor": -1456493057,
-      "color": -1841005313,
+      "backgroundColor": 11087789,
+      "color": 9585788,
     },
   },
 }
@@ -130,7 +130,7 @@ Object {
   },
   "style": Object {
     "colorOverrides": Object {
-      "backgroundColor": -1829999873,
+      "backgroundColor": 9628778,
     },
     "isBold": true,
     "isItalic": true,
@@ -175,7 +175,7 @@ Object {
   "parentId": "Organic",
   "style": Object {
     "colorOverrides": Object {
-      "color": 17731327,
+      "color": 69262,
     },
   },
 }
@@ -221,7 +221,7 @@ Array [
     },
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": -2024888833,
+        "backgroundColor": 8867493,
       },
     },
   },
@@ -262,7 +262,7 @@ Array [
     },
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 2086765311,
+        "backgroundColor": 8151426,
       },
     },
   },
@@ -308,8 +308,8 @@ Array [
     "parentId": "Cuban Peso Peso Convertible",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": -785933057,
-        "color": -2116120833,
+        "backgroundColor": 13707164,
+        "color": 8511118,
       },
     },
   },

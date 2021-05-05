@@ -7,12 +7,12 @@
  */
 import { assert } from "@bentley/bentleyjs-core";
 import {
-  ArrayTypeDescription, DisplayValue, DisplayValuesArray, DisplayValuesMap, Field, Item, NestedContentField, NestedContentValue,
-  PropertyValueFormat as PresentationPropertyValueFormat, StructTypeDescription, TypeDescription, Value, ValuesArray, ValuesDictionary, ValuesMap,
+  ArrayTypeDescription, DisplayValue, DisplayValuesArray, DisplayValuesMap, EditorDescription, EnumerationInfo, Field, Item, NestedContentField,
+  NestedContentValue, PropertyValueFormat as PresentationPropertyValueFormat, RendererDescription, StructTypeDescription, TypeDescription, Value,
+  ValuesArray, ValuesDictionary, ValuesMap,
 } from "@bentley/presentation-common";
 import {
-  ArrayValue, EnumerationChoicesInfo, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValue,
-  StructValue, PropertyValueFormat as UiPropertyValueFormat,
+  ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValue, StructValue, PropertyValueFormat as UiPropertyValueFormat,
 } from "@bentley/ui-abstract";
 import { Omit } from "@bentley/ui-core";
 
@@ -183,28 +183,14 @@ export class ContentBuilder {
    * @param props Parameters for creating the description
    */
   public static createPropertyDescription(field: Field, props?: PropertyDescriptionCreationProps): PropertyDescription {
-    const descr: PropertyDescription = {
+    return createPropertyDescriptionFromFieldInfo({
+      type: field.isNestedContentField() ? field.type : { ...field.type, typeName: field.type.typeName.toLowerCase() },
       name: applyOptionalPrefix(field.name, props ? props.namePrefix : undefined),
-      displayLabel: field.label,
-      typename: field.isNestedContentField() ? field.type.typeName : field.type.typeName.toLowerCase(),
-    };
-
-    if (field.renderer) {
-      descr.renderer = { name: field.renderer.name };
-    }
-
-    if (field.editor) {
-      descr.editor = { name: field.editor.name, params: [] } as PropertyEditorInfo;
-    }
-
-    if (field.type.valueFormat === PresentationPropertyValueFormat.Primitive && "enum" === field.type.typeName && field.isPropertiesField() && field.properties[0].property.enumerationInfo) {
-      const enumInfo = field.properties[0].property.enumerationInfo;
-      descr.enum = {
-        choices: enumInfo.choices,
-        isStrict: enumInfo.isStrict,
-      } as EnumerationChoicesInfo;
-    }
-    return descr;
+      label: field.label,
+      editor: field.editor,
+      renderer: field.renderer,
+      enum: getFieldEnumInfo(field),
+    });
   }
 }
 
@@ -303,31 +289,73 @@ function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy
   return convertedFieldHierarchy;
 }
 
-function createPropertyRecordPropsFromFieldInfo(fieldType: TypeDescription, name: string, label: string, isReadonly?: boolean): CreatePropertyRecordProps {
-  const props: CreatePropertyRecordProps = {
-    description: {
-      typename: fieldType.typeName,
-      displayLabel: label,
-      name,
-    },
+function getFieldEnumInfo(field: Field): EnumerationInfo | undefined {
+  if (field.isPropertiesField())
+    return field.properties[0].property.enumerationInfo;
+  return undefined;
+}
+
+interface FieldInfo {
+  type: TypeDescription;
+  name: string;
+  label: string;
+  renderer?: RendererDescription;
+  editor?: EditorDescription;
+  enum?: EnumerationInfo;
+  isReadonly?: boolean;
+}
+function createPropertyDescriptionFromFieldInfo(info: FieldInfo) {
+  const descr: PropertyDescription = {
+    typename: info.type.typeName,
+    name: info.name,
+    displayLabel: info.label,
   };
-  if (fieldType.valueFormat === PresentationPropertyValueFormat.Array) {
-    props.items = createPropertyRecordPropsFromFieldInfo(fieldType.memberType, name, label, isReadonly);
-  } else if (fieldType.valueFormat === PresentationPropertyValueFormat.Struct) {
-    props.members = fieldType.members.reduce((map, memberDescription) => {
-      map[memberDescription.name] = createPropertyRecordPropsFromFieldInfo(memberDescription.type, memberDescription.name, memberDescription.label, isReadonly);
+
+  if (info.renderer) {
+    descr.renderer = { name: info.renderer.name };
+  }
+
+  if (info.editor) {
+    descr.editor = { name: info.editor.name, params: [] } as PropertyEditorInfo;
+  }
+
+  if (info.type.valueFormat === PresentationPropertyValueFormat.Primitive && info.enum) {
+    descr.enum = {
+      choices: info.enum.choices,
+      isStrict: info.enum.isStrict,
+    };
+  }
+  return descr;
+}
+
+function createPropertyRecordPropsFromFieldInfo(fieldInfo: FieldInfo): CreatePropertyRecordProps {
+  const props: CreatePropertyRecordProps = {
+    description: createPropertyDescriptionFromFieldInfo(fieldInfo),
+  };
+  if (fieldInfo.type.valueFormat === PresentationPropertyValueFormat.Array) {
+    props.items = createPropertyRecordPropsFromFieldInfo({ ...fieldInfo, type: fieldInfo.type.memberType });
+  } else if (fieldInfo.type.valueFormat === PresentationPropertyValueFormat.Struct) {
+    props.members = fieldInfo.type.members.reduce((map, memberDescription) => {
+      map[memberDescription.name] = createPropertyRecordPropsFromFieldInfo({ type: memberDescription.type, name: memberDescription.name, label: memberDescription.label, isReadonly: fieldInfo.isReadonly });
       return map;
     }, {} as { [memberName: string]: CreatePropertyRecordProps });
   }
-  if (isReadonly)
-    props.isReadonly = isReadonly;
+  if (fieldInfo.isReadonly)
+    props.isReadonly = true;
   return props;
 }
 
 function createPropertyRecordPropsFromFieldHierarchy(fieldHierarchy: FieldHierarchy, isFieldMerged: boolean, namePrefix: string | undefined): CreatePropertyRecordProps {
   const props: CreatePropertyRecordProps = {
-    ...createPropertyRecordPropsFromFieldInfo(fieldHierarchy.field.type, applyOptionalPrefix(fieldHierarchy.field.name, namePrefix), fieldHierarchy.field.label, fieldHierarchy.field.isReadonly || isFieldMerged),
-    description: ContentBuilder.createPropertyDescription(fieldHierarchy.field, { namePrefix }),
+    ...createPropertyRecordPropsFromFieldInfo({
+      type: fieldHierarchy.field.type,
+      name: applyOptionalPrefix(fieldHierarchy.field.name, namePrefix),
+      label: fieldHierarchy.field.label,
+      renderer: fieldHierarchy.field.renderer,
+      editor: fieldHierarchy.field.editor,
+      enum: getFieldEnumInfo(fieldHierarchy.field),
+      isReadonly: fieldHierarchy.field.isReadonly || isFieldMerged,
+    }),
     isMerged: isFieldMerged,
     autoExpand: fieldHierarchy.field.parent?.autoExpand,
   };

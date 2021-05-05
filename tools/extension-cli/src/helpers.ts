@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken } from "@bentley/itwin-client";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 import { ExtensionProps } from "@bentley/extension-client";
 import { NativeHost } from "@bentley/imodeljs-backend";
@@ -11,9 +10,8 @@ import { NativeHost } from "@bentley/imodeljs-backend";
 export async function signIn(): Promise<AccessToken> {
   const clientId = "imodeljs-extension-publisher";
   const redirectUri = "http://localhost:5001/signin-oidc";
-  const requestContext = new ClientRequestContext();
   const client = new ElectronAuthorizationBackend();
-  await client.initialize(requestContext, {
+  await client.initialize({
     clientId,
     redirectUri,
     scope: "openid imodel-extension-service-api context-registry-service:read-only offline_access imodel-extension-service:modify",

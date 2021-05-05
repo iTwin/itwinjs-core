@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-common",
+      "comment": "Add `propertySource` attribute to `InstanceLabelOverridePropertyValueSpecification` to allow picking property from a related instance.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/presentation-common",
+      "comment": "Add a new `InstanceLabelOverrideRelatedInstanceLabelSpecification` to allow picking label of a related instance.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

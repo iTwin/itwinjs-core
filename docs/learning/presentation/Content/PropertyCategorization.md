@@ -14,25 +14,29 @@ A property may or may not have a category and there are several sources it may b
 2. An ECPropertyCategory assigned to the ECProperty in ECSchema.
 3. If a property is related with a *SameInstance* relationship, and that related class contains the property.
 
-If a property has no direct category, it is displayed as if it belonged to the parent category. See the [next chapter](#category-nesting) for more details on category nesting.
+If a property has no direct category, it is displayed as if it belonged to the parent category. See the [next section](#category-nesting) for more details on category nesting.
 
 ## Category Nesting
 
 Categories group properties so they're easier for users to find and manage. However, it's often necessary to group already categorized properties into some other group, for example 'favorites'. This is where nested categorization comes into play.
 
-Generally, since a property grid requests properties for the current selection, we put all properties into the *Selected Item(s)* category:
+Generally, since a property grid requests properties for the current selection, we put all properties into the default *Selected Item(s)* category:
 
 ![Selected Item(s)' Category](./media/property-grid-selected-items-category.png)
+
+The default category can be overriden using [DefaultPropertyCategoryOverride rule](./DefaultPropertyCategoryOverride.md).
 
 If properties have [direct categories of their own](#direct-property-categories), their categories appear nested under this top-level category, e.g.:
 
 ![Nested Categories](./media/property-grid-nested-categories.png)
 
-Additionally, when presentation rules specify [related properties](./RelatedPropertiesSpecification.md), it is possible to create new top-level categories. See the [next chapter](#controlling-category-nesting-of-related-properties) for more details.
+Additionally, when presentation rules specify [related properties](./RelatedPropertiesSpecification.md), it is possible to create new top-level categories. See the [Controlling Category Nesting of Related Properties](#controlling-category-nesting-of-related-properties) for more details.
+
+Finally, category nesting can be achieved using [property category overrides](./PropertyCategorySpecification.md) - see the [Controlling Category Nesting Through Property Category Overrides section](#controlling-category-nesting-through-property-category-overrides) for more details.
 
 ### Controlling Category Nesting of Related Properties
 
-The [RelatedPropertiesSpecification](./RelatedPropertiesSpecification.md) has an attribute `relationshipMeaning` which tells whether the related properties should be displayed as if they belong to the selected instance or a separate (related) instance. In the latter case, a new nested property category group is created based on the related class. Example:
+[RelatedPropertiesSpecification](./RelatedPropertiesSpecification.md) has an attribute `relationshipMeaning` which tells whether the related properties should be displayed as if they belong to the selected instance or a separate (related) instance. In the latter case, a new nested property category group is created based on the related class. Example:
 
 **ECSchema:**
 
@@ -197,3 +201,44 @@ Here is a more complex example with *nested* related properties:
 **Result:**
 
 !['Relationship Meaning on Nested Related Properties'](./media/property-grid-example-nested-related-properties.png)
+
+### Controlling Category Nesting Through Property Category Overrides
+
+[PropertyCategorySpecification](./PropertyCategorySpecification.md) has an attribute `parentId` which can point to another custom category to become nested inside it:
+
+**ECSchema:**
+
+```xml
+<ECEntityClass typeName="A">
+  <ECProperty propertyName="PropA" typeName="string" />
+  <ECProperty propertyName="PropB" typeName="string" />
+</ECEntityClass>
+```
+
+[ContentModifier](./ContentModifier.md) used in **Presentation Rules** for ECClass `A`:
+
+```json
+{
+  "ruleType": "ContentModifier",
+  "class": { "schemaName": "MySchema", "className": "A" },
+  "propertyCategories": [{
+    "id": "parent_category",
+    "label": "Parent Category"
+  }, {
+    "id": "child_category",
+    "parentId": "parent_category",
+    "label": "Child Category"
+  }],
+  "propertyOverrides": [{
+    "name": "PropA",
+    "categoryId": "parent_category"
+  }, {
+    "name": "PropB",
+    "categoryId": "child_category"
+  }]
+}
+```
+
+**Result:**
+
+!['Custom Nested Properties'](./media/property-grid-example-custom-nested-categories.png)

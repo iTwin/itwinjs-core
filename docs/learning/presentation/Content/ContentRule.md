@@ -15,6 +15,7 @@ Name | Required? | Type | Default | Meaning
 *Picking attributes* |
 `priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
 `condition` | No | [ECExpression](./ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
+`requiredSchemas` | No | [`RequiredSchemaSpecification[]`](../SchemaRequirements.md) | `[]` | Specifications that define schema requirements for the rule to take effect.
 `onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
 *Content attributes* |
 `specifications` | No | `ContentSpecification[]` | `[]` | Specifications that define what content the rule returns.
@@ -26,6 +27,7 @@ Name | Required? | Type | Default | Meaning
   "ruleType": "Content",
   "priority": 999,
   "condition": "SelectedNode.IsOfClass(\"Model\", \"BisCore\")",
+  "requiredSchemas": [{ "name": "BisCore", "minVersion": "1.0.1" }],
   "specifications": [],
 }
 ```

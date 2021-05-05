@@ -70,12 +70,14 @@
   // margin-top: -13px;
 }
 
-.virtualized-grid-node-content > .uicore-expandable-blocks-block.is-expanded {
+.virtualized-grid-node-content:not(.virtualized-grid-node-custom-category) > .uicore-expandable-blocks-block.is-expanded {
   border-bottom: none;
 }
 
-.virtualized-grid-node-content.virtualized-grid-node-category {
-  padding-bottom: 3px;
+.virtualized-grid-node-content {
+  &.virtualized-grid-node-category, &.virtualized-grid-node-custom-category {
+    padding-bottom: 3px;
+  }
 }
 
 .virtualized-grid-node-content {
