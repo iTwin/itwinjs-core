@@ -43,8 +43,8 @@ describe("NativeApp (#integration)", () => {
   before(async () => ElectronApp.startup(appOpts));
   before(async () => {
     await ElectronApp.startup(appOpts);
-    await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
     IModelApp.authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
+    await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
 
     testProjectName = Config.App.get("imjs_test_project_name");
 

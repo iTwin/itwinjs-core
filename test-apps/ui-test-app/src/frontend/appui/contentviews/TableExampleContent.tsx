@@ -171,7 +171,7 @@ const createLoremPropertyRecord = (column: ColumnDescription) => {
   return new PropertyRecord(v, pd);
 };
 
-class TableExampleContent extends React.Component<{}, TableExampleState>  {
+export class TableExampleContent extends React.Component<{}, TableExampleState>  {
   public readonly state: Readonly<TableExampleState>;
 
   private _columns: ColumnDescription[] = [
