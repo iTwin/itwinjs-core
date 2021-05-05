@@ -802,7 +802,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
       interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
 
-      const rectFrust = this._scratchRectFrustum;
+      rectFrust = this._scratchRectFrustum;
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);

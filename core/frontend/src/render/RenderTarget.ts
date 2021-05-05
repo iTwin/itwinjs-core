@@ -26,7 +26,7 @@ import { RenderPlan } from "./RenderPlan";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
-import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback, VisibleFeature } from "./VisibleFeature";
+import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].

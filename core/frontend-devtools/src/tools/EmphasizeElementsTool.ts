@@ -116,7 +116,7 @@ export class ClearEmphasizedElementsTool extends EmphasizeElementsTool {
   protected get _wantCreate() { return false; }
   protected get _wantClear() { return true; }
 
-  public execute(emph:EmphasizeElements, vp: ScreenViewport): void {
+  public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
     emph.clearEmphasizedElements(vp);
     vp.isFadeOutActive = false;
   }

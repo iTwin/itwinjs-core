@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Id64, Id64String, using } from "@bentley/bentleyjs-core";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { BatchType, PackedFeature } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { QueryTileFeaturesOptions, VisibleFeature } from "../VisibleFeature";

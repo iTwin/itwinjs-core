@@ -6,11 +6,9 @@ import { expect } from "chai";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ViewRect } from "../../ViewRect";
 import { QueryVisibleFeaturesOptions } from "../../render/VisibleFeature";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport } from "../../Viewport";
-import { TiledGraphicsProvider } from "../../tile/TiledGraphicsProvider";
 import { createBlankConnection } from "../createBlankConnection";
 
 describe("Visible feature query", () => {
