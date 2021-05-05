@@ -41,15 +41,17 @@ export function setupDebugLogLevels() {
 class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public get channelName() { return testIpcChannel; }
 
-  public async getTestProjectProps(): Promise<TestProjectProps> {
+  public async getTestProjectProps(user: TestUserCredentials): Promise<TestProjectProps> {
+    // first, perform silent login
+    NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));
+
     const projectName = Config.App.get("imjs_test_project_name");
 
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     if (CloudEnv.cloudEnv.isIModelHub) {
       const region = Config.App.get("imjs_buddi_resolve_url_using_region") || "0";
       return { projectName, iModelHub: { region } };
     }
-    const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(requestContext);
+    const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(ClientRequestContext.current as AuthorizedClientRequestContext);
     return { projectName, iModelBank: { url } };
   }
 
@@ -67,11 +69,6 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
 
   public async endOfflineScope(): Promise<void> {
     nock.cleanAll();
-  }
-
-  public async silentLogin(user: TestUserCredentials): Promise<void> {
-    const token = await TestUtility.getAccessToken(user);
-    NativeHost.authorization.setAccessToken(token);
   }
 }
 

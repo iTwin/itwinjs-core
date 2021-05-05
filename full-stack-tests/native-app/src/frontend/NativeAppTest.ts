@@ -19,13 +19,11 @@ export class NativeAppTest {
   }
 
   public static async initializeTestProject(): Promise<string> {
-    // first, perform silent login
-    await NativeAppTest.callBackend("silentLogin", TestUsers.regular);
-
-    const props = await NativeAppTest.callBackend("getTestProjectProps");
+    const user = TestUsers.regular;
+    const props = await NativeAppTest.callBackend("getTestProjectProps", user);
     if (props.iModelBank) {
       const bank = new IModelBankCloudEnv(props.iModelBank.url, false);
-      const authorizationClient = bank.getAuthorizationClient(undefined, TestUsers.regular);
+      const authorizationClient = bank.getAuthorizationClient(undefined, user);
       await bank.bootstrapIModelBankProject(new AuthorizedClientRequestContext(await authorizationClient.getAccessToken()), props.projectName);
       this.imodelCloudEnv = bank;
     } else {

@@ -20,6 +20,5 @@ export interface TestIpcInterface {
   purgeStorageCache: () => Promise<void>;
   beginOfflineScope: () => Promise<void>;
   endOfflineScope: () => Promise<void>;
-  getTestProjectProps: () => Promise<TestProjectProps>;
-  silentLogin: (user: TestUserCredentials) => Promise<void>;
+  getTestProjectProps: (user: TestUserCredentials) => Promise<TestProjectProps>;
 }
