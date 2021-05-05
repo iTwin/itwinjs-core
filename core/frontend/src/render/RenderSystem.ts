@@ -195,6 +195,8 @@ export interface BatchOptions {
   noHilite?: boolean;
   /** If true, features within the batch will not be emphasized when the corresponding [[Feature]] is emphasized using [FeatureOverrides]($common). */
   noEmphasis?: boolean;
+  /** If true, the contents of the batch will only be drawn by [[Viewport.readPixels]], not [[Viewport.renderFrame]], causing them to be locatable but invisible. */
+  locateOnly?: boolean;
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
