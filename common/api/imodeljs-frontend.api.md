@@ -7274,8 +7274,30 @@ export type QuantityTypeKey = string;
 // @public
 export function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
 
+// @beta
+export interface QueryScreenFeaturesOptions {
+    includeNonLocatable?: boolean;
+    rect?: ViewRect;
+    source: "screen";
+}
+
 // @public
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
+
+// @beta
+export interface QueryTileFeaturesOptions {
+    includeNonLocatable?: boolean;
+    source: "tiles";
+}
+
+// @internal
+export function queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
+
+// @beta
+export type QueryVisibleFeaturesCallback = (features: Iterable<VisibleFeature>) => void;
+
+// @beta
+export type QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions;
 
 // @internal
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
@@ -8102,6 +8124,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void;
     // (undocumented)
     pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined;
+    queryVisibleTileFeatures(_options: QueryTileFeaturesOptions, _iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
     readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     readImageToCanvas(): HTMLCanvasElement;
@@ -9462,6 +9485,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     pushState(state: BranchState): void;
     // (undocumented)
     pushViewClip(): void;
+    // (undocumented)
+    queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
     readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
@@ -12091,6 +12116,8 @@ export abstract class Viewport implements IDisposable {
     get pixelsPerInch(): number;
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
+    // @beta
+    queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
     // @internal
     readImageToCanvas(): HTMLCanvasElement;
@@ -12774,6 +12801,15 @@ export class ViewUndoTool extends ViewTool {
     onPostInstall(): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @beta
+export interface VisibleFeature {
+    readonly elementId: Id64String;
+    readonly geometryClass: GeometryClass;
+    iModel: IModelConnection;
+    readonly modelId: Id64String;
+    readonly subCategoryId: Id64String;
 }
 
 // @public
