@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Revert to using older GPU timer extension in webgl2 if the newer extension isn't supported",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "18196761+hnn0003@users.noreply.github.com"
+}

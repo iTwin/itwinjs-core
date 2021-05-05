@@ -63,8 +63,8 @@ describe("NativeApp (#integration)", () => {
       },
     });
 
-    await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
     IModelApp.authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
+    await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
 
     testProjectName = Config.App.get("imjs_test_project_name");
     testIModelName = Config.App.get("imjs_test_imodel_name");

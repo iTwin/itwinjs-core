@@ -339,6 +339,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
             opened={this.state.isOptionsOpened}
             x={this._getOptionsX()}
             y={this._getOptionsY()}
+            onOutsideClick={this._onCloseContextMenu}
           >
             <ContextMenuItem
               key={0}
@@ -468,9 +469,9 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     }));
   }
 
-  private _onCloseContextMenu() {
+  private _onCloseContextMenu = () => {
     this.setState({ isOptionsOpened: false });
-  }
+  };
 
   private _getSpinner() {
     return <LoadingSpinner size={SpinnerSize.Large} />;
