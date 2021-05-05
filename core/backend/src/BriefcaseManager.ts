@@ -286,7 +286,7 @@ export class BriefcaseManager {
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not find briefcase to release");
+      Logger.logError(loggerCategory, "Could not find briefcase to release", () => ({ iModelId, briefcaseId }));
       throw error;
     }
 
