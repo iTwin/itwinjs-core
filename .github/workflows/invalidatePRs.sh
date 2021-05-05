@@ -2,8 +2,19 @@
 
 # GitHub workflow handles invalidating Pull Requests after 3 hours.
 #
-# It will only invalidate open, non-draft pull requests and mark each status
-# as timed out.
+# It will only invalidate open, non-draft pull requests that are
+# 3 hours after successfully passing build checks and
+# out-of-date with their target branch
+#
+# Possible cases
+# 1. PRs that are out-of-date with their target branch and
+#   that have any of passed build checks which happened
+#   more than 3 hours ago will be invalidated
+# 2. PRs that are up-to-date with their target branch
+#   will not be invalidated
+# 3. PRs that are out-of-date with their target branch and
+#   have passed all build checks within 3 hours will not
+#   be invalidated
 
 if [[ "" == $token ]]; then
   echo Missing the environment variable "$token"
@@ -62,7 +73,9 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
 
   shaToCompare=${listSha[${ref}]}
 
-  # Keep the list of branch head sha
+  # Check if shaToCompare exists
+  # if it doesn't, find the shaToCompare and save it to listSha
+  # to keep track of head sha that has been used alreday
   if [[ $shaToCompare == "" ]]
   then
     refCommit=$(curl -s \
@@ -76,7 +89,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
   fi
 
   # Compare base sha with the target branch head sha
-  log "  Head sha at ${ref} branch is ${shaToCompare} and base sha is ${sha}"
+  log "  Target branch, ${ref}, commit sha is ${shaToCompare} and PR is on ${sha}"
   if [[ $shaToCompare == $sha ]]
     then
     log "  Skipping since it is up-to-date with the target branch, ${ref}."
@@ -100,7 +113,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
   createdTooOld=$(node -e "const lutPlus3=new Date('$prCreationTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
   pushedTooOld=$(node -e "const lutPlus3=new Date('$lastPushedTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
   if [[ $createdTooOld == false || $pushedTooOld == false ]]; then
-    log "  Skipping since this PR has been created or last pushed within the past 3 hours."
+    log "  Skipping since this PR has been created or updated within the past 3 hours."
     continue
   fi
 
