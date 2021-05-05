@@ -2198,7 +2198,7 @@ export interface Decorator extends ViewportDecorator {
 
 // @internal (undocumented)
 export class DefaultViewTouchTool extends ViewManip implements Animator {
-    constructor(startEv: BeTouchEvent, ev: BeTouchEvent);
+    constructor(startEv: BeTouchEvent, ev: BeTouchEvent, only2dManipulations?: boolean);
     animate(): boolean;
     // (undocumented)
     interrupt(): void;
@@ -10517,6 +10517,7 @@ export class ToolAdmin {
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     gridLock: boolean;
     get idleTool(): IdleTool;
+    set idleTool(idleTool: IdleTool);
     // (undocumented)
     get isLocateCircleOn(): boolean;
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
