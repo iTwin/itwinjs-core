@@ -27,7 +27,9 @@ import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import { ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, ToggleSkyboxTool } from "./tools/DisplayStyleTools";
-import { ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, IsolateSelectedElementsTool } from "./tools/EmphasizeElementsTool";
+import {
+  ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
+} from "./tools/EmphasizeElementsTool";
 import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
@@ -102,6 +104,7 @@ export class FrontendDevTools {
       ChangeUnitsTool,
       ChangeViewFlagsTool,
       ClearEffectsTool,
+      ClearEmphasizedElementsTool,
       ClearIsolatedElementsTool,
       ClipColorTool,
       CompileShadersTool,
@@ -112,6 +115,7 @@ export class FrontendDevTools {
       EmbossEffect,
       ElementIdFromSourceAspectIdTool,
       EmphasizeSelectedElementsTool,
+      EmphasizeVisibleElementsTool,
       ExplosionEffect,
       ExtensionServiceTool,
       FadeOutTool,
