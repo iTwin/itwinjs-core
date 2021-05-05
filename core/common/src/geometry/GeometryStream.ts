@@ -12,7 +12,7 @@ import {
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@bentley/geometry-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";
-import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps } from "../ElementProps";
+import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, isPlacement2dProps, PlacementProps } from "../ElementProps";
 import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
 import { IModelError } from "../IModelError";
@@ -21,6 +21,7 @@ import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
 import { TextString, TextStringProps } from "./TextString";
 import { Base64EncodedString } from "../Base64EncodedString";
+import { Placement2d, Placement3d } from "./Placement";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -205,6 +206,14 @@ export class GeometryStreamBuilder {
    */
   public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
     this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)));
+  }
+
+  /** Supply local to world transform from a PlacementProps2d or PlacementProps3d.
+   * @see [[PlacementProps]]
+   */
+  public setLocalToWorldFromPlacement(props: PlacementProps) {
+    const placement = isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
+    this.setLocalToWorld(placement.transform);
   }
 
   /** Store local ranges in GeometryStream for all subsequent geometry appended. Can improve performance of range testing for elements with a GeometryStream
