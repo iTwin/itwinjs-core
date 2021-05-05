@@ -9,7 +9,7 @@ import * as nock from "nock";
 import * as path from "path";
 import { BentleyLoggerCategory, ClientRequestContext, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost, ElectronHostOpts } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import { BackendLoggerCategory, IModelHostConfiguration, IModelJsFs, IpcHandler, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
 import { RpcConfiguration } from "@bentley/imodeljs-common";
@@ -80,6 +80,16 @@ async function init() {
   iModelHost.concurrentQuery.concurrent = 2;
   iModelHost.concurrentQuery.pollInterval = 5;
   iModelHost.cacheDir = path.join(__dirname, "out");
-  await ElectronHost.startup({ electronHost: { ipcHandlers: [TestIpcHandler] }, iModelHost });
+
+  await ElectronHost.startup({
+    electronHost: {
+      ipcHandlers: [TestIpcHandler],
+      authConfig: {
+        clientId: "testapp", redirectUri: "", scope: "",
+      },
+    },
+    iModelHost,
+  });
 }
+
 module.exports = init();

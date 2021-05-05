@@ -6,18 +6,30 @@ import { assert } from "chai";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { NativeApp } from "@bentley/imodeljs-frontend";
 import { TestUtility } from "../hub/TestUtility";
+import { usingOfflineScope } from "../hub/HttpRequestHook";
 
-describe("NativeApp Storage frontend", () => {
+describe("NativeApp startup", () => {
+  before(async () => ElectronApp.startup());
+  after(async () => ElectronApp.shutdown());
+
+  it("should startup offline without errors", async () => {
+    await usingOfflineScope(async () => {
+      await ElectronApp.shutdown();
+      await ElectronApp.startup();
+      assert.isTrue(ElectronApp.isValid);
+    });
+  });
+});
+
+describe("NativeApp Storage", () => {
   before(async () => {
     await ElectronApp.startup();
     await TestUtility.callBackend("purgeStorageCache");
   });
 
-  after(async () => {
-    await ElectronApp.shutdown();
-  });
+  after(async () => ElectronApp.shutdown());
 
-  it("Primitive Type ", async () => {
+  it("Primitive Types", async () => {
     const test1 = await NativeApp.openStorage("fronted_test_1");
     await test1.removeAll();
     const dataset = [
@@ -81,5 +93,4 @@ describe("NativeApp Storage frontend", () => {
     assert.isUndefined(await test1.getData("key1"));
     await NativeApp.closeStorage(test1, true);
   });
-
 });

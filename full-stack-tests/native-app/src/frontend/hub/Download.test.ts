@@ -6,44 +6,26 @@ import { assert } from "chai";
 import { BeDuration, Config, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, IModelApp, NativeApp, NativeAppAuthorization, NativeAppOpts } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection, NativeApp } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { usingOfflineScope } from "./HttpRequestHook";
 import { TestUtility } from "./TestUtility";
 
-const appOpts: NativeAppOpts = {
-  iModelApp: {
-    applicationId: "1234",
-    applicationVersion: "testappversion",
-    sessionId: "testsessionid",
-  },
-};
-
-describe("NativeApp (offline)", () => {
-  before(async () => ElectronApp.startup(appOpts));
-
-  it("must startup offline without errors", async () => {
-    await usingOfflineScope(async () => {
-      await ElectronApp.shutdown();
-      await ElectronApp.startup(appOpts);
-      assert.isTrue(ElectronApp.isValid);
-    });
-  });
-
-  after(async () => {
-    await ElectronApp.shutdown();
-  });
-});
-
-describe("NativeApp (#integration)", () => {
+describe("NativeApp Download (#integration)", () => {
   let testProjectName: string;
   let testProjectId: GuidString;
 
-  before(async () => ElectronApp.startup(appOpts));
   before(async () => {
-    await ElectronApp.startup(appOpts);
-    IModelApp.authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
+    await ElectronApp.startup({
+      iModelApp: {
+        applicationId: "1234",
+        applicationVersion: "testappversion",
+        sessionId: "testsessionid",
+      },
+    });
+
+    // perform silent login
     await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
 
     testProjectName = Config.App.get("imjs_test_project_name");
@@ -52,10 +34,7 @@ describe("NativeApp (#integration)", () => {
     testProjectId = await TestUtility.getTestProjectId(testProjectName);
   });
 
-  after(async () => {
-    await ElectronApp.shutdown();
-    IModelApp.authorizationClient = undefined;
-  });
+  after(async () => ElectronApp.shutdown());
 
   it("Download Briefcase with progress events (#integration)", async () => {
     let events = 0;
@@ -88,7 +67,7 @@ describe("NativeApp (#integration)", () => {
     });
   });
 
-  it("Should be able to cancel an in progress download (#integration)", async () => {
+  it("Should be able to cancel download (#integration)", async () => {
     const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, "Stadium Dataset 1");
     const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly });
 
