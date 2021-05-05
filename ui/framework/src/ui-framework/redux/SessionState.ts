@@ -18,7 +18,7 @@ import { ActionsUnion, createAction, DeepReadonly } from "./redux-ts";
 /** PresentationSelectionScope holds the id and the localized label for a selection scope supported for a specific iModel.
  * Added to avoid an api-extract error caused by using SelectionScope.
  * @public
- */
+ */
 export interface PresentationSelectionScope {
   id: string;
   label: string;
@@ -31,6 +31,7 @@ export interface PresentationSelectionScope {
 export interface CursorMenuData {
   items: MenuItemProps[];
   position: XAndY;
+  childWindowId?: string;
 }
 
 /** Action Ids used by Redux and to send sync UI components. Typically used to refresh visibility or enable state of control.

@@ -406,8 +406,8 @@ export class SceneContext extends RenderContext {
       return drape;
 
     drape = this.viewport.target.getTextureDrape(id);
-    if (undefined === drape)
-      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTreeRef, this.viewport.displayStyle.backgroundDrapeMap);
+    if (undefined === drape && this.viewport.backgroundDrapeMap)
+      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTreeRef, this.viewport.backgroundDrapeMap);
 
     if (undefined !== drape)
       this.textureDrapes.set(id, drape);

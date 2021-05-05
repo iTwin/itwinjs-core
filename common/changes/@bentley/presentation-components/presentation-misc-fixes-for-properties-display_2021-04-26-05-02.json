@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Sort categories and fields in table and property data providers based on priority and label rather than name.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/mobile-manager",
+      "comment": "Fixes to desktop/mobile authorization",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/mobile-manager",
+  "email": "32458710+ramanujam-raman@users.noreply.github.com"
+}

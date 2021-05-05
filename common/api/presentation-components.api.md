@@ -447,7 +447,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     protected shouldConfigureContentDescriptor(): boolean;
     protected sortCategories(categories: CategoryDescription[]): void;
     protected sortFields: (category: CategoryDescription, fields: Field[]) => void;
-    }
+}
 
 // @public
 export interface PresentationPropertyDataProviderProps extends DiagnosticsProps {

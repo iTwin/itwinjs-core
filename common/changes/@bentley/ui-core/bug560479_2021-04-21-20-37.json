@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Wrap resizeObserver in a windows animation frame to prevent loop limit exceeded error.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}

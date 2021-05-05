@@ -57,3 +57,4 @@ export * from "./render/webgl/Texture";
 export * from "./render/webgl/UniformHandle";
 export * from "./render/webgl/VertexLUT";
 export * from "./render/webgl/ViewRectUniforms";
+export * from "./render/webgl/VisibleTileFeatures";

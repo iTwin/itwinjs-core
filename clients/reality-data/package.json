@@ -1,6 +1,6 @@
 {
   "name": "@bentley/reality-data-client",
-  "version": "2.16.0-dev.13",
+  "version": "2.16.0-dev.25",
   "description": "iModel.js Reality Data Client",
   "main": "lib/reality-data-client.js",
   "typings": "lib/reality-data-client",
@@ -36,20 +36,20 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.13"
+    "@bentley/bentleyjs-core": "2.16.0-dev.25"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.16.0-dev.13"
+    "@bentley/itwin-client": "^2.16.0-dev.25"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.13",
-    "@bentley/certa": "2.16.0-dev.13",
-    "@bentley/config-loader": "2.16.0-dev.13",
-    "@bentley/context-registry-client": "2.16.0-dev.13",
-    "@bentley/eslint-plugin": "2.16.0-dev.13",
-    "@bentley/geometry-core": "2.16.0-dev.13",
-    "@bentley/itwin-client": "2.16.0-dev.13",
-    "@bentley/oidc-signin-tool": "2.16.0-dev.13",
+    "@bentley/build-tools": "2.16.0-dev.25",
+    "@bentley/certa": "2.16.0-dev.25",
+    "@bentley/config-loader": "2.16.0-dev.25",
+    "@bentley/context-registry-client": "2.16.0-dev.25",
+    "@bentley/eslint-plugin": "2.16.0-dev.25",
+    "@bentley/geometry-core": "2.16.0-dev.25",
+    "@bentley/itwin-client": "2.16.0-dev.25",
+    "@bentley/oidc-signin-tool": "2.16.0-dev.25",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",

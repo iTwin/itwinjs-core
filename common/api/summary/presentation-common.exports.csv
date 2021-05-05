@@ -40,9 +40,9 @@ public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | C
 public;ContentSpecificationBase 
 public;ContentSpecificationTypes
 alpha;ContentUpdateInfo = typeof UPDATE_FULL
-public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
+public;CustomRendererSpecification
 public;DEFAULT_KEYS_BATCH_SIZE = 5000
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
@@ -149,8 +149,9 @@ public;InstanceLabelOverrideClassNameSpecification
 public;InstanceLabelOverrideCompositeValueSpecification 
 public;InstanceLabelOverrideLocalIdSpecification 
 public;InstanceLabelOverridePropertyValueSpecification 
+public;InstanceLabelOverrideRelatedInstanceLabelSpecification 
 public;InstanceLabelOverrideStringValueSpecification 
-public;InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification
+public;InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification | InstanceLabelOverrideRelatedInstanceLabelSpecification
 public;InstanceLabelOverrideValueSpecificationBase
 public;InstanceLabelOverrideValueSpecificationType
 public;InstanceNodesOfSpecificClassesSpecification 
@@ -178,6 +179,7 @@ internal;reviver(key: string, value: any): any
 public;LabelDefinitionJSON
 public;LabelGroupingNodeKey 
 public;LabelOverride 
+deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
 public;LabelRequestOptions
@@ -269,7 +271,8 @@ public;PropertyInfoJSON
 public;PropertyJSON
 public;PropertyOverrides
 public;PropertyRangeGroupSpecification
-public;PropertyRendererSpecification
+public;PropertyRendererSpecification = CustomRendererSpecification
+deprecated;PropertyRendererSpecification = CustomRendererSpecification
 public;PropertySortingRule 
 public;PropertySpecification 
 public;PropertyValueFormat
@@ -300,6 +303,7 @@ public;RepeatableRelationshipStepSpecification
 public;RequestOptions
 public;RequestOptionsWithRuleset
 public;RequestPriority
+beta;RequiredSchemaSpecification
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
