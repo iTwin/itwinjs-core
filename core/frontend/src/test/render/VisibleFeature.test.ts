@@ -48,6 +48,8 @@ describe("Visible feature query", () => {
     expect(vp.target.debugControl).not.to.be.undefined;
     vp.target.debugControl!.devicePixelRatioOverride = devicePixelRatio ?? 1;
 
+    vp.renderFrame();
+
     try {
       callback(vp);
     } finally {
