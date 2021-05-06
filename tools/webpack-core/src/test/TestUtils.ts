@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { copyFilesRule } from "../plugins/RequireMagicCommentsPlugin";
+import * as fs from "fs-extra";
+import * as webpack from "webpack";
+const MODULE = require("module");
 
-export function createTestCompiler(webpack: any, config: any, vol: any) {
+function createTestCompiler(web: any, config: any, vol: any) {
   let compiler: any;
   try {
-    compiler = webpack(config);
+    compiler = web(config);
   } catch (err) {
     console.log(err);
   }
@@ -16,31 +18,14 @@ export function createTestCompiler(webpack: any, config: any, vol: any) {
   return compiler;
 }
 
-export function getTestConfig(srcFile: any, pluginToTest: any) {
-  return {
-    entry: [
-      path.join(__dirname, srcFile),
-    ],
-    output: {
-      path: path.join(__dirname, "dist"),
-      chunkFilename: path.basename(srcFile),
-      filename: "runtime.js",
-      pathinfo: false,
-    },
-    plugins: [
-      pluginToTest,
-    ],
-    externals: [
-      "fs-extra",
-      "electron",
-      "eslint",
-      "@bentley/imodeljs-native",
-    ],
-    optimization: { minimize: false, runtimeChunk: true },
-  };
+export async function runWebpack(config: any, vol: any) {
+  const compiler = createTestCompiler(webpack, config, vol);
+  return new Promise<any>((resolve, reject) => {
+    compiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats.toJson({ logging: true })));
+  });
 }
 
-export function getRequireExternalConfig(srcFile: any, pluginToTest: any) {
+export function getTestConfig(srcFile: string, pluginsToTest: any[], externalsToTest?: any[], rules?: any[]) {
   return {
     entry: [
       path.join(__dirname, srcFile),
@@ -51,32 +36,50 @@ export function getRequireExternalConfig(srcFile: any, pluginToTest: any) {
       filename: "runtime.js",
       pathinfo: false,
     },
-    plugins: pluginToTest,
-    externals: [
-      "fs-extra",
-      "electron",
-      "eslint",
-      "@bentley/imodeljs-native",
-    ],
-    optimization: { minimize: false, runtimeChunk: true },
-  };
-}
-
-export function getRequireCopyConfig(srcFile: any, pluginToTest: any) {
-  return {
-    entry: [
-      path.join(__dirname, srcFile),
-    ],
-    output: {
-      path: path.join(__dirname, "dist"),
-      chunkFilename: path.basename(srcFile),
-      filename: "runtime.js",
-      pathinfo: false,
-    },
-    plugins: pluginToTest,
+    plugins: pluginsToTest,
+    externals: externalsToTest,
     optimization: { minimize: false, runtimeChunk: true },
     module: {
-      rules: [copyFilesRule],
-    }
+      rules,
+    },
   };
+}
+
+export function fsFromJson(json: any) {
+  for (const filePath in json) {
+    if (json.hasOwnProperty(filePath)) {
+      const dirName = path.dirname(filePath);
+      if (!fs.existsSync(dirName)) {
+        fs.mkdirSync(dirName, { recursive: true });
+      }
+      fs.writeFileSync(filePath, json[filePath]);
+    }
+  }
+}
+
+function clearModuleCache(paths: string) {
+  for (const [key, value] of Object.entries(MODULE._pathCache)) {
+    if ((value as string).startsWith(paths)) {
+      delete MODULE._pathCache[key];
+    }
+  }
+}
+
+function clearRequireCache(paths: string) {
+  for (const key in require.cache) {
+    if (key.startsWith(paths)) {
+      delete require.cache[key];
+    }
+  }
+}
+
+export function clearCache(dir: string) {
+  const paths: string = path.join(dir, "/assets/");
+  clearModuleCache(paths);
+  clearRequireCache(paths);
+}
+
+export function clearFileSystem(dir: string) {
+  fs.removeSync(path.join(dir, "/assets/"));
+  fs.removeSync(path.join(dir, "/dist/"));
 }

@@ -7,7 +7,6 @@ import * as fs from "fs";
 import * as path from "path";
 
 const appDirectory = fs.realpathSync(process.cwd());
-
 export const resolveApp = (relativePath: string) => path.resolve(appDirectory, relativePath);
 
 const _paths = {
@@ -19,7 +18,8 @@ export function getPaths() {
   return _paths;
 }
 
-export function updatePaths(dir: string) {
+// setApplicationDir is only used for test purpose
+export function setApplicationDir(dir: string) {
   _paths.appPackageJson = path.resolve(dir, "package.json");
   _paths.appNodeModules = path.resolve(dir, "node_modules");
 }

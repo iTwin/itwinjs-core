@@ -9,6 +9,7 @@ const resolve = util.promisify(require("resolve"));
 const builtIn = require("module").builtinModules;
 const _ = require("lodash");
 const path = require("path");
+const fs = require("fs");
 
 // Track used Dependencies so we don't waste time processing the same ones.
 const usedDeps = new Set();
@@ -72,13 +73,13 @@ function getDependencies(pkg, options) {
     .value();
 }
 
-
 // promise dependentModules
 // resolves to an array of the dependentModules for a module in a given directory
 // allowedVersion is the version that the referring package.json requested,
 //  if it exists
 // options is the options object
 async function dependentModules(dir, allowedVersion, options) {
+  dir = fs.realpathSync(dir);
   // read the package.json, and get the dependencies
   const pkg = require(path.join(dir, "package.json"));
   let deps = getDependencies(pkg, options);

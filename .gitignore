@@ -16,7 +16,6 @@ integration_test_results
 imjs_plugins
 imjs_extensions
 !tools/build
-!/tools/webpack-core/src/test/assets/**
 
 # rush-specific
 /common/temp

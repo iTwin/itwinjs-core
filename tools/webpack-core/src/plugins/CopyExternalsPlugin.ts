@@ -6,13 +6,12 @@ import * as chalk from "chalk";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
-import { getAppRelativePath, getPaths, getSourcePosition } from "../utils/paths";
+import { getAppRelativePath, getPaths } from "../utils/paths";
 const getAllDependencies = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
 const WebpackError = require("webpack/lib/WebpackError");
-const ModuleDependencyWarning = require("webpack/lib/ModuleDependencyWarning");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 class MissingExternalWarning extends WebpackError {
@@ -44,7 +43,7 @@ export class CopyExternalsPlugin {
       this._logger = compilation.getLogger("CopyExternalsPlugin");
       compilation.hooks.buildModule.tap("CopyExternalsPlugin", (currentModule: any) => {
         if (currentModule.external) {
-          this._promises.push(this.handleModule(currentModule, compiler.outputPath, compilation));
+          this._promises.push(this.handleModule(currentModule, compiler.outputPath));
         }
       });
     });
@@ -54,28 +53,12 @@ export class CopyExternalsPlugin {
     });
   }
 
-  public async handleModule(currentModule: any, outputDir: string, compilation: any) {
+  public async handleModule(currentModule: any, outputDir: string) {
     const pkgName = this.pathToPackageName(currentModule.request);
     if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName)) {
-      this._logger.log(`Skipping ${pkgName}`);
       return;
     }
-    if (!this._appDependencies.has(pkgName)) {
-      this._logger.warn(`Can't copy package "${pkgName}" - it is not a direct dependency.`);
-      for (const reason of currentModule.reasons) {
-        if (!reason.module || !reason.dependency)
-          continue;
-
-        this._logger.log(`"${pkgName}" included at ${getSourcePosition(reason.module, reason.dependency.loc)}`);
-
-        if (!reason.dependency.optional) {
-          compilation.warnings.push(new ModuleDependencyWarning(reason.module, new MissingExternalWarning(pkgName), reason.dependency.loc));
-        }
-      }
-      return;
-    }
-    const paths = getPaths();
-    const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [paths.appNodeModules, path.join(paths.appNodeModules, "@bentley", "imodeljs-backend")] });
+    const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [currentModule.issuer.context] });
     await this.copyPackage(pkgName, outputDir, path.dirname(packageJsonPath));
     if (!packageJsonPath)
       return;
