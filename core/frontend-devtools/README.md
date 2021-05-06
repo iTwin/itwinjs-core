@@ -256,6 +256,10 @@ These keysins control the planar masking of reality models.
   * "color": Override color to white.
   * "emphasis": Apply silhouette for emphasis.
   * "both": Apply both color and silhouette.
+* `fdt emphasize visible` - Determines the set of elements considered currently visible in the selected viewport and emphasizes them, de-emphasizing everything else. It takes one required argument and one optional argument:
+  * "tiles" or "screen": The criterion by which elements are considered visible. "tiles" means the element is present in at least one tile selected for display in the view and is not hidden based on category, subcategory, symbology overrides, etc. "screen" means the element lit up at least one pixel; this does not include pixels behind other transparent pixels.
+  * "nonlocatable=0|1" where `1` indicates non-locatable geometry should be considered. By default it is ignored.
+* `fdt clear emphasized` - Undo the effects of `fdt emphasize selection` or `fdt emphasize visible`.
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
 * `fdt toggle wiremesh` - Toggles "pseudo-wiremesh" display. This causes surfaces to be rendered using `GL_LINES` instead of `GL_TRIANGLES`. Useful for visualizing the triangles of a mesh - but not suitable for "real" wiremesh display.

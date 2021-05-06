@@ -100,6 +100,7 @@ export * from "./render/RenderTarget";
 export * from "./render/RenderSystem";
 export * from "./render/Scene";
 export * from "./render/ScreenSpaceEffectBuilder";
+export * from "./render/VisibleFeature";
 export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
 export * from "./render/webgl/IModelFrameLifecycle";

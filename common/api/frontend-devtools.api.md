@@ -354,6 +354,18 @@ export class ClearEffectsTool extends Tool {
 }
 
 // @beta
+export class ClearEmphasizedElementsTool extends EmphasizeElementsTool {
+    // (undocumented)
+    execute(emph: EmphasizeElements, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get _wantClear(): boolean;
+    // (undocumented)
+    protected get _wantCreate(): boolean;
+}
+
+// @beta
 export class ClearIsolatedElementsTool extends EmphasizeElementsTool {
     // (undocumented)
     execute(emph: EmphasizeElements, vp: ScreenViewport): void;
@@ -705,6 +717,8 @@ export abstract class EmphasizeElementsTool extends Tool {
     // (undocumented)
     run(_args: any[]): boolean;
     // (undocumented)
+    protected get _wantClear(): boolean;
+    // (undocumented)
     protected get _wantCreate(): boolean;
 }
 
@@ -721,6 +735,22 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     // (undocumented)
     static toolId: string;
     }
+
+// @beta
+export class EmphasizeVisibleElementsTool extends EmphasizeElementsTool {
+    // (undocumented)
+    execute(emph: EmphasizeElements, vp: ScreenViewport): void;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...input: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get _wantClear(): boolean;
+}
 
 // @beta
 export class ExplosionEffect extends Tool {
