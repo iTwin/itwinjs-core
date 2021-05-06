@@ -51,7 +51,7 @@ export class NullRenderSystem extends RenderSystem {
   public doIdleWork(): boolean { return false; }
   public createTarget() { return new NullTarget(); }
   public createOffscreenTarget() { return new NullTarget(); }
-  public createGraphicBuilder() { return undefined as any; }
+  public createGraphic() { return undefined as any; }
   public createGraphicList() { return undefined as any; }
   public createGraphicBranch() { return undefined as any; }
   public createBatch() { return undefined as any; }

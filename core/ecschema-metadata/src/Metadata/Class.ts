@@ -29,14 +29,14 @@ import { SchemaItem } from "./SchemaItem";
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
-  protected _properties?: Property[];
+  protected _properties?: Map<string, Property>;
   private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Property[];
 
   public get modifier() { return this._modifier; }
   public get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
   public set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
-  public get properties(): Property[] | undefined { return this._properties; }
+  public get properties(): IterableIterator<Property> | undefined { return this._properties?.values(); }
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
@@ -55,9 +55,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   protected addProperty<T extends Property>(prop: T): T {
     if (!this._properties)
-      this._properties = [];
+      this._properties = new Map<string, Property>();
 
-    this._properties.push(prop);
+    this._properties.set(prop.name.toUpperCase(), prop);
     return prop;
   }
 
@@ -74,12 +74,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param name
    */
   public async getProperty(name: string, includeInherited: boolean = false): Promise<Property | undefined> {
-    if (this.properties) {
+    if (this._properties) {
       const upperKey = name.toUpperCase();
-      const foundProp = this.properties.find((prop) => prop.name.toUpperCase() === upperKey);
-      if (foundProp) {
-        return foundProp;
-      }
+      const property = this._properties.get(upperKey);
+      if (property)
+        return property;
     }
 
     if (!includeInherited) {
@@ -94,12 +93,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param name
    */
   public getPropertySync(name: string, includeInherited: boolean = false): Property | undefined {
-    if (this.properties) {
+    if (this._properties) {
       const upperKey = name.toUpperCase();
-      const foundProp = this.properties.find((prop) => prop.name.toLocaleUpperCase() === upperKey);
-      if (foundProp) {
-        return foundProp;
-      }
+      const property = this._properties.get(upperKey);
+      if (property)
+        return property;
     }
 
     if (!includeInherited) {
@@ -337,8 +335,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       schemaJson.modifier = classModifierToString(this.modifier);
     if (this.baseClass !== undefined)
       schemaJson.baseClass = this.baseClass.fullName;
-    if (this.properties !== undefined && this.properties.length > 0)
-      schemaJson.properties = this.properties.map((prop) => prop.toJSON());
+    if (this._properties !== undefined && this._properties.size > 0)
+      schemaJson.properties = [...this.properties!].map((prop) => prop.toJSON());
 
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
@@ -489,7 +487,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (!this.properties)
       return;
 
-    ECClass.mergeProperties(result, existingValues, this.properties, true);
+    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
   }
 
   protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
@@ -505,7 +503,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (!this.properties)
       return;
 
-    ECClass.mergeProperties(result, existingValues, this.properties, true);
+    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
   }
 
   /**
