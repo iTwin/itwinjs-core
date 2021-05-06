@@ -222,7 +222,7 @@ export class OpenWidgetPopoutTool extends Tool {
     };
     const connection = UiFramework.getIModelConnection();
     if (connection)
-      UiFramework.ChildWindowManager.openChildWindow("VisibilityTreeWidget", "VisibilityTreeWidget", <ModelSelectorWidget iModelConnection={connection} />, location);
+      UiFramework.childWindowManager.openChildWindow("VisibilityTreeWidget", "VisibilityTreeWidget", <ModelSelectorWidget iModelConnection={connection} />, location);
   }
 
   public static get flyover(): string {
@@ -266,7 +266,7 @@ export class OpenCustomPopoutTool extends Tool {
       left: 0,
       top: 0,
     };
-    UiFramework.ChildWindowManager.openChildWindow("CustomPopout", "Custom Popout", <PopupTestPanel />, location);
+    UiFramework.childWindowManager.openChildWindow("CustomPopout", "Custom Popout", <PopupTestPanel />, location);
   }
 
   public static get flyover(): string {
@@ -311,7 +311,7 @@ export class OpenViewPopoutTool extends Tool {
       left: 0,
       top: 0,
     };
-    UiFramework.ChildWindowManager.openChildWindow("ViewPopout", "View Popout", <PopupTestView />, location);
+    UiFramework.childWindowManager.openChildWindow("ViewPopout", "View Popout", <PopupTestView />, location);
   }
 
   public static get flyover(): string {

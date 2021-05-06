@@ -11,7 +11,10 @@
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
-import { dockWidgetContainer, findTab, floatWidget, isFloatingLocation, isPopoutLocation, NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow } from "@bentley/ui-ninezone";
+import {
+  dockWidgetContainer, findTab, floatWidget, isFloatingLocation, isPopoutLocation, NineZoneManagerProps,
+  NineZoneState, popoutWidgetToChildWindow,
+} from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
@@ -29,6 +32,8 @@ import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { PointProps, SizeProps } from "@bentley/ui-core";
+import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
+import { PopoutWidget } from "../childwindow/PopoutWidget";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -180,6 +185,8 @@ export class FrontstageDef {
 
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
+
+    UiFramework.childWindowManager.closeAllChildWindows();
 
     this._timeTracker.stopTiming();
 
@@ -592,14 +599,32 @@ export class FrontstageDef {
       return;
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetId);
+      let location = findTab(this.nineZoneState, widgetId);
       if (location) {
         if (isPopoutLocation(location))
           return;
 
         const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, point, size);
-        if (state)
-          this.nineZoneState = state;
+        if (state) {
+          location = findTab(state, widgetId);
+          if (location && isPopoutLocation(location)) {
+            const widgetDef = this.findWidgetDef(widgetId);
+            if (widgetDef) {
+              const widgetPanelId = location.widgetId;
+              this.nineZoneState = state;
+              setImmediate(() => {
+                const popoutContent = (<PopoutWidget widgetDef={widgetDef} frontstageDef={this} />);
+                const position: ChildWindowLocationProps = {
+                  width: 800,
+                  height: 600,
+                  left: 0,
+                  top: 0,
+                };
+                UiFramework.childWindowManager.openChildWindow(widgetPanelId, widgetDef.label, popoutContent, position);
+              });
+            }
+          }
+        }
       }
     }
   }
@@ -615,9 +640,29 @@ export class FrontstageDef {
       return;
     // istanbul ignore else
     if (this.nineZoneState) {
+      const location = findTab(this.nineZoneState, widgetId);
+      if (location && isPopoutLocation(location)) {
+        UiFramework.childWindowManager.closeChildWindow(location.widgetId, true);
+      }
       const state = dockWidgetContainer(this.nineZoneState, widgetId);
       if (state)
         this.nineZoneState = state;
     }
   }
+
+  public dockPopoutWidget(widgetId: string, processWindowClose?: boolean) {
+    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
+      return;
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const location = findTab(this.nineZoneState, widgetId);
+      if (location && isPopoutLocation(location)) {
+        UiFramework.childWindowManager.closeChildWindow(location.widgetId, processWindowClose);
+        const state = dockWidgetContainer(this.nineZoneState, widgetId);
+        if (state)
+          this.nineZoneState = state;
+      }
+    }
+  }
+
 }

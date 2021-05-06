@@ -107,7 +107,7 @@ export class UiFramework {
   private static _PopupWindowManager = new ChildWindowManager();
 
   /** @alpha */
-  public static get ChildWindowManager(): ChildWindowManager {
+  public static get childWindowManager(): ChildWindowManager {
     return UiFramework._PopupWindowManager;
   }
 

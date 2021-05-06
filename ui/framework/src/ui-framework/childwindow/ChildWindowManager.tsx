@@ -98,6 +98,12 @@ export class ChildWindowManager {
     }
   }
 
+  /** Close all child/pop-out windows. This typically is called when the frontstage is changed. */
+  public closeAllChildWindows() {
+    this.openChildWindows.forEach((openChildWindow) => openChildWindow.window.close());
+    this._openChildWindows = [];
+  }
+
   public closeChildWindow = (childWindowId: string, processWindowClose = true) => {
     const windowIndex = this.openChildWindows.findIndex((openWindow) => openWindow.childWindowId === childWindowId);
     if (-1 === windowIndex)
