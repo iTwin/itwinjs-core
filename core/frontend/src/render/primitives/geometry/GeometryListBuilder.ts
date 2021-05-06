@@ -12,7 +12,7 @@ import {
 } from "@bentley/geometry-core";
 import { FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
 import { Viewport } from "../../../Viewport";
-import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
+import { GraphicBuilder, GraphicBuilderOptions, GraphicType } from "../../GraphicBuilder";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
@@ -32,13 +32,12 @@ function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
   public readonly graphicParams: GraphicParams = new GraphicParams();
-  private _wantNormals = false;
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by Finish() to obtain the finished RenderGraphic.
 
-  public constructor(system: RenderSystem, type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String, accumulatorTf: Transform = Transform.identity) {
-    super(placement, type, viewport, pickableId);
-    this.accum = new GeometryAccumulator(this.iModel, system, undefined, accumulatorTf);
+  public constructor(system: RenderSystem, options: GraphicBuilderOptions, accumulatorTransform = Transform.identity) {
+    super(options);
+    this.accum = new GeometryAccumulator(this.iModel, system, undefined, accumulatorTransform);
   }
 
   public finish(): RenderGraphic {
@@ -49,13 +48,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public activateGraphicParams(graphicParams: GraphicParams): void {
     graphicParams.clone(this.graphicParams);
-  }
-
-  public get wantNormals() {
-    return this._wantNormals;
-  }
-  public set wantNormals(want: boolean) {
-    this._wantNormals = want;
   }
 
   public addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {

@@ -13,7 +13,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
-import { BatchOptions } from "../RenderSystem";
+import { BatchOptions } from "../GraphicBuilder";
 import { RenderMemory } from "../RenderMemory";
 import { ClipVolume } from "./ClipVolume";
 import { WebGLDisposable } from "./Disposable";

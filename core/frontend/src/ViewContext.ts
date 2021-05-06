@@ -18,7 +18,7 @@ import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicBuilderOptions, GraphicType } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
 import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./render/RenderSystem";
@@ -61,8 +61,8 @@ export class RenderContext {
   public get target(): RenderTarget { return this.viewport.target; }
 
   /** @internal */
-  protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
-    return this.target.createGraphicBuilder(type, this.viewport, transform, id);
+  protected _createGraphicBuilder(options: GraphicBuilderOptions): GraphicBuilder {
+    return this.target.createGraphicBuilder(options);
   }
 
   /** Create a builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
@@ -70,7 +70,7 @@ export class RenderContext {
    * @returns A builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    */
   public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder {
-    return this._createGraphicBuilder(GraphicType.Scene, transform);
+    return this._createGraphicBuilder({ viewport: this.viewport, type: GraphicType.Scene, placement: transform });
   }
 
   /** @internal */
@@ -146,9 +146,14 @@ export class DecorateContext extends RenderContext {
    * @param id If the decoration is to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
    * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
    * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
+   * @see [[createGraphic]] for more options.
    */
   public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
-    return this._createGraphicBuilder(type, transform, id);
+    return this.createGraphic({ viewport: this.viewport, type, placement: transform, pickable: undefined !== id ? { id } : undefined });
+  }
+
+  public createGraphic(options: GraphicBuilderOptions): GraphicBuilder {
+    return this._createGraphicBuilder(options);
   }
 
   /** @internal */
