@@ -117,11 +117,11 @@ describe("Pickable graphic", () => {
     const dec = new BoxDecorator("0x123", ColorDef.red, false);
     expectColors([dec.color, viewport.view.displayStyle.backgroundColor]);
     expectIds([dec.id]);
-  });
+  }).timeout(20000); // macOS is slow.
 
   it("optionally draws only for pick", () => {
     const dec = new BoxDecorator("0x456", ColorDef.blue, true);
     expectColors([viewport.view.displayStyle.backgroundColor]);
     expectIds([dec.id]);
-  });
+  }).timeout(20000); // macOS is slow.
 });
