@@ -9,7 +9,7 @@ import * as path from "path";
 import { ClientRequestContext, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import {
-  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
+  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -27,6 +27,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
+import * as Semver from "semver";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
@@ -742,29 +743,16 @@ export class IModelTransformer extends IModelExportHandler {
     try {
       this.sourceDb.nativeDb.exportSchemas(schemasDir);
       const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
-      // some system schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
+      // some schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
       const filteredImportSchemas = schemaFiles.filter((schemaFile) => {
         const match = /^(?<name>[a-zA-Z0-9]+)\.(?<version>[.0-9]+)\.ecschema.xml$/.exec(schemaFile);
         if (match === null)
           return true;
         const [_fullMatch, schemaName, versionString] = match;
-        if (!this.targetDb.nativeDb.containsSchema(schemaName))
-          return true;
-        const targetSchemaResult = this.targetDb.nativeDb.getSchema(schemaName);
-        if (targetSchemaResult.result !== undefined) {
-          try {
-            type VersionTuple = number[];
-            const parseVersion = (src: string): VersionTuple | undefined => src.split(".").map(Number);
-            const versionTupleEq = (v1: VersionTuple, v2: VersionTuple): boolean => v1.every((val, idx) => v2[idx] === val);
-            const schemaInTarget = JSON.parse(targetSchemaResult.result);
-            const versionInTarget = parseVersion(schemaInTarget.version);
-            const versionToImport = parseVersion(versionString);
-            if (versionInTarget && versionToImport && versionTupleEq(versionInTarget, versionToImport))
-              return false;
-          } catch (err) { // bad json, should be unreachable, but we'll try to not swallow errors
-            return true;
-          }
-        }
+        const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
+        const versionToImport = versionString.split(".").map(Number).join(".");
+        if (versionInTarget && Semver.eq(versionToImport, versionInTarget))
+          return false;
         return true;
       });
       const importSchemasFullPaths = filteredImportSchemas.map((schema) => path.join(schemasDir, schema));
