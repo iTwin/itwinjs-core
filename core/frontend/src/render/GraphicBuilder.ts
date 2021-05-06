@@ -94,17 +94,44 @@ export interface BatchOptions {
   locateOnly?: boolean;
 }
 
+/** Options used as part of [[GraphicBuilderOptions]] to describe a pickable [[RenderGraphic]].
+ * @public
+ */
 export interface PickableGraphicOptions extends BatchOptions {
+  /** Unique identifier for the graphic.
+   * @see [[IModelConnection.transientIds]] to obtain a unique Id in the context of an iModel.
+   */
   id: Id64String;
 }
 
+/** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
+ * @public
+ */
 export interface GraphicBuilderOptions {
+  /** The viewport in which the resultant [[RenderGraphic]] is to be drawn, used for calculating the graphic's level of detail. */
   viewport: Viewport;
+  /** The type of graphic to produce. */
   type: GraphicType;
+  /** The local-to-world transform in which the builder's geometry is to be defined - by default, an identity transform. */
   placement?: Transform;
+  /** If the graphic is to be pickable, specifies the pickable Id and other options. */
   pickable?: PickableGraphicOptions;
+  /** If true, the order in which geometry is added to the builder is preserved.
+   * This is useful for overlay and background graphics because they draw without using the depth buffer. For example, to draw an overlay containing a red shape with a white outline,
+   * you would add the shape to the GraphicBuilder first, followed by the outline, to ensure the outline draws "in front of" the shape.
+   * It defaults to true fo overlays and background graphics, and false for other graphic types.
+   * It is not useful for other types of graphics and imposes a performance penalty due to increased number of draw calls.
+   * For overlay and background graphics that do not need to draw in any particular order, the performance penalty can be eliminated by setting this to `false`.
+   */
   preserveOrder?: boolean;
+  /** If true, [[ViewState.getAspectRatioSkew]] will be taken into account when computing the level of detail for the produced graphics. */
   applyAspectRatioSkew?: boolean;
+  /** Controls whether normals are generated for surfaces. Normals allow 3d geometry to receive lighting; without them the geometry will be unaffected by lighting.
+   * By default, normals are not generated.
+   * @note Currently, no API exists to generate normals for a [Polyface]($geometry-core) that lacks them. Until such an API becomes available, if you want a lit Polyface, you
+   * must both set `wantNormals` to `true` **and** supply a Polyface with precomputed normals to `addPolyface`.
+   * @see [[GraphicType]] for a description of whether and how different types of graphics are affected by lighting.
+   */
   wantNormals?: boolean;
 }
 
@@ -115,19 +142,14 @@ export type BuilderOptions = GraphicBuilderOptions & { placement: Transform; };
  * GraphicBuilder is primarily used for creating [[Decorations]] to be displayed inside a [[Viewport]].
  *
  * The typical process for constructing a [[RenderGraphic]] proceeds as follows:
- *  1. Use [[RenderContext.createGraphicBuilder]] to obtain a builder.
- *  2. Set up the symbology using [[GraphicBuilder.activateGraphicParams]].
+ *  1. Use [[DecorateContext.createGraphic]] or [[RenderSystem.createGraphic]] to obtain a builder.
+ *  2. Set up the symbology using [[GraphicBuilder.activateGraphicParams]] or [[GraphicBuilder.setSymbology]].
  *  3. Add one or more geometric primitives using methods like [[GraphicBuilder.addShape]] and [[GraphicBuilder.addLineString]], possibly setting new symbology in between.
  *  4. Use [[GraphicBuilder.finish]] to produce the finished [[RenderGraphic]].
  *
  * @note Most of the methods which add geometry to the builder take ownership of their inputs rather than cloning them.
  * So, for example, if you pass an array of points to addLineString(), you should not subsequently modify that array.
  *
- * @see [[Decorator]].
- * @see [[RenderContext.createGraphicBuilder]].
- * @see [[RenderSystem.createGraphicBuilder]].
- * @see [[DecorateContext]].
- * @see [[DynamicsContext]].
  * @public
  */
 export abstract class GraphicBuilder {
@@ -141,6 +163,9 @@ export abstract class GraphicBuilder {
       this._options.preserveOrder = this.isOverlay || this.isViewBackground;
   }
 
+  /** The local coordinate system transform applied to this builder's geometry.
+   * @see [[GraphicBuilderOptions.placement]].
+   */
   public get placement(): Transform {
     return this._options.placement;
   }
@@ -148,14 +173,23 @@ export abstract class GraphicBuilder {
     this._options.placement.setFrom(transform);
   }
 
+  /** The viewport in which the resultant [[RenderGraphic]] will be drawn.
+   * @see [[GraphicBuilderOptions.viewport]].
+   */
   public get viewport(): Viewport {
     return this._options.viewport;
   }
 
+  /** The type of graphic to be produced by this builder.
+   * @see [[GraphicBuilderOptions.type]].
+   */
   public get type(): GraphicType {
     return this._options.type;
   }
 
+  /** The Id to be associated with the graphic for picking.
+   * @see [[GraphicBuilderOptions.pickable]] for more options.
+   */
   public get pickId(): Id64String | undefined {
     return this._options.pickable?.id;
   }
@@ -174,6 +208,9 @@ export abstract class GraphicBuilder {
       this._options.pickable.id = id;
   }
 
+  /** If true, [[ViewState.getAspectRatioSkew]] will be taken into account when computing the level of detail for the produced graphics.
+   * @see [[GraphicBuilderOptions.applyAspectRatioSkew]].
+   */
   public get applyAspectRatioSkew(): boolean {
     return true === this._options.applyAspectRatioSkew;
   }
@@ -181,6 +218,9 @@ export abstract class GraphicBuilder {
     this._options.applyAspectRatioSkew = apply;
   }
 
+  /** If true, the order in which geometry is added to the builder is preserved.
+   * @see [[GraphicBuilderOptions.preserveOrder]] for more details.
+   */
   public get preserveOrder(): boolean {
     return true === this._options.preserveOrder;
   }
@@ -188,6 +228,9 @@ export abstract class GraphicBuilder {
     this._options.preserveOrder = preserve;
   }
 
+  /** Controls whether normals are generated for surfaces.
+   * @see [[GraphicBuilderOptions.wantNormals]] for more details.
+   */
   public get wantNormals(): boolean {
     return true === this._options.wantNormals;
   }
@@ -195,21 +238,36 @@ export abstract class GraphicBuilder {
     this._options.wantNormals = want;
   }
 
+  /** Whether the builder's geometry is defined in [[CoordSystem.View]] coordinates.
+   * @see [[isWorldCoordinates]].
+   */
   public get isViewCoordinates(): boolean {
     return this.type === GraphicType.ViewBackground || this.type === GraphicType.ViewOverlay;
   }
+
+  /** Whether the builder's geometry is defined in [[CoordSystem.World]] coordinates.
+   * @see [[isViewCoordinates]].
+   */
   public get isWorldCoordinates(): boolean {
     return !this.isViewCoordinates;
   }
+
+  /** True if the builder produces a graphic of [[GraphicType.Scene]]. */
   public get isSceneGraphic(): boolean {
     return this.type === GraphicType.Scene;
   }
+
+  /** True if the builder produces a graphic of [[GraphicType.ViewBackground]]. */
   public get isViewBackground(): boolean {
     return this.type === GraphicType.ViewBackground;
   }
+
+  /** True if the builder produces a graphic of [[GraphicType.WorldOverlay]] or [[GraphicType.ViewOerlay]]. */
   public get isOverlay(): boolean {
     return this.type === GraphicType.ViewOverlay || this.type === GraphicType.WorldOverlay;
   }
+
+  /** The iModel of the [[Viewport]] in which the [[RenderGraphic]] is to be drawn. */
   public get iModel(): IModelConnection {
     return this.viewport.iModel;
   }

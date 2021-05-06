@@ -152,6 +152,10 @@ export class DecorateContext extends RenderContext {
     return this.createGraphic({ type, placement: transform, pickable: undefined !== id ? { id } : undefined });
   }
 
+  /** Create a builder for producing a [[RenderGraphic]] appropriate for rendering within this context's [[Viewport]].
+   * @param options Options describing how to create the builder.
+   * @returns A builder that produces a [[RenderGraphic]].
+   */
   public createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this._createGraphicBuilder(options);
   }

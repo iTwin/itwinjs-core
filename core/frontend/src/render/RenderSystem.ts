@@ -270,6 +270,10 @@ export abstract class RenderSystem implements IDisposable {
     return this.createGraphic({ type, viewport, placement, pickable });
   }
 
+  /** Obtain a [[GraphicBuilder]] from which to produce a [[RenderGraphic]].
+   * @param options Options describing how to create the builder.
+   * @returns A builder that produces a [[RenderGraphic]].
+   */
   public abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
 
   /** Obtain an object capable of producing a custom screen-space effect to be applied to the image rendered by a [[Viewport]].
