@@ -778,6 +778,7 @@ export class ToolAdmin {
 
   /** The idleTool handles events that are not otherwise processed. */
   public get idleTool(): IdleTool { return this._idleTool!; }
+  public set idleTool(idleTool: IdleTool) { this._idleTool = idleTool; }
 
   /** Return true to filter (ignore) events to the given viewport */
   protected filterViewport(vp: ScreenViewport) {
