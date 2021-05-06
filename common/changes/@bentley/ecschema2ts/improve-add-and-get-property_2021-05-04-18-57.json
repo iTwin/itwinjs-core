@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema2ts",
+      "comment": "Adjusted because of changes to class properties",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema2ts",
+  "email": "Ivan.Kok@bentley.com"
+}
