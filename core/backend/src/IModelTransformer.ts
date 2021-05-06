@@ -748,11 +748,13 @@ export class IModelTransformer extends IModelExportHandler {
         if (match === null)
           return true;
         const [_fullMatch, schemaName, versionString] = match;
+        if (!this.targetDb.nativeDb.containsSchema(schemaName))
+          return true;
         const targetSchemaResult = this.targetDb.nativeDb.getSchema(schemaName);
         if (targetSchemaResult.result !== undefined) {
           try {
             type VersionTuple = number[];
-            const parseVersion = (src: string): VersionTuple | undefined => /(\d+)\.(\d+)\.(\d+)/.exec(src)?.slice(1).map(Number);
+            const parseVersion = (src: string): VersionTuple | undefined => src.split(".").map(Number);
             const versionTupleEq = (v1: VersionTuple, v2: VersionTuple): boolean => v1.every((val, idx) => v2[idx] === val);
             const schemaInTarget = JSON.parse(targetSchemaResult.result);
             const versionInTarget = parseVersion(schemaInTarget.version);
