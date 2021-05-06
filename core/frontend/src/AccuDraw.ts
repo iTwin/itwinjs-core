@@ -808,7 +808,11 @@ export class AccuDraw {
   }
 
   /** @internal */
-  public enableForSession(): void { if (CurrentState.NotEnabled === this.currentState) this.currentState = CurrentState.Inactive; }
+  public enableForSession(): void {
+    if (CurrentState.NotEnabled === this.currentState)
+      this.currentState = CurrentState.Inactive;
+  }
+
   /** @internal */
   public disableForSession(): void {
     this.currentState = CurrentState.NotEnabled;
@@ -2916,6 +2920,7 @@ export class AccuDraw {
       (current.view.iModel === previous.view.iModel))
       return;
 
+    this._acsPickId = undefined;
     this.currentView = undefined;
     this.flags.redrawCompass = false;
 
