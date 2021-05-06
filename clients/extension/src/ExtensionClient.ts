@@ -12,7 +12,6 @@ import { IModelError } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, Client, getArrayBuffer, request, RequestOptions, ResponseError } from "@bentley/itwin-client";
 import { ExtensionFile } from "./ExtensionFile";
 import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProps";
-import { fetch } from "cross-fetch";
 
 /**
  * Client for querying, publishing and deleting iModel.js Extensions.
