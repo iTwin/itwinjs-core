@@ -13,7 +13,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
-import { BatchOptions } from "../RenderSystem";
+import { BatchOptions } from "../GraphicBuilder";
 import { RenderMemory } from "../RenderMemory";
 import { ClipVolume } from "./ClipVolume";
 import { WebGLDisposable } from "./Disposable";
@@ -98,7 +98,15 @@ export class Batch extends Graphic {
   private readonly _perTargetData: PerTargetBatchData[] = [];
   private readonly _options: BatchOptions;
 
-  public get tileId(): string | undefined { return this._options.tileId; } // chiefly for debugging
+  // Chiefly for debugging.
+  public get tileId(): string | undefined {
+    return this._options.tileId;
+  }
+
+  public get locateOnly(): boolean {
+    return true === this._options.locateOnly;
+  }
+
   public get batchId() { return this._context.batchId; }
   public get batchIModel() { return this._context.iModel; }
   public setContext(batchId: number, iModel: IModelConnection | undefined) {
@@ -148,8 +156,13 @@ export class Batch extends Graphic {
     }
   }
 
-  public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
-  public get isPickable(): boolean { return true; }
+  public addCommands(commands: RenderCommands): void {
+    commands.addBatch(this);
+  }
+
+  public get isPickable(): boolean {
+    return true;
+  }
 
   private getPerTargetData(target: Target): PerTargetBatchData {
     let ptd = this._perTargetData.find((x) => x.target === target);

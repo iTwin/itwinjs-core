@@ -19,7 +19,8 @@ import { AreaPattern } from "./AreaPattern";
 import { BRepEntity } from "./GeometryStream";
 import { ImageGraphic, ImageGraphicCorners, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
-import { ElementAlignedBox3d, Placement3d } from "./Placement";
+import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
+import { isPlacement2dProps, PlacementProps } from "../ElementProps";
 
 /** Values for [[ElementGeometryDataEntry.opcode]]
  * @alpha
@@ -268,6 +269,14 @@ export namespace ElementGeometry {
      */
     public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
       this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)));
+    }
+
+    /** Supply local to world transform from a PlacementProps2d or PlacementProps3d.
+     * @see [[PlacementProps]]
+     */
+    public setLocalToWorldFromPlacement(props: PlacementProps) {
+      const placement = isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
+      this.setLocalToWorld(placement.transform);
     }
 
     /** Compute angles suitable for passing to [[setLocalToWorld3d]] from an array of 3d points. */

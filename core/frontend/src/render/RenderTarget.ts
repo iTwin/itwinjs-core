@@ -7,7 +7,7 @@
  */
 
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Point2d, Transform, XAndY } from "@bentley/geometry-core";
+import { Point2d, XAndY } from "@bentley/geometry-core";
 import { Frustum, ImageBuffer, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
@@ -18,7 +18,7 @@ import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { AnimationBranchStates } from "./GraphicBranch";
-import { GraphicType } from "./GraphicBuilder";
+import { GraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { GraphicList } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
@@ -104,7 +104,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public createPlanarClassifier(_properties?: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined { return undefined; }
   public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
 
-  public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
+  public createGraphicBuilder(options: GraphicBuilderOptions) {
+    return this.renderSystem.createGraphic(options);
+  }
 
   public dispose(): void { }
   public reset(): void { }
