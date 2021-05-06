@@ -223,6 +223,148 @@ describe("Full Schema Deserialization", () => {
       await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
     });
 
+    it.only("should throw for cyclic references test 2", async () => {
+      const context = new SchemaContext();
+
+      const schemaAJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "RefSchemaA",
+        version: "1.0.0",
+        alias: "a",
+        references: [
+          {
+            name: "RefSchemaB",
+            version: "2.0.0",
+          },
+          {
+            name: "RefSchemaC",
+            version: "3.0.0",
+          },
+        ],
+      };
+
+      const schemaBJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "RefSchemaB",
+        version: "2.0.0",
+        alias: "b",
+      };
+
+      const schemaCJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "RefSchemaC",
+        version: "3.0.0",
+        alias: "c",
+        references: [
+          {
+            name: "RefSchemaD",
+            version: "4.0.0",
+          },
+        ],
+      };
+
+      const schemaDJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "RefSchemaD",
+        version: "4.0.0",
+        alias: "d",
+        references: [
+          {
+            name: "RefSchemaA",
+            version: "1.0.0",
+          },
+        ],
+      };
+
+      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync);
+      locater.addSchema("RefSchemaA", schemaAJson);
+      locater.addSchema("RefSchemaB", schemaBJson);
+      locater.addSchema("RefSchemaC", schemaCJson);
+      locater.addSchema("RefSchemaD", schemaDJson);
+
+      context.addLocater(locater);
+
+      const json = {
+        ...baseJson,
+        alias: "test",
+        references: [
+          { name: "RefSchemaA", version: "1.0.0" },
+        ],
+      };
+      await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'RefSchemaA' has reference cycles: RefSchemaD --> RefSchemaA, RefSchemaC --> RefSchemaD, RefSchemaA --> RefSchemaC\r\n`);
+    });
+
+    it.only("should not throw cyclic references test", async () => {
+      const context = new SchemaContext();
+
+      const schemaAJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "RefSchemaA",
+        version: "1.0.0",
+        alias: "a",
+        references: [
+          {
+            name: "RefSchemaC",
+            version: "3.0.0",
+          },
+          {
+            name: "RefSchemaD",
+            version: "4.0.0",
+          },
+        ],
+      };
+
+      const schemaBJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "RefSchemaB",
+        version: "2.0.0",
+        alias: "b",
+        references: [
+          {
+            name: "RefSchemaA",
+            version: "1.0.0",
+          },
+          {
+            name: "RefSchemaC",
+            version: "3.0.0",
+          },
+        ],
+      };
+
+      const schemaCJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "RefSchemaC",
+        version: "3.0.0",
+        alias: "c",
+      };
+
+      const schemaDJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "RefSchemaD",
+        version: "4.0.0",
+        alias: "d",
+      };
+
+      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync);
+      locater.addSchema("RefSchemaA", schemaAJson);
+      locater.addSchema("RefSchemaB", schemaBJson);
+      locater.addSchema("RefSchemaC", schemaCJson);
+      locater.addSchema("RefSchemaD", schemaDJson);
+
+      context.addLocater(locater);
+
+      const json = {
+        ...baseJson,
+        alias: "test",
+        references: [
+          { name: "RefSchemaA", version: "1.0.0" },
+          { name: "RefSchemaB", version: "2.0.0" },
+        ],
+      };
+      assert.isTrue(json.references.length === 2);
+      await expect(Schema.fromJson(json, context)).not.to.be.rejectedWith(ECObjectsError);
+    });
+
     it("should throw for cyclic references in XML", async () => {
       const context = new SchemaContext();
 
