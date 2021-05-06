@@ -28,11 +28,12 @@ export class Schema {
    */
   public static get missingRequiredBehavior(): boolean { return false; }
 
-  /** Get a semver-compatible string from a padded version string
-   * @example Schema.paddedVersionToSemver("1.02.03") === "1.2.3"
+  /** Get a semver-compatible string from a padded version string.
+   * works on unpadded version strings as well
+   * @example Schema.toSemverString("1.02.03") === "1.2.3"
    * @beta
    */
-  public static paddedVersionToSemver(paddedVersion: string): string { return paddedVersion.split(".").map(Number).join("."); }
+  public static toSemverString(paddedVersion: string): string { return paddedVersion.split(".").map(Number).join("."); }
 
   /** Schemas may not be instantiated. The method is not private only because that precludes subclassing. It throws an
    * error if it is ever called.
