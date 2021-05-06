@@ -6,13 +6,11 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
 import {
   Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform,
 } from "@bentley/geometry-core";
 import { FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
-import { Viewport } from "../../../Viewport";
-import { GraphicBuilder, GraphicBuilderOptions, GraphicType } from "../../GraphicBuilder";
+import { GraphicBuilder, GraphicBuilderOptions } from "../../GraphicBuilder";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";

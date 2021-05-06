@@ -7,7 +7,7 @@
  */
 
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Point2d, Transform, XAndY } from "@bentley/geometry-core";
+import { Point2d, XAndY } from "@bentley/geometry-core";
 import { Frustum, ImageBuffer, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
@@ -18,7 +18,7 @@ import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { AnimationBranchStates } from "./GraphicBranch";
-import { GraphicBuilderOptions, GraphicType } from "./GraphicBuilder";
+import { GraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { GraphicList } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";

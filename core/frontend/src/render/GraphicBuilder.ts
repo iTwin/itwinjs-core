@@ -136,7 +136,7 @@ export interface GraphicBuilderOptions {
 }
 
 /** @internal */
-export type BuilderOptions = GraphicBuilderOptions & { placement: Transform; };
+export type BuilderOptions = GraphicBuilderOptions & { placement: Transform };
 
 /** Provides methods for constructing a [[RenderGraphic]] from geometric primitives.
  * GraphicBuilder is primarily used for creating [[Decorations]] to be displayed inside a [[Viewport]].

@@ -3,16 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dispose, Id64String } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { Decorations } from "./Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { GraphicBuilderOptions, GraphicType } from "./GraphicBuilder";
+import { GraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
