@@ -9,7 +9,7 @@ import * as path from "path";
 import { ClientRequestContext, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import {
-  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
+  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -28,6 +28,7 @@ import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 import * as Semver from "semver";
+import { Schema } from "./Schema";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
@@ -750,7 +751,7 @@ export class IModelTransformer extends IModelExportHandler {
           return true;
         const [_fullMatch, schemaName, versionString] = match;
         const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
-        const versionToImport = versionString.split(".").map(Number).join(".");
+        const versionToImport = Schema.paddedVersionToSemver(versionString);
         if (versionInTarget && Semver.eq(versionToImport, versionInTarget))
           return false;
         return true;
