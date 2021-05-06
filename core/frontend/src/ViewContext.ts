@@ -61,8 +61,8 @@ export class RenderContext {
   public get target(): RenderTarget { return this.viewport.target; }
 
   /** @internal */
-  protected _createGraphicBuilder(options: GraphicBuilderOptions): GraphicBuilder {
-    return this.target.createGraphicBuilder(options);
+  protected _createGraphicBuilder(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+    return this.target.createGraphicBuilder({ ...options, viewport: this.viewport });
   }
 
   /** Create a builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
@@ -70,7 +70,7 @@ export class RenderContext {
    * @returns A builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    */
   public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder {
-    return this._createGraphicBuilder({ viewport: this.viewport, type: GraphicType.Scene, placement: transform });
+    return this._createGraphicBuilder({ type: GraphicType.Scene, placement: transform });
   }
 
   /** @internal */
@@ -149,10 +149,10 @@ export class DecorateContext extends RenderContext {
    * @see [[createGraphic]] for more options.
    */
   public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
-    return this.createGraphic({ viewport: this.viewport, type, placement: transform, pickable: undefined !== id ? { id } : undefined });
+    return this.createGraphic({ type, placement: transform, pickable: undefined !== id ? { id } : undefined });
   }
 
-  public createGraphic(options: GraphicBuilderOptions): GraphicBuilder {
+  public createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this._createGraphicBuilder(options);
   }
 
