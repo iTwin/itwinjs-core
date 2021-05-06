@@ -52,6 +52,13 @@ The new `@beta` API [Viewport.queryVisibleFeatures]($frontend) can be used to de
 * The feature lit up at least one pixel on the screen. Pixels drawn behind other, transparent pixels are not included in this criterion. Pixel-based queries can be constrained to a sub-region of the viewport.
 * The feature is included in at least one [Tile]($frontend) currently being displayed by the viewport. By this criterion, if a [ClipVector]($geometry-core) is clipping the contents of the viewport, a feature contained in a tile that intersects the clip volume is considered visible even if the feature's geometry would be completely clipped out.
 
+## Creating graphics
+
+The new [GraphicBuilderOptions]($frontend) makes it easier to create a [GraphicBuilder]($frontend) and enables some additional features. [DecorateContext.createGraphic]($frontend) and [RenderSystem.createGraphic]($frontend) have been added, superseding [DecorateContext.createGraphicBuilder]($frontend) and [RenderSystem.createGraphicBuilder]($frontend). Each accepts a GraphicBuilderOptions specifying only those aspects of the GraphicBuilder that the caller wishes to customize. In particular, the behavior of pickable decorations can be customized using [GraphicBuilderOptions.pickable]($frontend):
+
+* [PickableGraphicOptions.noHilite]($frontend) and [PickableGraphicOptions.noFlash]($frontend) can prevent pickable graphics from being flashed and/or hilited by tools.
+* [PickableGraphicOptions.locateOnly]($frontend) allows a pickable graphic to be located by tools but not drawn to the screen.
+
 ## Presentation changes
 
 ### InstanceLabelOverride enhancements
