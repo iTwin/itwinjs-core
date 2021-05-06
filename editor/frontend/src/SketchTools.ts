@@ -43,7 +43,6 @@ export class CreateLineStringTool extends CreateElementTool {
 
     if (0 !== nPts) {
       const hints = new AccuDrawHintBuilder();
-      hints.enableSmartRotation = true;
 
       if (nPts > 1 && !this._points[nPts - 1].isAlmostEqual(this._points[nPts - 2]))
         hints.setXAxis(Vector3d.createStartEnd(this._points[nPts - 2], this._points[nPts - 1])); // Rotate AccuDraw to last segment.
@@ -105,9 +104,8 @@ export class CreateLineStringTool extends CreateElementTool {
     if (undefined === this._snapGeomId)
       this._snapGeomId = this.iModel.transientIds.next;
 
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._snapGeomId);
-    const color = ColorDef.from(0, 0, 0, 250); // TODO: Mostly transparent until we have a "for pick only" option...
-    builder.setSymbology(color, color, 1);
+    const builder = context.createGraphic({ type: GraphicType.WorldDecoration, pickable: { id: this._snapGeomId, locateOnly: true }});
+    builder.setSymbology(ColorDef.white, ColorDef.white, 1);
     builder.addLineString(this._points); // Allow snapping to accepted segments...
     context.addDecorationFromBuilder(builder);
   }
