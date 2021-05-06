@@ -2593,6 +2593,7 @@ export class DynamicsContext extends RenderContext {
     addGraphic(graphic: RenderGraphic): void;
     // @internal (undocumented)
     changeDynamics(): void;
+    createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
     }
 
 // @alpha @deprecated

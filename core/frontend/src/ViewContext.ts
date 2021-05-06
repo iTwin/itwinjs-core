@@ -113,6 +113,14 @@ export class DynamicsContext extends RenderContext {
   public changeDynamics(): void {
     this.viewport.changeDynamics(this._dynamics);
   }
+
+  /** Create a builder for producing a [[RenderGraphic]] appropriate for rendering within this context's [[Viewport]].
+   * @param options Options describing how to create the builder.
+   * @returns A builder that produces a [[RenderGraphic]].
+   */
+  public createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+    return this._createGraphicBuilder(options);
+  }
 }
 
 /** Provides context for a [[ViewportDecorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
