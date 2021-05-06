@@ -1345,7 +1345,7 @@ export interface NavigationRuleBase extends RuleBase {
 
 // @public
 export class NestedContentField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, relationshipMeaning?: string, renderer?: RendererDescription);
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, renderer?: RendererDescription);
     // @alpha (undocumented)
     actualPrimaryClassIds: Id64String[];
     autoExpand?: boolean;
