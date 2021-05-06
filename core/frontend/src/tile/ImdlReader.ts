@@ -25,7 +25,8 @@ import {
   SurfaceMaterial, SurfaceParams, SurfaceType, TesselatedPolyline, VertexIndices, VertexTable,
 } from "../render/primitives/VertexTable";
 import { RenderGraphic } from "../render/RenderGraphic";
-import { BatchOptions, RenderSystem } from "../render/RenderSystem";
+import { RenderSystem } from "../render/RenderSystem";
+import { BatchOptions } from "../render/GraphicBuilder";
 import { GltfReader, GltfReaderProps, IModelTileContent, ShouldAbortReadGltf } from "./internal";
 
 /* eslint-disable no-restricted-syntax */

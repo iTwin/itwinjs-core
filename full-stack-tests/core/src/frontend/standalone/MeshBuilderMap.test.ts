@@ -65,7 +65,7 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("createFromGeometries", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -115,7 +115,7 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("toMeshes", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -168,7 +168,7 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("loadGeometry", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -320,7 +320,7 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("loadStrokePrimitiveList", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -361,7 +361,7 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("loadStrokesPrimitive", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
