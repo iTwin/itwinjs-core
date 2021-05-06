@@ -14,11 +14,9 @@ import {
 } from "@bentley/ui-abstract";
 import { Button, Point } from "@bentley/ui-core";
 import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
-import { Calculator } from "../../ui-framework/accudraw/Calculator";
-import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
 import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
 import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
-import TestUtils, { mount, storageMock } from "../TestUtils";
+import TestUtils, { storageMock } from "../TestUtils";
 import { FrameworkUiAdmin, KeyinEntry } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 import { fireEvent, render } from "@testing-library/react";
 const myLocalStorage = storageMock();
@@ -210,40 +208,34 @@ describe("PopupManager", () => {
 
   describe("PopupRenderer", () => {
     it("PopupRenderer should render", () => {
-      mount(<PopupRenderer />);
+      const wrapper = render(<PopupRenderer />);
+      wrapper.unmount();
     });
 
     it("PopupRenderer should render menuButton with menu item", () => {
-      const wrapper = mount(<PopupRenderer />);
-
+      const wrapper = render(<PopupRenderer />);
       const menuItemProps: MenuItemProps[] = [
         { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
       ];
-      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
-
-      AccuDrawPopupManager.showMenuButton("test1", doc.documentElement, new Point(150, 250), menuItemProps);
-
-      wrapper.update();
-      expect(wrapper.find(MenuButton).length).to.eq(1);
+      AccuDrawPopupManager.showMenuButton("test1", wrapper.container, new Point(150, 250), menuItemProps);
+      const menuButtonNode = wrapper.container.querySelector("button");
+      expect(menuButtonNode).to.not.be.null;
     });
 
     it("PopupRenderer should render Calculator", () => {
-      const wrapper = mount(<PopupRenderer />);
+      const wrapper = render(<PopupRenderer />);
 
-      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyOk = sinon.spy();
       const spyCancel = sinon.spy();
 
-      AccuDrawPopupManager.showCalculator(doc.documentElement, new Point(150, 250), 100, "icon-placeholder", spyOk, spyCancel);
-
-      wrapper.update();
-      expect(wrapper.find(Calculator).length).to.eq(1);
+      AccuDrawPopupManager.showCalculator(wrapper.container, new Point(150, 250), 100, "icon-placeholder", spyOk, spyCancel);
+      const calculatorDiv = wrapper.container.querySelector("div.uifw-calculator");
+      expect(calculatorDiv).to.not.be.null;
     });
 
     it("PopupRenderer should render InputEditor", async () => {
       const wrapper = render(<PopupRenderer />);
 
-      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyCommit = sinon.spy();
       const spyCancel = sinon.spy();
       const description: PropertyDescription = {
@@ -252,7 +244,7 @@ describe("PopupManager", () => {
         typename: StandardTypeNames.Text,
       };
 
-      PopupManager.showInputEditor(doc.documentElement, new Point(150, 250), 123, description, spyCommit, spyCancel);
+      PopupManager.showInputEditor(wrapper.container, new Point(150, 250), 123, description, spyCommit, spyCancel);
 
       let inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
@@ -261,7 +253,7 @@ describe("PopupManager", () => {
       await TestUtils.flushAsyncOperations();
       expect(spyCommit.calledOnce).to.be.true;
 
-      PopupManager.showInputEditor(doc.documentElement, new Point(150, 250), 123, description, spyCommit, spyCancel);
+      PopupManager.showInputEditor(wrapper.container, new Point(150, 250), 123, description, spyCommit, spyCancel);
       inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
 
@@ -280,11 +272,10 @@ describe("PopupManager", () => {
         ],
       };
 
-      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyItemExecuted = sinon.spy();
       const spyCancel = sinon.spy();
 
-      PopupManager.showToolbar(toolbarProps, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
+      PopupManager.showToolbar(toolbarProps, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
 
       const buttonNodes = wrapper.container.querySelectorAll("button");
       expect(buttonNodes.length).to.eq(2);
@@ -295,17 +286,12 @@ describe("PopupManager", () => {
     });
 
     it("PopupRenderer should render HTMLElement", async () => {
-      const wrapper = mount(<PopupRenderer />);
-
+      const wrapper = render(<PopupRenderer />);
       const html = "<div class='test-element'>Hello World!</div>";
       const display = new DOMParser().parseFromString(html, "text/html");
-
-      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyCancel = sinon.spy();
-
-      PopupManager.showHTMLElement(display.documentElement, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
-      wrapper.update();
-      wrapper.should.matchSnapshot();
+      PopupManager.showHTMLElement(display.documentElement, wrapper.container, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
+      wrapper.getByText("Hello World!");
     });
 
     it("PopupRenderer should render Card", async () => {
@@ -321,11 +307,10 @@ describe("PopupManager", () => {
         ],
       };
 
-      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyItemExecuted = sinon.spy();
       const spyCancel = sinon.spy();
 
-      PopupManager.showCard(content.documentElement, "Title", toolbarProps, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
+      PopupManager.showCard(content.documentElement, "Title", toolbarProps, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
       expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(1);
       expect(wrapper.container.querySelectorAll("div.components-toolbar-overflow-sizer").length).to.eq(1);
@@ -339,18 +324,18 @@ describe("PopupManager", () => {
       PopupManager.hideCard();
 
       const record = TestUtils.createPrimitiveStringProperty("record", "Title");
-      PopupManager.showCard(content.documentElement, record, toolbarProps, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
+      PopupManager.showCard(content.documentElement, record, toolbarProps, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
       expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(1);
       PopupManager.hideCard();
 
-      PopupManager.showCard(content.documentElement, undefined, undefined, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
+      PopupManager.showCard(content.documentElement, undefined, undefined, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
       expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(0);
       PopupManager.hideCard();
 
       const reactContent = { reactNode: <Button>Label</Button> };
-      PopupManager.showCard(reactContent, undefined, undefined, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
+      PopupManager.showCard(reactContent, undefined, undefined, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
       expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(0);
       PopupManager.hideCard();
@@ -407,10 +392,9 @@ describe("PopupManager", () => {
 
       const uiDataProvider = new TestUiDataProvider();
 
-      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyCancel = sinon.spy();
 
-      PopupManager.openToolSettings(uiDataProvider, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
+      PopupManager.openToolSettings(uiDataProvider, wrapper.container, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-default-container").length).to.eq(1);
 
       let inputNode = wrapper.container.querySelector("input");
@@ -420,7 +404,7 @@ describe("PopupManager", () => {
       await TestUtils.flushAsyncOperations();
       expect(spyChange.calledOnce).to.be.true;
 
-      PopupManager.openToolSettings(uiDataProvider, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
+      PopupManager.openToolSettings(uiDataProvider, wrapper.container, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-default-container").length).to.eq(1);
 
       inputNode = wrapper.container.querySelector("input");
@@ -434,11 +418,10 @@ describe("PopupManager", () => {
     it("PopupRenderer should render Keyin Palette", async () => {
       const wrapper = render(<PopupRenderer />);
       const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
-      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyOk = sinon.spy();
       const spyCancel = sinon.spy();
 
-      PopupManager.showKeyinPalette(keyins, doc.documentElement, spyOk, spyCancel);
+      PopupManager.showKeyinPalette(keyins, wrapper.container, spyOk, spyCancel);
 
       expect(wrapper.container.querySelectorAll("div.uifw-command-palette-panel").length).to.eq(1);
       const inputNode = wrapper.container.querySelector("input");

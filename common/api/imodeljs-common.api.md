@@ -2130,6 +2130,7 @@ export namespace ElementGeometry {
         setLocalToWorld(localToWorld?: Transform): void;
         setLocalToWorld2d(origin: Point2d, angle?: Angle): void;
         setLocalToWorld3d(origin: Point3d, angles?: YawPitchRollAngles): void;
+        setLocalToWorldFromPlacement(props: PlacementProps): void;
         get worldToLocal(): Transform | undefined;
         }
     export function fromBRep(brep: BRepEntity.DataProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
@@ -2567,7 +2568,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     // @internal (undocumented)
     protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined;
     getElementOverridesById(id: Id64String): FeatureAppearance | undefined;
-    getFeatureAppearance(feature: Feature, modelId: Id64String, type?: BatchType): FeatureAppearance | undefined;
+    getFeatureAppearance(feature: Feature, modelId: Id64String, type?: BatchType, animationNodeId?: number): FeatureAppearance | undefined;
     // @internal (undocumented)
     protected getModelOverrides(idLo: number, idHi: number): FeatureAppearance | undefined;
     getModelOverridesById(id: Id64String): FeatureAppearance | undefined;
@@ -3016,6 +3017,7 @@ export class GeometryStreamBuilder {
     setLocalToWorld(localToWorld?: Transform): void;
     setLocalToWorld2d(origin: Point2d, angle?: Angle): void;
     setLocalToWorld3d(origin: Point3d, angles?: YawPitchRollAngles): void;
+    setLocalToWorldFromPlacement(props: PlacementProps): void;
     }
 
 // @public

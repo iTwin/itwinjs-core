@@ -1368,12 +1368,16 @@ export class BackgroundMapGeometry {
 // @internal (undocumented)
 export class BackgroundMapLocation {
     // (undocumented)
+    get geodeticToSeaLevel(): number;
+    // (undocumented)
     getMapEcefToDb(bimElevationBias: number): Transform;
     // (undocumented)
     initialize(iModel: IModelConnection): Promise<void>;
     // (undocumented)
     onEcefChanged(ecefLocation: EcefLocation): void;
-}
+    // (undocumented)
+    get projectCenterAltitude(): number;
+    }
 
 // @beta
 export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
@@ -2194,7 +2198,7 @@ export interface Decorator extends ViewportDecorator {
 
 // @internal (undocumented)
 export class DefaultViewTouchTool extends ViewManip implements Animator {
-    constructor(startEv: BeTouchEvent, ev: BeTouchEvent);
+    constructor(startEv: BeTouchEvent, ev: BeTouchEvent, only2dManipulations?: boolean);
     animate(): boolean;
     // (undocumented)
     interrupt(): void;
@@ -2343,12 +2347,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
     // @internal (undocumented)
-    get backgroundDrapeMap(): MapTileTreeReference;
-    // @internal (undocumented)
-    get backgroundMap(): MapTileTreeReference;
-    // @internal (undocumented)
     get backgroundMapBase(): BaseLayerSettings | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     get backgroundMapElevationBias(): number;
     // @internal (undocumented)
     get backgroundMapLayers(): MapLayerSettings[];
@@ -2411,8 +2411,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     getIsBackgroundMapVisible(): boolean;
     // @internal (undocumented)
-    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
-    // @internal (undocumented)
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
@@ -2441,10 +2439,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     load(): Promise<void>;
     // @internal (undocumented)
     mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined;
-    // @internal (undocumented)
-    mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined;
-    // @internal (undocumented)
-    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // @beta
     get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance>;
     get monochromeColor(): ColorDef;
@@ -2458,8 +2452,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get name(): string;
     // @beta
     readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
-    // @internal (undocumented)
-    get overlayMap(): MapTileTreeReference;
     // @internal (undocumented)
     get overlayMapLayers(): MapLayerSettings[];
     // @beta
@@ -2961,6 +2953,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     // @internal
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
     toJSON(vp: Viewport): EmphasizeElementsProps;
+    get unanimatedAppearance(): FeatureAppearance | undefined;
+    set unanimatedAppearance(appearance: FeatureAppearance | undefined);
     // @internal (undocumented)
     protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
     wantEmphasis: boolean;
@@ -2980,6 +2974,8 @@ export interface EmphasizeElementsProps {
     isAlwaysDrawnExclusive?: boolean;
     // (undocumented)
     neverDrawn?: Id64Array;
+    // (undocumented)
+    unanimatedAppearance?: FeatureAppearanceProps;
     // (undocumented)
     wantEmphasis?: boolean;
 }
@@ -5643,7 +5639,7 @@ export class MapTileTree extends RealityTileTree {
 
 // @internal
 export class MapTileTreeReference extends TileTreeReference {
-    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
+    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, viewportId: number, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     // (undocumented)
@@ -5677,6 +5673,8 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
+    get layerSettings(): MapLayerSettings[];
+    // (undocumented)
     get planarclipMaskPriority(): number;
     // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
@@ -5690,7 +5688,7 @@ export class MapTileTreeReference extends TileTreeReference {
     unionFitRange(_range: Range3d): void;
     // (undocumented)
     get useDepthBuffer(): boolean;
-}
+    }
 
 // @internal (undocumented)
 export abstract class MapTilingScheme {
@@ -7276,8 +7274,30 @@ export type QuantityTypeKey = string;
 // @public
 export function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
 
+// @beta
+export interface QueryScreenFeaturesOptions {
+    includeNonLocatable?: boolean;
+    rect?: ViewRect;
+    source: "screen";
+}
+
 // @public
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
+
+// @beta
+export interface QueryTileFeaturesOptions {
+    includeNonLocatable?: boolean;
+    source: "tiles";
+}
+
+// @internal
+export function queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
+
+// @beta
+export type QueryVisibleFeaturesCallback = (features: Iterable<VisibleFeature>) => void;
+
+// @beta
+export type QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions;
 
 // @internal
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
@@ -8104,6 +8124,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void;
     // (undocumented)
     pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined;
+    queryVisibleTileFeatures(_options: QueryTileFeaturesOptions, _iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
     readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     readImageToCanvas(): HTMLCanvasElement;
@@ -9464,6 +9485,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     pushState(state: BranchState): void;
     // (undocumented)
     pushViewClip(): void;
+    // (undocumented)
+    queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
     readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
@@ -10494,6 +10517,7 @@ export class ToolAdmin {
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     gridLock: boolean;
     get idleTool(): IdleTool;
+    set idleTool(idleTool: IdleTool);
     // (undocumented)
     get isLocateCircleOn(): boolean;
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
@@ -11896,10 +11920,15 @@ export abstract class Viewport implements IDisposable {
     set antialiasSamples(numSamples: number);
     // @internal
     applyViewState(val: ViewState): void;
+    get areAllTileTreesLoaded(): boolean;
     // @beta
     attachRealityModel(props: ContextRealityModelProps): void;
     // (undocumented)
     get auxCoordSystem(): AuxCoordSystemState;
+    // @internal (undocumented)
+    get backgroundDrapeMap(): MapTileTreeReference | undefined;
+    // @internal (undocumented)
+    get backgroundMap(): MapTileTreeReference | undefined;
     // @internal (undocumented)
     get backgroundMapGeometry(): BackgroundMapGeometry | undefined;
     get backgroundMapSettings(): BackgroundMapSettings;
@@ -11967,6 +11996,8 @@ export abstract class Viewport implements IDisposable {
     flashIntensity: number;
     // @internal
     flashUpdateTime?: BeTimePoint;
+    // @internal (undocumented)
+    forEachMapTreeRef(func: (ref: TileTreeReference) => void): void;
     // @alpha (undocumented)
     forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
     // @internal (undocumented)
@@ -11986,6 +12017,8 @@ export abstract class Viewport implements IDisposable {
     getAuxCoordRotation(result?: Matrix3d): Matrix3d;
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
+    // @internal (undocumented)
+    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
     // @beta
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     // @beta
@@ -12041,6 +12074,10 @@ export abstract class Viewport implements IDisposable {
     lastFlashedElem?: string;
     get lightSettings(): LightSettings | undefined;
     // @internal (undocumented)
+    mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined;
+    // @internal (undocumented)
+    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
+    // @internal (undocumented)
     markSelectionSetDirty(): void;
     get neverDrawn(): Id64Set | undefined;
     npcToView(pt: Point3d, out?: Point3d): Point3d;
@@ -12065,6 +12102,8 @@ export abstract class Viewport implements IDisposable {
     readonly onViewedModelsChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewportChanged: BeEvent<(vp: Viewport, changed: ChangeFlags) => void>;
     readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
+    // @internal (undocumented)
+    get overlayMap(): MapTileTreeReference | undefined;
     // @beta
     overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;
     overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void;
@@ -12078,6 +12117,8 @@ export abstract class Viewport implements IDisposable {
     get pixelsPerInch(): number;
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
+    // @beta
+    queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
     // @internal
     readImageToCanvas(): HTMLCanvasElement;
@@ -12761,6 +12802,15 @@ export class ViewUndoTool extends ViewTool {
     onPostInstall(): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @beta
+export interface VisibleFeature {
+    readonly elementId: Id64String;
+    readonly geometryClass: GeometryClass;
+    iModel: IModelConnection;
+    readonly modelId: Id64String;
+    readonly subCategoryId: Id64String;
 }
 
 // @public

@@ -43,6 +43,15 @@ The planar grid that is displayed when [ViewFlags.grid]($common) is now displaye
 
 The [RenderSchedule]($common) API for defining how to animate the contents of a view over time has been cleaned up and expanded. A new [RenderTimeline]($backend) element class has been introduced with version 1.0.13 of the BisCore ECSchema, to host a [RenderSchedule.Script]($common). `DisplayStyleSettings.scheduleScriptProps` has been deprecated in favor of [DisplayStyleSettings.renderTimeline]($common) specifying the Id of the RenderTimeline element hosting the script to be applied to the display style. A [DisplayStyleState]($frontend)'s schedule script is now loaded asynchronously via [DisplayStyleState.load]($frontend) - this is done automatically by [ViewState.load]($frontend) but must be done manually for display styles obtained through other means.
 
+Sometimes it is useful to make the elements animated by the script more visible by de-emphasizing elements unaffected by the script. The appearance of non-animated elements can now be controlled by [EmphasizeElements.unanimatedAppearance]($frontend).
+
+## Querying visible elements
+
+The new `@beta` API [Viewport.queryVisibleFeatures]($frontend) can be used to determine the set of [Feature]($common)s - typically, elements - that are currently visible in the viewport. The API offers a choice between two criteria that can be used to determine visibility:
+
+* The feature lit up at least one pixel on the screen. Pixels drawn behind other, transparent pixels are not included in this criterion. Pixel-based queries can be constrained to a sub-region of the viewport.
+* The feature is included in at least one [Tile]($frontend) currently being displayed by the viewport. By this criterion, if a [ClipVector]($geometry-core) is clipping the contents of the viewport, a feature contained in a tile that intersects the clip volume is considered visible even if the feature's geometry would be completely clipped out.
+
 ## Presentation changes
 
 ### InstanceLabelOverride enhancements
@@ -66,6 +75,10 @@ A new `parentId` attribute was added to [PropertyCategorySpecification]($present
 ### Presentation rule schema requirements
 
 A new `requiredSchemas` attribute was added to [Ruleset]($presentation-common), [Rule]($presentation-common) and [SubCondition]($presentation-common) definitions. The attribute allows specifying ECSchema requirements for rules and avoid using them when requirements are not met. See the [schema requirements page](../learning/presentation/SchemaRequirements.md) for more details.
+
+## Map tile trees refactoring
+
+The map tile trees have been moved from [DisplayStyleState]($frontend) to [Viewport]($frontend).  This enables the maps to be maintained correctly when viewports are synchronized.  This will primarily not affect applications except calls to [ViewState.areAllTileTreesLoaded]($frontend) should replaced with [Viewport.areAllTileTreesLoaded]($frontend) if the map tile trees should be tested.
 
 ## Promoted APIs
 

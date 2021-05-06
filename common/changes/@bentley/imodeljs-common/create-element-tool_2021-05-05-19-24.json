@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "wip: CreateElementTool. Fix not being able to pick decorations after changing files.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "65233531+bbastings@users.noreply.github.com"
+}

@@ -1250,7 +1250,7 @@ export interface DateFieldProps extends CommonProps {
 export function DatePicker(props: DatePickerProps): JSX.Element;
 
 // @alpha
-export function DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName }: DatePickerPopupButtonProps): JSX.Element;
+export function DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): JSX.Element;
 
 // @alpha
 export interface DatePickerPopupButtonProps extends CommonProps {

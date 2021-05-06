@@ -36,6 +36,7 @@ export * from "./ui-core/contextmenu/PopupContextMenu";
 export * from "./ui-core/cube/Cube";
 
 export * from "./ui-core/dialog/Dialog";
+export * from "./ui-core/dialog/GlobalDialog";
 
 export * from "./ui-core/elementseparator/ElementSeparator";
 
