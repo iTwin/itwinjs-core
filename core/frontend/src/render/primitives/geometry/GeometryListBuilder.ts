@@ -179,7 +179,9 @@ export class PrimitiveBuilder extends GeometryListBuilder {
 
     let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
     if (undefined !== featureTable) {
-      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), (range !== undefined) ? range : new Range3d());
+      const batchRange = range ?? new Range3d();
+      const batchOptions = this._options.pickable;
+      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), batchRange, batchOptions);
     }
 
     return graphic;
