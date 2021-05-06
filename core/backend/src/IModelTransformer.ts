@@ -757,7 +757,8 @@ export class IModelTransformer extends IModelExportHandler {
         return true;
       });
       const importSchemasFullPaths = filteredImportSchemas.map((schema) => path.join(schemasDir, schema));
-      await this.targetDb.importSchemas(requestContext, importSchemasFullPaths);
+      if (importSchemasFullPaths.length > 0)
+        await this.targetDb.importSchemas(requestContext, importSchemasFullPaths);
     } finally {
       requestContext.enter();
       IModelJsFs.removeSync(schemasDir);
