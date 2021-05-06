@@ -123,8 +123,7 @@ export class DynamicGraphicsProvider {
     }
   }
 
-  /** Call to request a RenderGraphic for geometry that is always changing based on cursor location, etc.
-   * Triggers a dynamic update upon request fulfullment.
+  /** Call to request a RenderGraphic for geometry and trigger a dynamic update upon fulfullment.
    * @see [[cleanupGraphic]] Must be called when the tool exits.
    */
   public createGraphicAndUpdateDynamics(ev: BeButtonEvent, categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): void {
