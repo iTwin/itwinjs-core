@@ -109,33 +109,35 @@ function invokeCallback(features: Iterable<VisibleFeature>, callback: QueryVisib
 class ScreenFeatures implements Iterable<VisibleFeature> {
   private readonly _pixels: Pixel.Buffer;
   private readonly _rect: ViewRect;
+  private readonly _iModel: IModelConnection;
 
   public constructor(pixels: Pixel.Buffer, rect: ViewRect, viewport: Viewport) {
     this._pixels = pixels;
     this._rect = rect.clone();
     this._rect.right = viewport.cssPixelsToDevicePixels(this._rect.right);
     this._rect.bottom = viewport.cssPixelsToDevicePixels(this._rect.bottom);
+    this._iModel = viewport.iModel;
   }
 
   public [Symbol.iterator](): Iterator<VisibleFeature> {
-    function * iterator(pixels: Pixel.Buffer, rect: ViewRect) {
+    function * iterator(pixels: Pixel.Buffer, rect: ViewRect, iModel: IModelConnection) {
       for (let x = rect.left; x < rect.right; x++) {
         for (let y = rect.top; y < rect.bottom; y++) {
           const pixel = pixels.getPixel(x, y);
-          if (pixel.feature && pixel.iModel && pixel.featureTable) {
+          if (pixel.feature && pixel.featureTable) {
             yield {
               elementId: pixel.feature.elementId,
               subCategoryId: pixel.feature.subCategoryId,
               geometryClass: pixel.feature.geometryClass,
               modelId: pixel.featureTable.modelId,
-              iModel: pixel.iModel,
+              iModel: pixel.iModel ?? iModel,
             };
           }
         }
       }
     }
 
-    return iterator(this._pixels, this._rect);
+    return iterator(this._pixels, this._rect, this._iModel);
   }
 }
 
