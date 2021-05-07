@@ -33,8 +33,30 @@ describe("QuantityInput", () => {
   });
 
   it("should render basic panel", () => {
-    const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length}  />);
+    const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} />);
     expect(renderedComponent).not.to.be.null;
+  });
+
+  const selectChangeValue = (select: HTMLElement, index: number, menuId: string) => {
+    fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
+    const menu = document.querySelector(`.iui-menu.${menuId}`) as HTMLUListElement;
+    expect(menu).to.exist;
+
+    const menuItem = menu.querySelectorAll("li");
+    expect(menuItem).to.exist;
+    expect(menuItem[index]).to.not.be.undefined;
+    fireEvent.click(menuItem[index]);
+  };
+
+  const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
+  const scrollIntoViewMock = sinon.spy();
+
+  beforeEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
+  });
+
+  afterEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
   });
 
   it("should render basic panel with sample", () => {
@@ -61,11 +83,11 @@ describe("QuantityInput", () => {
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} enableMinimumProperties />);
     await TestUtils.flushAsyncOperations();
     const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
-    expect(spanElement.textContent).to.be.eql (`405'-0 1/4"`);
+    expect(spanElement.textContent).to.be.eql(`405'-0 1/4"`);
     await IModelApp.quantityFormatter.setOverrideFormat(QuantityType.Length, overrideLengthFormat);
     renderedComponent.rerender(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} enableMinimumProperties />);
     await TestUtils.flushAsyncOperations();
-    expect(spanElement.textContent).to.be.eql ("4860.2362 in");
+    expect(spanElement.textContent).to.be.eql("4860.2362 in");
     await IModelApp.quantityFormatter.clearOverrideFormats(QuantityType.Length);
   });
 
@@ -77,30 +99,30 @@ describe("QuantityInput", () => {
     const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
 
     // change from default none to space
-    fireEvent.change(renderedComponent.getByTestId("uom-separator-select"), {target: { value: " " }});
+    fireEvent.change(renderedComponent.getByTestId("uom-separator-select"), { target: { value: " " } });
     expect(spy).to.be.called;
     spy.resetHistory();
     await TestUtils.flushAsyncOperations();
-    expect(spanElement.textContent).to.be.eql (`405 '-0 1/4 "`);
+    expect(spanElement.textContent).to.be.eql(`405 '-0 1/4 "`);
 
     // change from default none to space
-    fireEvent.change(renderedComponent.getByTestId("uom-separator-select"), {target: { value: "" }});
+    fireEvent.change(renderedComponent.getByTestId("uom-separator-select"), { target: { value: "" } });
     expect(spy).to.be.called;
     spy.resetHistory();
     await TestUtils.flushAsyncOperations();
-    expect(spanElement.textContent).to.be.eql (`405'-0 1/4"`);
+    expect(spanElement.textContent).to.be.eql(`405'-0 1/4"`);
 
     fireEvent.click(renderedComponent.getByTestId("show-unit-label-checkbox"));
     expect(spy).to.be.called;
     spy.resetHistory();
     await TestUtils.flushAsyncOperations();
-    expect(spanElement.textContent).to.be.eql (`405:-0 1/4`);  // TODO does this match Native formatter?
+    expect(spanElement.textContent).to.be.eql(`405:-0 1/4`);  // TODO does this match Native formatter?
 
     fireEvent.click(renderedComponent.getByTestId("show-unit-label-checkbox"));
     expect(spy).to.be.called;
     spy.resetHistory();
     await TestUtils.flushAsyncOperations();
-    expect(spanElement.textContent).to.be.eql (`405'-0 1/4"`);
+    expect(spanElement.textContent).to.be.eql(`405'-0 1/4"`);
   });
 
   it("should handle onFormatChange Composite separator", async () => {
@@ -111,20 +133,20 @@ describe("QuantityInput", () => {
     await TestUtils.flushAsyncOperations();
 
     const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
-    expect(spanElement.textContent).to.be.eql (`405'-0 1/4"`);
+    expect(spanElement.textContent).to.be.eql(`405'-0 1/4"`);
 
     // change from default none to space
-    fireEvent.change(renderedComponent.getByTestId("composite-spacer"), {target: { value: "x" }});
+    fireEvent.change(renderedComponent.getByTestId("composite-spacer"), { target: { value: "x" } });
     await TestUtils.flushAsyncOperations();
-    expect(spanElement.textContent).to.be.eql (`405'x0 1/4"`);
+    expect(spanElement.textContent).to.be.eql(`405'x0 1/4"`);
 
     expect(spy).to.be.called;
     spy.resetHistory();
 
     // change from default none to space
-    fireEvent.change(renderedComponent.getByTestId("composite-spacer"), {target: { value: "xxx" }});
+    fireEvent.change(renderedComponent.getByTestId("composite-spacer"), { target: { value: "xxx" } });
     await TestUtils.flushAsyncOperations();
-    expect(spanElement.textContent).to.be.eql (`405'x0 1/4"`);
+    expect(spanElement.textContent).to.be.eql(`405'x0 1/4"`);
 
     expect(spy).to.be.called;
     spy.resetHistory();
@@ -141,8 +163,8 @@ describe("QuantityInput", () => {
       FormatType.Scientific.toString(),
       FormatType.Station.toString(),
       FormatType.Fractional.toString(),
-    ].forEach ((selectValue) => {
-      fireEvent.change(typeSelector, {target: { value: selectValue }});
+    ].forEach((selectValue) => {
+      fireEvent.change(typeSelector, { target: { value: selectValue } });
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -151,7 +173,7 @@ describe("QuantityInput", () => {
   it("should handle onFormatChange Type selection (metric)", async () => {
     const spy = sinon.spy();
     const system = IModelApp.quantityFormatter.activeUnitSystem;
-    await IModelApp.quantityFormatter.setActiveUnitSystem (system==="imperial"?"metric": "imperial") ;
+    await IModelApp.quantityFormatter.setActiveUnitSystem(system === "imperial" ? "metric" : "imperial");
 
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Stationing} showSample initialMagnitude={123.45} onFormatChange={spy} />);
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
@@ -162,14 +184,14 @@ describe("QuantityInput", () => {
       FormatType.Decimal.toString(),
       FormatType.Scientific.toString(),
       FormatType.Station.toString(),
-    ].forEach (async (selectValue) => {
-      fireEvent.change(typeSelector, {target: { value: selectValue }});
+    ].forEach(async (selectValue) => {
+      fireEvent.change(typeSelector, { target: { value: selectValue } });
       expect(spy).to.be.called;
       await TestUtils.flushAsyncOperations();
       spy.resetHistory();
     });
 
-    await IModelApp.quantityFormatter.setActiveUnitSystem (system) ;
+    await IModelApp.quantityFormatter.setActiveUnitSystem(system);
   });
 
   it("should handle onFormatChange Type selection (numeric format)", async () => {
@@ -190,8 +212,8 @@ describe("QuantityInput", () => {
       FormatType.Decimal.toString(),
       FormatType.Scientific.toString(),
       FormatType.Station.toString(),
-    ].forEach (async (selectValue) => {
-      fireEvent.change(typeSelector, {target: { value: selectValue }});
+    ].forEach(async (selectValue) => {
+      fireEvent.change(typeSelector, { target: { value: selectValue } });
       expect(spy).to.be.called;
       await TestUtils.flushAsyncOperations();
       spy.resetHistory();
@@ -214,11 +236,11 @@ describe("QuantityInput", () => {
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} enableMinimumProperties />);
     await TestUtils.flushAsyncOperations();
     const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
-    expect(spanElement.textContent).to.be.eql (`405'-0 1/4"`);
+    expect(spanElement.textContent).to.be.eql(`405'-0 1/4"`);
     await IModelApp.quantityFormatter.setOverrideFormat(QuantityType.Length, overrideLengthFormat);
     renderedComponent.rerender(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} enableMinimumProperties />);
     await TestUtils.flushAsyncOperations();
-    expect(spanElement.textContent).to.be.eql ("4860.2362 in");
+    expect(spanElement.textContent).to.be.eql("4860.2362 in");
     await IModelApp.quantityFormatter.clearOverrideFormats(QuantityType.Length);
   });
 
@@ -228,26 +250,27 @@ describe("QuantityInput", () => {
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} onFormatChange={spy} />);
     const precisionSelector = renderedComponent.getByTestId("fraction-precision-selector");
 
-    ["1", "2", "4", "8", "16","32","64","128","256"].forEach ((selectValue) => {
-      fireEvent.change(precisionSelector, {target: { value: selectValue }});
+    ["1", "2", "4", "8", "16", "32", "64", "128", "256"].forEach((selectValue) => {
+      fireEvent.change(precisionSelector, { target: { value: selectValue } });
       expect(spy).to.be.called;
       spy.resetHistory();
     });
   });
 
-  it("should handle onFormatChange Decimal precision selection", () => {
+  it.only("should handle onFormatChange Decimal precision selection", () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} onFormatChange={spy} />);
 
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
-    fireEvent.change(typeSelector, {target: { value: FormatType.Decimal.toString() }});
+    // fireEvent.change(typeSelector, { target: { value: FormatType.Decimal.toString() } });
+    selectChangeValue(typeSelector, 0, "format-type-selector-menu");
     expect(spy).to.be.called;
     spy.resetHistory();
 
     const precisionSelector = renderedComponent.getByTestId("decimal-precision-selector");
 
-    ["0", "1", "2", "3", "4","5","6","7","8","9","10","11","12"].forEach ((selectValue) => {
-      fireEvent.change(precisionSelector, {target: { value: selectValue }});
+    ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"].forEach((selectValue) => {
+      fireEvent.change(precisionSelector, { target: { value: selectValue } });
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -278,8 +301,8 @@ describe("QuantityInput", () => {
       ShowSignOption.SignAlways.toString(),
       ShowSignOption.NegativeParentheses.toString(),
       ShowSignOption.NoSign.toString(),
-    ].forEach ((selectValue) => {
-      fireEvent.change(signOptionSelector, {target: { value: selectValue }});
+    ].forEach((selectValue) => {
+      fireEvent.change(signOptionSelector, { target: { value: selectValue } });
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -291,20 +314,20 @@ describe("QuantityInput", () => {
 
     // set to Station Type so selector is enabled
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
-    fireEvent.change(typeSelector, {target: { value: FormatType.Station.toString() }});
+    fireEvent.change(typeSelector, { target: { value: FormatType.Station.toString() } });
     expect(spy).to.be.called;
     spy.resetHistory();
 
     const sizeOptionSelector = renderedComponent.getByTestId("station-size-selector");
-    ["3", "2" ].forEach ((selectValue) => {
-      fireEvent.change(sizeOptionSelector, {target: { value: selectValue }});
+    ["3", "2"].forEach((selectValue) => {
+      fireEvent.change(sizeOptionSelector, { target: { value: selectValue } });
       expect(spy).to.be.called;
       spy.resetHistory();
     });
 
     const separatorSelector = renderedComponent.getByTestId("station-separator-selector");
-    ["-",    " ",    "^",    "+"].forEach ((selectValue) => {
-      fireEvent.change(separatorSelector, {target: { value: selectValue }});
+    ["-", " ", "^", "+"].forEach((selectValue) => {
+      fireEvent.change(separatorSelector, { target: { value: selectValue } });
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -322,7 +345,7 @@ describe("QuantityInput", () => {
     spy.resetHistory();
 
     const typeSelector = renderedComponent.getByTestId("thousands-separator-selector");
-    fireEvent.change(typeSelector, {target: { value: "." }});
+    fireEvent.change(typeSelector, { target: { value: "." } });
     await TestUtils.flushAsyncOperations();
 
     /* turn off */
@@ -338,7 +361,7 @@ describe("QuantityInput", () => {
     spy.resetHistory();
     renderedComponent.getByText(`40.504'-2"`);
 
-    fireEvent.change(typeSelector, {target: { value: "," }});
+    fireEvent.change(typeSelector, { target: { value: "," } });
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
@@ -351,7 +374,7 @@ describe("QuantityInput", () => {
     await TestUtils.flushAsyncOperations();
 
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
-    fireEvent.change(typeSelector, {target: { value: FormatType.Decimal.toString() }});
+    fireEvent.change(typeSelector, { target: { value: FormatType.Decimal.toString() } });
     await TestUtils.flushAsyncOperations();
 
     expect(spy).to.be.called;
@@ -364,12 +387,12 @@ describe("QuantityInput", () => {
     spy.resetHistory();
 
     const separatorSelector = renderedComponent.getByTestId("decimal-separator-selector");
-    fireEvent.change(separatorSelector, {target: { value: "," }});
+    fireEvent.change(separatorSelector, { target: { value: "," } });
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
 
-    fireEvent.change(separatorSelector, {target: { value: "." }});
+    fireEvent.change(separatorSelector, { target: { value: "." } });
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
@@ -385,7 +408,7 @@ describe("QuantityInput", () => {
     spy.resetHistory();
 
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
-    fireEvent.change(typeSelector, {target: { value: FormatType.Decimal.toString() }});
+    fireEvent.change(typeSelector, { target: { value: FormatType.Decimal.toString() } });
     expect(spy).to.be.called;
     spy.resetHistory();
 
@@ -405,13 +428,13 @@ describe("QuantityInput", () => {
     expect(spy).to.be.called;
     spy.resetHistory();
 
-    fireEvent.change(typeSelector, {target: { value: FormatType.Scientific.toString() }});
+    fireEvent.change(typeSelector, { target: { value: FormatType.Scientific.toString() } });
     expect(spy).to.be.called;
     spy.resetHistory();
 
     const scientificTypeSelector = renderedComponent.getByTestId("scientific-type-selector");
-    [ScientificType.ZeroNormalized.toString(), ScientificType.Normalized.toString()].forEach ((selectValue) => {
-      fireEvent.change(scientificTypeSelector, {target: { value: selectValue }});
+    [ScientificType.ZeroNormalized.toString(), ScientificType.Normalized.toString()].forEach((selectValue) => {
+      fireEvent.change(scientificTypeSelector, { target: { value: selectValue } });
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -423,7 +446,7 @@ describe("QuantityInput", () => {
     await TestUtils.flushAsyncOperations();
 
     const secondaryUnitsSelector = renderedComponent.getByTestId("unit-Units.IN");
-    fireEvent.change(secondaryUnitsSelector, {target: { value: "REMOVEUNIT" }});
+    fireEvent.change(secondaryUnitsSelector, { target: { value: "REMOVEUNIT" } });
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
@@ -435,7 +458,7 @@ describe("QuantityInput", () => {
     await TestUtils.flushAsyncOperations();
 
     const primaryUnitSelector = renderedComponent.getByTestId("unit-Units.FT");
-    fireEvent.change(primaryUnitSelector, {target: { value: "Units.IN:in" }});
+    fireEvent.change(primaryUnitSelector, { target: { value: "Units.IN:in" } });
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
@@ -447,7 +470,7 @@ describe("QuantityInput", () => {
     await TestUtils.flushAsyncOperations();
 
     const primaryUnitSelector = renderedComponent.getByTestId("unit-Units.FT");
-    fireEvent.change(primaryUnitSelector, {target: { value: "ADDSUBUNIT:Units.IN:in" }});
+    fireEvent.change(primaryUnitSelector, { target: { value: "ADDSUBUNIT:Units.IN:in" } });
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
@@ -458,7 +481,7 @@ describe("QuantityInput", () => {
 
     const sampleInput = renderedComponent.getByTestId("format-sample-input");
     act(() => {
-      fireEvent.change(sampleInput, {target: { value: "729.32" }});
+      fireEvent.change(sampleInput, { target: { value: "729.32" } });
     });
     await wait(() => {
       fireEvent.keyDown(sampleInput, { key: "Enter", code: 13 });
@@ -467,7 +490,7 @@ describe("QuantityInput", () => {
     });
 
     act(() => {
-      fireEvent.change(sampleInput, {target: { value: "a" }});
+      fireEvent.change(sampleInput, { target: { value: "a" } });
     });
     await wait(() => {
       fireEvent.keyDown(sampleInput, { key: "Enter", code: 13 });
@@ -487,13 +510,13 @@ describe("QuantityInput", () => {
     renderedComponent.getByDisplayValue("0");
 
     // cover update props case
-    renderedComponent.rerender (<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample initialMagnitude={4} />);
+    renderedComponent.rerender(<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample initialMagnitude={4} />);
     renderedComponent.getByDisplayValue("4");
 
-    renderedComponent.rerender (<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample />);
+    renderedComponent.rerender(<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample />);
     renderedComponent.getByDisplayValue("0");
 
-    renderedComponent.rerender (<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample />);
+    renderedComponent.rerender(<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample />);
     renderedComponent.getByDisplayValue("0");
 
     // renderedComponent.debug();
@@ -504,7 +527,7 @@ describe("QuantityInput", () => {
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample initialMagnitude={123.45} onFormatChange={spy} />);
     const primaryUnitLabel = renderedComponent.getByTestId("unit-label-Units.FT");
     act(() => {
-      fireEvent.change(primaryUnitLabel, {target: { value: "testfeet" }});
+      fireEvent.change(primaryUnitLabel, { target: { value: "testfeet" } });
     });
     await wait(() => {
       renderedComponent.getByText(/testfeet/);
@@ -514,7 +537,7 @@ describe("QuantityInput", () => {
 
     const primaryUnitSelector = renderedComponent.getByTestId("unit-Units.FT");
     act(() => {
-      fireEvent.change(primaryUnitSelector, {target: { value: "Units.YRD:yd" }});
+      fireEvent.change(primaryUnitSelector, { target: { value: "Units.YRD:yd" } });
     });
     await wait(() => {
       renderedComponent.getByTestId("unit-label-Units.YRD");
@@ -527,8 +550,8 @@ describe("QuantityInput", () => {
 
   describe("Properties from Custom Quantity Type are Rendered", () => {
     before(async () => {
-    // register new QuantityType
-      await BearingQuantityType.registerQuantityType ();
+      // register new QuantityType
+      await BearingQuantityType.registerQuantityType();
     });
 
     it("should handle onFormatChange when changing changing primary unit", () => {
@@ -536,7 +559,7 @@ describe("QuantityInput", () => {
       const renderedComponent = render(<QuantityFormatPanel quantityType={"Bearing"} showSample initialMagnitude={1.45} onFormatChange={spy} />);
 
       const textField = renderedComponent.getByTestId("text-1-editor");
-      fireEvent.change(textField, {target: { value: "Hello" }});
+      fireEvent.change(textField, { target: { value: "Hello" } });
       expect(spy).to.be.called;
       spy.resetHistory();
 
@@ -546,7 +569,7 @@ describe("QuantityInput", () => {
       spy.resetHistory();
 
       const selectField = renderedComponent.getByTestId("select-0-editor");
-      fireEvent.change(selectField, {target: { value: "counter-clockwise" }});
+      fireEvent.change(selectField, { target: { value: "counter-clockwise" } });
       expect(spy).to.be.called;
       spy.resetHistory();
     });
