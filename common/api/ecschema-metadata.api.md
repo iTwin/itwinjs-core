@@ -828,9 +828,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // (undocumented)
     protected _modifier: ECClassModifier;
     // (undocumented)
-    get properties(): Property[] | undefined;
+    get properties(): IterableIterator<Property> | undefined;
     // (undocumented)
-    protected _properties?: Property[];
+    protected _properties?: Map<string, Property>;
     // @alpha
     protected setModifier(modifier: ECClassModifier): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ClassProps;

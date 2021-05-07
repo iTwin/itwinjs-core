@@ -6,21 +6,119 @@
 
 import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
+import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
+import { EventHandled } from '@bentley/imodeljs-frontend';
+import { FlatBufferGeometryStream } from '@bentley/imodeljs-common';
+import { GeometricElementProps } from '@bentley/imodeljs-common';
+import { GeometryStreamProps } from '@bentley/imodeljs-common';
+import { HitDetail } from '@bentley/imodeljs-frontend';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
+import { JsonGeometryStream } from '@bentley/imodeljs-common';
 import { Placement } from '@bentley/imodeljs-common';
+import { PlacementProps } from '@bentley/imodeljs-common';
 import { Point3d } from '@bentley/geometry-core';
+import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 import { PropertyDescription } from '@bentley/ui-abstract';
+import { Range3d } from '@bentley/geometry-core';
 import { RenderGraphic } from '@bentley/imodeljs-frontend';
 import { RenderGraphicOwner } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { Transform } from '@bentley/geometry-core';
+import { Viewport } from '@bentley/imodeljs-frontend';
+
+// @alpha (undocumented)
+export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number;
+
+// @alpha (undocumented)
+export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): number;
+
+// @alpha
+export abstract class CreateElementTool extends PrimitiveTool {
+    protected abstract createElement(): Promise<void>;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    onPostInstall(): void;
+    onUnsuspend(): void;
+    protected processDataButton(ev: BeButtonEvent): Promise<EventHandled>;
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    get targetCategory(): Id64String;
+    // (undocumented)
+    get targetModelId(): Id64String;
+    protected get wantAccuSnap(): boolean;
+    protected get wantDynamics(): boolean;
+}
+
+// @alpha
+export class CreateLineStringTool extends CreateElementTool {
+    // (undocumented)
+    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected clearGraphics(): void;
+    // (undocumented)
+    protected createElement(): Promise<void>;
+    // (undocumented)
+    protected createGraphics(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
+    // (undocumented)
+    protected getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
+    // (undocumented)
+    protected getGeometryProps(placement: PlacementProps, ev?: BeButtonEvent): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
+    protected getPlacementProps(ev?: BeButtonEvent): PlacementProps | undefined;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
+    // (undocumented)
+    protected _graphicsProvider?: DynamicGraphicsProvider;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUndoPreviousStep(): Promise<boolean>;
+    // (undocumented)
+    protected readonly _points: Point3d[];
+    // (undocumented)
+    protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected _snapGeomId?: Id64String;
+    // (undocumented)
+    protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
+    // (undocumented)
+    testDecorationHit(id: Id64String): boolean;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+}
 
 // @alpha
 export class DeleteElementsTool extends ElementSetTool {
@@ -46,9 +144,29 @@ export class DeleteElementsTool extends ElementSetTool {
     static toolId: string;
 }
 
+// @alpha (undocumented)
+export class DynamicGraphicsProvider {
+    constructor(iModel: IModelConnection, prefix: string);
+    // (undocumented)
+    addGraphic(context: DynamicsContext, transform?: Transform): void;
+    chordTolerance: number;
+    cleanupGraphic(): void;
+    createGraphic(categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): Promise<boolean>;
+    createGraphicAndUpdateDynamics(ev: BeButtonEvent, categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): void;
+    elementId?: Id64String;
+    // (undocumented)
+    graphic?: RenderGraphicOwner;
+    // (undocumented)
+    readonly iModel: IModelConnection;
+    modelId?: Id64String;
+    // (undocumented)
+    readonly prefix: string;
+}
+
 // @alpha
 export interface EditorOptions {
     registerBasicManipulationTools?: true | undefined;
+    registerSketchTools?: true | undefined;
     registerUndoRedoTools?: true | undefined;
 }
 

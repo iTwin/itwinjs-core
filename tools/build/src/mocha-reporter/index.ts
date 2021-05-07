@@ -24,7 +24,7 @@ function withStdErr(callback: () => void) {
 const isCI = process.env.CI || process.env.TF_BUILD;
 
 // This is necessary to enable colored output when running in rush test:
-Object.defineProperty(Base, "useColors", {
+Object.defineProperty(Base, "color", {
   get: () => process.env.FORCE_COLOR !== "false" && process.env.FORCE_COLOR !== "0",
   set: () => { },
 });
