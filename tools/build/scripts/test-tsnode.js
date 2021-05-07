@@ -31,7 +31,7 @@ const options = [
   "--require", "source-map-support/register",
   "--require", "ts-node/register",
   "--watch-extensions", "ts",
-  "-u", "tdd",
+  "-u", "bdd",
   "--no-cache",
   "--timeout", timeout,
   "--colors",

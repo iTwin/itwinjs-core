@@ -1,0 +1,20 @@
+{
+  "require": [
+    "../scripts/copy-test-setup.js",
+    "source-map-support/register"
+  ],
+  "checkLeaks": true,
+  "timeout": 60000,
+  "file": [
+    "lib/test/setup.js"
+  ],
+  "exclude": [
+    "lib/test/coverage/**/*"
+  ],
+  "reporter": [
+    "node_modules/@bentley/build-tools/mocha-reporter"
+  ],
+  "reporterOptions": [
+    "mochaFile=lib/test/junit_results.xml"
+  ]
+}

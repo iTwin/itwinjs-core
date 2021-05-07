@@ -38,7 +38,7 @@
     "extract-api": "betools extract-api --entry=presentation-components",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
-    "test": "mocha --opts ../mocha.opts -r ignore-styles -r jsdom-global/register --file ./lib/test/index.test.js \"./lib/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json -r ignore-styles -r jsdom-global/register --file ./lib/test/index.test.js \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
@@ -80,7 +80,7 @@
     "@types/chai-subset": "1.3.1",
     "@types/enzyme": "3.9.3",
     "@types/faker": "^4.1.0",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",
     "@types/sinon": "^9.0.0",
@@ -100,8 +100,8 @@
     "ignore-styles": "^5.0.1",
     "immer": "^9.0.1",
     "jsdom-global": "3.0.2",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "react-test-renderer": "^16.13.1",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",

@@ -299,6 +299,15 @@ export interface RulesetManager {
     remove(ruleset: RegisteredRuleset | [string, string]): boolean;
 }
 
+// @internal
+export class RulesetManagerImpl implements RulesetManager {
+    constructor(getNativePlatform: () => NativePlatformDefinition);
+    add(ruleset: Ruleset): RegisteredRuleset;
+    clear(): void;
+    get(id: string): RegisteredRuleset | undefined;
+    remove(ruleset: RegisteredRuleset | [string, string]): boolean;
+    }
+
 // @public
 export interface RulesetVariablesManager {
     getBool(variableId: string): boolean;
@@ -315,6 +324,39 @@ export interface RulesetVariablesManager {
     setInts(variableId: string, value: number[]): void;
     setString(variableId: string, value: string): void;
     setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
+}
+
+// @internal
+export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
+    constructor(getNativeAddon: () => NativePlatformDefinition, rulesetId: string);
+    getBool(variableId: string): boolean;
+    getId64(variableId: string): Id64String;
+    getId64s(variableId: string): Id64String[];
+    getInt(variableId: string): number;
+    getInts(variableId: string): number[];
+    getString(variableId: string): string;
+    // (undocumented)
+    getValue(variableId: string, type: VariableValueTypes): VariableValue;
+    // (undocumented)
+    getValueJSON(variableId: string, type: VariableValueTypes): VariableValueJSON;
+    setBool(variableId: string, value: boolean): void;
+    setId64(variableId: string, value: Id64String): void;
+    setId64s(variableId: string, value: Id64String[]): void;
+    setInt(variableId: string, value: number): void;
+    setInts(variableId: string, value: number[]): void;
+    setString(variableId: string, value: string): void;
+    // (undocumented)
+    setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
+    // (undocumented)
+    setValueJSON(variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
+}
+
+// @alpha
+export interface UnitSystemFormat {
+    // (undocumented)
+    format: FormatProps;
+    // (undocumented)
+    unitSystems: PresentationUnitSystem[];
 }
 
 // @public
