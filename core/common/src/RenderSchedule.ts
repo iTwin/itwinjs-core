@@ -544,19 +544,19 @@ export namespace RenderSchedule {
       if (!this.transform || !(interval = this.transform.findInterval(time, scratchInterval)))
         return Transform.identity;
 
-      let transform;
-
-      const comp0 = this.transform.getEntry(interval.lowerIndex)?.components;
-      const comp1 = this.transform.getEntry(interval.upperIndex)?.components;
-      if (comp0 && comp1) {
-        const sum = Point4d.interpolateQuaternions(comp0.orientation, interval.fraction, comp1.orientation);
-        const matrix = Matrix3d.createFromQuaternion(sum);
-        const pre = Transform.createTranslation(comp0.pivot);
-        const post = Transform.createTranslation(comp0.position.interpolate(interval.fraction, comp1.position));
-        transform = post.multiplyTransformMatrix3d(matrix);
-      } else {
-        transform = this.transform.getValue(interval.lowerIndex);
-        if (interval.fraction > 0) {
+      let transform = this.transform.getValue(interval.lowerIndex);
+      if (interval.fraction > 0) {
+        const comp0 = this.transform.getEntry(interval.lowerIndex)?.components;
+        const comp1 = this.transform.getEntry(interval.upperIndex)?.components;
+        if (comp0 && comp1) {
+          const sum = Point4d.interpolateQuaternions(comp0.orientation, interval.fraction, comp1.orientation);
+          const matrix = Matrix3d.createFromQuaternion(sum);
+          const pre = Transform.createTranslation(comp0.pivot);
+          const post = Transform.createTranslation(comp0.position.interpolate(interval.fraction, comp1.position));
+          const product = post.multiplyTransformMatrix3d(matrix);
+          product.multiplyTransformTransform(pre, product);
+          transform = product;
+        } else {
           const end = this.transform.getValue(interval.upperIndex);
           const q0 = transform.matrix.inverse()?.toQuaternion();
           const q1 = end.matrix.inverse()?.toQuaternion();
