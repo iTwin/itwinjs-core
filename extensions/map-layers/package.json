@@ -16,7 +16,7 @@
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
-    "test": "mocha --opts ./mocha.opts \"./lib/test/**/*.test.js\""
+    "test": "mocha \"./lib/test/**/*.test.js\""
   },
   "repository": {
     "type": "git",
@@ -54,7 +54,7 @@
     "@testing-library/react-hooks": "^3.2.1",
     "@types/enzyme": "3.9.3",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/react": "16.9.43",
     "@types/react-beautiful-dnd": "^12.1.2",
@@ -72,8 +72,8 @@
     "eslint": "^6.8.0",
     "jsdom": "^11.12.0",
     "jsdom-global": "3.0.2",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
@@ -111,5 +111,28 @@
       "@bentley"
     ],
     "extends": "plugin:@bentley/imodeljs-recommended"
+  },
+  "mocha": {
+    "require": [
+      "scripts/copy-test-setup.js",
+      "raf/polyfill",
+      "source-map-support/register",
+      "jsdom-global/register",
+      "ignore-styles"
+    ],
+    "checkLeaks": true,
+    "timeout": 60000,
+    "file": [
+      "lib/test/setup.js"
+    ],
+    "exclude": [
+      "lib/test/coverage/**/*"
+    ],
+    "reporter": [
+      "node_modules/@bentley/build-tools/mocha-reporter"
+    ],
+    "reporterOptions": [
+      "mochaFile=lib/test/junit_results.xml"
+    ]
   }
 }
