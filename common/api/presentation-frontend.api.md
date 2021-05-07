@@ -40,6 +40,7 @@ import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { PagedResponse } from '@bentley/presentation-common';
+import { PageOptions } from '@bentley/presentation-common';
 import { PartialHierarchyModification } from '@bentley/presentation-common';
 import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
@@ -51,6 +52,9 @@ import { SelectionScope } from '@bentley/presentation-common';
 import { SetRulesetVariableParams } from '@bentley/presentation-common';
 import { UpdateHierarchyStateParams } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
+
+// @internal (undocumented)
+export const buildPagedResponse: <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>) => Promise<PagedResponse<TItem>>;
 
 // @alpha (undocumented)
 export function consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void;
@@ -87,6 +91,11 @@ export class FavoritePropertiesManager implements IDisposable {
     }
 
 // @public
+export interface FavoritePropertiesManagerProps {
+    storage: IFavoritePropertiesStorage;
+}
+
+// @public
 export interface FavoritePropertiesOrderInfo {
     // (undocumented)
     name: PropertyFullName;
@@ -113,6 +122,9 @@ export const getFieldInfos: (field: Field) => Set<PropertyFullName>;
 
 // @public
 export function getScopeId(scope: SelectionScope | string | undefined): string;
+
+// @internal (undocumented)
+export const HILITE_RULESET: Ruleset;
 
 // @public
 export interface HiliteSet {
@@ -144,6 +156,18 @@ export interface IFavoritePropertiesStorage {
     savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
 }
 
+// @internal (undocumented)
+export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+    // (undocumented)
+    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    // (undocumented)
+    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    // (undocumented)
+    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    // (undocumented)
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+}
+
 // @alpha
 export interface IModelContentChangeEventArgs {
     imodelKey: string;
@@ -170,6 +194,29 @@ export interface NodeIdentifier {
     id: string;
     // (undocumented)
     key: NodeKey;
+}
+
+// @internal (undocumented)
+export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
+    constructor(props: OfflineCachingFavoritePropertiesStorageProps);
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    loadProperties(projectId?: string, imodelId?: string): Promise<Set<string> | undefined>;
+    // (undocumented)
+    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    // (undocumented)
+    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    // (undocumented)
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+    }
+
+// @internal (undocumented)
+export interface OfflineCachingFavoritePropertiesStorageProps {
+    // (undocumented)
+    connectivityInfo: IConnectivityInformationProvider;
+    // (undocumented)
+    impl: IFavoritePropertiesStorage;
 }
 
 // @public
@@ -306,6 +353,19 @@ export interface RulesetManager {
     remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
 }
 
+// @internal (undocumented)
+export class RulesetManagerImpl implements RulesetManager {
+    add(ruleset: Ruleset): Promise<RegisteredRuleset>;
+    clear(): Promise<void>;
+    // (undocumented)
+    static create(): RulesetManagerImpl;
+    get(id: string): Promise<RegisteredRuleset | undefined>;
+    modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
+    // (undocumented)
+    onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
+    remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
+}
+
 // @public
 export interface RulesetVariablesManager {
     // @internal
@@ -324,6 +384,27 @@ export interface RulesetVariablesManager {
     setInts(variableId: string, value: number[]): Promise<void>;
     setString(variableId: string, value: string): Promise<void>;
 }
+
+// @internal (undocumented)
+export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
+    constructor(rulesetId: string, ipcHandler?: IpcRequestsHandler);
+    // (undocumented)
+    getAllVariables(): Promise<RulesetVariable[]>;
+    getBool(variableId: string): Promise<boolean>;
+    getId64(variableId: string): Promise<Id64String>;
+    getId64s(variableId: string): Promise<Id64String[]>;
+    getInt(variableId: string): Promise<number>;
+    getInts(variableId: string): Promise<number[]>;
+    getString(variableId: string): Promise<string>;
+    // (undocumented)
+    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue) => void>;
+    setBool(variableId: string, value: boolean): Promise<void>;
+    setId64(variableId: string, value: Id64String): Promise<void>;
+    setId64s(variableId: string, value: Id64String[]): Promise<void>;
+    setInt(variableId: string, value: number): Promise<void>;
+    setInts(variableId: string, value: number[]): Promise<void>;
+    setString(variableId: string, value: string): Promise<void>;
+    }
 
 // @public
 export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> {
@@ -432,6 +513,19 @@ export class StateTracker {
     // (undocumented)
     onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string): Promise<void>;
     }
+
+// @internal (undocumented)
+export class ToolSelectionSyncHandler implements IDisposable {
+    constructor(imodel: IModelConnection, logicalSelection: SelectionManager);
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    isSuspended?: boolean;
+    get pendingAsyncs(): Set<string>;
+    }
+
+// @internal (undocumented)
+export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
 
 
 // (No @packageDocumentation comment for this package)

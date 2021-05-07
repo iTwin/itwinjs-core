@@ -69,7 +69,7 @@ export class CreateLineStringTool extends CreateElementTool {
     // (undocumented)
     protected createElement(): Promise<void>;
     // (undocumented)
-    protected createGraphics(ev: BeButtonEvent): void;
+    protected createGraphics(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
