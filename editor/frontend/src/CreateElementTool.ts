@@ -5,7 +5,7 @@
 
 import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Constant, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, IModelError, isPlacement3dProps, JsonGeometryStream, PlacementProps  } from "@bentley/imodeljs-common";
+import { DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, IModelError, isPlacement3dProps, JsonGeometryStream, PlacementProps } from "@bentley/imodeljs-common";
 import { BeButtonEvent, CoordSystem, CoreTools, DynamicsContext, EventHandled, GraphicBranch, IModelApp, IModelConnection, PrimitiveTool, readElementGraphics, RenderGraphicOwner, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@bentley/imodeljs-frontend";
 
 function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, radius: number): number {
@@ -76,7 +76,7 @@ export class DynamicGraphicsProvider {
     if (is3d = isPlacement3dProps(placement)) {
       const requestProps: DynamicGraphicsRequest3dProps = {
         id: this.getRequestId(this.elementId ? this.elementId : Id64.invalid),
-        elementId : this.elementId,
+        elementId: this.elementId,
         modelId: this.modelId,
         toleranceLog10: this.getToleranceLog10(),
         type: "3d",
@@ -89,7 +89,7 @@ export class DynamicGraphicsProvider {
     } else {
       const requestProps: DynamicGraphicsRequest2dProps = {
         id: this.getRequestId(this.elementId ? this.elementId : Id64.invalid),
-        elementId : this.elementId,
+        elementId: this.elementId,
         modelId: this.modelId,
         toleranceLog10: this.getToleranceLog10(),
         type: "2d",
@@ -110,22 +110,21 @@ export class DynamicGraphicsProvider {
     return IModelApp.renderSystem.createGraphicOwner(graphic);
   }
 
-  /** Call to request a RenderGraphic for geometry that is mostly stable and is not changing based on cursor location, etc.
+  /** Call to request a RenderGraphic for the supplied geometry and placement.
    * @see [[cleanupGraphic]] Must be called when the tool exits.
    */
   public async createGraphic(categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): Promise<boolean> {
-    this.cleanupGraphic();
-
     try {
-      this.graphic = await this.createRequest(categoryId, placement, geometry);
-      return (undefined !== this.graphic);
+      const graphic = await this.createRequest(categoryId, placement, geometry);
+      this.cleanupGraphic();
+      return (undefined !== (this.graphic = graphic));
     } catch {
       return false;
     }
   }
 
-  /** Call to request a RenderGraphic for geometry that is always changing based on cursor location, etc.
-   * Triggers a dynamic update upon request fulfullment.
+  /** Call to request a RenderGraphic for the supplied geometry and trigger a dynamic update upon fulfillment.
+   * @note May be useful to update a dynamic preview outside of normal button and motion events, ex. modifier key change.
    * @see [[cleanupGraphic]] Must be called when the tool exits.
    */
   public createGraphicAndUpdateDynamics(ev: BeButtonEvent, categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): void {
@@ -144,9 +143,10 @@ export class DynamicGraphicsProvider {
    * @note Must be called when the tool exits to avoid leaks of graphics memory or other webgl resources.
    */
   public cleanupGraphic(): void {
-    if (undefined !== this.graphic)
-      this.graphic.disposeGraphic();
-    this._graphicPromise = this.graphic = undefined;
+    if (undefined === this.graphic)
+      return;
+    this.graphic.disposeGraphic();
+    this.graphic = undefined;
   }
 
   public addGraphic(context: DynamicsContext, transform?: Transform): void {

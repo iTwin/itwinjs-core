@@ -74,6 +74,7 @@ public;BlankConnectionProps
 public;BriefcaseConnection 
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
+internal;BuilderOptions = GraphicBuilderOptions &
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -224,6 +225,7 @@ public;GraphicBranch
 internal;GraphicBranchFrustum
 public;GraphicBranchOptions
 public;class GraphicBuilder
+public;GraphicBuilderOptions
 public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
@@ -385,6 +387,7 @@ beta;PendingExtension
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
 public;PhysicalModelState 
+public;PickableGraphicOptions 
 internal;PingTestResult
 public;Pixel
 internal;PlanarClassifierMap = Map
