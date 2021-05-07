@@ -813,6 +813,7 @@ function removeWidgetTabInternal(
 function removeWidget(state: Draft<NineZoneState>, id: WidgetState["id"]) {
   delete state.widgets[id];
   removeFloatingWidget(state, id);
+  removePopoutWidget(state, id);
 }
 
 function removeFloatingWidget(state: Draft<NineZoneState>, id: FloatingWidgetState["id"]) {
@@ -1137,6 +1138,21 @@ export function isPanelLocation(location: TabLocation): location is PanelLocatio
 }
 
 /** @internal */
+export function isFloatingWidgetLocation(location: WidgetLocation): location is FloatingLocation {
+  return "floatingWidgetId" in location;
+}
+
+/** @internal */
+export function isPopoutWidgetLocation(location: WidgetLocation): location is PopoutLocation {
+  return "popoutWidgetId" in location;
+}
+
+/** @internal */
+export function isPanelWidgetLocation(location: WidgetLocation): location is PanelLocation {
+  return "side" in location;
+}
+
+/** @internal */
 export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined {
   let widgetId;
   for (const [, widget] of Object.entries(state.widgets)) {
@@ -1233,26 +1249,66 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
 }
 
 /** @internal */
-export function dockWidgetContainer(state: NineZoneState, widgetTabId: string) {
-  const location = findTab(state, widgetTabId);
-  if (location) {
-    if (isFloatingLocation(location)) {
-      const floatingWidgetId = location.widgetId;
-      return NineZoneStateReducer(state, {
-        type: "FLOATING_WIDGET_SEND_BACK",
-        id: floatingWidgetId,
-      });
-    } else {
-      if (isPopoutLocation(location)) {
-        const popoutWidgetId = location.widgetId;
+export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean) {
+  if (idIsContainerId) {
+    const widgetLocation = findWidget(state, widgetTabId);
+    if (widgetLocation) {
+      if (isFloatingWidgetLocation(widgetLocation)) {
+        const floatingWidgetId = widgetLocation.floatingWidgetId;
         return NineZoneStateReducer(state, {
-          type: "POPOUT_WIDGET_SEND_BACK",
-          id: popoutWidgetId,
+          type: "FLOATING_WIDGET_SEND_BACK",
+          id: floatingWidgetId,
         });
+      } else {
+        if (isPopoutWidgetLocation(widgetLocation)) {
+          const popoutWidgetId = widgetLocation.popoutWidgetId;
+          return NineZoneStateReducer(state, {
+            type: "POPOUT_WIDGET_SEND_BACK",
+            id: popoutWidgetId,
+          });
+        }
+      }
+    }
+  } else {
+    const location = findTab(state, widgetTabId);
+    if (location) {
+      if (isFloatingLocation(location)) {
+        const floatingWidgetId = location.widgetId;
+        return NineZoneStateReducer(state, {
+          type: "FLOATING_WIDGET_SEND_BACK",
+          id: floatingWidgetId,
+        });
+      } else {
+        if (isPopoutLocation(location)) {
+          const popoutWidgetId = location.widgetId;
+          return NineZoneStateReducer(state, {
+            type: "POPOUT_WIDGET_SEND_BACK",
+            id: popoutWidgetId,
+          });
+        }
       }
     }
   }
+
   return undefined;
+}
+
+function convertFloatingWidgetToPopout(state: NineZoneState): NineZoneState {
+  return produce(state, (draft) => {
+    for (const widgetContainerId of state.floatingWidgets.allIds) {
+      const floatingWidget = state.floatingWidgets.byId[widgetContainerId];
+      const bounds = floatingWidget.bounds;
+      const home = floatingWidget.home;
+      const id = floatingWidget.id;
+      // remove the floating entry
+      delete draft.floatingWidgets.byId[widgetContainerId];
+      const idIndex = draft.floatingWidgets.allIds.indexOf(widgetContainerId);
+      draft.floatingWidgets.allIds.splice(idIndex, 1);
+      // insert popout entry
+      draft.popoutWidgets.byId[widgetContainerId] = { bounds, id, home };
+      draft.popoutWidgets.allIds.push(widgetContainerId);
+    }
+  });
 }
 
 /** @internal */
@@ -1302,8 +1358,32 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
           tabs: [widgetTabId],
         };
       });
+    } else if (isFloatingLocation(location)) {
+      return convertFloatingWidgetToPopout(state);
     }
   }
+
   return undefined;
 }
 
+/**
+   * When running in web-browser - browser prohibits auto opening of popup windows so convert any PopoutWidgets to
+   * FloatingWidgets in this situation.
+   */
+export function convertPopupWidgetsToFloating(state: NineZoneState): NineZoneState {
+  return produce(state, (draft) => {
+    for (const widgetContainerId of state.popoutWidgets.allIds) {
+      const popoutWidget = state.popoutWidgets.byId[widgetContainerId];
+      const bounds = popoutWidget.bounds;
+      const home = popoutWidget.home;
+      const id = popoutWidget.id;
+      // remove the popout entry
+      delete draft.popoutWidgets.byId[widgetContainerId];
+      const idIndex = draft.popoutWidgets.allIds.indexOf(widgetContainerId);
+      draft.popoutWidgets.allIds.splice(idIndex, 1);
+      // insert floating entry
+      draft.floatingWidgets.byId[widgetContainerId] = { bounds, id, home };
+      draft.floatingWidgets.allIds.push(widgetContainerId);
+    }
+  });
+}

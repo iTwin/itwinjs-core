@@ -9,11 +9,11 @@
 import "./Frontstage.scss";
 import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
-import { assert, Logger } from "@bentley/bentleyjs-core";
+import { assert, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, floatingWidgetBringToFront,
+  addPanelWidget, addTab, convertPopupWidgetsToFloating, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, floatingWidgetBringToFront,
   FloatingWidgets, getUniqueId, isFloatingLocation, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
@@ -159,6 +159,22 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
 /** @internal */
 export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const frontstageDef = useActiveFrontstageDef();
+
+  React.useEffect(() => {
+    const triggerWidowCloseProcessing = () => {
+      if (frontstageDef)
+        frontstageDef.setIsApplicationClosing(true);
+    };
+
+    if (frontstageDef)
+      frontstageDef.setIsApplicationClosing(false);
+
+    window.addEventListener("beforeunload", triggerWidowCloseProcessing);
+    return () => {
+      window.removeEventListener("beforeunload", triggerWidowCloseProcessing);
+    };
+  }, [frontstageDef]);
+
   if (!frontstageDef)
     return null;
   return (
@@ -278,6 +294,13 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
   }
 
   return state;
+}
+
+function processPopoutWidgets(initialState: NineZoneState): NineZoneState {
+  if (!initialState.popoutWidgets || ProcessDetector.isElectronAppFrontend) {
+    return initialState;
+  }
+  return convertPopupWidgetsToFloating(initialState);
 }
 
 /** Adds frontstageDef widgets that are missing in NineZoneState.
@@ -802,8 +825,10 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
   }, [uiSettingsStorage]);
   React.useEffect(() => {
     async function fetchFrontstageState() {
-      if (frontstageDef.nineZoneState)
+      if (frontstageDef.nineZoneState) {
+        frontstageDef.nineZoneState = processPopoutWidgets(frontstageDef.nineZoneState);
         return;
+      }
       const id = frontstageDef.id;
       const version = frontstageDef.version;
       const settingsResult = await uiSettingsRef.current.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id));
@@ -812,7 +837,8 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
         settingsResult.setting.stateVersion >= stateVersion
       ) {
         const restored = restoreNineZoneState(frontstageDef, settingsResult.setting.nineZone);
-        const state = addMissingWidgets(frontstageDef, restored);
+        let state = addMissingWidgets(frontstageDef, restored);
+        state = processPopoutWidgets(state);
         frontstageDef.nineZoneState = state;
         return;
       }
