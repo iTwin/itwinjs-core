@@ -86,7 +86,7 @@ export namespace RenderSchedule {
     value?: CuttingPlaneProps;
   }
 
-  /** JSON representation of a [[TransformComponents]]. */
+  /** JSON representation of a [[RenderSchedule.TransformComponents]]. */
   export interface TransformComponentsProps {
     /** (x, y, z) of position  - applied after rotation. */
     position?: number[];
@@ -227,7 +227,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Describes the components of a [[TransformEntry]] as a rotation around a pivot point followed by a translation. */
+  /** Describes the components of a [[RenderSchedule.TransformEntry]] as a rotation around a pivot point followed by a translation. */
   export class TransformComponents {
     /** Pivot point - applied before rotation. */
     public readonly pivot: Vector3d;
