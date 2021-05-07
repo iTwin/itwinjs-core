@@ -110,7 +110,7 @@ export class DynamicGraphicsProvider {
     return IModelApp.renderSystem.createGraphicOwner(graphic);
   }
 
-  /** Call to request a RenderGraphic for geometry that is mostly stable and is not changing based on cursor location, etc.
+  /** Call to request a RenderGraphic for the supplied geometry and placement.
    * @see [[cleanupGraphic]] Must be called when the tool exits.
    */
   public async createGraphic(categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): Promise<boolean> {
@@ -123,8 +123,8 @@ export class DynamicGraphicsProvider {
     }
   }
 
-  /** Call to request a RenderGraphic for geometry that is always changing based on cursor location, etc.
-   * Triggers a dynamic update upon request fulfullment.
+  /** Call to request a RenderGraphic for the supplied geometry and trigger a dynamic update upon fulfillment.
+   * @note May be useful to update a dynamic preview outside of normal button and motion events, ex. modifier key change.
    * @see [[cleanupGraphic]] Must be called when the tool exits.
    */
   public createGraphicAndUpdateDynamics(ev: BeButtonEvent, categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): void {
