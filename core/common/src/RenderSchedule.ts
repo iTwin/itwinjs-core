@@ -86,26 +86,22 @@ export namespace RenderSchedule {
     value?: CuttingPlaneProps;
   }
 
-  /** JSON representation of a [Transform]($geometry-core) associated with a [[RenderSchedule.TransformEntryProps]]. */
-  export interface TransformProps {
-    /** (x, y, z) of position  - applied after rotation.
-     * This property is preserved but unused by iTwin.js.
-     * @internal
-     */
+  /** JSON representation of a [[RenderSchedule.TransformComponents]]. */
+  export interface TransformComponentsProps {
+    /** (x, y, z) of position  - applied after rotation. */
     position?: number[];
-    /** quaternion representing rotation.
-     * This property is preserved but unused by iTwin.js.
-     * @internal
-     */
+    /** Quaternion representing rotation. */
     orientation?: number[];
-    /** x, y, z) of pivot - applied before rotation.
-     * This property is preserved but unused by iTwin.js.
-     * @internal
-     */
+    /** (x, y, z) of pivot - applied before rotation. */
     pivot?: number[];
+  }
+
+  /** JSON representation of a [Transform]($geometry-core) associated with a [[RenderSchedule.TransformEntryProps]]. */
+  export interface TransformProps extends TransformComponentsProps {
     /** 3 X 4 transformation matrix containing 3 arrays of matrix rows consisting of 4 numbers each: [qx qy qz ax]
      * where the fourth columnn in each row holds the translation.
      * `undefined` is equivalent to an identity transform.
+     * This transform is only used if position, orientation, and/or pivot are undefined.
      */
     transform?: number[][];
   }
@@ -231,25 +227,59 @@ export namespace RenderSchedule {
     }
   }
 
+  /** Describes the components of a [[RenderSchedule.TransformEntry]] as a rotation around a pivot point followed by a translation. */
+  export class TransformComponents {
+    /** Pivot point - applied before rotation. */
+    public readonly pivot: Vector3d;
+    /** Quaternion rotation. */
+    public readonly orientation: Point4d;
+    /** Translation - applied after rotation. */
+    public readonly position: Vector3d;
+
+    public constructor(position: Vector3d, pivot: Vector3d, orientation: Point4d) {
+      this.position = position;
+      this.pivot = pivot;
+      this.orientation = orientation;
+    }
+
+    public static fromJSON(props: TransformComponentsProps): TransformComponents | undefined {
+      if (props.pivot && props.position && props.orientation)
+        return new TransformComponents(Vector3d.fromJSON(props.position), Vector3d.fromJSON(props.pivot), Point4d.fromJSON(props.orientation));
+      else
+        return undefined;
+    }
+
+    public toJSON(): TransformComponentsProps {
+      return {
+        position: [ this.position.x, this.position.y, this.position.z ],
+        pivot: [ this.pivot.x, this.pivot.y, this.pivot.z ],
+        orientation: [ this.orientation.x, this.orientation.y, this.orientation.z, this.orientation.w ],
+      };
+    }
+  }
+
   /** A timeline entry that applies rotation, scaling, and/or translation to the affected geometry. */
   export class TransformEntry extends TimelineEntry {
-    /** The transform matrix to be applied to the geometry. */
+    /** The transform matrix to be applied to the geometry, used only if [[components]] is not defined. */
     public readonly value: Readonly<Transform>;
-    private readonly _value?: TransformProps;
+    /** The transform represented as a rotation about a pivot point followed by a translation. If undefined, [[value]] is used instead. */
+    public readonly components?: TransformComponents;
 
     public constructor(props: TransformEntryProps) {
       super(props);
       this.value = props.value ? Transform.fromJSON(props.value.transform) : Transform.identity;
-      if (props.value) {
-        // Preserve the other properties for toJSON(). We don't use them but other apps could.
-        this._value = { ...props.value };
-      }
+      if (props.value)
+        this.components = TransformComponents.fromJSON(props.value);
     }
 
     public toJSON(): TransformEntryProps {
       const props = super.toJSON() as TransformEntryProps;
-      if (this._value)
-        props.value = { ...this._value };
+      if (this.components) {
+        props.value = this.components.toJSON();
+        props.value.transform = this.value.toRows();
+      } else {
+        props.value = { transform: this.value.toRows() };
+      }
 
       return props;
     }
@@ -514,16 +544,28 @@ export namespace RenderSchedule {
 
       let transform = this.transform.getValue(interval.lowerIndex);
       if (interval.fraction > 0) {
-        const end = this.transform.getValue(interval.upperIndex);
-        const q0 = transform.matrix.inverse()?.toQuaternion();
-        const q1 = end.matrix.inverse()?.toQuaternion();
-        if (q0 && q1) {
-          const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
+        const comp0 = this.transform.getEntry(interval.lowerIndex)?.components;
+        const comp1 = this.transform.getEntry(interval.upperIndex)?.components;
+        if (comp0 && comp1) {
+          const sum = Point4d.interpolateQuaternions(comp0.orientation, interval.fraction, comp1.orientation);
           const matrix = Matrix3d.createFromQuaternion(sum);
+          const pre = Transform.createTranslation(comp0.pivot);
+          const post = Transform.createTranslation(comp0.position.interpolate(interval.fraction, comp1.position));
+          const product = post.multiplyTransformMatrix3d(matrix);
+          product.multiplyTransformTransform(pre, product);
+          transform = product;
+        } else {
+          const end = this.transform.getValue(interval.upperIndex);
+          const q0 = transform.matrix.inverse()?.toQuaternion();
+          const q1 = end.matrix.inverse()?.toQuaternion();
+          if (q0 && q1) {
+            const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
+            const matrix = Matrix3d.createFromQuaternion(sum);
 
-          const origin0 = Vector3d.createFrom(transform.origin);
-          const origin1 = Vector3d.createFrom(end.origin);
-          transform = Transform.createRefs(origin0.interpolate(interval.fraction, origin1), matrix);
+            const origin0 = Vector3d.createFrom(transform.origin);
+            const origin1 = Vector3d.createFrom(end.origin);
+            transform = Transform.createRefs(origin0.interpolate(interval.fraction, origin1), matrix);
+          }
         }
       }
 
