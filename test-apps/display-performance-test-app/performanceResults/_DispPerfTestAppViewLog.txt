@@ -1,3 +1,0 @@
-View Log,  Model Base Location: undefined
-  format: Time_started  ModelName  [ViewName]
-2021-05-07 11:51:32  Philadelphia.bim  [X2 - No Classifiers]
