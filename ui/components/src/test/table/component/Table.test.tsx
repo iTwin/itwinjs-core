@@ -327,13 +327,16 @@ describe("Table", () => {
 
     describe("without cell styles", () => {
       let boundingClientStub: sinon.SinonStub<[], DOMRect>;
+      const widthGetter = sinon.stub();
+      widthGetter
+        .onFirstCall().returns({ width: 80 })
+        .onSecondCall().returns({ width: 90 })
+        .onThirdCall().returns({ width: 80 });
+      widthGetter.returns({ width: 80 });
+
       beforeEach(async () => {
         boundingClientStub = sinon.stub(HTMLElement.prototype, "getBoundingClientRect");
-        boundingClientStub
-          .onFirstCall().returns(createDOMRect({ width: 80 }))
-          .onSecondCall().returns(createDOMRect({ width: 90 }))
-          .onThirdCall().returns(createDOMRect({ width: 80 }));
-        boundingClientStub.returns(createDOMRect({ width: 80 }));
+        boundingClientStub.get(() => widthGetter);
 
         rowData = [{
           key: "no_overrides",
