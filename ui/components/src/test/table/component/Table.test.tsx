@@ -22,7 +22,6 @@ import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTabl
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import { createDOMRect } from "../../Utils";
 
 describe("Table", () => {
 
