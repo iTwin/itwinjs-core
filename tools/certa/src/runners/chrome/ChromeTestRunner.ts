@@ -108,7 +108,7 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       // ...and start the tests
       await page.evaluate(async () => {
         // NB: This is being evaluated in the frontend context!
-        Mocha.reporters.Base.useColors = true;
+        Mocha.reporters.Base.color = true as any;
         const globals = window as any;
         mocha.run((failures) => {
           const coverage = globals.__coverage__;
