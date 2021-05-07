@@ -455,7 +455,7 @@ export class ToolAdmin {
 
   /** @internal */
   public onShutDown() {
-    this._snapMotionPromise = this._toolMotionPromise = undefined;
+    this.clearMotionPromises();
     this._idleTool = undefined;
     IconSprites.emptyAll(); // clear cache of icon sprites
     ToolAdmin._removals.forEach((remove) => remove());
@@ -469,12 +469,14 @@ export class ToolAdmin {
    * @internal
    */
   public forgetViewport(vp: ScreenViewport): void {
+    // Ignore pending motion promises on fulfillment.
+    this.clearMotionPromises();
+
     // make sure tools don't think the cursor is still in this viewport.
     this.onMouseLeave(vp);
 
     // Remove any events associated with this viewport.
     ToolAdmin._toolEvents = ToolAdmin._toolEvents.filter((ev) => ev.vp !== vp);
-    this._snapMotionPromise = this._toolMotionPromise = undefined;
   }
 
   private getMousePosition(event: ToolEvent): XAndY {
@@ -908,10 +910,14 @@ export class ToolAdmin {
     return decoration;
   }
 
-  /** Current request for snap */
+  /** Current request for locate/snap */
   private _snapMotionPromise?: Promise<boolean>;
   /** Current request for active tool motion event */
   private _toolMotionPromise?: Promise<void>;
+
+  private clearMotionPromises(): void {
+    this._snapMotionPromise = this._toolMotionPromise = undefined;
+  }
 
   private async onMotionSnap(ev: BeButtonEvent): Promise<boolean> {
     try {
@@ -1340,7 +1346,7 @@ export class ToolAdmin {
   }
 
   private onActiveToolChanged(tool: Tool, start: StartOrResume): void {
-    this._snapMotionPromise = this._toolMotionPromise = undefined;
+    this.clearMotionPromises();
     this.activeToolChanged.raiseEvent(tool, start);
   }
 
