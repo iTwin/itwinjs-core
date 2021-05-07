@@ -63,6 +63,11 @@ describe("Render Compatibility", () => {
     overriddenFunctions.restore();
   });
 
+  it("should provide error message if failed to produce context", () => {
+    const compatibility = queryRenderCompatibility(false, createContext);
+    expect(compatibility.contextErrorMessage !== undefined).to.equal(WebGLRenderCompatibilityStatus.MajorPerformanceCaveat === compatibility.status);
+  });
+
   it("should query proper render compatibility info assuming not enough texture units", () => {
     overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number): any => {
       if (ctx.MAX_TEXTURE_IMAGE_UNITS === pname)
