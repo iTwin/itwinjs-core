@@ -86,21 +86,13 @@ export namespace RenderSchedule {
     value?: CuttingPlaneProps;
   }
 
+  /** JSON representation of a [[TransformComponents]]. */
   export interface TransformComponentsProps {
-    /** (x, y, z) of position  - applied after rotation.
-     * This property is preserved but unused by iTwin.js.
-     * @internal
-     */
+    /** (x, y, z) of position  - applied after rotation. */
     position?: number[];
-    /** quaternion representing rotation.
-     * This property is preserved but unused by iTwin.js.
-     * @internal
-     */
+    /** Quaternion representing rotation. */
     orientation?: number[];
-    /** x, y, z) of pivot - applied before rotation.
-     * This property is preserved but unused by iTwin.js.
-     * @internal
-     */
+    /** (x, y, z) of pivot - applied before rotation. */
     pivot?: number[];
   }
 
@@ -109,6 +101,7 @@ export namespace RenderSchedule {
     /** 3 X 4 transformation matrix containing 3 arrays of matrix rows consisting of 4 numbers each: [qx qy qz ax]
      * where the fourth columnn in each row holds the translation.
      * `undefined` is equivalent to an identity transform.
+     * This transform is only used if position, orientation, and/or pivot are undefined.
      */
     transform?: number[][];
   }
@@ -234,10 +227,14 @@ export namespace RenderSchedule {
     }
   }
 
+  /** Describes the components of a [[TransformEntry]] as a rotation around a pivot point followed by a translation. */
   export class TransformComponents {
-    public readonly position: Vector3d;
+    /** Pivot point - applied before rotation. */
     public readonly pivot: Vector3d;
+    /** Quaternion rotation. */
     public readonly orientation: Point4d;
+    /** Translation - applied after rotation. */
+    public readonly position: Vector3d;
 
     public constructor(position: Vector3d, pivot: Vector3d, orientation: Point4d) {
       this.position = position;
@@ -263,8 +260,9 @@ export namespace RenderSchedule {
 
   /** A timeline entry that applies rotation, scaling, and/or translation to the affected geometry. */
   export class TransformEntry extends TimelineEntry {
-    /** The transform matrix to be applied to the geometry. */
+    /** The transform matrix to be applied to the geometry, used only if [[components]] is not defined. */
     public readonly value: Readonly<Transform>;
+    /** The transform represented as a rotation about a pivot point followed by a translation. If undefined, [[value]] is used instead. */
     public readonly components?: TransformComponents;
 
     public constructor(props: TransformEntryProps) {
