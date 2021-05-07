@@ -2130,6 +2130,7 @@ export namespace ElementGeometry {
         setLocalToWorld(localToWorld?: Transform): void;
         setLocalToWorld2d(origin: Point2d, angle?: Angle): void;
         setLocalToWorld3d(origin: Point3d, angles?: YawPitchRollAngles): void;
+        setLocalToWorldFromPlacement(props: PlacementProps): void;
         get worldToLocal(): Transform | undefined;
         }
     export function fromBRep(brep: BRepEntity.DataProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
@@ -3016,6 +3017,7 @@ export class GeometryStreamBuilder {
     setLocalToWorld(localToWorld?: Transform): void;
     setLocalToWorld2d(origin: Point2d, angle?: Angle): void;
     setLocalToWorld3d(origin: Point3d, angles?: YawPitchRollAngles): void;
+    setLocalToWorldFromPlacement(props: PlacementProps): void;
     }
 
 // @public

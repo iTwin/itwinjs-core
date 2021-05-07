@@ -52,6 +52,13 @@ The new `@beta` API [Viewport.queryVisibleFeatures]($frontend) can be used to de
 * The feature lit up at least one pixel on the screen. Pixels drawn behind other, transparent pixels are not included in this criterion. Pixel-based queries can be constrained to a sub-region of the viewport.
 * The feature is included in at least one [Tile]($frontend) currently being displayed by the viewport. By this criterion, if a [ClipVector]($geometry-core) is clipping the contents of the viewport, a feature contained in a tile that intersects the clip volume is considered visible even if the feature's geometry would be completely clipped out.
 
+## Creating graphics
+
+The new [GraphicBuilderOptions]($frontend) makes it easier to create a [GraphicBuilder]($frontend) and enables some additional features. [DecorateContext.createGraphic]($frontend) and [RenderSystem.createGraphic]($frontend) have been added, superseding [DecorateContext.createGraphicBuilder]($frontend) and [RenderSystem.createGraphicBuilder]($frontend). Each accepts a GraphicBuilderOptions specifying only those aspects of the GraphicBuilder that the caller wishes to customize. In particular, the behavior of pickable decorations can be customized using [GraphicBuilderOptions.pickable]($frontend):
+
+* [PickableGraphicOptions.noHilite]($frontend) and [PickableGraphicOptions.noFlash]($frontend) can prevent pickable graphics from being flashed and/or hilited by tools.
+* [PickableGraphicOptions.locateOnly]($frontend) allows a pickable graphic to be located by tools but not drawn to the screen.
+
 ## Presentation changes
 
 ### InstanceLabelOverride enhancements
@@ -111,3 +118,9 @@ In addition, new protected static methods were added:
 The following method is now `async` to make it easier to integrate with asynchronous status and health reporting services:
 
 * [IModelExportHandler.onProgress]($backend)
+
+### @bentley/ecschema-metadata package
+
+Properties getter in @beta [ECClass]($ecschema-metadata) has been changed to return an iterator of properties instead of an array of properties.
+Array indexing and properties like .length will no longer work with the returned iterator, so you may need to create an array from the iterator or use its .next() method. Iterating with for...of loop works the same with iterator as before with an array.\
+This change is made because internally properties are now stored in a map instead of an array, and it is more efficient to return an iterator for the properties to be generated on demand than to create them on the getter.

@@ -5,20 +5,31 @@
 import { assert } from "chai";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { NativeApp } from "@bentley/imodeljs-frontend";
-import { rpcInterfaces } from "../../common/RpcInterfaces";
-import { TestUtility } from "../hub/TestUtility";
+import { NativeAppTest } from "../NativeAppTest";
+import { usingOfflineScope } from "../HttpRequestHook";
 
-describe("NativeApp Storage frontend", () => {
+describe("NativeApp startup", () => {
+  before(async () => ElectronApp.startup());
+  after(async () => ElectronApp.shutdown());
+
+  it("should startup offline without errors", async () => {
+    await usingOfflineScope(async () => {
+      await ElectronApp.shutdown();
+      await ElectronApp.startup(); // restart with no network available
+      assert.isTrue(ElectronApp.isValid);
+    });
+  });
+});
+
+describe("NativeApp Storage", () => {
   before(async () => {
-    await ElectronApp.startup({ iModelApp: { rpcInterfaces } });
-    await TestUtility.purgeStorageCache();
+    await ElectronApp.startup();
+    await NativeAppTest.callBackend("purgeStorageCache");
   });
 
-  after(async () => {
-    await ElectronApp.shutdown();
-  });
+  after(async () => ElectronApp.shutdown());
 
-  it("Primitive Type ", async () => {
+  it("Primitive Types", async () => {
     const test1 = await NativeApp.openStorage("fronted_test_1");
     await test1.removeAll();
     const dataset = [
@@ -82,5 +93,4 @@ describe("NativeApp Storage frontend", () => {
     assert.isUndefined(await test1.getData("key1"));
     await NativeApp.closeStorage(test1, true);
   });
-
 });

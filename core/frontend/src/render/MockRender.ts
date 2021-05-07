@@ -3,16 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dispose, Id64String } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { Decorations } from "./Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { GraphicType } from "./GraphicBuilder";
+import { GraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
@@ -73,8 +72,8 @@ export namespace MockRender {
 
   /** @internal */
   export class Builder extends PrimitiveBuilder {
-    public constructor(system: System, placement: Transform = Transform.identity, type: GraphicType, viewport: Viewport, pickId?: Id64String) {
-      super(system, type, viewport, placement, pickId);
+    public constructor(system: System, options: GraphicBuilderOptions) {
+      super(system, options);
     }
   }
 
@@ -127,7 +126,10 @@ export namespace MockRender {
     public createTarget(canvas: HTMLCanvasElement): OnScreenTarget { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 
-    public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String) { return new Builder(this, placement, type, viewport, pickableId); }
+    public createGraphic(options: GraphicBuilderOptions) {
+      return new Builder(this, options);
+    }
+
     public createGraphicList(primitives: RenderGraphic[]) { return new List(primitives); }
     public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) { return new Branch(branch, transform, options); }
     public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) { return new Batch(graphic, features, range); }

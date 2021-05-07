@@ -238,7 +238,7 @@ export class DisplayTestApp {
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true });
+    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true, registerSketchTools: true });
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

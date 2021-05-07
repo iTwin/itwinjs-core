@@ -59,8 +59,7 @@ import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Propert
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
-import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
-import { EditingScopeTool } from "./tools/editing/PrimitiveToolEx";
+import { EditingScopeTool } from "./tools/editing/EditingTools";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
@@ -239,7 +238,6 @@ export class SampleAppIModelApp {
     if (this.allowWrite) {
       EditingScopeTool.register(this.sampleAppNamespace);
       PlaceBlockTool.register(this.sampleAppNamespace);
-      PlaceLineStringTool.register(this.sampleAppNamespace);
     }
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
@@ -250,7 +248,7 @@ export class SampleAppIModelApp {
 
     await MarkupApp.initialize();
     await FrontendDevTools.initialize();
-    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true });
+    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true, registerSketchTools: true });
 
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
