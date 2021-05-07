@@ -12,7 +12,7 @@ import * as React from "react";
 import {
   AlternateDateFormats, PropertyValue, PropertyValueFormat, StandardTypeNames, TimeDisplay,
 } from "@bentley/ui-abstract";
-import { BodyText } from "@bentley/ui-core";
+import { Body } from "@itwin/itwinui-react/cjs/core/Typography/Body";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
@@ -287,7 +287,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
                 <DatePicker selected={date} onDateChange={this._handleChange} showFocusOutline={false} />
                 {this.state.timeDisplay &&
                   <div className="time-container">
-                    <BodyText className="time-label">{"Time"}</BodyText>
+                    <Body className="time-label">{"Time"}</Body>
                     <TimeField time={timeSpec} timeDisplay={this.state.timeDisplay} onTimeChange={this._handleTimeChange} />
                   </div>
                 }

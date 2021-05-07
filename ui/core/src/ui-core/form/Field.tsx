@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
+import { Input } from "@itwin/itwinui-react/cjs/core/Input";
 import { Checkbox } from "../checkbox/Checkbox";
-import { Input } from "../inputs/Input";
 import { Textarea } from "../inputs/Textarea";
 import { Select } from "../select/Select";
 import { FieldDef, FormContext, FormContextState } from "./Form";
@@ -42,7 +42,7 @@ export class Field extends React.Component<FieldProps> {
               <Input
                 id={this.props.id}
                 value={context!.values[this.props.id]}
-                onChange={(event) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
                 className="core-form-input"
               />
             )}

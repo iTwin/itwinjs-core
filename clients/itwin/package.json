@@ -1,6 +1,6 @@
 {
   "name": "@bentley/itwin-client",
-  "version": "2.16.0-dev.14",
+  "version": "2.16.0-dev.24",
   "description": "Base client package for iTwin applications",
   "main": "lib/itwin-client.js",
   "typings": "lib/itwin-client",
@@ -30,23 +30,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.14"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.24"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.14",
-    "@bentley/build-tools": "2.16.0-dev.14",
-    "@bentley/certa": "2.16.0-dev.14",
-    "@bentley/config-loader": "2.16.0-dev.14",
-    "@bentley/eslint-plugin": "2.16.0-dev.14",
+    "@bentley/bentleyjs-core": "2.16.0-dev.24",
+    "@bentley/build-tools": "2.16.0-dev.24",
+    "@bentley/certa": "2.16.0-dev.24",
+    "@bentley/config-loader": "2.16.0-dev.24",
+    "@bentley/eslint-plugin": "2.16.0-dev.24",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
-    "@types/nock": "^11.1.0",
     "@types/node": "10.14.1",
     "@types/qs": "^6.5.0",
     "@types/superagent": "^4.1.7",

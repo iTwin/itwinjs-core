@@ -83,5 +83,12 @@ $component-examples-rightpanel-width: 200px;
       width: 100%;
       color: $buic-inputs-border;
     }
+
+    .component-examples-horizontal-tabs {
+      > li {
+        width: 33%;
+      }
+    }
+
   }
 }

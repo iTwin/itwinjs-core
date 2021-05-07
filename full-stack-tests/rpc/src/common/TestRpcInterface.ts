@@ -277,6 +277,19 @@ export abstract class WebRoutingInterface extends RpcInterface {
   }
 }
 
+export abstract class MobileTestInterface extends RpcInterface {
+  public static readonly interfaceName = "MobileTestInterface";
+  public static interfaceVersion = "1.0.0";
+
+  public static getClient(): MobileTestInterface {
+    return RpcManager.getClientForInterface(MobileTestInterface);
+  }
+
+  public async multipart(_a: number, _b: Uint8Array): Promise<number> {
+    return this.forward(arguments);
+  }
+}
+
 export const rpcInterfaces: RpcInterfaceDefinition[] = [
   IModelReadRpcInterface,
   TestRpcInterface,

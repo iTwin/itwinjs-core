@@ -235,7 +235,7 @@ class PrimaryTreeReference extends TileTreeReference {
       this._viewFlagOverrides.setForceSurfaceDiscard(true);
     }
 
-    const script = view.scheduleScript;
+    const script = view.displayStyle.scheduleState;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
     const edgesRequired = true === IModelApp.tileAdmin.alwaysRequestEdges || this._viewFlagOverrides.edgesRequired(view.viewFlags);
     const sectionCut = this._sectionClip?.clipString;
@@ -261,7 +261,7 @@ export class AnimatedTreeReference extends PrimaryTreeReference {
     if (undefined === script || undefined === this._id.treeId.animationTransformNodeId)
       return tf;
 
-    const timePoint = style.settings.timePoint ?? script.getCachedDuration().low;
+    const timePoint = style.settings.timePoint ?? script.duration.low;
     const animTf = script.getTransform(this._id.modelId, this._id.treeId.animationTransformNodeId, timePoint);
     if (animTf)
       animTf.multiplyTransformTransform(tf, tf);
@@ -442,7 +442,7 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       yield this._sectionCutRef;
   }
 
-  public updateAnimated(script: RenderScheduleState.Script | undefined): void {
+  public updateAnimated(script: RenderScheduleState | undefined): void {
     const ref = this._primaryRef;
     if (!ref)
       return;
@@ -485,12 +485,12 @@ class SpatialRefs implements SpatialTileTreeReferences {
   private readonly _view: SpatialViewState;
   private _refs = new Map<Id64String, SpatialModelRefs>();
   private _swapRefs = new Map<Id64String, SpatialModelRefs>();
-  private _scheduleScript?: RenderScheduleState.Script;
+  private _scheduleScript?: RenderScheduleState;
   private _sectionCut?: StringifiedClipVector;
 
   public constructor(view: SpatialViewState) {
     this._view = view;
-    this._scheduleScript = view.displayStyle.scheduleScript;
+    this._scheduleScript = view.displayStyle.scheduleState;
     this._sectionCut = this.getSectionCutFromView();
   }
 
@@ -511,7 +511,7 @@ class SpatialRefs implements SpatialTileTreeReferences {
       this.updateModels();
     }
 
-    const script = this._view.displayStyle.scheduleScript;
+    const script = this._view.displayStyle.scheduleState;
     if (script !== this._scheduleScript) {
       this._scheduleScript = script;
       for (const ref of this._refs.values())

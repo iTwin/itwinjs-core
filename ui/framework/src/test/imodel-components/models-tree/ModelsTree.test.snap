@@ -3190,7 +3190,9 @@ Array [
 `;
 
 exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
-<body>
+<body
+  class="iui-body"
+>
   <div>
     <div
       class="ui-fw-models-tree"

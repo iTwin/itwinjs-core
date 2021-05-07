@@ -12,7 +12,8 @@ import {
   isTextInputFormatPropEditorSpec, isTextSelectFormatPropEditorSpec, QuantityTypeArg,
 } from "@bentley/imodeljs-frontend";
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { Checkbox, CommonProps, Input, Select } from "@bentley/ui-core";
+import { Checkbox, CommonProps, Select } from "@bentley/ui-core";
+import { Input } from "@itwin/itwinui-react/cjs/core/Input";
 import { FormatPanel } from "./FormatPanel";
 import { DeepCompare } from "@bentley/geometry-core";
 

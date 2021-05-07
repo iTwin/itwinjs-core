@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index";
+@import "~@itwin/itwinui-css/scss/style/speed";
 
 @mixin uicore-expandable-blocks-list {
 
     > div {
 
-        transition:                 margin 0.15s ease-in-out;
+        transition:                 margin $iui-speed-fast ease-in-out;
 
         > .header {
 

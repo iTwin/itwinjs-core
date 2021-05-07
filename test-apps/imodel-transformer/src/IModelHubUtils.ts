@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:words buddi urlps
 
-import { assert, ClientRequestContext, Config, GuidString } from "@bentley/bentleyjs-core";
+import { assert, Config, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 import { BriefcaseQuery, ChangeSet, HubIModel, IModelQuery, Version } from "@bentley/imodelhub-client";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, NativeHost, RequestNewBriefcaseArg } from "@bentley/imodeljs-backend";
@@ -20,8 +20,7 @@ export namespace IModelHubUtils {
 
   async function signIn(): Promise<AccessToken> {
     const client = new ElectronAuthorizationBackend();
-    const requestContext = new ClientRequestContext();
-    await client.initialize(requestContext, {
+    await client.initialize({
       clientId: "imodeljs-electron-test",
       redirectUri: "http://localhost:3000/signin-callback",
       scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api offline_access",

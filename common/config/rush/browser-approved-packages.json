@@ -8,7 +8,7 @@
     },
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@babel/core",
@@ -543,8 +543,16 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "fast-deep-equal",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "fast-sha256",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "fast-sort",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "file-loader",

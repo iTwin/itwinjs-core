@@ -6,7 +6,7 @@
 @import "~@bentley/ui-core/lib/ui-core/inputs/variables";
 @import "~@bentley/ui-core/lib/ui-core/inputs/input";
 @import "~@itwin/itwinui-css/scss/style/variables";
-@import "~@bentley/ui-core/lib/ui-core/text/block";
+@import "~@itwin/itwinui-css/scss/text/block";
 
 $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
 .components-breadcrumb {
@@ -135,7 +135,7 @@ $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
       }
 
       .components-breadcrumb-end-node {
-        @include uicore-text-block;
+        @include iui-text-block;
 
         margin: 0;
         min-width: $uicore-line-height;

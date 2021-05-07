@@ -36,5 +36,12 @@ import { StyleOverride } from "./StyleOverride";
  * @public
  */
 export declare type CustomizationRule =
-  InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride |
-  SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
+  InstanceLabelOverride |
+  CheckBoxRule |
+  GroupingRule |
+  ImageIdOverride |
+  LabelOverride | // eslint-disable-line deprecation/deprecation
+  SortingRule |
+  StyleOverride |
+  ExtendedDataRule |
+  NodeArtifactsRule;

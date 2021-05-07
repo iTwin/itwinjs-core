@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "../variables";
+@import "../../style/opacity";
+@import "~@itwin/itwinui-css/scss/style/speed";
 @import "~@itwin/itwinui-css/scss/style/typography";
 @import "~@itwin/itwinui-css/scss/style/variables";
 
@@ -26,7 +28,7 @@
       border-radius:          $iui-border-radius !important;
       box-shadow:             $buic-inputs-boxshadow 0px 1px 1px inset !important;
       box-sizing:             border-box;
-      transition:             border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+      transition:             border-color $iui-speed-fast ease-in-out, box-shadow $iui-speed-fast ease-in-out !important;
 
       &:-ms-input-placeholder {       color: $buic-foreground-disabled; }
       &::-webkit-input-placeholder {  color: $buic-foreground-disabled; }
@@ -50,7 +52,7 @@
       &:focus {
         border-color:       $buic-foreground-focus-border !important;
         outline:            0px !important;
-        box-shadow:         $uicore-inputs-focus-gradient !important;
+        box-shadow:         $uicore-inputs-focus-boxshadow !important;
       }
 
     }

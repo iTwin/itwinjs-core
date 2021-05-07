@@ -48,7 +48,7 @@
   & input:active ~ .core-radio-checkmark,
   & input:focus ~ .core-radio-checkmark {
     border-color:     $buic-foreground-focus-border;
-    box-shadow:       $uicore-inputs-focus-gradient;
+    box-shadow:       $uicore-inputs-focus-boxshadow;
   }
 
   .core-radio-checkmark::after {

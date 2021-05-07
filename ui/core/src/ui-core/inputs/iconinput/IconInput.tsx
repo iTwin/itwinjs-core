@@ -9,12 +9,12 @@
 import "./IconInput.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Input, InputProps } from "../Input";
+import { Input, InputProps } from "../Input";   // NEEDSWORK - for nativeKeyHandler
 
 /** Properties for the [[IconInput]] component
  * @public
  */
-export interface IconInputProps extends InputProps {
+export interface IconInputProps extends InputProps {    // eslint-disable-line deprecation/deprecation
   /** Icon displayed to the left of the Input field within the IconInput component */
   icon: React.ReactNode;
   /** CSS class name for the IconInput component container div */

@@ -64,7 +64,7 @@
   & input:focus ~ .core-checkbox-checkmark,
   & input:focus ~ .core-checkbox-indeterminate {
     border-color:     $buic-foreground-focus-border;
-    box-shadow:       $uicore-inputs-focus-gradient;
+    box-shadow:       $uicore-inputs-focus-boxshadow;
   }
 
   .core-checkbox-checkmark::after,

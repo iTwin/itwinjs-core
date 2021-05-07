@@ -515,12 +515,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "test-apps-synchro-schedule-importer",
-      "projectFolder": "test-apps/synchro-schedule-importer",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "export-gltf",
       "projectFolder": "test-apps/export-gltf",
       "reviewCategory": "internal",
@@ -553,12 +547,6 @@
     {
       "packageName": "@bentley/ui-test-extension",
       "projectFolder": "test-apps/ui-test-extension",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "iot-demo",
-      "projectFolder": "extensions/iot-demo",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

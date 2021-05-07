@@ -327,7 +327,7 @@ describe("PopupManager", () => {
 
       PopupManager.showCard(content.documentElement, "Title", toolbarProps, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(1);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(1);
       expect(wrapper.container.querySelectorAll("div.components-toolbar-overflow-sizer").length).to.eq(1);
 
       const buttonNodes = wrapper.container.querySelectorAll("button");
@@ -341,18 +341,18 @@ describe("PopupManager", () => {
       const record = TestUtils.createPrimitiveStringProperty("record", "Title");
       PopupManager.showCard(content.documentElement, record, toolbarProps, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(1);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(1);
       PopupManager.hideCard();
 
       PopupManager.showCard(content.documentElement, undefined, undefined, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(0);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(0);
       PopupManager.hideCard();
 
       const reactContent = { reactNode: <Button>Label</Button> };
       PopupManager.showCard(reactContent, undefined, undefined, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(0);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(0);
       PopupManager.hideCard();
     });
 

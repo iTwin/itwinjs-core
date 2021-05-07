@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/inputs/variables";
 @import "~@bentley/ui-core/lib/ui-core/select/select";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
@@ -52,5 +53,9 @@
       text-decoration: underline;
       cursor: pointer;
     }
+  }
+
+  .iui-input {
+    padding: $uicore-iui-input-padding;
   }
 }
