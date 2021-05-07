@@ -526,6 +526,24 @@ export class ComponentExamplesProvider {
   private static get datePickerSample(): ComponentExampleCategory {
     const londonDate = adjustDateToTimezone(new Date(), 1 * 60);
     const laDate = adjustDateToTimezone(new Date(), -7 * 60);
+    // example showing converting to UTC time and using that to format.
+    const msPerHour = 60 * 60 * 1000;
+    const tzOffset = -4; // this should be similar to Math.floor(.5 + location.longitudeDegrees / 15.0);
+    const tzOffsetMs = tzOffset * msPerHour; // offset to project
+    const projectSunrise = new Date(Date.UTC(1999, 3, 15, 7, 30) + tzOffsetMs); // this should be same as time returned from calculateSunriseOrSunset
+    const projectSunset = new Date(Date.UTC(1999, 3, 15, 20, 30) + tzOffsetMs); // this should be same as time returned from calculateSunriseOrSunset
+    const projectSunriseMs = projectSunrise.getTime();
+    const projectSunsetMs = projectSunset.getTime();
+    const projectSunTimeMs = Date.UTC(1999, 3, 15, 9, 30) + tzOffsetMs;  // this should be same as displayStyle.settings.sunTime
+    const dateFormatter = new Intl.DateTimeFormat("default", { month: "numeric", day: "numeric", timeZone: "UTC" } as any);
+    const timeFormatter = new Intl.DateTimeFormat("default", { timeStyle: "short", timeZone: "UTC" } as any);
+    const monthLetterFormatter = new Intl.DateTimeFormat("default", { month: "narrow", timeZone: "UTC" } as any);
+    const projectDate = dateFormatter.format(new Date(projectSunriseMs - tzOffsetMs));
+    const projectSunriseTime = timeFormatter.format(new Date(projectSunriseMs - tzOffsetMs));
+    const projectSunsetTime = timeFormatter.format(new Date(projectSunsetMs - tzOffsetMs));
+    const projectSunTime = timeFormatter.format(new Date(projectSunTimeMs - tzOffsetMs));
+    const month = monthLetterFormatter.format(new Date(projectSunriseMs - tzOffsetMs));
+
     return {
       title: "DatePicker",
       examples: [
@@ -538,6 +556,14 @@ export class ComponentExamplesProvider {
         createComponentExample("Date Picker Popup w/custom formatter", undefined, <DatePickerHost selected={new Date()} displayEditField={true} dateFormatter={new IntlFormatter(customDayFormatter)} />),
         createComponentExample("Date Picker Popup w/IntlFormatter", undefined, <DatePickerHost fieldStyle={{ width: "16em" }} selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} dateFormatter={new IntlFormatter()} />),
         createComponentExample("Date Picker Popup w/MDY Formatter", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} dateFormatter={new MdyFormatter()} />),
+        createComponentExample("Date Formatting", undefined,
+          <div className="component-examples-date-sample">
+            <span>{`date: ${projectDate}`}</span>
+            <span>{`monthLetter: ${month}`}</span>
+            <span>{`sunrise: ${projectSunriseTime}`}</span>
+            <span>{`sun time: ${projectSunTime}`}</span>
+            <span>{`sunset: ${projectSunsetTime}`}</span>
+          </div>),
       ],
     };
   }

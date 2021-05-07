@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Transform } from "@bentley/geometry-core";
 import {
   ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
 } from "@bentley/imodeljs-common";
@@ -70,7 +70,7 @@ class TransparencyDecorator {
     const gfParams = GraphicParams.fromSymbology(opts.color, opts.color, 1);
     gfParams.material = opts.material;
 
-    const builder = vp.target.createGraphicBuilder(GraphicType.Scene, vp, undefined, opts.pickableId);
+    const builder = vp.target.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.Scene, vp, opts.pickableId);
     builder.activateGraphicParams(gfParams);
     builder.addShape(pts);
 

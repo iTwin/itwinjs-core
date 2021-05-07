@@ -11,7 +11,6 @@
 import "./CustomNumberEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
@@ -73,7 +72,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         }
       } else {
         const msg = new NotifyMessageDetails(OutputMessagePriority.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
-        msg.setInputFieldTypeDetails(ReactDOM.findDOMNode(this) as HTMLElement); // eslint-disable-line react/no-find-dom-node
+        this.htmlElement && msg.setInputFieldTypeDetails(this.htmlElement);
         // istanbul ignore next
         if (IModelApp.notifications)
           IModelApp.notifications.outputMessage(msg);

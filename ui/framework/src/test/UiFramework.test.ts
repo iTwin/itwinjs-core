@@ -69,12 +69,12 @@ describe("UiFramework localStorage Wrapper", () => {
 
       const spy = sinon.spy();
       const tabName = "page1";
-      const handleOpenSetting = (settingsCategory: string)=> {
-        expect (settingsCategory).to.eql(tabName);
+      const handleOpenSetting = (settingsCategory: string) => {
+        expect(settingsCategory).to.eql(tabName);
         spy();
       };
 
-      const handleOpenSetting2 = (_settingsCategory: string)=> {
+      const handleOpenSetting2 = (_settingsCategory: string) => {
         spy();
       };
 
@@ -229,17 +229,17 @@ describe("UiFramework localStorage Wrapper", () => {
       expect(settingsProvider.settingsLoaded).to.be.false;
 
       const uiVersion1 = "1";
-      UiFramework.setUiVersion (uiVersion1);
+      UiFramework.setUiVersion(uiVersion1);
       expect(UiFramework.uiVersion).to.eql(uiVersion1);
 
       const uiVersion = "2";
-      UiFramework.setUiVersion (uiVersion);
+      UiFramework.setUiVersion(uiVersion);
       expect(UiFramework.uiVersion).to.eql(uiVersion);
-      UiFramework.setUiVersion ("");
+      UiFramework.setUiVersion("");
       expect(UiFramework.uiVersion).to.eql(uiVersion);
 
       const useDragInteraction = true;
-      UiFramework.setUseDragInteraction (useDragInteraction);
+      UiFramework.setUseDragInteraction(useDragInteraction);
       expect(UiFramework.useDragInteraction).to.eql(useDragInteraction);
 
       UiFramework.closeCursorMenu();
