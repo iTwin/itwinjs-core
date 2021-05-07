@@ -123,7 +123,7 @@ export class DynamicGraphicsProvider {
     }
   }
 
-  /** Call to request a RenderGraphic for the supplied geometry and trigger a dynamic update upon fulfullment.
+  /** Call to request a RenderGraphic for the supplied geometry and trigger a dynamic update upon fulfillment.
    * @note May be useful to update a dynamic preview outside of normal button and motion events, ex. modifier key change.
    * @see [[cleanupGraphic]] Must be called when the tool exits.
    */
