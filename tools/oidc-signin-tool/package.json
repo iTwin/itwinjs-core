@@ -44,20 +44,16 @@
     "@bentley/eslint-plugin": "2.16.0-dev.27",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/puppeteer": "2.0.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "eslint": "^6.8.0",
     "internal-tools": "0.0.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0"
-  },
-  "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
