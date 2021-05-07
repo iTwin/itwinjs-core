@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item
+internal;applyHierarchyChanges(treeModel: MutableTreeModel, hierarchyUpdateRecords: HierarchyUpdateRecord[], reloadedHierarchyParts: ReloadedHierarchyPart[], treeNodeItemCreationProps: CreateTreeNodeItemProps): MutableTreeModel
+internal;applyOptionalPrefix: (str: string, prefix?: string | undefined) => string
 public;CacheInvalidationProps
 public;CacheInvalidationProps
 internal;ContentBuilder
@@ -13,6 +15,7 @@ deprecated;ControlledTreeWithFilteringSupportProps
 beta;ControlledTreeWithVisibleNodesProps 
 deprecated;ControlledTreeWithVisibleNodesProps 
 alpha;createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined
+internal;CreatePropertyRecordProps
 public;DataProvidersFactory
 public;DataProvidersFactoryProps
 public;DEFAULT_PROPERTY_GRID_RULESET: Ruleset
@@ -29,7 +32,15 @@ beta;FavoritePropertiesDataFilterer
 beta;FavoritePropertiesDataFiltererProps
 public;FavoritePropertiesDataProvider 
 public;FavoritePropertiesDataProviderProps
+internal;FAVORITES_CATEGORY_NAME = "Favorite"
+internal;FIELD_NAMES_SEPARATOR = "$"
+internal;FieldHierarchy
+internal;FieldRecord
+internal;FilteredPresentationTreeDataProvider 
+internal;FilteredPresentationTreeDataProviderProps
+internal;getFavoritesCategory: () => CategoryDescription
 public;IContentDataProvider 
+public;IFavoritePropertiesDataProvider
 public;IFilteredPresentationTreeDataProvider 
 beta;InstanceKeyValueRenderer 
 public;IPresentationDataProvider 
@@ -50,10 +61,15 @@ beta;PresentationTreeDataProviderDataSourceEntryPoints
 public;PresentationTreeDataProviderProps 
 public;PresentationTreeNodeLoaderProps 
 public;PropertyDataProviderWithUnifiedSelectionProps
+internal;PropertyDescriptionCreationProps
 public;propertyGridWithUnifiedSelection
 deprecated;propertyGridWithUnifiedSelection
 public;PropertyGridWithUnifiedSelectionProps
 deprecated;PropertyGridWithUnifiedSelectionProps
+internal;ReloadedHierarchyPart
+internal;reloadVisibleHierarchyParts(visibleNodes: VisibleTreeNodes, renderedItems: RenderedItemsRange, dataProvider: IPresentationTreeDataProvider): Promise
+public;TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5
+public;TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20
 public;tableWithUnifiedSelection
 public;TableWithUnifiedSelectionProps
 public;TreeWithFilteringSupportProps
@@ -66,13 +82,18 @@ beta;UnifiedSelectionContextProviderProps
 beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 public;UnifiedSelectionTreeEventHandler 
 public;UnifiedSelectionTreeEventHandlerParams
+internal;updateTreeModel(treeModel: TreeModel, hierarchyModifications: PartialHierarchyModification[], treeNodeItemCreationProps: CreateTreeNodeItemProps): MutableTreeModel | undefined
 public;useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps):
 beta;useControlledTreeFiltering: typeof useControlledPresentationTreeFiltering
 deprecated;useControlledTreeFiltering: typeof useControlledPresentationTreeFiltering
+internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
+internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
 public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps):
 public;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps):
 public;useRulesetRegistration(ruleset: Ruleset): void
 beta;useUnifiedSelectionContext(): UnifiedSelectionContext | undefined
 public;useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams): UnifiedSelectionTreeEventHandler
+internal;ViewportSelectionHandler 
+internal;ViewportSelectionHandlerProps
 public;viewWithUnifiedSelection
 public;ViewWithUnifiedSelectionProps

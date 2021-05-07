@@ -41,6 +41,9 @@ export interface ContentBuilderResult {
 }
 
 // @public
+export const defaultNodeMappingFunc: NodeMappingFunc;
+
+// @public
 export class HierarchyBuilder {
     constructor(props: HierarchyBuilderProps);
     createHierarchy(rulesetOrId: Ruleset | string): Promise<HierarchyNode[]>;
