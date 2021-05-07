@@ -6,13 +6,15 @@
 /** @packageDocumentation
  * @module RealityData
  */
-import { URL } from "url";
 import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance,
 } from "@bentley/itwin-client";
+import { URL } from "url";
 
-/** Currenlty supported  ProjectWise ContextShare reality data types */
+/** Currenlty supported  ProjectWise ContextShare reality data types
+ * @internal
+ */
 export enum RealityDataType {
   REALITYMESH3DTILES  = "RealityMesh3DTiles", // Web Ready Scalable Mesh
   OPC = "OPC", // Orbit Point Cloud
@@ -464,6 +466,7 @@ export class RealityDataClient extends WsgClient {
   /** Return the filter string used to query all supported Reality Data types or only the input type if defined
   * @param type  reality data type to query or all supported type if undefined
   * @returns the filter string to use
+  * @internal
   */
   private getRealityDataTypesFilter(type?: string): string {
     let filter: string = "";
