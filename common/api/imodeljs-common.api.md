@@ -55,6 +55,7 @@ import { OrderedId64Iterable } from '@bentley/bentleyjs-core';
 import { Plane3dByOriginAndUnitNormal } from '@bentley/geometry-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
+import { Point4d } from '@bentley/geometry-core';
 import { PolyfaceVisitor } from '@bentley/geometry-core';
 import { Range1d } from '@bentley/geometry-core';
 import { Range1dProps } from '@bentley/geometry-core';
@@ -5978,22 +5979,32 @@ export namespace RenderSchedule {
         transformTimeline?: TransformEntryProps[];
         visibilityTimeline?: VisibilityEntryProps[];
     }
+    export class TransformComponents {
+        constructor(position: Vector3d, pivot: Vector3d, orientation: Point4d);
+        // (undocumented)
+        static fromJSON(props: TransformComponentsProps): TransformComponents | undefined;
+        readonly orientation: Point4d;
+        readonly pivot: Vector3d;
+        readonly position: Vector3d;
+        // (undocumented)
+        toJSON(): TransformComponentsProps;
+    }
+    export interface TransformComponentsProps {
+        orientation?: number[];
+        pivot?: number[];
+        position?: number[];
+    }
     export class TransformEntry extends TimelineEntry {
         constructor(props: TransformEntryProps);
+        readonly components?: TransformComponents;
         // (undocumented)
         toJSON(): TransformEntryProps;
         readonly value: Readonly<Transform>;
-        }
+    }
     export interface TransformEntryProps extends TimelineEntryProps {
         value?: TransformProps;
     }
-    export interface TransformProps {
-        // @internal
-        orientation?: number[];
-        // @internal
-        pivot?: number[];
-        // @internal
-        position?: number[];
+    export interface TransformProps extends TransformComponentsProps {
         transform?: number[][];
     }
     export class TransformTimelineEntries extends TimelineEntryList<TransformEntry, TransformEntryProps, Readonly<Transform>> {

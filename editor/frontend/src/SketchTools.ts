@@ -117,7 +117,7 @@ export class CreateLineStringTool extends CreateElementTool {
     this._graphicsProvider = undefined;
   }
 
-  protected createGraphics(ev: BeButtonEvent): void {
+  protected async createGraphics(ev: BeButtonEvent): Promise<void> {
     const placement = this.getPlacementProps(ev);
     if (undefined === placement)
       return;
@@ -129,7 +129,7 @@ export class CreateLineStringTool extends CreateElementTool {
     if (undefined === this._graphicsProvider)
       this._graphicsProvider = new DynamicGraphicsProvider(this.iModel, this.toolId);
 
-    this._graphicsProvider.createGraphicAndUpdateDynamics(ev, this.targetCategory, placement, geometry);
+    await this._graphicsProvider.createGraphic(this.targetCategory, placement, geometry);
   }
 
   public onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
@@ -138,7 +138,7 @@ export class CreateLineStringTool extends CreateElementTool {
   }
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
-    this.createGraphics(ev);
+    return this.createGraphics(ev);
   }
 
   protected getPlacementProps(ev?: BeButtonEvent): PlacementProps | undefined {
