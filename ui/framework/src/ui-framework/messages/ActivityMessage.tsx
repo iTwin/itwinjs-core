@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Icon, UiCore } from "@bentley/ui-core";
 import { Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
-import { Small } from "@itwin/itwinui-react/cjs/core/Typography/Small";
+import { Small } from "@itwin/itwinui-react";
 import { UiFramework } from "../UiFramework";
 import { ActivityMessageEventArgs } from "../messages/MessageManager";
 import { HollowIcon } from "./HollowIcon";

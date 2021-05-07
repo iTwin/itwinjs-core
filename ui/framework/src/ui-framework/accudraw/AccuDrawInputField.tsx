@@ -14,7 +14,7 @@ import {
   AccuDrawField, AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldValueToUiEventArgs,
   AccuDrawUiAdmin, isLetter, SpecialKey,
 } from "@bentley/ui-abstract";
-import { Input } from "@itwin/itwinui-react/cjs/core/Input";
+import { Input } from "@itwin/itwinui-react";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
 

@@ -11,7 +11,7 @@ import "./KeyinBrowser.scss";
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Tool } from "@bentley/imodeljs-frontend";
 import { AutoSuggest, AutoSuggestData, Button, CommonProps, InputLabel } from "@bentley/ui-core";
-import { LabeledInput } from "@itwin/itwinui-react/cjs/core/LabeledInput";
+import { LabeledInput } from "@itwin/itwinui-react";
 import { UiFramework } from "../UiFramework";
 import { SpecialKey } from "@bentley/ui-abstract";
 

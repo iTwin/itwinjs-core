@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Textarea as ITwinUI_Textarea } from "@itwin/itwinui-react/cjs/core/Textarea";
+import { Textarea as ITwinUI_Textarea } from "@itwin/itwinui-react";
 import { useRefs } from "../utils/hooks/useRefs";
 import { CommonProps } from "../utils/Props";
 

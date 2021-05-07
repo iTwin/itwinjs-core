@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { Input } from "@itwin/itwinui-react/cjs/core/Input";
+import { Input } from "@itwin/itwinui-react";
 import { CommonProps } from "@bentley/ui-core";
 import { ParseResults, SpecialKey } from "@bentley/ui-abstract";
 import "./ParsedInput.scss";

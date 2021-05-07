@@ -9,7 +9,7 @@
 import * as React from "react";
 import { UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
-import { Input } from "@itwin/itwinui-react/cjs/core/Input";
+import { Input } from "@itwin/itwinui-react";
 
 /** Properties of [[UnitDescr]] component.
  * @internal

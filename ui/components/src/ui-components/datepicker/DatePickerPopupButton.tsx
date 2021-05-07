@@ -9,7 +9,7 @@
 import * as React from "react";
 import { DateFormatter, RelativePosition, SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
 import { CommonProps, Popup } from "@bentley/ui-core";
-import { Body } from "@itwin/itwinui-react/cjs/core/Typography/Body";
+import { Body } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
 import { DatePicker } from "./DatePicker";
 import { DateField } from "./DateField";

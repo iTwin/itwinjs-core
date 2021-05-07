@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { OnCancelFunc, OnNumberCommitFunc, SpecialKey } from "@bentley/ui-abstract";
 import { Button, ButtonType, CommonProps, Icon, IconInput, Omit, SvgSprite } from "@bentley/ui-core";
-import { Input } from "@itwin/itwinui-react/cjs/core/Input";
+import { Input } from "@itwin/itwinui-react";
 import { CalculatorEngine, CalculatorOperator } from "./CalculatorEngine";
 import { SquareButton, SquareButtonProps } from "./SquareButton";
 

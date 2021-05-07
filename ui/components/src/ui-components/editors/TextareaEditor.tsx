@@ -14,7 +14,7 @@ import {
   PropertyEditorParamTypes, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
-import { Textarea, TextareaProps } from "@itwin/itwinui-react/cjs/core/Textarea";
+import { Textarea, TextareaProps } from "@itwin/itwinui-react";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";

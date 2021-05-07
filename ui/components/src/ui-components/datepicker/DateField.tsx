@@ -11,7 +11,7 @@ import * as React from "react";
 import classnames from "classnames";
 import { AlternateDateFormats, DateFormatter, TimeDisplay } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
-import { Input } from "@itwin/itwinui-react/cjs/core/Input";
+import { Input } from "@itwin/itwinui-react";
 import { Logger } from "@bentley/bentleyjs-core";
 
 /** Props for [[DateField]] Component.

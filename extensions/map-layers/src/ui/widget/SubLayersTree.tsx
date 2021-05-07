@@ -14,7 +14,7 @@ import {
   TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useVisibleTreeNodes,
 } from "@bentley/ui-components";
 import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
-import { Input } from "@itwin/itwinui-react/cjs/core/Input";
+import { Input } from "@itwin/itwinui-react";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";

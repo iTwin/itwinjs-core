@@ -9,7 +9,7 @@
 import "./NumberInput.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Input, InputProps } from "@itwin/itwinui-react/cjs/core/Input";
+import { Input, InputProps } from "@itwin/itwinui-react";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { WebFontIcon } from "../../icons/WebFontIcon";
 

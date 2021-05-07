@@ -12,7 +12,7 @@ import * as React from "react";
 import {
   Slider as CompoundSlider, GetRailProps, GetTrackProps, Handles, Rail, SliderItem, SliderModeFunction, Ticks, Tracks,
 } from "react-compound-slider";
-import { Body } from "@itwin/itwinui-react/cjs/core/Typography/Body";
+import { Body } from "@itwin/itwinui-react";
 import { CommonProps } from "../utils/Props";
 import { useRefState } from "../utils/hooks/useRefState";
 import { Tooltip } from "../tooltip/Tooltip";

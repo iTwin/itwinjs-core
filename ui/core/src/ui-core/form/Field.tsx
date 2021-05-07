@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Input } from "@itwin/itwinui-react/cjs/core/Input";
+import { Input } from "@itwin/itwinui-react";
 import { Checkbox } from "../checkbox/Checkbox";
 import { Textarea } from "../inputs/Textarea";
 import { Select } from "../select/Select";

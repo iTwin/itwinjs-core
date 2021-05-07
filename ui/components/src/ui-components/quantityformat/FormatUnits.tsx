@@ -9,7 +9,7 @@
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { Input } from "@itwin/itwinui-react/cjs/core/Input";
+import { Input } from "@itwin/itwinui-react";
 import { UnitDescr } from "./misc/UnitDescr";
 import { UiComponents } from "../UiComponents";
 

@@ -12,7 +12,7 @@ import * as React from "react";
 import {
   AlternateDateFormats, PropertyValue, PropertyValueFormat, StandardTypeNames, TimeDisplay,
 } from "@bentley/ui-abstract";
-import { Body } from "@itwin/itwinui-react/cjs/core/Typography/Body";
+import { Body } from "@itwin/itwinui-react";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";

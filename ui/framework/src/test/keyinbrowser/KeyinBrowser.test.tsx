@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import { AutoSuggest, Button } from "@bentley/ui-core";
-import { LabeledInput } from "@itwin/itwinui-react/cjs/core/LabeledInput";
+import { LabeledInput } from "@itwin/itwinui-react";
 import { fireEvent, render } from "@testing-library/react";
 import { KeyinBrowser } from "../../ui-framework";
 import TestUtils, { mount, storageMock } from "../TestUtils";

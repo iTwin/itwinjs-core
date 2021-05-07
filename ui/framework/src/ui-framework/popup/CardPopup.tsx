@@ -11,7 +11,7 @@ import * as React from "react";
 import classnames from "classnames";
 import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, PropertyRecord, RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
-import { Leading } from "@itwin/itwinui-react/cjs/core/Typography/Leading";
+import { Leading } from "@itwin/itwinui-react";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { isReactContent, PopupContentType, PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup } from "./PositionPopup";

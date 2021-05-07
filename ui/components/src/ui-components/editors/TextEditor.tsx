@@ -13,7 +13,7 @@ import {
   IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat,
 } from "@bentley/ui-abstract";
 import { Icon, IconInput } from "@bentley/ui-core";
-import { Input, InputProps } from "@itwin/itwinui-react/cjs/core/Input";
+import { Input, InputProps } from "@itwin/itwinui-react";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { UiComponents } from "../UiComponents";
