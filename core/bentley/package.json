@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "2.16.0-dev.27",
+  "version": "2.16.0-dev.29",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -32,8 +32,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.27",
-    "@bentley/eslint-plugin": "2.16.0-dev.27",
+    "@bentley/build-tools": "2.16.0-dev.29",
+    "@bentley/eslint-plugin": "2.16.0-dev.29",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
