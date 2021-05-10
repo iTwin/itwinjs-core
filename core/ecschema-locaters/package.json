@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-locaters",
-  "version": "2.16.0-dev.25",
+  "version": "2.16.0-dev.30",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/ecschema-locaters.js",
@@ -31,21 +31,21 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.25",
-    "@bentley/ecschema-metadata": "2.16.0-dev.25",
-    "@bentley/eslint-plugin": "2.16.0-dev.25",
+    "@bentley/build-tools": "2.16.0-dev.30",
+    "@bentley/ecschema-metadata": "2.16.0-dev.30",
+    "@bentley/eslint-plugin": "2.16.0-dev.30",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/sinon": "^9.0.0",
     "@types/xmldom": "^0.1.30",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "eslint": "^6.8.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0",
     "xmldom": "^0.5.0"
@@ -54,10 +54,10 @@
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@bentley/ecschema-metadata": "^2.16.0-dev.25"
+    "@bentley/ecschema-metadata": "^2.16.0-dev.30"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@bentley/build-tools/.nycrc",
     "sourceMap": false
   },
   "eslintConfig": {

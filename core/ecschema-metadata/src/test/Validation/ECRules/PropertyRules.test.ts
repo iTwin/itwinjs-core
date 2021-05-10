@@ -44,12 +44,13 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const results = Rules.incompatibleValueTypePropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const properties = [...testClass.properties!];
+      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(testClass.properties![0]);
+        expect(diagnostic.ecDefinition).eq(properties[0]);
         expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", testBaseClass.fullName, "string", "int"]);
         expect(diagnostic.messageText)
           .eq("The ECProperty 'TestSchema.TestClass.TestProperty' has a base property 'TestSchema.TestBaseClass.TestProperty' with a value type of string which is incompatible with the value type of int.");
@@ -66,12 +67,13 @@ describe("PropertyRule tests", () => {
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
       testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
 
-      const results = Rules.incompatibleValueTypePropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const properties = [...testClass.properties!];
+      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(testClass.properties![0]);
+        expect(diagnostic.ecDefinition).eq(properties[0]);
         expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", rootBaseClass.fullName, "string", "int"]);
         expect(diagnostic.messageText)
           .eq("The ECProperty 'TestSchema.TestClass.TestProperty' has a base property 'TestSchema.RootBaseClass.TestProperty' with a value type of string which is incompatible with the value type of int.");
@@ -86,7 +88,8 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const results = Rules.incompatibleValueTypePropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const properties = [...testClass.properties!];
+      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -95,7 +98,8 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
 
-      const results = Rules.incompatibleValueTypePropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const properties = [...testClass.properties!];
+      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -104,7 +108,8 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
 
-      const results = Rules.incompatibleValueTypePropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const properties = [...testClass.properties!];
+      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -113,7 +118,8 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createStructProperty("TestProperty", new StructClass(schema, "TestStruct"));
       await (testClass as ECClass as MutableClass).createStructProperty("TestProperty", new StructClass(schema, "TestStruct"));
 
-      const results = Rules.incompatibleValueTypePropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const properties = [...testClass.properties!];
+      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -122,7 +128,8 @@ describe("PropertyRule tests", () => {
       const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3), "TestEntity");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const results = Rules.incompatibleValueTypePropertyOverride(entityClass.properties![0] as PrimitiveProperty);
+      const properties = [...entityClass.properties!];
+      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -133,12 +140,13 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const results = Rules.incompatibleTypePropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const properties = [...testClass.properties!];
+      const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(testClass.properties![0]);
+        expect(diagnostic.ecDefinition).eq(properties[0]);
         expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", testBaseClass.fullName, "PrimitiveArrayProperty", "PrimitiveProperty"]);
         expect(diagnostic.messageText)
           .eq(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${testBaseClass.fullName}.TestProperty' with a type of PrimitiveArrayProperty which is incompatible with the type of PrimitiveProperty.`);
@@ -155,12 +163,13 @@ describe("PropertyRule tests", () => {
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
 
-      const results = Rules.incompatibleTypePropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const properties = [...testClass.properties!];
+      const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(testClass.properties![0]);
+        expect(diagnostic.ecDefinition).eq(properties[0]);
         expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", rootBaseClass.fullName, "PrimitiveArrayProperty", "PrimitiveProperty"]);
         expect(diagnostic.messageText)
           .eq(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${rootBaseClass.fullName}.TestProperty' with a type of PrimitiveArrayProperty which is incompatible with the type of PrimitiveProperty.`);
@@ -176,7 +185,8 @@ describe("PropertyRule tests", () => {
       // different value type, but THIS rule should still pass
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const results = Rules.incompatibleTypePropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const properties = [...testClass.properties!];
+      const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -185,7 +195,8 @@ describe("PropertyRule tests", () => {
       const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3), "TestEntity");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const results = Rules.incompatibleTypePropertyOverride(entityClass.properties![0] as PrimitiveProperty);
+      const properties = [...entityClass.properties!];
+      const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -208,10 +219,13 @@ describe("PropertyRule tests", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
 
-      const baseProperty = testBaseClass.properties![0];
+      const baseProperties = [...testBaseClass.properties!];
+      const childProperties = [...testClass.properties!];
+
+      const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
 
-      const childProperty = testClass.properties![0];
+      const childProperty = childProperties[0];
       await childProperty.fromJSON(childPropJson);
 
       const baseUnit = await (schema as MutableSchema).createUnit("BaseTestUnit");
@@ -226,12 +240,12 @@ describe("PropertyRule tests", () => {
         relativeError: 4,
       });
 
-      const results = Rules.incompatibleUnitPropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(childProperties[0] as PrimitiveProperty);
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(testClass.properties![0]);
+        expect(diagnostic.ecDefinition).eq(childProperties[0]);
         expect(diagnostic.messageArgs).deep.eq([
           testClass.fullName, "TestProperty", testBaseClass.fullName,
           testBaseKindOfQuantity.fullName, baseUnit.fullName, childUnit.fullName, testKindOfQuantity.fullName,
@@ -263,10 +277,13 @@ describe("PropertyRule tests", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
 
-      const baseProperty = rootBaseClass.properties![0];
+      const baseProperties = [...rootBaseClass.properties!];
+      const childProperties = [...testClass.properties!];
+
+      const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
 
-      const childProperty = testClass.properties![0];
+      const childProperty = childProperties[0];
       await childProperty.fromJSON(childPropJson);
 
       const baseUnit = await (schema as MutableSchema).createUnit("BaseTestUnit");
@@ -281,12 +298,12 @@ describe("PropertyRule tests", () => {
         relativeError: 4,
       });
 
-      const results = Rules.incompatibleUnitPropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(childProperty as PrimitiveProperty);
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(testClass.properties![0]);
+        expect(diagnostic.ecDefinition).eq(childProperty);
         expect(diagnostic.messageArgs).deep.eq([
           testClass.fullName, "TestProperty", rootBaseClass.fullName,
           testBaseKindOfQuantity.fullName, baseUnit.fullName, childUnit.fullName, testKindOfQuantity.fullName,
@@ -315,10 +332,13 @@ describe("PropertyRule tests", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
 
-      const baseProperty = testBaseClass.properties![0];
+      const baseProperties = [...testBaseClass.properties!];
+      const childProperties = [...testClass.properties!];
+
+      const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
 
-      const childProperty = testClass.properties![0];
+      const childProperty = childProperties[0];
       await childProperty.fromJSON(childPropJson);
 
       await (schema as MutableSchema).createUnit("TestUnit");
@@ -332,7 +352,7 @@ describe("PropertyRule tests", () => {
         relativeError: 4,
       });
 
-      const results = Rules.incompatibleUnitPropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(childProperty as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, `Rule should have passed, instead recieved "${_diagnostic.messageText}"`).true;
     });
@@ -353,10 +373,13 @@ describe("PropertyRule tests", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
 
-      const baseProperty = testBaseClass.properties![0];
+      const baseProperties = [...testBaseClass.properties!];
+      const childProperties = [...testClass.properties!];
+
+      const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
 
-      const childProperty = testClass.properties![0];
+      const childProperty = childProperties[0];
       await childProperty.fromJSON(childPropJson);
 
       await (schema as MutableSchema).createUnit("TestUnit");
@@ -365,7 +388,7 @@ describe("PropertyRule tests", () => {
         relativeError: 4,
       });
 
-      const results = Rules.incompatibleUnitPropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(childProperties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -384,13 +407,16 @@ describe("PropertyRule tests", () => {
         type: "PrimitiveProperty",
       };
 
-      const baseProperty = testBaseClass.properties![0];
+      const baseProperties = [...testBaseClass.properties!];
+      const childProperties = [...testClass.properties!];
+
+      const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
 
-      const childProperty = testClass.properties![0];
+      const childProperty = childProperties[0];
       await childProperty.fromJSON(childPropJson);
 
-      const results = Rules.incompatibleUnitPropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(childProperties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -411,10 +437,13 @@ describe("PropertyRule tests", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
 
-      const baseProperty = testBaseClass.properties![0];
+      const baseProperties = [...testBaseClass.properties!];
+      const childProperties = [...testClass.properties!];
+
+      const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
 
-      const childProperty = testClass.properties![0];
+      const childProperty = childProperties[0];
       await childProperty.fromJSON(childPropJson);
 
       await (schema as MutableSchema).createUnit("BaseTestUnit");
@@ -429,7 +458,7 @@ describe("PropertyRule tests", () => {
         relativeError: 4,
       });
 
-      const results = Rules.incompatibleUnitPropertyOverride(testClass.properties![0] as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(childProperties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });

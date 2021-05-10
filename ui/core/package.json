@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.16.0-dev.25",
+  "version": "2.16.0-dev.30",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -20,7 +20,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-core/file.json --tsIndexFile=./ui-core.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "extract-api": "betools extract-api --entry=ui-core",
-    "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "keywords": [
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.25",
-    "@bentley/geometry-core": "^2.16.0-dev.25",
-    "@bentley/imodeljs-i18n": "^2.16.0-dev.25",
-    "@bentley/ui-abstract": "^2.16.0-dev.25",
+    "@bentley/bentleyjs-core": "^2.16.0-dev.30",
+    "@bentley/geometry-core": "^2.16.0-dev.30",
+    "@bentley/imodeljs-i18n": "^2.16.0-dev.30",
+    "@bentley/ui-abstract": "^2.16.0-dev.30",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -47,13 +47,13 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.25",
-    "@bentley/build-tools": "2.16.0-dev.25",
-    "@bentley/eslint-plugin": "2.16.0-dev.25",
-    "@bentley/geometry-core": "2.16.0-dev.25",
-    "@bentley/imodeljs-i18n": "2.16.0-dev.25",
+    "@bentley/bentleyjs-core": "2.16.0-dev.30",
+    "@bentley/build-tools": "2.16.0-dev.30",
+    "@bentley/eslint-plugin": "2.16.0-dev.30",
+    "@bentley/geometry-core": "2.16.0-dev.30",
+    "@bentley/imodeljs-i18n": "2.16.0-dev.30",
     "@bentley/react-scripts": "3.4.9",
-    "@bentley/ui-abstract": "2.16.0-dev.25",
+    "@bentley/ui-abstract": "2.16.0-dev.30",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -63,7 +63,7 @@
     "@types/dompurify": "^2.0.3",
     "@types/enzyme": "3.9.3",
     "@types/lodash": "^4.14.0",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/react": "16.9.43",
     "@types/react-autosuggest": "10.1.2",
@@ -84,8 +84,8 @@
     "ignore-styles": "^5.0.1",
     "jsdom": "^11.12.0",
     "jsdom-global": "3.0.2",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "raf": "^3.4.0",
     "react-test-renderer": "^16.13.1",
     "rimraf": "^3.0.2",

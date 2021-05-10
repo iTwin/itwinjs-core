@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-backend",
-  "version": "2.16.0-dev.25",
+  "version": "2.16.0-dev.30",
   "description": "iModel.js editor backend",
   "main": "lib/imodeljs-editor-backend.js",
   "typings": "lib/imodeljs-editor-backend",
@@ -34,26 +34,26 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.25",
-    "@bentley/geometry-core": "^2.16.0-dev.25",
-    "@bentley/imodeljs-backend": "2.16.0-dev.25",
-    "@bentley/imodeljs-common": "^2.16.0-dev.25"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.30",
+    "@bentley/geometry-core": "^2.16.0-dev.30",
+    "@bentley/imodeljs-backend": "2.16.0-dev.30",
+    "@bentley/imodeljs-common": "^2.16.0-dev.30"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.25",
-    "@bentley/build-tools": "2.16.0-dev.25",
-    "@bentley/eslint-plugin": "2.16.0-dev.25",
-    "@bentley/geometry-core": "2.16.0-dev.25",
-    "@bentley/imodeljs-backend": "2.16.0-dev.25",
-    "@bentley/imodeljs-common": "2.16.0-dev.25",
+    "@bentley/bentleyjs-core": "2.16.0-dev.30",
+    "@bentley/build-tools": "2.16.0-dev.30",
+    "@bentley/eslint-plugin": "2.16.0-dev.30",
+    "@bentley/geometry-core": "2.16.0-dev.30",
+    "@bentley/imodeljs-backend": "2.16.0-dev.30",
+    "@bentley/imodeljs-common": "2.16.0-dev.30",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
@@ -61,8 +61,7 @@
     "cpx": "^1.5.0",
     "eslint": "^6.8.0",
     "electron": "^11.1.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "source-map-loader": "^1.0.0",
@@ -70,10 +69,7 @@
     "typescript": "~4.1.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-editor-common": "2.16.0-dev.25"
-  },
-  "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "@bentley/imodeljs-editor-common": "2.16.0-dev.30"
   },
   "eslintConfig": {
     "plugins": [

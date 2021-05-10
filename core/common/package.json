@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "2.16.0-dev.25",
+  "version": "2.16.0-dev.30",
   "description": "iModel.js components common to frontend and backend",
   "main": "lib/imodeljs-common.js",
   "typings": "lib/imodeljs-common",
@@ -37,36 +37,36 @@
     "semver": "^5.5.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.25",
-    "@bentley/geometry-core": "^2.16.0-dev.25",
-    "@bentley/imodelhub-client": "^2.16.0-dev.25",
-    "@bentley/itwin-client": "^2.16.0-dev.25",
-    "@bentley/rbac-client": "^2.16.0-dev.25"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.30",
+    "@bentley/geometry-core": "^2.16.0-dev.30",
+    "@bentley/imodelhub-client": "^2.16.0-dev.30",
+    "@bentley/itwin-client": "^2.16.0-dev.30",
+    "@bentley/rbac-client": "^2.16.0-dev.30"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.25",
-    "@bentley/build-tools": "2.16.0-dev.25",
-    "@bentley/eslint-plugin": "2.16.0-dev.25",
-    "@bentley/geometry-core": "2.16.0-dev.25",
-    "@bentley/imodelhub-client": "2.16.0-dev.25",
-    "@bentley/itwin-client": "2.16.0-dev.25",
-    "@bentley/rbac-client": "2.16.0-dev.25",
+    "@bentley/bentleyjs-core": "2.16.0-dev.30",
+    "@bentley/build-tools": "2.16.0-dev.30",
+    "@bentley/eslint-plugin": "2.16.0-dev.30",
+    "@bentley/geometry-core": "2.16.0-dev.30",
+    "@bentley/imodelhub-client": "2.16.0-dev.30",
+    "@bentley/itwin-client": "2.16.0-dev.30",
+    "@bentley/rbac-client": "2.16.0-dev.30",
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
     "@types/js-base64": "^2.3.1",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "eslint": "^6.8.0",
     "js-base64": "^2.4.5",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@bentley/build-tools/.nycrc",
     "all": true
   },
   "eslintConfig": {

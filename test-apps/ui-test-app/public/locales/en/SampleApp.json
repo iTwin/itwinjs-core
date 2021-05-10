@@ -314,11 +314,6 @@
       "ToolSettings": {
         "heigh": "Height"
       }
-    },
-    "PlaceLinestring": {
-      "keyin": "test place linestring",
-      "description": "Place Line-string",
-      "flyover": "Place Line-string"
     }
   },
   "widgets": {

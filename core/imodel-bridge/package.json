@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodel-bridge",
-  "version": "2.16.0-dev.25",
+  "version": "2.16.0-dev.30",
   "description": "iModel.js bridge components",
   "main": "lib/imodel-bridge.js",
   "typings": "lib/imodel-bridge",
@@ -40,41 +40,41 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "^2.16.0-dev.25",
-    "@bentley/bentleyjs-core": "^2.16.0-dev.25",
-    "@bentley/context-registry-client": "^2.16.0-dev.25",
-    "@bentley/geometry-core": "^2.16.0-dev.25",
-    "@bentley/imodelhub-client": "^2.16.0-dev.25",
-    "@bentley/imodeljs-backend": "^2.16.0-dev.25",
-    "@bentley/imodeljs-common": "^2.16.0-dev.25",
-    "@bentley/rbac-client": "^2.16.0-dev.25"
+    "@bentley/backend-itwin-client": "^2.16.0-dev.30",
+    "@bentley/bentleyjs-core": "^2.16.0-dev.30",
+    "@bentley/context-registry-client": "^2.16.0-dev.30",
+    "@bentley/geometry-core": "^2.16.0-dev.30",
+    "@bentley/imodelhub-client": "^2.16.0-dev.30",
+    "@bentley/imodeljs-backend": "^2.16.0-dev.30",
+    "@bentley/imodeljs-common": "^2.16.0-dev.30",
+    "@bentley/rbac-client": "^2.16.0-dev.30"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/backend-itwin-client": "2.16.0-dev.25",
-    "@bentley/bentleyjs-core": "2.16.0-dev.25",
-    "@bentley/build-tools": "2.16.0-dev.25",
-    "@bentley/config-loader": "2.16.0-dev.25",
-    "@bentley/eslint-plugin": "2.16.0-dev.25",
-    "@bentley/geometry-core": "2.16.0-dev.25",
-    "@bentley/imodeljs-backend": "2.16.0-dev.25",
-    "@bentley/imodeljs-common": "2.16.0-dev.25",
-    "@bentley/itwin-client": "2.16.0-dev.25",
-    "@bentley/oidc-signin-tool": "2.16.0-dev.25",
-    "@bentley/rbac-client": "2.16.0-dev.25",
+    "@bentley/backend-itwin-client": "2.16.0-dev.30",
+    "@bentley/bentleyjs-core": "2.16.0-dev.30",
+    "@bentley/build-tools": "2.16.0-dev.30",
+    "@bentley/config-loader": "2.16.0-dev.30",
+    "@bentley/eslint-plugin": "2.16.0-dev.30",
+    "@bentley/geometry-core": "2.16.0-dev.30",
+    "@bentley/imodeljs-backend": "2.16.0-dev.30",
+    "@bentley/imodeljs-common": "2.16.0-dev.30",
+    "@bentley/itwin-client": "2.16.0-dev.30",
+    "@bentley/oidc-signin-tool": "2.16.0-dev.30",
+    "@bentley/rbac-client": "2.16.0-dev.30",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/object-hash": "^1.3.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "eslint": "^6.8.0",
     "internal-tools": "0.0.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0"
   },
@@ -82,7 +82,7 @@
     "object-hash": "^1.3.1"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

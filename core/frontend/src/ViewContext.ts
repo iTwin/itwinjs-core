@@ -18,7 +18,7 @@ import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicBuilderOptions, GraphicType } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
 import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./render/RenderSystem";
@@ -61,8 +61,8 @@ export class RenderContext {
   public get target(): RenderTarget { return this.viewport.target; }
 
   /** @internal */
-  protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
-    return this.target.createGraphicBuilder(type, this.viewport, transform, id);
+  protected _createGraphicBuilder(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+    return this.target.createGraphicBuilder({ ...options, viewport: this.viewport });
   }
 
   /** Create a builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
@@ -70,7 +70,7 @@ export class RenderContext {
    * @returns A builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    */
   public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder {
-    return this._createGraphicBuilder(GraphicType.Scene, transform);
+    return this._createGraphicBuilder({ type: GraphicType.Scene, placement: transform });
   }
 
   /** @internal */
@@ -113,6 +113,14 @@ export class DynamicsContext extends RenderContext {
   public changeDynamics(): void {
     this.viewport.changeDynamics(this._dynamics);
   }
+
+  /** Create a builder for producing a [[RenderGraphic]] appropriate for rendering within this context's [[Viewport]].
+   * @param options Options describing how to create the builder.
+   * @returns A builder that produces a [[RenderGraphic]].
+   */
+  public createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+    return this._createGraphicBuilder(options);
+  }
 }
 
 /** Provides context for a [[ViewportDecorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
@@ -146,9 +154,18 @@ export class DecorateContext extends RenderContext {
    * @param id If the decoration is to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
    * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
    * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
+   * @see [[createGraphic]] for more options.
    */
   public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
-    return this._createGraphicBuilder(type, transform, id);
+    return this.createGraphic({ type, placement: transform, pickable: undefined !== id ? { id } : undefined });
+  }
+
+  /** Create a builder for producing a [[RenderGraphic]] appropriate for rendering within this context's [[Viewport]].
+   * @param options Options describing how to create the builder.
+   * @returns A builder that produces a [[RenderGraphic]].
+   */
+  public createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+    return this._createGraphicBuilder(options);
   }
 
   /** @internal */

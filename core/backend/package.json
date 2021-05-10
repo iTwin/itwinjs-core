@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "2.16.0-dev.25",
+  "version": "2.16.0-dev.30",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -55,35 +55,35 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "^2.16.0-dev.25",
-    "@bentley/bentleyjs-core": "^2.16.0-dev.25",
-    "@bentley/ecschema-metadata": "^2.16.0-dev.25",
-    "@bentley/geometry-core": "^2.16.0-dev.25",
-    "@bentley/imodelhub-client": "^2.16.0-dev.25",
-    "@bentley/imodeljs-common": "^2.16.0-dev.25",
-    "@bentley/itwin-client": "^2.16.0-dev.25",
-    "@bentley/rbac-client": "^2.16.0-dev.25",
-    "@bentley/telemetry-client": "^2.16.0-dev.25"
+    "@bentley/backend-itwin-client": "^2.16.0-dev.30",
+    "@bentley/bentleyjs-core": "^2.16.0-dev.30",
+    "@bentley/ecschema-metadata": "^2.16.0-dev.30",
+    "@bentley/geometry-core": "^2.16.0-dev.30",
+    "@bentley/imodelhub-client": "^2.16.0-dev.30",
+    "@bentley/imodeljs-common": "^2.16.0-dev.30",
+    "@bentley/itwin-client": "^2.16.0-dev.30",
+    "@bentley/rbac-client": "^2.16.0-dev.30",
+    "@bentley/telemetry-client": "^2.16.0-dev.30"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/backend-itwin-client": "2.16.0-dev.25",
-    "@bentley/bentleyjs-core": "2.16.0-dev.25",
-    "@bentley/build-tools": "2.16.0-dev.25",
-    "@bentley/config-loader": "2.16.0-dev.25",
-    "@bentley/ecschema-metadata": "2.16.0-dev.25",
-    "@bentley/eslint-plugin": "2.16.0-dev.25",
-    "@bentley/geometry-core": "2.16.0-dev.25",
-    "@bentley/imodelhub-client": "2.16.0-dev.25",
-    "@bentley/imodeljs-common": "2.16.0-dev.25",
-    "@bentley/itwin-client": "2.16.0-dev.25",
-    "@bentley/oidc-signin-tool": "2.16.0-dev.25",
-    "@bentley/perf-tools": "2.16.0-dev.25",
-    "@bentley/rbac-client": "2.16.0-dev.25",
-    "@bentley/telemetry-client": "2.16.0-dev.25",
+    "@bentley/backend-itwin-client": "2.16.0-dev.30",
+    "@bentley/bentleyjs-core": "2.16.0-dev.30",
+    "@bentley/build-tools": "2.16.0-dev.30",
+    "@bentley/config-loader": "2.16.0-dev.30",
+    "@bentley/ecschema-metadata": "2.16.0-dev.30",
+    "@bentley/eslint-plugin": "2.16.0-dev.30",
+    "@bentley/geometry-core": "2.16.0-dev.30",
+    "@bentley/imodelhub-client": "2.16.0-dev.30",
+    "@bentley/imodeljs-common": "2.16.0-dev.30",
+    "@bentley/itwin-client": "2.16.0-dev.30",
+    "@bentley/oidc-signin-tool": "2.16.0-dev.30",
+    "@bentley/perf-tools": "2.16.0-dev.30",
+    "@bentley/rbac-client": "2.16.0-dev.30",
+    "@bentley/telemetry-client": "2.16.0-dev.30",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",
@@ -92,7 +92,7 @@
     "@types/glob": "^5.0.35",
     "@types/js-base64": "^2.3.1",
     "@types/lru-cache": "^5.1.0",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/multiparty": "^0.0.31",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
@@ -106,10 +106,10 @@
     "event-stream": "~4.0.1",
     "internal-tools": "0.0.0",
     "mkdirp": "^1.0.4",
-    "mocha": "^5.2.0",
+    "mocha": "^8.3.2",
     "npm-run-all": "^4.1.5",
     "null-loader": "^0.1.1",
-    "nyc": "^14.0.0",
+    "nyc": "^15.1.0",
     "openid-client": "^3.15.3",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
@@ -121,8 +121,8 @@
   "dependencies": {
     "@bentley/imodeljs-native": "2.16.1",
     "@azure/storage-blob": "10.4.0",
-    "@bentley/context-registry-client": "2.16.0-dev.25",
-    "@bentley/usage-logging-client": "2.16.0-dev.25",
+    "@bentley/context-registry-client": "2.16.0-dev.30",
+    "@bentley/usage-logging-client": "2.16.0-dev.30",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
@@ -133,7 +133,7 @@
     "ws": "^7.2.0"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

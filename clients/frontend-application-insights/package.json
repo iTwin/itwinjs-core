@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-application-insights-client",
-  "version": "2.16.0-dev.25",
+  "version": "2.16.0-dev.30",
   "description": "iModel.js Frontend Application Insights Client",
   "main": "lib/frontend-application-insights-client.js",
   "typings": "lib/frontend-application-insights-client",
@@ -31,33 +31,29 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.25",
-    "@bentley/telemetry-client": "2.16.0-dev.25",
+    "@bentley/bentleyjs-core": "2.16.0-dev.30",
+    "@bentley/telemetry-client": "2.16.0-dev.30",
     "@microsoft/applicationinsights-web": "^2.5.5"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.16.0-dev.25"
+    "@bentley/itwin-client": "^2.16.0-dev.30"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.25",
-    "@bentley/certa": "2.16.0-dev.25",
-    "@bentley/config-loader": "2.16.0-dev.25",
-    "@bentley/eslint-plugin": "2.16.0-dev.25",
-    "@bentley/itwin-client": "2.16.0-dev.25",
+    "@bentley/build-tools": "2.16.0-dev.30",
+    "@bentley/certa": "2.16.0-dev.30",
+    "@bentley/config-loader": "2.16.0-dev.30",
+    "@bentley/eslint-plugin": "2.16.0-dev.30",
+    "@bentley/itwin-client": "2.16.0-dev.30",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "eslint": "^6.8.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
     "typescript": "~4.1.0",
     "webpack": "4.42.0"
-  },
-  "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

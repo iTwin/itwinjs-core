@@ -1,6 +1,6 @@
 {
   "name": "@bentley/analytical-backend",
-  "version": "2.16.0-dev.25",
+  "version": "2.16.0-dev.30",
   "main": "lib/analytical-backend.js",
   "typings": "lib/analytical-backend",
   "license": "MIT",
@@ -32,30 +32,30 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.25",
-    "@bentley/imodeljs-backend": "^2.16.0-dev.25",
-    "@bentley/imodeljs-common": "^2.16.0-dev.25"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.30",
+    "@bentley/imodeljs-backend": "^2.16.0-dev.30",
+    "@bentley/imodeljs-common": "^2.16.0-dev.30"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.25",
-    "@bentley/build-tools": "2.16.0-dev.25",
-    "@bentley/eslint-plugin": "2.16.0-dev.25",
-    "@bentley/imodeljs-backend": "2.16.0-dev.25",
-    "@bentley/imodeljs-common": "2.16.0-dev.25",
+    "@bentley/bentleyjs-core": "2.16.0-dev.30",
+    "@bentley/build-tools": "2.16.0-dev.30",
+    "@bentley/eslint-plugin": "2.16.0-dev.30",
+    "@bentley/imodeljs-backend": "2.16.0-dev.30",
+    "@bentley/imodeljs-common": "2.16.0-dev.30",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "eslint": "^6.8.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0"
   },
@@ -66,7 +66,7 @@
     "@bentley/analytical-schema": "~1.0.0"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

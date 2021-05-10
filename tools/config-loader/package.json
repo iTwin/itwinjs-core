@@ -1,6 +1,6 @@
 {
   "name": "@bentley/config-loader",
-  "version": "2.16.0-dev.25",
+  "version": "2.16.0-dev.30",
   "description": "Configuration loader",
   "license": "MIT",
   "repository": {
@@ -35,8 +35,8 @@
     "json5": "^2.1.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.25",
-    "@bentley/eslint-plugin": "2.16.0-dev.25",
+    "@bentley/build-tools": "2.16.0-dev.30",
+    "@bentley/eslint-plugin": "2.16.0-dev.30",
     "@types/json5": "0.0.30",
     "@types/node": "10.14.1",
     "eslint": "^6.8.0",

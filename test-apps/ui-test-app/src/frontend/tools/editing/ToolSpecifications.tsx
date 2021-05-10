@@ -5,8 +5,7 @@
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ToolItemDef } from "@bentley/ui-framework";
 import { PlaceBlockTool } from "./PlaceBlockTool";
-import { PlaceLineStringTool } from "./PlaceLineStringTool";
-import { DeleteElementsTool, MoveElementsTool, RotateElementsTool } from "@bentley/imodeljs-editor-frontend";
+import { CreateLineStringTool, DeleteElementsTool, MoveElementsTool, RotateElementsTool } from "@bentley/imodeljs-editor-frontend";
 
 export class EditTools {
   public static get deleteElementTool() {
@@ -47,12 +46,12 @@ export class EditTools {
 
   public static get placeLineStringTool() {
     return new ToolItemDef({
-      toolId: PlaceLineStringTool.toolId,
-      iconSpec: PlaceLineStringTool.iconSpec,
-      label: PlaceLineStringTool.flyover,
-      tooltip: PlaceLineStringTool.description,
+      toolId: CreateLineStringTool.toolId,
+      iconSpec: CreateLineStringTool.iconSpec,
+      label: CreateLineStringTool.flyover,
+      tooltip: CreateLineStringTool.description,
       execute: () => {
-        IModelApp.tools.run(PlaceLineStringTool.toolId);
+        IModelApp.tools.run(CreateLineStringTool.toolId);
       },
     });
   }

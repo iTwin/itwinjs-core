@@ -61,6 +61,7 @@ import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
+import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -2349,6 +2350,7 @@ export abstract class Viewport implements IDisposable {
     else
       this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
   }
+
   /** @internal */
   public isPixelSelectable(pixel: Pixel.Data) {
     if (undefined === pixel.featureTable || undefined === pixel.elementId)
@@ -2422,6 +2424,16 @@ export abstract class Viewport implements IDisposable {
     }
 
     return npc;
+  }
+
+  /** Query which [Feature]($common)s are currently visible within the viewport.
+   * @param options Specifies how to query.
+   * @param callback Callback to invoke with the results.
+   * @note This function may be slow, especially if the features are being queried from screen pixels. Avoid calling it repeatedly in rapid succession.
+   * @beta
+   */
+  public queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void {
+    return queryVisibleFeatures(this, options, callback);
   }
 
   /** @internal */

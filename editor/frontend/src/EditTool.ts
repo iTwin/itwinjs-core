@@ -9,6 +9,7 @@
 import { editorChannel } from "@bentley/imodeljs-editor-common";
 import { IModelApp, IpcApp } from "@bentley/imodeljs-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
+import { CreateLineStringTool } from "./SketchTools";
 import { MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
@@ -18,6 +19,8 @@ export interface EditorOptions {
   registerUndoRedoTools?: true | undefined;
   /** If true, default tools for basic manipulation will be registered. */
   registerBasicManipulationTools?: true | undefined;
+  /** If true, default tools for sketching will be registered. */
+  registerSketchTools?: true | undefined;
 }
 
 /** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
@@ -72,6 +75,15 @@ export class EditTools {
         DeleteElementsTool,
         MoveElementsTool,
         RotateElementsTool,
+      ];
+
+      for (const tool of tools)
+        tool.register(i18n);
+    }
+
+    if (undefined !== options?.registerSketchTools) {
+      const tools = [
+        CreateLineStringTool,
       ];
 
       for (const tool of tools)
