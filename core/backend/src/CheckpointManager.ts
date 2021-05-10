@@ -158,23 +158,27 @@ export class V2CheckpointManager {
     return BlobDaemon.getDbFileName(args);
   }
 
-  private static async performDownload(job: DownloadJob) {
+  private static async performDownload(job: DownloadJob): Promise<void> {
     CheckpointManager.onDownload.raiseEvent(job);
     const request = job.request;
     const downloader = new IModelHost.platform.DownloadV2Checkpoint({ ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile });
-    const onProgress = request.onProgress;
-    if (onProgress) {
-      const timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-        const progress = downloader.getProgress();
-        if (onProgress(progress.loaded, progress.total))
-          downloader.cancelDownload();
-      }, 250);
-      downloader.downloadPromise
-        .catch(() => { }) // otherwise Node complains about unhandled exceptions
-        .finally(() => clearInterval(timer)); // clear the timer when download stops (either completes or is aborted)
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      const onProgress = request.onProgress;
+      if (onProgress) {
+        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
+          const progress = downloader.getProgress();
+          if (onProgress(progress.loaded, progress.total))
+            downloader.cancelDownload();
+        }, 250);
+      }
+      await downloader.downloadPromise;
+    } catch (err) {
+      throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
+    } finally {
+      if (timer)
+        clearInterval(timer);
     }
-
-    return downloader.downloadPromise;
   }
 
   /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
