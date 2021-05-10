@@ -81,7 +81,7 @@ describe("iModelHub VersionHandler", () => {
       response: 100000,
     };
 
-    this.enableTimeouts(false);
+    this.timeout(0);
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
