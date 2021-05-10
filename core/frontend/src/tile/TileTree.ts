@@ -162,10 +162,11 @@ export abstract class TileTree {
   }
 
   /**
-   * Return the transform from the tile tree's coordinate space to [ECEF] (https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
+   * Return the transform from the tile tree's coordinate space to [ECEF] (https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates.
+   * If the a geographic coordinate system is present then this transform will be calculated at the tile tree center.
    * @alpha
    */
-  public async getEcefTranform(): Promise<Transform | undefined> {
+  public async getEcefTransform(): Promise<Transform | undefined> {
     if (!this.iModel.ecefLocation)
       return undefined;
 
