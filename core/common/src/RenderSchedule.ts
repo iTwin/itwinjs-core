@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
 } from "@bentley/geometry-core";
@@ -904,41 +904,142 @@ export namespace RenderSchedule {
     public visibility?: VisibilityEntryProps[];
     public color?: ColorEntryProps[];
     public transform?: TransformEntryProps[];
-    public cuttingPlane?: CuttingPlaneEntryProps;
+    public cuttingPlane?: CuttingPlaneEntryProps[];
 
-    public addVisibility(time: number, visibility?: number, interpolation = Interpolation.Linear): void {
+    public addVisibility(time: number, visibility: number | undefined, interpolation = Interpolation.Linear): void {
+      if (!this.visibility)
+        this.visibility = [];
+
+      this.visibility.push({ time, value: visibility, interpolation });
     }
 
-    public add
+    public addColor(time: number, color: RgbColor | { red: number, green: number, blue: number } | undefined, interpolation = Interpolation.Linear): void {
+      if (!this.color)
+        this.color = [];
+
+      const value = color instanceof RgbColor ? { red: color.r, green: color.g, blue: color.b } : color;
+      this.color.push({ time, value, interpolation });
+    }
+
+    public addCuttingPlane(time: number, plane: { position: XYAndZ, direction: XYAndZ, visible?: boolean, hidden?: boolean } | undefined, interpolation = Interpolation.Linear): void {
+      if (!this.cuttingPlane)
+        this.cuttingPlane = [];
+
+      let value;
+      if (plane) {
+        value = {
+          position: [ plane.position.x, plane.position.y, plane.position.z ],
+          direction: [ plane.direction.x, plane.direction.y, plane.direction.z ],
+          visible: plane.visible,
+          hidden: plane.hidden,
+        };
+      }
+
+      this.cuttingPlane.push({ time, value, interpolation });
+    }
+
+    public addTransform(time: number, transform: Transform | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
+      if (!this.transform)
+        this.transform = [];
+
+      const value: TransformProps = { transform: transform?.toRows() };
+      if (components) {
+        value.pivot = [ components.pivot.x, components.pivot.y, components.pivot.z ];
+        value.orientation = components.orientation.toJSON();
+        value.position = [ components.position.x, components.position.y, components.position.z ];
+      }
+
+      this.transform.push({ time, value, interpolation });
+    }
+
+    public finish(): TimelineProps {
+      const props: TimelineProps = { };
+      if (this.visibility && this.visibility.length)
+        props.visibilityTimeline = this.visibility;
+
+      if (this.color && this.color.length)
+        props.colorTimeline = this.color;
+
+      if (this.transform && this.transform.length)
+        props.transformTimeline = this.transform;
+
+      if (this.cuttingPlane && this.cuttingPlane.length)
+        props.cuttingPlaneTimeline = this.cuttingPlane;
+
+      return props;
+    }
   }
 
   export class ElementTimelineBuilder extends TimelineBuilder {
+    public readonly batchId: number;
+    public readonly elementIds: CompressedId64Set;
+
     public constructor(batchId: number, elementIds: CompressedId64Set) {
+      super();
+      this.batchId = batchId;
+      this.elementIds = elementIds;
+    }
+
+    public finish(): ElementTimelineProps {
+      const props = super.finish() as ElementTimelineProps;
+      props.batchId = this.batchId;
+      props.elementIds = this.elementIds;
+      return props;
     }
   }
 
   export class ModelTimelineBuilder extends TimelineBuilder {
+    public readonly modelId: Id64String;
     /** @internal */
     public realityModelUrl?: string;
+    private readonly _obtainNextBatchId: () => number;
+    private readonly _elements: ElementTimelineBuilder[] = [];
 
-    public constructor(modelId: Id64String, script: ScriptBuilder) {
+    public constructor(modelId: Id64String, obtainNextBatchId: () => number) {
+      super();
+      this.modelId = modelId;
+      this._obtainNextBatchId = obtainNextBatchId;
     }
 
     public addElementTimeline(elementIds: Id64String | CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder {
+      const batchId = this._obtainNextBatchId();
+      let ids: CompressedId64Set;
+      if (typeof elementIds === "string") {
+        ids = Id64.isId64(elementIds) ? CompressedId64Set.compressIds([ elementIds ]) : elementIds;
+      } else {
+        const sorted = Array.from(elementIds);
+        OrderedId64Iterable.sortArray(sorted);
+        ids = CompressedId64Set.compressIds(sorted);
+      }
+
+      const builder = new ElementTimelineBuilder(batchId, ids);
+      this._elements.push(builder);
+      return builder;
+    }
+
+    public finish(): ModelTimelineProps {
+      const props = super.finish() as ModelTimelineProps;
+      props.modelId = this.modelId;
+      if (undefined !== this.realityModelUrl)
+        props.realityModelUrl = this.realityModelUrl;
+
+      props.elementTimelines = this._elements.map((x) => x.finish());
+      return props;
     }
   }
 
   export class ScriptBuilder {
-    protected _nextBatchId = 1;
-
-    public takeNextBatchId(): number {
-      return this._nextBatchId++;
-    }
+    private _nextBatchId = 1;
+    private readonly _models: ModelTimelineBuilder[] = [];
 
     public addModelTimeline(modelId: Id64String): ModelTimelineBuilder {
+      const builder = new ModelTimelineBuilder(modelId, () => this._nextBatchId++);
+      this._models.push(builder);
+      return builder;
     }
 
     public finish(): ScriptProps {
+      return this._models.map((x) => x.finish());
     }
   }
 }
