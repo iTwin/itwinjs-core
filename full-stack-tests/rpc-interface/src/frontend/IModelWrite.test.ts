@@ -29,7 +29,7 @@ describe("IModel Read/Write Connection", () => {
 
   after(async function () {
     if (!testContext.settings.runiModelWriteRpcTests)
-      this.skip();
+      return;
 
     const iModelId = testContext.iModelForWrite!.iModelId;
     const requestContext = await AuthorizedFrontendRequestContext.create();
