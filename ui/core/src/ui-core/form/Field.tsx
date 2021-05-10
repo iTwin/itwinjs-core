@@ -7,9 +7,7 @@
  */
 
 import * as React from "react";
-import { Input } from "@itwin/itwinui-react";
-import { Checkbox } from "../checkbox/Checkbox";
-import { Textarea } from "../inputs/Textarea";
+import { Checkbox, Input, Textarea } from "@itwin/itwinui-react";
 import { Select } from "../select/Select";
 import { FieldDef, FormContext, FormContextState } from "./Form";
 
@@ -58,7 +56,7 @@ export class Field extends React.Component<FieldProps> {
               <Textarea
                 id={this.props.id}
                 value={context!.values[this.props.id]}
-                onChange={(event) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
+                onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
                 className="core-form-textarea"
               />
             )}

@@ -9,7 +9,7 @@
 import "./Node.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Checkbox, CheckboxProps } from "../checkbox/Checkbox";
+import { Checkbox, CheckboxProps } from "@itwin/itwinui-react";
 import { CheckBoxState } from "../enums/CheckBoxState";
 import { Spinner, SpinnerSize } from "../loading/Spinner";
 import { CommonProps } from "../utils/Props";
@@ -114,7 +114,11 @@ export class TreeNode extends React.Component<TreeNodeProps> {
       if (this.props.renderOverrides && this.props.renderOverrides.renderCheckbox) {
         checkbox = this.props.renderOverrides.renderCheckbox(props);
       } else {
-        checkbox = (<Checkbox {...props} onChange={(e) => this._onCheckboxChange(e.target.checked)} data-testid={this.createSubComponentTestId("checkbox")} />);
+        checkbox = (
+          <Checkbox {...props}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => this._onCheckboxChange(e.target.checked)} data-testid={this.createSubComponentTestId("checkbox")}
+          />
+        );
       }
     }
 

@@ -8,7 +8,8 @@
 
 import "./MultiValueFilter.scss";
 import React from "react";
-import { Button, ButtonType, Checkbox, CheckBoxState, CheckListBox, CheckListBoxItem, SearchBox, UiCore } from "@bentley/ui-core";
+import { Button, ButtonType, CheckBoxState, CheckListBox, CheckListBoxItem, SearchBox, UiCore } from "@bentley/ui-core";
+import { Checkbox } from "@itwin/itwinui-react";
 import { PopupButton, PopupContent } from "../../../editors/PopupButton";
 import { ReactDataGridColumn } from "../../component/TableColumn";
 import { UiComponents } from "../../../UiComponents";

@@ -7,6 +7,7 @@
 import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import { CheckboxProps as CheckboxProps_2 } from '@itwin/itwinui-react';
 import Component from 'react-select';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
@@ -19,6 +20,7 @@ import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IMatch } from '@bentley/ui-abstract';
 import { InputActionMeta } from 'react-select/src/types';
+import { InputProps as InputProps_2 } from '@itwin/itwinui-react';
 import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as PropTypes from 'prop-types';
@@ -141,7 +143,7 @@ export function BetaBadge(props: CommonProps): JSX.Element;
 // @public
 export function BlockText(props: TextProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export function BodyText(props: TextProps): JSX.Element;
 
 // @beta @deprecated
@@ -196,7 +198,7 @@ export const calculateToolbarOpacity: (proximityScale: number) => number;
 // @public
 export function Centered(props: CommonDivProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export class Checkbox extends React.PureComponent<CheckboxProps> {
     // @internal
     constructor(props: CheckboxProps);
@@ -220,7 +222,7 @@ export interface CheckBoxInfo {
     tooltip?: string;
 }
 
-// @public
+// @public @deprecated
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
     indeterminate?: boolean;
     inputClassName?: string;
@@ -779,7 +781,7 @@ export enum Face {
     Top = "top"
 }
 
-// @beta
+// @beta @deprecated
 export function FeaturedTile(props: TileProps): JSX.Element;
 
 // @beta
@@ -956,7 +958,7 @@ export interface GlobalDialogState {
 // @internal
 export function hasPointerEventsSupport(): boolean;
 
-// @public
+// @public @deprecated
 export function Headline(props: TextProps): JSX.Element;
 
 // @public
@@ -1023,7 +1025,7 @@ export interface ImageCheckBoxProps extends CommonProps {
     tooltip?: string;
 }
 
-// @public
+// @public @deprecated
 export const Input: (props: InputProps) => JSX.Element | null;
 
 // @public
@@ -1038,7 +1040,7 @@ export interface InputLabelProps extends LabeledComponentProps, MessagedComponen
     disabled?: boolean;
 }
 
-// @public
+// @public @deprecated
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     // (undocumented)
     nativeKeyHandler?: (e: KeyboardEvent) => void;
@@ -1097,10 +1099,10 @@ export interface LabeledComponentProps {
     status?: InputStatus;
 }
 
-// @public
+// @public @deprecated
 export function LabeledInput(props: LabeledInputProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps {
 }
 
@@ -1114,10 +1116,10 @@ export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
 export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @public
+// @public @deprecated
 export function LabeledTextarea(props: LabeledTextareaProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
 }
 
@@ -1141,10 +1143,10 @@ export interface LabeledToggleProps extends ToggleProps {
     labelStyle?: React.CSSProperties;
 }
 
-// @public
+// @public @deprecated
 export function LeadingText(props: TextProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export function LeadingText2(props: TextProps): JSX.Element;
 
 // @internal
@@ -1371,10 +1373,10 @@ export enum MessageSeverity {
 // @public
 export type MessageType = string | HTMLElement | ReactMessage;
 
-// @beta
+// @beta @deprecated
 export function MinimalFeaturedTile(props: TileProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export function MinimalTile(props: TileProps): JSX.Element;
 
 // @public
@@ -1401,7 +1403,7 @@ export interface NodeCheckboxProps {
 export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;
 
 // @beta
-export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"> & {
+export type NodeCheckboxRenderProps = Omit<CheckboxProps_2, "onChange" | "onClick"> & {
     onChange: (checked: boolean) => void;
     onClick: (e: React.MouseEvent) => void;
 };
@@ -1410,7 +1412,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 export const NumberInput: (props: NumberInputProps) => JSX.Element | null;
 
 // @beta
-export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange"> {
+export interface NumberInputProps extends Omit<InputProps_2, "min" | "max" | "step" | "onChange"> {
     containerClassName?: string;
     format?: (num: number | null | undefined, formattedValue: string) => string;
     max?: number;
@@ -2072,7 +2074,7 @@ export interface SliderProps extends CommonProps {
     values: number[];
 }
 
-// @public
+// @public @deprecated
 export function SmallText(props: TextProps): JSX.Element;
 
 // @public
@@ -2147,10 +2149,10 @@ export interface StyledTextProps extends TextProps {
     mainClassName: string;
 }
 
-// @public
+// @public @deprecated
 export function Subheading(props: TextProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export function Subheading2(props: TextProps): JSX.Element;
 
 // @public
@@ -2214,10 +2216,10 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
     onClickLabel?: (index: number) => any;
 }
 
-// @public
+// @public @deprecated
 export const Textarea: (props: TextareaProps) => JSX.Element | null;
 
-// @public
+// @public @deprecated
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
     ref?: React.Ref<HTMLTextAreaElement>;
     rows?: number;
@@ -2296,7 +2298,7 @@ export type ThemedSelectProps = {
     value?: ValueType<OptionType>;
 };
 
-// @beta
+// @beta @deprecated
 export class Tile extends React.Component<TileProps> {
     // @internal (undocumented)
     static readonly defaultProps: TileDefaultProps;
@@ -2307,7 +2309,7 @@ export class Tile extends React.Component<TileProps> {
 // @internal (undocumented)
 export type TileDefaultProps = Pick<TileProps, "stepNum">;
 
-// @beta
+// @beta @deprecated
 export interface TileProps extends CommonDivProps {
     // (undocumented)
     featured?: boolean;
@@ -2345,10 +2347,10 @@ export class Timer {
     stop(): void;
     }
 
-// @public
+// @public @deprecated
 export function Title(props: TextProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export function Title2(props: TextProps): JSX.Element;
 
 // @public

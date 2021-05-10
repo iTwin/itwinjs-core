@@ -8,8 +8,9 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Checkbox, CommonProps, Select, SelectOption } from "@bentley/ui-core";
+import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
 import { Format, FormatProps, FormatTraits } from "@bentley/imodeljs-quantity";
+import { Checkbox } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
 
 interface UomSeparatorSelectorProps extends CommonProps {
@@ -106,7 +107,7 @@ export function FormatUnitLabel(props: FormatUnitLabelProps) {
   return (
     <>
       <span className={"uicore-label"}>{appendUnitLabel.current}</span>
-      <Checkbox data-testid="show-unit-label-checkbox"  checked={isFormatTraitSet(FormatTraits.ShowUnitLabel)} onChange={handleShowUnitLabelChange} />
+      <Checkbox data-testid="show-unit-label-checkbox" checked={isFormatTraitSet(FormatTraits.ShowUnitLabel)} onChange={handleShowUnitLabelChange} />
       <span className={classnames("uicore-label", !isFormatTraitSet(FormatTraits.ShowUnitLabel) && "uicore-disabled")}>{labelSeparator.current}</span>
       <UomSeparatorSelector data-testid="uom-separator-select" separator={formatProps.uomSeparator ?? ""} onChange={handleUomSeparatorChange} disabled={!isFormatTraitSet(FormatTraits.ShowUnitLabel)} />
     </>
