@@ -28,6 +28,8 @@ import { TestChangeSetUtility } from "./TestChangeSetUtility";
 //    imjs_test_manager_user_password
 //    imjs_test_super_manager_user_name
 //    imjs_test_super_manager_password
+//    imjs_test_imodelhub_user_name
+//    imjs_test_imodelhub_user_password
 //    imjs_oidc_browser_test_client_id
 //      - Required to be a SPA
 //    imjs_oidc_browser_test_redirect_uri
