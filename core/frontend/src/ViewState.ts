@@ -240,7 +240,6 @@ export abstract class ViewState extends ElementState {
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
-    await this.iModel.backgroundMapLocation.initialize(this.iModel);
     this._auxCoordSystem = undefined;
     const acsId = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValid(acsId)) {
@@ -987,8 +986,7 @@ export abstract class ViewState extends ElementState {
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.iModel.projectExtents.containsPoint(point))
       return Vector3d.unitZ();
 
-    // Note - use the calculated ECEF tranform rather than stored which may not be accurate.
-    const earthCenter = this.iModel.backgroundMapLocation.getMapEcefToDb(0).origin;
+    const earthCenter = this.iModel.getMapEcefToDb(0).origin;
     const normal = Vector3d.createStartEnd(earthCenter, point);
     normal.normalizeInPlace();
 

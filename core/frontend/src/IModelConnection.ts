@@ -9,7 +9,7 @@
 import {
   assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
@@ -17,7 +17,6 @@ import {
   ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
   SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
-import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -77,10 +76,6 @@ export abstract class IModelConnection extends IModel {
   public readonly subcategories: SubCategoriesCache;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
-  /** The map location.
-   * @internal
-   */
-  public backgroundMapLocation = new BackgroundMapLocation();
   /** The Geographic location services available for this iModelConnection
    * @internal
    */
@@ -554,9 +549,19 @@ export abstract class IModelConnection extends IModel {
     // setEcefLocation is invoked from IModel constructor...
     if (this.tiles)
       this.tiles.onEcefChanged();
+  }
+  public getMapEcefToDb(bimElevationBias: number): Transform {
+    if (!this.ecefLocation)
+      return Transform.createIdentity();
 
-    if (this.backgroundMapLocation && this.ecefLocation)
-      this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
+    const mapEcefToDb = this.ecefLocation.getTransform().inverse();
+    if (!mapEcefToDb) {
+      assert(false);
+      return Transform.createIdentity();
+    }
+    mapEcefToDb.origin.z += bimElevationBias;
+
+    return mapEcefToDb;
   }
 }
 
@@ -979,8 +984,6 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
       if (undefined === ctor)
         throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps);
-
-      await this._iModel.backgroundMapLocation.initialize(this._iModel);
 
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector

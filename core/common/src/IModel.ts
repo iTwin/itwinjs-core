@@ -48,6 +48,9 @@ export interface EcefLocationProps {
   orientation: YawPitchRollProps;
   /** Optional position on the earth used to establish the ECEF coordinates. */
   cartographicOrigin?: LatLongAndHeight;
+  /** Optional, column vectors if projected */
+  xVector?: XYZProps;
+  yVector?: XYZProps;
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
@@ -184,10 +187,22 @@ export class EcefLocation implements EcefLocationProps {
   public readonly orientation: YawPitchRollAngles;
   /** Optional position on the earth used to establish the ECEF origin and orientation. */
   public readonly cartographicOrigin?: Cartographic;
+  /** Optional, column vectors for ECEF non-rigid ECEF transform  */
+  public readonly xVector?: Vector3d;
+  public readonly yVector?: Vector3d;
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
   public getTransform(): Transform {
-    return Transform.createOriginAndMatrix(this.origin, this.orientation.toMatrix3d());
+    let matrix;
+    if (this.xVector && this.yVector) {
+      const zVector = this.xVector.crossProduct(this.yVector);
+      if (zVector.normalizeInPlace())
+        matrix = Matrix3d.createColumns(this.xVector, this.yVector, zVector);
+    }
+    if (!matrix)
+      matrix = this.orientation.toMatrix3d();
+
+    return Transform.createOriginAndMatrix(this.origin, matrix);
   }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
@@ -196,6 +211,10 @@ export class EcefLocation implements EcefLocationProps {
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation).freeze();
     if (props.cartographicOrigin)
       this.cartographicOrigin = Cartographic.fromRadians(props.cartographicOrigin.longitude, props.cartographicOrigin.latitude, props.cartographicOrigin.height).freeze();
+    if (props.xVector && props.yVector) {
+      this.xVector = Vector3d.fromJSON(props.xVector);
+      this.yVector = Vector3d.fromJSON(props.yVector);
+    }
   }
 
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
