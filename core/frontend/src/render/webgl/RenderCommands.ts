@@ -31,7 +31,7 @@ import { Target } from "./Target";
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal
  */
-export class RenderCommands {
+export class RenderCommands implements Iterable<DrawCommands> {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
   private readonly _scratchRange = new Range3d();
@@ -47,6 +47,10 @@ export class RenderCommands {
   private readonly _layers: LayerCommandLists;
 
   public get target(): Target { return this._target; }
+
+  public [Symbol.iterator](): Iterator<DrawCommands> {
+    return this._commands[Symbol.iterator]();
+  }
 
   public get isEmpty(): boolean {
     for (const commands of this._commands)
@@ -582,6 +586,9 @@ export class RenderCommands {
   }
 
   public addBatch(batch: Batch): void {
+    if (batch.locateOnly && !this.target.isReadPixelsInProgress)
+      return;
+
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
     // NB: This is no longer true - pickable overlay decorations are defined as Batches. Problem?

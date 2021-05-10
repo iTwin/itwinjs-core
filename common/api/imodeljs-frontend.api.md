@@ -1412,6 +1412,7 @@ export class BatchedTileIdMap {
 
 // @public
 export interface BatchOptions {
+    locateOnly?: boolean;
     noEmphasis?: boolean;
     noFlash?: boolean;
     noHilite?: boolean;
@@ -1704,6 +1705,11 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseSingleTxn(): Promise<IModelStatus>;
     reverseTxns(numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus>;
 }
+
+// @internal (undocumented)
+export type BuilderOptions = GraphicBuilderOptions & {
+    placement: Transform;
+};
 
 // @internal (undocumented)
 export type CachedDecoration = {
@@ -2148,6 +2154,7 @@ export class DecorateContext extends RenderContext {
     // @internal (undocumented)
     addFromDecorator(decorator: ViewportDecorator): void;
     addHtmlDecoration(decoration: HTMLElement): void;
+    createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
     createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     // @internal (undocumented)
     drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid?: boolean, _fixedRepetitions?: Point2d): void;
@@ -2198,7 +2205,7 @@ export interface Decorator extends ViewportDecorator {
 
 // @internal (undocumented)
 export class DefaultViewTouchTool extends ViewManip implements Animator {
-    constructor(startEv: BeTouchEvent, ev: BeTouchEvent);
+    constructor(startEv: BeTouchEvent, ev: BeTouchEvent, only2dManipulations?: boolean);
     animate(): boolean;
     // (undocumented)
     interrupt(): void;
@@ -2586,6 +2593,7 @@ export class DynamicsContext extends RenderContext {
     addGraphic(graphic: RenderGraphic): void;
     // @internal (undocumented)
     changeDynamics(): void;
+    createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
     }
 
 // @alpha @deprecated
@@ -2953,6 +2961,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     // @internal
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
     toJSON(vp: Viewport): EmphasizeElementsProps;
+    get unanimatedAppearance(): FeatureAppearance | undefined;
+    set unanimatedAppearance(appearance: FeatureAppearance | undefined);
     // @internal (undocumented)
     protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
     wantEmphasis: boolean;
@@ -2972,6 +2982,8 @@ export interface EmphasizeElementsProps {
     isAlwaysDrawnExclusive?: boolean;
     // (undocumented)
     neverDrawn?: Id64Array;
+    // (undocumented)
+    unanimatedAppearance?: FeatureAppearanceProps;
     // (undocumented)
     wantEmphasis?: boolean;
 }
@@ -3856,7 +3868,7 @@ export interface GraphicBranchOptions {
 // @public
 export abstract class GraphicBuilder {
     // @internal
-    protected constructor(placement: Transform | undefined, type: GraphicType, viewport: Viewport, pickId?: Id64String);
+    protected constructor(options: GraphicBuilderOptions);
     abstract activateGraphicParams(graphicParams: GraphicParams): void;
     abstract addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void;
     abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
@@ -3872,33 +3884,40 @@ export abstract class GraphicBuilder {
     addRangeBoxFromCorners(p: Point3d[]): void;
     abstract addShape(points: Point3d[]): void;
     abstract addShape2d(points: Point2d[], zDepth: number): void;
-    // @alpha
-    applyAspectRatioSkew: boolean;
+    get applyAspectRatioSkew(): boolean;
+    set applyAspectRatioSkew(apply: boolean);
     abstract finish(): RenderGraphic;
-    // @internal (undocumented)
     get iModel(): IModelConnection;
-    // @internal (undocumented)
     get isOverlay(): boolean;
-    // @internal (undocumented)
     get isSceneGraphic(): boolean;
-    // @internal (undocumented)
     get isViewBackground(): boolean;
-    // @internal (undocumented)
     get isViewCoordinates(): boolean;
-    // @internal (undocumented)
     get isWorldCoordinates(): boolean;
-    // (undocumented)
-    pickId?: string;
+    // @internal (undocumented)
+    protected readonly _options: BuilderOptions;
+    get pickId(): Id64String | undefined;
+    set pickId(id: Id64String | undefined);
     get placement(): Transform;
-    set placement(tf: Transform);
-    // @beta
-    preserveOrder: boolean;
+    set placement(transform: Transform);
+    get preserveOrder(): boolean;
+    set preserveOrder(preserve: boolean);
     setBlankingFill(fillColor: ColorDef): void;
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
-    readonly type: GraphicType;
-    readonly viewport: Viewport;
+    get type(): GraphicType;
+    get viewport(): Viewport;
     get wantNormals(): boolean;
-    set wantNormals(_wantNormals: boolean);
+    set wantNormals(want: boolean);
+}
+
+// @public
+export interface GraphicBuilderOptions {
+    applyAspectRatioSkew?: boolean;
+    pickable?: PickableGraphicOptions;
+    placement?: Transform;
+    preserveOrder?: boolean;
+    type: GraphicType;
+    viewport: Viewport;
+    wantNormals?: boolean;
 }
 
 // @public
@@ -6211,7 +6230,7 @@ export namespace MockRender {
     }
     // (undocumented)
     export class Builder extends PrimitiveBuilder {
-        constructor(system: System, placement: Transform | undefined, type: GraphicType, viewport: Viewport, pickId?: Id64String);
+        constructor(system: System, options: GraphicBuilderOptions);
     }
     // (undocumented)
     export class Graphic extends RenderGraphic {
@@ -6251,9 +6270,9 @@ export namespace MockRender {
         // (undocumented)
         createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): Batch;
         // (undocumented)
-        createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): Branch;
+        createGraphic(options: GraphicBuilderOptions): Builder;
         // (undocumented)
-        createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): Builder;
+        createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): Branch;
         // (undocumented)
         createGraphicList(primitives: RenderGraphic[]): List;
         // (undocumented)
@@ -6542,9 +6561,9 @@ export class NullRenderSystem extends RenderSystem {
     // (undocumented)
     createBatch(): any;
     // (undocumented)
-    createGraphicBranch(): any;
+    createGraphic(): any;
     // (undocumented)
-    createGraphicBuilder(): any;
+    createGraphicBranch(): any;
     // (undocumented)
     createGraphicList(): any;
     // (undocumented)
@@ -6945,6 +6964,11 @@ export class PhysicalModelState extends SpatialModelState {
     static get className(): string;
 }
 
+// @public
+export interface PickableGraphicOptions extends BatchOptions {
+    id: Id64String;
+}
+
 // @internal
 export interface PingTestResult {
     avg: number | undefined;
@@ -7270,8 +7294,30 @@ export type QuantityTypeKey = string;
 // @public
 export function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
 
+// @beta
+export interface QueryScreenFeaturesOptions {
+    includeNonLocatable?: boolean;
+    rect?: ViewRect;
+    source: "screen";
+}
+
 // @public
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
+
+// @beta
+export interface QueryTileFeaturesOptions {
+    includeNonLocatable?: boolean;
+    source: "tiles";
+}
+
+// @internal
+export function queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
+
+// @beta
+export type QueryVisibleFeaturesCallback = (features: Iterable<VisibleFeature>) => void;
+
+// @beta
+export type QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions;
 
 // @internal
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
@@ -7619,7 +7665,7 @@ export class RenderContext {
     // @internal (undocumented)
     createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic;
     // @internal (undocumented)
-    protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
+    protected _createGraphicBuilder(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
     createSceneGraphicBuilder(transform?: Transform): GraphicBuilder;
     readonly frustum: Frustum;
     readonly frustumPlanes: FrustumPlanes;
@@ -7925,9 +7971,10 @@ export abstract class RenderSystem implements IDisposable {
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
+    abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
     // @internal (undocumented)
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
-    abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
+    createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     // @internal
     createGraphicLayer(graphic: RenderGraphic, _layerId: string): RenderGraphic;
     // @internal
@@ -8073,7 +8120,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
     // (undocumented)
-    createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): import("./GraphicBuilder").GraphicBuilder;
+    createGraphicBuilder(options: GraphicBuilderOptions): import("./GraphicBuilder").GraphicBuilder;
     // (undocumented)
     createPlanarClassifier(_properties?: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined;
     // (undocumented)
@@ -8098,6 +8145,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void;
     // (undocumented)
     pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined;
+    queryVisibleTileFeatures(_options: QueryTileFeaturesOptions, _iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
     readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     readImageToCanvas(): HTMLCanvasElement;
@@ -9458,6 +9506,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     pushState(state: BranchState): void;
     // (undocumented)
     pushViewClip(): void;
+    // (undocumented)
+    queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
     readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
@@ -10488,6 +10538,7 @@ export class ToolAdmin {
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     gridLock: boolean;
     get idleTool(): IdleTool;
+    set idleTool(idleTool: IdleTool);
     // (undocumented)
     get isLocateCircleOn(): boolean;
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
@@ -12087,6 +12138,8 @@ export abstract class Viewport implements IDisposable {
     get pixelsPerInch(): number;
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
+    // @beta
+    queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
     // @internal
     readImageToCanvas(): HTMLCanvasElement;
@@ -12770,6 +12823,15 @@ export class ViewUndoTool extends ViewTool {
     onPostInstall(): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @beta
+export interface VisibleFeature {
+    readonly elementId: Id64String;
+    readonly geometryClass: GeometryClass;
+    iModel: IModelConnection;
+    readonly modelId: Id64String;
+    readonly subCategoryId: Id64String;
 }
 
 // @public

@@ -13,7 +13,7 @@ describe("ContextRegistryClient (#integration)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
-    this.enableTimeouts(false);
+    this.timeout(0);
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
   });
 
