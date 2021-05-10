@@ -598,9 +598,20 @@ export class FrontstageDef {
       return;
     // istanbul ignore else
     if (this.nineZoneState) {
-      const state = floatWidget(this.nineZoneState, widgetId, point, size);
-      if (state)
-        this.nineZoneState = state;
+      const location = findTab(this.nineZoneState, widgetId);
+      if (location) {
+        let popoutWidgetContainerId: string | undefined;
+        if (isPopoutLocation(location)) {
+          popoutWidgetContainerId = location.popoutWidgetId;
+        }
+        const state = floatWidget(this.nineZoneState, widgetId, point, size);
+        if (state) {
+          this.nineZoneState = state;
+          setImmediate(() => {
+            popoutWidgetContainerId && UiFramework.childWindowManager.closeChildWindow(popoutWidgetContainerId, true);
+          });
+        }
+      }
     }
   }
 
@@ -671,9 +682,16 @@ export class FrontstageDef {
       return;
     }
 
-    const state = this.nineZoneState && dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
-    if (state)
-      this.nineZoneState = state;
+    if (this.nineZoneState) {
+      const location = findWidget(this.nineZoneState, widgetContainerId);
+      // Make sure the widgetContainerId is still in popout state. We don't want to set it to docked if the window is being closed because
+      // an API call has moved the widget from a popout state to a floating state.
+      if (location && isPopoutWidgetLocation(location)) {
+        const state = this.nineZoneState && dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
+        if (state)
+          this.nineZoneState = state;
+      }
+    }
   }
 
   /** Finds the container with the specified widget and re-docks all widgets

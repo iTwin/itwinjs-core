@@ -78,7 +78,7 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
     }
 
     return () => {
-      instance && resizeObserver.current!.unobserve(instance);
+      instance && resizeObserver.current?.unobserve(instance);
       resizeObserver.current = null;
     };
   }, [handleResize, onResize]);

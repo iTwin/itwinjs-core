@@ -13,7 +13,7 @@ import { assert, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, convertPopupWidgetsToFloating, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, floatingWidgetBringToFront,
+  addPanelWidget, addTab, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, floatingWidgetBringToFront,
   FloatingWidgets, getUniqueId, isFloatingLocation, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
@@ -300,7 +300,7 @@ function processPopoutWidgets(initialState: NineZoneState): NineZoneState {
   if (!initialState.popoutWidgets || ProcessDetector.isElectronAppFrontend) {
     return initialState;
   }
-  return convertPopupWidgetsToFloating(initialState);
+  return convertAllPopupWidgetContainersToFloating(initialState);
 }
 
 /** Adds frontstageDef widgets that are missing in NineZoneState.

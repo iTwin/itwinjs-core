@@ -823,9 +823,11 @@ function removeFloatingWidget(state: Draft<NineZoneState>, id: FloatingWidgetSta
 }
 
 function removePopoutWidget(state: Draft<NineZoneState>, id: PopoutWidgetState["id"]) {
-  delete state.popoutWidgets.byId[id];
-  const index = state.popoutWidgets.allIds.indexOf(id);
-  index >= 0 && state.popoutWidgets.allIds.splice(index, 1);
+  if (state.popoutWidgets) {
+    delete state.popoutWidgets.byId[id];
+    const index = state.popoutWidgets.allIds.indexOf(id);
+    index >= 0 && state.popoutWidgets.allIds.splice(index, 1);
+  }
 }
 
 function setWidgetActiveTabId(
@@ -1243,6 +1245,8 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
           tabs: [widgetTabId],
         };
       });
+    } else if (isPopoutLocation(location)) {
+      return convertPopoutWidgetToFloating(state, location.popoutWidgetId);
     }
   }
   return undefined;
@@ -1293,20 +1297,60 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, i
   return undefined;
 }
 
-function convertFloatingWidgetToPopout(state: NineZoneState): NineZoneState {
+function convertFloatingWidgetToPopout(state: NineZoneState, widgetContainerId: string): NineZoneState {
+  if (!state.widgets[widgetContainerId]?.tabs || state.widgets[widgetContainerId].tabs.length !== 1) {
+    // currently only support popping out a floating widget container if it has a single tab
+    return state;
+  }
   return produce(state, (draft) => {
-    for (const widgetContainerId of state.floatingWidgets.allIds) {
-      const floatingWidget = state.floatingWidgets.byId[widgetContainerId];
-      const bounds = floatingWidget.bounds;
-      const home = floatingWidget.home;
-      const id = floatingWidget.id;
-      // remove the floating entry
-      delete draft.floatingWidgets.byId[widgetContainerId];
-      const idIndex = draft.floatingWidgets.allIds.indexOf(widgetContainerId);
-      draft.floatingWidgets.allIds.splice(idIndex, 1);
-      // insert popout entry
-      draft.popoutWidgets.byId[widgetContainerId] = { bounds, id, home };
-      draft.popoutWidgets.allIds.push(widgetContainerId);
+    const floatingWidget = state.floatingWidgets.byId[widgetContainerId];
+    const bounds = floatingWidget.bounds;
+    const home = floatingWidget.home;
+    const id = floatingWidget.id;
+    // remove the floating entry
+    delete draft.floatingWidgets.byId[widgetContainerId];
+    const idIndex = draft.floatingWidgets.allIds.indexOf(widgetContainerId);
+    draft.floatingWidgets.allIds.splice(idIndex, 1);
+    // insert popout entry
+    draft.popoutWidgets.byId[widgetContainerId] = { bounds, id, home };
+    draft.popoutWidgets.allIds.push(widgetContainerId);
+  });
+}
+
+function convertPopoutWidgetToFloating(state: NineZoneState, widgetContainerId: string): NineZoneState {
+  return produce(state, (draft) => {
+    const popoutWidget = state.popoutWidgets.byId[widgetContainerId];
+    const bounds = popoutWidget.bounds;
+    const home = popoutWidget.home;
+    const id = popoutWidget.id;
+    // remove the floating entry
+    delete draft.popoutWidgets.byId[widgetContainerId];
+    const idIndex = draft.popoutWidgets.allIds.indexOf(widgetContainerId);
+    draft.popoutWidgets.allIds.splice(idIndex, 1);
+    // insert popout entry
+    draft.floatingWidgets.byId[widgetContainerId] = { bounds, id, home };
+    draft.floatingWidgets.allIds.push(widgetContainerId);
+  });
+}
+
+/**
+   * When running in web-browser - browser prohibits auto opening of popup windows so convert any PopoutWidgets to
+   * FloatingWidgets in this situation.
+   */
+export function convertAllPopupWidgetContainersToFloating(state: NineZoneState): NineZoneState {
+  return produce(state, (draft) => {
+    for (const widgetContainerId of state.popoutWidgets.allIds) {
+      const popoutWidget = state.popoutWidgets.byId[widgetContainerId];
+      const bounds = popoutWidget.bounds;
+      const home = popoutWidget.home;
+      const id = popoutWidget.id;
+      // remove the popout entry
+      delete draft.popoutWidgets.byId[widgetContainerId];
+      const idIndex = draft.popoutWidgets.allIds.indexOf(widgetContainerId);
+      draft.popoutWidgets.allIds.splice(idIndex, 1);
+      // insert floating entry
+      draft.floatingWidgets.byId[widgetContainerId] = { bounds, id, home };
+      draft.floatingWidgets.allIds.push(widgetContainerId);
     }
   });
 }
@@ -1359,31 +1403,9 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
         };
       });
     } else if (isFloatingLocation(location)) {
-      return convertFloatingWidgetToPopout(state);
+      return convertFloatingWidgetToPopout(state, location.floatingWidgetId);
     }
   }
 
   return undefined;
-}
-
-/**
-   * When running in web-browser - browser prohibits auto opening of popup windows so convert any PopoutWidgets to
-   * FloatingWidgets in this situation.
-   */
-export function convertPopupWidgetsToFloating(state: NineZoneState): NineZoneState {
-  return produce(state, (draft) => {
-    for (const widgetContainerId of state.popoutWidgets.allIds) {
-      const popoutWidget = state.popoutWidgets.byId[widgetContainerId];
-      const bounds = popoutWidget.bounds;
-      const home = popoutWidget.home;
-      const id = popoutWidget.id;
-      // remove the popout entry
-      delete draft.popoutWidgets.byId[widgetContainerId];
-      const idIndex = draft.popoutWidgets.allIds.indexOf(widgetContainerId);
-      draft.popoutWidgets.allIds.splice(idIndex, 1);
-      // insert floating entry
-      draft.floatingWidgets.byId[widgetContainerId] = { bounds, id, home };
-      draft.floatingWidgets.allIds.push(widgetContainerId);
-    }
-  });
 }
