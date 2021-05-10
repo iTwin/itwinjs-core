@@ -793,6 +793,7 @@ export namespace RenderSchedule {
    * @see [RenderTimeline]($backend) to create an [Element]($backend) to host a script.
    * @see [[DisplayStyleSettings.renderTimeline]] to associate a [RenderTimeline]($backend)'s script with a [DisplayStyle]($backend).
    * @see [DisplayStyleState.scheduleScript]($frontend) to obtain the script associated with a display style.
+   * @see [[RenderSchedule.ScriptBuilder]] to define a new script.
    */
   export class Script {
     /** Timelines specifying how to animate individual models within the view. */
@@ -900,12 +901,20 @@ export namespace RenderSchedule {
     }
   }
 
+  /** Used as part of a [[RenderSchedule.ScriptBuilder]] to define a [[RenderSchedule.Timeline]].
+   * @see [[RenderSchedule.ElementTimelineBuilder]] and [[RenderSchedule.ModelTimelineBuilder]].
+   */
   export class TimelineBuilder {
+    /** Timeline controlling visibility. */
     public visibility?: VisibilityEntryProps[];
+    /** Timeline controlling color. */
     public color?: ColorEntryProps[];
+    /** Timeline controlling position and orientation. */
     public transform?: TransformEntryProps[];
+    /** Timeline controlling clipping. */
     public cuttingPlane?: CuttingPlaneEntryProps[];
 
+    /** Append a new [[RenderSchedule.VisibilityEntry]] to the timeline. */
     public addVisibility(time: number, visibility: number | undefined, interpolation = Interpolation.Linear): void {
       if (!this.visibility)
         this.visibility = [];
@@ -913,6 +922,7 @@ export namespace RenderSchedule {
       this.visibility.push({ time, value: visibility, interpolation });
     }
 
+    /** Append a new [[RenderSchedule.ColorEntry]] to the timeline. */
     public addColor(time: number, color: RgbColor | { red: number, green: number, blue: number } | undefined, interpolation = Interpolation.Linear): void {
       if (!this.color)
         this.color = [];
@@ -921,6 +931,7 @@ export namespace RenderSchedule {
       this.color.push({ time, value, interpolation });
     }
 
+    /** Append a new [[RenderSchedule.CuttingPlaneEntry]] to the timeline. */
     public addCuttingPlane(time: number, plane: { position: XYAndZ, direction: XYAndZ, visible?: boolean, hidden?: boolean } | undefined, interpolation = Interpolation.Linear): void {
       if (!this.cuttingPlane)
         this.cuttingPlane = [];
@@ -938,6 +949,7 @@ export namespace RenderSchedule {
       this.cuttingPlane.push({ time, value, interpolation });
     }
 
+    /** Append a new [[RenderSchedule.TransformEntry]] to the timeline. */
     public addTransform(time: number, transform: Transform | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
       if (!this.transform)
         this.transform = [];
@@ -952,6 +964,9 @@ export namespace RenderSchedule {
       this.transform.push({ time, value, interpolation });
     }
 
+    /** Obtain the JSON representation of the [[RenderSchedule.Timeline]] produced by this builder.
+     * @see [[RenderSchedule.ScriptBuilder.finish]] to obtain the JSON for the entire [[RenderSchedule.Script]].
+     */
     public finish(): TimelineProps {
       const props: TimelineProps = { };
       if (this.visibility && this.visibility.length)
@@ -970,16 +985,29 @@ export namespace RenderSchedule {
     }
   }
 
+  /** As part of a [[RenderSchedule.ScriptBuilder]], assembles a [[RenderSchedule.ElementTimeline]].
+   * @see [[RenderSchedule.ModelTimelineBuilder.addElementTimeline]].
+   */
   export class ElementTimelineBuilder extends TimelineBuilder {
+    /** A positive integer that uniquely identifies this timeline among all element timelines in the [[RenderSchedule.Script]].
+     * [[RenderSchedule.ScriptBuilder]] ensures each ElementTimelineBuilder receives a unique batch Id.
+     */
     public readonly batchId: number;
+    /** The compressed set of Ids of the elements affected by this timeline. */
     public readonly elementIds: CompressedId64Set;
 
+    /** Constructor - typically not used directly.
+     * @see [[RenderSchedule.ModelTimelineBuilder.addElementTimeline]] to create an ElementTimelineBuilder.
+     */
     public constructor(batchId: number, elementIds: CompressedId64Set) {
       super();
       this.batchId = batchId;
       this.elementIds = elementIds;
     }
 
+    /** Obtain the JSON representation of the [[RenderSchedule.ElementTimeline]] produced by this builder.
+     * @see [[RenderSchedule.ScriptBuilder.finish]] to obtain the JSON for the entire [[RenderSchedule.Script]].
+     */
     public finish(): ElementTimelineProps {
       const props = super.finish() as ElementTimelineProps;
       props.batchId = this.batchId;
@@ -988,24 +1016,35 @@ export namespace RenderSchedule {
     }
   }
 
+  /** As part of a [[RenderSchedule.ScriptBuilder, assembles a [[RenderSchedule.ModelTimeline]].
+   * @see [[RenderSchedule.ScriptBuilder.addModelTimeline]].
+   */
   export class ModelTimelineBuilder extends TimelineBuilder {
+    /** The Id of the model affected by this timeline. */
     public readonly modelId: Id64String;
     /** @internal */
     public realityModelUrl?: string;
     private readonly _obtainNextBatchId: () => number;
     private readonly _elements: ElementTimelineBuilder[] = [];
 
+    /** Constructor - typically not used directly.
+     * @see [[RenderSchedule.ScriptBuilder.addModelTimeline]] to create a ModelTimelineBuilder.
+     */
     public constructor(modelId: Id64String, obtainNextBatchId: () => number) {
       super();
       this.modelId = modelId;
       this._obtainNextBatchId = obtainNextBatchId;
     }
 
-    public addElementTimeline(elementIds: Id64String | CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder {
+    /** Add a new [[RenderSchedule.ElementTimeline]] to be applied to the specified elements.
+     * This function will sort and compress the Ids if they are not already compressed.
+     *
+     */
+    public addElementTimeline(elementIds: CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder {
       const batchId = this._obtainNextBatchId();
       let ids: CompressedId64Set;
       if (typeof elementIds === "string") {
-        ids = Id64.isId64(elementIds) ? CompressedId64Set.compressIds([ elementIds ]) : elementIds;
+        ids = elementIds;
       } else {
         const sorted = Array.from(elementIds);
         OrderedId64Iterable.sortArray(sorted);
@@ -1017,6 +1056,9 @@ export namespace RenderSchedule {
       return builder;
     }
 
+    /** Obtain the JSON representation of the [[RenderSchedule.ModelTimeline]] produced by this builder.
+     * @see [[RenderSchedule.ScriptBuilder.finish]] to obtain the JSON for the entire [[RenderSchedule.Script]].
+     */
     public finish(): ModelTimelineProps {
       const props = super.finish() as ModelTimelineProps;
       props.modelId = this.modelId;
@@ -1028,16 +1070,29 @@ export namespace RenderSchedule {
     }
   }
 
+  /** Assembles the JSON representation for a new [[RenderSchedule.Script]]. As an extremely simple example, the following code produces a script that changes the color of a single element:
+   * ```ts
+   *  const script = new ScriptBuilder();
+   *  const model = script.addModelTimeline("0x123");
+   *  const element = model.addElementTimeline([ "0x456" ]);
+   *  element.addColor(Date.now(), new RgbColor(0xff, 0x7f, 0));
+   *  const scriptProps = script.finish();
+   * ```
+   */
   export class ScriptBuilder {
     private _nextBatchId = 1;
     private readonly _models: ModelTimelineBuilder[] = [];
 
+    /** Add a new [[RenderSchedule.ModelTimeline]] to be applied to the specified model. */
     public addModelTimeline(modelId: Id64String): ModelTimelineBuilder {
       const builder = new ModelTimelineBuilder(modelId, () => this._nextBatchId++);
       this._models.push(builder);
       return builder;
     }
 
+    /** Obtain the JSON representation of the [[RenderSchedule.Script]] produced by this builder.
+     * @see [RenderTimeline.scriptProps]($backend) to assign the new script to a RenderTimeline element.
+     */
     public finish(): ScriptProps {
       return this._models.map((x) => x.finish());
     }
