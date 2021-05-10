@@ -135,15 +135,9 @@ export enum BriefcaseStatus {
     // (undocumented)
     CannotUpload = 131074,
     // (undocumented)
-    ContainsDeletedChangeSets = 131083,
+    ContainsDeletedChangeSets = 131080,
     // (undocumented)
     DownloadCancelled = 131079,
-    // (undocumented)
-    DownloadError = 131080,
-    // (undocumented)
-    UploadCancelled = 131082,
-    // (undocumented)
-    UploadError = 131081,
     // (undocumented)
     VersionNotFound = 131077
 }
