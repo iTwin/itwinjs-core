@@ -65,7 +65,6 @@ import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleSettingsProps } from '@bentley/imodeljs-common';
 import { EasingFunction } from '@bentley/imodeljs-common';
-import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
 import { EditingScopeNotifications } from '@bentley/imodeljs-common';
@@ -1364,16 +1363,6 @@ export class BackgroundMapGeometry {
     // (undocumented)
     readonly maxGeometryChordHeight: number;
     }
-
-// @internal (undocumented)
-export class BackgroundMapLocation {
-    // (undocumented)
-    getMapEcefToDb(bimElevationBias: number): Transform;
-    // (undocumented)
-    initialize(iModel: IModelConnection): Promise<void>;
-    // (undocumented)
-    onEcefChanged(ecefLocation: EcefLocation): void;
-}
 
 // @beta
 export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
@@ -4435,8 +4424,6 @@ export abstract class IModelConnection extends IModel {
     // @internal
     protected constructor(iModelProps: IModelConnectionProps);
     // @internal
-    backgroundMapLocation: BackgroundMapLocation;
-    // @internal
     protected beforeClose(): void;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
@@ -4458,6 +4445,8 @@ export abstract class IModelConnection extends IModel {
     readonly geoServices: GeoServices;
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string>;
+    // (undocumented)
+    getMapEcefToDb(bimElevationBias: number): Transform;
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // @alpha
     getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
