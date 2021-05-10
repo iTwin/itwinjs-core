@@ -976,13 +976,13 @@ export namespace RenderSchedule {
       if (this.visibility?.length)
         props.visibilityTimeline = this.visibility;
 
-      if (this.color && this.color.length)
+      if (this.color?.length)
         props.colorTimeline = this.color;
 
-      if (this.transform && this.transform.length)
+      if (this.transform?.length)
         props.transformTimeline = this.transform;
 
-      if (this.cuttingPlane && this.cuttingPlane.length)
+      if (this.cuttingPlane?.length)
         props.cuttingPlaneTimeline = this.cuttingPlane;
 
       return props;
