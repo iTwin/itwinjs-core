@@ -6,12 +6,9 @@
  * @module Utils
  */
 
-import { AuthStatus, BentleyError, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError, ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
-
-const loggerCategory: string = FrontendLoggerCategory.FrontendRequestContext;
 
 /**
  * Provides some generic context for downstream server applications to get details of a request that
@@ -37,14 +34,11 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
    */
   public static async create(activityId: string = Guid.createValue()): Promise<AuthorizedFrontendRequestContext> {
     if (!IModelApp.authorizationClient)
-      throw new BentleyError(AuthStatus.Error, "IModelApp.authorizationClient not initialized", Logger.logError, loggerCategory);
-    if (!IModelApp.authorizationClient.hasSignedIn)
-      throw new BentleyError(AuthStatus.Error, "Not signed in", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "authorizationClient not initialized");
 
-    const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
+    const accessToken = await IModelApp.authorizationClient.getAccessToken();
     return new AuthorizedFrontendRequestContext(accessToken, activityId);
   }
-
 }
 
 /**
