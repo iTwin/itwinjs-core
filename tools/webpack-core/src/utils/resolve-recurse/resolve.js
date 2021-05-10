@@ -132,4 +132,5 @@ async function resolveRecurse(options) {
   });
 }
 
-module.exports = resolveRecurse;
+exports.resolveRecurse = resolveRecurse;
+exports.usedDeps = usedDeps;

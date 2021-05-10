@@ -2,13 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 import { Volume } from "memfs";
 import { expect } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
+import * as snapshot from "snap-shot-it";
 import { clearCache, clearFileSystem, getTestConfig, runWebpack } from "./TestUtils";
 import { IgnoreOptionalDependenciesPlugin } from "../plugins/OptionalDependenciesPlugin";
-import { setApplicationDir } from "../utils/paths";
+import { resetPaths, setApplicationDir } from "../utils/paths";
 
 describe("OptionalDependenciesPlugin", () => {
   let testConfig: any;
@@ -29,15 +31,8 @@ describe("OptionalDependenciesPlugin", () => {
       "lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/bar.js": `console.log("This is bar");`,
     });
 
-    const result = await runWebpack(testConfig, vol);
-
-    const logging = result.logging;
-    expect(logging).to.not.have.property("CopyBentleyStaticResourcesPlugin");
-
-    const testModulePath = path.join(__dirname, "dist/test.js");
-    const testModuleContent = fs.readFileSync(testModulePath, "utf8");
-    expect(testModuleContent).to.be.equal(
-      `(window["webpackJsonp"] = window["webpackJsonp"] || []).push([[0],[\n/* 0 */\n/***/ (function(module, exports, __webpack_require__) {\n\nmodule.exports = __webpack_require__(1);\n\n\n/***/ }),\n/* 1 */\n/***/ (function(module, exports, __webpack_require__) {\n\nconst foo = __webpack_require__(2);\n\n/***/ }),\n/* 2 */\n/***/ (function(module, exports, __webpack_require__) {\n\nconst bar = __webpack_require__(3);\n\n/***/ }),\n/* 3 */\n/***/ (function(module, exports) {\n\nconsole.log("This is bar");\n\n/***/ })\n],[[0,1]]]);`);
+    await runWebpack(testConfig, vol);
+    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
   });
 
   it("should ignore optional dependency in try/catch", async () => {
@@ -48,16 +43,8 @@ describe("OptionalDependenciesPlugin", () => {
     });
 
     const result = await runWebpack(testConfig, vol);
-
-    const logging = result.logging.IgnoreOptionalDependenciesPlugin.entries;
-    expect(logging.length, "Length of entries should be 1").to.be.equal(1);
-    expect(logging[0].type).to.be.equal("log");
-    expect(logging[0].message).to.include(`Ignoring require("./bar") at lib\\test\\assets\\optional-dependencies-plugin-test\\node_modules\\foo\\index.js`);
-
-    const testModulePath = path.join(__dirname, "dist/test.js");
-    const testModuleContent = fs.readFileSync(testModulePath, "utf8");
-    expect(testModuleContent).to.be.equal(
-      `(window["webpackJsonp"] = window["webpackJsonp"] || []).push([[0],[\n/* 0 */\n/***/ (function(module, exports, __webpack_require__) {\n\nmodule.exports = __webpack_require__(1);\n\n\n/***/ }),\n/* 1 */\n/***/ (function(module, exports, __webpack_require__) {\n\nconst foo = __webpack_require__(2);\n\n/***/ }),\n/* 2 */\n/***/ (function(module, exports) {\n\ntry {const bar = require("./bar");} catch {}\n\n/***/ })\n],[[0,1]]]);`);
+    expect(result.logging.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include(`Ignoring require(\"./bar\")`);
+    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
   });
 
   it("should ignore critical dependency", async () => {
@@ -68,16 +55,8 @@ describe("OptionalDependenciesPlugin", () => {
     });
 
     const result = await runWebpack(testConfig, vol);
-
-    const logging = result.logging.IgnoreOptionalDependenciesPlugin.entries;
-    expect(logging.length, "Length of entries should be 1").to.be.equal(1);
-    expect(logging[0].type).to.be.equal("log");
-    expect(logging[0].message).to.include(`Ignoring require(<<expression>>) at lib\\test\\assets\\optional-dependencies-plugin-test\\node_modules\\foo\\index.js`);
-
-    const testModulePath = path.join(__dirname, "dist/test.js");
-    const testModuleContent = fs.readFileSync(testModulePath, "utf8");
-    expect(testModuleContent).to.equal(
-      `(window["webpackJsonp"] = window["webpackJsonp"] || []).push([[0],[\n/* 0 */\n/***/ (function(module, exports, __webpack_require__) {\n\nmodule.exports = __webpack_require__(1);\n\n\n/***/ }),\n/* 1 */\n/***/ (function(module, exports, __webpack_require__) {\n\nconst foo = __webpack_require__(2);\n\n/***/ }),\n/* 2 */\n/***/ (function(module, exports) {\n\nconst pathBar = "./bar";const bar = require(pathBar);\n\n/***/ })\n],[[0,1]]]);`);
+    expect(result.logging.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include(`Ignoring require(<<expression>>)`);
+    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
   });
 
   it("should ignore non-call use of require", async () => {
@@ -88,21 +67,13 @@ describe("OptionalDependenciesPlugin", () => {
     });
 
     const result = await runWebpack(testConfig, vol);
-
-    const logging = result.logging.IgnoreOptionalDependenciesPlugin.entries;
-    expect(logging.length, "Length of entries should be 1").to.be.equal(1);
-    expect(logging[0].type).to.equal("log");
-    expect(logging[0].message).to.include(`Ignoring non-call require expression at lib\\test\\assets\\optional-dependencies-plugin-test\\node_modules\\foo\\index.js`);
-
-    const testModulePath = path.join(__dirname, "dist/test.js");
-    const testModuleContent = fs.readFileSync(testModulePath, "utf8");
-    expect(testModuleContent).to.equal(
-      `(window["webpackJsonp"] = window["webpackJsonp"] || []).push([[0],[\n/* 0 */\n/***/ (function(module, exports, __webpack_require__) {\n\nmodule.exports = __webpack_require__(1);\n\n\n/***/ }),\n/* 1 */\n/***/ (function(module, exports, __webpack_require__) {\n\nconst foo = __webpack_require__(2);\n\n/***/ }),\n/* 2 */\n/***/ (function(module, exports) {\n\nconst optional = true;let req = (optional) ? require : console.log;const bar = req("./bar");\n\n/***/ })\n],[[0,1]]]);`);
+    expect(result.logging.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include("Ignoring non-call require expression");
+    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
   });
 
   afterEach(() => {
+    resetPaths();
     vol.reset();
-    fs.removeSync("lib/test/dist/");
     clearFileSystem(__dirname);
     clearCache(__dirname);
   });

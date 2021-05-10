@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 import { Volume } from "memfs";
 import { expect } from "chai";
 import * as path from "path";
@@ -21,7 +22,7 @@ describe("CopyExternalsPlugin", () => {
       .use(vol as any)
       .use(fs as any);
     fsFromJson({
-      "lib/test/assets/copy-externals-plugin-test/package.json": `{"dependencies": {"fs-extra": "^8.1.0"}}`,
+      "lib/test/assets/copy-externals-plugin-test/package.json": `{"dependencies": {"foo": ""}}`,
     });
   });
 
@@ -30,31 +31,33 @@ describe("CopyExternalsPlugin", () => {
       "lib/test/assets/copy-externals-plugin-test/test.js": `import * as electron from "electron";`,
     });
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["electron"]);
-    const result = await runWebpack(testConfig, ufs);
 
-    const logging = result.logging;
-    expect(logging, "Log message should not contain CopyExternalsPlugin").to.not.have.property("CopyExternalsPlugin");
+    const result = await runWebpack(testConfig, ufs);
+    expect(result.logging).to.not.haveOwnProperty("CopyExternalsPlugin");
+    expect(fs.existsSync(path.join(__dirname, "dist/node_modules"))).to.be.false;
   });
 
   it("should copy direct externals dependency", async () => {
     vol.fromJSON({
-      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as fs from "fs-extra";`,
+      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as foo from "foo";`,
     });
-    testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["fs-extra"]);
-    const result = await runWebpack(testConfig, ufs);
+    fsFromJson({
+      "lib/test/assets/copy-externals-plugin-test/node_modules/foo/index.js": `console.log("This is foo");`,
+      "lib/test/assets/copy-externals-plugin-test/node_modules/foo/package.json": `{"name": "foo", "dependencies": {"a": "", "b": "", "c":""}}`,
+      "lib/test/assets/copy-externals-plugin-test/node_modules/a/index.js": `console.log("This is a");`,
+      "lib/test/assets/copy-externals-plugin-test/node_modules/a/package.json": `{"name": "a"}`,
+      "lib/test/assets/copy-externals-plugin-test/node_modules/b/index.js": `console.log("This is b");`,
+      "lib/test/assets/copy-externals-plugin-test/node_modules/b/package.json": `{"name": "b"}`,
+      "lib/test/assets/copy-externals-plugin-test/node_modules/c/index.js": `console.log("This is c");`,
+      "lib/test/assets/copy-externals-plugin-test/node_modules/c/package.json": `{"name": "c"}`,
+    });
+    testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["foo"]);
 
-    const logging = result.logging.CopyExternalsPlugin.entries;
-    expect(logging.length, "Length of entries should be 4").to.be.equal(4);
-
-    const modules = ["fs-extra", "graceful-fs", "jsonfile", "universalify"];
-    for (let i = 0; i < 4; i++) {
-      expect(logging[i].type).to.be.equal("log");
-      const regex = new RegExp(`^Copying.*?${modules[i]}.*?$`);
-      expect(logging[i].message, `Message should contain 'Copying ... ${modules[i]}'`).to.match(regex);
-    }
-
-    const testModulePath = path.join(__dirname, "dist/node_modules/fs-extra");
-    expect(fs.existsSync(testModulePath), "fs-extra should be copied to /dist/node_modules").to.be.true;
+    await runWebpack(testConfig, ufs);
+    expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/foo/index.js"), "utf8")).to.equal(`console.log("This is foo");`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/a/index.js"), "utf8")).to.equal(`console.log("This is a");`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/b/index.js"), "utf8")).to.equal(`console.log("This is b");`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/c/index.js"), "utf8")).to.equal(`console.log("This is c");`);
   });
 
   it("should copy @bentley/imodeljs-native", async () => {
@@ -62,15 +65,9 @@ describe("CopyExternalsPlugin", () => {
       "lib/test/assets/copy-externals-plugin-test/test.js": `import * as imodeljsnative from "@bentley/imodeljs-native";`,
     });
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["@bentley/imodeljs-native"]);
-    const result = await runWebpack(testConfig, ufs);
 
-    const logging = result.logging.CopyExternalsPlugin.entries;
-    expect(logging.length, "Length of entries should be 1").to.be.equal(1);
-    expect(logging[0].type).to.be.equal("log");
-    expect(logging[0].message, "Message should contain 'Copying ... imodeljs-native'").to.match(/^Copying.*?imodeljs-native.*?$/);
-
-    const testModulePath = path.join(__dirname, "dist/node_modules/@bentley/imodeljs-native");
-    expect(fs.existsSync(testModulePath), "@bentley/imodeljs-native should be copied to /dist/node_modules").to.be.true;
+    await runWebpack(testConfig, ufs);
+    expect(fs.existsSync(path.join(__dirname, "dist/node_modules/@bentley/imodeljs-native"))).to.be.true;
   });
 
   it("should copy indirect dependencies with symlink", async () => {
@@ -84,21 +81,12 @@ describe("CopyExternalsPlugin", () => {
     });
     fs.symlinkSync("../bar/node_modules/b", "lib/test/assets/copy-externals-plugin-test/node_modules/b", "junction");
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["a"]);
+
     const result = await runWebpack(testConfig, ufs);
-
-    const logging = result.logging.CopyExternalsPlugin.entries;
-    expect(logging.length, "Length of entries should be 3").to.be.equal(3);
-    expect(logging[0].type).to.be.equal("log");
-    expect(logging[0].message).to.be.equal("Copying lib\\test\\assets\\copy-externals-plugin-test\\node_modules\\a to lib\\test\\dist\\node_modules");
-    expect(logging[1].type).to.be.equal("log");
-    expect(logging[1].message).to.be.include("Copying lib\\test\\assets\\copy-externals-plugin-test\\bar\\node_modules\\b to lib\\test\\dist\\node_modules");
-    expect(logging[2].type).to.be.equal("log");
-    expect(logging[2].message).to.be.include("Copying lib\\test\\assets\\copy-externals-plugin-test\\bar\\node_modules\\c to lib\\test\\dist\\node_modules");
-
-    const testModulePath = path.join(__dirname, "/dist/node_modules");
-    expect(fs.existsSync(path.join(testModulePath, "/a"))).to.be.true;
-    expect(fs.existsSync(path.join(testModulePath, "/b"))).to.be.true;
-    expect(fs.existsSync(path.join(testModulePath, "/c"))).to.be.true;
+    expect(result.logging.CopyExternalsPlugin.entries.length, "Length of entries should be 3").to.be.equal(3);
+    expect(fs.existsSync(path.join(__dirname, "dist/node_modules/a"))).to.be.true;
+    expect(fs.existsSync(path.join(__dirname, "dist/node_modules/b"))).to.be.true;
+    expect(fs.existsSync(path.join(__dirname, "dist/node_modules/c"))).to.be.true;
   });
 
   it("should copy indirect dependency which is not nested", async () => {
@@ -111,17 +99,10 @@ describe("CopyExternalsPlugin", () => {
       "lib/test/assets/copy-externals-plugin-test/node_modules/bar/package.json": "{}",
     });
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["bar"]);
-    const result = await runWebpack(testConfig, ufs);
 
-    const logging = result.logging.CopyExternalsPlugin.entries;
-    expect(logging.length, "Length of entries should be 1").to.be.equal(1);
-    expect(logging[0].type).to.be.equal("log");
-    expect(logging[0].message).to.be.equal(`Copying lib\\test\\assets\\copy-externals-plugin-test\\node_modules\\bar to lib\\test\\dist\\node_modules`);
-
-    const testModulePath = path.join(__dirname, "dist/node_modules/bar/index.js");
-    expect(fs.existsSync(testModulePath)).to.be.true;
-    const testModuleContent = fs.readFileSync(testModulePath, "utf8");
-    expect(testModuleContent).to.be.equal(`console.log("This is bar");`);
+    await runWebpack(testConfig, ufs);
+    expect(fs.existsSync(path.join(__dirname, "dist/node_modules/bar"))).to.be.true;
+    expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/bar/index.js"), "utf8")).to.equal(`console.log("This is bar");`);
   });
 
   it("should copy indirect dependences which are nested", async () => {
@@ -134,17 +115,10 @@ describe("CopyExternalsPlugin", () => {
       "lib/test/assets/copy-externals-plugin-test/node_modules/foo/node_modules/bar/package.json": "{}",
     });
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["bar"]);
-    const result = await runWebpack(testConfig, ufs);
 
-    const logging = result.logging.CopyExternalsPlugin.entries;
-    expect(logging.length, "Length of entries should be 1").to.be.equal(1);
-    expect(logging[0].type).to.be.equal("log");
-    expect(logging[0].message).to.be.equal(`Copying lib\\test\\assets\\copy-externals-plugin-test\\node_modules\\foo\\node_modules\\bar to lib\\test\\dist\\node_modules`);
-
-    const testModulePath = path.join(__dirname, "dist/node_modules/bar/index.js");
-    expect(fs.existsSync(testModulePath)).to.be.true;
-    const testModuleContent = fs.readFileSync(testModulePath, "utf8");
-    expect(testModuleContent).to.be.equal(`console.log("This is bar inside foo");`);
+    await runWebpack(testConfig, ufs);
+    expect(fs.existsSync(path.join(__dirname, "dist/node_modules/bar"))).to.be.true;
+    expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/bar/index.js"), "utf8")).to.equal(`console.log("This is bar inside foo");`);
   });
 
   afterEach(() => {

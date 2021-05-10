@@ -57,7 +57,8 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "memfs": "^3.2.2",
-    "unionfs": "^4.4.0"
+    "unionfs": "^4.4.0",
+    "snap-shot-it": "^7.9.6"
   },
   "eslintConfig": {
     "plugins": [

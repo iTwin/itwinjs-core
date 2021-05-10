@@ -951,6 +951,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
     },
     {
+      "name": "snap-shot-it",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "source-map-loader",
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },

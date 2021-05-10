@@ -6,6 +6,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as webpack from "webpack";
 const MODULE = require("module");
+let { usedDeps } = require("../utils/resolve-recurse/resolve");
 
 function createTestCompiler(web: any, config: any, vol: any) {
   let compiler: any;
@@ -59,15 +60,21 @@ export function fsFromJson(json: any) {
 
 function clearModuleCache(paths: string) {
   for (const [key, value] of Object.entries(MODULE._pathCache)) {
-    if ((value as string).startsWith(paths)) {
+    if ((value as string).startsWith(paths) || key.startsWith(paths) || key.includes("resolve-recurse")) {
       delete MODULE._pathCache[key];
     }
   }
+  for (const key in MODULE._cache) {
+    if (key.startsWith(paths) || key.includes("resolve-recurse")) {
+      delete MODULE._cache[key];
+    }
+  }
+  usedDeps.clear();
 }
 
 function clearRequireCache(paths: string) {
   for (const key in require.cache) {
-    if (key.startsWith(paths)) {
+    if (key.startsWith(paths) || key.includes("resolve-recurse")) {
       delete require.cache[key];
     }
   }

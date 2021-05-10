@@ -2,28 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chalk from "chalk";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
 import { getAppRelativePath, getPaths } from "../utils/paths";
-const getAllDependencies = require("../utils/resolve-recurse/resolve");
+const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
-const WebpackError = require("webpack/lib/WebpackError");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-
-class MissingExternalWarning extends WebpackError {
-  constructor(pkgName: string) {
-    super();
-
-    this.name = "MissingExternalWarning";
-    this.message = `\nCan't copy external package "${pkgName}" because it is not a direct dependency.\n`;
-    this.message = `${this.message}To fix this, run ${chalk.cyan(`npm install -P ${pkgName}`)}`;
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
 export class CopyExternalsPlugin {
   private _promises: Array<Promise<any>> = [];
   private _copiedPackages: Set<string> = new Set();
@@ -70,7 +57,7 @@ export class CopyExternalsPlugin {
       return;
 
     // Grab external package's dependencies and all of its dependencies and so on recursively
-    const depsFromRecursion = await getAllDependencies({
+    const depsFromRecursion = await resolveRecurse({
       path: path.dirname(packageJsonPath),
     });
     await this.recurseDependencies(depsFromRecursion.dependencies, outputDir);
