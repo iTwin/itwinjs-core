@@ -899,4 +899,46 @@ export namespace RenderSchedule {
       this.script = script;
     }
   }
+
+  export class TimelineBuilder {
+    public visibility?: VisibilityEntryProps[];
+    public color?: ColorEntryProps[];
+    public transform?: TransformEntryProps[];
+    public cuttingPlane?: CuttingPlaneEntryProps;
+
+    public addVisibility(time: number, visibility?: number, interpolation = Interpolation.Linear): void {
+    }
+
+    public add
+  }
+
+  export class ElementTimelineBuilder extends TimelineBuilder {
+    public constructor(batchId: number, elementIds: CompressedId64Set) {
+    }
+  }
+
+  export class ModelTimelineBuilder extends TimelineBuilder {
+    /** @internal */
+    public realityModelUrl?: string;
+
+    public constructor(modelId: Id64String, script: ScriptBuilder) {
+    }
+
+    public addElementTimeline(elementIds: Id64String | CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder {
+    }
+  }
+
+  export class ScriptBuilder {
+    protected _nextBatchId = 1;
+
+    public takeNextBatchId(): number {
+      return this._nextBatchId++;
+    }
+
+    public addModelTimeline(modelId: Id64String): ModelTimelineBuilder {
+    }
+
+    public finish(): ScriptProps {
+    }
+  }
 }
