@@ -50,12 +50,10 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
 
       // TODO: Temporarily lower the threshold of the immer security issue until we can consume a fix.  Id === 1603
 
-      console.log(excludedAdvisories.includes(advisory.id) + " " + severity)
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
-      if (!excludedAdvisories.includes(advisory.id) && (severity === "HIGH" || severity === "CRITICAL")) {
-        console.log(excludedAdvisories.includes(advisory.id) + " " + severity)
+      if (!excludedAdvisories.includes(advisory.id) && (severity === "HIGH" || severity === "CRITICAL"))
         logBuildError(message);
-      } else if (excludedAdvisories.includes(advisory.id) || severity === "MODERATE") // Only warn on Moderate severity items
+      else if (excludedAdvisories.includes(advisory.id) || severity === "MODERATE") // Only warn on Moderate severity items
         logBuildWarning(message);
     }
   }
