@@ -164,7 +164,20 @@ export class V2CheckpointManager {
   private static async performDownload(job: DownloadJob) {
     CheckpointManager.onDownload.raiseEvent(job);
     const request = job.request;
-    return BlobDaemon.command("download", { ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile, onProgress: request.onProgress });
+    const downloader = new IModelHost.platform.DownloadV2Checkpoint({ ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile });
+    const onProgress = request.onProgress;
+    if (onProgress) {
+      const timer = setInterval(async () => {
+        const progress = downloader.getProgress();
+        if (onProgress(progress.loaded, progress.total))
+          downloader.cancelDownload();
+      }, 250);
+      downloader.downloadPromise
+        .catch(() => { }) // otherwise Node complains about unhandled exceptions
+        .finally(() => clearInterval(timer)); // clear the timer when download stops (either completes or is aborted)
+    }
+
+    return downloader.downloadPromise;
   }
 
   /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
@@ -328,12 +341,14 @@ export class CheckpointManager {
 
     try {
       // first see if there's a V2 checkpoint available.
-      return await V2CheckpointManager.downloadCheckpoint(request);
+      await V2CheckpointManager.downloadCheckpoint(request);
+      Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeSetId}`);
     } catch (error) {
-      // TODO: check to see if the error is "not available" and keep going. Otherwise rethrow error
-    }
+      if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
+        return V1CheckpointManager.downloadCheckpoint(request);
 
-    return V1CheckpointManager.downloadCheckpoint(request);
+      throw (error); // most likely, was aborted
+    }
   }
 
   /** checks a file's dbGuid & contextId for consistency, and updates the dbGuid when possible */
