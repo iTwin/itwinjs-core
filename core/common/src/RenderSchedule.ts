@@ -973,7 +973,7 @@ export namespace RenderSchedule {
      */
     public finish(): TimelineProps {
       const props: TimelineProps = { };
-      if (this.visibility && this.visibility.length)
+      if (this.visibility?.length)
         props.visibilityTimeline = this.visibility;
 
       if (this.color && this.color.length)
