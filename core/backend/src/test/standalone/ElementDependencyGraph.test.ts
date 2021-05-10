@@ -65,10 +65,10 @@ class TestHelper {
     this.db = StandaloneDb.openFile(writeDbFileName, OpenMode.ReadWrite);
     assert.isTrue(this.db !== undefined);
 
-    Logger.setLevelDefault(LogLevel.Info);
-    Logger.setLevel("EDGTest", LogLevel.Trace);
-    Logger.setLevel("ElementDependencyGraph", LogLevel.Trace);
-    Logger.setLevel("ECObjectsNative", LogLevel.Error);
+    // Logger.setLevelDefault(LogLevel.Info);
+    // Logger.setLevel("EDGTest", LogLevel.Trace);
+    // Logger.setLevel("ElementDependencyGraph", LogLevel.Trace);
+    // Logger.setLevel("ECObjectsNative", LogLevel.Error);
 
     this.db.nativeDb.enableTxnTesting();
     assert.equal(this.db.nativeDb.addChildPropagatesChangesToParentRelationship("TestBim", "ChildPropagatesChangesToParent"), 0);

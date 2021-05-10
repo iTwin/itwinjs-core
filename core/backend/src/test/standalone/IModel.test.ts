@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import {
-  BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
+  ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
 } from "@bentley/bentleyjs-core";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
@@ -21,23 +21,20 @@ import {
   TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
-import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb } from "../../IModelDb";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, Category,
-  ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
-  DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers,
-  ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost,
-  IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel,
-  PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb,
-  SubCategory, Subject, Texture, ViewDefinition,
+  BackendRequestContext, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
+  DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic,
+  ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
+  GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
+  LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory,
+  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
-let lastPushTimeMillis = 0;
-let lastAutoPushEventType: AutoPushEventType | undefined;
 
 // spell-checker: disable
 
@@ -1747,7 +1744,7 @@ describe("iModel", () => {
     checkpoint.close();
   });
 
-  it("should throw for invalid dbGuid in v2 checkpoint", async () => {
+  it("should throw for invalid v2 checkpoints", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
@@ -1777,18 +1774,15 @@ describe("iModel", () => {
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
+    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+
+    process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
+
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-
-    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId }));
     expectIModelError(IModelStatus.ValidationFailed, error);
-  });
-
-  it("should throw when opening checkpoint without blockcache dir env", async () => {
-    process.env.BLOCKCACHE_DIR = "";
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
-    expectIModelError(IModelStatus.BadRequest, error);
   });
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
@@ -1803,7 +1797,7 @@ describe("iModel", () => {
 
     hubMock.callsFake(async () => [{} as any]);
     error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
-    expectIModelError(IModelStatus.BadRequest, error);
+    expectIModelError(IModelStatus.NotFound, error);
   });
 
   it("should throw when attempting to re-attach a non-checkpoint snapshot", async () => {
@@ -1811,130 +1805,6 @@ describe("iModel", () => {
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const error = await getIModelError(imodel1.reattachDaemon(ctx));
     expectIModelError(IModelStatus.WrongIModel, error);
-  });
-
-  // This is skipped because it fails unpredictably - the timeouts don't seem to happen as expected
-  it.skip("should test AutoPush", async () => {
-    let idle: boolean = true;
-    const activityMonitor = {
-      isIdle: idle,
-    };
-
-    const fakePushTimeRequired = 1; // pretend that it takes 1/1000 of a second to do the push
-    const millisToWaitForAutoPush = (15 * fakePushTimeRequired); // a long enough wait to ensure that auto-push ran.
-
-    const iModel = {
-      pushChanges: async (_clientAccessToken: AccessToken) => {
-        await new Promise((resolve, _reject) => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, to simulate time spent doing push
-        lastPushTimeMillis = Date.now();
-      },
-      iModelToken: {
-        changeSetId: "",
-        iModelId: "fake",
-      },
-      concurrencyControl: {
-        request: async (_clientAccessToken: AccessToken) => { },
-      },
-      onBeforeClose: new BeEvent<() => void>(),
-      txns: {
-        hasLocalChanges: () => true,
-      },
-    };
-
-    const authorizationClient: AuthorizationClient = {
-      getAccessToken: async (_requestContext: ClientRequestContext): Promise<AccessToken> => {
-        const fakeAccessToken2 = {} as AccessToken;
-        return fakeAccessToken2;
-      },
-      isAuthorized: true,
-    };
-
-    lastPushTimeMillis = 0;
-    lastAutoPushEventType = undefined;
-
-    // Create an autopush in manual-schedule mode.
-    const autoPushParams: AutoPushParams = { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false };
-    IModelHost.authorizationClient = authorizationClient;
-    const autoPush = new AutoPush(iModel as any, autoPushParams, activityMonitor);
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
-    assert.isFalse(autoPush.autoSchedule);
-
-    // Schedule the next push
-    autoPush.scheduleNextPush();
-    assert.equal(autoPush.state, AutoPushState.Scheduled);
-
-    // Wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
-
-    // Verify that push happened during the time that I was asleep.
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to restart automatically");
-    assert.notEqual(lastPushTimeMillis, 0);
-    assert.isAtLeast(autoPush.durationOfLastPushMillis, fakePushTimeRequired);
-    assert.isUndefined(lastAutoPushEventType);  // not listening to events yet.
-
-    // Cancel the next scheduled push
-    autoPush.cancel();
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "cancel does NOT automatically schedule the next push");
-
-    // Register an event handler
-    const autoPushEventHandler: AutoPushEventHandler = (etype: AutoPushEventType, _theAutoPush: AutoPush) => { lastAutoPushEventType = etype; };
-    autoPush.event.addListener(autoPushEventHandler);
-
-    lastPushTimeMillis = 0;
-
-    // Explicitly schedule the next auto-push
-    autoPush.scheduleNextPush();
-    assert.equal(autoPush.state, AutoPushState.Scheduled);
-
-    // wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
-    assert.notEqual(lastPushTimeMillis, 0);
-    assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
-
-    // Just verify that this doesn't blow up.
-    await autoPush.reserveCodes();
-
-    // Now turn on auto-schedule and verify that we get a few auto-pushes
-    lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true;
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0);
-    lastPushTimeMillis = 0;
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0);
-    autoPush.cancel();
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert(autoPush.state === AutoPushState.NotRunning);
-    assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
-
-    // Test auto-push when isIdle returns false
-    idle = false;
-    lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
-    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
-    autoPush.cancel();
-    idle = true;
-
-    // Test auto-push when Txn.hasLocalChanges returns false
-    iModel.txns.hasLocalChanges = () => false;
-    lastPushTimeMillis = 0;
-    autoPush.cancel();
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
-    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
-    autoPush.cancel();
-
-    // ... now turn it back on
-    iModel.txns.hasLocalChanges = () => true;
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0); // AutoPush should have run
-
-    autoPush.cancel();
   });
 
   function hasClassView(db: IModelDb, name: string): boolean {

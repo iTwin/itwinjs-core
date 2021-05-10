@@ -29,7 +29,7 @@
         "test:integration"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+        "${workspaceFolder}/core/backend/lib/**/*.js"
       ]
     },
     {
@@ -46,7 +46,7 @@
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+        "${workspaceFolder}/core/backend/lib/**/*.js"
       ]
     },
     {

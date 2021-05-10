@@ -115,39 +115,36 @@ export class V2CheckpointManager {
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
     const { requestContext, iModelId, changeSetId } = checkpoint;
 
-    requestContext.enter();
-    const bcvDaemonCachePath = process.env.BLOCKCACHE_DIR;
-    if (!bcvDaemonCachePath) {
-      if (checkpoint.expectV2)
-        Logger.logError(loggerCategory, "Invalid config: BLOCKCACHE_DIR is not set");
+    try {
+      requestContext.enter();
+      const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
+      const checkpoints = await IModelHost.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
+      requestContext.enter();
+      if (checkpoints.length < 1)
+        throw new Error("no checkpoint");
 
-      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
+      const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
+      if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
+        throw new Error("Invalid checkpoint in iModelHub");
+
+      return {
+        container: containerAccessKeyContainer,
+        auth: containerAccessKeySAS,
+        daemonDir: process.env.BLOCKCACHE_DIR,
+        storageType: "azure?sas=1",
+        user: containerAccessKeyAccount,
+        dbAlias: containerAccessKeyDbName,
+        writeable: false,
+      };
+    } catch (err) {
+      throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
-
-    const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
-    const checkpoints = await IModelHost.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
-    requestContext.enter();
-
-    if (checkpoints.length < 1)
-      throw new IModelError(IModelStatus.NotFound, "Checkpoint not found", Logger.logError, loggerCategory);
-
-    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
-    if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid checkpoint in iModelHub", Logger.logError, loggerCategory);
-
-    return {
-      container: containerAccessKeyContainer,
-      auth: containerAccessKeySAS,
-      daemonDir: bcvDaemonCachePath,
-      storageType: "azure?sas=1",
-      user: containerAccessKeyAccount,
-      dbAlias: containerAccessKeyDbName,
-      writeable: false,
-    };
   }
 
   public static async attach(checkpoint: CheckpointProps): Promise<string> {
     const args = await this.getCommandArgs(checkpoint);
+    if (undefined === args.daemonDir || args.daemonDir === "")
+      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
 
     // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
     const attachResult = await BlobDaemon.command("attach", args);
@@ -167,7 +164,7 @@ export class V2CheckpointManager {
     const downloader = new IModelHost.platform.DownloadV2Checkpoint({ ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile });
     const onProgress = request.onProgress;
     if (onProgress) {
-      const timer = setInterval(async () => {
+      const timer = setInterval(async () => { // set an interval timer to show progress every 250ms
         const progress = downloader.getProgress();
         if (onProgress(progress.loaded, progress.total))
           downloader.cancelDownload();
