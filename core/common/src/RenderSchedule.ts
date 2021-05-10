@@ -936,14 +936,18 @@ export namespace RenderSchedule {
       if (!this.cuttingPlane)
         this.cuttingPlane = [];
 
-      let value;
+      let value: CuttingPlaneProps | undefined;
       if (plane) {
         value = {
           position: [ plane.position.x, plane.position.y, plane.position.z ],
           direction: [ plane.direction.x, plane.direction.y, plane.direction.z ],
-          visible: plane.visible,
-          hidden: plane.hidden,
         };
+
+        if (plane.visible)
+          value.visible = true;
+
+        if (plane.hidden)
+          value.hidden = true;
       }
 
       this.cuttingPlane.push({ time, value, interpolation });
