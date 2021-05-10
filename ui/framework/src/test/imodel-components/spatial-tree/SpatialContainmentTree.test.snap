@@ -5,6 +5,11 @@ exports[`SpatialContainmentTree <SpatialContainmentTree /> renders 1`] = `
   class="iui-body"
 >
   <div>
+    <span
+      class="iui-toast-wrapper"
+    />
+  </div>
+  <div>
     <div
       class="ui-fw-spatial-tree"
     >

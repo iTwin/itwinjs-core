@@ -5,6 +5,11 @@ exports[`CategoryTreeWithSearchBox <CategoryTreeWithSearchBox /> should match sn
   class="iui-body"
 >
   <div>
+    <span
+      class="iui-toast-wrapper"
+    />
+  </div>
+  <div>
     <div
       class="ui-fw-categories-tree-with-search"
     >

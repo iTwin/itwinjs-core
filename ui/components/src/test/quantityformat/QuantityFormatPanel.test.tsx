@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { act, fireEvent, render, RenderResult, wait } from "@testing-library/react";
+import { act, fireEvent, render, wait } from "@testing-library/react";
 import { IModelApp, MockRender, QuantityType } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
 import { QuantityFormatPanel } from "../../ui-components/quantityformat/QuantityFormatPanel";
@@ -13,7 +13,7 @@ import { FormatProps, FormatType, ScientificType, ShowSignOption } from "@bentle
 import { BearingQuantityType } from "./BearingQuantityType";
 import { SpecialKey } from "@bentley/ui-abstract";
 
-describe.only("QuantityInput", () => {
+describe("QuantityInput", () => {
   const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
   function requestNextAnimation() { }
 
@@ -37,43 +37,16 @@ describe.only("QuantityInput", () => {
     expect(renderedComponent).not.to.be.null;
   });
 
-  const selectChangeValue = (select: HTMLElement, index: number, menuId: string, renderedComponent?: RenderResult) => {
-    fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-    renderedComponent?.debug();
+  // const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
+  // const scrollIntoViewMock = sinon.spy();
 
-    const menu = document.querySelector(`.iui-menu.${menuId}`) as HTMLUListElement;
-    expect(menu).to.exist;
+  // beforeEach(() => {
+  //   window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
+  // });
 
-    const menuItem = menu.querySelectorAll("li");
-    expect(menuItem).to.exist;
-    expect(menuItem[index]).to.not.be.undefined;
-    fireEvent.click(menuItem[index]);
-  };
-
-  const selectChangeValueByText = (select: HTMLElement, menuId: string, label: string, renderedComponent?: RenderResult) => {
-    fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-    renderedComponent?.debug();
-
-    const menu = document.querySelector(`.iui-menu.${menuId}`) as HTMLUListElement;
-    expect(menu).to.exist;
-
-    const menuItems = menu.querySelectorAll("li span.iui-content");
-    expect(menuItems.length).to.be.greaterThan(0);
-    const menuItem = [...menuItems].find((span) => span.textContent === label);
-    expect(menuItem).to.not.be.undefined;
-    fireEvent.click(menuItem!);
-  };
-
-  const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
-  const scrollIntoViewMock = sinon.spy();
-
-  beforeEach(() => {
-    window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
-  });
-
-  afterEach(() => {
-    window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
-  });
+  // afterEach(() => {
+  //   Element.prototype.scrollIntoView = originalScrollIntoView;
+  // });
 
   it("should render basic panel with sample", () => {
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} />);
@@ -273,14 +246,12 @@ describe.only("QuantityInput", () => {
     });
   });
 
-  it.only("should handle onFormatChange Decimal precision selection", () => {
+  it("should handle onFormatChange Decimal precision selection", () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} onFormatChange={spy} />);
 
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
-    // fireEvent.change(typeSelector, { target: { value: FormatType.Decimal.toString() } });
-    selectChangeValueByText(typeSelector, "format-type-selector-menu", "QuantityFormat.decimal", renderedComponent);
-    // selectChangeValue(typeSelector, 0, "format-type-selector-menu");
+    fireEvent.change(typeSelector, { target: { value: FormatType.Decimal.toString() } });
     expect(spy).to.be.called;
     spy.resetHistory();
 

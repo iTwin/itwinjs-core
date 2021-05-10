@@ -3194,6 +3194,11 @@ exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
   class="iui-body"
 >
   <div>
+    <span
+      class="iui-toast-wrapper"
+    />
+  </div>
+  <div>
     <div
       class="ui-fw-models-tree"
     >

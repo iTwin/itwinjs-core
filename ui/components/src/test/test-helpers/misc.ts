@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { act, wait } from "@testing-library/react";
+import { expect } from "chai";
+import { act, fireEvent, wait } from "@testing-library/react";
 
 let mochaTimeoutsEnabled = true;
 beforeEach(function () {
@@ -42,6 +43,55 @@ export const waitForUpdate = async (action: () => any, spy: sinon.SinonSpy, coun
       throw err;
     }
   }, { timeout, interval: 1 });
+};
+
+/**
+ * Select component pick value using index
+ */
+export const selectChangeValueByIndex = (select: HTMLElement, menuId: string, index: number, onError?: (msg: string) => void): void => {
+  fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
+
+  const selector = `.iui-menu.${menuId}`;
+  const menu = document.querySelector(selector) as HTMLUListElement;
+  if (!menu)
+    onError && onError(`Couldn't find '${selector}'`);
+  expect(menu).to.exist;
+
+  const menuItem = menu.querySelectorAll("li");
+  expect(menuItem).to.exist;
+  if (!menuItem)
+    onError && onError(`Couldn't find any 'li' menu items`);
+  if (menuItem[index] === undefined)
+    onError && onError(`Couldn't find menu item ${index}`);
+  expect(menuItem[index]).to.not.be.undefined;
+
+  fireEvent.click(menuItem[index]);
+};
+
+/**
+ * Select component change value using text of menu item to find item
+ */
+export const selectChangeValueByText = (select: HTMLElement, menuId: string, label: string, onError?: (msg: string) => void): void => {
+  fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
+
+  let selector = `.iui-menu.${menuId}`;
+  const menu = document.querySelector(selector) as HTMLUListElement;
+  if (!menu)
+    onError && onError(`Couldn't find '${selector}'`);
+  expect(menu).to.exist;
+
+  selector = "li span.iui-content";
+  const menuItems = menu.querySelectorAll(selector);
+  if (menuItems.length <= 0)
+    onError && onError(`Couldn't find any '${selector}' menu items`);
+  expect(menuItems.length).to.be.greaterThan(0);
+
+  const menuItem = [...menuItems].find((span) => span.textContent === label);
+  if (!menuItem)
+    onError && onError(`No menu items found`);
+  expect(menuItem).to.not.be.undefined;
+
+  fireEvent.click(menuItem!);
 };
 
 /** Creates Promise */
