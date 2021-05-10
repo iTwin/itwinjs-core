@@ -149,6 +149,7 @@ export interface ViewerProps {
   iModel: IModelConnection;
   defaultViewName?: string;
   disableEdges?: boolean;
+  logFrameStats?: boolean;
 }
 
 export class Viewer extends Window {
@@ -361,8 +362,7 @@ export class Viewer extends Window {
     this.updateTitle();
     this.updateActiveSettings();
 
-    const doFrameStats = true;
-    if (doFrameStats) {
+    if (true === props.logFrameStats) {
       const printFrameStats = (stats: FrameStats) => {
         console.log(`frame stats (vp=${  this.viewport.viewportId  }) = ${ JSON.stringify(stats)}`); // eslint-disable-line no-console
       };

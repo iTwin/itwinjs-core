@@ -144,6 +144,9 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.SVT_DEBUG_SHADERS)
     configuration.debugShaders = true;
 
+  if (undefined !== process.env.SVT_LOG_FRAMESTATS)
+    configuration.logFrameStats = true;
+
   configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
 
   const parseSeconds = (key: string) => {
