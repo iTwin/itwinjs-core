@@ -18,12 +18,15 @@ describe("Schema Utilities Test", () => {
     assert.equal(Schema.toSemverString("1.2.3"), "1.2.3");
     assert.isNotNull(Semver.valid(Schema.toSemverString("1.2.3")));
 
+    assert.equal(Schema.toSemverString("012.0013"), "12.0.13");
+    assert.isNotNull(Semver.valid(Schema.toSemverString("012.0013")));
+
     // bad inputs with undefined behavior
 
-    assert.equal(Schema.toSemverString("bad.input"), "NaN.NaN");
+    assert.equal(Schema.toSemverString("bad.input"), "NaN.0.NaN");
     assert.isNull(Semver.valid(Schema.toSemverString("bad.input")));
 
-    assert.equal(Schema.toSemverString("012.0013"), "12.13");
-    assert.isNull(Semver.valid(Schema.toSemverString("012.0013")));
+    assert.equal(Schema.toSemverString("1..2"), "1.0.2");
+    assert.isNotNull(Semver.valid(Schema.toSemverString("1..2")));
   });
 });

@@ -745,20 +745,31 @@ export class IModelTransformer extends IModelExportHandler {
       this.sourceDb.nativeDb.exportSchemas(schemasDir);
       const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
       // some schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
-      const filteredImportSchemas = schemaFiles.filter((schemaFile) => {
-        const match = /^(?<name>[a-zA-Z0-9]+)\.(?<version>[.0-9]+)\.ecschema.xml$/.exec(schemaFile);
-        if (match === null)
+      const importSchemasFullPaths = schemaFiles.map((schema) => path.join(schemasDir, schema));
+      const filteredSchemaPaths = importSchemasFullPaths.filter((schemaPath) => {
+        let schemaSource = "";
+        try {
+          schemaSource = IModelJsFs.readFileSync(schemaPath).toString("utf8");
+        } catch (err) {
+          Logger.logError(loggerCategory, `error reading xml schema file ${schemaPath}`);
           return true;
-        const [_fullMatch, schemaName, versionString] = match;
+        }
+        const schemaVersionMatch = /<ECSchema .*?version="([0-9.]+)"/.exec(schemaSource);
+        const schemaNameMatch = /<ECSchema .*?schemaName="([^"]+)"/.exec(schemaSource);
+        if (schemaVersionMatch == null || schemaNameMatch == null) {
+          Logger.logError(loggerCategory, `failed to parse schema name or version, first 200 chars: '${schemaSource.slice(0, 200)}'`);
+          return true;
+        }
+        const [_fullVersionMatch, versionString] = schemaVersionMatch;
+        const [_fullNameMatch, schemaName] = schemaNameMatch;
         const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
         const versionToImport = Schema.toSemverString(versionString);
         if (versionInTarget && Semver.eq(versionToImport, versionInTarget))
           return false;
         return true;
       });
-      const importSchemasFullPaths = filteredImportSchemas.map((schema) => path.join(schemasDir, schema));
-      if (importSchemasFullPaths.length > 0)
-        await this.targetDb.importSchemas(requestContext, importSchemasFullPaths);
+      if (filteredSchemaPaths.length > 0)
+        await this.targetDb.importSchemas(requestContext, filteredSchemaPaths);
     } finally {
       requestContext.enter();
       IModelJsFs.removeSync(schemasDir);
