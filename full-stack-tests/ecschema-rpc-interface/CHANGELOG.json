@@ -1,0 +1,23 @@
+{
+  "name": "@bentley/ecschema-rpcinterface-tests",
+  "entries": [
+    {
+      "version": "2.15.1",
+      "tag": "@bentley/ecschema-rpcinterface-tests_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/ecschema-rpcinterface-tests_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "schema rpc interface initial release"
+          }
+        ]
+      }
+    }
+  ]
+}

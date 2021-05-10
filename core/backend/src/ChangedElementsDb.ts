@@ -109,11 +109,7 @@ export class ChangedElementsDb implements IDisposable {
   /** Processes a range of changesets and adds it to the changed elements cache
    * @param requestContext The client request context
    * @param briefcase iModel briefcase to use
-   * @param startChangesetId Start Changeset Id
-   * @param endChangesetId End Changeset Id
-   * @param filterSpatial [optional] Whether to do processing filtering out spatial elements, defaults to false
-   * @param rulesetDir [optional] Directories string for ruleset directory locater
-   * @param tempDir [optional] Directory to use to store temporary Db used to do processing. This Db is cleaned up automatically unless the process crashes.
+   * @param options Options for processing
    */
   public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     requestContext.enter();
@@ -131,7 +127,42 @@ export class ChangedElementsDb implements IDisposable {
       options.wantParents,
       options.wantPropertyChecksums,
       options.rulesetDir,
-      options.tempDir
+      options.tempDir,
+    );
+    if (status !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(status, "Failed to process changesets");
+    return status;
+  }
+
+  /** Processes a range of changesets and adds it to the changed elements cache
+   * This call will close the IModelDb object as it is required for processing and applying changesets
+   * @param requestContext The client request context
+   * @param briefcase iModel briefcase to use
+   * @param options options for processing
+   */
+  public async processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
+    requestContext.enter();
+    const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
+    const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
+    requestContext.enter();
+    const tokens = ChangedElementsDb.buildChangeSetTokens(changesets, BriefcaseManager.getChangeSetsPath(briefcase.iModelId));
+    // ChangeSets need to be processed from newest to oldest
+    tokens.reverse();
+    // Close briefcase before doing processing and rolling briefcase
+    const dbFilename = briefcase.pathName;
+    const dbGuid = briefcase.getGuid();
+    briefcase.close();
+    // Process changesets
+    const status: DbResult = this.nativeDb.processChangesetsAndRoll(
+      dbFilename,
+      dbGuid,
+      JSON.stringify(tokens),
+      options.rulesetId,
+      options.filterSpatial,
+      options.wantParents,
+      options.wantPropertyChecksums,
+      options.rulesetDir,
+      options.tempDir,
     );
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to process changesets");

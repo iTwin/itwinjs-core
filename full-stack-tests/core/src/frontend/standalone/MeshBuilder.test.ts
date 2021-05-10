@@ -63,7 +63,7 @@ describe("Mesh Builder Tests", () => {
 
   it("addStrokePointLists", () => {
     const viewport = ScreenViewport.create(viewDiv, spatialView);
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, {type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);

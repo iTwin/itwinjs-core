@@ -89,3 +89,62 @@ export class ViewportWidget extends React.Component<ViewportWidgetProps, Viewpor
     return content;
   }
 }
+
+/** Widget that displays a ViewportComponent or Loading message */
+export class IModelViewport extends React.Component<ViewportWidgetProps, ViewportWidgetState> {
+  private _loading = IModelApp.i18n.translate("SampleApp:Test.loading");
+  private _viewport: ScreenViewport | undefined;
+
+  public readonly state: Readonly<ViewportWidgetState> = {
+    viewId: undefined,
+    iModelConnection: undefined,
+  };
+
+  public async componentDidMount() {
+    const externalIModel = new ExternalIModel(this.props.projectName, this.props.imodelName);
+    await externalIModel.openIModel();
+
+    if (externalIModel.viewId && externalIModel.iModelConnection) {
+      this.setState({
+        viewId: externalIModel.viewId,
+        iModelConnection: externalIModel.iModelConnection,
+      });
+    }
+
+    ViewSelector.onViewSelectorChangedEvent.addListener(this._handleViewSelectorChangedEvent);
+  }
+
+  public componentWillUnmount() {
+    ViewSelector.onViewSelectorChangedEvent.removeListener(this._handleViewSelectorChangedEvent);
+  }
+
+  private _handleViewSelectorChangedEvent = (args: ViewSelectorChangedEventArgs) => {
+    if (this._viewport === IModelApp.viewManager.selectedView) {
+      this.setState({
+        viewId: args.viewDefinitionId,
+        iModelConnection: args.iModelConnection,
+      });
+    }
+  };
+
+  public render() {
+    const divStyle: React.CSSProperties = {
+      height: "100%",
+    };
+    let content: React.ReactNode;
+
+    if (this.state.viewId === undefined || this.state.iModelConnection === undefined)
+      content = (
+        <div className="uifw-centered" style={divStyle}> <LoadingSpinner message={this._loading} /> </div>
+      );
+    else
+      content = (
+        <ViewportComponent
+          viewDefinitionId={this.state.viewId}
+          imodel={this.state.iModelConnection}
+          viewportRef={(v: ScreenViewport) => { this._viewport = v; }} />
+      );
+
+    return content;
+  }
+}

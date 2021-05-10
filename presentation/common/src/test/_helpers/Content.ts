@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  CategoryDescription, ClassInfo, Descriptor, DescriptorSource, DisplayValuesMap, EditorDescription,
-  Field, InstanceKey, Item, LabelDefinition, NestedContentField, PropertiesField,
-  Property, PropertyValueFormat, RelationshipPath, RendererDescription, SelectClassInfo, StructTypeDescription,
+  CategoryDescription, ClassInfo, Descriptor, DescriptorSource, DisplayValuesMap, EditorDescription, Field, InstanceKey, Item, LabelDefinition,
+  NestedContentField, PropertiesField, Property, PropertyValueFormat, RelationshipPath, RendererDescription, SelectClassInfo, StructTypeDescription,
   TypeDescription, ValuesMap,
 } from "../../presentation-common";
+import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 import { createTestECClassInfo, createTestECInstanceKey, createTestRelationshipPath } from "./EC";
 
 export const createTestCategoryDescription = (props?: Partial<CategoryDescription>) => ({
@@ -87,6 +87,7 @@ export function createTestNestedContentField(props: {
   autoExpand?: boolean;
   editor?: EditorDescription;
   renderer?: RendererDescription;
+  relationshipMeaning?: RelationshipMeaning;
 }) {
   const nestedContentFieldType: StructTypeDescription = {
     valueFormat: PropertyValueFormat.Struct,
@@ -111,6 +112,8 @@ export function createTestNestedContentField(props: {
     !!props.autoExpand,
     props.renderer,
   );
+  if (props.relationshipMeaning)
+    field.relationshipMeaning = props.relationshipMeaning;
   field.rebuildParentship();
   return field;
 }

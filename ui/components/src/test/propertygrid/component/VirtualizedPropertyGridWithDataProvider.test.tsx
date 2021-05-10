@@ -20,9 +20,9 @@ import {
 } from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
+import { PropertyCategoryRendererManager } from "../../../ui-components/propertygrid/PropertyCategoryRendererManager";
 
 describe("VirtualizedPropertyGridWithDataProvider", () => {
-
   const categories: PropertyCategory[] = [
     { name: "Group_1", label: "Group 1", expand: true },
     { name: "Group_2", label: "Group 2", expand: false },
@@ -42,7 +42,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
   });
 
   beforeEach(() => {
-    sinon.restore();
     // note: this is needed for AutoSizer used by the Tree to
     // have non-zero size and render the virtualized list
     sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 1200);
@@ -61,6 +60,10 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         },
       }),
     };
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   describe("rendering", () => {
@@ -404,11 +407,101 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
     });
 
+    describe("custom category renderers", () => {
+      interface SetupDataProviderArgs {
+        expandCustomCategory: boolean;
+      }
+
+      function setupDataProvider(customCategoryName: string, { expandCustomCategory }: SetupDataProviderArgs): IPropertyDataProvider {
+        const rootCategory1: PropertyCategory = {
+          name: customCategoryName,
+          label: customCategoryName,
+          expand: expandCustomCategory,
+          renderer: { name: "test_renderer" },
+        };
+        return {
+          onDataChanged: new PropertyDataChangeEvent(),
+          getData: async (): Promise<PropertyData> => ({
+            label: PropertyRecord.fromString("test_label"),
+            description: "test_description",
+            categories: [rootCategory1],
+            records: {
+              [rootCategory1.name]: [TestUtils.createPrimitiveStringProperty("rootCategory1Property", "Test", "Test")],
+            },
+            reusePropertyDataState: true,
+          }),
+        };
+      }
+
+      before(() => {
+        PropertyCategoryRendererManager.defaultManager.addRenderer("test_renderer", () => () => <>Custom renderer</>);
+      });
+
+      after(() => {
+        PropertyCategoryRendererManager.defaultManager.removeRenderer("test_renderer");
+      });
+
+      it("uses custom category renderer when category specifies one", async () => {
+        dataProvider = setupDataProvider("test_category", { expandCustomCategory: true });
+        const { findByText } = render(
+          <VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />,
+        );
+        expect(await findByText("Custom renderer")).not.to.be.null;
+      });
+
+      it("uses property category renderer manager from props when available", async () => {
+        dataProvider = setupDataProvider("test_category", { expandCustomCategory: true });
+        const rendererManager = new PropertyCategoryRendererManager();
+        rendererManager.addRenderer("test_renderer", () => () => <>Test renderer from props</>);
+        const { findByText } = render(
+          <VirtualizedPropertyGridWithDataProvider
+            orientation={Orientation.Horizontal}
+            dataProvider={dataProvider}
+            propertyCategoryRendererManager={rendererManager}
+          />,
+        );
+        expect(await findByText("Test renderer from props")).not.to.be.null;
+      });
+
+      it("updates node height on expansion", async () => {
+        sinon.stub(HTMLElement.prototype, "getBoundingClientRect").get(() => () => ({ height: 500 }));
+        dataProvider = setupDataProvider("test_category", { expandCustomCategory: false });
+
+        const { baseElement, findByText, queryByText } = render(
+          <VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />,
+        );
+
+        const category = await findByText("test_category");
+        expect(queryByText("Custom renderer")).to.be.null;
+        const node = baseElement.querySelector(".virtualized-grid-node") as HTMLElement;
+        expect(node.style.height).to.be.equal("39px");
+
+        fireEvent.click(category);
+        await findByText("Custom renderer");
+        expect(node.style.height).to.be.equal("536px");
+      });
+
+      it("updates node height on collapse", async () => {
+        sinon.stub(HTMLElement.prototype, "getBoundingClientRect").get(() => () => ({ height: 500 }));
+        dataProvider = setupDataProvider("test_category", { expandCustomCategory: true });
+
+        const { baseElement, findByText } = render(
+          <VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />,
+        );
+
+        const category = await findByText("test_category");
+        const node = baseElement.querySelector(".virtualized-grid-node") as HTMLElement;
+        expect(node.style.height).to.be.equal("536px");
+
+        fireEvent.click(category);
+        expect(node.style.height).to.be.equal("39px");
+      });
+    });
   });
 
   describe("dynamic node heights", () => {
     const StubComponent: React.FC<FlatPropertyRendererExports.FlatPropertyRendererProps> = (props) => {
-      React.useEffect(() => props.onHeightChanged!(15));
+      React.useLayoutEffect(() => props.onHeightChanged!(15));
       return <>Stub Component</>;
     };
 
@@ -636,6 +729,20 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     });
   });
 
+  describe("property hover", () => {
+    it("enables property hovering", async () => {
+      const { findByText, getByRole } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider}
+          isPropertyHoverEnabled={true}
+        />);
+
+      await findByText("Group 1");
+      expect([...getByRole("presentation").classList.values()]).to.contain("components--hoverable");
+    });
+  });
+
   describe("property editing", () => {
     it("starts editor on click & commits on Enter", async () => {
       const spyMethod = sinon.spy();
@@ -682,6 +789,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
       expect(container.querySelectorAll(".components-cell-editor").length).to.be.equal(0);
     });
+
     it("starts editor on click if clicked before to select", async () => {
       const { container } = render(
         <VirtualizedPropertyGridWithDataProvider
@@ -888,7 +996,9 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       label: "Parent",
       expand: true,
     };
-    const highlightValue: HighlightingComponentProps & { filteredTypes: FilteredType[] } = {
+    const highlightValue: HighlightingComponentProps & {
+      filteredTypes: FilteredType[];
+    } = {
       highlightedText: "test",
       activeHighlight: {
         highlightedItemIdentifier: "test2",
@@ -896,7 +1006,9 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       },
       filteredTypes: [FilteredType.Value],
     };
-    const highlightCategory: HighlightingComponentProps & { filteredTypes: FilteredType[] } = {
+    const highlightCategory: HighlightingComponentProps & {
+      filteredTypes: FilteredType[];
+    } = {
       highlightedText: "PARENT",
       activeHighlight: {
         highlightedItemIdentifier: "ParentCategory",
@@ -904,7 +1016,9 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       },
       filteredTypes: [FilteredType.Category],
     };
-    const highlightLabel: HighlightingComponentProps & { filteredTypes: FilteredType[] } = {
+    const highlightLabel: HighlightingComponentProps & {
+      filteredTypes: FilteredType[];
+    } = {
       highlightedText: "test",
       activeHighlight: {
         highlightedItemIdentifier: "test2",
@@ -912,7 +1026,9 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       },
       filteredTypes: [FilteredType.Label],
     };
-    const highlight1: HighlightingComponentProps & { filteredTypes?: FilteredType[] } = {
+    const highlight1: HighlightingComponentProps & {
+      filteredTypes?: FilteredType[];
+    } = {
       highlightedText: "Test",
       activeHighlight: {
         highlightedItemIdentifier: "testtest",

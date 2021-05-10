@@ -3698,6 +3698,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   private _hasZoom = false;
   private _rotate2dDisabled = false;
   private _rotate2dThreshold?: Angle;
+  private _only2dManipulations = false;
 
   /** Move this handle during the inertia duration */
   public animate(): boolean {
@@ -3724,8 +3725,9 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 
   public interrupt() { }
 
-  constructor(startEv: BeTouchEvent, ev: BeTouchEvent) {
+  constructor(startEv: BeTouchEvent, ev: BeTouchEvent, only2dManipulations = false) {
     super(startEv.viewport, 0, true, false);
+    this._only2dManipulations = only2dManipulations;
     this.onStart(ev);
   }
 
@@ -3915,7 +3917,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     vp.setupViewFromFrustum(this._frustum);
 
     const singleTouch = this._singleTouch;
-    return vp.view.allow3dManipulations() ?
+    return (!this._only2dManipulations && vp.view.allow3dManipulations()) ?
       singleTouch ? this.handle3dRotate() : this.handle3dPanZoom(ev) :
       singleTouch ? this.handle2dPan() : this.handle2dRotateZoom(ev);
   }

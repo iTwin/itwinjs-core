@@ -109,14 +109,20 @@ export abstract class MutableFlatPropertyGridItem implements IMutableFlatPropert
   }
 
   /**
-   * Gets a flat list of visible FlatGridItems beneath this flat grid item and itself in depth first visiting order.
+   * Gets a flat list of visible FlatGridItems beneath this flat grid item.
    */
-  public getVisibleDescendantsAndSelf(): IMutableFlatGridItem[] {
+  public getVisibleDescendants(): IMutableFlatGridItem[] {
     const descendants: IMutableFlatGridItem[] = [];
     if (this.isExpanded)
       this.getChildren().forEach((child) => descendants.push(...child.getVisibleDescendantsAndSelf()));
+    return descendants;
+  }
 
-    return [this.getSelf(), ...descendants];
+  /**
+   * Gets a flat list of visible FlatGridItems beneath this flat grid item and itself in depth first visiting order.
+   */
+  public getVisibleDescendantsAndSelf(): IMutableFlatGridItem[] {
+    return [this.getSelf(), ...this.getVisibleDescendants()];
   }
 
   /**

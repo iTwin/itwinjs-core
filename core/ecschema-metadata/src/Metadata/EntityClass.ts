@@ -122,7 +122,7 @@ export class EntityClass extends ECClass {
     if (!this.properties)
       return;
 
-    ECClass.mergeProperties(result, existingValues, this.properties, true);
+    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
   }
 
   protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
@@ -142,7 +142,7 @@ export class EntityClass extends ECClass {
     if (!this.properties)
       return;
 
-    ECClass.mergeProperties(result, existingValues, this.properties, true);
+    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
   }
 
   /**

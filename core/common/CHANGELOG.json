@@ -2,6 +2,75 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.15.1",
+      "tag": "@bentley/imodeljs-common_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "FeatureOverrides can hide or override the symbology of unanimated nodes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/imodeljs-common_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add documentation and links for each BisCodeSpec name."
+          },
+          {
+            "comment": "Properly declare changeSetId variables as string."
+          },
+          {
+            "comment": "Promote display-related APIs."
+          },
+          {
+            "comment": "An ElementGraphicsRequest can supply a non-persistent geometry stream."
+          },
+          {
+            "comment": "Add TypeScript wrappers for ExternalSource and related classes and relationships."
+          },
+          {
+            "comment": "Fixes to desktop and iOS apps."
+          },
+          {
+            "comment": "ClipStyle supports recolorization. Promote ModelClipGroups to public."
+          },
+          {
+            "comment": "Promote thematic display API to public."
+          },
+          {
+            "comment": "Optimize reality model processing."
+          },
+          {
+            "comment": "Remove deprecated ElementEditor that was replaced by EditCommands."
+          },
+          {
+            "comment": "rename (deprecate) BriefcaseIdValue.Standalone to BriefcaseIdValue.Unassigned to reduce confusion"
+          },
+          {
+            "comment": "Update release tags."
+          },
+          {
+            "comment": "Add support for forwarding txn events from backend to frontend."
+          },
+          {
+            "comment": "Update api tags"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@bentley/imodeljs-common_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.14.3",
       "tag": "@bentley/imodeljs-common_v2.14.3",
       "date": "Thu, 15 Apr 2021 15:13:16 GMT",
