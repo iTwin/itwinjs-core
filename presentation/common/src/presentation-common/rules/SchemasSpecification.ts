@@ -20,3 +20,28 @@ export interface SchemasSpecification {
    */
   isExclude?: boolean;
 }
+
+/**
+ * A specification for a schema requirement.
+ * @beta
+ */
+export interface RequiredSchemaSpecification {
+  /** ECSchema name */
+  name: string;
+
+  /**
+   * Minimum required schema version (inclusive).
+   * Format: `{read version}.{write version}.{minor version}`, e.g. `2.1.15`.
+   *
+   * @pattern ^[\d]+\.[\d]+\.[\d]+$
+   */
+  minVersion?: string;
+
+  /**
+   * Maximum allowed schema version (exclusive).
+   * Format: `{read version}.{write version}.{minor version}`, e.g. `2.1.15`.
+   *
+   * @pattern ^[\d]+\.[\d]+\.[\d]+$
+   */
+  maxVersion?: string;
+}
