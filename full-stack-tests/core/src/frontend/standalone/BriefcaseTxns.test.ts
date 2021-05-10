@@ -21,7 +21,6 @@ describe("BriefcaseTxns", () => {
 
     after(async () => {
       await ElectronApp.shutdown();
-      await initializeEditTools();
     });
 
     beforeEach(async () => {
@@ -62,6 +61,7 @@ describe("BriefcaseTxns", () => {
 
         await wait();
         expect(received).to.deep.equal(expected);
+        received.length = expected.length = 0;
       };
 
       const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
@@ -122,19 +122,19 @@ describe("BriefcaseTxns", () => {
 
       await imodel.txns.reverseAll();
       await expectUndo([
-        "onElementsChanged", "onChangesApplied",
-        "onElementsChanged", "onChangesApplied",
-        "onElementsChanged", "onChangesApplied",
-        "onElementsChanged", "onModelsChanged", "onChangesApplied",
         "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
+        "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
+        "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
+        "onElementsChanged", "onModelsChanged", "onChangesApplied",
+        "onElementsChanged", "onChangesApplied",
       ]);
 
       await imodel.txns.reinstateTxn();
       await expectRedo([
         "onElementsChanged", "onChangesApplied",
         "onElementsChanged", "onModelsChanged", "onChangesApplied",
-        "onElementsChanged", "onChangesApplied",
-        "onElementsChanged", "onChangesApplied",
+        "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
+        "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
         "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
       ]);
     });

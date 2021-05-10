@@ -7,8 +7,8 @@
  */
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@bentley/geometry-core";
+import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -20,7 +20,7 @@ import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
+import { BatchOptions, GraphicBuilder, GraphicBuilderOptions, GraphicType } from "./GraphicBuilder";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
@@ -148,6 +148,35 @@ export class DebugShaderFile {
   public constructor(public readonly filename: string, public readonly src: string, public isVS: boolean, public isGL: boolean, public isUsed: boolean) {
   }
 }
+/** Transparency settings for planar grid display.
+ * @alpha
+ */
+export class PlanarGridTransparency {
+  /** Transparency for the grid plane.   This should generally be fairly high to avoid obscuring other geometry */
+  public readonly planeTransparency = .9;
+  /** Transparency of the grid lines.  This should be higher than the plane, but less than reference line transparency */
+  public readonly lineTransparency = .75;
+  /** Transparency of the reference lines.   This should be less than plane or line transparency so that reference lines are more prominent */
+  public readonly refTransparency = .5;
+}
+
+/** Settings for planar grid display.
+ * @alpha
+ */
+export interface PlanarGridProps {
+  /**  The grid origin */
+  origin: Point3d;
+  /** The grid orientation. The grid X and Y direction are the first and second matrix rows */
+  rMatrix: Matrix3d;
+  /** The spacing between grid liens in the X and Y direction */
+  spacing: XAndY;
+  /** Grid lines per reference. If zero no reference lines are displayed. */
+  gridsPerRef: number;
+  /** Grid color.   [[Use Viewport.getContrastToBackgroundColor]] to get best constrast color based on current background. */
+  color: ColorDef;
+  /** Transparency settings.  If omitted then the [[PlanarGridTransparency]] defaults are used. */
+  transparency?: PlanarGridTransparency;
+}
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
@@ -236,7 +265,16 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[RenderContext.createGraphicBuilder]].
    * @see [[Decorator]]
    */
-  public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
+  public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder {
+    const pickable = undefined !== pickableId ? { id: pickableId } : undefined;
+    return this.createGraphic({ type, viewport, placement, pickable });
+  }
+
+  /** Obtain a [[GraphicBuilder]] from which to produce a [[RenderGraphic]].
+   * @param options Options describing how to create the builder.
+   * @returns A builder that produces a [[RenderGraphic]].
+   */
+  public abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
 
   /** Obtain an object capable of producing a custom screen-space effect to be applied to the image rendered by a [[Viewport]].
    * @returns undefined if screen-space effects are not supported by this RenderSystem.
@@ -279,8 +317,16 @@ export abstract class RenderSystem implements IDisposable {
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
-  /** @internal */
+
+  /** Create a clip volume to clip geometry.
+   * @note The clip volume takes ownership of the ClipVector, which must not be subsequently mutated.
+   * @param _clipVector Defines how the volume clips geometry.
+   * @returns A clip volume, or undefined if, e.g., the clip vector does not clip anything.
+   */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
+
+  /** @internal */
+  public createPlanarGrid(_frustum: Frustum,_grid: PlanarGridProps): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
@@ -344,7 +390,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal
    */
-  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
+  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
 
   /** Create a graphic that assumes ownership of another graphic.
    * @param ownedGraphic The RenderGraphic to be owned.

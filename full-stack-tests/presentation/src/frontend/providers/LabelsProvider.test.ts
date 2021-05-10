@@ -42,7 +42,7 @@ describe("LabelsProvider", async () => {
     });
 
     it("returns model labels", async () => {
-      const props = await imodel.models.queryProps({ from: "bis.Model", only: false });
+      const props = await imodel.models.queryProps({ from: "bis.Model", where: "ECInstanceId <> 1", only: false });
       const labels = await provider.getLabels(props.map((p) => ({ className: p.classFullName, id: p.id! })));
       expect(labels).to.matchSnapshot();
     });

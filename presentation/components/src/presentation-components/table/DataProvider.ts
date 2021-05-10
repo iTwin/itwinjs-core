@@ -6,18 +6,20 @@
  * @module Table
  */
 
+import { sort } from "fast-sort";
 import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   Content, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item, PresentationError,
   PresentationStatus, Ruleset, SortDirection,
 } from "@bentley/presentation-common";
-import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent} from "@bentley/ui-components";
+import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
 import { SortDirection as UiSortDirection } from "@bentley/ui-core";
 import { ContentBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
+import { DiagnosticsProps } from "../common/Diagnostics";
 import { Page, PageContainer } from "../common/PageContainer";
-import { createLabelRecord, priorityAndNameSortFunction, translate } from "../common/Utils";
+import { createLabelRecord, translate } from "../common/Utils";
 
 interface PromisedPage<TItem> extends Page<TItem> {
   promise?: Promise<void>;
@@ -48,7 +50,7 @@ export type IPresentationTableDataProvider = ITableDataProvider & IContentDataPr
  * Initialization properties for [[PresentationTableDataProvider]]
  * @public
  */
-export interface PresentationTableDataProviderProps {
+export interface PresentationTableDataProviderProps extends DiagnosticsProps {
   /** IModel to pull data from */
   imodel: IModelConnection;
 
@@ -91,6 +93,8 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
       displayType: props.displayType || DefaultContentDisplayTypes.Grid,
       pagingSize: props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
       enableContentAutoUpdate: props.enableContentAutoUpdate,
+      ruleDiagnostics: props.ruleDiagnostics,
+      devDiagnostics: props.devDiagnostics,
     });
     this._pages = new PageContainer(props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
       props.cachedPagesCount || TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT);
@@ -252,8 +256,10 @@ const createColumns = (descriptor: Readonly<Descriptor> | undefined): ColumnDesc
   if (descriptor.displayType === DefaultContentDisplayTypes.List)
     return [createLabelColumn()];
 
-  const sortedFields = [...descriptor.fields].sort(priorityAndNameSortFunction);
-  return sortedFields.map((field) => createColumn(field));
+  return sort(descriptor.fields).by([
+    { desc: (f) => f.priority },
+    { asc: (f) => f.label },
+  ]).map((f) => createColumn(f));
 };
 
 const createColumn = (field: Readonly<Field>): ColumnDescription => {

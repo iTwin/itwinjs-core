@@ -18,7 +18,6 @@ export interface GraphicBranchFrustum {
 }
 
 import { disposeArray, IDisposable } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
 import { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
@@ -84,9 +83,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
  * @public
  */
 export interface GraphicBranchOptions {
-  /** Clip applied to the graphics in the branch.
-   * @beta
-   */
+  /** Clip applied to the graphics in the branch. */
   clipVolume?: RenderClipVolume;
   /** @internal */
   classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
@@ -103,20 +100,9 @@ export interface GraphicBranchOptions {
 /** Clip/Transform for a branch that are varied over time.
  * @internal
  */
-export class AnimationBranchState {
-  public readonly omit?: boolean;
-  public readonly transform?: Transform;
-  public readonly clip?: RenderClipVolume;
-  constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean) {
-    this.transform = transform;
-    this.clip = clip;
-    this.omit = omit;
-  }
-
-  public dispose(): void {
-    if (this.clip)
-      this.clip.dispose();
-  }
+export interface AnimationBranchState {
+  readonly clip?: RenderClipVolume;
+  readonly omit?: boolean;
 }
 
 /** Mapping from node/branch IDs to animation branch state

@@ -14,12 +14,11 @@ import {
 } from "@bentley/geometry-core";
 import { ClipStyle, ColorDef, LinePixels, Placement2d, Placement2dProps, Placement3d } from "@bentley/imodeljs-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
-import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
+import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { GraphicBuilder, GraphicType } from "../render/GraphicBuilder";
-import { StandardViewId } from "../StandardView";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { EditManipulator } from "./EditManipulator";
@@ -87,14 +86,14 @@ export class ViewClipTool extends PrimitiveTool {
       typename: "enum",
       enum: {
         choices: [
-          { label: ViewClipTool.enumAsOrientationMessage("Top"), value: EditManipulator.RotationType.Top },
-          { label: ViewClipTool.enumAsOrientationMessage("Front"), value: EditManipulator.RotationType.Front },
-          { label: ViewClipTool.enumAsOrientationMessage("Left"), value: EditManipulator.RotationType.Left },
-          { label: ViewClipTool.enumAsOrientationMessage("Bottom"), value: EditManipulator.RotationType.Bottom },
-          { label: ViewClipTool.enumAsOrientationMessage("Back"), value: EditManipulator.RotationType.Back },
-          { label: ViewClipTool.enumAsOrientationMessage("Right"), value: EditManipulator.RotationType.Right },
-          { label: ViewClipTool.enumAsOrientationMessage("View"), value: EditManipulator.RotationType.View },
-          { label: ViewClipTool.enumAsOrientationMessage("Face"), value: EditManipulator.RotationType.Face },
+          { label: ViewClipTool.enumAsOrientationMessage("Top"), value: ContextRotationId.Top },
+          { label: ViewClipTool.enumAsOrientationMessage("Front"), value: ContextRotationId.Front },
+          { label: ViewClipTool.enumAsOrientationMessage("Left"), value: ContextRotationId.Left },
+          { label: ViewClipTool.enumAsOrientationMessage("Bottom"), value: ContextRotationId.Bottom },
+          { label: ViewClipTool.enumAsOrientationMessage("Back"), value: ContextRotationId.Back },
+          { label: ViewClipTool.enumAsOrientationMessage("Right"), value: ContextRotationId.Right },
+          { label: ViewClipTool.enumAsOrientationMessage("View"), value: ContextRotationId.View },
+          { label: ViewClipTool.enumAsOrientationMessage("Face"), value: ContextRotationId.Face },
         ],
       },
     };
@@ -119,8 +118,8 @@ export class ViewClipTool extends PrimitiveTool {
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.onReinitialize(); return EventHandled.No; }
 
   /** @internal */
-  public static getPlaneInwardNormal(orientation: EditManipulator.RotationType, viewport: Viewport): Vector3d | undefined {
-    const matrix = EditManipulator.HandleUtils.getRotation(orientation, viewport);
+  public static getPlaneInwardNormal(orientation: ContextRotationId, viewport: Viewport): Vector3d | undefined {
+    const matrix = AccuDrawHintBuilder.getContextRotation(orientation, viewport);
     if (undefined === matrix)
       return undefined;
     return matrix.getColumn(2).negate();
@@ -473,13 +472,13 @@ export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
   public static iconSpec = "icon-section-plane";
   /** @internal */
-  private _orientationValue: DialogItemValue = { value: EditManipulator.RotationType.Face };
+  private _orientationValue: DialogItemValue = { value: ContextRotationId.Face };
 
   constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
 
   /** @internal */
-  public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
-  public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
+  public get orientation(): ContextRotationId { return this._orientationValue.value as ContextRotationId; }
+  public set orientation(option: ContextRotationId) { this._orientationValue.value = option; }
 
   /** @internal */
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
@@ -554,7 +553,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
   public static iconSpec = "icon-section-shape";
   /** @internal */
-  private _orientationValue: DialogItemValue = { value: EditManipulator.RotationType.Top };
+  private _orientationValue: DialogItemValue = { value: ContextRotationId.Top };
   /** @internal */
   protected readonly _points: Point3d[] = [];
   /** @internal */
@@ -565,8 +564,8 @@ export class ViewClipByShapeTool extends ViewClipTool {
   protected _zHigh?: number;
 
   /** @internal */
-  public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
-  public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
+  public get orientation(): ContextRotationId { return this._orientationValue.value as ContextRotationId; }
+  public set orientation(option: ContextRotationId) { this._orientationValue.value = option; }
 
   /** @internal */
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
@@ -647,14 +646,14 @@ export class ViewClipByShapeTool extends ViewClipTool {
     const hints = new AccuDrawHintBuilder();
     hints.setOrigin(this._points[this._points.length - 1]);
     if (1 === this._points.length) {
-      hints.setRotation(this._matrix.inverse()!);
+      hints.setMatrix(this._matrix);
       hints.setModeRectangular();
     } else if (this._points.length > 1 && !(this._points[this._points.length - 1].isAlmostEqual(this._points[this._points.length - 2]))) {
       const xVec = Vector3d.createStartEnd(this._points[this._points.length - 2], this._points[this._points.length - 1]);
       const zVec = this._matrix.getColumn(2);
       const matrix = Matrix3d.createRigidFromColumns(xVec, zVec, AxisOrder.XZY);
       if (undefined !== matrix)
-        hints.setRotation(matrix.inverse()!); // Rotate AccuDraw x axis to last segment preserving current up vector...
+        hints.setMatrix(matrix); // Rotate AccuDraw x axis to last segment preserving current up vector...
     }
     hints.setLockZ = true;
     hints.sendHints();
@@ -671,14 +670,14 @@ export class ViewClipByShapeTool extends ViewClipTool {
       return points;
 
     const normal = this._matrix.getColumn(2);
-    let currentPt = EditManipulator.HandleUtils.projectPointToPlaneInView(ev.point, points[0], normal, ev.viewport!, true);
+    let currentPt = AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, points[0], normal, ev.viewport!, true);
     if (undefined === currentPt)
       currentPt = ev.point.clone();
     if (2 === points.length && !ev.isControlKey) {
       const xDir = Vector3d.createStartEnd(points[0], points[1]);
       const xLen = xDir.magnitude(); xDir.normalizeInPlace();
       const yDir = xDir.crossProduct(normal); yDir.normalizeInPlace();
-      const cornerPt = EditManipulator.HandleUtils.projectPointToLineInView(currentPt, points[1], yDir, ev.viewport!, true);
+      const cornerPt = AccuDrawHintBuilder.projectPointToLineInView(currentPt, points[1], yDir, ev.viewport!, true);
       if (undefined !== cornerPt) {
         points.push(cornerPt);
         cornerPt.plusScaled(xDir, -xLen, currentPt);
@@ -752,12 +751,12 @@ export class ViewClipByShapeTool extends ViewClipTool {
       return EventHandled.Yes;
     }
 
-    if (undefined === this._matrix && undefined === (this._matrix = EditManipulator.HandleUtils.getRotation(this.orientation, this.targetView)))
+    if (undefined === this._matrix && undefined === (this._matrix = AccuDrawHintBuilder.getContextRotation(this.orientation, this.targetView)))
       return EventHandled.No;
 
     const currPt = ev.point.clone();
     if (this._points.length > 0) {
-      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), ev.viewport!, true);
+      const planePt = AccuDrawHintBuilder.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), ev.viewport!, true);
       if (undefined !== planePt)
         currPt.setFrom(planePt);
     }
@@ -819,7 +818,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
     if (undefined === this.targetView || undefined === this._corner)
       return false;
     // Creating clip aligned with ACS when ACS context lock is enabled...
-    const matrix = EditManipulator.HandleUtils.getRotation(EditManipulator.RotationType.Top, this.targetView);
+    const matrix = AccuDrawHintBuilder.getContextRotation(ContextRotationId.Top, this.targetView);
     Transform.createOriginAndMatrix(this._corner, matrix, transform);
     const pt1 = transform.multiplyInversePoint3d(this._corner);
     const pt2 = transform.multiplyInversePoint3d(ev.point);
@@ -1063,7 +1062,7 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
 
     // NOTE: Use AccuDraw z instead of view z if AccuDraw is explicitly enabled...
     const anchorRay = ViewClipTool.getClipRayTransformed(this._controls[this._anchorIndex].origin, this._controls[this._anchorIndex].direction, transformFromClip);
-    const projectedPt = EditManipulator.HandleUtils.projectPointToLineInView(ev.point, anchorRay.origin, anchorRay.direction, ev.viewport, true);
+    const projectedPt = AccuDrawHintBuilder.projectPointToLineInView(ev.point, anchorRay.origin, anchorRay.direction, ev.viewport, true);
     if (undefined === projectedPt)
       return undefined;
 
@@ -1562,7 +1561,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 
   private getWorldUpPlane(viewport: Viewport): Plane3dByOriginAndUnitNormal | undefined {
-    const matrix = AccuDraw.getStandardRotation(StandardViewId.Top, viewport, viewport.isContextRotationRequired).inverse();
+    const matrix = AccuDrawHintBuilder.getContextRotation(ContextRotationId.Top, viewport);
     if (undefined === matrix)
       return undefined;
     const worldUp = matrix.getColumn(2);

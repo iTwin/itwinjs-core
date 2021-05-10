@@ -48,6 +48,7 @@ describe("ModelState", () => {
 
   it("should be able to load ModelState", async () => {
     await imodel.models.load(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
+    // eslint-disable-next-line deprecation/deprecation
     const models = imodel.models.loaded;
     assert.equal(models.size, 5);
     assert.instanceOf(models.get("0x24"), DrawingModelState);
@@ -115,6 +116,7 @@ describe("ModelState", () => {
     assert.equal(propsCount, 1);
 
     await imodel2.models.load(["0x28", "0x1c"]);
+    // eslint-disable-next-line deprecation/deprecation
     assert.equal(imodel2.models.loaded.size, 2);
     const scalableMesh = imodel2.models.getLoaded("0x28");
     assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");

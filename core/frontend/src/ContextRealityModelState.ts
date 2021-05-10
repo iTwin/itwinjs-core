@@ -72,7 +72,7 @@ export class ContextRealityModelState {
         orbitGtBlob: props.orbitGtBlob,
         name: props.name,
         classifiers,
-        displayStyle,
+        source: displayStyle,
       });
   }
 

@@ -24,7 +24,11 @@ export class TestUtility {
     connectionRead: "ConnectionReadTest",
     smallTex: "SmallTex",
     sectionDrawingLocations: "SectionDrawingLocations",
+    // Includes a display style with a schedule script embedded in JSON.
     synchro: "SYNCHRO.UTK",
+    // A version of the above that uses BisCore 1.0.13 and includes a second display style with schedule script stored
+    // separately on a RenderTimeline element.
+    synchroNew: "SYNCHRO.UTK.1.0.13",
   };
 
   public static testSnapshotIModels = {
@@ -58,7 +62,7 @@ export class TestUtility {
     let authorizationClient: FrontendAuthorizationClient;
     if (NativeApp.isValid) {
       authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
-      await NativeApp.callNativeHost("silentLogin", (await getAccessTokenFromBackend(user)).toJSON());
+      await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(user)).toJSON());
     } else {
       authorizationClient = this.imodelCloudEnv.getAuthorizationClient(undefined, user);
       await authorizationClient.signIn();

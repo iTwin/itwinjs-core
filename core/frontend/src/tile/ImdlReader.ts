@@ -26,6 +26,7 @@ import {
 } from "../render/primitives/VertexTable";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+import { BatchOptions } from "../render/GraphicBuilder";
 import { GltfReader, GltfReaderProps, IModelTileContent, ShouldAbortReadGltf } from "./internal";
 
 /* eslint-disable no-restricted-syntax */
@@ -36,11 +37,16 @@ export interface ImdlReaderResult extends IModelTileContent {
 }
 
 /** Convert the byte array returned by [[TileAdmin.requestElementGraphics]] into a [[RenderGraphic]].
+ * @param bytes The binary graphics data obtained from `requestElementGraphics`.
+ * @param iModel The iModel with which the graphics are associated.
+ * @param modelId The Id of the [[GeometricModelState]] with which the graphics are associated. Can be an invalid Id.
+ * @param is3d True if the graphics are 3d.
+ * @param options Options customizing how [Feature]($common)s within the graphic can be resymbolized.
  * @public
  */
-export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise<RenderGraphic | undefined> {
+export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(bytes.buffer);
-  const reader = ImdlReader.create(stream, iModel, modelId, is3d, IModelApp.renderSystem);
+  const reader = ImdlReader.create(stream, iModel, modelId, is3d, IModelApp.renderSystem, undefined, undefined, undefined, undefined, options);
   if (!reader)
     return undefined;
 
@@ -54,12 +60,12 @@ export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConne
 export class ImdlReader extends GltfReader {
   private readonly _sizeMultiplier?: number;
   private readonly _loadEdges: boolean;
-  private readonly _tileId?: string;
+  private readonly _options: BatchOptions;
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
     type: BatchType = BatchType.Primary, loadEdges: boolean = true, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number,
-    tileId?: string): ImdlReader | undefined {
+    options?: BatchOptions): ImdlReader | undefined {
     const header = new ImdlHeader(stream);
     if (!header.isValid || !header.isReadableVersion)
       return undefined;
@@ -70,7 +76,7 @@ export class ImdlReader extends GltfReader {
 
     // A glTF header follows the feature table
     const props = GltfReaderProps.create(stream, false);
-    return undefined !== props ? new ImdlReader(props, iModel, modelId, is3d, system, type, loadEdges, isCanceled, sizeMultiplier, tileId) : undefined;
+    return undefined !== props ? new ImdlReader(props, iModel, modelId, is3d, system, type, loadEdges, isCanceled, sizeMultiplier, options) : undefined;
   }
 
   /** Attempt to deserialize the tile data */
@@ -321,11 +327,11 @@ export class ImdlReader extends GltfReader {
   }
 
   private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
-    type: BatchType, loadEdges: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, tileId?: string) {
+    type: BatchType, loadEdges: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions) {
     super(props, iModel, modelId, is3d, system, type, isCanceled);
     this._sizeMultiplier = sizeMultiplier;
     this._loadEdges = loadEdges;
-    this._tileId = tileId;
+    this._options = options ?? { };
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {
@@ -706,7 +712,7 @@ export class ImdlReader extends GltfReader {
     }
 
     if (undefined !== tileGraphic)
-      tileGraphic = this._system.createBatch(tileGraphic, featureTable, contentRange, this._tileId);
+      tileGraphic = this._system.createBatch(tileGraphic, featureTable, contentRange, this._options);
 
     return {
       readStatus: TileReadStatus.Success,

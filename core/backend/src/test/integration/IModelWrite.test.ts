@@ -554,7 +554,8 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(codes.find((code) => (code.value === "newPhysicalModel" && code.state === CodeState.Used)) !== undefined);
   });
 
-  it("should not push changes with lock conflicts (#integration)", async () => {
+  // kabentley has fix, requires native change.
+  it.skip("should not push changes with lock conflicts (#integration)", async () => {
     const adminRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     const iModelName = "LocksConflictTest";

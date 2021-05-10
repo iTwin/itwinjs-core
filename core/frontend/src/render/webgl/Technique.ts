@@ -31,10 +31,11 @@ import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSym
 import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
 import { addLogDepth } from "./glsl/LogarithmicDepthBuffer";
 import { addUnlitMonochrome } from "./glsl/Monochrome";
+import createPlanarGridProgram from "./glsl/PlanarGrid";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
-import createRealityMeshBuilder, { createClassifierRealityMeshHiliter } from "./glsl/RealityMesh";
+import createRealityMeshBuilder, { createClassifierRealityMeshHiliter, createRealityMeshHiliter } from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
@@ -639,11 +640,15 @@ class PointCloudTechnique extends VariedTechnique {
 }
 
 class RealityMeshTechnique extends VariedTechnique {
-  private static readonly _numVariants = 49;
+  private static readonly _numVariants = 50;
 
   public constructor(gl: WebGLRenderingContext) {
     super(RealityMeshTechnique._numVariants);
-    this._earlyZFlags =  [ TechniqueFlags.fromDescription("Opaque-Hilite-Classified") ];
+    this._earlyZFlags = [
+      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
+    ];
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.No, createRealityMeshHiliter);
     this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, createClassifierRealityMeshHiliter);
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
@@ -676,8 +681,8 @@ class RealityMeshTechnique extends VariedTechnique {
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite)
-      return 0;
-    let ndx = 1;
+      return flags.isClassified ? 1 : 0;
+    let ndx = 2;
     if (flags.isClassified)
       ndx++;
     if (flags.isShadowable)
@@ -752,6 +757,7 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.VolClassSetBlend },
   { techniqueId: TechniqueId.VolClassBlend },
   { techniqueId: TechniqueId.Combine3Textures },
+  { techniqueId: TechniqueId.PlanarGrid },
 ];
 const numTechniquesByPriority = techniquesByPriority.length;
 
@@ -918,6 +924,7 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
+    this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
     if (System.instance.capabilities.supportsFragDepth)
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     else

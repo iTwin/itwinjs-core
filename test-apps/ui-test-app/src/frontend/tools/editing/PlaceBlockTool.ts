@@ -7,21 +7,33 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { AxisOrder, LinearSweep, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+import { CreateElementTool, EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistance,
+  AccuDrawHintBuilder, BeButtonEvent, ContextRotationId, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistance,
   ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport,
 } from "@bentley/imodeljs-frontend";
-import { PrimitiveToolEx } from "./PrimitiveToolEx";
 
-export class PlaceBlockTool extends PrimitiveToolEx {
+export class PlaceBlockTool extends CreateElementTool {
   public static toolId = "PlaceBlock";
   public static iconSpec = "icon-cube-faces-bottom";
+  protected _startedCmd?: string;
 
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
   protected _isComplete = false;
   public height = 2.75;
   public story = "1";
+
+  protected async startCommand(): Promise<string> {
+    if (undefined !== this._startedCmd)
+      return this._startedCmd;
+    return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
+  }
+
+  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
+    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
+  }
 
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
@@ -76,14 +88,14 @@ export class PlaceBlockTool extends PrimitiveToolEx {
     const hints = new AccuDrawHintBuilder();
     hints.setOrigin(this._points[this._points.length - 1]);
     if (1 === this._points.length) {
-      hints.setRotation(this._matrix!.inverse()!);
+      hints.setMatrix(this._matrix!);
       hints.setModeRectangular();
     } else if (this._points.length > 1 && !(this._points[this._points.length - 1].isAlmostEqual(this._points[this._points.length - 2]))) {
       const xVec = Vector3d.createStartEnd(this._points[this._points.length - 2], this._points[this._points.length - 1]);
       const zVec = this._matrix!.getColumn(2);
       const matrix = Matrix3d.createRigidFromColumns(xVec, zVec, AxisOrder.XZY);
       if (undefined !== matrix)
-        hints.setRotation(matrix.inverse()!); // Rotate AccuDraw x axis to last segment preserving current up vector...
+        hints.setMatrix(matrix); // Rotate AccuDraw x axis to last segment preserving current up vector...
     }
     hints.setLockZ = true;
     hints.sendHints();
@@ -100,14 +112,14 @@ export class PlaceBlockTool extends PrimitiveToolEx {
       return points;
 
     const normal = this._matrix!.getColumn(2);
-    let currentPt = EditManipulator.HandleUtils.projectPointToPlaneInView(ev.point, points[0], normal, ev.viewport!, true);
+    let currentPt = AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, points[0], normal, ev.viewport!, true);
     if (undefined === currentPt)
       currentPt = ev.point.clone();
     if (2 === points.length && !ev.isControlKey) {
       const xDir = Vector3d.createStartEnd(points[0], points[1]);
       const xLen = xDir.magnitude(); xDir.normalizeInPlace();
       const yDir = xDir.crossProduct(normal); yDir.normalizeInPlace();
-      const cornerPt = EditManipulator.HandleUtils.projectPointToLineInView(currentPt, points[1], yDir, ev.viewport!, true);
+      const cornerPt = AccuDrawHintBuilder.projectPointToLineInView(currentPt, points[1], yDir, ev.viewport!, true);
       if (undefined !== cornerPt) {
         points.push(cornerPt);
         cornerPt.plusScaled(xDir, -xLen, currentPt);
@@ -155,7 +167,7 @@ export class PlaceBlockTool extends PrimitiveToolEx {
   public decorateSuspended(context: DecorateContext): void { if (this._isComplete) this.decorate(context); }
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._points.length > 0 && undefined !== ev.viewport && !this._isComplete) ev.viewport.invalidateDecorations(); }
 
-  private async createElement(): Promise<void> {
+  protected async createElement(): Promise<void> {
     assert(this._matrix !== undefined, "should have defined orientation by now");
     const vp = this.targetView;
     if (undefined === vp || this._points.length < 3)
@@ -185,7 +197,7 @@ export class PlaceBlockTool extends PrimitiveToolEx {
         return;
 
       const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-      await PrimitiveToolEx.callCommand("insertGeometricElement", elemProps);
+      await PlaceBlockTool.callCommand("insertGeometricElement", elemProps);
       await this.saveChanges();
 
     } catch (err) {
@@ -215,13 +227,13 @@ export class PlaceBlockTool extends PrimitiveToolEx {
       return EventHandled.No;
     }
 
-    // TODO: Get orientation from AccuDraw.getCurrentOrientation ...
-    if (undefined === this._matrix && undefined === (this._matrix = EditManipulator.HandleUtils.getRotation(EditManipulator.RotationType.Top, this.targetView)))
+    // TODO: Get orientation from AccuDrawHintBuilder.getCurrentRotation...
+    if (undefined === this._matrix && undefined === (this._matrix = AccuDrawHintBuilder.getContextRotation(ContextRotationId.Top, this.targetView)))
       return EventHandled.No;
 
     const currPt = ev.point.clone();
     if (this._points.length > 0) {
-      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), this.targetView, true);
+      const planePt = AccuDrawHintBuilder.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), this.targetView, true);
       if (undefined !== planePt)
         currPt.setFrom(planePt);
     }

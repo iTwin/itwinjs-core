@@ -10,6 +10,7 @@ export * from "./ClassRegistry";
 export * from "./CodeSpecs";
 export * from "./ConcurrencyControl";
 export * from "./Deprecated";
+export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
@@ -123,6 +124,10 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description ECSQL
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md)
+ */
+/**
+ * @docs-group-description SQLite
+ * Classes for working directly with SQLite
  */
 /**
  * @docs-group-description Portability

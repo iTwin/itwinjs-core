@@ -7,13 +7,14 @@
  */
 
 import { assert, dispose, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipPlaneContainment, ClipUtilities, Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
 import { AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
 import { Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
+import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -27,9 +28,9 @@ import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
 import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
 import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { Scene } from "../Scene";
+import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "../VisibleFeature";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
-import { ClipVolume } from "./ClipVolume";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -56,6 +57,7 @@ import { TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
+import { VisibleTileFeatures } from "./VisibleTileFeatures";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -186,10 +188,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   private disposeAnimationBranches(): void {
-    if (this._animationBranches)
-      for (const branch of this._animationBranches.values())
-        branch.dispose();
-
     this._animationBranches = undefined;
   }
 
@@ -229,7 +227,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get currentBranch(): BranchState { return this.uniforms.branch.top; }
   public get currentViewFlags(): ViewFlags { return this.currentBranch.viewFlags; }
   public get currentTransform(): Transform { return this.currentBranch.transform; }
-  public get currentClipVolume(): ClipVolume | undefined { return this.uniforms.branch.clipVolume; }
   public get currentTransparencyThreshold(): number { return this.currentEdgeSettings.transparencyThreshold; }
   public get currentEdgeSettings(): EdgeSettings { return this.currentBranch.edgeSettings; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.currentBranch.symbologyOverrides; }
@@ -322,48 +319,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.uniforms.branch.popViewClip();
   }
 
-  private _scratchRangeCorners: Point3d[] = [
-    new Point3d(), new Point3d(), new Point3d(), new Point3d(),
-    new Point3d(), new Point3d(), new Point3d(), new Point3d(),
-  ];
-
-  private _getRangeCorners(r: Range3d): Point3d[] {
-    const p = this._scratchRangeCorners;
-    p[0].setFromPoint3d(r.low);
-    p[1].set(r.high.x, r.low.y, r.low.z);
-    p[2].set(r.low.x, r.high.y, r.low.z);
-    p[3].set(r.high.x, r.high.y, r.low.z);
-    p[4].set(r.low.x, r.low.y, r.high.z);
-    p[5].set(r.high.x, r.low.y, r.high.z);
-    p[6].set(r.low.x, r.high.y, r.high.z);
-    p[7].setFromPoint3d(r.high);
-    return p;
-  }
-
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
-    const clip = this.uniforms.branch.clipVolume;
-    if (!clip || clip.hasOutsideClipColor)
-      return false;
-
-    range = this.currentTransform.multiplyRange(range, range);
-
-    const testIntersection = false;
-    if (testIntersection) {
-      // ###TODO: Avoid allocation of Range3d inside called function...
-      // ###TODO: Use some not-yet-existent API which will return as soon as it determines ANY intersection (we don't care about the actual intersection range).
-      const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip.clipVector, range);
-      return clippedRange.isNull;
-    } else {
-      // Do the cheap, imprecise check. The above is far too slow and allocates way too many objects, especially for clips produced from non-convex shapes.
-      return ClipPlaneContainment.StronglyOutside === clip.clipVector.classifyPointContainment(this._getRangeCorners(range));
-    }
+    return this.uniforms.branch.clipStack.isRangeClipped(range, this.currentTransform);
   }
 
   private readonly _scratchRange = new Range3d();
+
   /** @internal */
   public isGeometryOutsideActiveVolume(geom: CachedGeometry): boolean {
-    if (!this.uniforms.branch.clipVolume)
+    if (!this.uniforms.branch.clipStack.hasClip || this.uniforms.branch.clipStack.hasOutsideColor)
       return false;
 
     const range = geom.computeRange(this._scratchRange);
@@ -510,7 +475,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
 
-    this.uniforms.branch.updateViewClip(plan.activeClipSettings);
+    this.uniforms.branch.updateViewClip(plan.clip, plan.clipStyle);
 
     const vf = ViewFlags.createFrom(plan.viewFlags, this._scratchViewFlags);
     if (!plan.is3d)
@@ -643,28 +608,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Set this to true to visualize the output of readPixels()...useful for debugging pick.
     if (this.drawForReadPixels) {
-      this._isReadPixelsInProgress = true;
-      this._readPixelsSelector = Pixel.Selector.Feature;
-
-      const vf = this.getViewFlagsForReadPixels();
-      const top = this.currentBranch;
-      const state = new BranchState({
-        viewFlags: vf,
-        symbologyOverrides: top.symbologyOverrides,
-        is3d: top.is3d,
-        edgeSettings: top.edgeSettings,
-        transform: Transform.createIdentity(),
-        clipVolume: top.clipVolume,
-      });
-
-      this.pushState(state);
-
-      this.beginPerfMetricRecord("Init Commands", this.drawForReadPixels);
-      this._renderCommands.initForReadPixels(this.graphics);
-      this.endPerfMetricRecord(this.drawForReadPixels);
-
+      this.beginReadPixels(Pixel.Selector.Feature);
       this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
-      this.uniforms.branch.pop();
+      this.endReadPixels();
     } else {
       // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
       // the compositor's textures, framebuffers, etc. This *must* occur before any drawing occurs.
@@ -707,7 +653,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // during readPixels() if the effect shifts pixels from their original locations.
     this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
     this.renderSystem.screenSpaceEffects.apply(this);
-    this._isReadPixelsInProgress = false;
     this.endPerfMetricRecord(this.drawForReadPixels);
 
     // Reset the batch IDs in all batches drawn for this call.
@@ -790,20 +735,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.uniforms.batch.resetBatchState();
   }
 
-  private getViewFlagsForReadPixels(): ViewFlags {
-    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = false;
-    if (!this.uniforms.thematic.wantIsoLines)
-      vf.thematicDisplay = false;
-    vf.noGeometryMap = true;
-    return vf;
-  }
-
-  private readonly _scratchTmpFrustum = new Frustum();
-  private readonly _scratchRectFrustum = new Frustum();
-  private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
-    // const collectReadPixelsTimings = this.performanceMetrics !== undefined && !this.performanceMetrics.gatherCurPerformanceMetrics; // Only collect data here if in display-perf-test-app
-    // if (collectReadPixelsTimings) this.beginPerfMetricRecord("Init Commands");
+  private beginReadPixels(selector: Pixel.Selector, cullingFrustum?: Frustum): void {
     this.beginPerfMetricRecord("Init Commands", true);
 
     this._isReadPixelsInProgress = true;
@@ -811,7 +743,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
-    const vf = this.getViewFlagsForReadPixels();
+    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
+    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = false;
+    if (!this.uniforms.thematic.wantIsoLines)
+      vf.thematicDisplay = false;
+
+    vf.noGeometryMap = true;
     const top = this.currentBranch;
     const state = new BranchState({
       viewFlags: vf,
@@ -824,7 +761,29 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.pushState(state);
 
+    // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
+    if (cullingFrustum)
+      this._renderCommands.setCheckRange(cullingFrustum);
+
+    this._renderCommands.initForReadPixels(this.graphics);
+    this._renderCommands.clearCheckRange();
+    this.endPerfMetricRecord(true);
+  }
+
+  private endReadPixels(preserveBatchState = false): void {
+    // Pop the BranchState pushed by beginReadPixels.
+    this.uniforms.branch.pop();
+    if (!preserveBatchState)
+      this.uniforms.batch.resetBatchState();
+
+    this._isReadPixelsInProgress = false;
+  }
+
+  private readonly _scratchTmpFrustum = new Frustum();
+  private readonly _scratchRectFrustum = new Frustum();
+  private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     // Create a culling frustum based on the input rect. We can't do this if a screen-space effect is going to move pixels around.
+    let rectFrust;
     if (!this.renderSystem.screenSpaceEffects.shouldApply(this)) {
       const viewRect = this.viewRect;
       const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
@@ -843,7 +802,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
       interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
 
-      const rectFrust = this._scratchRectFrustum;
+      rectFrust = this._scratchRectFrustum;
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
@@ -852,22 +811,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
-
-      this._renderCommands.setCheckRange(rectFrust);
-
-      // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
-      // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
-      // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
-      //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
-      //     return undefined;
     }
 
-    // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
-    this._renderCommands.clear();
-    this._renderCommands.initForReadPixels(this.graphics);
-    this._renderCommands.clearCheckRange();
-
-    this.endPerfMetricRecord(true); // End "Init Commands"
+    this.beginReadPixels(selector, rectFrust);
 
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
@@ -891,8 +837,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.renderSystem.screenSpaceEffects.apply(this);
     this.endPerfMetricRecord(true); // End "Screenspace Effects"
 
-    // Restore the state
-    this.uniforms.branch.pop();
+    this.endReadPixels(true);
 
     this.beginPerfMetricRecord("Read Pixels", true);
     const result = this.compositor.readPixels(rect, selector);
@@ -905,8 +850,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.performanceMetrics.endFrame();
     }
 
-    this._isReadPixelsInProgress = false;
     return result;
+  }
+
+  public queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void {
+    this.beginReadPixels(Pixel.Selector.Feature);
+    callback(new VisibleTileFeatures(this._renderCommands, options, this, iModel));
+    this.endReadPixels();
   }
 
   protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean {
@@ -1069,6 +1019,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     const thematicBytes = this.uniforms.thematic.bytesUsed;
     if (0 < thematicBytes)
       stats.addThematicTexture(thematicBytes);
+
+    const clipBytes = this.uniforms.branch.clipStack.bytesUsed;
+    if (clipBytes)
+      stats.addClipVolume(clipBytes);
   }
 
   protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect {

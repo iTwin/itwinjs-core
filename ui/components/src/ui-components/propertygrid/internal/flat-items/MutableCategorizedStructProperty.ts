@@ -12,9 +12,10 @@ import { IMutableGridItemFactory } from "./MutableGridItemFactory";
 
 /**
  * Mutable wrapper object for PropertyRecord with struct valueFormat which provides methods for working with and managing record children hierarchies.
- * @alpha
+ * @beta
  */
 export class MutableCategorizedStructProperty extends MutableCategorizedProperty implements IMutableCategorizedPropertyItem {
+  private _renderLabel: boolean;
   private _children: IMutableCategorizedPropertyItem[];
 
   public constructor(
@@ -27,9 +28,10 @@ export class MutableCategorizedStructProperty extends MutableCategorizedProperty
     overrideDisplayLabel?: string,
   ) {
     super(FlatGridItemType.Struct, record, parentSelectionKey, parentCategorySelectionKey, depth, overrideName, overrideDisplayLabel);
-
+    this._renderLabel = !record.property.hideCompositePropertyLabel;
+    const childrenDepth = depth + (this._renderLabel ? 1 : 0);
     this._children = record.getChildrenRecords().map((value) => {
-      return gridItemFactory.createCategorizedProperty(value, this.selectionKey, this.parentCategorySelectionKey, depth + 1);
+      return gridItemFactory.createCategorizedProperty(value, this.selectionKey, this.parentCategorySelectionKey, childrenDepth);
     });
   }
 
@@ -39,5 +41,13 @@ export class MutableCategorizedStructProperty extends MutableCategorizedProperty
 
   public getChildren(): IMutableCategorizedPropertyItem[] {
     return this._children;
+  }
+
+  public getDescendantsAndSelf() {
+    return this._renderLabel ? super.getDescendantsAndSelf() : this.getDescendants();
+  }
+
+  public getVisibleDescendantsAndSelf() {
+    return this._renderLabel ? super.getVisibleDescendantsAndSelf() : this.getVisibleDescendants();
   }
 }

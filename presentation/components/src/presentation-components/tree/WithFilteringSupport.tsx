@@ -7,7 +7,7 @@
  */
 
 import "./WithFilteringSupport.scss";
-import { isEqual } from "lodash";
+import isEqual from "fast-deep-equal";
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -20,7 +20,7 @@ import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 /**
  * Props that are injected to the TreeWithFilteringSupport HOC component.
  * @public
- * @deprecated Use `useControlledTreeFiltering` instead. Will be removed in iModel.js 3.0
+ * @deprecated Use [[useControlledTreeFiltering]] instead. Will be removed in iModel.js 3.0
  */
 export interface TreeWithFilteringSupportProps {
   /** The text to search for */
@@ -42,7 +42,7 @@ export interface TreeWithFilteringSupportProps {
  * **Note:** it is required for the tree to use [[IPresentationTreeDataProvider]]
  *
  * @public
- * @deprecated Use `useControlledTreeFiltering` instead. Will be removed in iModel.js 3.0
+ * @deprecated Use [[useControlledTreeFiltering]] instead. Will be removed in iModel.js 3.0
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps> {

@@ -13,18 +13,20 @@ import {
 } from "@bentley/presentation-components";
 import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { ElementSeparator, Orientation, RatioChangeResult } from "@bentley/ui-core";
+import { ElementSeparator, LabeledToggle, Orientation, RatioChangeResult } from "@bentley/ui-core";
+import { MyAppFrontend, MyAppSettings } from "../../api/MyAppFrontend";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
-import GridWidget from "../grid-widget/GridWidget";
-import IModelSelector from "../imodel-selector/IModelSelector";
+import { GridWidget } from "../grid-widget/GridWidget";
+import { IModelSelector } from "../imodel-selector/IModelSelector";
 import { PropertiesWidget } from "../properties-widget/PropertiesWidget";
-import RulesetSelector from "../ruleset-selector/RulesetSelector";
+import { RulesetSelector } from "../ruleset-selector/RulesetSelector";
 import { TreeWidget } from "../tree-widget/TreeWidget";
-import UnitSystemSelector from "../unit-system-selector/UnitSystemSelector";
+import { UnitSystemSelector } from "../unit-system-selector/UnitSystemSelector";
 import ViewportContentControl from "../viewport/ViewportContentControl";
 
 export interface State {
   imodel?: IModelConnection;
+  imodelPath?: string;
   currentRulesetId?: string;
   rightPaneRatio: number;
   rightPaneHeight?: number;
@@ -32,6 +34,7 @@ export interface State {
   contentWidth?: number;
   similarInstancesProvider?: IPresentationTableDataProvider;
   activeUnitSystem?: PresentationUnitSystem;
+  persistSettings: boolean;
 }
 
 export default class App extends React.Component<{}, State> {
@@ -43,15 +46,44 @@ export default class App extends React.Component<{}, State> {
   private _contentRef = React.createRef<HTMLDivElement>();
   private _selectionListener!: () => void;
 
-  public readonly state: State = {
-    activeUnitSystem: Presentation.presentation.activeUnitSystem,
-    rightPaneRatio: 0.5,
-    contentRatio: 0.7,
-  };
+  constructor() {
+    super({});
+    this.state = {
+      activeUnitSystem: Presentation.presentation.activeUnitSystem,
+      rightPaneRatio: 0.5,
+      contentRatio: 0.7,
+      persistSettings: MyAppFrontend.settings.persistSettings,
+    };
+  }
+
+  private updateAppSettings() {
+    const settings: MyAppSettings = {
+      persistSettings: this.state.persistSettings,
+    };
+    if (this.state.persistSettings) {
+      settings.imodelPath = this.state.imodelPath;
+      settings.rulesetId = this.state.currentRulesetId;
+      settings.unitSystem = this.state.activeUnitSystem;
+    }
+    MyAppFrontend.settings = settings;
+  }
+
+  private loadAppSettings() {
+    const settings = MyAppFrontend.settings;
+    const update: Partial<State> = {
+      persistSettings: settings.persistSettings,
+    };
+    if (settings.persistSettings) {
+      update.imodelPath = settings.imodelPath;
+      update.currentRulesetId = settings.rulesetId;
+      update.activeUnitSystem = settings.unitSystem;
+    }
+    this.setState(update as State);
+  }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onIModelSelected = async (imodel: IModelConnection | undefined) => {
-    this.setState({ imodel });
+  private onIModelSelected = async (imodel: IModelConnection | undefined, path?: string) => {
+    this.setState({ imodel, imodelPath: path }, () => this.updateAppSettings());
   };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -59,13 +91,18 @@ export default class App extends React.Component<{}, State> {
     if (this.state.imodel)
       Presentation.selection.clearSelection("onRulesetChanged", this.state.imodel, 0);
 
-    this.setState({ currentRulesetId: rulesetId });
+    this.setState({ currentRulesetId: rulesetId }, () => this.updateAppSettings());
   };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onUnitSystemSelected = (unitSystem: PresentationUnitSystem | undefined) => {
     Presentation.presentation.activeUnitSystem = unitSystem;
-    this.setState({ activeUnitSystem: unitSystem });
+    this.setState({ activeUnitSystem: unitSystem }, () => this.updateAppSettings());
+  };
+
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  private onPersistSettingsValueChange = (enabled: boolean) => {
+    this.setState({ persistSettings: enabled }, () => this.updateAppSettings());
   };
 
   private _onTreePaneRatioChanged = (ratio: number): RatioChangeResult => {
@@ -134,7 +171,7 @@ export default class App extends React.Component<{}, State> {
     }
   };
 
-  private renderIModelComponents(imodel: IModelConnection, rulesetId: string) {
+  private renderIModelComponents(imodel: IModelConnection, rulesetId?: string) {
     return (
       <div
         className="app-content"
@@ -201,6 +238,7 @@ export default class App extends React.Component<{}, State> {
   }
 
   public componentDidMount() {
+    this.loadAppSettings();
     this.afterRender();
     this._selectionListener = Presentation.selection.selectionChange.addListener(this._onSelectionChanged);
   }
@@ -215,7 +253,7 @@ export default class App extends React.Component<{}, State> {
 
   public render() {
     let imodelComponents = null;
-    if (this.state.imodel && this.state.currentRulesetId)
+    if (this.state.imodel)
       imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId);
 
     return (
@@ -223,9 +261,12 @@ export default class App extends React.Component<{}, State> {
         <div className="app-header">
           <h2>{IModelApp.i18n.translate("Sample:welcome-message")}</h2>
         </div>
-        <IModelSelector onIModelSelected={this.onIModelSelected} />
-        <RulesetSelector onRulesetSelected={this.onRulesetSelected} />
-        <UnitSystemSelector selectedUnitSystem={this.state.activeUnitSystem} onUnitSystemSelected={this.onUnitSystemSelected} />
+        <div className="app-pickers">
+          <IModelSelector onIModelSelected={this.onIModelSelected} activeIModelPath={this.state.imodelPath} />
+          <RulesetSelector onRulesetSelected={this.onRulesetSelected} activeRulesetId={this.state.currentRulesetId} />
+          <UnitSystemSelector selectedUnitSystem={this.state.activeUnitSystem} onUnitSystemSelected={this.onUnitSystemSelected} />
+          <LabeledToggle label="Persist settings" isOn={this.state.persistSettings} onChange={this.onPersistSettingsValueChange} />
+        </div>
         {imodelComponents}
       </div>
     );

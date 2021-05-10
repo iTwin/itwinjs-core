@@ -31,6 +31,16 @@
       </Target>
   </ECRelationshipClass>
 
+  <ECRelationshipClass typeName="ChildPropagatesChangesToParent" displayLabel="ChildPropagatesChangesToParent" modifier="None" strength="embedding" strengthDirection="forward" description="Relationship between a parent element and a child element that propagates changes to it.">
+      <BaseClass>bis:ElementOwnsChildElements</BaseClass>
+      <Source roleLabel="notified about changes to children" multiplicity="(0..1)" polymorphic="true">
+          <Class class="bis:Element"/>
+      </Source>
+      <Target roleLabel="propagates changes to parent" multiplicity="(1..*)" polymorphic="true">
+          <Class class="bis:Element"/>
+      </Target>
+  </ECRelationshipClass>
+
   <ECEntityClass typeName="TestPhysicalObject" >
     <BaseClass>bis:PhysicalElement</BaseClass>
     <ECNavigationProperty propertyName="relatedElement" relationshipName="TestPhysicalObjectRelatedToTestPhysicalObject" direction="Forward" readOnly="True"/>

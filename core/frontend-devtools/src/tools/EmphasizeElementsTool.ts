@@ -2,25 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 /** @packageDocumentation
  * @module Tools
  */
 
+import { Id64 } from "@bentley/bentleyjs-core";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { EmphasizeElements, IModelApp, ScreenViewport, Tool } from "@bentley/imodeljs-frontend";
+import { EmphasizeElements, IModelApp, QueryVisibleFeaturesOptions, ScreenViewport, Tool } from "@bentley/imodeljs-frontend";
+import { parseArgs } from "./parseArgs";
 
 /** Applies the `EmphasizeElements` API in some way to the selected Viewport.
  * @beta
  */
 export abstract class EmphasizeElementsTool extends Tool {
   protected get _wantCreate(): boolean { return true; }
+  protected get _wantClear(): boolean { return false; }
   protected abstract execute(emph: EmphasizeElements, vp: ScreenViewport): void;
 
   public run(_args: any[]): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
+
+    if (this._wantClear)
+      EmphasizeElements.clear(vp);
 
     const emph = this._wantCreate ? EmphasizeElements.getOrCreate(vp) : EmphasizeElements.get(vp);
     if (undefined !== emph)
@@ -100,5 +105,63 @@ export class ClearIsolatedElementsTool extends EmphasizeElementsTool {
   protected get _wantCreate() { return false; }
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
     emph.clearIsolatedElements(vp);
+  }
+}
+
+/** Reset [EmphasizeElements]($frontend) for the active [Viewport]($frontend).
+ * @beta
+ */
+export class ClearEmphasizedElementsTool extends EmphasizeElementsTool {
+  public static toolId = "ClearEmphasizedElements";
+  protected get _wantCreate() { return false; }
+  protected get _wantClear() { return true; }
+
+  public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
+    emph.clearEmphasizedElements(vp);
+    vp.isFadeOutActive = false;
+  }
+}
+
+/** Emphasize the set of elements currently visible in the view based on [Viewport.queryVisibleFeatures]($frontend).
+ * @beta
+ */
+export class EmphasizeVisibleElementsTool extends EmphasizeElementsTool {
+  public static toolId = "EmphasizeVisibleElements";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() {  return 2; }
+  private _options: QueryVisibleFeaturesOptions = { source: "screen" };
+  protected get _wantClear() { return true; }
+
+  public parseAndRun(...input: string[]): boolean {
+    const args = parseArgs(input);
+    const includeNonLocatable = args.getBoolean("n");
+    let source: "screen" | "tiles";
+    switch (input[0].toLowerCase()) {
+      case "screen":
+        source = "screen";
+        break;
+      case "tiles":
+        source = "tiles";
+        break;
+      default:
+        return false;
+    }
+
+    this._options = { source, includeNonLocatable };
+    return this.run(input);
+  }
+
+  public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
+    const elementIds = new Set<string>();
+    vp.queryVisibleFeatures(this._options, (features) => {
+      for (const feature of features) {
+        if (feature.iModel === vp.iModel && Id64.isValid(feature.elementId))
+          elementIds.add(feature.elementId);
+      }
+    });
+
+    emph.wantEmphasis = true;
+    if (emph.emphasizeElements(elementIds, vp))
+      vp.isFadeOutActive = true;
   }
 }
