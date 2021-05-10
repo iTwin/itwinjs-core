@@ -16,6 +16,7 @@ import { ViewRect } from "../ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
+import { FrameStatsCallback } from "./FrameStats";
 import { AnimationBranchStates } from "./GraphicBranch";
 import { GraphicType } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
@@ -95,6 +96,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
 
   public get antialiasSamples(): number { return 1; }
   public set antialiasSamples(_numSamples: number) { }
+
+  public enableFrameStatsCallback(_callback?: FrameStatsCallback) { }
 
   /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
   public updateSolarShadows(_context: SceneContext | undefined): void { }

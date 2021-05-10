@@ -25,6 +25,7 @@ import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
 import { openStandaloneIModel } from "./openStandaloneIModel";
+import { FrameStats } from "@bentley/imodeljs-frontend/lib/render/FrameStats";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -358,6 +359,14 @@ export class Viewer extends Window {
     });
 
     this.updateTitle();
+
+    const doFrameStats = true;
+    if (doFrameStats) {
+      const printFrameStats = (stats: FrameStats) => {
+        console.log(`frame stats (vp=${  this.viewport.viewportId  }) = ${ JSON.stringify(stats)}`); // eslint-disable-line no-console
+      };
+      this.viewport.enableFrameStatsCallback(printFrameStats);
+    }
   }
 
   private updateTitle(): void {
