@@ -203,7 +203,7 @@ export class Batch extends Graphic {
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public localToWorldTransform: Transform;
-  public clips?: ClipVolume;
+  public readonly clips?: ClipVolume;
   public readonly planarClassifier?: PlanarClassifier;
   public readonly textureDrape?: TextureDrape;
   public readonly edgeSettings?: EdgeSettings;
@@ -223,7 +223,7 @@ export class Branch extends Graphic {
       return;
 
     this.appearanceProvider = opts.appearanceProvider;
-    this.clips = opts.clipVolume as any;
+    this.clips = opts.clipVolume as ClipVolume | undefined;
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;
 
