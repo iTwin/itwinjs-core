@@ -48,7 +48,7 @@ describe("BriefcaseManager (#integration)", () => {
   let managerRequestContext: AuthorizedBackendRequestContext;
 
   const getElementCount = (iModel: IModelDb): number => {
-    const rows: any[] = IModelTestUtils.executeQuery(iModel, "SELECT COUNT(*) AS cnt FROM bis.Element");
+    const rows = IModelTestUtils.executeQuery(iModel, "SELECT COUNT(*) AS cnt FROM bis.Element");
     const count = +(rows[0].cnt);
     return count;
   };
@@ -618,11 +618,11 @@ describe("BriefcaseManager (#integration)", () => {
     const args = {
       contextId: testContextId,
       iModelId: testIModelId,
-      briefcaseId: 0,
+      briefcaseId: BriefcaseIdValue.Unassigned,
       onProgress: downloadProgress,
     };
     const fileName = BriefcaseManager.getFileName(args);
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName);
     const props = await BriefcaseManager.downloadBriefcase(requestContext, args);
     const iModel = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
@@ -635,7 +635,7 @@ describe("BriefcaseManager (#integration)", () => {
     const args = {
       contextId: testContextId,
       iModelId: testIModelId,
-      briefcaseId: 0,
+      briefcaseId: BriefcaseIdValue.Unassigned,
       onProgress: (_loaded: number, _total: number) => aborted,
     };
     await BriefcaseManager.deleteBriefcaseFiles(BriefcaseManager.getFileName(args), requestContext);
