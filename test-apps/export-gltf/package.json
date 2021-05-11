@@ -14,16 +14,16 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.17.0-dev.0",
-    "@bentley/geometry-core": "2.17.0-dev.0",
-    "@bentley/itwin-client": "2.17.0-dev.0",
-    "@bentley/imodeljs-common": "2.17.0-dev.0",
-    "@bentley/imodeljs-backend": "2.17.0-dev.0",
+    "@bentley/bentleyjs-core": "2.17.0-dev.1",
+    "@bentley/geometry-core": "2.17.0-dev.1",
+    "@bentley/itwin-client": "2.17.0-dev.1",
+    "@bentley/imodeljs-common": "2.17.0-dev.1",
+    "@bentley/imodeljs-backend": "2.17.0-dev.1",
     "yargs": "^16.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.17.0-dev.0",
-    "@bentley/eslint-plugin": "2.17.0-dev.0",
+    "@bentley/build-tools": "2.17.0-dev.1",
+    "@bentley/eslint-plugin": "2.17.0-dev.1",
     "@types/node": "10.14.1",
     "@types/yargs": "^12.0.5",
     "eslint": "^6.8.0",
