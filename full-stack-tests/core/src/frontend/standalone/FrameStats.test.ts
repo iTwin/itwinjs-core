@@ -10,7 +10,7 @@ import {
 import { expect } from "chai";
 import { testViewportsWithDpr } from "../TestViewport";
 
-describe.only("FrameStats", () => {
+describe("FrameStats", () => {
   let imodel: IModelConnection;
 
   before(async () => {
