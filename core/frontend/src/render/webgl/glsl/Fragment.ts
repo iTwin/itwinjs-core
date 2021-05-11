@@ -94,7 +94,7 @@ const assignPickBufferOutputsMP = `
   else
     FragColor = output2;
 `;
-const reassignFeatureId = "output1 = overrideFeatureId(output1);";
+const reassignFeatureId = "  output1 = overrideFeatureId(output1);";
 
 /** @internal */
 export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {

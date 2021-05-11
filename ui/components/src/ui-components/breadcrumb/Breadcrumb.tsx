@@ -236,6 +236,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     model.ready.then(() => {
+      // istanbul ignore else
       if (model === this.state.model)
         this._onModelReady();
     });
@@ -537,9 +538,10 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   /** @internal */
   public componentDidMount() {
     this._mounted = true;
-    window.addEventListener("click", this._handleClick);
     // istanbul ignore else
     if (this._inputElement) {
+      const activeWindow = this._inputElement.ownerDocument.defaultView;
+      activeWindow && activeWindow.addEventListener("click", this._handleClick);
       this._inputElement.value = this.props.pathString;
       this._inputElement.focus();
     }
@@ -547,7 +549,11 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
   /** @internal */
   public componentWillUnmount() {
-    window.removeEventListener("click", this._handleClick);
+    // istanbul ignore else
+    if (this._inputElement) {
+      const activeWindow = this._inputElement.ownerDocument.defaultView;
+      activeWindow && activeWindow.removeEventListener("click", this._handleClick);
+    }
     this._mounted = false;
   }
 
@@ -733,7 +739,7 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
   public shouldComponentUpdate(nextProps: BreadcrumbDropdownProps) {
     return this.props.tree !== nextProps.tree ||
       this.props.node !== nextProps.node ||
-      (nextProps.node && nextProps.node.isDirty()) ||
+      (nextProps.node && /* istanbul ignore next */ nextProps.node.isDirty()) ||
       this.props.onInputStart !== nextProps.onInputStart ||
       this.props.delimiter !== nextProps.delimiter ||
       this.props.width !== nextProps.width ||

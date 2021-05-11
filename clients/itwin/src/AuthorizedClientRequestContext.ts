@@ -6,14 +6,26 @@
  * @module Authentication
  */
 
-import { ClientRequestContext, ClientRequestContextProps, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken } from "./Token";
+import { ClientRequestContext, ClientRequestContextProps, Guid, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { AccessToken, AccessTokenProps } from "./Token";
+
+/** The properties of AuthorizedSession.
+ * @beta
+ */
+export interface AuthorizedSessionProps extends SessionProps {
+  accessTokenProps: AccessTokenProps;
+}
+
+/** @beta */
+export interface AuthorizedSession extends SessionProps {
+  accessToken?: AccessToken;
+}
 
 /** The properties of AuthorizedClientRequestContext.
- * @public
+ * @beta
  */
 export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
-  accessToken: any;
+  accessToken: AccessTokenProps;
 }
 
 /** Provides generic context for a server application to get details of a particular request that originated at the client.
@@ -23,7 +35,7 @@ export interface AuthorizedClientRequestContextProps extends ClientRequestContex
  * @see [ClientRequestContext]($bentley)
  * @public
  */
-export class AuthorizedClientRequestContext extends ClientRequestContext implements AuthorizedClientRequestContextProps {
+export class AuthorizedClientRequestContext extends ClientRequestContext {
   /** The access token value of the client application.
    * @beta
    */
@@ -37,13 +49,16 @@ export class AuthorizedClientRequestContext extends ClientRequestContext impleme
     this.accessToken = accessToken;
   }
 
-  /**
-   * @internal
-   */
+  /** @internal */
   public toJSON(): AuthorizedClientRequestContextProps {
     const obj = super.toJSON() as AuthorizedClientRequestContextProps;
-    obj.accessToken = this.accessToken;
+    obj.accessToken = this.accessToken.toJSON();
     return obj;
+  }
+  /** @internal */
+  public static fromJSON(json: AuthorizedClientRequestContextProps): AuthorizedClientRequestContext {
+    return new AuthorizedClientRequestContext(AccessToken.fromJson(json.accessToken), json.activityId, json.applicationId, json.applicationVersion, json.sessionId);
+
   }
 }
 

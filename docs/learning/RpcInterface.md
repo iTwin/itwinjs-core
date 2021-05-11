@@ -1,6 +1,6 @@
 # RpcInterface
 
-This article discusses RPC communication in iModel.js. See also [RPC vs IPC](./RpcVsIpc.md).
+This article discusses RPC communication in iTwin.js. See also [RPC vs IPC](./RpcVsIpc.md).
 
 Table of Contents:
 
@@ -20,7 +20,7 @@ Table of Contents:
 
 ## Overview
 
-As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iModel.js app is typically implemented in separate components that run in different processes, potentially on different machines. These components communicate through interfaces. These interfaces can either be implemented as [Rpc or Ipc](./RpcVsIpc.md). For web applications, iModel.js uses *RpcInterfaces* or [RPC](../learning/Glossary.md#RPC).
+As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iTwin.js app is typically implemented in separate components that run in different processes, potentially on different machines. These components communicate through interfaces. These interfaces can either be implemented as [Rpc or Ipc](./RpcVsIpc.md). For web applications, iTwin.js uses *RpcInterfaces* or [RPC](../learning/Glossary.md#RPC).
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC1.png)
 
@@ -135,13 +135,13 @@ The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram show
 
 ### Web RPC configuration
 
-The Web RPC configuration transforms client calls on an RpcInterface into HTTP requests. Provides endpoint-processing and call dispatching in the server process. The iModel.js cloud RPC configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure. See [Web architecture](./SoftwareArchitecture.md#web).
+The Web RPC configuration transforms client calls on an RpcInterface into HTTP requests. Provides endpoint-processing and call dispatching in the server process. The iTwin.js cloud RPC configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure. See [Web architecture](./SoftwareArchitecture.md#web).
 
-iModel.js comes with an implementation of a Web RPC configuration that works with the Bentley Cloud infrastructure. It is relatively straightforward for developers to write custom Web RPC configurations that works with other infrastructures.
+iTwin.js comes with an implementation of a Web RPC configuration that works with the Bentley Cloud infrastructure. It is relatively straightforward for developers to write custom Web RPC configurations that works with other infrastructures.
 
 ### Desktop RPC configuration
 
-The iModel.js desktop RPC configuration is specific to the Electron framework. It marshalls calls on an RpcInterface through high-bandwidth, low-latency pipes between cooperating processes on the same computer. It provides endpoint-processing and call dispatching in the backend process. See [Desktop architecture](./SoftwareArchitecture.md#desktop).
+The iTwin.js desktop RPC configuration is specific to the Electron framework. It marshalls calls on an RpcInterface through high-bandwidth, low-latency pipes between cooperating processes on the same computer. It provides endpoint-processing and call dispatching in the backend process. See [Desktop architecture](./SoftwareArchitecture.md#desktop).
 
 ### In-process RPC configuration
 
@@ -263,10 +263,10 @@ A backend method that turns around an invokes another backend's method via RpcIn
 Briefly, here is how it works:
 
 * Frontend/client
-  * iModel.js on the frontend assigns a unique ActivityId value to an RpcInterface call.
+  * iTwin.js on the frontend assigns a unique ActivityId value to an RpcInterface call.
   * It puts this value in the [X-Correlation-ID](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) HTTP header field, to ensure that it stays with the request as it passes through communication layers.
 * Backend
-  * iModel.js on the backend gets the ActivityId from the HTTP header.
+  * iTwin.js on the backend gets the ActivityId from the HTTP header.
   * The RpcInterface mechanism and all the async methods in the backend work together to make the ActivityId part of the context in which backend methods are called.
   * Calls to the Logging manager also occur in this context, and so the Logging manager gets the ActivityId from the context and adds to the logging messages as metadata using a Bentley-standard "ActivityId" property id.
 * Log Browsers

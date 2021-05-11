@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common";
+
+import { MobileHost, MobileRpcConfiguration, MobileRpcManager } from "@bentley/mobile-manager/lib/MobileBackend";
+import { MobileTestInterface } from "../common/TestRpcInterface";
 import { setupIpcTest } from "./ipc";
-import { setupPushTest } from "./push";
 
 export async function setupMockMobileTest(port: number) {
   MobileRpcConfiguration.setup = {
@@ -14,8 +15,8 @@ export async function setupMockMobileTest(port: number) {
 }
 
 export async function initializeMockMobileTest() {
-  MobileRpcManager.initializeImpl([]);
+  await MobileHost.startup();
+  MobileRpcManager.initializeImpl([MobileTestInterface]);
 
-  await setupPushTest(async () => MobileRpcManager.ready());
   await setupIpcTest(async () => MobileRpcManager.ready());
 }

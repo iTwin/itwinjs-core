@@ -5,9 +5,9 @@
 import * as sinon from "sinon";
 import { act, wait } from "@testing-library/react";
 
-let mochaTimeoutsEnabled = true;
+let mochaTimeoutsEnabled: Mocha.Context;
 beforeEach(function () {
-  mochaTimeoutsEnabled = this.enableTimeouts();
+  mochaTimeoutsEnabled = this.timeout(0);
 });
 
 /** Options for waitForSpy test helper function */
@@ -58,7 +58,7 @@ export class ResolvablePromise<T> implements PromiseLike<T> {
   }
   public async resolve(result: T) {
     this._resolve(result);
-    await new Promise((resolve: () => void) => {
+    await new Promise<void>((resolve: () => void) => {
       setImmediate(resolve);
     });
   }

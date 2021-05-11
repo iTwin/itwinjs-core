@@ -7,9 +7,10 @@ import {
   BaseItemState,
   CommandItemDef,
   ContentGroup, ContentLayoutDef, ContentViewManager, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupItemDef, ItemList, NavigationWidget,
+  SelectionContextToolDefinitions,
   SessionStateActionId,
   SyncUiEventId,
-  ToolWidget, UiFramework, Widget, WidgetState, Zone, ZoneState,
+  ToolWidget, UiFramework, Widget, Zone, ZoneState,
 } from "@bentley/ui-framework";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
@@ -20,7 +21,7 @@ import {
   HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, WidgetState } from "@bentley/ui-abstract";
 
 /* eslint-disable react/jsx-key */
 
@@ -176,7 +177,10 @@ class FrontstageToolWidget extends React.Component {
 
   private get _horizontalToolbarItems(): ItemList {
     const items = new ItemList([
-      this.myClearSelectionItemDef,
+      SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef,
+      SelectionContextToolDefinitions.hideSectionToolGroup,
+      SelectionContextToolDefinitions.isolateSelectionToolGroup,
+      SelectionContextToolDefinitions.emphasizeElementsItemDef,
       AppTools.item1,
       AppTools.item2,
       new GroupItemDef({

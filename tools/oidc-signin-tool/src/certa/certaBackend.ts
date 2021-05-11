@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Config } from "@bentley/bentleyjs-core";
+import * as path from "path";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { loadEnv } from "@bentley/config-loader";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "../TestUsers";
 import { TestUtility } from "../TestUtility";
@@ -15,7 +15,10 @@ import { getTokenCallbackName, serializeToken } from "./certaCommon";
 
 /* eslint-disable no-console */
 
-IModelJsConfig.init(true, true, Config.App);
+// The assumption is the certa.json file is a peer of the `package.json` file and
+// when certa is invoked via a npm script (in the package.json) the `.env` will
+// also be a peer of both files.
+loadEnv(path.join(process.cwd(), ".env"));
 
 /** Signs in for the provided user.
  *

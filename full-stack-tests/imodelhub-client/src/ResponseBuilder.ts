@@ -2,9 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Config } from "@bentley/bentleyjs-core";
 import { ChangeState, ECInstance, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
-import { TestConfig } from "./TestConfig";
 
 import nock = require("nock");
 export enum RequestType {
@@ -141,7 +139,7 @@ export class ResponseBuilder {
    * @param classObject Class object from which body will be generated.
    * @returns Created POST body in JSON.
    */
-  public static generatePostBody<T extends ECInstance>(classObject: T): object {
+  public static generatePostBody<T extends ECInstance>(classObject: T): nock.RequestBodyMatcher {
     return JSON.parse(`{"instance":${this.convertToJson(classObject, 1)}}`);
   }
 
@@ -151,7 +149,7 @@ export class ResponseBuilder {
    * @param requestOptions Extended options for request.
    * @returns Created POST body in JSON.
    */
-  public static generateChangesetBody<T extends ECInstance>(classObjects: T[], requestOptions?: object): object {
+  public static generateChangesetBody<T extends ECInstance>(classObjects: T[], requestOptions?: object): nock.RequestBodyMatcher {
     let body: string = '{"instances":[';
     let i = 0;
     for (const obj of classObjects) {
@@ -199,7 +197,7 @@ export class ResponseBuilder {
    * @param responseCode Specifies response code.
    */
   public static mockResponse(url: string, requestType: RequestType, requestPath: string, requestResponse?: object | (() => object),
-    times = 1, postBody?: object, headers?: any, responseCode = 200, delay = 0): void {
+    times = 1, postBody?: nock.RequestBodyMatcher, headers?: any, responseCode = 200, delay = 0): void {
     const response: any = requestResponse || "";
     switch (requestType) {
       case RequestType.Get:
@@ -268,14 +266,5 @@ export class ResponseBuilder {
    */
   public static clearMocks(): void {
     nock.cleanAll();
-  }
-}
-
-export class UrlDiscoveryMock {
-  public static mockGetUrl(searchKey: string, env: number, returnedUrl: string) {
-    if (!TestConfig.enableMocks)
-      return;
-    ResponseBuilder.mockResponse(Config.App.get("imjs_buddi_url"), RequestType.Get,
-      `/GetUrl/?url=${searchKey}&region=${env}`, { result: { url: returnedUrl } });
   }
 }

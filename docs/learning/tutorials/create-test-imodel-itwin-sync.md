@@ -1,8 +1,8 @@
-# Getting started with iModel.js using your own data via the Free Trial service
+# Getting started with iTwin.js using your own data via the Free Trial service
 
-This tutorial will describe steps to get started with iModel.js, using the free trial test environment. We will outline creating a Bentley user account, creating a starter iModel, then loading the starter iModel with data from source files on your desktop. At the end of the tutorial, you should have an iModel containing your own data that you will be able to view either on the web, with in a localhost web application, or with a local Electron app.
+This tutorial will describe steps to get started with iTwin.js, using the free trial test environment. We will outline creating a Bentley user account, creating a starter iModel, then loading the starter iModel with data from source files on your desktop. At the end of the tutorial, you should have an iModel containing your own data that you will be able to view either on the web, with in a localhost web application, or with a local Electron app.
 
-You should have a basic understanding of [iModels]($docs/learning/imodels.md), [iModelHub]($docs/learning/imodelhub/index.md), [iModel Bridges]($docs/learning/imodel-bridges.md), but don't worry if any of those concepts aren't entirely clear.
+You should have a basic understanding of [iModels]($docs/learning/imodels.md), [iModelHub]($docs/learning/imodelhub/index.md), [iModel Connectors]($docs/learning/imodel-connectors.md), but don't worry if any of those concepts aren't entirely clear.
 
 ## Create iModel
 

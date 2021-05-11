@@ -7,7 +7,7 @@
  */
 
 import { immerable } from "immer";
-import { compareNumbers, lowerBound } from "@bentley/bentleyjs-core";
+import { assert, compareNumbers, lowerBound } from "@bentley/bentleyjs-core";
 
 /** @internal */
 export interface Node {
@@ -68,6 +68,57 @@ export class SparseTree<T extends Node> {
     const existingChildren = this.getChildren(parentId, true)!;
     existingChildren.insert(offset, child.id);
     this._idToNode[child.id] = child;
+  }
+
+  public setNodeId(parentId: string | undefined, index: number, newId: string): boolean {
+    const previousNodeId = this.getChildren(parentId)?.get(index);
+    if (previousNodeId === undefined) {
+      return false;
+    }
+
+    if (previousNodeId === newId) {
+      return true;
+    }
+
+    if (this.getNode(newId) !== undefined) {
+      return false;
+    }
+
+    this._idToNode[newId] = this._idToNode[previousNodeId];
+    delete this._idToNode[previousNodeId];
+
+    this._parentToChildren[newId] = this._parentToChildren[previousNodeId];
+    delete this._parentToChildren[previousNodeId];
+
+    if (parentId === undefined) {
+      this._rootNodes.set(index, newId);
+    } else {
+      this._parentToChildren[parentId].set(index, newId);
+    }
+
+    return true;
+  }
+
+  public moveNode(
+    sourceParentId: string | undefined,
+    sourceNodeId: string,
+    targetParentId: string | undefined,
+    targetIndex: number,
+  ): void {
+    const sourceNodeSiblings = this.getChildren(sourceParentId);
+    assert(sourceNodeSiblings !== undefined);
+
+    const sourceIndex = this.getChildOffset(sourceParentId, sourceNodeId);
+    assert(sourceIndex !== undefined);
+
+    sourceNodeSiblings.remove(sourceIndex);
+    if (targetParentId === sourceParentId && targetIndex > sourceIndex) {
+      targetIndex -= 1;
+    }
+
+    const targetNodeSiblings = this.getChildren(targetParentId, true);
+    assert(targetNodeSiblings !== undefined);
+    targetNodeSiblings.insert(targetIndex, sourceNodeId);
   }
 
   public setNumChildren(parentId: string | undefined, numChildren: number) {

@@ -1,15 +1,15 @@
-# iModel.js Presentation Library
+# iTwin.js Presentation Library
 
 ## Purpose
 
-iModel.js Presentation library helps retrieve presentation data from iModels and
+iTwin.js Presentation library helps retrieve presentation data from iModels and
 takes care of unified selection. What data to retrieve from an iModel is
 defined by consumers in a declarative way, using presentation rules - that's
 why the library is commonly called "presentation rules engine".
 
 ![library purpose](./library.png "Purpose of the library")
 
-[Getting started with iModel.js Presentation](./Setup.md)
+[Getting started with iTwin.js Presentation](./Setup.md)
 
 ## Library Contents
 
@@ -26,6 +26,7 @@ why the library is commonly called "presentation rules engine".
   - [Rules](./Customization/index.md)
   - [ECExpressions](./Customization/ECExpressions.md)
   - [Property value renderers](./Customization/PropertyValueRenderers.md)
+  - [Property category renderers](./Customization/PropertyCategoryRenderers.md)
 - [Default BIS Presentation Rules](./DefaultBisRules.md)
 - [Unified Selection](./Unified-Selection/index.md)
 - [ECExpressions](./ECExpressions.md)

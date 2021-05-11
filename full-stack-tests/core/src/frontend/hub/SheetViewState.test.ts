@@ -3,29 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  IModelApp, RemoteBriefcaseConnection, SheetViewState,
-} from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, SheetViewState } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
+import { TestUtility } from "./TestUtility";
 
 describe("Sheet views (#integration)", () => {
-  const projectName = "iModelJsIntegrationTest";
-  let imodel: RemoteBriefcaseConnection;
+  let imodel: CheckpointConnection;
   const sheetViewId = "0x96";
   const attachmentCategoryId = "0x93";
 
   before(async () => {
     await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
 
-    const projectId = await TestUtility.getTestProjectId(projectName);
-    const iModelId = await TestUtility.getTestIModelId(projectId, "SectionDrawingLocations");
-    imodel = await RemoteBriefcaseConnection.open(projectId, iModelId);
+    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.sectionDrawingLocations);
+    imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
   after(async () => {

@@ -1,6 +1,6 @@
 # Unified Selection
 
-The purpose of unified selection is to act as a single source of truth of what is selected in iModel.js application.
+The purpose of unified selection is to act as a single source of truth of what is selected in iTwin.js application.
 
 ![selection storage](./selection-storage.png "Selection storage")
 

@@ -1,6 +1,6 @@
 # iTwin Service Clients
 
-The iModel.js library contains a set of packages that provide Typescript APIs for interacting with Bentley's [iTwin Services](./iTwinService.md).
+The iTwin.js library contains a set of packages that provide Typescript APIs for interacting with Bentley's [iTwin Services](./iTwinService.md).
 
 The current iTwin Service client APIs are available in the following npm packages:
 

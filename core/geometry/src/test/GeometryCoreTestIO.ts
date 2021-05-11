@@ -34,7 +34,10 @@ export class GeometryCoreTestIO {
       if (!fs.existsSync(path))
         fs.mkdirSync(path);
     }
-    const fullPath = `${path}/${fileName}.imjs`;
+    let fullPath = `${path}/${fileName}`;
+    if (fileName.search("\.imjs$") === 0)
+        fullPath = `${fullPath}.imjs`;
+
     console.log(`saveGeometry:: ${fullPath}`);
 
     const imjs = IModelJson.Writer.toIModelJson(geometry);
@@ -75,7 +78,7 @@ export class GeometryCoreTestIO {
       this.createAndCaptureLoop(collection, loop, dx, dy, dz);
   }
 
-  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][]| undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
     if (newGeometry instanceof GeometryQuery) {

@@ -182,12 +182,12 @@ describe("Ids", () => {
     const test = (arg: Id64Arg) => {
       const uint32Set = new Id64.Uint32Set(arg);
       expect(uint32Set.size).to.equal(Id64.sizeOf(arg));
-      Id64.forEach(arg, (id) => {
+      for (const id of Id64.iterable(arg)) {
         expect(uint32Set.hasId(id)).to.be.true;
 
         // While we're here, test Id64.has()
         expect(Id64.has(arg, id)).to.be.true;
-      });
+      }
     };
 
     test("0x123");
@@ -565,6 +565,15 @@ describe("CompressedId64Set", () => {
     roundTrip(["0xffffffffffffffff"], "+FFFFFFFFFFFFFFFF");
     roundTrip(["0x1", "0xffffffffffffffff"], "+1+FFFFFFFFFFFFFFFE");
     roundTrip(["0x1000000000000001", "0x4000000000000004", "0x7000000000000007", "0xa000007777777777"], "+1000000000000001+3000000000000003*2+3000007777777770");
+
+    roundTrip(["0xfffffffffe", "0xffffffffff"], "+FFFFFFFFFE+1");
+    roundTrip(["0xfffffffffe", "0x10000000001"], "+FFFFFFFFFE+3");
+    roundTrip(["0xffffffffff", "0x10000000001"], "+FFFFFFFFFF+2");
+    roundTrip(["0x10000000001", "0x10000000002"], "+10000000001+1");
+
+    roundTrip(["0x1", "0x10000000001"], "+1+10000000000");
+
+    roundTrip(["0x4000000023a", "0xe00000001c9"], "+4000000023A+9FFFFFFFF8F");
 
     expect(CompressedId64Set.compressArray([])).to.equal("");
     expect(CompressedId64Set.compressArray(["0"])).to.equal("");

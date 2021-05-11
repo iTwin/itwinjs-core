@@ -6,7 +6,11 @@
  * @module Properties
  */
 
-import { BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes } from "./EditorParams";
+import {
+  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams,
+} from "./EditorParams";
+
+// cSpell:ignore Picklist
 
 /**
  * Information about an enumeration choice
@@ -83,12 +87,20 @@ export interface PropertyDescription {
   quantityType?: string;
   /** Get the custom DataController by this name and register it with the property editor */
   dataController?: string;
+  /**
+   * Should property label for composite (struct & array) properties be rendered.
+   * @alpha
+   */
+  hideCompositePropertyLabel?: boolean;
 }
 
-/** Helper class the builds property descriptions that specify specific PropertyEditors
- * @alpha
+/** Helper class that builds property descriptions for specific PropertyEditors and processes descriptions.
+ * @beta
  */
 export class PropertyDescriptionHelper {
+  /** Builds a number description with a "weight-picker" editor name
+   * @alpha
+   */
   public static buildWeightPickerDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     return {
       name,
@@ -101,6 +113,33 @@ export class PropertyDescriptionHelper {
     };
   }
 
+  /** Builds an editor that uses [NumberInput]($ui-core) control
+   * @alpha
+   */
+  public static buildNumberEditorDescription(name: string, label: string, overrideParams?: RangeEditorParams, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
+    const editorParams = [{
+      type: PropertyEditorParamTypes.Range,
+      step: 1,
+      precision: 0,
+      ...overrideParams,
+    } as RangeEditorParams, ...additionalParams];
+
+    const editor = {
+      name: "numeric-input",
+      params: editorParams,
+    };
+
+    return {
+      name,
+      displayLabel: label,
+      typename: "number",
+      editor,
+    };
+  }
+
+  /** Builds a string description
+   * @alpha
+   */
   public static buildTextEditorDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editor = {
       params: additionalParams,
@@ -114,6 +153,9 @@ export class PropertyDescriptionHelper {
     };
   }
 
+  /** Builds an enum description
+   * @alpha
+   */
   public static buildEnumPicklistEditorDescription(name: string, label: string,
     choices: Promise<EnumerationChoice[]> | EnumerationChoice[],
     additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
@@ -132,6 +174,9 @@ export class PropertyDescriptionHelper {
     };
   }
 
+  /** Builds a number description with a "color-picker" editor name
+   * @alpha
+   */
   public static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number,
     additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editorParams = [
@@ -154,6 +199,9 @@ export class PropertyDescriptionHelper {
     };
   }
 
+  /** Builds a boolean description with a "toggle" editor name
+   * @alpha
+   */
   public static buildToggleDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     return {
       name,
@@ -166,6 +214,9 @@ export class PropertyDescriptionHelper {
     };
   }
 
+  /** Builds a boolean description with a "image-check-box" editor name
+   * @alpha
+   */
   public static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editorParams = [{
       type: PropertyEditorParamTypes.CheckBoxImages,
@@ -184,6 +235,9 @@ export class PropertyDescriptionHelper {
     };
   }
 
+  /** Builds a boolean description
+   * @alpha
+   */
   public static buildCheckboxDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editor = {
       params: additionalParams,
@@ -195,5 +249,34 @@ export class PropertyDescriptionHelper {
       typename: "boolean",
       editor,
     };
+  }
+
+  /** Bumps an enum property description value
+   * @beta
+   */
+  public static async bumpEnumProperty(description: PropertyDescription, value: string | number): Promise<string | number> {
+    let choices: EnumerationChoice[] | undefined;
+
+    if (description.enum) {
+      if (description.enum.choices instanceof Promise) {
+        choices = await description.enum.choices;
+      } else {
+        choices = description.enum.choices;
+      }
+    }
+
+    if (!choices || choices.length === 0)
+      return value;
+
+    let choiceIndex = choices.findIndex((choice) => choice.value === value);
+    if (choiceIndex < 0)
+      return value;
+
+    choiceIndex++;
+    if (choiceIndex >= choices.length)
+      choiceIndex = 0;
+
+    const newValue = choices[choiceIndex].value;
+    return newValue;
   }
 }

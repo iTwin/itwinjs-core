@@ -83,6 +83,36 @@ class TestTimelineDataProvider extends BaseTimelineDataProvider {
   }
 }
 
+function TestRepeatTimelineComponent() {
+  const duration = 20 * 1000;
+  const startDate = new Date(2014, 6, 6);
+  const endDate = new Date(2016, 8, 12);
+  const [loop, setLoop] = React.useState <boolean> (false);
+
+  const handleOnSettingsChange = (settings: PlaybackSettings) => {
+    if (settings.loop !== undefined) {
+      setLoop(settings.loop);
+    }
+  };
+
+  return (
+    <div>
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        initialDuration={0}
+        totalDuration={duration}
+        minimized={true}
+        showDuration={true}
+        alwaysMinimized={true}
+        repeat={loop}
+        onSettingsChange={handleOnSettingsChange}
+        componentId={"testApp-testRepeatTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+      />
+    </div>
+  );
+}
+
 describe("<TimelineComponent showDuration={true} />", () => {
   let fakeTimers: sinon.SinonFakeTimers | undefined;
   const rafSpy = sinon.spy((cb: FrameRequestCallback) => {
@@ -627,6 +657,23 @@ describe("<TimelineComponent showDuration={true} />", () => {
       />,
     );
     expect(dataProvider.getSettings().loop).to.be.true;
+  });
+  it("test repeat button does not loop endlessly with external state variable", () => {
+    const renderedComponent = render(
+      <TestRepeatTimelineComponent  />,
+    );
+
+    expect(renderedComponent).not.to.be.undefined;
+
+    const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
+    fireEvent.click(settingMenuSpan);
+
+    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
+    expect(menuPopupDiv).not.to.be.null;
+    // renderedComponent.debug();
+    const repeatItem = renderedComponent.getByText("timeline.repeat");
+    expect(repeatItem).not.to.be.null;
+    fireEvent.click(repeatItem);
   });
   it("re-render on totalDuration change", () => {
     const dataProvider = new TestTimelineDataProvider(false);

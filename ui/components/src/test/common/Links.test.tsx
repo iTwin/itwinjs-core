@@ -28,6 +28,9 @@ describe("matchlinks", () => {
       { link: "Link to explorer: pw://server.bentley.com:datasource-01/Documents/ProjectName", linkIndexes: [{ index: 18, lastIndex: 77 }] },
       { link: "pw://server.bentley.com:datasource-01/Documents/with%20%20spaces", linkIndexes: [{ index: 0, lastIndex: 64 }] },
       { link: "pw://server:datasource/Documents/P{7185c257-e735-4395-8655-ebeeb180c08a}/", linkIndexes: [{ index: 0, lastIndex: 73 }] },
+      { link: "pw:\\\\server.bentley.com:datasource-01/Documents/with%20%20spaces", linkIndexes: [{ index: 0, lastIndex: 64 }] },
+      { link: "pw:\\\\server:datasource/Documents/P{7185c257-e735-4395-8655-ebeeb180c08a}/", linkIndexes: [{ index: 0, lastIndex: 73 }] },
+      { link: "pw:\\\\  server:datasource /Docume nts/P{7185c257-e735-4395-8655-ebeeb180c08a}/", linkIndexes: [{ index: 0, lastIndex: 77 }] },
     ];
     testLinksWithIndexes.forEach(({ link, linkIndexes }) => {
       const linkMatches = matchLinks(link);

@@ -11,12 +11,15 @@ import { SceneContext } from "../ViewContext";
 import { TileTreeReference } from "./internal";
 
 /** Provides a way for applications to inject additional non-decorative graphics into a [[Viewport]] by supplying one or more [[TileTreeReference]]s capable of loading and drawing the graphics.
- * @see [[Viewport.addTiledGraphicsProvider]]
- * @beta
+ * @see [[Viewport.addTiledGraphicsProvider]] to register a provider to be drawn in a viewport.
+ * @see [Exploded View Sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=explode-sample&imodel=House+Sample) for an interactive
+ * demonstration of a custom provider.
+ * @public
  */
 export interface TiledGraphicsProvider {
-  /** Apply the supplied function to each [[TileTreeReference]] to be drawn in the specified [[Viewport]]. */
+  /** For each [[TileTreeReference]] belonging to this provider that should be drawn in the specified [[Viewport]], apply the provided function. */
   forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
+
   /** If defined, overrides the logic for adding this provider's graphics into the scene. Otherwise, [[TileTreeReference.addToScene]] is invoked for each reference. */
   addToScene?: (context: SceneContext) => void;
 }

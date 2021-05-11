@@ -5,22 +5,25 @@
 import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { loadEnv } from "@bentley/config-loader";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
-import { IModelHost, IModelHostConfiguration, NativeAppBackend } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
 import {
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileRpcConfiguration, RpcInterfaceDefinition,
-  RpcManager, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface,
+  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
+  SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
+import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/lib/MobileBackend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
+import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 
 class DisplayTestAppRpc extends DtaRpcInterface {
 
   public async readExternalSavedViews(bimFileName: string): Promise<string> {
-    if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
@@ -34,7 +37,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   }
 
   public async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
-    if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
@@ -87,12 +90,10 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
   const rpcs: RpcInterfaceDefinition[] = [
     DtaRpcInterface,
-    Editor3dRpcInterface,
     IModelReadRpcInterface,
     IModelTileRpcInterface,
     IModelWriteRpcInterface,
     SnapshotIModelRpcInterface,
-    StandaloneIModelRpcInterface,
   ];
 
   return rpcs;
@@ -100,10 +101,10 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
 
 const setupStandaloneConfiguration = () => {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-  IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
+  loadEnv(path.join(__dirname, "..", "..", ".env"));
 
   const configuration: DtaConfiguration = {};
-  if (MobileRpcConfiguration.isMobileBackend)
+  if (ProcessDetector.isMobileAppBackend)
     return configuration;
 
   // Currently display-test-app ONLY supports opening files from local disk - i.e., "standalone" mode.
@@ -196,9 +197,6 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.SVT_DPI_LOD)
     configuration.dpiAwareLOD = true;
 
-  if (undefined !== process.env.SVT_NO_CANCEL_TILE_REQUESTS)
-    configuration.cancelBackendTileRequests = false;
-
   const aaSamplesVar = process.env.SVT_AASAMPLES;
   if (undefined !== aaSamplesVar && "0" !== aaSamplesVar && "false" !== aaSamplesVar.toLowerCase()) {
     const aaSamples = Number.parseInt(aaSamplesVar, 10);
@@ -226,34 +224,49 @@ const setupStandaloneConfiguration = () => {
   return configuration;
 };
 
-export const initializeDtaBackend = async () => {
+export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
   const dtaConfig = setupStandaloneConfiguration();
 
-  const hostConfig = new IModelHostConfiguration();
-  hostConfig.logTileLoadTimeThreshold = 3;
-  hostConfig.logTileSizeThreshold = 500000;
+  const iModelHost = new IModelHostConfiguration();
+  iModelHost.logTileLoadTimeThreshold = 3;
+  iModelHost.logTileSizeThreshold = 500000;
 
   let logLevel = LogLevel.None;
-  if (MobileRpcConfiguration.isMobileBackend) {
+  if (ProcessDetector.isMobileAppBackend) {
     // Does not seem DtaConfiguration is used anymore.
   } else {
     if (dtaConfig.customOrchestratorUri)
-      hostConfig.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
+      iModelHost.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
 
     if (dtaConfig.useFakeCloudStorageTileCache)
-      hostConfig.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
+      iModelHost.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
 
     const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
     if (undefined !== logLevelEnv)
       logLevel = Logger.parseLogLevel(logLevelEnv);
   }
 
+  const opts = {
+    iModelHost,
+    electronHost: hostOpts,
+    nativeHost: {
+      applicationName: "display-test-app",
+    },
+    mobileHost: hostOpts?.mobileHost,
+  };
+
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
-  if (MobileRpcConfiguration.isMobileBackend)
-    await NativeAppBackend.startup(hostConfig);
-  else
-    await IModelHost.startup(hostConfig);
+  if (ProcessDetector.isElectronAppBackend) {
+    await ElectronHost.startup(opts);
+    EditCommandAdmin.register(BasicManipulationCommand);
+  } else if (ProcessDetector.isIOSAppBackend) {
+    await IOSHost.startup(opts);
+  } else if (ProcessDetector.isAndroidAppBackend) {
+    await AndroidHost.startup(opts);
+  } else {
+    await LocalhostIpcHost.startup(opts);
+  }
 
   // Set up logging (by default, no logging is enabled)
   Logger.initializeToConsole();

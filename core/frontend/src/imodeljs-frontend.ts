@@ -5,19 +5,21 @@
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
+export * from "./BingLocation";
+export * from "./BriefcaseConnection";
+export * from "./BriefcaseTxns";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
 export * from "./ContextRealityModelState";
 export * from "./CoordSystem";
+export * from "./DecorationsCache";
 export * from "./DevTools";
 export * from "./DisplayStyleState";
 export * from "./DrawingViewState";
 export * from "./EditingFunctions";
-export * from "./ElementEditor";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
-export * from "./EventSource";
 export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
 export * from "./FeatureTrackingManager";
@@ -33,7 +35,8 @@ export * from "./ImageUtil";
 export * from "./IModelApp";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";
-export * from "./InteractiveEditingSession";
+export * from "./GraphicalEditingScope";
+export * from "./IpcApp";
 export * from "./LinePlaneIntersect";
 export * from "./MarginPercent";
 export * from "./Marker";
@@ -44,8 +47,12 @@ export * from "./NativeAppLogger";
 export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
-export * from "./QuantityFormatter";
+export * from "./PlanarClipMaskState";
+export * from "./quantity-formatting/QuantityFormatter";
+export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
+export * from "./quantity-formatting/LocalUnitFormatProvider";
 export * from "./RenderScheduleState";
+export * from "./CheckpointConnection";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialClassifiers";
@@ -66,8 +73,7 @@ export * from "./ViewPose";
 export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
-export * from "./oidc/DesktopAuthorizationClient";
-export * from "./oidc/MobileAuthorizationClient";
+export * from "./WebViewerApp";
 export * from "./oidc/OidcBrowserClient";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
@@ -94,6 +100,7 @@ export * from "./render/RenderTarget";
 export * from "./render/RenderSystem";
 export * from "./render/Scene";
 export * from "./render/ScreenSpaceEffectBuilder";
+export * from "./render/VisibleFeature";
 export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
 export * from "./render/webgl/IModelFrameLifecycle";
@@ -115,6 +122,7 @@ export * from "./tools/ViewTool";
 export * from "./BackgroundMapGeometry";
 export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
+export * from "./LocalhostIpcApp";
 
 /** @docs-package-description
  * The imodeljs-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
@@ -142,6 +150,10 @@ export * from "./ViewCreator3d";
 /**
  * @docs-group-description Tools
  * Classes for [working with Tools]($docs/learning/frontend/Tools.md)
+ */
+/**
+ * @docs-group-description Measure
+ * Classes for reporting point to point distances and mass properties of elements.
  */
 /**
  * @docs-group-description Views
@@ -180,6 +192,10 @@ export * from "./ViewCreator3d";
  * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
+ * @docs-group-description NativeApp
+ * Classes for working with Native Applications
+ */
+/**
  * @docs-group-description OIDC
  * Classes for working with the OpenID Connect (OIDC) protocol
  */
@@ -198,6 +214,10 @@ export * from "./ViewCreator3d";
 /**
  * @docs-group-description Features
  * Classes for Feature Tracking classification.
+ */
+/**
+ * @docs-group-description QuantityFormatting
+ * Classes for formatting and parsing quantity values.
  */
 /**
  * @docs-group-description Tiles

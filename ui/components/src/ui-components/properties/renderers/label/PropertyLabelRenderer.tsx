@@ -35,7 +35,7 @@ export class PropertyLabelRenderer extends React.PureComponent<PropertyLabelRend
   }
 
   public render() {
-    const title = this.props.tooltip ?? (typeof this.props.children == "string" ? this.props.children : undefined);
+    const title = this.props.tooltip ?? (typeof this.props.children == "string" ? this.props.children : /* istanbul ignore next */ undefined);
     return (
       <>
         <span className="components-property-label-renderer" title={title}>

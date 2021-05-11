@@ -60,6 +60,7 @@ function getEmptyImage(): HTMLImageElement {
  * @beta
  * @deprecated
  */
+// istanbul ignore next
 export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,

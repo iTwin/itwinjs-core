@@ -13,21 +13,17 @@ import { UiCore } from "../UiCore";
 // cSpell:ignore focusable
 
 function isFocusable(element: HTMLElement): boolean {
-  // istanbul ignore next
   if (!element || element.tabIndex < 0)
     return false;
 
-  // istanbul ignore next
   if (element.classList && element.classList.contains("core-focus-trap-ignore-initial"))
     return false;
 
-  if (element.tabIndex > 0 || (element.tabIndex === 0 && element.getAttribute("tabIndex") !== null)) {
-    return true;
-  }
-
-  // istanbul ignore next
   if (element.getAttribute && (typeof element.getAttribute === "function") && element.getAttribute("disabled") !== null)
     return false;
+
+  if (element.tabIndex > 0 || (element.tabIndex === 0 && element.getAttribute("tabIndex") !== null))
+    return true;
 
   switch (element.nodeName) {
     case "A":
@@ -40,7 +36,6 @@ function isFocusable(element: HTMLElement): boolean {
     case "SELECT":
     case "TEXTAREA":
       return true;
-    // istanbul ignore next
     default:
       return false;
   }
@@ -122,6 +117,22 @@ function attemptFocus(element: HTMLElement, preventScroll: boolean): boolean {
   }
   return (document.activeElement === element);
 } // end attemptFocus
+
+/** Focus into first focusable element of a container.
+ * @internal
+ */
+export function focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React.RefObject<HTMLElement> | string): boolean {
+  let result = false;
+  const focusElement = getInitialFocusElement(focusContainer, initialFocusElement);
+  if (focusElement) {
+    // delay setting focus immediately because in some browsers other focus events happen when popup is initially opened.
+    setTimeout(() => {
+      attemptFocus(focusElement, true);
+    }, 60);
+    result = true;
+  }
+  return result;
+}
 
 /** Properties supported by [[FocusTrap]] component.
  * @internal

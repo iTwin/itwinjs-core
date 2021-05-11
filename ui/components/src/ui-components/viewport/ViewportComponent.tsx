@@ -265,7 +265,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       setTimeout(() => {
         ViewportComponentEvents.onViewIdChangedEvent.emit({ viewport: vp, oldId: this.state.viewId, newId: vp.view.id });
 
-        /* istanbul ignore else */
+        /* istanbul ignore next - flaky mounted condition in the setTimeout */
         if (this._mounted)
           this.setState({ viewId: vp.view.id });
       });

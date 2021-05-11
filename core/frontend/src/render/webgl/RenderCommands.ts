@@ -31,7 +31,7 @@ import { Target } from "./Target";
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal
  */
-export class RenderCommands {
+export class RenderCommands implements Iterable<DrawCommands> {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
   private readonly _scratchRange = new Range3d();
@@ -40,12 +40,17 @@ export class RenderCommands {
   private _stack: BranchStack; // refers to the Target's BranchStack
   private _batchState: BatchState; // refers to the Target's BatchState
   private _forcedRenderPass: RenderPass = RenderPass.None;
+  private _addLayersAsNormalGraphics = false;
   private _opaqueOverrides = false;
   private _translucentOverrides = false;
   private _addTranslucentAsOpaque = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
   private readonly _layers: LayerCommandLists;
 
   public get target(): Target { return this._target; }
+
+  public [Symbol.iterator](): Iterator<DrawCommands> {
+    return this._commands[Symbol.iterator]();
+  }
 
   public get isEmpty(): boolean {
     for (const commands of this._commands)
@@ -101,6 +106,15 @@ export class RenderCommands {
     this._stack = stack;
     this._batchState = batchState;
     this.clear();
+  }
+
+  public collectGraphicsForPlanarProjection(scene: GraphicList): void {
+    assert(this._forcedRenderPass === RenderPass.None);
+    assert(!this._addLayersAsNormalGraphics);
+
+    this._addLayersAsNormalGraphics = true;
+    this.addGraphics(scene);
+    this._addLayersAsNormalGraphics = false;
   }
 
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
@@ -285,6 +299,16 @@ export class RenderCommands {
   }
 
   public addLayerCommands(layer: Layer): void {
+    if (this._addLayersAsNormalGraphics) {
+      // GraphicsCollectorDrawArgs wants to collect graphics to project to a plane for masking.
+      // It bypasses PlanProjectionTreeReference.createDrawArgs which would otherwise wrap the graphics in a LayerContainer.
+      assert(this._forcedRenderPass === RenderPass.None);
+      this._forcedRenderPass = RenderPass.OpaqueGeneral;
+      layer.graphic.addCommands(this);
+      this._forcedRenderPass = RenderPass.None;
+      return;
+    }
+
     assert(this.isDrawingLayers);
     if (!this.isDrawingLayers)
       return;
@@ -301,8 +325,8 @@ export class RenderCommands {
   }
 
   public addHiliteLayerCommands(graphic: Graphic, pass: RenderPass): void {
-    assert(this.isDrawingLayers);
-    if (!this.isDrawingLayers)
+    assert(this.isDrawingLayers || this._addLayersAsNormalGraphics);
+    if (!this.isDrawingLayers && !this._addLayersAsNormalGraphics)
       return;
 
     const prevPass = this._forcedRenderPass;
@@ -562,6 +586,9 @@ export class RenderCommands {
   }
 
   public addBatch(batch: Batch): void {
+    if (batch.locateOnly && !this.target.isReadPixelsInProgress)
+      return;
+
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
     // NB: This is no longer true - pickable overlay decorations are defined as Batches. Problem?

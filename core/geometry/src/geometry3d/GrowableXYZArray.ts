@@ -8,6 +8,7 @@
  */
 
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { Matrix4d } from "../geometry4d/Matrix4d";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
@@ -562,7 +563,22 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return numFail === 0;
   }
 
-  /** multiply each point by the transform, replace values. */
+  /** multiply each xyz (as a point) by a homogeneous matrix and update as the normalized point
+   *
+   */
+  public multiplyMatrix4dAndQuietRenormalizeMatrix4d(matrix: Matrix4d) {
+    const data = this._data;
+    const nDouble = this.float64Length;
+    const xyz1 = Point3d.create();
+    for (let i = 0; i + 2 <= nDouble; i += 3) {
+      matrix.multiplyXYZWQuietRenormalize(data[i], data[i + 1], data[i + 2], 1.0, xyz1);
+      data[i] = xyz1.x;
+      data[i + 1] = xyz1.y;
+      data[i + 2] = xyz1.z;
+    }
+  }
+
+/** multiply each point by the transform, replace values. */
   public tryTransformInverseInPlace(transform: Transform): boolean {
     const data = this._data;
     const nDouble = this.float64Length;

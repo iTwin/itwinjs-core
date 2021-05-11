@@ -5,13 +5,14 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
-import { InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo, PropertyEditorParamTypes, StandardEditorNames } from "@bentley/ui-abstract";
+import { InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo,
+  PropertyEditorParamTypes, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
 import { TextareaEditor } from "../../ui-components/editors/TextareaEditor";
-import TestUtils from "../TestUtils";
 import { EditorContainer } from "../../ui-components/editors/EditorContainer";
+import TestUtils from "../TestUtils";
 
 describe("<TextareaEditor />", () => {
   before(async () => {
@@ -181,4 +182,23 @@ describe("<TextareaEditor />", () => {
     expect(renderedComponent.container.querySelector(".components-textarea-editor")).to.not.be.empty;
     cleanup();
   });
+
+  it("calls onCancel on Escape on button", async () => {
+    const editorInfo: PropertyEditorInfo = {
+      name: StandardEditorNames.MultiLine,
+    };
+    const propertyRecord = TestUtils.createPrimitiveStringProperty("Test", "MyValue", undefined, editorInfo);
+
+    const spyOnCommit = sinon.spy();
+    const spyOnCancel = sinon.spy();
+    const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={spyOnCancel} />);
+    expect(renderedComponent).not.to.be.undefined;
+    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    expect(popupButton).not.to.be.null;
+
+    fireEvent.keyDown(popupButton, { key: SpecialKey.Escape });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCancel.calledOnce).to.be.true;
+  });
+
 });

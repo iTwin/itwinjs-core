@@ -7,7 +7,7 @@
  */
 
 /** Widget state enum.
- * @beta
+ * @public
  */
 export enum WidgetState {
   /** Widget tab is visible and active and its contents are visible */

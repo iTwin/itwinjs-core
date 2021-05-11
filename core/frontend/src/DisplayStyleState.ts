@@ -5,24 +5,25 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
+import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings,
-  MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
+  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
+  MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
+  SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { ElementState } from "./EntityState";
-import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTree, MapTileTreeReference, TileTreeReference } from "./tile/internal";
+import { getCesiumOSMBuildingsUrl, MapCartoRectangle, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 
@@ -38,12 +39,14 @@ export class TerrainDisplayOverrides {
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
   public static get className() { return "DisplayStyle"; }
-  private _backgroundMap: MapTileTreeReference;
-  private _overlayMap: MapTileTreeReference;
-  private readonly _backgroundDrapeMap: MapTileTreeReference;
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
-  private _scheduleScript?: RenderScheduleState.Script;
+  private _scheduleState?: RenderScheduleState;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
+  private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
+  /** Event raised just before the [[scheduleScriptReference]] property is changed.
+   * @beta
+   */
+  public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
 
   /** The container for this display style's settings. */
   public abstract get settings(): DisplayStyleSettings;
@@ -54,23 +57,71 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Construct a new DisplayStyleState from its JSON representation.
    * @param props JSON representation of the display style.
    * @param iModel IModelConnection containing the display style.
+   * @param source If the constructor is being invoked from [[EntityState.clone]], the display style that is being cloned.
    */
-  constructor(props: DisplayStyleProps, iModel: IModelConnection) {
+  constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState) {
     super(props, iModel);
     const styles = this.jsonProperties.styles;
-    const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || {});
-    const mapImagery = MapImagerySettings.fromJSON(styles?.mapImagery, mapSettings.toJSON());
-    this._backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, false, () => this.overrideTerrainDisplay());
-    this._overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, iModel, true, false);
-    this._backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, true);
+
+    if (source)
+      this._scheduleState = source._scheduleState;
 
     if (styles) {
       if (styles.contextRealityModels)
         for (const contextRealityModel of styles.contextRealityModels)
           this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
 
-      if (styles.scheduleScript)
-        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, styles.scheduleScript);
+      if (styles.planarClipOvr)
+        for (const planarClipOvr of styles.planarClipOvr)
+          if (Id64.isValid(planarClipOvr.modelId))
+            this._attachedRealityModelPlanarClipMasks.set(planarClipOvr.modelId, PlanarClipMaskState.fromJSON(planarClipOvr));
+    }
+  }
+
+  /** Ensures all of the data required by the display style is loaded.
+   * @note This method is invoked by [[ViewState.load]].
+   * @beta
+   */
+  public async load(): Promise<void> {
+    // If we were cloned, we may already have a valid schedule state, and our display style Id may be invalid / different.
+    // Preserve it if still usable.
+    if (this._scheduleState) {
+      if (this.settings.renderTimeline === this._scheduleState.sourceId) {
+        // The script came from the same RenderTimeline element. Keep it.
+        return;
+      }
+
+      if (undefined === this.settings.renderTimeline) {
+        // The script cam from a display style's JSON properties. Keep it if (1) this style is not persistent or (2) this style has the same Id
+        if (this.id === this._scheduleState.sourceId || !Id64.isValidId64(this.id))
+          return;
+      }
+    }
+
+    this._scheduleState = await this.loadScheduleState();
+  }
+
+  private async loadScheduleState(): Promise<RenderScheduleState | undefined> {
+    // The script can be stored on a separate RenderTimeline element (new, preferred way); or stuffed into the display style's JSON properties (old, deprecated way).
+    try {
+      let script;
+      let sourceId;
+      if (this.settings.renderTimeline) {
+        const timeline = await this.iModel.elements.loadProps(this.settings.renderTimeline, { renderTimeline: { omitScriptElementIds: true } }) as RenderTimelineProps;
+        if (timeline) {
+          const scriptProps = JSON.parse(timeline.script);
+          script = RenderSchedule.Script.fromJSON(scriptProps);
+          sourceId = this.settings.renderTimeline;
+        }
+      } else if (this.settings.scheduleScriptProps) { // eslint-disable-line deprecation/deprecation
+        // eslint-disable-next-line deprecation/deprecation
+        script = RenderSchedule.Script.fromJSON(this.settings.scheduleScriptProps);
+        sourceId = this.id;
+      }
+
+      return (script && sourceId) ? new RenderScheduleState(sourceId, script) : undefined;
+    } catch (_) {
+      return undefined;
     }
   }
 
@@ -78,15 +129,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get displayTerrain() {
     return this.viewFlags.backgroundMap && this.settings.backgroundMap.applyTerrain;
   }
-
-  /** @internal */
-  public get backgroundMap(): MapTileTreeReference { return this._backgroundMap; }
-
-  /** @internal */
-  public get overlayMap(): MapTileTreeReference { return this._overlayMap; }
-
-  /** @internal */
-  public get backgroundDrapeMap(): MapTileTreeReference { return this._backgroundDrapeMap; }
 
   /** @internal */
   public get globeMode(): GlobeMode { return this.settings.backgroundMap.globeMode; }
@@ -103,7 +145,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
    */
-  public get backgroundMapSettings(): BackgroundMapSettings { return this._backgroundMap.settings; }
+  public get backgroundMapSettings(): BackgroundMapSettings { return this.settings.backgroundMap; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this.settings.backgroundMap = settings;
   }
@@ -119,16 +161,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * ```
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
-    this.backgroundMapSettings = this.backgroundMapSettings.clone(props);
+    const newSettings = this.backgroundMapSettings.clone(props);
+    this.backgroundMapSettings = newSettings;
     if (props.providerName !== undefined || props.providerData?.mapType !== undefined) {
-      const mapBase = MapLayerSettings.fromMapSettings(this.backgroundMapSettings);
-      this._backgroundMap.setBaseLayerSettings(mapBase);
-      this._backgroundDrapeMap.setBaseLayerSettings(mapBase);
+      const mapBase = MapLayerSettings.fromMapSettings(newSettings);
       this.settings.mapImagery.backgroundBase = mapBase;
     }
-    // The settings change may cause a different tree to be used... make sure its imagery is in synch.
-    this._backgroundMap.clearLayers();
-    this._backgroundDrapeMap.clearLayers();
   }
 
   /** @beta
@@ -148,10 +186,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.forEachRealityTileTreeRef(func);
-    if (this.viewFlags.backgroundMap) {
-      func(this._backgroundMap);
-      func(this._overlayMap);
-    }
   }
 
   /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.
@@ -166,25 +200,58 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** The name of this DisplayStyle */
-  public get name(): string { return this.code.getValue(); }
+  public get name(): string { return this.code.value; }
+
+  /** Change the Id of the [RenderTimeline]($backend) element that hosts the [RenderSchedule.Script]($common) to be applied by this display style for
+   * animating the contents of the view.
+   * @beta
+   */
+  public async changeRenderTimeline(timelineId: Id64String | undefined): Promise<void> {
+    if (timelineId === this.settings.renderTimeline)
+      return;
+
+    const script = await this.loadScheduleState();
+    this.onScheduleScriptReferenceChanged.raiseEvent(script);
+    this._scheduleState = script;
+  }
+
+  /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
+   * @see [[changeRenderTimeline]] to change the script.
+   * @beta
+   */
+  public get scheduleScript(): RenderSchedule.Script | undefined {
+    return this._scheduleState?.script;
+  }
+
+  /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
+   * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
+   * @see [[changeRenderTimeline]] to change the script.
+   * @beta
+   */
+  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
+    return this._scheduleState;
+  }
 
   /** @internal */
-  public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }
-  public set scheduleScript(script: RenderScheduleState.Script | undefined) {
-    let json;
-    let newScript;
-    if (script) {
-      json = script.toJSON();
-      newScript = RenderScheduleState.Script.fromJSON(this.id, json);
-    }
+  public get scheduleState(): RenderScheduleState | undefined {
+    return this._scheduleState;
+  }
 
-    this.settings.scheduleScriptProps = json;
-    this._scheduleScript = newScript;
+  /** This is only used by [RealityTransitionTool]($frontend-devtools). It basically can only work if the script contains nothing that requires special tiles to be generated -
+   * no symbology changes, transforms, or clipping - because the backend tile generator requires a *persistent* element to host the script for those features to work.
+   * @internal
+   */
+  public setScheduleState(state: RenderScheduleState | undefined): void {
+    this.onScheduleScriptReferenceChanged.raiseEvent(state);
+    this._scheduleState = state;
+
+    // eslint-disable-next-line deprecation/deprecation
+    this.settings.scheduleScriptProps = state?.script.toJSON();
   }
 
   /** @internal */
   public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined {
-    return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime);
+    return this.scheduleState?.getAnimationBranches(scheduleTime);
   }
 
   /**
@@ -242,7 +309,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const tilesetUrl = getCesiumOSMBuildingsUrl();
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
       currentIndex = this._contextRealityModels.length;
-      this.attachRealityModel({ tilesetUrl, name });
+      this.attachRealityModel({ tilesetUrl, name, planarClipMask: { mode: PlanarClipMaskMode.None }});
     }
 
     if (options.appearanceOverrides)
@@ -318,7 +385,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.settings.dropModelAppearanceOverride(modelId);
   }
 
-  /** Returns true if model appearance overridess are defined by this style.
+  /** Returns true if model appearance overrides are defined by this style.
    * @beta
    */
 
@@ -336,6 +403,25 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return this.settings.getModelAppearanceOverride(id);
   }
 
+  private applyToRealityModel(index: number, func: (index: number, jsonContextRealityModels: any[]) => boolean): boolean {
+    if (undefined === this.jsonProperties.styles)
+      this.jsonProperties.styles = {};
+
+    const styles = this.jsonProperties.styles;
+    const jsonContextRealityModels = styles.contextRealityModels;
+    if (!Array.isArray(jsonContextRealityModels) || jsonContextRealityModels.length !== this._contextRealityModels.length)
+      return false;     // No context reality models.
+
+    let changed = false;
+    if (index < 0) {
+      for (let i = 0; i < jsonContextRealityModels.length; i++)
+        changed = func(i, jsonContextRealityModels) || changed;
+    } else {
+      changed = func(index, jsonContextRealityModels);
+    }
+    return changed;
+  }
+
   /** Change the appearance overrides for a context reality model displayed by this style.
    * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
    * @param index The reality model index or -1 to apply to all models.
@@ -344,64 +430,28 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * the changes are promptly visible on the screen.
    * @beta
    */
+
   public overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean {
-    if (undefined === this.jsonProperties.styles)
-      this.jsonProperties.styles = {};
-
-    const styles = this.jsonProperties.styles;
-    const contextRealityModels = undefined !== styles ? styles.contextRealityModels : undefined;
-    if (!Array.isArray(contextRealityModels) || contextRealityModels.length !== this._contextRealityModels.length) {
-      return false;     // No context reality models.
-    }
-
-    const setContextRealityModelOverrides = (changeIndex: number) => {
-      if (changeIndex >= this._contextRealityModels.length)
-        return false;
-
-      contextRealityModels[changeIndex].appearanceOverrides = this._contextRealityModels[changeIndex].appearanceOverrides = overrides;
+    return this.applyToRealityModel(index, (changeIndex: number, jsonContextRealityModels: any[]) => {
+      jsonContextRealityModels[changeIndex].appearanceOverrides = overrides.toJSON();
+      this._contextRealityModels[changeIndex].appearanceOverrides = overrides;
       return true;
-    };
-    let changed = false;
-    if (index < 0) {
-      // All context models...
-      for (let i = 0; i < this._contextRealityModels.length; i++)
-        changed = setContextRealityModelOverrides(i) || changed;
-    } else {
-      // Context model by index...
-      changed = setContextRealityModelOverrides(index);
-    }
-    return changed;
+    });
   }
 
   /** Drop the appearance overrides for a context reality model displayed by this style.
-   * @param index The reality model index or -1 to drop overrides from all reality models.
-   * @returns true if overrides are successfully dropped.
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropRealityModelAppearanceOverride]] to ensure
-   * the changes are promptly visible on the screen.
-   * @beta
-   */
-  public dropRealityModelAppearanceOverride(index: number) {
-    if (undefined === this.jsonProperties.styles || undefined === this.jsonProperties.styles.contextRealityModels)
-      return;
-
-    const contextRealityModels = this.jsonProperties.styles.contextRealityModels;
-    if (!Array.isArray(contextRealityModels) || contextRealityModels.length !== this._contextRealityModels.length)
-      return;
-
-    const dropContextRealityModelOverrides = (dropIndex: number) => {
-      if (dropIndex >= 0 && dropIndex < contextRealityModels.length) {
-        contextRealityModels[dropIndex].appearanceOverrides = undefined;
-        this._contextRealityModels[dropIndex].appearanceOverrides = undefined;
-      }
-    };
-    if (index < 0) {
-      for (let i = 0; i < this._contextRealityModels.length; i++)
-        dropContextRealityModelOverrides(i);
-    } else {
-      dropContextRealityModelOverrides(index);
-    }
+ * @param index The reality model index or -1 to drop overrides from all reality models.
+ * @returns true if overrides are successfully dropped.
+ * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropRealityModelAppearanceOverride]] to ensure
+ * the changes are promptly visible on the screen.
+ * @beta
+ */
+  public dropRealityModelAppearanceOverride(index: number): boolean {
+    return this.applyToRealityModel(index, (changeIndex: number, jsonContextRealityModels: any[]) => {
+      jsonContextRealityModels[changeIndex].appearanceOverrides = this._contextRealityModels[changeIndex].appearanceOverrides = undefined;
+      return true;
+    });
   }
-
   /** Obtain the override applied to a context reality model displayed by this style.
    * @param index The reality model index
    * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
@@ -412,12 +462,88 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return index >= 0 && index < this._contextRealityModels.length ? this._contextRealityModels[index]?.appearanceOverrides : undefined;
   }
 
+  /** Return the "contextual" reality model index for a transient model ID or -1 if none found
+   * @beta
+   */
+  public getRealityModelIndexFromTransientId(id: Id64String): number {
+    for (let i = 0; i < this._contextRealityModels.length; i++) {
+      const treeRef = this._contextRealityModels[i].treeRef;
+      if (treeRef instanceof RealityModelTileTree.Reference && treeRef.modelId === id)
+        return i;
+    }
+    return -1;
+  }
+
+  /** Override the planar clip mask for a reality model.
+   * @param modelIdOrIndex The ID of the [[model]] if the attached to the view or the index if it is a context model displayed by this style.
+   * @param planarClipMask The planar clip mask to apply to the [[Model]].
+   * @see [[dropRealityModelPlanarClipMask]
+   * @beta
+   */
+  public overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, mask: PlanarClipMaskSettings): boolean {
+    const maskState = PlanarClipMaskState.create(mask);
+    if (typeof modelIdOrIndex === "string") {
+      const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
+      if (model?.isRealityModel) {
+        this.settings.overrideModelPlanarClipMask(modelIdOrIndex, mask);
+        return true;
+      } else
+        return false;
+    } else {
+      return this.applyToRealityModel(modelIdOrIndex, (changeIndex: number, jsonContextRealityModels: any[]) => {
+        jsonContextRealityModels[changeIndex].planarClipMask = mask;
+        this._contextRealityModels[changeIndex].planarClipMask = maskState;
+        this.settings.raiseRealityModelPlanarClipMaskChangedEvent(changeIndex, mask);
+        return true;
+      });
+    }
+  }
+
+  /** Drop the planar clip mask for a reality model.
+   * @param modelIdOrIndex The ID of the [[model]] if the attached to the view or the index if it is a context model displayed by this style.
+   * @returns true if overrides are successfully dropped.
+   * @beta
+   */
+  public dropRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): boolean {
+    if (typeof modelIdOrIndex === "string") {
+      const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
+      if (model && model.isRealityModel) {
+        this._attachedRealityModelPlanarClipMasks.delete(modelIdOrIndex);
+        this.settings.dropModelPlanarClipMaskOverride(modelIdOrIndex);
+        return true;
+      } else
+        return false;
+    } else {
+      return this.applyToRealityModel(modelIdOrIndex, (changeIndex: number, jsonContextRealityModels: any[]) => {
+        jsonContextRealityModels[changeIndex].planarClipMask = undefined;
+        this._contextRealityModels[changeIndex].planarClipMask = undefined;
+        this.settings.raiseRealityModelPlanarClipMaskChangedEvent(changeIndex, undefined);
+        return true;
+      });
+    }
+  }
+
+  /** Obtain the planar clip  applied to a context reality model
+   * @param modelIdOrIndex The ID of the [[model]] if the attached to the view or the index if it is a context model displayed by this style.
+   * @returns The corresponding PlanarClipMask, or undefined if the Model's appearance is not overridden.
+   * @see [[overrideRealityModelPlanarClipMask]]
+   * @beta
+   */
+  public getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMaskState | undefined {
+    if (typeof modelIdOrIndex === "string") {
+      const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
+      return (model && model.isRealityModel) ? this._attachedRealityModelPlanarClipMasks.get(modelIdOrIndex) : undefined;
+    } else {
+      return modelIdOrIndex >= 0 && modelIdOrIndex < this._contextRealityModels.length ? this._contextRealityModels[modelIdOrIndex]?.planarClipMask : undefined;
+    }
+  }
+
   /** @internal */
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
 
   /** @internal */
-  public attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex = -1): void {
-    const layerSettings = MapLayerSettings.fromJSON(props);
+  public attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex = -1): void {
+    const layerSettings = settings.clone({});
     if (undefined === layerSettings)
       return;
 
@@ -430,6 +556,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     this._synchBackgroundMapImagery();
+  }
+
+  /** @internal */
+  public attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex = -1): void {
+    const layerSettings = MapLayerSettings.fromJSON(props);
+    if (undefined === layerSettings)
+      return;
+
+    this.attachMapLayerSettings(layerSettings, isOverlay, insertIndex);
   }
 
   /** @internal */
@@ -511,6 +646,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
+  public changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string,) {
+    const layers = this.getMapLayers(isOverlay);
+    if (index < 0 || index >= layers.length)
+      return;
+    layers[index].setCredentials(userName, password);
+    this._synchBackgroundMapImagery();
+  }
+
   public changeMapSubLayerProps(props: MapSubLayerProps, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
@@ -562,11 +705,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /* @internal */
   private _synchBackgroundMapImagery() {
-    this._backgroundMap.setBaseLayerSettings(this.settings.mapImagery.backgroundBase);
-    this._backgroundMap.setLayerSettings(this.settings.mapImagery.backgroundLayers);
-    this._backgroundDrapeMap.setBaseLayerSettings(this.settings.mapImagery.backgroundBase);
-    this._backgroundDrapeMap.setLayerSettings(this.settings.mapImagery.backgroundLayers);
-    this._overlayMap.setLayerSettings(this.settings.mapImagery.overlayLayers);
     this.settings.synchMapImagery();
   }
 
@@ -601,20 +739,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
-  /** @internal */
-  public mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined {
-    return undefined === hit.modelId ? undefined : this.mapLayerFromIds(hit.modelId, hit.sourceId);
-  }
-
-  /** @internal */
-  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
-    let mapLayer;
-    if (undefined === (mapLayer = this.backgroundMap.layerFromTreeModelIds(mapTreeId, layerTreeId)))
-      mapLayer = this._overlayMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
-
-    return mapLayer;
-  }
-
   /**
    * Reorder map layers
    * @param fromIndex index of map layer to move
@@ -634,7 +758,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  /** The ViewFlags associated with this style.
+  /** Flags controlling various aspects of the display style.
+   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
    * @see [DisplayStyleSettings.viewFlags]($common)
    */
   public get viewFlags(): ViewFlags { return this.settings.viewFlags; }
@@ -645,7 +770,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public set backgroundColor(val: ColorDef) { this.settings.backgroundColor = val; }
 
   /** The color used to draw geometry in monochrome mode.
-   * @see [[ViewFlags.monochrome]] for enabling monochrome mode.
+   * @see [ViewFlags.monochrome]($common) for enabling monochrome mode.
    */
   public get monochromeColor(): ColorDef { return this.settings.monochromeColor; }
   public set monochromeColor(val: ColorDef) { this.settings.monochromeColor = val; }
@@ -671,16 +796,23 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getIsBackgroundMapVisible(): boolean {
     return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
   }
-
-  /** @internal */
   public get backgroundMapElevationBias(): number {
-    let bimElevationBias = this.backgroundMapSettings.groundBias;
-    const mapTree = this.backgroundMap.treeOwner.load() as MapTileTree;
+    if (this.backgroundMapSettings.applyTerrain) {
+      const terrainSettings = this.backgroundMapSettings.terrainSettings;
+      switch (terrainSettings.heightOriginMode) {
+        case TerrainHeightOriginMode.Ground:
+          return terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.backgroundMapLocation.projectCenterAltitude;
 
-    if (mapTree !== undefined)
-      bimElevationBias = mapTree.bimElevationBias;    // Terrain trees calculate their bias when loaded (sea level or ground offset).
+        case TerrainHeightOriginMode.Geodetic:
+          return terrainSettings.heightOrigin;
 
-    return bimElevationBias;
+        case TerrainHeightOriginMode.Geoid:
+          return terrainSettings.heightOrigin + this.iModel.backgroundMapLocation.geodeticToSeaLevel;
+      }
+    } else {
+      return this.backgroundMapSettings.groundBias;
+    }
+
   }
 
   /** @internal */
@@ -733,7 +865,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public dropSubCategoryOverride(id: Id64String) { this.settings.dropSubCategoryOverride(id); }
 
-  /** Returns true if an [[SubCategoryOverride]s are defined by this style. */
+  /** Returns true if an [[SubCategoryOverride]]s are defined by this style. */
   public get hasSubCategoryOverride() { return this.settings.hasSubCategoryOverride; }
 
   /** Obtain the overrides applied to a [[SubCategoryAppearance]] by this style.
@@ -744,26 +876,42 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 
   /** @internal */
-  public getAttribution(div: HTMLTableElement, vp: ScreenViewport): void {
-    if (this.viewFlags.backgroundMap) {
-      this._backgroundMap.addLogoCards(div, vp);
-      this._overlayMap.addLogoCards(div, vp);
-    }
-  }
-
-  /** @internal */
   public get wantShadows(): boolean {
     return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }
 
   /** @internal */
   protected registerSettingsEventListeners(): void {
-    this.settings.onScheduleScriptPropsChanged.addListener((timeline) => {
-      this._scheduleScript = timeline ? RenderScheduleState.Script.fromJSON(this.id, timeline) : undefined;
+    // eslint-disable-next-line deprecation/deprecation
+    this.settings.onScheduleScriptPropsChanged.addListener((scriptProps) => {
+      let newState: RenderScheduleState | undefined;
+      if (scriptProps) {
+        const script = RenderSchedule.Script.fromJSON(scriptProps);
+        if (script)
+          newState = new RenderScheduleState(this.id, script);
+      }
+
+      if (newState !== this._scheduleState) {
+        this.onScheduleScriptReferenceChanged.raiseEvent(newState);
+        this._scheduleState = newState;
+      }
     });
 
-    this.settings.onBackgroundMapChanged.addListener((mapSettings: BackgroundMapSettings) => {
-      this._backgroundMap.settings = this._overlayMap.settings = this._backgroundDrapeMap.settings = mapSettings;
+    this.settings.onRenderTimelineChanged.addListener((newTimeline) => {
+      if (newTimeline !== this._scheduleState?.sourceId) {
+        // Loading the new script is asynchronous...people should really be using DisplayStyleState.changeRenderTimeline().
+        this.onScheduleScriptReferenceChanged.raiseEvent(undefined);
+        this._scheduleState = undefined;
+      }
+    });
+
+    this.settings.onRealityModelPlanarClipMaskChanged.addListener((id: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => {
+      if (typeof id === "string") {
+        if (newSettings)
+          this._attachedRealityModelPlanarClipMasks.set(id, PlanarClipMaskState.create(newSettings));
+        else
+          this._attachedRealityModelPlanarClipMasks.delete(id);
+      }
     });
 
     // ###TODO contextRealityModels are a bit of a mess.
@@ -1131,21 +1279,15 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _environment?: Environment;
   private _settings: DisplayStyle3dSettings;
 
-  /** @internal */
-  public clone(iModel?: IModelConnection): this {
-    const clone = super.clone(iModel);
-    if (undefined === iModel || this.iModel === iModel) {
-      clone._skyBoxParams = this._skyBoxParams;
-      clone._skyBoxParamsLoaded = this._skyBoxParamsLoaded;
-    }
-
-    return clone;
-  }
-
   public get settings(): DisplayStyle3dSettings { return this._settings; }
 
-  public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
-    super(props, iModel);
+  public constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState) {
+    super(props, iModel, source);
+    if (source && source.iModel === this.iModel) {
+      this._skyBoxParams = source._skyBoxParams;
+      this._skyBoxParamsLoaded = source._skyBoxParamsLoaded;
+    }
+
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
     this.registerSettingsEventListeners();
   }
@@ -1205,18 +1347,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   /** Set the solar light direction based on time value
    * @param time The time in unix time milliseconds.
+   * @see [DisplayStyle3dSettings.sunTime]($common) to obtain the current sun time.
+   * @see [DisplayStyle3dSettings.setSunTime]($common).
    */
   public setSunTime(time: number) {
-    let cartoCenter;
-    if (this.iModel.isGeoLocated) {
-      const projectExtents = this.iModel.projectExtents;
-      const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
-      cartoCenter = this.iModel.spatialToCartographicFromEcef(projectCenter);
-    } else {
-      cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
-    }
-
-    this.settings.lights = this.settings.lights.clone({ solar: { direction: calculateSolarDirection(new Date(time), cartoCenter) } });
+    this.settings.setSunTime(time, this.iModel);
   }
 
   /** Settings controlling shadow display. */

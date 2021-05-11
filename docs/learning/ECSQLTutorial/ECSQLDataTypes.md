@@ -9,7 +9,7 @@ Property | Description
 ECInstanceId | Is the unique identifier for an ECInstance.
 ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECClass in the iModel.
 
-> In iModel.js the *ECClassId* is formatted as fully qualified class name when used in the SELECT clause.
+> In iTwin.js the *ECClassId* is formatted as fully qualified class name when used in the SELECT clause.
 
 ---
 
@@ -23,7 +23,7 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 > SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004"></iframe>
 
 ## Primitive Data Types
 
@@ -43,7 +43,7 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 > SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model"></iframe>
 
 Boolean properties or expressions do not need to be compared to `True` and `False` as they return a
 boolean value already.
@@ -65,7 +65,7 @@ boolean value already.
 > ```
 >
 > are equivalent.
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate"></iframe>
 
 And the same example with `False`:
 
@@ -85,7 +85,7 @@ And the same example with `False`:
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate"></iframe>
 
 ## DateTime
 
@@ -105,7 +105,7 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 > SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2020-03-11T12:30:20.492Z' AND TIMESTAMP '2020-03-11T12:31:03.494Z'
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2020-03-11T12:30:20.492Z' AND TIMESTAMP '2020-03-11T12:31:03.494Z'"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2020-03-11T12:30:20.492Z' AND TIMESTAMP '2020-03-11T12:31:03.494Z'"></iframe>
 
 ## Points
 
@@ -131,7 +131,7 @@ Property | Description
 > SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 0 AND 10 AND Origin.Y BETWEEN 0 AND 10 AND Origin.Z BETWEEN 0 AND 10
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 0 AND 10 AND Origin.Y BETWEEN 0 AND 10 AND Origin.Z BETWEEN 0 AND 10"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 0 AND 10 AND Origin.Y BETWEEN 0 AND 10 AND Origin.Z BETWEEN 0 AND 10"></iframe>
 
 ## Navigation Properties
 
@@ -145,7 +145,7 @@ Property | Description
 `Id` | ECInstanceId of the related instance
 `RelECClassId` | ECClassId of the ECRelationshipClass backing the navigation property. It is mainly relevant when the ECRelationshipClass has subclasses.
 
-> In iModel.js the *RelECClassId* is formatted as fully qualified class name when used in the SELECT clause.
+> In iTwin.js the *RelECClassId* is formatted as fully qualified class name when used in the SELECT clause.
 
 ---
 
@@ -159,7 +159,7 @@ Property | Description
 > SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 > **Try it yourself**
 >
@@ -171,7 +171,7 @@ Property | Description
 > SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 ---
 
@@ -185,7 +185,7 @@ Property | Description
 > SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 Find more examples in the lesson about [Joins and ECRelationshipClasses](./Joins.md#examples).
 
@@ -252,7 +252,7 @@ in the array property [ECEnumerationDef.EnumValues](../ECDbMeta.ecschema.md#ecen
 > SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='SectionType'
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='SectionType'"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='SectionType'"></iframe>
 
 You can find more ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#arrays).
 

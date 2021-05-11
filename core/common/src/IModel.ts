@@ -22,8 +22,10 @@ export interface IModelRpcOpenProps {
   readonly contextId?: GuidString;
   /** Guid of the iModel. */
   readonly iModelId?: GuidString;
-  /** Id of the last ChangeSet that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub. An empty string indicates the first version */
-  changeSetId?: GuidString;
+  /** Id of the last ChangeSet that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub. An empty string indicates the first version.
+   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
+   */
+  changeSetId?: string;
   /** Mode used to open the iModel */
   openMode?: OpenMode;
 }
@@ -58,7 +60,7 @@ export interface RootSubjectProps {
   description?: string;
 }
 
-/** Properties that are about an iModel.
+/** Properties of an iModel that are always held in memory whenever one is opened, both on the frontend and on the backend .
  * @public
  */
 export interface IModelProps {
@@ -76,15 +78,12 @@ export interface IModelProps {
   name?: string;
 }
 
-/** Supplies the name of the [EventSource]($frontend) through which the backend pushes notifications to the frontend.
- * @alpha
- */
-export interface IModelEventSourceProps {
-  eventSourceName: string;
-}
-
-/** @alpha */
-export type IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps;
+/**
+ * The properties returned by the backend when creating a new [[IModelConnection]] from the frontend, either with Rpc or with Ipc.
+ * These properties describe the iModel held on the backend for thew newly formed connection and are used to construct a new
+ * [[IModelConnection]] instance on the frontend to access it.
+ * @public */
+export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 /** The properties that can be supplied when creating a *new* iModel.
  * @public
@@ -109,18 +108,18 @@ export interface IModelEncryptionProps {
 }
 
 /**
- * A key used to identify an opened IModelDb between the frontend and backend for RPC communications.
+ * A key used to identify an opened [IModelDb]($backend) between the frontend and backend for Rpc and Ipc communications.
  * Keys must be unique - that is there can never be two IModelDbs opened with the same key at any given time.
  * If no key is supplied in a call to open an IModelDb, one is generated and returned.
  * It is only necessary to supply a key if you have some reason to assign a specific value to identify an IModelDb.
- * If you don't supply the key, you must use the returned value for RPC communications.
+ * If you don't supply the key, you must use the returned value for Rpc and Ipc communications.
  * @public
  */
 export interface OpenDbKey {
   key?: string;
 }
 
-/** Options that can be supplied when opening an existing SnapshotDb.
+/** Options to open a [SnapshotDb]($backend).
  * @public
  */
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
@@ -130,8 +129,9 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   autoUploadBlocks?: boolean;
 }
 
-/** Options that can be supplied when opening an existing StandaloneDb.
- * @beta
+/** Options to open a [StandaloneDb]($backend) via [StandaloneDb.openFile]($backend) from the backend,
+ * or [BriefcaseConnection.openStandalone]($frontend) from the frontend.
+ * @public
  */
 export type StandaloneOpenOptions = OpenDbKey;
 
@@ -290,9 +290,6 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @internal */
-  protected abstract getEventSourceProps(): IModelEventSourceProps;
-
-  /** @internal */
   public getConnectionProps(): IModelConnectionProps {
     return {
       name: this.name,
@@ -302,7 +299,6 @@ export abstract class IModel implements IModelProps {
       ecefLocation: this.ecefLocation,
       geographicCoordinateSystem: this.geographicCoordinateSystem,
       ... this.getRpcProps(),
-      ...this.getEventSourceProps(),
     };
   }
 
@@ -315,8 +311,8 @@ export abstract class IModel implements IModelProps {
    * @internal
    */
   protected _fileKey: string;
-  /** Get the key that was used to open this iModel. This is the value used for RPC communications. */
-  public get key() { return this._fileKey; }
+  /** Get the key that was used to open this iModel. This is the value used for Rpc and Ipc communications. */
+  public get key(): string { return this._fileKey; }
 
   /** @internal */
   protected _contextId?: GuidString;

@@ -7,7 +7,7 @@
 /* eslint-disable no-console */
 import * as path from "path";
 
-const fs = require("fs-extra")
+const fs = require("fs-extra");
 const { logBuildWarning, logBuildError, failBuild } = require("../scripts/rush/utils");
 
 const Base = require("mocha/lib/reporters/base");
@@ -24,7 +24,7 @@ function withStdErr(callback: () => void) {
 const isCI = process.env.CI || process.env.TF_BUILD;
 
 // This is necessary to enable colored output when running in rush test:
-Object.defineProperty(Base, "useColors", {
+Object.defineProperty(Base, "color", {
   get: () => process.env.FORCE_COLOR !== "false" && process.env.FORCE_COLOR !== "0",
   set: () => { },
 });

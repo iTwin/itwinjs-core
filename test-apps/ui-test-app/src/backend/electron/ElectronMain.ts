@@ -2,46 +2,57 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
+
+import { join } from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronBackend, ElectronBackendOptions } from "@bentley/electron-manager/lib/ElectronBackend";
-import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { getSupportedRpcs } from "../../common/rpcs";
 
-/**
- * Initializes Electron backend
- */
-const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
+const mainWindowName = "mainWindow";
 
-export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]) {
-  const opts: ElectronBackendOptions = {
-    webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
-    rpcInterfaces,
-    developmentServer: process.env.NODE_ENV === "development",
+/** Initializes Electron backend */
+export async function initializeElectron() {
+
+  const opt = {
+    electronHost: {
+      webResourcesPath: join(__dirname, "..", "..", "..", "build"),
+      developmentServer: process.env.NODE_ENV === "development",
+      rpcInterfaces: getSupportedRpcs(),
+    },
+    nativeHost: {
+      applicationName: "ui-test-app",
+    },
   };
 
-  const backend = ElectronBackend.initialize(opts);
+  await ElectronHost.startup(opt);
+  EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts
-  backend.app.on("web-contents-created", (_e, wc) => {
+  ElectronHost.app.on("web-contents-created", (_e, wc) => {
     wc.on("before-input-event", (event, input) => {
       // CTRL + SHIFT + I  ==> Toggle DevTools
       if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
-        if (backend.mainWindow)
-          backend.mainWindow.webContents.toggleDevTools();
+        if (ElectronHost.mainWindow)
+          ElectronHost.mainWindow.webContents.toggleDevTools();
 
         event.preventDefault();
       }
     });
   });
 
-  await backend.openMainWindow({ width: 800, height: 650, show: !maximizeWindow, title: "Ui Test App" });
-  assert(backend.mainWindow !== undefined);
+  // Restore previous window size, position and maximized state
+  const sizeAndPosition = ElectronHost.getWindowSizeSetting(mainWindowName);
+  const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
+
+  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: "Ui Test App", storeWindowName: mainWindowName });
+  assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
-    backend.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
-    backend.mainWindow.show();
+    ElectronHost.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
+    ElectronHost.mainWindow.show();
   }
-  if (autoOpenDevTools)
-    backend.mainWindow.webContents.toggleDevTools();
+
+  if ((undefined === process.env.imjs_TESTAPP_NO_DEV_TOOLS))
+    ElectronHost.mainWindow.webContents.toggleDevTools();
 }

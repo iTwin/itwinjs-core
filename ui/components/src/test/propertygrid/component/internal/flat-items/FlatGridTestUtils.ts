@@ -133,21 +133,6 @@ export class FlatGridTestUtils {
       .map((item) => item as IMutableCategorizedPropertyItem);
   }
 
-  public static assignParentsToCategories(categories: PropertyCategory[], parentCategory?: PropertyCategory) {
-    for (const category of categories) {
-      if (category.parentCategory)
-        category.parentCategory = parentCategory;
-      this.assignParentsToCategories(category.childCategories ?? [], category);
-    }
-  }
-
-  public static removeParentsFromCategories(categories: PropertyCategory[]) {
-    for (const category of categories) {
-      delete category.parentCategory;
-      this.removeParentsFromCategories(category.childCategories ?? []);
-    }
-  }
-
   public static constructCategoryRecordsDict(categories: PropertyCategory[], recordsDict?: CategoryRecordsDict) {
     recordsDict = recordsDict ?? {};
 

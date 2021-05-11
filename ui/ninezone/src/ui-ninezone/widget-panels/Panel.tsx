@@ -18,7 +18,7 @@ import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
 import { PanelTarget } from "./PanelTarget";
 import { RectangleProps, SizeProps } from "@bentley/ui-core";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { WidgetComponent } from "../widget/Widget";
 
 /** @internal */
@@ -80,7 +80,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
   spanTop,
 }) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const panel = React.useContext(PanelStateContext);
-  assert(panel);
+  assert(!!panel);
   const { handleBeforeTransition, handlePrepareTransition, handleTransitionEnd, getRef, sizes, ...animatePanelWidgets } = useAnimatePanelWidgets();
   const draggedPanelSide = React.useContext(DraggedPanelSideContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
@@ -181,7 +181,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
   React.useLayoutEffect(() => {
     if (panel.size !== undefined || panel.collapsed)
       return;
-    assert(ref.current);
+    assert(!!ref.current);
     const bounds = ref.current.getBoundingClientRect();
     const newSize = getPanelSize(horizontal, bounds);
     dispatch({
@@ -196,7 +196,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     if (!prepareTransition)
       return;
     setPrepareTransition(false);
-    assert(ref.current);
+    assert(!!ref.current);
     animateTo.current = getPanelSize(horizontal, ref.current.getBoundingClientRect());
     if (animateFrom.current === animateTo.current) {
       maxPanelSize.current = undefined;
@@ -230,7 +230,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     setInitializing(false);
   }, [initializing]);
   const getBounds = React.useCallback(() => {
-    assert(ref.current);
+    assert(!!ref.current);
     return ref.current.getBoundingClientRect();
   }, []);
   const widgetPanel = React.useMemo<WidgetPanelContextArgs>(() => {
@@ -344,7 +344,7 @@ export function useAnimatePanelWidgets(): {
 } {
   const panel = React.useContext(PanelStateContext);
   const widgets = React.useContext(WidgetsStateContext);
-  assert(panel);
+  assert(!!panel);
   const [prepareTransition, setPrepareTransition] = React.useState(false);
   const [transition, setTransition] = React.useState<PanelWidgetProps["transition"] | undefined>();
   const [prevPanelWidgets, setPrevPanelWidgets] = React.useState(panel.widgets);
@@ -407,8 +407,8 @@ export function useAnimatePanelWidgets(): {
       if (fillWidget) {
         const removedWidgetTransition = widgetTransitions.current.get(removedWidget);
         const fillWidgetTransition = widgetTransitions.current.get(fillWidget);
-        assert(removedWidgetTransition);
-        assert(fillWidgetTransition);
+        assert(!!removedWidgetTransition);
+        assert(!!fillWidgetTransition);
         const removedWidgetSize = removedWidgetTransition.from;
         const fillWidgetSize = fillWidgetTransition.from;
 

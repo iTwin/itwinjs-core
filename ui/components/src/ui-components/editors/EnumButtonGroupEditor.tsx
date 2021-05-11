@@ -31,6 +31,7 @@ interface EnumButtonGroupEditorState {
  */
 export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumButtonGroupEditorState> implements TypeEditor {
   private _btnRefs = new Map<string | number, HTMLButtonElement>();
+  private _divElement = React.createRef<HTMLDivElement>();
 
   /** @internal */
   public readonly state: Readonly<EnumButtonGroupEditorState> = {
@@ -53,6 +54,18 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     }
 
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._divElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    let containsFocus = false;
+    // istanbul ignore else
+    if (this._divElement.current)
+      containsFocus = this._divElement.current.contains(document.activeElement);
+    return containsFocus;
   }
 
   /** @internal */
@@ -82,12 +95,14 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
       }
 
       let choices: EnumerationChoice[] = [];
-      if (propertyRecord && propertyRecord.property.enum)
+      // istanbul ignore else
+      if (propertyRecord && propertyRecord.property.enum) {
         if (propertyRecord.property.enum.choices instanceof Promise) {
           choices = await propertyRecord.property.enum.choices;
         } else {
           choices = propertyRecord.property.enum.choices;
         }
+      }
 
       const numChoices = choices.length;
       const enumIcons = new Array<IconDefinition>(numChoices);
@@ -137,7 +152,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   };
 
   private getButton(choice: EnumerationChoice, index: number) {
-    const choiceValue = this.state.choices ? this.state.choices[index].value : 0;
+    const choiceValue = this.state.choices ? this.state.choices[index].value : /* istanbul ignore next */ 0;
     const isActive = (choiceValue === this.state.selectValue) ? true : false;
     let isDisabled = false;
     const isEnabledFunction = this.state.enumIcons[index].isEnabledFunction;
@@ -169,7 +184,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   /** @internal */
   public render() {
     return (
-      <div className={classnames("components-enumbuttongroup-editor", this.props.className)} style={this.props.style}>
+      <div className={classnames("components-enumbuttongroup-editor", this.props.className)} style={this.props.style} ref={this._divElement}>
         {this.state.choices && this.state.enumIcons.length && this.state.choices.map((choice: EnumerationChoice, index: number) => this.getButton(choice, index))}
       </div>);
   }

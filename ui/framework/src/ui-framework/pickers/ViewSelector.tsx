@@ -126,6 +126,12 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     await this.loadViews();
   }
 
+  public async componentDidUpdate(prevProps: ViewSelectorProps) {
+    if (this.props.imodel !== prevProps.imodel) {
+      await this.loadViews();
+    }
+  }
+
   public componentWillUnmount() {
     this._isMounted = false;
     // istanbul ignore else

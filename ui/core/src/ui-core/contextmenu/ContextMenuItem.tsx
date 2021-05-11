@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { BadgeType, SpecialKey } from "@bentley/ui-abstract";
+import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "../utils/Props";
 import { ContextMenu } from "./ContextMenu";
 import { BadgeUtilities } from "../badge/BadgeUtilities";
@@ -18,19 +18,21 @@ import { Icon, IconSpec } from "../icons/IconComponent";
 /** Properties for the [[ContextMenuItem]] component
  * @public
  */
-export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
+export interface ContextMenuItemProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "disabled" | "hidden">, CommonProps {
   onSelect?: (event: any) => any;
   /** @internal */
   onHotKeyParsed?: (hotKey: string) => void;
   /** Icon to display in the left margin. */
   icon?: IconSpec;
   /** Disables any onSelect calls, hover/keyboard highlighting, and grays item. */
-  disabled?: boolean;
+  disabled?: boolean | ConditionalBooleanValue;
+  /** Indicates whether the item is visible or hidden. The default is for the item to be visible. */
+  hidden?: boolean | ConditionalBooleanValue;
   /** Badge to be overlaid on the item. */
   badgeType?: BadgeType;
   /** Icon to display in the right margin. */
   iconRight?: IconSpec;
-  /** Hide the icon container. */
+  /** Hide the icon container. This can be used to eliminate space used to display an icon at the left of the menu item. */
   hideIconContainer?: boolean;
   /** @internal */
   onHover?: () => any;
@@ -56,6 +58,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   /** @internal */
   public static defaultProps: Partial<ContextMenuItemProps> = {
     disabled: false,
+    hidden: false,
     isSelected: false,
   };
   constructor(props: ContextMenuItemProps) {
@@ -65,9 +68,11 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   public readonly state: Readonly<ContextMenuItemState> = {};
   public render(): JSX.Element {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { onClick, className, style, onSelect, icon, disabled, onHover, isSelected, parentMenu, onHotKeyParsed, badgeType, iconRight,
-      ...props } = this.props;
+    const { onClick, className, style, onSelect, icon, disabled, hidden, onHover, isSelected, parentMenu, onHotKeyParsed, badgeType, iconRight,
+      hideIconContainer, ...props } = this.props;
     const badge = BadgeUtilities.getComponentForBadgeType(badgeType);
+    const isDisabled = ConditionalBooleanValue.getValue(disabled);
+    const isHidden = ConditionalBooleanValue.getValue(hidden);
 
     if (this._lastChildren !== this.props.children) {
       this._parsedChildren = TildeFinder.findAfterTilde(this.props.children).node;
@@ -85,14 +90,16 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
         onMouseOver={this._handleMouseOver}
         data-testid={"core-context-menu-item"}
         className={classnames("core-context-menu-item", className,
-          disabled && "core-context-menu-disabled",
+          isDisabled && "core-context-menu-disabled",
+          isHidden && "core-context-menu-hidden",
           isSelected && "core-context-menu-is-selected")
         }
         role="menuitem"
         tabIndex={isSelected ? 0 : -1}
-        aria-disabled={disabled}
+        aria-disabled={isDisabled}
+        aria-hidden={isHidden}
       >
-        {!this.props.hideIconContainer && <div className="core-context-menu-icon">
+        {!hideIconContainer && <div className="core-context-menu-icon">
           {icon !== undefined && <Icon iconSpec={icon} />}
         </div>}
         <div className={"core-context-menu-content"}>
@@ -123,7 +130,13 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   }
 
   private _updateHotkey = (node: React.ReactNode) => {
-    const hotKey = TildeFinder.findAfterTilde(node).character;
+    let hotKey: string | undefined;
+    const isDisabled = ConditionalBooleanValue.getValue(this.props.disabled);
+    const isHidden = ConditionalBooleanValue.getValue(this.props.hidden);
+    if (!isDisabled && !isHidden)
+      hotKey = TildeFinder.findAfterTilde(node).character;
+    else
+      hotKey = undefined;
     if (hotKey && hotKey !== this.state.hotKey) {
       this.setState({ hotKey });
       if (this.props.onHotKeyParsed)
@@ -152,7 +165,8 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   };
 
   private _handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (this.props.disabled === true)
+    const isDisabled = ConditionalBooleanValue.getValue(this.props.disabled);
+    if (isDisabled)
       return;
 
     if (this.props.onClick)
@@ -162,7 +176,8 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   };
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === SpecialKey.Enter && this.props.onSelect !== undefined && this.props.disabled !== true) {
+    const isDisabled = ConditionalBooleanValue.getValue(this.props.disabled);
+    if (event.key === SpecialKey.Enter && this.props.onSelect !== undefined && !isDisabled) {
       this.props.onSelect(event);
     }
   };

@@ -86,6 +86,7 @@ export const FlatPropertyRenderer: React.FC<FlatPropertyRendererProps> = (props)
   switch (props.propertyRecord.value.valueFormat) {
     case PropertyValueFormat.Primitive:
       return (<PrimitivePropertyRenderer highlight={highlight?.applyOnLabel ? highlight : undefined} {...primitiveRendererProps} />);
+
     case PropertyValueFormat.Array:
       // If array is empty, render it as a primitive property
       if (props.propertyRecord.value.items.length === 0)
@@ -138,7 +139,7 @@ const DisplayValue: React.FC<DisplayValueProps> = (props) => {
       <EditorContainer
         propertyRecord={props.propertyRecord}
         onCommit={_onEditCommit}
-        onCancel={props.onEditCancel ?? (() => { })}
+        onCancel={props.onEditCancel ?? (/* istanbul ignore next */() => { })}
         setFocus={true}
       />
     );

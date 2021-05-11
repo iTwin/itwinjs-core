@@ -137,13 +137,17 @@ describe("BreadcrumbTreeUtils", () => {
     const columns = [{ key: "icon", label: "", icon: true }, { key: "label", label: "Name" }, { key: "description", label: "Description" }];
     const treeDataProvider: TreeDataProvider = [
       {
-        id: "1", icon: "icon-placeholder", label: PropertyRecord.fromString("Raw Node 1"), description: "node 1 child", extendedData: {
+        id: "1", icon: "icon-placeholder", label: PropertyRecord.fromString("Raw Node 1"), description: "node 1 child",
+        extendedData: {
           testProp: new PropertyRecord(
             { value: "test prop", valueFormat: PropertyValueFormat.Primitive, displayValue: "test prop" },
             { name: "test", displayLabel: "Test", typename: "text" }),
           testStr: "TEST",
           testBool: false,
           testNum: 0,
+        },
+        style: {
+          colorOverrides: {color: 0xfffff},
         },
       },
     ];

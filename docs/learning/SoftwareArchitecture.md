@@ -1,6 +1,6 @@
-# Software Architecture for iModel.js platform
+# Software Architecture for iTwin.js platform
 
-The software architecture of iModel.js was driven by the following goals:
+The software architecture of iTwin.js was driven by the following goals:
 
 - Support iModel-based services running in any cloud or on-premise
 - Support iModel-based web/desktop/mobile apps
@@ -10,22 +10,22 @@ The software architecture of iModel.js was driven by the following goals:
 [Backend](../learning/backend/index) Architecture Layers:
 
 - Application Backend (TypeScript)
-- iModel.js Backend Framework (TypeScript)
+- iTwin.js Backend Framework (TypeScript)
 - JavaScript Runtime with C++ Interoperability
-- iModel.js Native Libraries (C++)
+- iTwin.js Native Libraries (C++)
 
 [Frontend](../learning/frontend/index) Architecture Layers:
 
 - Application Frontend (TypeScript/JavaScript)
-- iModel.js Frontend Framework (TypeScript)
+- iTwin.js Frontend Framework (TypeScript)
 - HTML GUI
 - Web Browser
 
 ## Web
 
-iModel.js Web App backends are [Node.js](http://www.nodejs.org) applications.
+iTwin.js Web App backends are [Node.js](http://www.nodejs.org) applications.
 Node.js provides the [V8 JavaScript Engine](https://developers.google.com/v8/) and the [N-API](https://github.com/nodejs/abi-stable-node) for writing Node Addons in C++.
-This is how the iModel.js Native Libraries are exposed to the iModel.js backend framework.
+This is how the iTwin.js Native Libraries are exposed to the iTwin.js backend framework.
 Portable application logic is written in TypeScript and calls TypeScript APIs exposed from the `@bentley/imodeljs-backend` package.
 
 Notice that the backend architecture is identical between Agents and backends for interactive Web Applications.
@@ -46,11 +46,11 @@ Also see [Logging and ActivityIds](./RpcInterface.md#logging-and-activityids)
 
 ## Desktop
 
-iModel.js desktop applications use the [Electron](https://electronjs.org/) Framework.
-The backend architecture is the same as with iModel.js Web Apps because Electron also uses Node.js.
+iTwin.js desktop applications use the [Electron](https://electronjs.org/) Framework.
+The backend architecture is the same as with iTwin.js Web Apps because Electron also uses Node.js.
 The primary difference in the frontend architecture is that an embedded [Chromium Browser](https://www.chromium.org/Home) replaces a standalone Web Browser.
 
-The [frontend --> backend communication](./RpcInterface.md) is over *Inter Process Communication* (IPC) as provided by Electron. Note that iModel.js desktop applications always have at least
+The [frontend --> backend communication](./RpcInterface.md) is over *Inter Process Communication* (IPC) as provided by Electron. Note that iTwin.js desktop applications always have at least
 two (one frontend and at least one backend) processes active together.
 
 ![SoftwareArchitecture-Desktop](./SoftwareArchitecture-Desktop.png)
@@ -59,7 +59,7 @@ two (one frontend and at least one backend) processes active together.
 
 ## Mobile
 
-iModel.js mobile applications use the JavaScript Engine and Web Browser GUI controls built into the Android SDK and iOS SDK.
+iTwin.js mobile applications use the JavaScript Engine and Web Browser GUI controls built into the Android SDK and iOS SDK.
 
 The [frontend --> backend communication](./RpcInterface.md) is over function calls and messages between two separate JavaScript contexts.
 

@@ -1,8 +1,8 @@
 # Extension publisher CLI
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
-Allows downloading, uploading and deleting iModel.js extensions from the Extension Service
+Allows downloading, uploading and deleting iTwin.js extensions from the Extension Service
 
 ## Usage
 

@@ -7,9 +7,9 @@
  */
 
 import * as path from "path";
-import { assert, DbResult, GuidString, Id64String, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
+import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery } from "@bentley/imodelhub-client";
-import { ChangedValueState, ChangeOpCode, IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
+import { ChangedValueState, ChangeOpCode, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -151,10 +151,10 @@ export class ChangeSummaryManager {
 
     const ctx = new ChangeSummaryExtractContext(iModel);
 
-    const endChangeSetId: GuidString = iModel.changeSetId;
+    const endChangeSetId = iModel.changeSetId;
     assert(endChangeSetId.length !== 0);
 
-    let startChangeSetId: GuidString = "";
+    let startChangeSetId = "";
     if (options) {
       if (options.startVersion) {
         startChangeSetId = await options.startVersion.evaluateChangeSet(requestContext, ctx.iModelId, IModelHost.iModelClient);
@@ -199,7 +199,7 @@ export class ChangeSummaryManager {
       const summaries: Id64String[] = [];
       for (let i = endChangeSetIx; i >= 0; i--) {
         const currentChangeSetInfo: ChangeSet = changeSetInfos[i];
-        const currentChangeSetId: GuidString = currentChangeSetInfo.wsgId;
+        const currentChangeSetId: string = currentChangeSetInfo.wsgId;
         Logger.logInfo(loggerCategory, `Started Change Summary extraction for changeset #${i + 1}...`, () => ({ iModelId: ctx.iModelId, changeSetId: currentChangeSetId }));
 
         const existingSummaryId: Id64String | undefined = ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId);
@@ -264,7 +264,7 @@ export class ChangeSummaryManager {
   public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]> {
     requestContext.enter();
     // Get the change set before the startChangeSet so that startChangeSet is included in the download and processing
-    let beforeStartChangeSetId: GuidString;
+    let beforeStartChangeSetId: string;
     if (startChangeSetId.length === 0)
       beforeStartChangeSetId = "";
     else {

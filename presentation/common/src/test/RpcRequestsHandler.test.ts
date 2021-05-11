@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -9,22 +10,23 @@ import * as moq from "typemoq";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@bentley/imodeljs-common";
 import {
-  ContentRequestOptions, DescriptorJSON, DistinctValuesRpcRequestOptions, HierarchyRequestOptions, KeySet, KeySetJSON, Paged,
-  PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
-  PresentationStatus, RpcRequestsHandler, SelectionInfo, SelectionScopeRequestOptions,
+  DescriptorJSON, DistinctValuesRpcRequestOptions, HierarchyRequestOptions, KeySet, KeySetJSON, Paged, PresentationError, PresentationRpcInterface,
+  PresentationRpcRequestOptions, PresentationRpcResponse, PresentationStatus, RpcRequestsHandler, SelectionInfo, SelectionScopeRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import { ItemJSON } from "../presentation-common/content/Item";
+import { DiagnosticsScopeLogs } from "../presentation-common/Diagnostics";
 import { InstanceKeyJSON } from "../presentation-common/EC";
 import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
 import {
   ContentDescriptorRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, PresentationDataCompareOptions,
+  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
   ContentDescriptorRpcRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, ExtendedContentRpcRequestOptions,
-  ExtendedHierarchyRpcRequestOptions, PresentationDataCompareRpcOptions,
+  ExtendedHierarchyRpcRequestOptions, HierarchyCompareRpcOptions,
 } from "../presentation-common/PresentationRpcInterface";
+import { HierarchyCompareInfoJSON, PartialHierarchyModificationJSON } from "../presentation-common/Update";
 import {
   createRandomDescriptorJSON, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKeyJSON,
   createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomSelectionScope,
@@ -35,8 +37,8 @@ describe("RpcRequestsHandler", () => {
   let clientId: string;
   let defaultRpcHandlerOptions: { imodel: IModelRpcProps };
   const token: IModelRpcProps = { key: "test", iModelId: "test", contextId: "test" };
-  const successResponse = async <TResult>(result: TResult): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result });
-  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined });
+  const successResponse = async <TResult>(result: TResult, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result, diagnostics });
+  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined, diagnostics });
 
   beforeEach(() => {
     clientId = faker.random.uuid();
@@ -84,6 +86,16 @@ describe("RpcRequestsHandler", () => {
         expect(actualResult).to.eq(result);
       });
 
+      it("calls diagnostics handler if provided", async () => {
+        const result = faker.random.number();
+        const diagnosticsOptions = {
+          handler: sinon.spy(),
+        };
+        const diagnosticsResult: DiagnosticsScopeLogs[] = [];
+        await handler.request(async () => successResponse(result, diagnosticsResult), { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions });
+        expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
+      });
+
     });
 
     describe("when request throws unknown exception", () => {
@@ -100,6 +112,16 @@ describe("RpcRequestsHandler", () => {
       it("throws an exception", async () => {
         const func = async () => errorResponse(PresentationStatus.Error);
         await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
+      });
+
+      it("calls diagnostics handler if provided", async () => {
+        const diagnosticsOptions = {
+          handler: sinon.spy(),
+        };
+        const diagnosticsResult: DiagnosticsScopeLogs[] = [];
+        const func = async () => errorResponse(PresentationStatus.Error, undefined, diagnosticsResult);
+        await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
+        expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
       });
 
     });
@@ -263,22 +285,6 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
-    it("forwards loadHierarchy call", async () => {
-      const handlerOptions: HierarchyRequestOptions<IModelRpcProps> = {
-        imodel: token,
-        rulesetOrId: faker.random.word(),
-      };
-      const rpcOptions: PresentationRpcRequestOptions<HierarchyRequestOptions<any>> = {
-        clientId,
-        rulesetOrId: handlerOptions.rulesetOrId,
-      };
-      rpcInterfaceMock
-        .setup(async (x) => x.loadHierarchy(token, rpcOptions))
-        .returns(async () => successResponse(undefined)).verifiable();
-      await handler.loadHierarchy(handlerOptions);
-      rpcInterfaceMock.verifyAll();
-    });
-
     it("forwards getContentDescriptor call", async () => {
       const displayType = faker.random.word();
       const keys = new KeySet().toJSON();
@@ -376,25 +382,6 @@ describe("RpcRequestsHandler", () => {
       };
       rpcInterfaceMock.setup(async (x) => x.getPagedContentSet(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getPagedContentSet(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
-    });
-
-    it("forwards getDistinctValues call", async () => {
-      const handlerOptions: ContentRequestOptions<IModelRpcProps> = {
-        imodel: token,
-        rulesetOrId: faker.random.word(),
-      };
-      const rpcOptions: PresentationRpcRequestOptions<ContentRequestOptions<any>> = {
-        clientId,
-        rulesetOrId: handlerOptions.rulesetOrId,
-      };
-      const descriptor = createRandomDescriptorJSON();
-      const keys = new KeySet().toJSON();
-      const fieldName = faker.random.word();
-      const maxItems = faker.random.number();
-      const result = [faker.random.word()];
-      rpcInterfaceMock.setup(async (x) => x.getDistinctValues(token, rpcOptions, descriptor, keys, fieldName, maxItems)).returns(async () => successResponse(result)).verifiable();
-      expect(await handler.getDistinctValues(handlerOptions, descriptor, keys, fieldName, maxItems)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 
@@ -497,8 +484,8 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
-    it("forwards compareHierarchies call", async () => {
-      const handlerOptions: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON> = {
+    it("[deprecated] forwards compareHierarchies call", async () => {
+      const handlerOptions: HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON> = {
         imodel: token,
         prev: {
           rulesetOrId: "test1",
@@ -506,7 +493,7 @@ describe("RpcRequestsHandler", () => {
         rulesetOrId: "test2",
         expandedNodeKeys: [createRandomECInstancesNodeKeyJSON()],
       };
-      const rpcOptions: PresentationDataCompareRpcOptions = {
+      const rpcOptions: HierarchyCompareRpcOptions = {
         clientId,
         prev: {
           rulesetOrId: "test1",
@@ -514,9 +501,36 @@ describe("RpcRequestsHandler", () => {
         rulesetOrId: "test2",
         expandedNodeKeys: [...handlerOptions.expandedNodeKeys!],
       };
-      const result = new Array<PartialHierarchyModificationJSON>();
-      rpcInterfaceMock.setup(async (x) => x.compareHierarchies(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      const result: PartialHierarchyModificationJSON[] = [];
+      rpcInterfaceMock.setup(async (x) => x.compareHierarchies(token, rpcOptions)).returns(async () => successResponse(result)).verifiable(); // eslint-disable-line deprecation/deprecation
       expect(await handler.compareHierarchies(handlerOptions)).to.eq(result);
+      rpcInterfaceMock.verifyAll();
+    });
+
+    it("forwards compareHierarchiesPaged call", async () => {
+      const handlerOptions: HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON> = {
+        imodel: token,
+        prev: {
+          rulesetOrId: "test1",
+        },
+        rulesetOrId: "test2",
+        expandedNodeKeys: [createRandomECInstancesNodeKeyJSON()],
+        resultSetSize: 10,
+      };
+      const rpcOptions: HierarchyCompareRpcOptions = {
+        clientId,
+        prev: {
+          rulesetOrId: "test1",
+        },
+        rulesetOrId: "test2",
+        expandedNodeKeys: [...handlerOptions.expandedNodeKeys!],
+        resultSetSize: 10,
+      };
+      const result: HierarchyCompareInfoJSON = {
+        changes: [],
+      };
+      rpcInterfaceMock.setup(async (x) => x.compareHierarchiesPaged(token, rpcOptions)).returns(async () => successResponse(result)).verifiable(); // eslint-disable-line deprecation/deprecation
+      expect(await handler.compareHierarchiesPaged(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

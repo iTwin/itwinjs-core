@@ -17,7 +17,7 @@ export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefin
 // @public
 export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | undefined;
 
-// @beta
+// @public
 export function assert(condition: boolean, msg?: string): asserts condition;
 
 // @alpha
@@ -70,7 +70,7 @@ export class BeEvent<T extends Listener> {
     removeListener(listener: T, scope?: any): boolean;
 }
 
-// @beta
+// @public
 export class BeEventList<T extends Listener> {
     get(name: string): BeEvent<T>;
     remove(name: string): void;
@@ -140,7 +140,7 @@ export enum BriefcaseStatus {
     VersionNotFound = 131077
 }
 
-// @beta
+// @public
 export class ByteStream {
     constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
         byteOffset: number;
@@ -159,7 +159,6 @@ export class ByteStream {
     get nextInt32(): number;
     get nextUint16(): number;
     get nextUint32(): number;
-    // (undocumented)
     nextUint32s(numUint32s: number): Uint32Array;
     get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
@@ -201,7 +200,7 @@ export enum ChangeSetStatus {
     NoTransactions = 90127,
     ParentMismatch = 90128,
     ProcessSchemaChangesOnOpen = 90134,
-    ReverseOrReinstateSchemaChangesOnOpen = 90133,
+    ReverseOrReinstateSchemaChanges = 90133,
     SQLiteError = 90129,
     // (undocumented)
     Success = 0,
@@ -209,7 +208,7 @@ export enum ChangeSetStatus {
 }
 
 // @public
-export class ClientRequestContext implements ClientRequestContextProps {
+export class ClientRequestContext {
     constructor(activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
     readonly activityId: GuidString;
     readonly applicationId: string;
@@ -218,6 +217,8 @@ export class ClientRequestContext implements ClientRequestContextProps {
     // (undocumented)
     protected static _current: ClientRequestContext;
     enter(): this;
+    // (undocumented)
+    static fromJSON(json: ClientRequestContextProps): ClientRequestContext;
     readonly sessionId: GuidString;
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
@@ -227,11 +228,8 @@ export class ClientRequestContext implements ClientRequestContextProps {
     }
 
 // @public
-export interface ClientRequestContextProps {
-    readonly activityId: GuidString;
-    readonly applicationId: string;
-    readonly applicationVersion: string;
-    readonly sessionId: GuidString;
+export interface ClientRequestContextProps extends SessionProps {
+    readonly activityId?: GuidString;
 }
 
 // @public
@@ -261,19 +259,17 @@ export function compareStringsOrUndefined(lhs?: string, rhs?: string): number;
 // @public
 export function compareWithTolerance(a: number, b: number, tolerance?: number): number;
 
-// @beta
+// @public (undocumented)
 export type CompressedId64Set = string;
 
-// @beta
+// @public
 export namespace CompressedId64Set {
     export function compressArray(ids: Id64Array): CompressedId64Set;
     export function compressIds(ids: OrderedId64Iterable): CompressedId64Set;
     export function compressSet(ids: Id64Set): CompressedId64Set;
     export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array;
     export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
-    // @alpha
     export function iterable(ids: CompressedId64Set): OrderedId64Iterable;
-    // @alpha
     export function iterator(ids: CompressedId64Set): Iterator<Id64String>;
 }
 
@@ -619,11 +615,13 @@ export enum HttpStatus {
 
 // @public
 export namespace Id64 {
+    // @deprecated
     export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void;
     export function fromJSON(prop?: string): Id64String;
     export function fromLocalAndBriefcaseIds(localId: number, briefcaseId: number): Id64String;
     export function fromString(val: string): Id64String;
     export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String;
+    export function fromUint32PairObject(pair: Uint32Pair): Id64String;
     export function getBriefcaseId(id: Id64String): number;
     export function getFirst(arg: Id64Arg): Id64String;
     export function getLocalId(id: Id64String): number;
@@ -636,10 +634,13 @@ export namespace Id64 {
     export function isTransient(id: Id64String): boolean;
     export function isTransientId64(id: string): boolean;
     export function isValid(id: Id64String): boolean;
-    const invalid = "0";
     export function isValidId64(id: string): boolean;
     export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
+    const invalid = "0";
+    export function iterable(ids: Id64Arg): Iterable<Id64String>;
+    // @deprecated
     export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean;
+    export function iterator(ids: Id64Arg): Iterator<Id64String>;
     export function sizeOf(arg: Id64Arg): number;
     export function toIdSet(arg: Id64Arg, makeCopy?: boolean): Id64Set;
     export class Uint32Map<T> {
@@ -1005,10 +1006,10 @@ export class IndexMap<T> {
     protected readonly _maximumSize: number;
 }
 
-// @internal
+// @internal @deprecated
 export const isElectronMain: boolean;
 
-// @internal
+// @internal @deprecated
 export const isElectronRenderer: boolean;
 
 // @public
@@ -1139,7 +1140,7 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
     constructor(limit: number);
 }
 
-// @alpha
+// @public
 export class MutableCompressedId64Set implements OrderedId64Iterable {
     [Symbol.iterator](): Iterator<string, any, undefined>;
     constructor(ids?: CompressedId64Set);
@@ -1155,7 +1156,7 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     reset(ids?: CompressedId64Set): void;
     }
 
-// @beta
+// @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
     // @internal (undocumented)
@@ -1186,10 +1187,16 @@ export enum OpenMode {
 // @public
 export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
 
-// @beta
+// @public
+export class OrderedId64Array extends SortedArray<Id64String> {
+    constructor();
+    get ids(): OrderedId64Iterable;
+}
+
+// @public (undocumented)
 export type OrderedId64Iterable = Iterable<Id64String>;
 
-// @beta
+// @public
 export namespace OrderedId64Iterable {
     export function areEqualSets(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): boolean;
     export function compare(lhs: Id64String, rhs: Id64String): number;
@@ -1205,7 +1212,15 @@ export namespace OrderedId64Iterable {
     export function uniqueIterator(ids: OrderedId64Iterable): Generator<string, void, unknown>;
 }
 
-// @beta
+// @public
+export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
+    constructor(compare: OrderedComparator<T>, clone?: CloneFunction<T>);
+    add(value: T): this;
+    clear(): void;
+    delete(value: T): boolean;
+}
+
+// @public
 export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number;
 
 // @public
@@ -1239,6 +1254,36 @@ export class PriorityQueue<T> implements Iterable<T> {
     sort(): void;
     // (undocumented)
     protected _swap(a: number, b: number): void;
+}
+
+// @public
+export class ProcessDetector {
+    static get isAndroidAppBackend(): boolean;
+    static get isAndroidAppFrontend(): boolean;
+    static get isAndroidBrowser(): boolean;
+    static get isBrowserProcess(): boolean;
+    static get isElectronAppBackend(): boolean;
+    static get isElectronAppFrontend(): boolean;
+    static get isIOSAppBackend(): boolean;
+    static get isIOSAppFrontend(): boolean;
+    static get isIOSBrowser(): boolean;
+    static get isIPadBrowser(): boolean;
+    static get isIPhoneBrowser(): boolean;
+    static get isMobileAppBackend(): boolean;
+    static get isMobileAppFrontend(): boolean;
+    static get isMobileBrowser(): boolean;
+    static get isNativeAppFrontend(): boolean;
+    static get isNodeProcess(): boolean;
+}
+
+// @public
+export class ReadonlyOrderedSet<T> implements Iterable<T> {
+    [Symbol.iterator](): Iterator<T>;
+    constructor(compare: OrderedComparator<T>, clone?: CloneFunction<T>);
+    // (undocumented)
+    protected readonly _array: SortedArray<T>;
+    has(value: T): boolean;
+    get size(): number;
 }
 
 // @public
@@ -1323,6 +1368,13 @@ export interface SerializedClientRequestContext {
     sessionId: string;
     // (undocumented)
     userId?: string;
+}
+
+// @public
+export interface SessionProps {
+    applicationId: string;
+    applicationVersion: string;
+    sessionId: GuidString;
 }
 
 // @public

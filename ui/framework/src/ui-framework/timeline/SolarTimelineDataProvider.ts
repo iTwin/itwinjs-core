@@ -34,6 +34,10 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     } else {
       this._cartographicCenter = Cartographic.fromDegrees(this.longitude, this.latitude, 0.0);
     }
+
+    this._projectTimeZoneOffset = this.getZone(this._cartographicCenter);
+    this.initializeData(this._projectTimeZoneOffset);
+    this.onTimeChanged(this.timeOfDay);
   }
 
   public get shouldShowTimeline() {
@@ -42,10 +46,8 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
   }
 
   public onTimeChanged = (time: Date) => {
-    this.timeOfDay = time;
     if (this._viewport && this._viewport.view.is3d()) {
       this._viewport.view.displayStyle.setSunTime(time.getTime());
-      this._viewport.invalidateScene();
     }
   };
 

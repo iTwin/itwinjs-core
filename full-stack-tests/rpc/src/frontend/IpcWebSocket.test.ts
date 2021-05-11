@@ -2,13 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { IpcWebSocketFrontend } from "@bentley/imodeljs-common";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
+import { IModelApp, NativeApp } from "@bentley/imodeljs-frontend";
+import { AccessToken } from "@bentley/itwin-client";
 
-if (!isElectronRenderer) {
+if (!ProcessDetector.isElectronAppFrontend) {
   describe("IpcWebSocket", () => {
     let socket: IpcWebSocketFrontend;
 
@@ -41,6 +43,13 @@ if (!isElectronRenderer) {
         assert.equal(invoked[3], 3);
         resolve();
       });
+    });
+
+    it("should not recurse in auth call", async () => {
+      await NativeApp.startup(socket);
+      IModelApp.authorizationClient!.onUserStateChanged.raiseEvent(new AccessToken(undefined, undefined, new Date(0)));
+      await NativeApp.callNativeHost("getAccessTokenProps");
+      IModelApp.authorizationClient = undefined;
     });
   });
 }

@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { Guid, GuidString, Id64, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
-  AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CheckpointCreatedEvent, CodeEvent, EventSAS,
+  AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CheckpointCreatedEvent, CheckpointV2CreatedEvent, CodeEvent, EventSAS,
   EventSubscription, EventType, IModelClient, IModelDeletedEvent, IModelHubEvent, IModelHubEventType, LockEvent, LockLevel, LockType, VersionEvent,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -94,17 +94,18 @@ describe("iModelHub EventHandler", () => {
   let subscription: EventSubscription;
   let briefcaseId: number;
   let sasToken: EventSAS;
-  const imodelHubClient: IModelClient = utils.getDefaultClient();
+  let imodelHubClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
-    this.enableTimeouts(false);
+    this.timeout(0);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    imodelHubClient = utils.getDefaultClient();
     briefcaseId = (await utils.getBriefcases(requestContext, imodelId, 1))[0].briefcaseId!;
   });
 
@@ -395,6 +396,23 @@ describe("iModelHub EventHandler", () => {
     const typedEvent = event as CheckpointCreatedEvent;
     chai.assert(!!typedEvent);
     chai.expect(!typedEvent.versionId);
+    chai.expect(typedEvent.changeSetId).to.be.eq(changeSetId);
+    chai.expect(typedEvent.changeSetIndex).to.be.eq(changeSetIndex);
+  });
+
+  it("should receive CheckpointV2CreatedEvent (#unit)", async () => {
+    const versionId: GuidString = Guid.createValue();
+    const changeSetId: string = "changeSetId";
+    const changeSetIndex: string = "5";
+    const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","VersionId":"${versionId}","ChangeSetId":"${changeSetId}","ChangeSetIndex":"${changeSetIndex}"}`;
+    mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "CheckpointV2CreatedEvent");
+
+    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    chai.expect(event).to.be.instanceof(CheckpointV2CreatedEvent);
+    chai.assert(!!event!.iModelId);
+    const typedEvent = event as CheckpointV2CreatedEvent;
+    chai.assert(!!typedEvent);
+    chai.expect(typedEvent.versionId).to.be.equal(versionId);
     chai.expect(typedEvent.changeSetId).to.be.eq(changeSetId);
     chai.expect(typedEvent.changeSetIndex).to.be.eq(changeSetIndex);
   });

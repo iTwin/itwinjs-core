@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Config, GuidString } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import * as path from "path";
+import { GuidString } from "@bentley/bentleyjs-core";
+import { loadEnv } from "@bentley/config-loader";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
-IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
+loadEnv(path.join(__dirname, "..", "..", ".env"));
 
 /** Basic configuration used by all tests
  */

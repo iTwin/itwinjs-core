@@ -50,7 +50,7 @@ describe("StyleHelper", () => {
 
       it("returns valid color", () => {
         const node = { ...createNodeBase(), backColor: "rgb(1, 1,1 )" };
-        expect(StyleHelper.getBackColor(node)).to.eq(0x010101ff);
+        expect(StyleHelper.getBackColor(node)).to.eq(0x010101);
       });
 
     });
@@ -59,7 +59,7 @@ describe("StyleHelper", () => {
 
       it("returns valid color", () => {
         const node = { ...createNodeBase(), backColor: "#010101" };
-        expect(StyleHelper.getBackColor(node)).to.eq(0x010101ff);
+        expect(StyleHelper.getBackColor(node)).to.eq(0x010101);
       });
 
     });
@@ -70,7 +70,7 @@ describe("StyleHelper", () => {
         const colorName = faker.random.arrayElement(Object.keys(StyleHelper.availableColors));
         const color = StyleHelper.availableColors[colorName];
         const node = { ...createNodeBase(), backColor: colorName };
-        expect(StyleHelper.getBackColor(node)).to.eq(color);
+        expect(StyleHelper.getBackColor(node)).to.eq(color >> 8);
       });
 
       it("throws on invalid color", () => {

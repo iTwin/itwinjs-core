@@ -67,7 +67,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
   }
 
   private getStyle(style?: ItemStyle, isSelected?: boolean): React.CSSProperties {
-    return ItemStyleProvider.createStyle(style ? style : {}, isSelected);
+    return ItemStyleProvider.createStyle(style ? /* istanbul ignore next */ style : {}, isSelected);
   }
 
   private nodeToPropertyRecord(node: BeInspireTreeNode<TreeNodeItem>) {
@@ -95,7 +95,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     const context: PropertyValueRendererContext = {
       containerType: PropertyContainerType.Tree,
       decoratedTextElement: labelElement,
-      style: props.node.payload ? this.getStyle(props.node.payload.style, props.node.selected()) : undefined,
+      style: props.node.payload ? this.getStyle(props.node.payload.style, props.node.selected()) : /* istanbul ignore next */ undefined,
     };
 
     const nodeRecord = this.nodeToPropertyRecord(props.node);
@@ -140,6 +140,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     }
 
     const renderInfo = createRenderInfo(this.props.node);
+    // istanbul ignore else
     if (renderInfo !== this.state.renderInfo)
       this.setState({ renderInfo });
   }
@@ -148,6 +149,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     if (this.state.label !== nextState.label || TreeNodeContent.needsLabelUpdate(nextState, this.props, nextProps))
       return true;
 
+    // istanbul ignore else
     if (nextState.label) {
       // This is an anti-pattern, but it's main purpose is for testing.
       // We need to know when all of the nodes have finished rendering
@@ -166,7 +168,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     let editor: JSX.Element | undefined;
     if (this.props.cellEditing && this.props.cellEditing.isEditingEnabled(this.props.node)) {
       // if cell editing is enabled, return editor instead of the label
-      const style = this.props.node.payload ? this.getStyle(this.props.node.payload.style, this.props.node.selected()) : undefined;
+      const style = this.props.node.payload ? this.getStyle(this.props.node.payload.style, this.props.node.selected()) : /* istanbul ignore next */ undefined;
       editor = this.props.cellEditing.renderEditor(this.props.node, style);
     }
 

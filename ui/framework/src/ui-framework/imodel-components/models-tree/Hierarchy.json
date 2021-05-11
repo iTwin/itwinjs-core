@@ -120,7 +120,7 @@
               "isRequired": true
             }
           ],
-          "instanceFilter": "(parent.ECInstanceId = partition.Parent.Id OR json_extract(parent.JsonProperties, \"$.Subject.Model.TargetPartition\") = printf(\"0x%x\", partition.ECInstanceId)) AND NOT this.IsPrivate AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") = NULL AND json_extract(partition.JsonProperties, \"$.GraphicalPartition3d.Model.Content\") = NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "instanceFilter": "(parent.ECInstanceId = partition.Parent.Id OR json_extract(parent.JsonProperties, \"$.Subject.Model.TargetPartition\") = printf(\"0x%x\", partition.ECInstanceId)) AND NOT this.IsPrivate AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") = NULL AND json_extract(partition.JsonProperties, \"$.GraphicalPartition3d.Model.Content\") = NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:GeometricElement3d\")",
           "hasChildren": "Always",
           "groupByClass": false,
           "groupByLabel": false
@@ -151,7 +151,7 @@
               "isRequired": true
             }
           ],
-          "instanceFilter": "(parent.ECInstanceId = partition.Parent.Id OR json_extract(parent.JsonProperties, \"$.Subject.Model.TargetPartition\") = printf(\"0x%x\", partition.ECInstanceId)) AND NOT this.IsPrivate AND (json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") <> NULL OR json_extract(partition.JsonProperties, \"$.GraphicalPartition3d.Model.Content\") <> NULL) AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "instanceFilter": "(parent.ECInstanceId = partition.Parent.Id OR json_extract(parent.JsonProperties, \"$.Subject.Model.TargetPartition\") = printf(\"0x%x\", partition.ECInstanceId)) AND NOT this.IsPrivate AND (json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") <> NULL OR json_extract(partition.JsonProperties, \"$.GraphicalPartition3d.Model.Content\") <> NULL) AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:GeometricElement3d\")",
           "hideNodesInHierarchy": true,
           "hasChildren": "Always",
           "groupByClass": false,
@@ -182,7 +182,7 @@
               "direction": "Backward"
             }
           ],
-          "instanceFilter": "NOT this.IsPrivate AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "instanceFilter": "NOT this.IsPrivate AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:GeometricElement3d\")",
           "hasChildren": "Always",
           "hideNodesInHierarchy": true,
           "groupByClass": false,
@@ -363,6 +363,9 @@
       "ruleType": "Content",
       "condition": "ContentDisplayType = \"AssemblyElementsRequest\"",
       "specifications": [
+        {
+          "specType": "SelectedNodeInstances"
+        },
         {
           "specType": "ContentRelatedInstances",
           "relationshipPaths": [

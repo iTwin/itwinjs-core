@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import { QuantityType } from "../QuantityFormatter";
+import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**

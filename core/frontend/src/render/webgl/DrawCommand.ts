@@ -146,16 +146,6 @@ export class PushBranchCommand {
     if (undefined === anim)
       return;
 
-    if (undefined !== anim.transform) {
-      let transform = anim.transform;
-      const prevLocalToWorld = target.currentTransform;
-      const prevWorldToLocal = prevLocalToWorld.inverse();
-      if (prevLocalToWorld && prevWorldToLocal)
-        transform = prevWorldToLocal.multiplyTransformTransform(transform.multiplyTransformTransform(prevLocalToWorld));
-
-      this.branch.localToWorldTransform = transform;
-    }
-
     if (anim.clip !== undefined) {
       this.branch.clips = anim.clip as ClipVolume;
       if (undefined === PushBranchCommand._viewFlagOverrides) {
@@ -204,7 +194,7 @@ export class PrimitiveCommand {
 
     const target = exec.target;
     const thematic = this.primitive.cachedGeometry.supportsThematicDisplay && target.wantThematicDisplay;
-    const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.TerrainMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows && !thematic;
+    const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows && !thematic;
     const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
     let isThematic = thematic ? IsThematic.Yes : IsThematic.No;
     const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;

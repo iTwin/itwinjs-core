@@ -6,10 +6,13 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { VariableValueTypes } from "@bentley/presentation-common";
+import { IpcApp } from "@bentley/imodeljs-frontend";
+import { RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
+import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 
 describe("RulesetVariablesManager", () => {
 
@@ -18,7 +21,28 @@ describe("RulesetVariablesManager", () => {
 
   beforeEach(() => {
     variableId = faker.random.word();
-    vars = new RulesetVariablesManagerImpl();
+    vars = new RulesetVariablesManagerImpl("test-ruleset-id");
+  });
+
+  describe("one-backend-one-frontend mode", () => {
+
+    it("calls ipc handler to set variable value on backend", async () => {
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      const ipcHandlerMock = moq.Mock.ofType<IpcRequestsHandler>();
+      const rulesetId = "test-ruleset-id";
+      vars = new RulesetVariablesManagerImpl(rulesetId, ipcHandlerMock.object);
+
+      const testVariable: RulesetVariable = {
+        id: "test-var-id",
+        type: VariableValueTypes.String,
+        value: "test-value",
+      };
+      ipcHandlerMock.setup(async (x) => x.setRulesetVariable(moq.It.isObjectWith({ rulesetId, variable: testVariable }))).verifiable(moq.Times.once());
+
+      await vars.setString(testVariable.id, testVariable.value as string);
+      ipcHandlerMock.verifyAll();
+    });
+
   });
 
   describe("getAllVariables", () => {

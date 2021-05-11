@@ -50,6 +50,7 @@ interface SliderEditorState {
 export class SliderEditor extends React.PureComponent<PropertyEditorProps, SliderEditorState> implements TypeEditor {
   private _isMounted = false;
   private _enterKey = false;
+  private _divElement = React.createRef<HTMLDivElement>();
 
   /** @internal */
   public readonly state: Readonly<SliderEditorState> = {
@@ -72,6 +73,18 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
     }
 
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._divElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    let containsFocus = false;
+    // istanbul ignore else
+    if (this._divElement.current)
+      containsFocus = this._divElement.current.contains(document.activeElement);
+    return containsFocus;
   }
 
   private _handleChange = (values: readonly number[]): void => {
@@ -242,7 +255,7 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
     );
 
     return (
-      <div className={className}>
+      <div className={className} ref={this._divElement}>
         <PopupButton label={this.state.value} onClose={this._handleClose} onEnter={this._handleEnter}
           setFocus={this.props.setFocus} focusTarget=".core-slider-handle">
           <PopupContent>

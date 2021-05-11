@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+internal;DataLocation 
 internal;FileAccessKey 
 internal;RealityData 
 internal;RealityDataClient 

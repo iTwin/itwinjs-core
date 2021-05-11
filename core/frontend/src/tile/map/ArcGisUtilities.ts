@@ -4,17 +4,42 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle } from "@bentley/geometry-core";
 import { MapSubLayerProps } from "@bentley/imodeljs-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
+import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../imodeljs-frontend";
 import { MapLayerSourceValidation } from "../internal";
 import { MapCartoRectangle } from "./MapCartoRectangle";
 import { MapLayerSource, MapLayerSourceStatus } from "./MapLayerSources";
+import { ArcGisTokenClientType } from "./ArcGisTokenGenerator";
+import { ArcGisTokenManager } from "./ArcGisTokenManager";
 
 /** @packageDocumentation
  * @module Tiles
  */
 /** @internal */
+export enum ArcGisErrorCode {
+  InvalidCredentials = 401,
+  InvalidToken = 498,
+  TokenRequired = 499,
+  UnknownError = 1000,
+  NoTokenService = 1001,
+}
+
+/** @internal */
 export class ArcGisUtilities {
+
+  public static hasTokenError(response: Response): boolean {
+    if (response.header && (response.header["content-type"] as string)?.toLowerCase().includes("json")) {
+      try {
+        // Tile response returns byte array, so we need to check the response data type and convert accordingly.
+        const json = ((response.body instanceof ArrayBuffer) ? JSON.parse(Buffer.from(response.body).toString()) : response.body);
+        return (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken);
+      } catch (_err) {
+        return false;  // that probably means we failed to convert byte array to JSON
+      }
+    }
+    return false;
+  }
+
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range)
       range = MapCartoRectangle.create();
@@ -96,10 +121,16 @@ export class ArcGisUtilities {
     return sources;
   }
 
-  public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
-    const json = await this.getServiceJson(url, credentials);
-    if (json === undefined || json.error !== undefined)
+  public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    const json = await this.getServiceJson(url, credentials, ignoreCache);
+    if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
+    } else if (json.error !== undefined) {
+      if (json.error.code === ArcGisErrorCode.TokenRequired) {
+        return { status: MapLayerSourceStatus.RequireAuth };
+      } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
+        return { status: MapLayerSourceStatus.InvalidCredentials };
+    }
 
     let subLayers;
     if (json.layers) {
@@ -116,20 +147,35 @@ export class ArcGisUtilities {
 
   }
   private static _serviceCache = new Map<string, any>();
-  public static async getServiceJson(url: string, credentials?: RequestBasicCredentials): Promise<any> {
-    const cached = ArcGisUtilities._serviceCache.get(url);
-    if (cached !== undefined)
-      return cached;
+  public static async getServiceJson(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<any> {
+    if (!ignoreCache) {
+      const cached = ArcGisUtilities._serviceCache.get(url);
+      if (cached !== undefined)
+        return cached;
+    }
 
     try {
       const options: RequestOptions = {
         method: "GET",
         responseType: "json",
-        auth: credentials,
       };
-      const data = await request(new FrontendRequestContext(""), `${url}?f=json`, options);
-      const json = data.body ? data.body : undefined;
-      ArcGisUtilities._serviceCache.set(url, json);
+      let tokenParam = "";
+      if (credentials) {
+        const token = await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer });
+        if (token?.token) {
+          tokenParam = `&token=${token.token}`;
+        } else if (token?.error)
+          return token;   // An error occurred, return immediately
+      }
+      const finalUrl = `${url}?f=json${tokenParam}`;
+      const data = await request(new FrontendRequestContext(""), finalUrl, options);
+      const json = data.body ?? undefined;
+
+      // Cache the response only if it doesn't contain a token error.
+      if (!ArcGisUtilities.hasTokenError(data)) {
+        ArcGisUtilities._serviceCache.set(url, json);
+      }
+
       return json;
     } catch (_error) {
       ArcGisUtilities._serviceCache.set(url, undefined);
@@ -138,13 +184,19 @@ export class ArcGisUtilities {
   }
 
   private static _footprintCache = new Map<string, any>();
-  public static async getFootprintJson(url: string): Promise<any> {
+  public static async getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any> {
     const cached = ArcGisUtilities._footprintCache.get(url);
     if (cached !== undefined)
       return cached;
 
     try {
-      const json = await getJson(new FrontendRequestContext(""), `${url}?f=json&option=footprints&outSR=4326`);
+      let tokenParam = "";
+      if (credentials) {
+        const token = await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer });
+        if (token?.token)
+          tokenParam = `&token=${token.token}`;
+      }
+      const json = await getJson(new FrontendRequestContext(""), `${url}?f=json&option=footprints&outSR=4326${tokenParam}`);
       ArcGisUtilities._footprintCache.set(url, json);
       return json;
     } catch (_error) {

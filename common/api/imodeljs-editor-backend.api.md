@@ -4,8 +4,37 @@
 
 ```ts
 
+import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
+import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { EditCommandIpc } from '@bentley/imodeljs-editor-common';
+import { GeometricElementProps } from '@bentley/imodeljs-common';
+import { GeometryPartProps } from '@bentley/imodeljs-common';
+import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelDb } from '@bentley/imodeljs-backend';
+import { IModelStatus } from '@bentley/bentleyjs-core';
+import { InsertGeometricElementData } from '@bentley/imodeljs-editor-common';
+import { InsertGeometryPartData } from '@bentley/imodeljs-editor-common';
+import { Matrix3dProps } from '@bentley/geometry-core';
+import { TransformProps } from '@bentley/geometry-core';
+
+// @alpha (undocumented)
+export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
+    constructor(iModel: IModelDb, _str: string);
+    // (undocumented)
+    static commandId: string;
+    // (undocumented)
+    deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
+    // (undocumented)
+    insertGeometricElement(props: GeometricElementProps, data?: InsertGeometricElementData): Promise<Id64String>;
+    // (undocumented)
+    insertGeometryPart(props: GeometryPartProps, data?: InsertGeometryPartData): Promise<Id64String>;
+    // (undocumented)
+    rotatePlacement(ids: CompressedId64Set, matrixProps: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
+    // (undocumented)
+    protected _str: string;
+    // (undocumented)
+    transformPlacement(ids: CompressedId64Set, transProps: TransformProps): Promise<IModelStatus>;
+}
 
 // @alpha
 export class EditCommand implements EditCommandIpc {

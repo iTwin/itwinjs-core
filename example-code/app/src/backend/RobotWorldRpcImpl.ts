@@ -57,10 +57,10 @@ export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeBackendForElectron
-import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 
 export async function initializeForElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
-  ElectronBackend.initialize({ rpcInterfaces });
+  await ElectronHost.startup({ electronHost: { rpcInterfaces } });
 }
 
 // __PUBLISH_EXTRACT_END__

@@ -13,7 +13,7 @@ import { RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 
-/* eslint-disable no-shadow */
+/* eslint-disable @typescript-eslint/no-shadow */
 
 const formatString = (format: string, ...args: string[]) => {
   return format.replace(/{(\d+)}/g, (match, theNumber) => {
@@ -29,11 +29,11 @@ const formatString = (format: string, ...args: string[]) => {
  */
 export enum DiagnosticType {
   None,
-  Schema,
-  SchemaItem,
+  Schema, // eslint-disable-line @typescript-eslint/no-shadow
+  SchemaItem, // eslint-disable-line @typescript-eslint/no-shadow
   Property,
   CustomAttributeContainer,
-  RelationshipConstraint,
+  RelationshipConstraint, // eslint-disable-line @typescript-eslint/no-shadow
 }
 
 /**

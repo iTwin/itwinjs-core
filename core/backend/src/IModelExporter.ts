@@ -6,7 +6,7 @@
  * @module iModels
  */
 import * as path from "path";
-import { DbResult, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Schema } from "@bentley/ecschema-metadata";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
@@ -120,9 +120,10 @@ export abstract class IModelExportHandler {
   protected onExportSchema(_schema: Schema): void { }
 
   /** This method is called when IModelExporter has made incremental progress based on the [[IModelExporter.progressInterval]] setting.
+   * This method is `async` to make it easier to integrate with asynchronous status and health reporting services.
    * @note A subclass may override this method to report custom progress. The base implementation does nothing.
    */
-  protected onProgress(): void { }
+  protected async onProgress(): Promise<void> { }
 
   /** Helper method that allows IModelExporter to call protected methods in IModelExportHandler.
    * @internal
@@ -143,7 +144,7 @@ export class IModelExporter {
    * @see [ElementLoadProps.wantGeometry]($common)
    */
   public wantGeometry: boolean = true;
-  /** A flag that indicates whether template models should be exported or not.
+  /** A flag that indicates whether template models should be exported or not. The default is `true`.
    * @note If only exporting *instances* then template models can be skipped since they are just definitions that are cloned to create new instances.
    * @see [Model.isTemplate]($backend)
    */
@@ -236,14 +237,11 @@ export class IModelExporter {
   /** Export all entity instance types from the source iModel.
    * @note [[exportSchemas]] must be called separately.
    */
-  public exportAll(): void {
-    this.exportCodeSpecs();
-    this.exportFonts();
-    this.exportModelContainer(this.sourceDb.models.getModel(IModel.repositoryModelId));
-    this.exportElement(IModel.rootSubjectId);
-    this.exportRepositoryLinks();
-    this.exportSubModels(IModel.repositoryModelId);
-    this.exportRelationships(ElementRefersToElements.classFullName);
+  public async exportAll(): Promise<void> {
+    await this.exportCodeSpecs();
+    await this.exportFonts();
+    await this.exportModel(IModel.repositoryModelId);
+    await this.exportRelationships(ElementRefersToElements.classFullName);
   }
 
   /** Export changes from the source iModel.
@@ -252,13 +250,14 @@ export class IModelExporter {
    * If this parameter is not provided, then just the current changeset will be exported.
    * @note To form a range of versions to export, set `startChangeSetId` for the start of the desired range and open the source iModel as of the end of the desired range.
    */
-  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
+  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
     requestContext.enter();
     if (!this.sourceDb.isBriefcaseDb()) {
       throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory);
     }
     if ((undefined === this.sourceDb.changeSetId) || ("" === this.sourceDb.changeSetId)) {
-      this.exportAll(); // no changesets, so revert to exportAll
+      await this.exportAll(); // no changesets, so revert to exportAll
+      requestContext.enter();
       return;
     }
     if (undefined === startChangeSetId) {
@@ -266,11 +265,11 @@ export class IModelExporter {
     }
     this._sourceDbChanges = await ChangedInstanceIds.initialize(requestContext, this.sourceDb, startChangeSetId);
     requestContext.enter();
-    this.exportCodeSpecs();
-    this.exportFonts();
-    this.exportElement(IModel.rootSubjectId);
-    this.exportSubModels(IModel.repositoryModelId);
-    this.exportRelationships(ElementRefersToElements.classFullName);
+    await this.exportCodeSpecs();
+    await this.exportFonts();
+    await this.exportModelContents(IModel.repositoryModelId);
+    await this.exportSubModels(IModel.repositoryModelId);
+    await this.exportRelationships(ElementRefersToElements.classFullName);
     // handle deletes
     if (this.visitElements) {
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
@@ -291,7 +290,7 @@ export class IModelExporter {
   /** Export schemas from the source iModel.
    * @note This must be called separately from [[exportAll]] or [[exportChanges]].
    */
-  public exportSchemas(): void {
+  public async exportSchemas(): Promise<void> {
     const schemaLoader = new IModelSchemaLoader(this.sourceDb);
     const sql = "SELECT Name FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
     let readyToExport: boolean = this.wantSystemSchemas ? true : false;
@@ -318,13 +317,13 @@ export class IModelExporter {
   /** Export all CodeSpecs from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportCodeSpecs(): void {
+  public async exportCodeSpecs(): Promise<void> {
     Logger.logTrace(loggerCategory, `exportCodeSpecs()`);
     const sql = `SELECT Name FROM BisCore:CodeSpec ORDER BY ECInstanceId`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const codeSpecName: string = statement.getValue(0).getString();
-        this.exportCodeSpecByName(codeSpecName);
+        await this.exportCodeSpecByName(codeSpecName);
       }
     });
   }
@@ -332,7 +331,7 @@ export class IModelExporter {
   /** Export a single CodeSpec from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportCodeSpecByName(codeSpecName: string): void {
+  public async exportCodeSpecByName(codeSpecName: string): Promise<void> {
     const codeSpec: CodeSpec = this.sourceDb.codeSpecs.getByName(codeSpecName);
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
@@ -353,43 +352,43 @@ export class IModelExporter {
     if (this.handler.callProtected.shouldExportCodeSpec(codeSpec)) {
       Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})${this.getChangeOpSuffix(isUpdate)}`);
       this.handler.callProtected.onExportCodeSpec(codeSpec, isUpdate);
-      this.trackProgress();
+      return this.trackProgress();
     }
   }
 
   /** Export a single CodeSpec from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportCodeSpecById(codeSpecId: Id64String): void {
+  public async exportCodeSpecById(codeSpecId: Id64String): Promise<void> {
     const codeSpec: CodeSpec = this.sourceDb.codeSpecs.getById(codeSpecId);
-    this.exportCodeSpecByName(codeSpec.name);
+    return this.exportCodeSpecByName(codeSpec.name);
   }
 
   /** Export all fonts from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportFonts(): void {
+  public async exportFonts(): Promise<void> {
     Logger.logTrace(loggerCategory, `exportFonts()`);
     for (const font of this.sourceDb.fontMap.fonts.values()) {
-      this.exportFontByNumber(font.id);
+      await this.exportFontByNumber(font.id);
     }
   }
 
   /** Export a single font from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportFontByName(fontName: string): void {
+  public async exportFontByName(fontName: string): Promise<void> {
     Logger.logTrace(loggerCategory, `exportFontByName(${fontName})`);
     const font: FontProps | undefined = this.sourceDb.fontMap.getFont(fontName);
     if (undefined !== font) {
-      this.exportFontByNumber(font.id);
+      await this.exportFontByNumber(font.id);
     }
   }
 
   /** Export a single font from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportFontByNumber(fontNumber: number): void {
+  public async exportFontByNumber(fontNumber: number): Promise<void> {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
       const fontId: Id64String = Id64.fromUint32Pair(fontNumber, 0); // changeset information uses Id64String, not number
@@ -405,31 +404,31 @@ export class IModelExporter {
     const font: FontProps | undefined = this.sourceDb.fontMap.getFont(fontNumber);
     if (undefined !== font) {
       this.handler.callProtected.onExportFont(font, isUpdate);
-      this.trackProgress();
+      return this.trackProgress();
     }
   }
 
   /** Export the model container, contents, and sub-models from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportModel(modeledElementId: Id64String): void {
+  public async exportModel(modeledElementId: Id64String): Promise<void> {
     const model: Model = this.sourceDb.models.getModel(modeledElementId);
     if (model.isTemplate && !this.wantTemplateModels) {
       return;
     }
     const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry });
-    Logger.logTrace(loggerCategory, `exportModel()`);
+    Logger.logTrace(loggerCategory, `exportModel(${modeledElementId})`);
     if (this.shouldExportElement(modeledElement)) {
-      this.exportModelContainer(model);
+      await this.exportModelContainer(model);
       if (this.visitElements) {
-        this.exportModelContents(modeledElementId);
-        this.exportSubModels(modeledElementId);
+        await this.exportModelContents(modeledElementId);
       }
+      await this.exportSubModels(modeledElementId);
     }
   }
 
   /** Export the model (the container only) from the source iModel. */
-  private exportModelContainer(model: Model): void {
+  private async exportModelContainer(model: Model): Promise<void> {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
       if (this._sourceDbChanges.model.insertIds.has(model.id)) {
@@ -441,15 +440,23 @@ export class IModelExporter {
       }
     }
     this.handler.callProtected.onExportModel(model, isUpdate);
-    this.trackProgress();
+    return this.trackProgress();
   }
 
   /** Export the model contents.
+   * @param modelId The only required parameter
+   * @param elementClassFullName Can be optionally specified if the goal is to export a subset of the model contents
+   * @param skipRootSubject Decides whether or not to export the root Subject. It is normally left undefined except for internal implementation purposes.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName): void {
+  public async exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName, skipRootSubject?: boolean): Promise<void> {
+    if (skipRootSubject) {
+      // NOTE: IModelTransformer.processAll should skip the root Subject since it is specific to the individual iModel and is not part of the changes that need to be synchronized
+      // NOTE: IModelExporter.exportAll should not skip the root Subject since the goal is to export everything
+      assert(modelId === IModel.repositoryModelId); // flag is only relevant when processing the RepositoryModel
+    }
     if (!this.visitElements) {
-      Logger.logTrace(loggerCategory, `visitElements=false, skipping exportModelContents()`);
+      Logger.logTrace(loggerCategory, `visitElements=false, skipping exportModelContents(${modelId})`);
       return;
     }
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
@@ -457,12 +464,20 @@ export class IModelExporter {
         return; // this optimization assumes that the Model changes (LastMod) any time an Element in the Model changes
       }
     }
-    Logger.logTrace(loggerCategory, `exportModelContents()`);
-    const sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    Logger.logTrace(loggerCategory, `exportModelContents(${modelId})`);
+    let sql: string;
+    if (skipRootSubject) {
+      sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId AND ECInstanceId!=:rootSubjectId ORDER BY ECInstanceId`;
+    } else {
+      sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
+    }
+    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
       statement.bindId("modelId", modelId);
+      if (skipRootSubject) {
+        statement.bindId("rootSubjectId", IModel.rootSubjectId);
+      }
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        this.exportElement(statement.getValue(0).getId());
+        await this.exportElement(statement.getValue(0).getId());
       }
     });
   }
@@ -470,7 +485,8 @@ export class IModelExporter {
   /** Export the sub-models directly below the specified model.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportSubModels(parentModelId: Id64String): void {
+  public async exportSubModels(parentModelId: Id64String): Promise<void> {
+    Logger.logTrace(loggerCategory, `exportSubModels(${parentModelId})`);
     const definitionModelIds: Id64String[] = [];
     const otherModelIds: Id64String[] = [];
     const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId ORDER BY ECInstanceId`;
@@ -487,29 +503,36 @@ export class IModelExporter {
       }
     });
     // export DefinitionModels before other types of Models
-    definitionModelIds.forEach((modelId: Id64String) => this.exportModel(modelId));
-    otherModelIds.forEach((modelId: Id64String) => this.exportModel(modelId));
+    for (const definitionModelId of definitionModelIds) {
+      await this.exportModel(definitionModelId);
+    }
+    for (const otherModelId of otherModelIds) {
+      await this.exportModel(otherModelId);
+    }
   }
 
-  /** Returns true if the specified element should be exported. */
-  private shouldExportElement(element: Element): boolean {
+  /** Returns true if the specified element should be exported.
+   * This considers the standard IModelExporter exclusion rules plus calls [IModelExportHandler.shouldExportElement]($backend) for any custom exclusion rules.
+   * @note This method is called from within [[exportChanges]] and [[exportAll]], so usually does not need to be called directly.
+   */
+  public shouldExportElement(element: Element): boolean {
     if (this._excludedElementIds.has(element.id)) {
-      Logger.logInfo(loggerCategory, `Excluded element by Id`);
+      Logger.logInfo(loggerCategory, `Excluded element ${element.id} by Id`);
       return false;
     }
     if (element instanceof GeometricElement) {
       if (this._excludedElementCategoryIds.has(element.category)) {
-        Logger.logInfo(loggerCategory, `Excluded element by Category`);
+        Logger.logInfo(loggerCategory, `Excluded element ${element.id} by Category`);
         return false;
       }
     }
     if (!this.wantTemplateModels && (element instanceof RecipeDefinitionElement)) {
-      Logger.logInfo(loggerCategory, `Excluded recipe because wantTemplate=false`);
+      Logger.logInfo(loggerCategory, `Excluded RecipeDefinitionElement ${element.id} because wantTemplate=false`);
       return false;
     }
     for (const excludedElementClass of this._excludedElementClasses) {
       if (element instanceof excludedElementClass) {
-        Logger.logInfo(loggerCategory, `Excluded element by class: ${excludedElementClass.classFullName}`);
+        Logger.logInfo(loggerCategory, `Excluded element ${element.id} by class: ${excludedElementClass.classFullName}`);
         return false;
       }
     }
@@ -520,7 +543,7 @@ export class IModelExporter {
   /** Export the specified element, its child elements (if applicable), and any owned ElementAspects.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportElement(elementId: Id64String): void {
+  public async exportElement(elementId: Id64String): Promise<void> {
     if (!this.visitElements) {
       Logger.logTrace(loggerCategory, `visitElements=false, skipping exportElement(${elementId})`);
       return;
@@ -534,24 +557,23 @@ export class IModelExporter {
       } else {
         // NOTE: This optimization assumes that the Element will change (LastMod) if an owned ElementAspect changes
         // NOTE: However, child elements may have changed without the parent changing
-        this.exportChildElements(elementId);
-        return;
+        return this.exportChildElements(elementId);
       }
     }
     const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
       this.handler.callProtected.onExportElement(element, isUpdate);
-      this.trackProgress();
-      this.exportElementAspects(elementId);
-      this.exportChildElements(elementId);
+      await this.trackProgress();
+      await this.exportElementAspects(elementId);
+      return this.exportChildElements(elementId);
     }
   }
 
   /** Export the child elements of the specified element from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportChildElements(elementId: Id64String): void {
+  public async exportChildElements(elementId: Id64String): Promise<void> {
     if (!this.visitElements) {
       Logger.logTrace(loggerCategory, `visitElements=false, skipping exportChildElements(${elementId})`);
       return;
@@ -560,22 +582,24 @@ export class IModelExporter {
     if (childElementIds.length > 0) {
       Logger.logTrace(loggerCategory, `exportChildElements(${elementId})`);
       for (const childElementId of childElementIds) {
-        this.exportElement(childElementId);
+        await this.exportElement(childElementId);
       }
     }
   }
 
-  /** Export RepositoryLinks in the RepositoryModel. */
-  public exportRepositoryLinks(): void {
+  /** Export RepositoryLinks in the RepositoryModel.
+   * @deprecated The entire RepositoryModel contents are now exported, so RepositoryLinks do no need to be handled separately.
+   */
+  public async exportRepositoryLinks(): Promise<void> {
     if (!this.visitElements) {
       Logger.logTrace(loggerCategory, `visitElements=false, skipping exportRepositoryLinks()`);
       return;
     }
     const sql = `SELECT ECInstanceId FROM ${RepositoryLink.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
       statement.bindId("modelId", IModel.repositoryModelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        this.exportElement(statement.getValue(0).getId());
+        await this.exportElement(statement.getValue(0).getId());
       }
     });
   }
@@ -593,26 +617,26 @@ export class IModelExporter {
   }
 
   /** Export ElementAspects from the specified element from the source iModel. */
-  private exportElementAspects(elementId: Id64String): void {
+  private async exportElementAspects(elementId: Id64String): Promise<void> {
     // ElementUniqueAspects
     let uniqueAspects: ElementUniqueAspect[] = this.sourceDb.elements._queryAspects(elementId, ElementUniqueAspect.classFullName, this._excludedElementAspectClassFullNames);
     if (uniqueAspects.length > 0) {
       uniqueAspects = uniqueAspects.filter((a) => this.shouldExportElementAspect(a));
       if (uniqueAspects.length > 0) {
-        uniqueAspects.forEach((uniqueAspect: ElementUniqueAspect) => {
+        uniqueAspects.forEach(async (uniqueAspect: ElementUniqueAspect) => {
           if (undefined !== this._sourceDbChanges) { // is changeSet information available?
             if (this._sourceDbChanges.aspect.insertIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, false);
-              this.trackProgress();
+              await this.trackProgress();
             } else if (this._sourceDbChanges.aspect.updateIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, true);
-              this.trackProgress();
+              await this.trackProgress();
             } else {
               // not in changeSet, don't export
             }
           } else {
             this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, undefined);
-            this.trackProgress();
+            await this.trackProgress();
           }
         });
       }
@@ -623,7 +647,7 @@ export class IModelExporter {
       multiAspects = multiAspects.filter((a) => this.shouldExportElementAspect(a));
       if (multiAspects.length > 0) {
         this.handler.callProtected.onExportElementMultiAspects(multiAspects);
-        this.trackProgress();
+        return this.trackProgress();
       }
     }
   }
@@ -631,24 +655,24 @@ export class IModelExporter {
   /** Exports all relationships that subclass from the specified base class.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportRelationships(baseRelClassFullName: string): void {
+  public async exportRelationships(baseRelClassFullName: string): Promise<void> {
     if (!this.visitRelationships) {
       Logger.logTrace(loggerCategory, `visitRelationships=false, skipping exportRelationships()`);
       return;
     }
     Logger.logTrace(loggerCategory, `exportRelationships(${baseRelClassFullName})`);
     const sql = `SELECT ECInstanceId FROM ${baseRelClassFullName}`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const relInstanceId: Id64String = statement.getValue(0).getId();
         const relProps: RelationshipProps = this.sourceDb.relationships.getInstanceProps(baseRelClassFullName, relInstanceId);
-        this.exportRelationship(relProps.classFullName, relInstanceId); // must call exportRelationship using the actual classFullName, not baseRelClassFullName
+        await this.exportRelationship(relProps.classFullName, relInstanceId); // must call exportRelationship using the actual classFullName, not baseRelClassFullName
       }
     });
   }
 
   /** Export a relationship from the source iModel. */
-  public exportRelationship(relClassFullName: string, relInstanceId: Id64String): void {
+  public async exportRelationship(relClassFullName: string, relInstanceId: Id64String): Promise<void> {
     if (!this.visitRelationships) {
       Logger.logTrace(loggerCategory, `visitRelationships=false, skipping exportRelationship(${relClassFullName}, ${relInstanceId})`);
       return;
@@ -675,15 +699,15 @@ export class IModelExporter {
     // relationship has passed standard exclusion rules, now give handler a chance to accept/reject export
     if (this.handler.callProtected.shouldExportRelationship(relationship)) {
       this.handler.callProtected.onExportRelationship(relationship, isUpdate);
-      this.trackProgress();
+      await this.trackProgress();
     }
   }
 
   /** Tracks incremental progress */
-  private trackProgress(): void {
+  private async trackProgress(): Promise<void> {
     this._progressCounter++;
     if (0 === (this._progressCounter % this.progressInterval)) {
-      this.handler.callProtected.onProgress();
+      return this.handler.callProtected.onProgress();
     }
   }
 }
@@ -709,7 +733,7 @@ class ChangedInstanceIds {
   public relationship = new ChangedInstanceOps();
   public font = new ChangedInstanceOps();
   private constructor() { }
-  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseDb, startChangeSetId: GuidString): Promise<ChangedInstanceIds> {
+  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseDb, startChangeSetId: string): Promise<ChangedInstanceIds> {
     requestContext.enter();
     const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
     // NOTE: ChangeSummaryManager.downloadChangeSets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangeSets)

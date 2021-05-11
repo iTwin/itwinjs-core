@@ -11,6 +11,7 @@ import {
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
+import { findFieldByLabel } from "../Utils";
 
 import sinon = require("sinon");
 
@@ -23,6 +24,11 @@ describe("Content", () => {
     if (!imodel || !imodel.isOpen)
       imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
+  };
+
+  const closeIModel = async () => {
+    if (imodel && imodel.isOpen)
+      await imodel.close();
   };
 
   before(async () => {
@@ -54,6 +60,10 @@ describe("Content", () => {
               ],
             },
           }],
+        }, {
+          ruleType: RuleTypes.LabelOverride,
+          condition: `ThisNode.IsInstanceNode ANDALSO this.IsOfClass("Model", "BisCore")`,
+          label: `this.GetRelatedDisplayLabel("BisCore:ModelModelsElement", "Forward", "BisCore:Element")`,
         }],
       };
       const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
@@ -181,7 +191,7 @@ describe("Content", () => {
       };
       const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
-      const field = findFieldByLabel(descriptor.fields, "$óúrçè Fílê Ñâmé")!;
+      const field = findFieldByLabel(descriptor.fields, "Ñámê")!;
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
         groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
@@ -408,10 +418,11 @@ describe("Content", () => {
 
   describe("when request in the backend exceeds the backend timeout time", () => {
 
-    let raceStub: sinon.SinonStub<[Iterable<unknown>], Promise<unknown>>;
+    let raceStub: sinon.SinonStub<[readonly unknown[]], Promise<unknown>>;
 
     beforeEach(async () => {
       // re-initialize to set backend response timeout to 500 ms
+      await closeIModel();
       await terminate();
       await initialize(500);
       await openIModel();
@@ -426,7 +437,7 @@ describe("Content", () => {
     });
 
     afterEach(async () => {
-      await imodel.close();
+      await closeIModel();
       raceStub.restore();
     });
 
@@ -573,27 +584,4 @@ class ECClassHierarchy {
       derivedClassIds: this.getAllDerivedClassIds(id),
     };
   }
-}
-
-function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
-  const isTopLevel = (undefined === allFields);
-  if (!allFields)
-    allFields = new Array<Field>();
-  for (const field of fields) {
-    if (field.label === label)
-      return field;
-
-    if (field.isNestedContentField()) {
-      const nestedMatchingField = findFieldByLabel(field.nestedFields, label, allFields);
-      if (nestedMatchingField)
-        return nestedMatchingField;
-    }
-
-    allFields.push(field);
-  }
-  if (isTopLevel) {
-    // eslint-disable-next-line no-console
-    console.error(`Field '${label}' not found. Available fields: [${allFields.map((f) => `"${f.label}"`).join(", ")}]`);
-  }
-  return undefined;
 }

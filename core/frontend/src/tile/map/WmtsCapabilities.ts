@@ -495,10 +495,12 @@ export class WmtsCapabilities {
     return new WmtsCapabilities(capabilities);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials): Promise<WmtsCapabilities | undefined> {
-    const cached = WmtsCapabilities._capabilitiesCache.get(url);
-    if (cached !== undefined)
-      return cached;
+  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmtsCapabilities | undefined> {
+    if (!ignoreCache) {
+      const cached = WmtsCapabilities._capabilitiesCache.get(url);
+      if (cached !== undefined)
+        return cached;
+    }
 
     const xmlCapabilities = await getXml(new ClientRequestContext(""), `${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMTS`, credentials);
 

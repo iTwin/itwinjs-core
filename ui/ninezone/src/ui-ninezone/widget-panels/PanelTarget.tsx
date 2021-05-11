@@ -9,7 +9,7 @@
 import "./PanelTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabStateContext, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { isHorizontalPanelState } from "../base/NineZoneState";
@@ -22,7 +22,7 @@ export const PanelTarget = React.memo(function PanelTarget() { // eslint-disable
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabStateContext);
   const draggedWidget = React.useContext(DraggedWidgetIdContext);
-  assert(panel);
+  assert(!!panel);
   const allowedTarget = useAllowedPanelTarget();
   const [ref, targeted] = usePanelTarget<HTMLDivElement>({
     side: panel.side,
@@ -51,7 +51,7 @@ export function useAllowedPanelTarget() {
   const draggedWidget = React.useContext(DraggedWidgetIdContext);
   const tabsState = React.useContext(TabsStateContext);
   const widgetsState = React.useContext(WidgetsStateContext);
-  assert(panel);
+  assert(!!panel);
 
   let allowedPanelTargets: ReadonlyArray<PanelSide> | undefined;
   if (draggedTab) {

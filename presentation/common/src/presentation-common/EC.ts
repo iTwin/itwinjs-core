@@ -159,6 +159,8 @@ export interface PropertyInfo {
    * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
    */
   kindOfQuantity?: KindOfQuantityInfo;
+  /** Extended type name of the ECProperty if it has one */
+  extendedType?: string;
 }
 
 /** @public */

@@ -1,0 +1,78 @@
+{
+  "name": "@bentley/mobile-manager",
+  "version": "2.17.0-dev.1",
+  "description": "iTwin.js MobileHost and MobileApp",
+  "license": "MIT",
+  "engines": {
+    "node": ">=10.17.0 <13.0"
+  },
+  "scripts": {
+    "compile": "npm run build",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/mobile-manager/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=__DOC_ONLY__",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": "",
+    "cover": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/mobile-manager"
+  },
+  "keywords": [
+    "Bentley",
+    "digital-twin",
+    "iTwin",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^2.17.0-dev.1",
+    "@bentley/frontend-authorization-client": "^2.17.0-dev.1",
+    "@bentley/imodeljs-common": "^2.17.0-dev.1",
+    "@bentley/imodeljs-frontend": "^2.17.0-dev.1",
+    "@bentley/imodeljs-backend": "^2.17.0-dev.1",
+    "@bentley/itwin-client": "^2.17.0-dev.1",
+    "@bentley/imodelhub-client": "^2.17.0-dev.1",
+    "@bentley/presentation-common": "^2.17.0-dev.1",
+    "ws": "^7.2.0",
+    "js-base64": "^2.4.5"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "2.17.0-dev.1",
+    "@bentley/frontend-authorization-client": "2.17.0-dev.1",
+    "@bentley/build-tools": "2.17.0-dev.1",
+    "@bentley/eslint-plugin": "2.17.0-dev.1",
+    "@bentley/imodeljs-backend": "2.17.0-dev.1",
+    "@bentley/imodeljs-frontend": "2.17.0-dev.1",
+    "@bentley/imodeljs-common": "2.17.0-dev.1",
+    "@bentley/itwin-client": "2.17.0-dev.1",
+    "@bentley/imodelhub-client": "2.17.0-dev.1",
+    "@bentley/presentation-common": "2.17.0-dev.1",
+    "@types/node": "10.14.1",
+    "@types/mocha": "^8.2.2",
+    "@types/chai": "^4.1.4",
+    "@types/js-base64": "^2.3.1",
+    "@types/fs-extra": "^4.0.7",
+    "@types/ws": "^6.0.4",
+    "js-base64": "^2.4.5",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "cpx": "^1.5.0",
+    "eslint": "^6.8.0",
+    "mocha": "^8.3.2",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.1.0",
+    "ws": "^7.2.0"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
+  }
+}

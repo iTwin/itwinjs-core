@@ -9,21 +9,18 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomDescriptor, createRandomECInstanceKey, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { HiliteSetProvider, Presentation, PresentationManager, RulesetManager } from "../../presentation-frontend";
+import { HiliteSetProvider, Presentation, PresentationManager } from "../../presentation-frontend";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 describe("HiliteSetProvider", () => {
 
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-  const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
 
   beforeEach(() => {
     imodelMock.reset();
     presentationManagerMock.reset();
-    rulesetsManagerMock.reset();
     Presentation.setPresentationManager(presentationManagerMock.object);
-    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
   });
 
   afterEach(() => {
@@ -46,14 +43,6 @@ describe("HiliteSetProvider", () => {
 
     beforeEach(() => {
       provider = HiliteSetProvider.create({ imodel: imodelMock.object });
-    });
-
-    it("registers ruleset only on first call", async () => {
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.never());
-      await provider.getHiliteSet(new KeySet());
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
-      await provider.getHiliteSet(new KeySet());
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
     });
 
     it("memoizes result", async () => {

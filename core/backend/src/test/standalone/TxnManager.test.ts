@@ -4,11 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, DbResult, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, DbResult, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, UpdateModelOptions,
+  Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
+} from "@bentley/imodeljs-common";
+import {
+  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb,
+  TxnChangedEntities, TxnManager,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
@@ -33,7 +36,8 @@ describe("TxnManager", () => {
 
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
-    testFileName = IModelTestUtils.prepareOutputFile("TxnManager", "TxnManagerTest.bim");
+    // make a unique name for the output file so this test can be run in parallel
+    testFileName = IModelTestUtils.prepareOutputFile("TxnManager", `${Guid.createValue()}.bim`);
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
@@ -61,12 +65,16 @@ describe("TxnManager", () => {
     imodel.nativeDb.deleteAllTxns();
   });
 
-  after(() => imodel.close());
+  after(() => {
+    imodel.close();
+    IModelJsFs.removeSync(testFileName);
+  });
 
-  it("Undo/Redo", async () => {
+  it("TxnManager", async () => {
     const models = imodel.models;
     const elements = imodel.elements;
     const modelId = props.model;
+    const cleanup: Array<() => void> = [];
 
     let model = models.getModel<PhysicalModel>(modelId);
     assert.isUndefined(model.geometryGuid, "geometryGuid starts undefined");
@@ -82,8 +90,8 @@ describe("TxnManager", () => {
     let afterUndo = 0;
     let undoAction = TxnAction.None;
 
-    txns.onBeforeUndoRedo.addListener(() => afterUndo++);
-    txns.onAfterUndoRedo.addListener((action) => { beforeUndo++; undoAction = action; });
+    cleanup.push(txns.onBeforeUndoRedo.addListener(() => beforeUndo++));
+    cleanup.push(txns.onAfterUndoRedo.addListener((isUndo) => { afterUndo++; undoAction = isUndo ? TxnAction.Reverse : TxnAction.Reinstate; }));
 
     let elementId = elements.insertElement(props);
     assert.isFalse(txns.isRedoPossible);
@@ -96,6 +104,10 @@ describe("TxnManager", () => {
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
 
+    const classId = imodel.nativeDb.classNameToId(props.classFullName);
+    assert.isTrue(Id64.isValid(classId));
+    const class2 = imodel.nativeDb.classIdToName(classId);
+    assert.equal(class2, props.classFullName);
     model = models.getModel(modelId);
     assert.isDefined(model.geometryGuid);
 
@@ -223,21 +235,15 @@ describe("TxnManager", () => {
     model = models.getModel(modelId);
     assert.notEqual(guid2, model.geometryGuid, "update placement should change guid");
 
+    const lastMod = models.queryLastModifiedTime(modelId);
+    await BeDuration.wait(300); // we update the lastMod below, make sure it will be different by waiting .3 seconds
     const guid3 = model.geometryGuid;
-    const modelProps = model.toJSON() as UpdateModelOptions;
-    modelProps.geometryChanged = true;
-    models.updateModel(modelProps);
+    models.updateGeometryGuid(modelId);
     model = models.getModel(modelId);
     assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
-
-    const lastMod = models.queryLastModifiedTime(modelId);
-    await BeDuration.wait(300); // we're going to update the lastMod below, make sure it will be different by waiting .3 seconds
-    const modelProps2 = model.toJSON() as UpdateModelOptions;
-    modelProps2.updateLastMod = true;
-    models.updateModel(modelProps2);
-    model = models.getModel(modelId);
     const lastMod2 = models.queryLastModifiedTime(modelId);
     assert.notEqual(lastMod, lastMod2);
+    // imodel.saveChanges("update geometry guid");
 
     // Deleting a geometric element updates model's GeometryGuid; deleting any element updates model's LastMod.
     await BeDuration.wait(300); // for lastMod...
@@ -278,74 +284,442 @@ describe("TxnManager", () => {
     assert.isFalse(txns.isUndoPossible);
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isFalse(txns.hasPendingTxns);
+    cleanup.forEach((drop) => drop());
   });
 
-  it("Element drives element events", async () => {
-    assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
+  class EventAccumulator {
+    public readonly inserted: string[] = [];
+    public readonly updated: string[] = [];
+    public readonly deleted: string[] = [];
+    public numValidates = 0;
+    public numApplyChanges = 0;
+    private _numBeforeUndo = 0;
+    private _numAfterUndo = 0;
+    private readonly _cleanup: Array<() => void> = [];
 
+    public constructor(mgr: TxnManager) {
+      this._cleanup.push(mgr.onEndValidation.addListener(() => {
+        ++this.numValidates;
+      }));
+
+      this._cleanup.push(mgr.onCommit.addListener(() => {
+        this.clearChanges();
+      }));
+
+      this._cleanup.push(mgr.onChangesApplied.addListener(() => {
+        ++this.numApplyChanges;
+      }));
+
+      this._cleanup.push(mgr.onBeforeUndoRedo.addListener(() => {
+        expect(this._numBeforeUndo).to.equal(this._numAfterUndo);
+        ++this._numBeforeUndo;
+      }));
+
+      this._cleanup.push(mgr.onAfterUndoRedo.addListener(() => {
+        ++this._numAfterUndo;
+        expect(this._numAfterUndo).to.equal(this._numBeforeUndo);
+      }));
+    }
+
+    public dispose(): void {
+      for (const cleanup of this._cleanup)
+        cleanup();
+
+      this._cleanup.length = 0;
+    }
+
+    public static test(txns: TxnManager, event: BeEvent<(changes: TxnChangedEntities) => void>, func: (accum: EventAccumulator) => void): void {
+      const accum = new EventAccumulator(txns);
+      accum.listen(event);
+      func(accum);
+      accum.dispose();
+    }
+
+    public static testElements(iModel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
+      this.test(iModel.txns, iModel.txns.onElementsChanged, func);
+    }
+
+    public static testModels(iModel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
+      this.test(iModel.txns, iModel.txns.onModelsChanged, func);
+    }
+
+    public listen(evt: BeEvent<(changes: TxnChangedEntities) => void>): void {
+      this._cleanup.push(evt.addListener((changes) => {
+        this.copyArray(changes, "inserted");
+        this.copyArray(changes, "updated");
+        this.copyArray(changes, "deleted");
+      }));
+    }
+
+    private copyArray(changes: TxnChangedEntities, propName: "inserted" | "updated" | "deleted"): void {
+      const source = changes[propName];
+      if (!source)
+        return;
+
+      const dest = this[propName];
+      for (const id of source)
+        dest.push(id);
+    }
+
+    public expectNumValidations(expected: number) {
+      expect(this.numValidates).to.equal(expected);
+    }
+
+    public expectNumApplyChanges(expected: number) {
+      expect(this.numApplyChanges).to.equal(expected);
+    }
+
+    public expectNumUndoRedo(expected: number) {
+      expect(this._numBeforeUndo).to.equal(this._numAfterUndo);
+      expect(this._numBeforeUndo).to.equal(expected);
+    }
+
+    public expectChanges(expected: { inserted?: string[], updated?: string[], deleted?: string[] }): void {
+      this.expect(expected.inserted, "inserted");
+      this.expect(expected.updated, "updated");
+      this.expect(expected.deleted, "deleted");
+    }
+
+    private expect(expected: string[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
+      expect(this[propName]).to.deep.equal(expected ?? []);
+    }
+
+    public clearChanges(): void {
+      this.inserted.length = 0;
+      this.updated.length = 0;
+      this.deleted.length = 0;
+    }
+  }
+
+  it("dispatches events when elements change", async () => {
     const elements = imodel.elements;
-    const el1 = elements.insertElement(props);
-    const el2 = elements.insertElement(props);
-    const ede = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, el1, el2);
-    ede.property1 = "test ede";
-    ede.insert();
+    let id1: string;
+    let id2: string;
 
-    const removals: VoidFunction[] = [];
-    let beforeOutputsHandled = 0;
-    let allInputsHandled = 0;
-    let rootChanged = 0;
-    let validateOutput = 0;
-    let deletedDependency = 0;
-    let commits = 0;
-    let committed = 0;
-    removals.push(TestElementDrivesElement.deletedDependency.addListener((evProps) => {
-      assert.equal(evProps.sourceId, el1);
-      assert.equal(evProps.targetId, el2);
-      ++deletedDependency;
-    }));
-    removals.push(TestElementDrivesElement.rootChanged.addListener((evProps, im) => {
-      const ede2 = im.relationships.getInstance<TestElementDrivesElement>(evProps.classFullName, evProps.id!);
-      assert.equal(ede2.property1, ede.property1);
-      assert.equal(evProps.sourceId, el1);
-      assert.equal(evProps.targetId, el2);
-      ++rootChanged;
-    }));
-    removals.push(TestElementDrivesElement.validateOutput.addListener((_props) => ++validateOutput));
-    removals.push(TestPhysicalObject.beforeOutputsHandled.addListener((id) => {
-      assert.equal(id, el1);
-      ++beforeOutputsHandled;
-    }));
-    removals.push(TestPhysicalObject.allInputsHandled.addListener((id) => {
-      assert.equal(id, el2);
-      ++allInputsHandled;
-    }));
+    EventAccumulator.testElements(imodel, (accum) => {
+      id1 = elements.insertElement(props);
+      id2 = elements.insertElement(props);
+      imodel.saveChanges("2 inserts");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ inserted: [id1, id2] });
+    });
 
-    removals.push(imodel.txns.onCommit.addListener(() => commits++));
-    removals.push(imodel.txns.onCommitted.addListener(() => committed++));
+    await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
 
-    imodel.saveChanges("step 1");
-    assert.equal(commits, 1);
-    assert.equal(committed, 1);
-    assert.equal(beforeOutputsHandled, 1);
-    assert.equal(allInputsHandled, 1);
-    assert.equal(rootChanged, 1);
-    assert.equal(validateOutput, 0);
-    assert.equal(deletedDependency, 0);
+    let elem1: TestPhysicalObject;
+    let elem2: TestPhysicalObject;
+    EventAccumulator.testElements(imodel, (accum) => {
+      elem1 = elements.getElement<TestPhysicalObject>(id1);
+      elem2 = elements.getElement<TestPhysicalObject>(id2);
+      elem1.intProperty = 200;
+      elem1.update();
+      elem2.intProperty = 200;
+      elem2.update();
+      imodel.saveChanges("2 updates");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ updated: [id1, id2] });
+    });
 
-    const element2 = elements.getElement<TestPhysicalObject>(el2);
-    // make sure we actually change something in the element table. Otherwise update does nothing unless we wait long enough for last-mod-time to be updated.
-    element2.userLabel = "new value";
-    element2.update();
-    imodel.saveChanges("step 2");
-    assert.equal(commits, 2);
-    assert.equal(committed, 2);
+    EventAccumulator.testElements(imodel, (accum) => {
+      elem1.delete();
+      elem2.delete();
+      imodel.saveChanges("2 deletes");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ deleted: [id1, id2] });
+    });
 
-    assert.equal(allInputsHandled, 2, "allInputsHandled not called for update");
-    assert.equal(beforeOutputsHandled, 2, "beforeOutputsHandled not called for update");
-    assert.equal(rootChanged, 2, "rootChanged not called for update");
-    assert.equal(validateOutput, 0, "validateOutput shouldn't be called for update");
-    assert.equal(deletedDependency, 0, "deleteDependency shouldn't be called for update");
-    removals.forEach((drop) => drop());
+    // Undo
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ inserted: [id1, id2] });
+      accum.expectNumApplyChanges(1);
+      accum.expectNumValidations(0);
+    });
+
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ updated: [id1, id2] });
+    });
+
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ deleted: [id1, id2] });
+    });
+
+    // Redo
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reinstateTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ inserted: [id1, id2] });
+    });
+
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reinstateTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ updated: [id1, id2] });
+    });
+
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reinstateTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ deleted: [id1, id2] });
+      accum.expectNumApplyChanges(1);
+      accum.expectNumValidations(0);
+    });
+
+    // Undo all
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reverseTxns(3);
+      accum.expectNumValidations(0);
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(3);
+
+      // We received 3 separate "elements changed" events - one for each txn - and just concatenated the lists.
+      accum.expectChanges({
+        inserted: [id1, id2],
+        updated: [id1, id2],
+        deleted: [id1, id2],
+      });
+    });
+
+    // Redo all
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reinstateTxn();
+      accum.expectNumValidations(0);
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(3);
+
+      // We received 3 separate "elements changed" events - one for each txn - and just concatenated the lists.
+      accum.expectChanges({
+        inserted: [id1, id2],
+        updated: [id1, id2],
+        deleted: [id1, id2],
+      });
+    });
+  });
+
+  it("dispatches events when models change", async () => {
+    const existingModelId = props.model;
+
+    let newModelId: string;
+    EventAccumulator.testModels(imodel, (accum) => {
+      newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
+      imodel.saveChanges("1 insert");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ inserted: [newModelId] });
+    });
+    await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
+
+    // NB: Updates to existing models never produce events. I don't think I want to change that as part of this PR.
+    let newModel: PhysicalModel;
+    EventAccumulator.testModels(imodel, (accum) => {
+      newModel = imodel.models.getModel<PhysicalModel>(newModelId);
+      const newModelProps = newModel.toJSON();
+      newModelProps.isNotSpatiallyLocated = newModel.isSpatiallyLocated;
+      imodel.models.updateModel(newModelProps);
+      imodel.models.updateGeometryGuid(existingModelId);
+      imodel.saveChanges("1 update");
+      accum.expectNumValidations(1);
+      accum.expectChanges({});
+    });
+
+    EventAccumulator.testModels(imodel, (accum) => {
+      imodel.elements.insertElement(props);
+      imodel.saveChanges("insert 1 geometric element");
+      accum.expectNumValidations(1);
+      accum.expectChanges({});
+    });
+
+    EventAccumulator.testModels(imodel, (accum) => {
+      newModel.delete();
+      imodel.saveChanges("1 delete");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ deleted: [newModelId] });
+
+      accum.expectNumApplyChanges(0);
+    });
+
+    // Undo
+    EventAccumulator.testModels(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(1);
+      accum.expectChanges({ inserted: [newModelId] });
+    });
+
+    EventAccumulator.testModels(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(1);
+      accum.expectChanges({});
+    });
+
+    EventAccumulator.testModels(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(1);
+      accum.expectChanges({});
+    });
+
+    EventAccumulator.testModels(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(1);
+      accum.expectChanges({ deleted: [newModelId] });
+    });
+
+    // Redo
+    EventAccumulator.testModels(imodel, (accum) => {
+      for (let i = 0; i < 4; i++)
+        imodel.txns.reinstateTxn();
+
+      accum.expectNumUndoRedo(4);
+      accum.expectNumApplyChanges(4);
+      accum.expectChanges({ inserted: [newModelId], deleted: [newModelId] });
+    });
+  });
+
+  it("dispatches events when geometry guids change", () => {
+    const modelId = props.model;
+    const test = (func: (model: PhysicalModel) => boolean) => {
+      const model = imodel.models.getModel<PhysicalModel>(modelId);
+      const prevGuid = model.geometryGuid;
+      let newGuid: string | undefined;
+      let numEvents = 0;
+      let dropListener = imodel.txns.onModelGeometryChanged.addListener((changes) => {
+        expect(numEvents).to.equal(0);
+        ++numEvents;
+        expect(changes.length).to.equal(1);
+        expect(changes[0].id).to.equal(modelId);
+        newGuid = changes[0].guid;
+        expect(newGuid).not.to.equal(prevGuid);
+      });
+
+      const expectEvent = func(model);
+
+      imodel.saveChanges("");
+      expect(numEvents).to.equal(expectEvent ? 1 : 0);
+
+      dropListener();
+      if (!expectEvent)
+        return;
+
+      dropListener = imodel.txns.onModelGeometryChanged.addListener((changes) => {
+        ++numEvents;
+        expect(changes.length).to.equal(1);
+        expect(changes[0].id).to.equal(modelId);
+        expect(changes[0].guid).to.equal(prevGuid);
+      });
+
+      imodel.txns.reverseSingleTxn();
+      expect(numEvents).to.equal(2);
+      dropListener();
+
+      dropListener = imodel.txns.onModelGeometryChanged.addListener((changes) => {
+        ++numEvents;
+        expect(changes.length).to.equal(1);
+        expect(changes[0].id).to.equal(modelId);
+        expect(changes[0].guid).to.equal(newGuid);
+      });
+
+      imodel.txns.reinstateTxn();
+      expect(numEvents).to.equal(3);
+      dropListener();
+    };
+
+    test(() => {
+      imodel.models.updateGeometryGuid(modelId);
+      return true;
+    });
+
+    test((model) => {
+      model.geometryGuid = Guid.createValue();
+      model.update();
+      return false;
+    });
+
+    let newElemId: string;
+    test(() => {
+      newElemId = imodel.elements.insertElement(props);
+      return true;
+    });
+
+    test(() => {
+      const elem = imodel.elements.getElement<TestPhysicalObject>(newElemId);
+      elem.userLabel = "not a geometric change";
+      elem.intProperty = 42;
+      elem.update();
+      return false;
+    });
+
+    test(() => {
+      const elem = imodel.elements.getElement<TestPhysicalObject>(newElemId);
+      elem.placement.origin.x += 10;
+      elem.update();
+      return true;
+    });
+
+    test(() => {
+      imodel.elements.deleteElement(newElemId);
+      return true;
+    });
+  });
+
+  it("dispatches events in batches", async () => {
+    const test = (numChangesExpected: number, func: () => void) => {
+      const numChanged: number[] = [];
+      const prevMax = setMaxEntitiesPerEvent(2);
+      const dropListener = imodel.txns.onElementsChanged.addListener((changes) => {
+        const numEntities = changes.inserted.length + changes.updated.length + changes.deleted.length;
+        numChanged.push(numEntities);
+        expect(numEntities).least(1);
+        expect(numEntities <= 2).to.be.true;
+      });
+
+      func();
+      imodel.saveChanges("");
+
+      dropListener();
+      setMaxEntitiesPerEvent(prevMax);
+
+      expect(numChanged.length).to.equal(Math.ceil(numChangesExpected / 2));
+      for (let i = 0; i < numChanged.length - 1; i++)
+        expect(numChanged[i]).to.equal(2);
+
+      if (numChangesExpected > 0)
+        expect(numChanged[numChanged.length - 1]).to.equal(0 === numChangesExpected % 2 ? 2 : 1);
+    };
+
+    let elemId1: string;
+    test(1, () => {
+      elemId1 = imodel.elements.insertElement(props);
+    });
+
+    let elemId2: string;
+    test(2, () => {
+      elemId2 = imodel.elements.insertElement(props);
+      imodel.elements.deleteElement(elemId1);
+    });
+    await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
+
+    let elemId3: string;
+    test(3, () => {
+      elemId1 = imodel.elements.insertElement(props);
+      elemId3 = imodel.elements.insertElement(props);
+      const elem2 = imodel.elements.getElement<TestPhysicalObject>(elemId2);
+      elem2.intProperty = 321;
+      elem2.update();
+    });
+
+    test(4, () => {
+      imodel.elements.deleteElement(elemId1);
+      imodel.elements.deleteElement(elemId2);
+      imodel.elements.deleteElement(elemId3);
+      imodel.elements.insertElement(props);
+    });
   });
 
   it("change propagation should leave txn empty", async () => {
@@ -360,6 +734,7 @@ describe("TxnManager", () => {
     relationship.property1 = "Root drives child";
     relationship.insert();
     imodel.saveChanges("Inserted root, child element and dependency");
+    await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
 
     // Setup dependency handler to update childElement
     let handlerCalled = false;

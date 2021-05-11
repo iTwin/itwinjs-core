@@ -1,6 +1,6 @@
-# Using Views in iModel.js
+# Using Views in iTwin.js
 
-A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iModel.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
+A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iTwin.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
 
 Views are managed by the [ViewManager]($frontend) class, using [IModelApp.viewManager]($frontend).
 
@@ -109,13 +109,13 @@ After the viewport is added to the [ViewManager]($frontend), all HTML events for
 
 ### The "Selected" View
 
-It is sometimes necessary to chose a Viewport from inside code that reacts to user input. Absent some other way of determining which Viewport to use, iModel.js applications often default to [ViewManager.selectedView]($frontend). This will be the last [ScreenViewport]($frontend) in which the user clicked. [ViewManager.selectedView]($frontend) is often the target Viewport for [Tools]($frontend:Tools).
+It is sometimes necessary to chose a Viewport from inside code that reacts to user input. Absent some other way of determining which Viewport to use, iTwin.js applications often default to [ViewManager.selectedView]($frontend). This will be the last [ScreenViewport]($frontend) in which the user clicked. [ViewManager.selectedView]($frontend) is often the target Viewport for [Tools]($frontend:Tools).
 
 > Note: If there is only one Viewport visible, that Viewport will always be the [ViewManager.selectedView]($frontend). If there are no Viewports visible, [ViewManager.selectedView]($frontend) can be undefined.
 
 ## Viewing Tools
 
-The iModel.js library supplies controls that allow users to modify what is shown in Views via the [ViewTool]($frontend) classes. You can create instances of the
+The iTwin.js library supplies controls that allow users to modify what is shown in Views via the [ViewTool]($frontend) classes. You can create instances of the
 supplied classes (e.g. [WindowAreaTool]($frontend), [FitViewTool]($frontend), [WalkViewTool]($frontend), [RotateViewTool]($frontend), etc.) or create your own subclasses for
 special viewing operations.
 

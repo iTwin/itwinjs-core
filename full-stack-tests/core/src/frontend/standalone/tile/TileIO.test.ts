@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId,
-  iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, ServerTimeoutError, TileFormat, TileReadStatus,
+  iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, TileFormat, TileReadStatus,
 } from "@bentley/imodeljs-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
@@ -14,7 +14,6 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
-import { testOnScreenViewport } from "../..//TestViewport";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
@@ -59,6 +58,21 @@ export class FakeModelProps implements ModelProps {
 export class FakeREProps implements RelatedElementProps {
   public id: Id64String;
   public constructor() { this.id = Id64.invalid; }
+}
+
+export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, renderMode?: RenderMode, is2d?: boolean, animationId?: Id64String }): ViewState {
+  const scheduleState = options?.animationId ? { getModelAnimationId: () => options.animationId } : undefined;
+  return {
+    iModel,
+    is3d: () => true !== options?.is2d,
+    viewFlags: {
+      renderMode: options?.renderMode ?? RenderMode.SmoothShade,
+      visibleEdges: options?.visibleEdges ?? false,
+    },
+    displayStyle: {
+      scheduleState,
+    },
+  } as ViewState;
 }
 
 function delta(a: number, b: number): number { return Math.abs(a - b); }
@@ -439,7 +453,7 @@ describe("TileIO (mock render)", () => {
     const modelProps = await imodel.models.getProps("0x22");
     expect(modelProps.length).to.equal(1);
 
-    const tree = await imodel.tiles.getTileTreeProps(modelProps[0].id!.toString());
+    const tree = await IModelApp.tileAdmin.requestTileTreeProps(imodel, modelProps[0].id!.toString());
 
     expect(tree.id).to.equal(modelProps[0].id);
     expect(tree.maxTilesToSkip).to.equal(1);
@@ -529,23 +543,10 @@ async function getTileTree(imodel: IModelConnection, modelId: Id64String, edgesR
 }
 
 async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = true, animationId?: Id64String): Promise<IModelTileTree> {
-  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and scheduleScript.getModelAnimationId(modelId) and for access to its IModelConnection.
+  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and scheduleState.getModelAnimationId(modelId) and for access to its IModelConnection.
   // ###TODO Make that an interface instead of requiring a ViewState.
-  let scheduleScript;
-  if (undefined !== animationId)
-    scheduleScript = { getModelAnimationId: () => animationId };
-
-  const fakeViewState = {
-    iModel: model.iModel,
-    scheduleScript,
-    viewFlags: {
-      renderMode: RenderMode.SmoothShade,
-      visibleEdges: edgesRequired,
-    },
-    is3d: () => true,
-  };
-
-  const ref = model.createTileTreeReference(fakeViewState as ViewState);
+  const view = fakeViewState(model.iModel, { animationId, visibleEdges: edgesRequired });
+  const ref = model.createTileTreeReference(view);
   const owner = ref.treeOwner;
   owner.load();
   await waitUntil(() => {
@@ -600,7 +601,7 @@ describe("mirukuru TileTree", () => {
     const modelProps = await imodel.models.getProps("0x1c");
     expect(modelProps.length).to.equal(1);
 
-    const treeProps = await imodel.tiles.getTileTreeProps(modelProps[0].id!);
+    const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, modelProps[0].id!);
     expect(treeProps.id).to.equal(modelProps[0].id);
     expect(treeProps.rootTile).not.to.be.undefined;
 
@@ -611,7 +612,7 @@ describe("mirukuru TileTree", () => {
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
     const tree = new IModelTileTree(params);
 
-    const response: TileRequest.Response = await tree.staticBranch.requestContent(() => false);
+    const response: TileRequest.Response = await tree.staticBranch.requestContent();
     expect(response).not.to.be.undefined;
     expect(response).instanceof(Uint8Array);
 
@@ -636,7 +637,7 @@ describe("mirukuru TileTree", () => {
     const test = async (tree: IModelTileTree, expectedVersion: number, expectedRootContentId: string) => {
       expect(tree).not.to.be.undefined;
       expect(tree.staticBranch.contentId).to.equal(expectedRootContentId);
-      const response = await tree.staticBranch.requestContent(() => false);
+      const response = await tree.staticBranch.requestContent();
       expect(response).instanceof(Uint8Array);
 
       // The model contains a single rectangular element.
@@ -662,7 +663,7 @@ describe("mirukuru TileTree", () => {
     await test(modelTree, CurrentImdlVersion.Combined, "-3-0-0-0-0-1");
 
     // Test directly loading a tile tree of version 3.0
-    const v3Props = await imodel.tiles.getTileTreeProps("0x1c");
+    const v3Props = await IModelApp.tileAdmin.requestTileTreeProps(imodel, "0x1c");
     expect(v3Props).not.to.be.undefined;
 
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: false, allowInstancing: false };
@@ -672,85 +673,13 @@ describe("mirukuru TileTree", () => {
     await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
   });
 
-  it("should retry tile requests on server timeout error", async () => {
-    let treeCounter = 0;
-    let tileCounter = 0;
-    const numRetries = 3;
-
-    const getTileTreeProps = imodel.tiles.getTileTreeProps;
-    imodel.tiles.getTileTreeProps = async () => {
-      ++treeCounter;
-      if (treeCounter >= numRetries)
-        imodel.tiles.getTileTreeProps = getTileTreeProps;
-
-      throw new ServerTimeoutError("fake timeout");
-    };
-
-    const getTileContent = imodel.tiles.getTileContent;
-    imodel.tiles.getTileContent = async () => {
-      ++tileCounter;
-      if (tileCounter >= numRetries)
-        imodel.tiles.getTileContent = getTileContent;
-
-      throw new ServerTimeoutError("fake timeout");
-    };
-
-    await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      await vp.waitForAllTilesToRender();
-      expect(tileCounter).to.equal(numRetries);
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-      expect(treeCounter).to.equal(numRetries);
-    });
-  });
-
-  it("should retry tile requests if canceled while awaiting cache miss", async () => {
-    let tileCounter = 0;
-    const numRetries = 3;
-
-    // Replace the `isCanceled` property with one that returns true `numRetries` times, to indicate the request should not be forwarded to the backend in the event of a cache miss.
-    // (Because we are running locally, we will never get a cache hit).
-    const propertyDescriptor = Object.getOwnPropertyDescriptor(TileRequest.prototype, "isCanceled")!;
-    const oldGet = propertyDescriptor.get;
-    propertyDescriptor.get = () => {
-      ++tileCounter;
-      if (tileCounter >= numRetries) {
-        propertyDescriptor.get = oldGet;
-        Object.defineProperty(TileRequest.prototype, "isCanceled", propertyDescriptor);
-      }
-
-      return true;
-    };
-    Object.defineProperty(TileRequest.prototype, "isCanceled", propertyDescriptor);
-
-    await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      await vp.waitForAllTilesToRender();
-      expect(tileCounter).to.equal(numRetries);
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      const stats = IModelApp.tileAdmin.statistics;
-      // We only record cache misses if the request is NOT canceled.
-      expect(stats.totalCacheMisses).to.equal(1);
-      expect(stats.totalDispatchedRequests).to.equal(numRetries + 1);
-    });
-  });
-
   it("should use a different tile tree when view flags change", async () => {
     const modelId = "0x1c";
     await imodel.models.load(modelId);
     const model = imodel.models.getLoaded(modelId) as GeometricModelState;
 
-    const viewState = {
-      iModel: imodel,
-      viewFlags: {
-        renderMode: RenderMode.SmoothShade,
-        visibleEdges: false,
-      },
-      is3d: () => true,
-    };
-
-    const treeRef = model.createTileTreeReference(viewState as ViewState);
+    const viewState = fakeViewState(imodel);
+    const treeRef = model.createTileTreeReference(viewState);
     const noEdges = treeRef.treeOwner;
 
     viewState.viewFlags.visibleEdges = true;
@@ -789,7 +718,7 @@ describe.skip("TileAdmin", () => {
       await cleanup();
 
       await super.startup({
-        tileAdmin: TileAdmin.create(props),
+        tileAdmin: props,
       });
 
       theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
@@ -828,7 +757,7 @@ describe.skip("TileAdmin", () => {
         let actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
 
-        const treePropsNoEdges = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
+        const treePropsNoEdges = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
         expect(treePropsNoEdges.id).to.equal(actualTreeIdStr);
 
         const treeNoEdges = await getTileTree(imodel, "0x1c", false, animationId);
@@ -844,7 +773,7 @@ describe.skip("TileAdmin", () => {
         actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
 
-        const treeProps = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
+        const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
         expect(treeProps.id).to.equal(actualTreeIdStr);
 
         const tree = await getTileTree(imodel, "0x1c", true, animationId);
@@ -864,7 +793,7 @@ describe.skip("TileAdmin", () => {
       }
 
       private static async rootTileHasEdges(tree: IModelTileTree, imodel: IModelConnection): Promise<boolean> {
-        const response = await tree.staticBranch.requestContent(() => false) as Uint8Array;
+        const response = await tree.staticBranch.requestContent() as Uint8Array;
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
@@ -906,7 +835,7 @@ describe.skip("TileAdmin", () => {
           treeId = `${v.toString(16)}_1-0x1c`;
         }
 
-        const tree = await imodel.tiles.getTileTreeProps(treeId);
+        const tree = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
 
         expect(tree).not.to.be.undefined;
         expect(tree.id).to.equal(treeId);
@@ -941,7 +870,7 @@ describe.skip("TileAdmin", () => {
         const flags = useProjectExtents ? "1" : "0";
         const treeId = `8_${flags}-0x1c`;
 
-        const treeProps = await imodel.tiles.getTileTreeProps(treeId);
+        const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
         const qualifier = treeProps.contentIdQualifier;
         expect(qualifier !== undefined).to.equal(useProjectExtents);
         if (undefined !== qualifier)
@@ -952,8 +881,8 @@ describe.skip("TileAdmin", () => {
         const tree = new IModelTileTree(params);
 
         const intfc = IModelTileRpcInterface.getClient();
-        const requestTileContent = intfc.requestTileContent;
-        intfc.requestTileContent = async (_token: IModelRpcProps, tileTreeId: string, _contentId: string, _isCanceled: () => boolean, guid?: string) => {
+        const generateTileContent = intfc.generateTileContent;
+        intfc.generateTileContent = async (_token: IModelRpcProps, tileTreeId: string, _contentId: string, guid: string | undefined) => {
           expect(tileTreeId).to.equal(treeId);
 
           expect(guid).not.to.be.undefined;
@@ -965,9 +894,9 @@ describe.skip("TileAdmin", () => {
           return new Uint8Array(1);
         };
 
-        await tree.staticBranch.requestContent(() => false);
+        await tree.staticBranch.requestContent();
 
-        intfc.requestTileContent = requestTileContent;
+        intfc.generateTileContent = generateTileContent;
 
         await App.stop();
       }

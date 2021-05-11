@@ -37,7 +37,7 @@
       "Samples": "sample-showcase",
       "Learning": "learning",
       "API": "reference",
-      "v2.11.0": "changehistory"
+      "v2.15.0": "changehistory"
     },
     "archivedVersions": [
       {
@@ -54,6 +54,7 @@
       "context-registry-client": "context-registry-client",
       "ecschema-metadata": "ecschema-metadata",
       "electron-manager": "electron-manager",
+      "mobile-manager": "mobile-manager",
       "extension-client": "extension-client",
       "frontend-authorization-client": "frontend-authorization-client",
       "frontend-devtools": "frontend-devtools",
@@ -84,7 +85,7 @@
       "usage-logging-client": "usage-logging-client",
       "webgl-compatibility": "webgl-compatibility"
     },
-    "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
+    "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"itwinjs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
     "ogShareImage": "assets/twitter-share.png",
     "katexOptions": {
       "macros": {

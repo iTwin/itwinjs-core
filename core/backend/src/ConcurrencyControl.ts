@@ -6,14 +6,12 @@
  * @module iModels
  */
 
-import { assert, DbOpcode, DbResult, Id64, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
-import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import {
-  ChannelConstraintError, CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps,
-} from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as deepAssign from "deep-assign";
 import * as path from "path";
+import { assert, DbOpcode, DbResult, Id64, Id64String, IModelStatus, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
+import { ChannelConstraintError, CodeProps, ElementProps, IModelError, ModelProps } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
@@ -39,7 +37,6 @@ export class ConcurrencyControl {
   private _policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
   private _bulkMode: boolean = false;
   private _cache: ConcurrencyControl.StateCache;
-  private _modelsAffectedByWrites = new Set<Id64String>(); // TODO: Remove this when we get tile healing
   private _channel: ConcurrencyControl.Channel;
 
   constructor(private _iModel: BriefcaseDb) {
@@ -58,9 +55,6 @@ export class ConcurrencyControl {
 
   /** @internal */
   public get iModel(): BriefcaseDb { return this._iModel; }
-
-  /** @internal */
-  public get modelsAffectedByWrites(): Id64String[] { return Array.from(this._modelsAffectedByWrites); }
 
   /** @internal */
   public getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy { return this._policy; }
@@ -118,33 +112,10 @@ export class ConcurrencyControl {
   }
 
   /** @internal */
-  public onSavedChanges() {
-    this.applyTransactionOptions();
-
-    if (this._modelsAffectedByWrites.size !== 0) { // TODO: Remove this when we get tile healing
-      this._iModel.nativeDb.purgeTileTrees(Array.from(this._modelsAffectedByWrites)); // TODO: Remove this when we get tile healing
-      this._modelsAffectedByWrites.clear(); // TODO: Remove this when we get tile healing
-    }
-  }
-
-  /** @internal */
   public onMergeChanges() {
     if (this.hasPendingRequests)
       throw new IModelError(IModelStatus.TransactionActive, "Call BriefcaseDb.concurrencyControl.request and BriefcaseDb.saveChanges before applying changesets", Logger.logError, loggerCategory);
   }
-
-  /** @internal */
-  public onMergedChanges() {
-    this.applyTransactionOptions();
-    this._iModel.nativeDb.purgeTileTrees(undefined); // TODO: Remove this when we get tile healing
-    const data = { parentChangeSetId: this.iModel.changeSetId };
-    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onPulledChanges", data);
-  }
-
-  /** @internal */
-  public onUndoRedo() { this.applyTransactionOptions(); }
-
-  private applyTransactionOptions() { }
 
   /** You must call this if you use classes other than ConcurrencyControl to manage locks and codes.
    * For example, if you call IModelHost.imodelClient to call IModelClient functions directly to
@@ -220,9 +191,6 @@ export class ConcurrencyControl {
     this._channel.checkCanWriteElementToCurrentChannel(this._iModel.elements.getElement(model.modeledElement), resourcesNeeded, opcode);  // do this first! It may change resourcesNeeded
     this.applyPolicyBeforeWrite(resourcesNeeded);
     this.addToPendingRequestIfNotHeld(resourcesNeeded);
-
-    if (DbOpcode.Delete === opcode) // TODO: Remove this when we get tile healing
-      this._modelsAffectedByWrites.add(model.id!); // TODO: Remove this when we get tile healing
   }
 
   /*
@@ -266,7 +234,6 @@ export class ConcurrencyControl {
     this._channel.checkCanWriteElementToCurrentChannel(element, resourcesNeeded, opcode); // do this first! It may change resourcesNeeded
     this.applyPolicyBeforeWrite(resourcesNeeded);
     this.addToPendingRequestIfNotHeld(resourcesNeeded);
-    this._modelsAffectedByWrites.add(element.model);  // TODO: Remove this when we get tile healing
   }
 
   /*
@@ -508,17 +475,7 @@ export class ConcurrencyControl {
   /** @internal */
   public async onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
-
-    const data = { parentChangeSetId: this.iModel.changeSetId };
-    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onPushedChanges", data);
-
     return this.openOrCreateCache(requestContext); // re-create after we know that push has succeeded
-  }
-
-  /** @internal */
-  private emitOnSavedChangesEvent() {
-    const data = { hasPendingTxns: this.iModel.txns.hasPendingTxns, time: Date.now() }; // Note that not all calls to saveChanges create a txn. For example, an update to be_local does not.
-    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onSavedChanges", data);
   }
 
   /** @internal */
@@ -528,14 +485,11 @@ export class ConcurrencyControl {
 
     assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseDb.onOpened should be raised only once");
 
-    this._iModel.txns.onCommitted.addListener(this.emitOnSavedChangesEvent, this); // eslint-disable-line @typescript-eslint/unbound-method
-
     return this.openOrCreateCache(requestContext);
   }
 
   /** @internal */
   public onClose() {
-    this._iModel.txns.onCommitted.removeListener(this.emitOnSavedChangesEvent, this); // eslint-disable-line @typescript-eslint/unbound-method
     this._cache.close(true);
   }
 
@@ -846,6 +800,7 @@ export class ConcurrencyControl {
     this._policy = policy;
     if (!this._iModel.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
+
     let rc: RepositoryStatus;
     if (policy instanceof ConcurrencyControl.OptimisticPolicy) {
       const oc: ConcurrencyControl.OptimisticPolicy = policy;
@@ -853,10 +808,10 @@ export class ConcurrencyControl {
     } else {
       rc = this._iModel.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
     }
+
     if (RepositoryStatus.Success !== rc) {
       throw new IModelError(rc, "Error setting concurrency control policy", Logger.logError, loggerCategory);
     }
-    this.applyTransactionOptions();
   }
 
   /** API to reserve Codes and to query the status of Codes */

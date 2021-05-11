@@ -18,6 +18,8 @@ class TestHideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler 
   public processHideSelectedElementsCategoryCalled = false;
   public processHideSelectedCalled = false;
   public processEmphasizeSelectedCalled = false;
+  public processClearOverrideModelsCalled = false;
+  public processClearOverrideCategoriesCalled = false;
 
   public areFeatureOverridesActive(_vp: Viewport): boolean {
     return this.featureOverridesActive;
@@ -60,6 +62,16 @@ class TestHideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler 
 
   public async processClearEmphasize(): Promise<void> {
     this.featureOverridesActive = false;
+  }
+
+  public async processClearOverrideModels(): Promise<void> {
+    this.processClearOverrideModelsCalled = true;
+    this.featureOverridesActive = true;
+  }
+
+  public async processClearOverrideCategories(): Promise<void> {
+    this.processClearOverrideCategoriesCalled = true;
+    this.featureOverridesActive = true;
   }
 }
 
@@ -146,6 +158,22 @@ describe("Use Custom HideIsolateEmphasizeActionHandler", () => {
     await UiFramework.hideIsolateEmphasizeActionHandler.processHideSelected();
     expect((UiFramework.hideIsolateEmphasizeActionHandler as TestHideIsolateEmphasizeManager).processHideSelectedCalled).to.be.true;
     expect(UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(vp)).to.be.true;
+    await UiFramework.hideIsolateEmphasizeActionHandler.processClearEmphasize();
+    expect(UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(vp)).to.be.false;
+  });
+
+  it("processClearOverrideModels", async () => {
+    expect(UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(vp)).to.be.false;
+    await UiFramework.hideIsolateEmphasizeActionHandler.processClearOverrideModels();
+    expect((UiFramework.hideIsolateEmphasizeActionHandler as TestHideIsolateEmphasizeManager).processClearOverrideModelsCalled).to.be.true;
+    await UiFramework.hideIsolateEmphasizeActionHandler.processClearEmphasize();
+    expect(UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(vp)).to.be.false;
+  });
+
+  it("processClearOverrideCategories", async () => {
+    expect(UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(vp)).to.be.false;
+    await UiFramework.hideIsolateEmphasizeActionHandler.processClearOverrideCategories();
+    expect((UiFramework.hideIsolateEmphasizeActionHandler as TestHideIsolateEmphasizeManager).processClearOverrideCategoriesCalled).to.be.true;
     await UiFramework.hideIsolateEmphasizeActionHandler.processClearEmphasize();
     expect(UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(vp)).to.be.false;
   });

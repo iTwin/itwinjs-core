@@ -1,8 +1,8 @@
 # backend-webpack-tools
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
-The __backend-webpack-tools__ package includes configuration and scripts for bundling iModel.js service backends and agents.
+The __backend-webpack-tools__ package includes configuration and scripts for bundling iTwin.js service backends and agents.
 
 ## Available Scripts
 

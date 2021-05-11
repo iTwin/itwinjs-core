@@ -8,15 +8,19 @@
 
 import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
-  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelError, IModelRpcProps,
-  IModelStatus, IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse,
+  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
+  IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse,
   TileTreeContentIds, TileVersionInfo,
 } from "@bentley/imodeljs-common";
-import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
+
+interface TileContent {
+  content: Uint8Array;
+  metadata?: object;
+}
 
 interface TileRequestProps {
   requestContext: ClientRequestContext;
@@ -126,16 +130,24 @@ interface TileContentRequestProps extends TileRequestProps {
   contentId: string;
 }
 
-async function getTileContent(props: TileContentRequestProps): Promise<Uint8Array> {
+async function getTileContent(props: TileContentRequestProps): Promise<TileContent> {
   const db = IModelDb.findByKey(props.tokenProps.key);
-  return db.tiles.requestTileContent(props.requestContext, props.treeId, props.contentId);
+  const tile = await db.tiles.requestTileContent(props.requestContext, props.treeId, props.contentId);
+  return {
+    content: tile.content,
+    metadata: {
+      backendName: IModelHost.applicationId,
+      tileGenerationTime: tile.elapsedSeconds.toString(),
+      tileSize: tile.content.byteLength.toString(),
+    },
+  };
 }
 
 function generateTileContentKey(props: TileContentRequestProps): string {
   return `${generateTileRequestKey(props)}:${props.contentId}`;
 }
 
-class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileContentRequestProps> {
+class RequestTileContentMemoizer extends TileRequestMemoizer<TileContent, TileContentRequestProps> {
   protected get _timeoutMilliseconds() { return IModelHost.tileContentRequestTimeout; }
   protected get _operationName() { return "requestTileContent"; }
   protected stringify(props: TileContentRequestProps): string { return `${props.treeId}:${props.contentId}`; }
@@ -157,7 +169,7 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
     return this._instance;
   }
 
-  public static async perform(props: TileContentRequestProps): Promise<Uint8Array> {
+  public static async perform(props: TileContentRequestProps): Promise<TileContent> {
     return this.instance.perform(props);
   }
 }
@@ -180,15 +192,19 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
-  public async requestTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, _unused?: () => boolean, guid?: string): Promise<Uint8Array> {
+  public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<Uint8Array> {
     const requestContext = ClientRequestContext.current;
-    const content = await RequestTileContentMemoizer.perform({ requestContext, tokenProps, treeId, contentId });
+    const tile = await RequestTileContentMemoizer.perform({ requestContext, tokenProps, treeId, contentId });
 
     // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
     if (IModelHost.usingExternalTileCache)
-      IModelHost.tileUploader.cacheTile(tokenProps, treeId, contentId, content, guid);
+      IModelHost.tileUploader.cacheTile(tokenProps, treeId, contentId, tile.content, guid, tile.metadata);
 
-    return content;
+    return tile.content;
+  }
+
+  public async requestTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, _unused?: () => boolean, guid?: string): Promise<Uint8Array> {
+    return this.generateTileContent(tokenProps, treeId, contentId, guid);
   }
 
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
@@ -203,40 +219,18 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
   }
 
+  public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+    return IModelHost.usingExternalTileCache;
+  }
+
   public async queryVersionInfo(): Promise<TileVersionInfo> {
     return IModelHost.platform.getTileVersionInfo();
   }
 
   /** @internal */
   public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    const requestContext = ClientRequestContext.current;
     const iModel = IModelDb.findByKey(rpcProps.key);
-    const result = await iModel.nativeDb.generateElementGraphics(request);
-
-    requestContext.enter();
-    let error: string | undefined;
-    switch (result.status) {
-      case ElementGraphicsStatus.NoGeometry:
-      case ElementGraphicsStatus.Canceled:
-        return undefined;
-      case ElementGraphicsStatus.Success:
-        return result.content;
-      case ElementGraphicsStatus.InvalidJson:
-        error = "Invalid JSON";
-        break;
-      case ElementGraphicsStatus.UnknownMajorFormatVersion:
-        error = "Unknown major format version";
-        break;
-      case ElementGraphicsStatus.ElementNotFound:
-        error = `Element Id ${request.elementId} not found`;
-        break;
-      case ElementGraphicsStatus.DuplicateRequestId:
-        error = `Duplicate request Id "${request.id}"`;
-        break;
-    }
-
-    assert(undefined !== error);
-    throw new IModelError(IModelStatus.BadRequest, error);
+    return iModel.generateElementGraphics(request);
   }
 }
 

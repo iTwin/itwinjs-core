@@ -49,12 +49,15 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
   };
 
   private _onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === SpecialKey.Escape) {
-      this.setState(
-        (prevState) => ({ value: prevState.originalValue }),
-        () => this._inputRef.current!.select());
-    } else if (event.key === SpecialKey.Enter) {
-      this._sendChange(this.state.value);
+    switch (event.key) {
+      case SpecialKey.Escape:
+        this.setState(
+          (prevState) => ({ value: prevState.originalValue }),
+          () => this._inputRef.current!.select());
+        break;
+      case SpecialKey.Enter:
+        this._sendChange(this.state.value);
+        break;
     }
   };
 

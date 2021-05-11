@@ -322,6 +322,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       this._lastPanTime = t - 16.667;
     const delta = t - this._lastPanTime;
     this._lastPanTime = t;
+    // istanbul ignore else
     if (!this.state.panningDirection.isAlmostZero && this.state.isMoving) {
       const { panningDirection } = this.state;
       const offset = panningDirection.scale(delta / 1000 / this.state.drawingZoom);
@@ -480,9 +481,9 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     if (this.state.isMoving) {
       // add scaled mouse movement
       this._processWindowDrag(movement);
-    } else /* istanbul ignore else */ if (this.state.isPanning) {
+    } else  {
       // istanbul ignore else
-      if (this.state.mode === MapMode.Opened) {
+      if (this.state.isPanning && this.state.mode === MapMode.Opened) {
         const vect = Vector3d.create(movement.x / this.state.drawingZoom, -movement.y / this.state.drawingZoom, 0);
         const offset = this.state.rotateMinimapWithView || this._isViewport3D() ? this.state.rotation.multiplyTransposeVector(vect) : vect;
         const mapOrigin = this.state.mapOrigin.minus(offset);
@@ -512,6 +513,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     this._lastClientXY = Point2d.create(event.clientX, event.clientY);
   };
 
+  // istanbul ignore next - unable to test touch
   private _handleWindowTouchStart = (event: any) => {
     if (1 !== event.targetTouches.length)
       return;
@@ -523,6 +525,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     this.setState({ isMoving: true });
   };
 
+  // istanbul ignore next - unable to test touch
   private _onTouchMove = (event: TouchEvent) => {
     if (1 !== event.targetTouches.length)
       return;
@@ -533,6 +536,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     this._lastClientXY = mouse;
   };
 
+  // istanbul ignore next - unable to test touch
   private _onTouchEnd = (event: TouchEvent) => {
     if (0 !== event.targetTouches.length)
       return;

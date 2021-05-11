@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-cli",
-  "version": "2.12.0-dev.22",
+  "version": "2.17.0-dev.1",
   "description": "A CLI client for publishing iModel.js Extensions",
   "license": "MIT",
   "main": "bin/extension-cli.js",
@@ -32,30 +32,31 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "2.12.0-dev.22",
-    "@bentley/bentleyjs-core": "2.12.0-dev.22",
-    "@bentley/context-registry-client": "2.12.0-dev.22",
-    "@bentley/ecschema-metadata": "2.12.0-dev.22",
-    "@bentley/extension-client": "2.12.0-dev.22",
-    "@bentley/geometry-core": "2.12.0-dev.22",
-    "@bentley/imodelhub-client": "2.12.0-dev.22",
-    "@bentley/imodeljs-backend": "2.12.0-dev.22",
-    "@bentley/imodeljs-common": "2.12.0-dev.22",
-    "@bentley/itwin-client": "2.12.0-dev.22",
-    "@bentley/rbac-client": "2.12.0-dev.22",
-    "@bentley/telemetry-client": "2.12.0-dev.22",
+    "@bentley/backend-itwin-client": "2.17.0-dev.1",
+    "@bentley/bentleyjs-core": "2.17.0-dev.1",
+    "@bentley/context-registry-client": "2.17.0-dev.1",
+    "@bentley/ecschema-metadata": "2.17.0-dev.1",
+    "@bentley/extension-client": "2.17.0-dev.1",
+    "@bentley/geometry-core": "2.17.0-dev.1",
+    "@bentley/imodelhub-client": "2.17.0-dev.1",
+    "@bentley/imodeljs-backend": "2.17.0-dev.1",
+    "@bentley/imodeljs-common": "2.17.0-dev.1",
+    "@bentley/electron-manager": "2.17.0-dev.1",
+    "@bentley/itwin-client": "2.17.0-dev.1",
+    "@bentley/rbac-client": "2.17.0-dev.1",
+    "@bentley/telemetry-client": "2.17.0-dev.1",
     "electron": "^11.1.0",
     "fast-sha256": "1.3.0",
     "rimraf": "^3.0.2",
     "semver": "^5.5.0",
     "tar": "^4.4.8",
-    "yargs": "^15.0.0"
+    "yargs": "^16.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.12.0-dev.22",
-    "@bentley/eslint-plugin": "2.12.0-dev.22",
+    "@bentley/build-tools": "2.17.0-dev.1",
+    "@bentley/eslint-plugin": "2.17.0-dev.1",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/rimraf": "^2.0.2",
     "@types/semver": "^5.5.0",
@@ -63,8 +64,8 @@
     "@types/yargs": "^12.0.5",
     "chai": "^4.1.2",
     "eslint": "^6.8.0",
-    "mocha": "^5.2.0",
-    "typescript": "~3.7.4"
+    "mocha": "^8.3.2",
+    "typescript": "~4.1.0"
   },
   "eslintConfig": {
     "plugins": [

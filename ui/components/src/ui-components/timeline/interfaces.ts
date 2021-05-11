@@ -180,7 +180,7 @@ export interface SolarDataProvider {
   /** Starting time for day in milliseconds */
   readonly dayStartMs: number;
   /** Time of day for sun */
-  timeOfDay: Date;
+  readonly timeOfDay: Date;
   /** Called during playback to update animation */
   onTimeChanged?: SolarPlaybackProgressHandler;
   /** viewport to show animation */
@@ -191,4 +191,9 @@ export interface SolarDataProvider {
   readonly sunset: Date;
   /** shadow color */
   shadowColor: ColorDef;
+  /** timezone offset for local project time */
+  readonly timeZoneOffset: number;
+  /** set date for shadow study. If isProjectDate is false the is assume to be in users
+   * current time and the value is adjusted to be the same date and time at the project location. */
+  setDateAndTime: (day: Date, isProjectDate?: boolean) => void;
 }

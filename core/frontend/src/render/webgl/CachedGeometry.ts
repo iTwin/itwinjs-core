@@ -28,9 +28,10 @@ import { CompositeFlags, FlashMode, RenderOrder, RenderPass } from "./RenderFlag
 import { System } from "./System";
 import { Target } from "./Target";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
-import { TerrainMeshGeometry } from "./TerrainMesh";
+import { RealityMeshGeometry } from "./RealityMesh";
 import { TextureHandle } from "./Texture";
 import { VertexLUT } from "./VertexLUT";
+import { PlanarGridGeometry } from "./PlanarGrid";
 
 const scratchVec3a = new Vector3d();
 const scratchVec3b = new Vector3d();
@@ -55,11 +56,12 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asSurface(): SurfaceGeometry | undefined { return undefined; }
   public get asMesh(): MeshGeometry | undefined { return undefined; }
   public get asEdge(): EdgeGeometry | undefined { return undefined; }
-  public get asTerrainMesh(): TerrainMeshGeometry | undefined { return undefined; }
+  public get asRealityMesh(): RealityMeshGeometry | undefined { return undefined; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
   public get isInstanced() { return undefined !== this.asInstanced; }
   public get asPointCloud(): PointCloudGeometry | undefined { return undefined; }
+  public get asPlanarGrid(): PlanarGridGeometry | undefined { return undefined; }
   public get alwaysRenderTranslucent(): boolean { return false; }
   public get allowColorOverride(): boolean { return true; }
 
@@ -102,7 +104,6 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
 
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public get hasFeatures(): boolean { return false; }
-
   public get viewIndependentOrigin(): Point3d | undefined { return undefined; }
   public get isViewIndependent(): boolean { return undefined !== this.viewIndependentOrigin; }
 
@@ -861,6 +862,25 @@ export class CombineTexturesGeometry extends TexturedViewportQuadGeometry {
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CombineTextures, textures);
+  }
+}
+
+export class Combine3TexturesGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(texture0: WebGLTexture, texture1: WebGLTexture, texture2: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined !== params) {
+      return new Combine3TexturesGeometry(params, [texture0, texture1, texture2]);
+    } else {
+      return undefined;
+    }
+  }
+
+  public get texture0() { return this._textures[0]; }
+  public get texture1() { return this._textures[1]; }
+  public get texture2() { return this._textures[2]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.Combine3Textures, textures);
   }
 }
 

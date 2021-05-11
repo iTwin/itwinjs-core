@@ -170,7 +170,7 @@ const argv = yargs.strict(true)
         process.stdout.write("Uploading extension...\n");
 
         while (true) {
-          await new Promise((resolve) => {
+          await new Promise<void>((resolve) => {
             setTimeout(() => {
               resolve();
             }, 1000);

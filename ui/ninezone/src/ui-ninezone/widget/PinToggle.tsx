@@ -11,13 +11,13 @@ import classnames from "classnames";
 import * as React from "react";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { PanelSide, PanelStateContext } from "../widget-panels/Panel";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 
 /** @internal */
 export const PinToggle = React.memo(function PinToggle() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const panelState = React.useContext(PanelStateContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
-  assert(panelState);
+  assert(!!panelState);
   const pinPanelTitle = useLabel("pinPanelTitle");
   const unpinPanelTitle = useLabel("unpinPanelTitle");
   const iconClassName = classnames(

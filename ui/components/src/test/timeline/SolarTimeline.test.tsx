@@ -11,6 +11,7 @@ import { BaseSolarDataProvider } from "../../ui-components/timeline/BaseSolarDat
 import { SolarTimeline } from "../../ui-components/timeline/SolarTimeline";
 import { SpeedTimeline } from "../../ui-components/timeline/SpeedTimeline";
 import TestUtils from "../TestUtils";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
 
 class TestSolarDataProvider extends BaseSolarDataProvider {
   public playing = false;
@@ -20,8 +21,8 @@ class TestSolarDataProvider extends BaseSolarDataProvider {
     this.timeChangeCallbackCalled = true;
   };
 
-  constructor() {
-    super();
+  constructor(viewport?: ScreenViewport, longitude?: number, latitude?: number) {
+    super(viewport, longitude, latitude );
   }
 }
 
@@ -74,6 +75,53 @@ describe("<SolarTimeline />", () => {
 
   after(() => {
     sinon.restore();
+  });
+
+  it ("should  create provider for time zone GMT -0500 (May)", async () => {
+    // const philadelphia = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+    const philadelphiaDataProvider = new TestSolarDataProvider(undefined, -75.17035, 39.954927);
+
+    const philadelphiaDate = new Date("May 03 2019 12:00:00 GMT -0500");
+    const sunRiseTime = new Date("May 03 2019 04:59 GMT -0500");
+    const sunSetTime = new Date("May 03 2019 18:57 GMT -0500");
+    philadelphiaDataProvider.setDateAndTime (philadelphiaDate, true);
+    expect(philadelphiaDataProvider.timeOfDay.getTime() === philadelphiaDate.getTime());
+    expect(philadelphiaDataProvider.sunrise.getTime() === sunRiseTime.getTime());
+    expect(philadelphiaDataProvider.sunset.getTime() === sunSetTime.getTime());
+  });
+
+  it ("should  create provider for time zone GMT -0500 (Sept)", async () => {
+    // const philadelphia = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+    const philadelphiaDataProvider = new TestSolarDataProvider(undefined, -75.17035, 39.954927);
+    const philadelphiaDate = new Date("Sep 03 2019 12:00:00 GMT -0500");
+    const sunRiseTime = new Date("Sep 03 2019 05:30 GMT -0500");
+    const sunSetTime = new Date("Sep 03 2019 18:29 GMT -0500");
+    philadelphiaDataProvider.setDateAndTime (philadelphiaDate, true);
+    expect(philadelphiaDataProvider.timeOfDay.getTime() === philadelphiaDate.getTime());
+    expect(philadelphiaDataProvider.sunrise.getTime() === sunRiseTime.getTime());
+    expect(philadelphiaDataProvider.sunset.getTime() === sunSetTime.getTime());
+  });
+
+  it ("should  create provider for time zone GMT +1000", async () => {
+    // const melbourne = Cartographic.fromDegrees(145.371093, -37.8575, 0.0);
+    const melbourneDataProvider = new TestSolarDataProvider(undefined, 145.371093, -37.8575);
+
+    const melbourneDate = new Date("May 03 2019 12:00:00 GMT +1000");
+    const sunRiseTime = new Date("May 03 2019 7:01 GMT +1000");
+    const sunSetTime = new Date("May 03 2019 17:30 GMT +1000");
+    melbourneDataProvider.setDateAndTime (melbourneDate, true);
+    expect(melbourneDataProvider.timeOfDay.getTime() === melbourneDate.getTime());
+    expect(melbourneDataProvider.sunrise.getTime() === sunRiseTime.getTime());
+    expect(melbourneDataProvider.sunset.getTime() === sunSetTime.getTime());
+  });
+
+  it ("should  create provider for time zone GMT -0000", async () => {
+    // const algeria = Cartographic.fromDegrees(2.54882812, 27.761329, 0.0);
+    const algeriaDataProvider = new TestSolarDataProvider(undefined, 2.54882812, 27.761329);
+
+    const algeriaDate = new Date("May 03 2019 12:00:00 GMT -0000");
+    algeriaDataProvider.setDateAndTime (algeriaDate, true);
+    expect(algeriaDataProvider.timeOfDay.getTime() === algeriaDate.getTime());
   });
 
   it("should render", async () => {

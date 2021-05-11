@@ -53,7 +53,7 @@ function lowerBoundOfEquivalent<T>(list: T[], criterion: (element: T) => number)
   return { index: low, equal: false };
 }
 
-/** Describes how duplicate values are handled when inserting into a [[SortedArray].
+/** Describes how duplicate values are handled when inserting into a [[SortedArray]].
  * A "duplicate" value is one that compares equal to a value already present in the array, per the array's comparison function.
  * @public
  */

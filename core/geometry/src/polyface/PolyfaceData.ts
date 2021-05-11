@@ -69,6 +69,11 @@ export class PolyfaceData {
   /** boolean tag indicating if the facets are viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
   public set twoSided(value: boolean) { this._twoSided = value; }
+
+  private _expectedClosure: number;
+  /** boolean tag indicating if the facets are viewable from the back */
+  public get expectedClosure(): number { return this._expectedClosure; }
+  public set expectedClosure(value: number) { this._expectedClosure = value; }
   /** Constructor for facets.
    *   * The various params control whether respective arrays are to be allocated.
    *   * If arrayData is provided, all other params are IGNORED.
@@ -82,6 +87,7 @@ export class PolyfaceData {
     if (needParams) { this.param = new GrowableXYArray(); this.paramIndex = []; }
     if (needColors) { this.color = []; this.colorIndex = []; }
     this._twoSided = twoSided;
+    this._expectedClosure = 0;
   }
   /** Return a depp clone. */
   public clone(): PolyfaceData {
@@ -91,6 +97,7 @@ export class PolyfaceData {
     result.edgeVisible = this.edgeVisible.slice();
     result.face = this.face.slice();
     result.twoSided = this.twoSided;
+    result.expectedClosure = this.expectedClosure;
     if (this.normal)
       result.normal = this.normal.clone();
     if (this.param)
@@ -126,6 +133,13 @@ export class PolyfaceData {
 
     if (!NumberArray.isExactEqual(this.edgeVisible, other.edgeVisible)) return false;
     if (!PolyfaceAuxData.isAlmostEqual(this.auxData, other.auxData)) return false;
+
+    if (this.twoSided !== other.twoSided)
+      return false;
+
+    if (this.expectedClosure !== other.expectedClosure)
+      return false;
+
     return true;
   }
   /** Ask if normals are required in this mesh. */

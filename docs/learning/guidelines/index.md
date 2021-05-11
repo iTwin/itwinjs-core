@@ -1,4 +1,4 @@
-# Tips and Guidelines for iModel.js
+# Tips and Guidelines for iTwin.js
 
 - [TypeScript Coding Guideline](./typescript-coding-guidelines.md)
 - [API Release Tags](./release-tags-guidelines.md)

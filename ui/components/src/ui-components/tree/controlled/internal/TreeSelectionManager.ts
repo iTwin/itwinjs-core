@@ -110,18 +110,13 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
           return _this._getVisibleNodes === undefined ? 0 : _this._getVisibleNodes().getNumNodes();
         }
 
+        // istanbul ignore next
+        if (_this._getVisibleNodes === undefined)
+          return undefined;
+
         const index: number = +(prop as string);
-        let itemHandler: ItemHandler | undefined;
-
-        // istanbul ignore else
-        if (_this._getVisibleNodes !== undefined) {
-          const node = _this.getVisibleNodeAtIndex(_this._getVisibleNodes(), index);
-          // istanbul ignore else
-          if (node)
-            itemHandler = new ItemHandler(node);
-        }
-
-        return itemHandler;
+        const node = _this.getVisibleNodeAtIndex(_this._getVisibleNodes(), index);
+        return new ItemHandler(node);
       },
     }) as Array<SingleSelectionHandler<string>>;
     this._itemHandlers = [itemHandlers];
@@ -129,10 +124,10 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
 
   private getVisibleNodeAtIndex(nodes: VisibleTreeNodes | undefined, index: number): TreeModelNode | undefined {
     const foundNode = nodes !== undefined ? nodes.getAtIndex(index) : /* istanbul ignore next */ undefined;
-    return isTreeModelNode(foundNode) ? foundNode : /* istanbul ignore next */ undefined;
+    return isTreeModelNode(foundNode) ? foundNode : undefined;
   }
 
-  public setVisibleNodes(visibleNodes: () => VisibleTreeNodes) {
+  public setVisibleNodes(visibleNodes: (() => VisibleTreeNodes) | undefined) {
     this._getVisibleNodes = visibleNodes;
   }
 
@@ -303,9 +298,9 @@ function isIndividualSelection(selection: Selection | undefined): selection is s
 }
 
 class ItemHandler implements SingleSelectionHandler<string> {
-  private _node: TreeModelNode;
+  private _node: TreeModelNode | undefined;
 
-  constructor(node: TreeModelNode) {
+  constructor(node: TreeModelNode | undefined) {
     this._node = node;
   }
 
@@ -320,10 +315,11 @@ class ItemHandler implements SingleSelectionHandler<string> {
 
   // eslint-disable-next-line @bentley/prefer-get
   public isSelected(): boolean {
-    return this._node.isSelected;
+    // istanbul ignore next
+    return !!this._node?.isSelected;
   }
 
   public item(): string {
-    return this._node.id;
+    return this._node?.id ?? "";
   }
 }

@@ -167,6 +167,9 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
 
   private _getSolarDataProvider(viewport: ScreenViewport): SolarDataProvider | undefined {
     if (IModelApp.renderSystem.options.displaySolarShadows) {
+      if (this.state.solarDataProvider && this.state.solarDataProvider.viewport === viewport)
+        return this.state.solarDataProvider;
+
       const solarDataProvider: SolarDataProvider = new SolarTimelineDataProvider(viewport.view, viewport);
       if (solarDataProvider.supportsTimelineAnimation) {
         viewport.onViewChanged.removeListener(this._onHandleViewChanged);

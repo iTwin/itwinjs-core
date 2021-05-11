@@ -28,7 +28,7 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
 
   /** provideToolbarButtonItems() is called for each registered UI provider as the Frontstage is building toolbars. We are adding
    *  an action button to the ContentManipulation Horizontal toolbar in General use Frontstages. For more information, refer to
-   *  the UiItemsProvider and Frontstage documentation on imodeljs.org.
+   *  the UiItemsProvider and Frontstage documentation on itwinjs.org.
    */
   public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
@@ -49,7 +49,7 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
   }
 
   /** provideStatusBarItems() is called for each registered UI provider to allow the provider to add items to the StatusBar. For more information, see the UiItemsProvider and StatusBar
-   * documentation on imodeljs.org.
+   * documentation on itwinjs.org.
    */
   public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
     const unitsIcon = `svg:${statusBarButtonSvg}`;

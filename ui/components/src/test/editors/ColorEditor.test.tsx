@@ -6,12 +6,14 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { ColorByName } from "@bentley/imodeljs-common";
-import { PrimitiveValue, StandardEditorNames } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { ColorByName } from "@bentley/imodeljs-common";
+import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { ColorEditor } from "../../ui-components/editors/ColorEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 // cspell:ignore colorpicker
 
@@ -73,6 +75,29 @@ describe("<ColorEditor />", () => {
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(renderedComponent.getByTestId("components-colorpicker-button")).to.exist;
     cleanup();
+  });
+
+  class MineDataController extends DataControllerBase {
+    public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+    }
+  }
+
+  it("should not commit if DataController fails to validate", async () => {
+    PropertyEditorManager.registerDataController("myData", MineDataController);
+    const propertyRecord = TestUtils.createNumericProperty("Test", 50, StandardEditorNames.ColorPicker);
+    propertyRecord.property.dataController = "myData";
+
+    const spyOnCommit = sinon.spy();
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
+    const pickerButton = wrapper.getByTestId("components-colorpicker-button");
+    expect(pickerButton).not.to.be.null;
+
+    fireEvent.keyDown(pickerButton, { key: SpecialKey.Enter });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCommit.calledOnce).to.be.false;
+
+    PropertyEditorManager.deregisterDataController("myData");
   });
 
 });

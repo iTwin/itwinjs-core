@@ -59,8 +59,8 @@ describe("MapSubLayerSettings", () => {
 const testMapLayer0 = { name: "TestName", url: "www.bentley.com", formatId: "WMS" };
 const testMapLayer1 = { name: "TestName", url: "www.bentley.com", formatId: "WMTS", transparency: .5, transparentBackground: false };
 const testMapLayer2 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1] };
-const testMapLayer3 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", userName: "TestUser", password: "TestPassword", subLayers: [testMapSubLayer0, testMapSubLayer1] };
-const testMapLayer4 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", userName: "TestUser", password: "TestPassword", subLayers: [testMapSubLayer0, testMapSubLayer1], isBase: true };
+const testMapLayer3 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1] };
+const testMapLayer4 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], isBase: true };
 const legacyMapLayer = MapLayerSettings.fromMapSettings(BackgroundMapSettings.fromJSON({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } }));
 
 describe("MapLayerSettings", () => {
@@ -71,8 +71,6 @@ describe("MapLayerSettings", () => {
     expect(output.transparency).to.equal(expected.transparency);
     expect(output.transparentBackground).to.equal(expected.transparentBackground);
     expect(output.isBase).to.equal(expected.isBase);
-    expect(output.userName).to.equal(expected.userName);
-    expect(output.password).to.equal(expected.password);
 
     if (expected.subLayers) {
       expect(output.subLayers).not.to.be.undefined;
@@ -80,6 +78,12 @@ describe("MapLayerSettings", () => {
       for (let i = 0; i < expected.subLayers.length; i++)
         expect(JSON.stringify(expected.subLayers[i])).to.equal(JSON.stringify(output.subLayers![i]));
     }
+  };
+
+  const expectSettingsMatches = (output: MapLayerSettings, expected: MapLayerSettings) => {
+    expectMatches(output.toJSON(), expected.toJSON());
+    expect(output.userName).to.equal(expected.userName);
+    expect(output.password).to.equal(expected.password);
   };
 
   it("round-trips through JSON", () => {
@@ -110,13 +114,22 @@ describe("MapLayerSettings", () => {
       const output = settings!.clone(changed);
       expectMatches(output.toJSON(), expected);
     };
+    const cloneSettings = (input: MapLayerSettings) => {
+      const cloned = input.clone({});
+      expectSettingsMatches(input, cloned);
+    };
 
     // Turn off visibility
     clone(testMapLayer0, { visible: false }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: undefined });
-    clone(testMapLayer3, { visible: false }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", userName: "TestUser", password: "TestPassword", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: undefined });
+    clone(testMapLayer3, { visible: false }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: undefined });
 
     // Set transparency
     clone(testMapLayer0, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", transparency: .5 });
-    clone(testMapLayer3, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", userName: "TestUser", password: "TestPassword", subLayers: [testMapSubLayer0, testMapSubLayer1], transparency: .5 });
+    clone(testMapLayer3, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], transparency: .5 });
+
+    // Test settings not part of MapLayerProps
+    const settings1 = MapLayerSettings.fromJSON(testMapLayer0)!;
+    settings1.setCredentials("TestUser", "TestPassword");
+    cloneSettings(settings1);
   });
 });

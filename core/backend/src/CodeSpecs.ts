@@ -6,8 +6,8 @@
  * @module Codes
  */
 
-import { DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { CodeScopeSpec, CodeSpec, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { DbResult, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { CodeScopeSpec, CodeSpec, IModelError } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
@@ -30,11 +30,11 @@ export class CodeSpecs {
 
   /** Look up the Id of the CodeSpec with the specified name. */
   public queryId(name: string): Id64String {
-    return this._imodel.withPreparedStatement("SELECT ECInstanceId as id FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
-      stmt.bindString(1, name);
+    return this._imodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore.CodeSpec WHERE Name=:name", (stmt: ECSqlStatement) => {
+      stmt.bindString("name", name);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory, () => ({ name }));
-      return Id64.fromJSON(stmt.getRow().id);
+      return stmt.getValue(0).getId();
     });
   }
 

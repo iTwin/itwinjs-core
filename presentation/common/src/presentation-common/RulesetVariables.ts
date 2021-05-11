@@ -53,3 +53,13 @@ export interface RulesetVariable {
   type: VariableValueTypes;
   value: VariableValue;
 }
+
+/**
+ * JSON representation of [[RulesetVariable]].
+ * @public
+ */
+export interface RulesetVariableJSON {
+  id: string;
+  type: VariableValueTypes;
+  value: VariableValueJSON;
+}

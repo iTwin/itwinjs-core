@@ -46,6 +46,22 @@ describe("KeyboardShortcutMenu", () => {
         key: FunctionKey.F7,
         item: testCommand,
       },
+      {
+        key: "h",
+        item: testCommand,
+        isHidden: true,
+      },
+      {
+        key: "i",
+        label: "Test",
+        isHidden: true,
+        shortcuts: [
+          {
+            key: "2",
+            item: testCommand,
+          },
+        ],
+      },
     ];
   });
 
@@ -90,7 +106,7 @@ describe("KeyboardShortcutMenu", () => {
     KeyboardShortcutManager.displayShortcutsMenu();
     wrapper.update();
 
-    expect(wrapper.find("div.core-context-menu-item").length).to.not.eq(0);
+    expect(wrapper.find("div.core-context-menu-item").length).to.eq(3);
 
     wrapper.find("div.core-context-menu-item").at(0).simulate("click");
     wrapper.update();

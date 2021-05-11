@@ -28,6 +28,7 @@ interface EnumEditorState {
 export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
   private _isMounted = false;
   private _ariaLabel = UiComponents.translate("editor.enum");
+  private _selectElement: React.RefObject<HTMLSelectElement> = React.createRef();
 
   /** @internal */
   public readonly state: Readonly<EnumEditorState> = {
@@ -52,11 +53,21 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     return propertyValue;
   }
 
+  public get htmlElement(): HTMLElement | null {
+    return this._selectElement.current;
+  }
+
+  // istanbul ignore next
+  public get hasFocus(): boolean {
+    return document.activeElement === this._selectElement.current;
+  }
+
   private _updateSelectValue = (e: React.ChangeEvent<HTMLSelectElement>) => {
     // istanbul ignore else
     if (this._isMounted) {
       let selectValue: string | number;
 
+      // istanbul ignore if
       if (this.state.valueIsNumber)
         selectValue = parseInt(e.target.value, 10);
       else
@@ -114,12 +125,14 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 
     let choices: EnumerationChoice[] | undefined;
 
-    if (propertyRecord && propertyRecord.property.enum)
+    if (propertyRecord && propertyRecord.property.enum) {
+      // istanbul ignore else
       if (propertyRecord.property.enum.choices instanceof Promise) {
         choices = await propertyRecord.property.enum.choices;
       } else {
         choices = propertyRecord.property.enum.choices;
       }
+    }
 
     const options: { [key: string]: string } = {};
     if (choices) {
@@ -145,6 +158,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 
     return (
       <Select
+        ref={this._selectElement}
         onBlur={this.props.onBlur}
         className={className}
         style={this.props.style ? this.props.style : minWidthStyle}

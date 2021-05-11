@@ -7,17 +7,18 @@
  */
 
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Point2d, Transform, XAndY } from "@bentley/geometry-core";
+import { Point2d, XAndY } from "@bentley/geometry-core";
 import { Frustum, ImageBuffer, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
+import { IModelConnection } from "../IModelConnection";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { AnimationBranchStates } from "./GraphicBranch";
-import { GraphicType } from "./GraphicBuilder";
+import { GraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { GraphicList } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
@@ -25,10 +26,11 @@ import { RenderPlan } from "./RenderPlan";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
+import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].
- * @alpha
+ * @internal
  */
 export enum PrimitiveVisibility {
   /** Draw all primitives. */
@@ -40,30 +42,22 @@ export enum PrimitiveVisibility {
 }
 
 /** An interface optionally exposed by a RenderTarget that allows control of various debugging features.
- * @beta
+ * @internal
  */
 export interface RenderTargetDebugControl {
   /** If true, render to the screen as if rendering off-screen for readPixels(). */
   drawForReadPixels: boolean;
-  /** @alpha */
   primitiveVisibility: PrimitiveVisibility;
-  /** @internal */
   vcSupportIntersectingVolumes: boolean;
-  /** @internal */
   readonly shadowFrustum: Frustum | undefined;
-  /** @internal */
   displayDrapeFrustum: boolean;
-  /** Override device pixel ratio for on-screen targets only. This supersedes window.devicePixelRatio. Undefined clears the override. Chiefly useful for tests.
-   * @internal
+  /** Override device pixel ratio for on-screen targets only. This supersedes window.devicePixelRatio.
+   * Undefined clears the override. Chiefly useful for tests.
    */
   devicePixelRatioOverride?: number;
-  /** @internal */
   displayRealityTilePreload: boolean;
-  /** @internal */
   displayRealityTileRanges: boolean;
-  /** @internal */
   logRealityTiles: boolean;
-  /** @internal */
   freezeRealityTiles: boolean;
 }
 
@@ -88,7 +82,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
 
   /** Given the size of a logical pixel in meters, convert it to the size of a physical pixel in meters, if [[RenderSystem.dpiAwareLOD]] is `true`.
    * Used when computing LOD for graphics.
-   * @internal
    */
   public adjustPixelSizeForLOD(cssPixelSize: number): number {
     return this.renderSystem.dpiAwareLOD ? this.cssPixelsToDevicePixels(cssPixelSize, false) : cssPixelSize;
@@ -108,10 +101,12 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
   public updateSolarShadows(_context: SceneContext | undefined): void { }
   public getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined { return undefined; }
-  public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined { return undefined; }
+  public createPlanarClassifier(_properties?: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined { return undefined; }
   public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
 
-  public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
+  public createGraphicBuilder(options: GraphicBuilderOptions) {
+    return this.renderSystem.createGraphic(options);
+  }
 
   public dispose(): void { }
   public reset(): void { }
@@ -146,8 +141,14 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
    * The effects are applied in the order in which they appear in the list. Any names not corresponding to a registered effect are ignored.
    * This may have no effect if this target does not support screen-space effects.
    * @see [[RenderSystem.createScreenSpaceEffectBuilder]] to create and register new effects.
-   * @internal
    */
   public abstract get screenSpaceEffects(): Iterable<string>;
   public abstract set screenSpaceEffects(_effectNames: Iterable<string>);
+
+  /** Implementation for [[Viewport.queryVisibleFeatures]]. Not intended for direct usage. The returned iterable remains valid only for the duration of the
+   * Viewport.queryVisibleFeatures call.
+   */
+  public queryVisibleTileFeatures(_options: QueryTileFeaturesOptions, _iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void {
+    callback([]);
+  }
 }

@@ -2,7 +2,7 @@
 
 ## Backends
 
-iModel.js **backends** are built and tested on the following:
+iTwin.js **backends** are built and tested on the following:
 
 - Debian 9 "Stretch"
 - Windows 10 version 1803 (or greater)
@@ -24,7 +24,7 @@ They should run on most Windows, Linux and MacOS versions with [Tier 1 support](
 
 ## Supported Browsers
 
-iModel.js strives to support as many modern browsers as possible, though it requires complete JavaScript ES6 support. The quality of the web browser's WebGL implementation has a substantial impact on display performance.
+iTwin.js strives to support as many modern browsers as possible, though it requires complete JavaScript ES6 support. The quality of the web browser's WebGL implementation has a substantial impact on display performance.
 
 - Chrome (recommended for development)
 - Firefox

@@ -1,6 +1,6 @@
 # @bentley/build-tools
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
@@ -11,16 +11,20 @@ The __@bentley/build-tools__ is a package for developers to consolidate the step
 Location: tsconfig-base.json\
 Requires build: no
 
-This file contains common tsconfig settings across all iModel.js packages. Packages should extend this file in their own tsconfig.json file, and then overwrite and set new properties as needed. Note that this file is different from the tsconfig.json file for this package, as that contains different settings for bentleyjs-tools only.
+This file contains common tsconfig settings across all iTwin.js packages. Packages should extend this file in their own tsconfig.json file, and then overwrite and set new properties as needed. Note that this file is different from the tsconfig.json file for this package, as that contains different settings for bentleyjs-tools only.
 
 ### tslint
+
+> WARNING: TSLint support will be dropped in the next major release, 3.0. Please switch to ESLint, using `@bentley/eslint-plugin`.
 
 Location: tslint.json\
 Requires build: yes
 
-This file contains common tslint settings across all iModel.js packages. Packages should extend this file in their own tslint.json file, and then overwrite and set new properties as needed.
+This file contains common tslint settings across all iTwin.js packages. Packages should extend this file in their own tslint.json file, and then overwrite and set new properties as needed.
 
 ### TSLint Rules
+
+> WARNING: TSLint support will be dropped in the next major release, 3.0. Please switch to ESLint, using `@bentley/eslint-plugin`.
 
 Location: tslint-rules\
 Requires build: yes
@@ -40,7 +44,7 @@ After compiling each rule, they may be used inside a tslint.json file by setting
 Location: scripts/\
 Requires build: no
 
-The following node scripts are delivered in this package's scripts folder in order to ease development of iModel.js packages with npm scripts. These scripts may require that additional packages be installed as dependencies of your package.
+The following node scripts are delivered in this package's scripts folder in order to ease development of iTwin.js packages with npm scripts. These scripts may require that additional packages be installed as dependencies of your package.
 
 The default behaviors of the scripts (without parameters) assume that the directory structure of your package mirrors the following:
 
@@ -87,6 +91,8 @@ This script runs the javascript output of Mocha tests with a few standard parame
 - debug - adds the "--inspect=9229" and "--debug-brk" parameters to the Mocha command (for debugging with VS Code)
 
 #### test-tsnode.js
+
+> WARNING: The tsnode script will be dropped.  Please switch to using `test.js` or directly using mocha.
 
 This script is similar to the test.js command, but looks for the TypeScript test source in order to run it using ts-node. The arguments for this command are similar to the test command, with the following differences:
 

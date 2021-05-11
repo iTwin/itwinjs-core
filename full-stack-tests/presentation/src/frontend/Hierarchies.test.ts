@@ -129,7 +129,7 @@ describe("Hierarchies", () => {
                       schemaName: "BisCore",
                       classNames: ["ElementOwnsChildElements"],
                     },
-                    requiredDirection: "Forward",
+                    requiredDirection: RelationshipDirection.Forward,
                     groupByClass: true,
                     groupByLabel: false,
                   }],

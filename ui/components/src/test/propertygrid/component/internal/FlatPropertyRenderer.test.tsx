@@ -77,6 +77,19 @@ describe("FlatPropertyRenderer", () => {
     expect(getByText("Test")).to.be.not.null;
   });
 
+  it("highlights matches in primitive values", async () => {
+    const { container } = render(
+      <FlatPropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={TestUtils.createPrimitiveStringProperty("Label", "abc")}
+        highlight={{ highlightedText: "b", applyOnLabel: true, applyOnValue: true }}
+        isExpanded={false}
+        onExpansionToggled={() => { }}
+      />);
+    const highlightedNodes = container.querySelectorAll("mark");
+    expect(highlightedNodes.length).to.eq(2);
+  });
+
   it("renders as primitive value if property is an empty array", () => {
     propertyRecord = TestUtils.createArrayProperty("EmptyArray");
 
@@ -89,6 +102,20 @@ describe("FlatPropertyRenderer", () => {
       />);
 
     expect(propertyRenderer.find(PrimitivePropertyRenderer).exists()).to.be.true;
+  });
+
+  it("highlights matches in empty array values", () => {
+    const { container } = render(
+      <FlatPropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={TestUtils.createArrayProperty("EmptyArray")}
+        highlight={{ highlightedText: "rr", applyOnLabel: true, applyOnValue: true }}
+        isExpanded={false}
+        onExpansionToggled={() => { }}
+      />);
+    const highlightedNode = container.querySelector("mark");
+    expect(highlightedNode).to.be.not.null;
+    expect(highlightedNode!.textContent).to.eq("rr");
   });
 
   it("renders struct as a non primitive value", () => {
@@ -118,6 +145,7 @@ describe("FlatPropertyRenderer", () => {
 
     expect(propertyRenderer.find(FlatNonPrimitivePropertyRenderer).exists()).to.be.true;
   });
+
   it("renders an editor correctly", () => {
     const propertyRenderer = mount(
       <FlatPropertyRenderer

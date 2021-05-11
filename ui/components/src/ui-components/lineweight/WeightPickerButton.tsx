@@ -9,10 +9,9 @@
 import "./WeightPickerButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
-import { CommonProps, Popup } from "@bentley/ui-core";
+import { CommonProps, ElementResizeObserver, Popup } from "@bentley/ui-core";
 import { LineWeightSwatch } from "./Swatch";
 
 // cSpell:ignore weightpicker lineweight
@@ -48,7 +47,7 @@ interface WeightPickerState {
  * @beta
  */
 export class WeightPickerButton extends React.PureComponent<WeightPickerProps, WeightPickerState> {
-  private _target: HTMLDivElement | null = null;
+  private _target = React.createRef<HTMLDivElement>();
   private _weightsContainer: HTMLDivElement | null = null;
   private _focusTarget = React.createRef<HTMLButtonElement>();  // weight button that should receive focus after popup is open
 
@@ -145,10 +144,14 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
       }
       this._closePopup();
     } else {
-      if (event.key === SpecialKey.ArrowDown)
-        this.moveFocusInPopup(false, event);
-      else if (event.key === SpecialKey.ArrowUp)
-        this.moveFocusInPopup(true, event);
+      switch (event.key) {
+        case SpecialKey.ArrowDown:
+          this.moveFocusInPopup(false, event);
+          break;
+        case SpecialKey.ArrowUp:
+          this.moveFocusInPopup(true, event);
+          break;
+      }
     }
   };
 
@@ -182,10 +185,6 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     );
   }
 
-  private _setTarget = (el: any) => {
-    this._target = el;
-  };
-
   /** @internal */
   public render() {
     const buttonClassNames = classnames(
@@ -194,22 +193,22 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     );
 
     return (
-      <ReactResizeDetector handleWidth
-        render={({ width }) => (
-          <>
-            <div ref={this._setTarget} >
-              <LineWeightSwatch
-                data-testid="components-weightpicker-button"
-                className={buttonClassNames}
-                weight={this.props.activeWeight}
-                colorDef={this.props.colorDef}
-                readonly={this.props.readonly}
-                disabled={this.props.disabled}
-                hideLabel={this.props.hideLabel}
-                aria-haspopup="listbox"
-                aria-expanded={this.state.showPopup}
-                onClick={this._togglePopup} />
-            </div>
+      <>
+        <div ref={this._target} >
+          <LineWeightSwatch
+            data-testid="components-weightpicker-button"
+            className={buttonClassNames}
+            weight={this.props.activeWeight}
+            colorDef={this.props.colorDef}
+            readonly={this.props.readonly}
+            disabled={this.props.disabled}
+            hideLabel={this.props.hideLabel}
+            aria-haspopup="listbox"
+            aria-expanded={this.state.showPopup}
+            onClick={this._togglePopup} />
+        </div>
+        <ElementResizeObserver watchedElement={this._target} render=
+          {({ width }) => (
             <Popup
               className="components-weightpicker-popup"
               style={{ width: `${width}px` }}
@@ -221,14 +220,14 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
               onOpen={this._onPopupOpened}
               focusTarget={`#${this.buildIdForWeight(this.props.activeWeight)}`}
               moveFocus={true}
-              target={this._target}
+              target={this._target.current}
               closeOnNestedPopupOutsideClick
             >
               {this.renderPopup(this.props.dropDownTitle)}
             </Popup>
-          </>
-        )}
-      />
+          )}
+        />
+      </>
     );
   }
 }

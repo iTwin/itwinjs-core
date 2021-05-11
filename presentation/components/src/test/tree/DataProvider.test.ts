@@ -48,6 +48,10 @@ describe("TreeDataProvider", () => {
     provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId });
   });
 
+  afterEach(() => {
+    provider.dispose();
+  });
+
   describe("dispose", () => {
 
     it("disposes registered ruleset", async () => {
@@ -288,14 +292,23 @@ describe("TreeDataProvider", () => {
 
   });
 
-  describe("loadHierarchy", () => {
+  describe("diagnostics", () => {
 
-    it("calls presentation manager", async () => {
+    it("passes diagnostics options to presentation manager", async () => {
+      const diagnosticsHandler = sinon.stub();
+
+      provider.dispose();
+      provider = new PresentationTreeDataProvider({
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+        ruleDiagnostics: { severity: "error", handler: diagnosticsHandler },
+      });
+
       presentationManagerMock
-        .setup(async (x) => x.loadHierarchy({ imodel: imodelMock.object, rulesetOrId: rulesetId }))
-        .returns(async () => { })
+        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, diagnostics: { editor: "error", handler: diagnosticsHandler } }))
+        .returns(async () => 0)
         .verifiable();
-      await provider.loadHierarchy();
+      await provider.getNodesCount();
       presentationManagerMock.verifyAll();
     });
 

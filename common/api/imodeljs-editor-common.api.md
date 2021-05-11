@@ -4,6 +4,27 @@
 
 ```ts
 
+import { CompressedId64Set } from '@bentley/bentleyjs-core';
+import { ElementGeometryDataEntry } from '@bentley/imodeljs-common';
+import { GeometricElementProps } from '@bentley/imodeljs-common';
+import { GeometryPartProps } from '@bentley/imodeljs-common';
+import { Id64String } from '@bentley/bentleyjs-core';
+import { IModelStatus } from '@bentley/bentleyjs-core';
+import { Matrix3dProps } from '@bentley/geometry-core';
+import { TransformProps } from '@bentley/geometry-core';
+
+// @alpha (undocumented)
+export interface BasicManipulationCommandIpc extends EditCommandIpc {
+    // (undocumented)
+    deleteElements: (ids: CompressedId64Set) => Promise<IModelStatus>;
+    insertGeometricElement(props: GeometricElementProps, data?: InsertGeometricElementData): Promise<Id64String>;
+    insertGeometryPart(props: GeometryPartProps, data?: InsertGeometryPartData): Promise<Id64String>;
+    // (undocumented)
+    rotatePlacement: (ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean) => Promise<IModelStatus>;
+    // (undocumented)
+    transformPlacement: (ids: CompressedId64Set, transform: TransformProps) => Promise<IModelStatus>;
+}
+
 // @alpha (undocumented)
 export interface EditCommandIpc {
     // (undocumented)
@@ -14,6 +35,11 @@ export interface EditCommandIpc {
     }>;
 }
 
+// @alpha (undocumented)
+export const editorBuiltInCmdIds: {
+    cmdBasicManipulation: string;
+};
+
 // @internal (undocumented)
 export const editorChannel = "editor";
 
@@ -23,6 +49,19 @@ export interface EditorIpc {
     callMethod: (name: string, ...args: any[]) => Promise<any>;
     // (undocumented)
     startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
+}
+
+// @alpha (undocumented)
+export interface InsertGeometricElementData {
+    entryArray: ElementGeometryDataEntry[];
+    isWorld?: boolean;
+    viewIndependent?: boolean;
+}
+
+// @alpha (undocumented)
+export interface InsertGeometryPartData {
+    entryArray: ElementGeometryDataEntry[];
+    is2dPart?: boolean;
 }
 
 

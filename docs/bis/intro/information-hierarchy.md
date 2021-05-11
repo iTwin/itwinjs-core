@@ -53,12 +53,12 @@ The top of the information hierarchy is strictly controlled and is very similar 
 
 Two examples of repository organizations are described below. It should be noted that a single BIS repository may have multiple uses. When that occurs each use (often corresponding to an application) adds the hierarchy; the resulting hierarchy is similar to a union of the uses' hierarchies.
 
-### iModel Bridge Repository Organization
+### iModel Connector Repository Organization
 
 TODO: show organization for an iModel created by both:
 
-* One bridge with two source files
-* Another bridge with one source file
+* One connector with two source files
+* Another connector with one source file
 
 ### Editing Application Repository Organization
 

@@ -2,25 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
-import { LocalUiSettings, UiSettingsStatus } from "../../ui-core";
+import { LocalSettingsStorage, LocalUiSettings, UiSettingsStatus } from "../../ui-core";
 
 import { storageMock } from "../TestUtils";
 
 describe("LocalUiSettings", () => {
   it("default constructor executes successfully", () => {
-    const initialLocalUiSettings = new LocalUiSettings();
+    const initialLocalUiSettings = new LocalUiSettings(); // eslint-disable-line deprecation/deprecation
+    expect(initialLocalUiSettings).to.not.be.undefined;
+  });
+  it("default LocalSettingsStorage constructor executes successfully", () => {
+    const initialLocalUiSettings = new LocalSettingsStorage(); // eslint-disable-line deprecation/deprecation
     expect(initialLocalUiSettings).to.not.be.undefined;
   });
   describe("saveSetting", () => {
-    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+    const localUiSettings = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
     it("Should save setting correctly", async () => {
       const result = await localUiSettings.saveSetting("Testing", "TestData", { test123: "4567" });
       expect(result.status).to.equal(UiSettingsStatus.Success);
     });
   });
   describe("getSetting", async () => {
-    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+    const localUiSettings = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
     await localUiSettings.saveSetting("Testing", "TestData", { test123: "4567" });
     it("Should load setting correctly", async () => {
       const result = await localUiSettings.getSetting("Testing", "TestData");
@@ -34,7 +39,7 @@ describe("LocalUiSettings", () => {
     });
   });
   describe("deleteSetting", async () => {
-    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+    const localUiSettings = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
     await localUiSettings.saveSetting("Testing", "TestData", { test123: "4567" });
     it("Should remove setting correctly", async () => {
       const result = await localUiSettings.deleteSetting("Testing", "TestData");

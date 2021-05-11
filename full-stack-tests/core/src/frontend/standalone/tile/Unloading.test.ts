@@ -6,7 +6,8 @@
 import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
-  IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, TileAdmin, TileLoadStatus, TileTree, TileTreeSet, TileUsageMarker, Viewport,
+  DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileLoadStatus,
+  TileTree, TileUsageMarker, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
 
@@ -24,7 +25,7 @@ describe("Tile unloading", async () => {
   };
 
   before(async () => {
-    await IModelApp.startup({ tileAdmin: TileAdmin.create(tileOpts) });
+    await IModelApp.startup({ tileAdmin: tileOpts });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -36,11 +37,11 @@ describe("Tile unloading", async () => {
   });
 
   function getTileTree(vp: Viewport): TileTree {
-    const trees = new TileTreeSet();
+    const trees = new DisclosedTileTreeSet();
     vp.discloseTileTrees(trees);
     expect(trees.size).to.equal(1);
     let tree: TileTree | undefined;
-    for (const t of trees.trees)
+    for (const t of trees)
       tree = t;
 
     return tree!;
@@ -284,5 +285,62 @@ describe("Tile unloading", async () => {
       });
     });
   });
-});
 
+  function collectLoadedParents(tiles: Tile[]): Set<Tile> {
+    const parents = new Set<Tile>();
+    for (const tile of tiles) {
+      let parent = tile.parent;
+      while(parent) {
+        if (parents.has(parent))
+          break;
+
+        if (parent.hasGraphics)
+          parents.add(parent);
+
+        parent = parent.parent;
+      }
+    }
+
+    return parents;
+  }
+
+  function getSelectedTiles(vp: Viewport): Tile[] {
+    const tiles = IModelApp.tileAdmin.getTilesForViewport(vp)!;
+    expect(tiles).not.to.be.undefined;
+    return Array.from(tiles.selected);
+  }
+
+  it("should not reload parent tile's content if children are selectable", async () => {
+    await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      const selectedTiles = getSelectedTiles(vp);
+      expect(selectedTiles.length).greaterThan(0);
+
+      // Unload content for all parents.
+      const parents = collectLoadedParents(selectedTiles);
+      expect(parents.size).greaterThan(0);
+      for (const parent of parents) {
+        expect(parent.isReady).to.be.true;
+        parent.disposeContents();
+        expect(parent.isReady).to.be.false;
+        expect(parent.hasGraphics).to.be.false;
+      }
+
+      // Recreate the scene.
+      vp.invalidateScene();
+      await vp.waitForAllTilesToRender();
+
+      // Confirm we selected same tiles without reloading parent tiles' content.
+      const reselectedTiles = getSelectedTiles(vp);
+      expect(reselectedTiles.length).to.equal(selectedTiles.length);
+      for (let i = 0; i < reselectedTiles.length; i++)
+        expect(reselectedTiles[i].contentId).to.equal(selectedTiles[i].contentId);
+
+      for (const parent of parents) {
+        expect(parent.hasGraphics).to.be.false;
+        expect(parent.isReady).to.be.false;
+      }
+    });
+  });
+});

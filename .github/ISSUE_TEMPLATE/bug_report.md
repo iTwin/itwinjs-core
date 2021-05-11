@@ -7,7 +7,7 @@ assignees: ""
 ---
 
 <!--
-Thanks for helping us improve iModel.js! Please describe what the expected behavior is vs what actually happens.
+Thanks for helping us improve iTwin.js! Please describe what the expected behavior is vs what actually happens.
 -->
 
 **Describe the bug**
@@ -32,7 +32,7 @@ If applicable, add screenshots to help explain your problem.
 - OS: [e.g. iOS]
 - Browser [e.g. chrome, safari]
 - Version [e.g. 22]
-- iModel.js Version [e.g. 2.5.3]
+- iTwin.js Version [e.g. 2.5.3]
 
 **Additional context**
 Add any other context about the problem here.

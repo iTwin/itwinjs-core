@@ -8,7 +8,7 @@
 
 import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "../tools/parseArgs";
-import { AddEffectTool, redrawSelectedView } from "./EffectTools";
+import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
 let flipHorizontal = false;
 let flipVertical = false;
@@ -94,7 +94,8 @@ export class FlipImageConfig extends Tool {
     flipHorizontal = !!horizontal;
     flipVertical = !!vertical;
     flipColor = !!color;
-    redrawSelectedView();
+
+    refreshViewportsForEffect("fdt flip");
     return true;
   }
 

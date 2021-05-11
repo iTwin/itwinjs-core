@@ -8,20 +8,22 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
+import { fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
+
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
-import { HorizontalAlignment, LocalUiSettings } from "@bentley/ui-core";
+import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
+import { HorizontalAlignment, LocalSettingsStorage } from "@bentley/ui-core";
+
 import {
-  CellItem, ColumnDescription, PropertyUpdatedArgs, RowItem, SelectionMode, Table, TableDataChangeEvent, TableDataChangesListener,
-  TableDataProvider, TableProps, TableSelectionTarget,
+  CellItem, ColumnDescription, PropertyUpdatedArgs, PropertyValueRendererManager, RowItem, SelectionMode, Table, TableDataChangeEvent,
+  TableDataChangesListener, TableDataProvider, TableProps, TableSelectionTarget,
 } from "../../../ui-components";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import { fireEvent, render } from "@testing-library/react";
 
 describe("Table", () => {
 
@@ -1353,7 +1355,7 @@ describe("Table", () => {
         reorderableColumns={true}
         ref={ref}
         settingsIdentifier="test"
-        uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
+        settingsStorage={new LocalSettingsStorage({ localStorage: storageMock() } as Window)}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
@@ -1376,7 +1378,7 @@ describe("Table", () => {
         onRowsLoaded={onRowsLoaded}
         settingsIdentifier="test"
         showHideColumns={true}
-        uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
+        settingsStorage={new LocalSettingsStorage({ localStorage: storageMock() } as Window)}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
@@ -1446,6 +1448,14 @@ describe("Table", () => {
         label: "Lorem",
         filterRenderer: FilterRenderer.Text,
       },
+      {
+        key: "multi-value",
+        label: "Multi-Value",
+        filterable: true,
+        filterRenderer: FilterRenderer.MultiValue,
+        showDistinctValueFilters: true,
+        showFieldFilters: true,
+      },
     ];
 
     // cSpell:disable
@@ -1467,9 +1477,14 @@ describe("Table", () => {
       const row: RowItem = { key: i.toString(), cells: [] };
       const enumValue = i % 4;
       const loremIndex = i % 10;
+      const convertInfo: PropertyConverterInfo = { name: "" };
+
+      const propertyRecord = TestUtils.createPropertyRecord(i, filteringColumns[0], "int");
+      propertyRecord.property.converter = convertInfo;
+
       row.cells.push({
         key: filteringColumns[0].key,
-        record: TestUtils.createPropertyRecord(i, filteringColumns[0], "int"),
+        record: propertyRecord,
       });
       row.cells.push({
         key: filteringColumns[1].key,
@@ -1482,6 +1497,10 @@ describe("Table", () => {
       row.cells.push({
         key: filteringColumns[3].key,
         record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], filteringColumns[3], "text"),
+      });
+      row.cells.push({
+        key: filteringColumns[4].key,
+        record: TestUtils.createPropertyRecord(`Multi-Value ${i}`, filteringColumns[4], "text"),
       });
       return row;
     };
@@ -1519,7 +1538,7 @@ describe("Table", () => {
 
     it("should create two row headers", async () => {
       expect(filterTable.find("div.react-grid-HeaderRow").length).to.eq(2);
-      expect(filterTable.find("div.react-grid-HeaderCell").length).to.eq(8);
+      expect(filterTable.find("div.react-grid-HeaderCell").length).to.eq(10);
       // expect(filterTable.find("input.input-sm").length).to.eq(2);
       // expect(filterTable.find("div.Select").length).to.eq(2);
 
@@ -1553,6 +1572,7 @@ describe("Table", () => {
         onRowsLoaded={onRowsLoaded}
         onCellContextMenu={onCellContextMenuSpy}
         pageAmount={50}
+        propertyValueRendererManager={PropertyValueRendererManager.defaultManager}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();

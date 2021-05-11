@@ -7,8 +7,8 @@
  */
 
 import { IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { EventSink, IModelDb } from "@bentley/imodeljs-backend";
-import { PresentationRpcEvents, PresentationRpcInterface, UpdateInfoJSON } from "@bentley/presentation-common";
+import { IModelDb, IpcHost } from "@bentley/imodeljs-backend";
+import { PresentationIpcEvents, UpdateInfoJSON } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { NativePlatformDefinition } from "./NativePlatform";
 
@@ -18,7 +18,6 @@ import { NativePlatformDefinition } from "./NativePlatform";
  */
 export interface UpdatesTrackerProps {
   nativePlatformGetter: () => NativePlatformDefinition;
-  eventSink: EventSink;
   pollInterval: number;
 }
 
@@ -30,12 +29,10 @@ export interface UpdatesTrackerProps {
  */
 export class UpdatesTracker implements IDisposable {
   private _getNativePlatform: () => NativePlatformDefinition;
-  private _eventSink: EventSink;
   private _intervalHandle: any;
 
   private constructor(props: UpdatesTrackerProps) {
     this._getNativePlatform = props.nativePlatformGetter;
-    this._eventSink = props.eventSink;
     this._intervalHandle = setInterval(this.onInterval.bind(this), props.pollInterval);
   }
 
@@ -48,9 +45,8 @@ export class UpdatesTracker implements IDisposable {
   private onInterval() {
     const response = this._getNativePlatform().getUpdateInfo();
     const info = parseUpdateInfo(response.result);
-    if (info) {
-      this._eventSink.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, info);
-    }
+    if (info)
+      IpcHost.send(PresentationIpcEvents.Update, info);
   }
 }
 

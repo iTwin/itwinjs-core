@@ -49,6 +49,9 @@ export abstract class Polyface extends GeometryQuery {
   /** Flag indicating if the mesh display must assume both sides are visible. */
   public get twoSided() { return this.data.twoSided; }
   public set twoSided(value: boolean) { this.data.twoSided = value; }
+  /** Flag indicating if the mesh closure is unknown (0), open sheet (1), closed (2) */
+  public get expectedClosure(): number { return this.data.expectedClosure; }
+  public set expectedClosure(value: number) { this.data.expectedClosure = value; }
   /**
      * Check validity of indices into a data array.
      * * It is valid to have  both indices and data undefined.

@@ -1,18 +1,18 @@
 # Geonames Example Extension
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
-An iModel.js Extension that displays markers at locations of named geographic features from the [GeoNames](https://www.geonames.org/) geographical database. Hovering over a marker shows a tooltip containing the name of the location and its population.  Clicking a marker causes the view to zoom to that location.
+An iTwin.js Extension that displays markers at locations of named geographic features from the [GeoNames](https://www.geonames.org/) geographical database. Hovering over a marker shows a tooltip containing the name of the location and its population.  Clicking a marker causes the view to zoom to that location.
 
-This extension is an example of a extension that can be added to iModel.js host applications. See http://imodeljs.org for comprehensive documentation on the iModel.js API and the various constructs used in this sample.
+This extension is an example of a extension that can be added to iTwin.js host applications. See <http://itwinjs.org> for comprehensive documentation on the iTwin.js API and the various constructs used in this sample.
 
 ## Development Setup
 
-1. Select and prepare an iModel.js host application. You can use the [Simple Viewer App](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/simple-viewer-app), for example.
+1. Select and prepare an iTwin.js host application. You can use the [Simple Viewer App](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/simple-viewer-app), for example.
 
-2. The dependencies are installed as part of "rush install" in the iModel.js monorepository.
+2. The dependencies are installed as part of "rush install" in the iTwin.js monorepository.
 
-3. Build the extension as part of the "rush build" in the iModel.js monorepository, or separately build using the npm build command.
+3. Build the extension as part of the "rush build" in the iTwin.js monorepository, or separately build using the npm build command.
 
   ```sh
   npm run build
@@ -32,4 +32,4 @@ This extension is an example of a extension that can be added to iModel.js host 
 
 ## Contributing
 
-[Contributing to iModel.js](https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md)
+[Contributing to iTwin.js](https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md)

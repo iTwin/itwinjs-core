@@ -1,7 +1,7 @@
 
 # Third-Party Code
 
-The iModel.js library potentially incorporates work from the following third-party code:
+The iTwin.js library potentially incorporates work from the following third-party code:
 
 ## [react-numeric-input](https://github.com/vlad-ignatov/react-numeric-input)
 

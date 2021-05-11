@@ -17,6 +17,8 @@ import * as utils from "./TestUtils";
 import { assetsPath, workDir } from "./TestConstants";
 import { createFileHandler } from "./FileHandler";
 
+const defaultDataLocationId: GuidString = "99999999-9999-9999-9999-999999999999";
+
 function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true, iModelType = IModelType.Undefined, extent: number[] = [], returnsInstances = true) {
   mockGetIModelWithFilter(`?$filter=Name+eq+%27${encodeURIComponent(name)}%27`, contextId, name, description, imodelId, initialized, "Empty", iModelType, extent, returnsInstances);
 }
@@ -55,6 +57,7 @@ function mockGetIModelWithFilter(
       ["iModelTemplate", template],
       ["iModelType", iModelType],
       ["extent", extent],
+      ["dataLocationId", defaultDataLocationId],
     ])), returnsInstances ? 1 : 0);
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
@@ -244,7 +247,7 @@ describe("iModelHub iModelsHandler", () => {
   const createimodelName = utils.getUniqueIModelName("imodeljs-client iModels Create test");
   const updatedimodelName = utils.getUniqueIModelName(`${imodelName}_updated`);
   const imodelNameWithSpecialChars = utils.getUniqueIModelName("Д");
-  const imodelClient: IModelClient = utils.getDefaultClient();
+  let imodelClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
 
@@ -255,13 +258,14 @@ describe("iModelHub iModelsHandler", () => {
       response: 100000,
     };
 
-    this.enableTimeouts(false);
+    this.timeout(0);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     (requestContext as any).activityId = "iModelHub iModelsHandler";
     projectId = await utils.getProjectId(requestContext);
     assetId = await utils.getAssetId(requestContext);
+    imodelClient = utils.getDefaultClient();
 
     await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, projectId);
@@ -864,5 +868,11 @@ describe("iModelHub iModelsHandler", () => {
     imodel.name = oldimodelName;
     mockUpdateiModel(projectId, imodel);
     await iModelClient.iModels.update(requestContext, projectId, imodel);
+  });
+
+  it("should return DataLocationId", async () => {
+    mockGetIModelByName(projectId, imodelName);
+    const iModel: HubIModel = (await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
+    chai.expect(iModel.dataLocationId).to.be.equal(defaultDataLocationId);
   });
 });

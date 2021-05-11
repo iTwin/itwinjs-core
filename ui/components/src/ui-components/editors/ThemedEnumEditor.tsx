@@ -38,6 +38,7 @@ interface EnumEditorState {
  */
 export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps, EnumEditorState> implements TypeEditor {
   private _isMounted = false;
+  private _divElement = React.createRef<HTMLDivElement>();
 
   /** @internal */
   public readonly state: Readonly<EnumEditorState> = {
@@ -60,6 +61,20 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
     }
 
     return propertyValue;
+  }
+
+  // istanbul ignore next
+  public get htmlElement(): HTMLElement | null {
+    return this._divElement.current;
+  }
+
+  // istanbul ignore next
+  public get hasFocus(): boolean {
+    let containsFocus = false;
+    // istanbul ignore else
+    if (this._divElement.current)
+      containsFocus = this._divElement.current.contains(document.activeElement);
+    return containsFocus;
   }
 
   private _updateSelectValue = (value: ValueType<OptionType>, action: ActionMeta<OptionType>) => {
@@ -166,6 +181,7 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
 
     return (
       <ThemedSelect
+        divRef={this._divElement}
         className={className}
         value={selectedOption}
         onChange={this._updateSelectValue}

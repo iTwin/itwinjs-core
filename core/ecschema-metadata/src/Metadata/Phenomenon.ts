@@ -65,6 +65,6 @@ export class Phenomenon extends SchemaItem {
  * An abstract class used for schema editing.
  */
 export abstract class MutablePhenomenon extends Phenomenon {
-  public abstract async setDefinition(definition: string): Promise<void>;
+  public abstract setDefinition(definition: string): Promise<void>;
   public abstract setDisplayLabel(displayLabel: string): void;
 }

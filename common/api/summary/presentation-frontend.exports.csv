@@ -1,25 +1,36 @@
 sep=;
 Release Tag;API Item
+internal;buildPagedResponse: 
+alpha;consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void
+alpha;createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]): (scopeLogs: DiagnosticsScopeLogs[]) => void
 internal;createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[]
-beta;FavoritePropertiesManager 
-beta;FavoritePropertiesOrderInfo
-beta;FavoritePropertiesScope
+public;FavoritePropertiesManager 
+public;FavoritePropertiesManagerProps
+public;FavoritePropertiesOrderInfo
+public;FavoritePropertiesScope
 internal;getFieldInfos: (field: Field) => Set
 public;getScopeId(scope: SelectionScope | string | undefined): string
+internal;HILITE_RULESET: Ruleset
 public;HiliteSet
 public;HiliteSetProvider
 public;HiliteSetProviderProps
-beta;IFavoritePropertiesStorage
+public;IFavoritePropertiesStorage
+internal;IModelAppFavoritePropertiesStorage 
 alpha;IModelContentChangeEventArgs
 alpha;IModelHierarchyChangeEventArgs
 public;ISelectionProvider
+internal;NodeIdentifier
+internal;OfflineCachingFavoritePropertiesStorage 
+internal;OfflineCachingFavoritePropertiesStorageProps
 public;Presentation
-beta;PresentationFrontendLoggerCategory
+public;PresentationFrontendLoggerCategory
 public;PresentationManager 
 public;PresentationManagerProps
-beta;PropertyFullName = string
+public;PropertyFullName = string
 public;RulesetManager
+internal;RulesetManagerImpl 
 public;RulesetVariablesManager
+internal;RulesetVariablesManagerImpl 
 public;SelectionChangeEvent 
 public;SelectionChangeEventArgs
 public;SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void
@@ -31,3 +42,6 @@ public;SelectionManager
 public;SelectionManagerProps
 public;SelectionScopesManager
 public;SelectionScopesManagerProps
+internal;StateTracker
+internal;ToolSelectionSyncHandler 
+internal;TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT"

@@ -1,3 +1,20 @@
 sep=;
 Release Tag;API Item
-alpha;EditTool 
+alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
+alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
+alpha;class CreateElementTool 
+alpha;CreateLineStringTool 
+alpha;DeleteElementsTool 
+alpha;DynamicGraphicsProvider
+alpha;EditorOptions
+alpha;EditTools
+alpha;MoveElementsTool 
+alpha;RedoTool 
+alpha;RotateAbout
+alpha;RotateElementsTool 
+alpha;RotateMethod
+alpha;class TransformElementsTool 
+alpha;TransformGraphicsData
+alpha;TransformGraphicsProvider
+alpha;UndoAllTool 
+alpha;UndoTool 

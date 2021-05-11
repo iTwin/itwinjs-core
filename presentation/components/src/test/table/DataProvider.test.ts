@@ -14,6 +14,7 @@ import {
   Content, DefaultContentDisplayTypes, Descriptor, FieldDescriptorType, Item, KeySet, PresentationError, SortDirection as PresentationSortDirection,
   ValuesDictionary,
 } from "@bentley/presentation-common";
+import { createTestContentDescriptor, createTestSimpleContentField } from "@bentley/presentation-common/lib/test/_helpers/Content";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
@@ -303,6 +304,24 @@ describe("TableDataProvider", () => {
       (provider as any).getContentDescriptor = () => undefined;
       const cols = await provider.getColumns();
       expect(cols).to.deep.eq([]);
+    });
+
+    it("sorts columns by priority and label", async () => {
+      (provider as any).getContentDescriptor = () => createTestContentDescriptor({
+        fields: [
+          createTestSimpleContentField({ priority: 2, label: "C" }),
+          createTestSimpleContentField({ priority: 2, label: "B" }),
+          createTestSimpleContentField({ priority: 1, label: "A" }),
+        ],
+      });
+      const cols = await provider.getColumns();
+      expect(cols).to.containSubset([{
+        label: "B",
+      }, {
+        label: "C",
+      }, {
+        label: "A",
+      }]);
     });
 
     it("returns one column descriptor when display type is list", async () => {

@@ -10,7 +10,7 @@ import "./Widget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Rectangle, SizeProps } from "@bentley/ui-core";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
 import { TabState, WidgetState } from "../base/NineZoneState";
@@ -60,7 +60,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
       const elementRef = React.useRef<HTMLDivElement>(null);
       const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
       const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId, initialPointerPosition) => {
-        assert(elementRef.current);
+        assert(!!elementRef.current);
         if (floatingWidgetId !== undefined)
           return;
         const nzBounds = measureNz();
@@ -175,7 +175,7 @@ export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): S
 function useActiveTab(): TabState | undefined {
   const widget = React.useContext(WidgetStateContext);
   const tabs = React.useContext(TabsStateContext);
-  assert(widget);
+  assert(!!widget);
   const tabId = widget.activeTabId;
   return tabs[tabId];
 }

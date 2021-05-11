@@ -7,8 +7,8 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { ImsAuthorizationClient } from "@bentley/itwin-client";
-import { ClientMetadata, Issuer, Client as OpenIdClient } from "openid-client";
+import { ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+import { ClientMetadata, custom, Issuer, Client as OpenIdClient } from "openid-client";
 
 /**
  * Client configuration to create OIDC/OAuth tokens for backend applications
@@ -71,6 +71,13 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     };
     const issuer = await this.getIssuer(requestContext);
     this._client = new issuer.Client(clientConfiguration);
+
+    custom.setHttpOptionsDefaults({
+      timeout: RequestGlobalOptions.timeout.response,
+      retry: RequestGlobalOptions.maxRetries,
+      agent: RequestGlobalOptions.httpsProxy,
+    });
+
     return this._client;
   }
 

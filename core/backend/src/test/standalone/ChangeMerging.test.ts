@@ -92,7 +92,7 @@ describe("ChangeMerging", () => {
       [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(firstDb, IModelTestUtils.getUniqueModelCode(firstDb, "newPhysicalModel"), true);
       const dictionary: DictionaryModel = firstDb.models.getModel<DictionaryModel>(IModel.dictionaryId);
       const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-      spatialCategoryId = SpatialCategory.insert(dictionary.iModel, dictionary.id, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+      spatialCategoryId = SpatialCategory.insert(dictionary.iModel, dictionary.id, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
       el1 = firstDb.elements.insertElement(IModelTestUtils.createPhysicalObject(firstDb, modelId, spatialCategoryId));
       firstDb.saveChanges();
       csHistory.push(createChangeSet(firstDb));

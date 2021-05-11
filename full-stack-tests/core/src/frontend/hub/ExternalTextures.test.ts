@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/webgl";
-import { TestUtility } from "./TestUtility";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestUtility } from "./TestUtility";
 
 describe("external texture requests (#integration)", () => {
-  const projectName = "iModelJsIntegrationTest";
+
   let imodel: IModelConnection;
   const texNames = [
     "0x48", "0x4b", "0x52", "0x54", "0x56", "0x59",
@@ -29,13 +29,13 @@ describe("external texture requests (#integration)", () => {
 
   before(async () => {
     await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
-    const projectId = await TestUtility.getTestProjectId(projectName);
-    const iModelId = await TestUtility.getTestIModelId(projectId, "SmallTex");
-    imodel = await RemoteBriefcaseConnection.open(projectId, iModelId);
+    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.smallTex);
+    imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
   after(async () => {

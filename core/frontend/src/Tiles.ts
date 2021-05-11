@@ -7,7 +7,6 @@
  */
 
 import { BeTimePoint, Dictionary, dispose, Id64Array, IModelStatus } from "@bentley/bentleyjs-core";
-import { IModelTileTreeProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
@@ -68,7 +67,11 @@ class TreeOwner implements TileTreeOwner {
 }
 
 /** Provides access to [[TileTree]]s associated with an [[IModelConnection]].
- * @beta
+ * The tile trees are accessed indirectly via their corresponding [[TileTreeOwner]]s.
+ * Loaded tile trees will be discarded after the iModel is closed, after a period of disuse, or when the contents of a [[GeometricModelState]] they represent
+ * change.
+ * @see [[IModelConnection.tiles]].
+ * @public
  */
 export class Tiles {
   private _iModel: IModelConnection;
@@ -78,6 +81,7 @@ export class Tiles {
   /** @internal */
   public get isDisposed() { return this._disposed; }
 
+  /** @internal */
   constructor(iModel: IModelConnection) { this._iModel = iModel; }
 
   /** @internal */
@@ -97,21 +101,14 @@ export class Tiles {
   }
 
   /** @internal */
-  public async getTileTreeProps(id: string): Promise<IModelTileTreeProps> {
-    return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
-  }
-
-  /** @internal */
-  public async getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
-    return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled, guid, qualifier);
-  }
-
-  /** @internal */
   public async purgeTileTrees(modelIds: Id64Array | undefined): Promise<void> {
     return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
   }
 
-  /** Obtain the owner of a TileTree. The `id` is unique within all tile trees associated with `supplier`; its specific structure is an implementation detail known only to the supplier. */
+  /** Obtain the owner of a TileTree.
+   * The `id` is unique within all tile trees associated with `supplier`; its specific structure is an implementation detail known only to the supplier.
+   * A [[TileTreeReference]] uses this method to obtain the tile tree to which it refers.
+   */
   public getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner {
     let trees = this._treesBySupplier.get(supplier);
     if (undefined === trees) {
@@ -157,7 +154,9 @@ export class Tiles {
     };
   }
 
-  /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */
+  /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees.
+   * @internal
+   */
   public purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void {
     // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTreeReferences exist pointing to a given Owner.
     for (const entry of this._treesBySupplier) {

@@ -110,5 +110,5 @@ The final step before building and loading the extension is setting up the local
 ## Next Steps
 
 - The [Overview of Building an Extension](./BuildingAnExtension) backs up to to the beginning to explain, in more detail, the steps above and the overall architecture of an Extension.
-- Learn how to [add UI](../../ui/augmentingui) to an iModel.js app from Extension.
-- Explore the full [iModel.js APIs](https://www.imodeljs.org/reference/) to see what else is possible within an Extension.
+- Learn how to [add UI](../../ui/augmentingui) to an iTwin.js app from Extension.
+- Explore the full [iTwin.js APIs](https://www.itwinjs.org/reference/) to see what else is possible within an Extension.

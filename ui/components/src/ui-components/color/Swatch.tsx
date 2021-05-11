@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
+import { getCSSColorFromDef } from "./getCSSColorFromDef";
 
 /** Properties for the [[ColorSwatch]] React component
  * @beta
@@ -28,9 +29,7 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
  * @beta
  */
 export function ColorSwatch(props: ColorSwatchProps) {
-  const { b, g, r, t } = props.colorDef.colors as any;
-
-  const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
+  const rgbaString = getCSSColorFromDef(props.colorDef);
   const colorStyle: React.CSSProperties = {
     backgroundColor: rgbaString,
     ...props.style,

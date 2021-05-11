@@ -29,6 +29,7 @@ export class IModelApi {
     return undefined;
   }
 
+  /* eslint-disable deprecation/deprecation */
   /** Open the specified version of the IModel */
   public static async openIModel(projectId: string, iModelId: string, changeSetId: string | undefined, openMode: OpenMode): Promise<RemoteBriefcaseConnection> {
     return RemoteBriefcaseConnection.open(projectId, iModelId, openMode, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());

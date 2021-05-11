@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { EnvMacroSubst, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsExpressServer } from "@bentley/express-server";
-import { BentleyCloudRpcManager, IModelError, IModelStatus, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelHost } from "@bentley/imodeljs-backend";
+import { BentleyCloudRpcManager, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { BunyanLoggerConfig, SeqLoggerConfig } from "@bentley/logger-config";
+import { getSupportedRpcs } from "../../common/rpcs";
 import { loggerCategory } from "../../common/TestAppConfiguration";
 
 // Setup to log to a locally install seq server from https://datalust.co/download
@@ -36,9 +38,9 @@ export function initializeLogging() {
 /**
  * Initializes Web Server backend
  */
-export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
+export async function initializeWeb() {
   // tell BentleyCloudRpcManager which RPC interfaces to handle
-  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "ui-test-app", version: "v1.0" } }, rpcs);
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "ui-test-app", version: "v1.0" } }, getSupportedRpcs());
   // TODO EDITING const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "simple-editor-app", version: "v1.0" } }, rpcs);
 
   // create a basic express web server
@@ -46,4 +48,6 @@ export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
   const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
   Logger.logInfo(loggerCategory, `Web backend for ui-test-app listening on port ${port}`);
+  await IModelHost.startup();
 }
+

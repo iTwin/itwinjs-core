@@ -10,12 +10,10 @@ import * as fs from "fs-extra";
 import * as http from "http";
 import * as https from "https";
 import * as path from "path";
-import { PassThrough } from "stream";
 import { URL } from "url";
-import { BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, CancelRequest, FileHandler, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
+import { downloadFileAtomic } from "./downloadFileAtomic";
 
-import WriteStreamAtomic = require("fs-write-stream-atomic");
 /**
  * Provides methods to upload and download files from the Internet
  * @internal
@@ -42,65 +40,7 @@ export class UrlFileHandler implements FileHandler {
       fs.unlinkSync(downloadToPathname);
 
     UrlFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
-
-    const target = new WriteStreamAtomic(downloadToPathname);
-
-    const promise = new Promise<void>((resolve, reject) => {
-      let cancelled: boolean = false;
-
-      const callback = (response: http.IncomingMessage) => {
-        if (response.statusCode !== 200) {
-          if (cancelRequest !== undefined)
-            cancelRequest.cancel = () => false;
-          reject();
-        } else {
-          const passThroughStream = new PassThrough();
-          let bytesWritten: number = 0;
-
-          if (progressCallback) {
-            target.on("drain", () => {
-              if (!cancelled)
-                progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
-            });
-            target.on("finish", () => {
-              if (!cancelled) {
-                fileSize = fileSize || fs.statSync(downloadToPathname).size;
-                progressCallback({ percent: 100, total: fileSize, loaded: fileSize });
-              }
-            });
-          }
-
-          response
-            .pipe(passThroughStream)
-            .on("data", (chunk: any) => {
-              bytesWritten += chunk.length;
-            })
-            .pipe(target)
-            .on("error", (error: any) => {
-              if (cancelRequest !== undefined)
-                cancelRequest.cancel = () => false;
-              reject(error);
-            })
-            .on("finish", () => {
-              if (cancelRequest !== undefined)
-                cancelRequest.cancel = () => false;
-              resolve();
-            });
-
-          if (cancelRequest !== undefined) {
-            cancelRequest.cancel = () => {
-              cancelled = true;
-              response.destroy(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
-              return true;
-            };
-          }
-        }
-      };
-
-      downloadUrl.startsWith("https:") ? https.get(downloadUrl, callback) : http.get(downloadUrl, callback);
-    });
-
-    return promise;
+    return downloadFileAtomic(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
   }
 
   public async uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {

@@ -28,6 +28,7 @@ export function ToolSettingsGridContainer({ componentGenerator }: { componentGen
   const version = useFrameworkVersion();
   const layoutMode = toLayoutMode(availableContentWidth);
   const className = classnames(
+    "uifw-tool-settings-grid-container",
     version === "1" && "uifw-fill",
     // istanbul ignore next
     LayoutMode.Narrow === layoutMode && "uifw-default-narrow",

@@ -1,4 +1,8 @@
 /*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------
 * This code has been adapted from
 * [tslint-react-set-state-usage](https://github.com/sutrkiller/tslint-react-set-state-usage).
 *--------------------------------------------------------------------------------------------*/
@@ -9,8 +13,8 @@ import { isObjectLiteralExpression } from "tsutils";
 
 import {
   IOptions,
-  OPTION_UPDATER_ONLY,
   OPTION_ALLOW_OBJECT,
+  OPTION_UPDATER_ONLY,
   parseOptions,
 } from "./tslintReactSetStateUsageOptions";
 import {

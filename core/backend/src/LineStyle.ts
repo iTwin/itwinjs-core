@@ -384,7 +384,7 @@ export namespace LineStyleDefinition {
     /** Query for a continuous line style that can be used to create curves with physical width instead of weight in pixels and create one if it does not already exist.
      * There are 2 ways to define a continuous line style:
      * - Width is not specified in the style itself and instead will be supplied as an override for each curve that is drawn.
-     *  - Defined using [[LineStyleDefinition.ComponentType.Internal]] with component id 0 [[LinePixels::Solid] which has special behavior of being affected by width overrides.
+     *  - Defined using [[LineStyleDefinition.ComponentType.Internal]] with component id 0 [[LinePixels.Solid]] which has special behavior of being affected by width overrides.
      * - Width is specified in the style.
      *  - Defined using a single stroke component that is a long dash.
      *

@@ -9,7 +9,7 @@
 import "./WidgetTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { DraggedWidgetIdContext, useWidgetTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
@@ -27,7 +27,7 @@ export const WidgetTarget = React.memo<WidgetTargetProps>(function WidgetTarget(
   const draggedTab = React.useContext(DraggedTabContext);
   const draggedWidget = React.useContext(DraggedWidgetIdContext);
   const side = React.useContext(PanelSideContext);
-  assert(side);
+  assert(!!side);
   const [ref, targeted] = useWidgetTarget<HTMLDivElement>({
     side,
     widgetIndex: props.widgetIndex,

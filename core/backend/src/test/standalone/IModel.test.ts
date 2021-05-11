@@ -14,17 +14,17 @@ import {
 } from "@bentley/geometry-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
-  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb } from "../../IModelDb";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
+  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, Category,
   ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
   DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers,
   ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost,
@@ -62,14 +62,6 @@ function exerciseGc() {
     const fmt = obj.value.toString();
     assert.isTrue(i === parseInt(fmt, 10));
   }
-}
-
-function generateChangeSetId(): string {
-  let result = "";
-  for (let i = 0; i < 20; ++i) {
-    result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
-  }
-  return result;
 }
 
 describe("iModel", () => {
@@ -207,6 +199,7 @@ describe("iModel", () => {
     }
 
     stmt.dispose();
+    Logger.initializeToConsole(); // reset back to console so future tests will log correctly
   });
 
   it("should be able to get properties of an iIModel", () => {
@@ -410,34 +403,6 @@ describe("iModel", () => {
     }
   });
 
-  it("should insert a Texture", () => {
-    const model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
-    expect(model).not.to.be.undefined;
-
-    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
-    // bottom right pixel.  The rest of the square is red.
-    const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
-
-    const testTextureName = "fake texture name";
-    const testTextureFormat = ImageSourceFormat.Png;
-    const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
-    const testTextureWidth = 3;
-    const testTextureHeight = 3;
-    const testTextureDescription = "empty description";
-    const testTextureFlags = TextureFlags.None;
-
-    const textureId = Texture.insert(imodel2, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
-
-    const texture = imodel2.elements.getElement<Texture>(textureId);
-    assert((texture instanceof Texture) === true, "did not retrieve an instance of Texture");
-    expect(texture.format).to.equal(testTextureFormat);
-    expect(Array.from(texture.data)).to.deep.equal(pngData);
-    expect(texture.width).to.equal(testTextureWidth);
-    expect(texture.height).to.equal(testTextureHeight);
-    expect(texture.description).to.equal(testTextureDescription);
-    expect(texture.flags).to.equal(testTextureFlags);
-  });
-
   it("should insert a RenderMaterial", () => {
     const model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
@@ -523,12 +488,9 @@ describe("iModel", () => {
     const testTextureName = "fake texture name";
     const testTextureFormat = ImageSourceFormat.Png;
     const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
-    const testTextureWidth = 3;
-    const testTextureHeight = 3;
     const testTextureDescription = "empty description";
-    const testTextureFlags = TextureFlags.None;
 
-    const texId = Texture.insert(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
+    const texId = Texture.insertTexture(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureDescription);
 
     /* eslint-disable @typescript-eslint/naming-convention */
     const matId = RenderMaterialElement.insert(imodel5, IModel.dictionaryId, "test material name",
@@ -652,7 +614,7 @@ describe("iModel", () => {
 
     const mapImagery: MapImageryProps = {
       backgroundBase: ColorDef.red.tbgr,
-      backgroundLayers: [{ transparency: 0.5, userName: "blah" }],
+      backgroundLayers: [{ transparency: 0.5 }],
     };
 
     const props: DisplayStyleSettingsProps = {
@@ -674,9 +636,6 @@ describe("iModel", () => {
       [{ backgroundColor: ColorDef.from(1, 2, 3, 4) }, defaultViewFlags, false],
       [{ backgroundColor: ColorDef.blue.tbgr }, defaultViewFlags, false],
       [{ backgroundColor: ColorDef.from(1, 2, 3, 4).tbgr }, defaultViewFlags, false],
-      [{ scheduleScript: { someRandomProperty: "Not a valid schedule script" } }, defaultViewFlags, false],
-      [{ scheduleScript: [{ modelId: "0xabc", elementTimelines: [] }] }, defaultViewFlags, true],
-      [{ scheduleScript: [{ someRandomProperty: "but still an array" }] }, defaultViewFlags, true],
     ];
 
     let suffix = 123;
@@ -695,8 +654,6 @@ describe("iModel", () => {
       const actualVf = ViewFlags.fromJSON(actual.viewflags);
       expect(actualVf.toJSON()).to.deep.equal(expectedVf.toJSON());
 
-      expect(undefined !== actual.scheduleScript).to.equal(test[2]);
-
       const expectedBGColor = expected.backgroundColor instanceof ColorDef ? expected.backgroundColor.toJSON() : expected.backgroundColor;
       expect(actual.backgroundColor).to.equal(expectedBGColor);
 
@@ -710,7 +667,7 @@ describe("iModel", () => {
     const rootSubject = imodel1.elements.getRootSubject();
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
-    assert.isAtLeast(rootSubject.code.getValue().length, 1);
+    assert.isAtLeast(rootSubject.code.value.length, 1);
     assert.isFalse(imodel1.elements.hasSubModel(IModel.rootSubjectId));
 
     try {
@@ -863,7 +820,7 @@ describe("iModel", () => {
         assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
         if (defaultSubCategory instanceof SubCategory) {
           assert.isTrue(defaultSubCategory.parent!.id === categoryId, "defaultSubCategory id should be prescribed value");
-          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.getValue(), "DefaultSubcategory name should match that of Category");
+          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.value, "DefaultSubcategory name should match that of Category");
           assert.isTrue(defaultSubCategory.isDefaultSubCategory, "isDefaultSubCategory should return true");
         }
 
@@ -1298,6 +1255,7 @@ describe("iModel", () => {
       assert.equal(count, 1);
     });
 
+    let firstCodeValueId: Id64String | undefined;
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
@@ -1308,10 +1266,15 @@ describe("iModel", () => {
         const row = stmt4.getRow();
         // Verify that we got the row that we asked for
         assert.equal(row.codeValue, codeValueToFind);
+        firstCodeValueId = row.id;
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
     });
+
+    // make sure we can use parameterized values for queryEnityId (test on parameterized codevalue)
+    const ids = imodel2.queryEntityIds({ from: "bis.element", where: "codevalue=:cv", bindings: { cv: firstCodeValue } });
+    assert.equal(ids.values().next().value, firstCodeValueId);
 
     imodel2.withPreparedStatement("select ecinstanceid as id, codevalue from bis.element", (stmt5: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt5.step()) {
@@ -1324,6 +1287,9 @@ describe("iModel", () => {
       }
     });
 
+    // make sure queryEnityIds works fine when all params are specified
+    const physicalObjectIds = imodel2.queryEntityIds({ from: "generic.PhysicalObject", where: "codevalue is null", limit: 1, offset: 1, only: true, orderBy: "ecinstanceid desc" });
+    assert.equal(physicalObjectIds.size, 1);
   });
 
   it("validate BisCodeSpecs", async () => {
@@ -1398,6 +1364,7 @@ describe("iModel", () => {
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
       assert.isFalse(codeSpec.isManagedWithIModel);
+      iModelDb.saveChanges();
       iModelDb.close();
     }
 
@@ -1729,8 +1696,10 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
-    const changeSetId = generateChangeSetId();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
+    snapshot.saveChanges();
     snapshot.close();
 
     // Mock iModelHub
@@ -1775,10 +1744,47 @@ describe("iModel", () => {
     checkpoint.close();
   });
 
+  it("should throw for invalid dbGuid in v2 checkpoint", async () => {
+    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
+    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
+    const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
+    const contextId = Guid.createValue();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
+    snapshot.saveChanges();
+    snapshot.close();
+
+    // Mock iModelHub
+    const mockCheckpointV2: CheckpointV2 = {
+      wsgId: "INVALID",
+      ecId: "INVALID",
+      changeSetId,
+      containerAccessKeyAccount: "testAccount",
+      containerAccessKeyContainer: `imodelblocks-${iModelId}`,
+      containerAccessKeySAS: "testSAS",
+      containerAccessKeyDbName: "testDb",
+    };
+    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
+    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
+    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+
+    // Mock blockcacheVFS daemon
+    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
+    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
+    sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+
+    process.env.BLOCKCACHE_DIR = "/foo/";
+    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId }));
+    expectIModelError(IModelStatus.ValidationFailed, error);
+  });
+
   it("should throw when opening checkpoint without blockcache dir env", async () => {
     process.env.BLOCKCACHE_DIR = "";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
@@ -1789,11 +1795,11 @@ describe("iModel", () => {
     sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
@@ -1930,7 +1936,7 @@ describe("iModel", () => {
 
   function hasClassView(db: IModelDb, name: string): boolean {
     try {
-      return db.withPreparedSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
+      return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
     } catch (e) {
       return false;
     }
@@ -1943,14 +1949,14 @@ describe("iModel", () => {
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
-    assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(standaloneDb1.pathName, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key), "Should be in the list of open StandaloneDbs");
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
-    assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
+    assert.equal(standaloneDb1.elements.getRootSubject().code.value, standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
-    assert.isUndefined(standaloneDb1.contextId);
+    assert.equal(standaloneDb1.contextId, Guid.empty);
     assert.isUndefined(standaloneDb1.changeSetId);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
@@ -1978,16 +1984,13 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb3.isSnapshot);
-    assert.isFalse(snapshotDb1.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb2.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb3.txns.hasPendingTxns);
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
-    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(snapshotDb1.pathName, snapshotFile1);
     assert.equal(snapshotDb2.pathName, snapshotFile2);
     assert.equal(snapshotDb3.pathName, snapshotFile3);
@@ -2003,10 +2006,10 @@ describe("iModel", () => {
     const iModelGuid3: GuidString = snapshotDb3.getGuid();
     assert.notEqual(iModelGuid1, iModelGuid2, "Expect different iModel GUIDs for each snapshot");
     assert.notEqual(iModelGuid2, iModelGuid3, "Expect different iModel GUIDs for each snapshot");
-    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.getValue();
-    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.getValue();
-    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.getValue();
-    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.getValue();
+    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.value;
+    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.value;
+    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.value;
+    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.value;
     assert.equal(rootSubjectName1, snapshotRootSubjectName);
     assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
     assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
@@ -2067,7 +2070,7 @@ describe("iModel", () => {
 
     // create snapshot from scratch without a password, then unnecessarily specify a password to open
     let snapshotDb1 = SnapshotDb.createFrom(imodel1, snapshotFile1);
-    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     snapshotDb1.close();
     snapshotDb1 = SnapshotDb.openFile(snapshotFile1, { password: "unnecessaryPassword" });
     assert.isTrue(snapshotDb1.isSnapshotDb());
@@ -2078,7 +2081,7 @@ describe("iModel", () => {
 
     // create snapshot from scratch and give it a password
     let snapshotDb2 = SnapshotDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
-    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     const subjectName2 = "TestSubject2";
     const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
     assert.isTrue(Id64.isValidId64(subjectId2));
@@ -2093,7 +2096,7 @@ describe("iModel", () => {
 
     // create a new snapshot from a non-password-protected snapshot and then give it a password
     let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { password: "password" });
-    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     snapshotDb3.close();
     snapshotDb3 = SnapshotDb.openFile(snapshotFile3, { password: "password" });
     assert.isTrue(snapshotDb3.isSnapshotDb());
@@ -2283,7 +2286,7 @@ describe("iModel", () => {
     element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
     assert.isTrue(Code.isValid(element.code));
     assert.isFalse(Code.isEmpty(element.code));
-    assert.equal(element.code.getValue(), codeValue);
+    assert.equal(element.code.value, codeValue);
   });
 
   it("should update UserLabel", () => {
@@ -2406,6 +2409,12 @@ describe("iModel", () => {
     assert.equal(subject2.description, "Description2");
     assert.equal(subject3.description, ""); // NOTE: different behavior between auto-handled and custom-handled
     assert.isUndefined(subject4.description);
+
+    // Test toJSON
+    assert.equal(subject1.toJSON().description, "Description1");
+    assert.equal(subject2.toJSON().description, "Description2");
+    assert.equal(subject3.toJSON().description, "");
+    assert.isUndefined(subject4.toJSON().description);
 
     // Element.UserLabel is a custom-handled property
     assert.equal(subject1.userLabel, "UserLabel1");

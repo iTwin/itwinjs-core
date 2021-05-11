@@ -1,6 +1,6 @@
 # UI 2.0
 
-With the release of the `iModel.js 2.0`, new UI components are available that provide a new look and feel for IModelApps. The new look and feel is referred to as `UI 2.0`. The two primary goals of `UI 2.0` are to limit the amount of UI components that obscure the iModel content and to ensure that Extensions can augment the UI provided by the host IModelApp.
+With the release of the `iTwin.js 2.0`, new UI components are available that provide a new look and feel for iTwin Apps. The new look and feel is referred to as `UI 2.0`. The two primary goals of `UI 2.0` are to limit the amount of UI components that obscure the iModel content and to ensure that Extensions can augment the UI provided by the host IModelApp.
 
 ## Frontstage shown using UI 2.0 components
 

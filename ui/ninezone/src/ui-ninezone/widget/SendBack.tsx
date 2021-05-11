@@ -11,14 +11,14 @@ import classnames from "classnames";
 import * as React from "react";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { FloatingWidgetContext } from "./FloatingWidget";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 
 /** @internal */
 export const SendBack = React.memo(function SendBack() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const floatingWidget = React.useContext(FloatingWidgetContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   const title = useLabel("sendWidgetHomeTitle");
-  assert(floatingWidget);
+  assert(!!floatingWidget);
   const className = classnames(
     "nz-widget-sendBack",
     floatingWidget.home.side && `nz-${floatingWidget.home.side}`,

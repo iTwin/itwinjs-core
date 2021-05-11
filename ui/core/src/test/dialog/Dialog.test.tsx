@@ -7,7 +7,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { cleanup, render } from "@testing-library/react";
 import { Dialog, DialogButtonType } from "../../ui-core";
-import { DialogAlignment, GlobalDialog } from "../../ui-core/dialog/Dialog";
+import { DialogAlignment } from "../../ui-core/dialog/Dialog";
+import { GlobalDialog } from "../../ui-core/dialog/GlobalDialog";
 import { UiCore } from "../../ui-core/UiCore";
 import TestUtils from "../TestUtils";
 
@@ -24,15 +25,15 @@ describe("Dialog", () => {
   });
 
   describe("<GlobalDialog />", () => {
+    it("should render with identifier", () => {
+      render(<GlobalDialog opened={true} identifier="test" />);
+    });
     it("should render", () => {
       render(<GlobalDialog opened={true} />);
     });
     it("should render multiple in same global container", () => {
       render(<GlobalDialog opened={true} />);
       render(<GlobalDialog opened={true} />);
-    });
-    it("should render with identifier", () => {
-      render(<GlobalDialog opened={true} identifier="test" />);
     });
   });
 

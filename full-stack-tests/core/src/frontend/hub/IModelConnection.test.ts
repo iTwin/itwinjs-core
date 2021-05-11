@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, Id64, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, expect } from "chai";
+import { Id64, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
-import { CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, RemoteBriefcaseConnection, ViewState } from "@bentley/imodeljs-frontend";
+import {
+  CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender,
+  ModelSelectorState, OrthographicViewState, ViewState,
+} from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { assert, expect } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { TestSeqClient } from "./TestSeqClient";
 import { TestUtility } from "./TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
@@ -24,6 +26,7 @@ describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
+    await IModelApp.shutdown();
     await MockRender.App.startup({
       applicationVersion: "1.2.1.1",
     });
@@ -31,17 +34,14 @@ describe("IModelConnection (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    const testProjectName = "iModelJsIntegrationTest";
-    const testIModelName = "ConnectionReadTest";
-
-    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
     IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
-    const testProjectId = await TestUtility.getTestProjectId(testProjectName);
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+    const testProjectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const testIModelId = await TestUtility.queryIModelIdbyName(testProjectId, TestUtility.testIModelNames.connectionRead);
 
-    iModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId);
+    iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);
   });
 
   after(async () => {
@@ -101,7 +101,7 @@ describe("IModelConnection (#integration)", () => {
     assert.isAtLeast(viewDefinitions.length, 1);
     viewState = await iModel.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
-    assert.equal(viewState.code.getValue(), viewDefinitions[0].name);
+    assert.equal(viewState.code.value, viewDefinitions[0].name);
     assert.equal(viewState.classFullName, viewDefinitions[0].class);
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.classFullName);
     assert.equal(viewState.displayStyle.classFullName, DisplayStyle2dState.classFullName);
@@ -112,7 +112,8 @@ describe("IModelConnection (#integration)", () => {
 
   });
 
-  it("should be able to re-establish IModelConnection if the backend is shut down", async () => {
+  // TODO: This test currently causes other tests to fail due to how it restarts IModelHost
+  it.skip("should be able to re-establish IModelConnection if the backend is shut down", async () => {
     let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
     assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
@@ -134,53 +135,29 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to open an IModel with no versions", async () => {
-    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const iModelId = await TestUtility.getTestIModelId(projectId, "NoVersionsTest");
-    const noVersionsIModel = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const projectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const iModelId = await TestUtility.queryIModelIdbyName(projectId, TestUtility.testIModelNames.noVersions);
+    const noVersionsIModel = await CheckpointConnection.openRemote(projectId, iModelId);
     assert.isNotNull(noVersionsIModel);
 
-    const noVersionsIModel2 = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
+    const noVersionsIModel2 = await CheckpointConnection.openRemote(projectId, iModelId);
     assert.isNotNull(noVersionsIModel2);
 
-    const noVersionsIModel3 = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(""));
+    const noVersionsIModel3 = await CheckpointConnection.openRemote(projectId, iModelId, IModelVersion.asOfChangeSet(""));
     assert.isNotNull(noVersionsIModel3);
   });
 
-  it("should send a usage log everytime an iModel is opened", async () => {
-    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
-
-    // Set a new session id to isolate the usage logs
-    IModelApp.sessionId = Guid.createValue();
-
-    // Open multiple connections
-    let n = 0;
-    const MAX_CONNECTIONS = 12;
-    while (n++ < MAX_CONNECTIONS) {
-      const noVersionsIModel = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
-      assert.isNotNull(noVersionsIModel);
-    }
-
-    const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-    await pause(5000); // Give ULAS and SEQ about 5 seconds to catch up
-
-    const filter = `And(And(Equal(ServiceRequest,"FePostClientLog"),has(UsageLogEntry)),Equal(UsageLogEntry.CorrelationId,"${IModelApp.sessionId}"))`;
-    const seqClient = new TestSeqClient(true /* = forUsageLogging */);
-    const results = await seqClient.query(filter, MAX_CONNECTIONS * 2);
-    assert.equal(results.length, MAX_CONNECTIONS);
-  });
-
   it("should be able to open the same IModel many times", async () => {
-    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
+    const projectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const iModelId = await TestUtility.queryIModelIdbyName(projectId, "ReadOnlyTest");
 
-    const readOnlyTest = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const readOnlyTest = await CheckpointConnection.openRemote(projectId, iModelId, IModelVersion.latest());
     assert.isNotNull(readOnlyTest);
 
     const promises = new Array<Promise<void>>();
     let n = 0;
     while (++n < 25) {
-      const promise = RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest())
+      const promise = CheckpointConnection.openRemote(projectId, iModelId)
         .then((readOnlyTest2: IModelConnection) => {
           assert.isNotNull(readOnlyTest2);
           assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
@@ -192,15 +169,15 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {
-    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
-    iModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId);
+    const testProjectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const testIModelId = await TestUtility.queryIModelIdbyName(testProjectId, "ConnectionReadTest");
+    iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);
 
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).to.equal(1);
 
     const treeId = modelProps[0].id!.toString();
-    const tree = await iModel.tiles.getTileTreeProps(treeId);
+    const tree = await IModelApp.tileAdmin.requestTileTreeProps(iModel, treeId);
 
     expect(tree.id).to.equal(modelProps[0].id);
     expect(tree.maxTilesToSkip).to.equal(1);
@@ -223,8 +200,7 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.isLeaf).to.be.false;
   });
 
-  // This require new build of Addon
-  it.skip("ECSQL with BLOB", async () => {
+  it("ECSQL with BLOB", async () => {
     assert.exists(iModel);
     let rows = await executeQuery(iModel, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
     assert.equal(rows.length, 1);
@@ -239,6 +215,7 @@ describe("IModelConnection (#integration)", () => {
     rows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
     assert.equal(rows.length, 1);
   });
+
   // This require new build of Addon
   it.skip("Parameterized ECSQL", async () => {
     assert.exists(iModel);

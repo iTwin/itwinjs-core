@@ -1,4 +1,4 @@
-# iModel.js RPC Tests
+# iTwin.js RPC Tests
 
 This package contains tests of the RPC transport mechanism defined in imodeljs-common.
 

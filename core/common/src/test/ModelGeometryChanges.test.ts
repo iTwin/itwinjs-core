@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { CompressedId64Set, DbOpcode, Guid, Id64String, OrderedId64Iterable, TransientIdSequence } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
-import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../rpc/ModelGeometryChanges";
+import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../ModelGeometryChanges";
 
 // Each test is list of inserted, updated, and/or deleted element Ids; along with modelId.
 // We choose an arbitrary range for each insert or update.
@@ -45,7 +45,7 @@ function generateElementChanges(numInserts: number, numUpdates: number, numDelet
   return changes;
 }
 
-function * elementIdIterator(changes: Set<ElementGeometryChange>): Iterator<Id64String> {
+function* elementIdIterator(changes: Set<ElementGeometryChange>): Iterator<Id64String> {
   for (const change of changes)
     yield change.id;
 }
@@ -145,8 +145,8 @@ describe("ModelGeometryChanges", () => {
     };
 
     test([]);
-    test([ generateElementChanges(0, 0, 0) ]);
-    test([ generateElementChanges(2, 0, 4) ]);
-    test([ generateElementChanges(0, 4, 3), generateElementChanges(1, 0, 0), generateElementChanges(0, 0, 0), generateElementChanges(3, 1, 2) ]);
+    test([generateElementChanges(0, 0, 0)]);
+    test([generateElementChanges(2, 0, 4)]);
+    test([generateElementChanges(0, 4, 3), generateElementChanges(1, 0, 0), generateElementChanges(0, 0, 0), generateElementChanges(3, 1, 2)]);
   });
 });

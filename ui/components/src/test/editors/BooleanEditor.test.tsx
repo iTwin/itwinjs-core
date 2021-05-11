@@ -5,12 +5,15 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
+import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import { PrimitiveValue } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
 import { BooleanEditor } from "../../ui-components/editors/BooleanEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 describe("<BooleanEditor />", () => {
   it("should render", () => {
@@ -99,6 +102,29 @@ describe("<BooleanEditor />", () => {
     expect(editor.state.checkboxValue).to.equal(true);
 
     wrapper.unmount();
+  });
+
+  class MineDataController extends DataControllerBase {
+    public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+    }
+  }
+
+  it("should not commit if DataController fails to validate", async () => {
+    PropertyEditorManager.registerDataController("myData", MineDataController);
+    const propertyRecord = TestUtils.createBooleanProperty("Test2", false);
+    propertyRecord.property.dataController = "myData";
+
+    const spyOnCommit = sinon.spy();
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
+    const inputNode = wrapper.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
+
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCommit.calledOnce).to.be.false;
+
+    PropertyEditorManager.deregisterDataController("myData");
   });
 
 });

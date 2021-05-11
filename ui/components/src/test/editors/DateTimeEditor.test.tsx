@@ -6,11 +6,14 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { AlternateDateFormats, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardTypeNames, TimeDisplay } from "@bentley/ui-abstract";
+import { AlternateDateFormats, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat,
+  SpecialKey, StandardTypeNames, TimeDisplay } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { EditorContainer /* PropertyUpdatedArgs */ } from "../../ui-components/editors/EditorContainer";
 import { DateTimeEditor } from "../../ui-components/editors/DateTimeEditor";
 import TestUtils from "../TestUtils";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 function createDateProperty(propertyName: string, value: Date, option: number) {
   const v: PropertyValue = {
@@ -228,6 +231,30 @@ describe("<DateTimeEditor />", () => {
     fireEvent.click(cancelButton);
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.notCalled);
+  });
+
+  class MineDataController extends DataControllerBase {
+    public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+    }
+  }
+
+  it("should not commit if DataController fails to validate", async () => {
+    PropertyEditorManager.registerDataController("myData", MineDataController);
+    const propertyRecord = createDateProperty("Test", date, 10);
+    propertyRecord.property.dataController = "myData";
+
+    const spyOnCommit = sinon.spy();
+    const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
+    expect(renderedComponent).not.to.be.undefined;
+    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    expect(popupButton).not.to.be.null;
+
+    fireEvent.keyDown(popupButton, { key: SpecialKey.Enter });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCommit.called).to.be.false;
+
+    PropertyEditorManager.deregisterDataController("myData");
   });
 
 });

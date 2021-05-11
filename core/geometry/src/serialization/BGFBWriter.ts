@@ -36,6 +36,7 @@ import { AuxChannel, AuxChannelData, PolyfaceAuxData } from "../polyface/AuxData
 import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DgnSpiralTypeQueries } from "./BGFBReader";
+import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 
 /**
  * Context to write to a flatbuffer blob.
@@ -196,8 +197,33 @@ export class BGFBWriter {
         spiralDetailOffset, 0, 0);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder,
         BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral, transitionTableOffset, 0);
-    }
-    return undefined;
+      } else if (curvePrimitive instanceof DirectSpiral3d) {
+      const placement = curvePrimitive.localToWorld;
+      // direct spirals always inflect at the origin of the local frame ..
+      // spiral
+      const curvature0 = 0.0;
+      const curvature1 = curvePrimitive.nominalCurvature1;
+      const radius0 = 0.0;
+      const radius1 = curvePrimitive.nominalR1; // which is 1/curvature1
+      const nominalLength = curvePrimitive.nominalL1;
+      const bearing0Radians = 0.0;
+      const bearing1Radians = TransitionSpiral3d.radiusRadiusLengthToSweepRadians(radius0, radius1, nominalLength);
+        const typeCode = DgnSpiralTypeQueries.stringToTypeCode(curvePrimitive.spiralType, true)!;
+        const spiralDetailOffset = BGFBAccessors.TransitionSpiralDetail.createTransitionSpiralDetail(this.builder,
+          placement.matrix.coffs[0], placement.matrix.coffs[1], placement.matrix.coffs[2], placement.origin.x,
+          placement.matrix.coffs[3], placement.matrix.coffs[4], placement.matrix.coffs[5], placement.origin.y,
+          placement.matrix.coffs[6], placement.matrix.coffs[5], placement.matrix.coffs[8], placement.origin.z,
+          curvePrimitive.activeFractionInterval.x0, curvePrimitive.activeFractionInterval.x1,
+          bearing0Radians, bearing1Radians,
+          curvature0, curvature1,
+          typeCode,
+          0);
+        const transitionTableOffset = BGFBAccessors.TransitionSpiral.createTransitionSpiral(this.builder,
+          spiralDetailOffset, 0, 0);
+        return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder,
+          BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral, transitionTableOffset, 0);
+        }
+      return undefined;
   }
   public writePointString3dAsFBVariantGeometry(pointString: PointString3d): number | undefined {
     if (pointString instanceof PointString3d) {
@@ -422,10 +448,11 @@ export class BGFBWriter {
         auxDataOffset = this.writePolyfaceAuxDataAsFBVariantGeometry(mesh.data.auxData)!;
       }
 
+      const expectedClosure = mesh.expectedClosure;
       const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset,
         pointIndexOffset, paramIndexOffset, normalIndexOffset, colorIndexOffset, 0,
         0, 0, meshStyle, twoSided,
-        numPerFace, 0, auxDataOffset);
+        numPerFace, 0, auxDataOffset, expectedClosure);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagPolyface, polyfaceOffset, 0);
 
     }

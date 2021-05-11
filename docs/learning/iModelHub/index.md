@@ -1,4 +1,4 @@
-# iModelHub - The Backbone for iModel.js Applications
+# iModelHub - The Backbone for iTwin.js Applications
 
 [iModelHub](http://www.iModelHub.com) is the control center for iModels. It is responsible for coordinating concurrent access to [iModels](./iModels/index.md) as well as changes made to them in a form of [ChangeSets](../Glossary.md#changeset).
 
@@ -6,18 +6,18 @@
 
 Like [Git](https://git-scm.com/) repositories for source code, in the iModel ecosystem copies of iModels are distributed widely in [Briefcases](../Glossary.md#briefcase). In fact, iModelHub's primary purpose is *not* to hold or process copies of iModels (it does so only to facilitate Briefcase checkout). Rather, iModelHub's main role is to maintain the sequence of [ChangeSets](../Glossary.md#changeset) that forms an iModel's [Timeline](#the-timeline-of-changes-to-an-imodel). Like an accounting system does for financial transactions, iModelHub holds a ledger of all changes to an iModel.
 
-iModelHub accepts ChangeSets from iModel.js [backends](../backend/index.md) through a process called [*push*](../Glossary.md#push), and sends them to other validated users when requested through a process called [*pull*](../Glossary.md#pull). iModel.js applications determine when and how to push and pull changes.
+iModelHub accepts ChangeSets from iTwin.js [backends](../backend/index.md) through a process called [*push*](../Glossary.md#push), and sends them to other validated users when requested through a process called [*pull*](../Glossary.md#pull). iTwin.js applications determine when and how to push and pull changes.
 
 > See [Working with iModelHub](./WorkingWith.md) for a list of related learning topics.
 
-## The Connection between iModel.js and iModelHub
+## The Connection between iTwin.js and iModelHub
 
 1. Every iModel has an [identity](../iModels#every-imodel-has-a-guid) registered in iModelHub.
 2. Users [authenticate](../common/AccessToken.md) with iModelHub.
-3. iModel.js backends have an identity, registered with iModelHub.
+3. iTwin.js backends have an identity, registered with iModelHub.
 4. iModel owners decide, which users and which applications have [access](./Permissions.md) to their iModels.
 
-When an iModel.js backend opens an iModel, it first verifies with iModelHub that the iModel's owner has granted the right for the specified user and application to access the briefcase. In this manner owners can maintain control over who-does-what with their iModels.
+When an iTwin.js backend opens an iModel, it first verifies with iModelHub that the iModel's owner has granted the right for the specified user and application to access the briefcase. In this manner owners can maintain control over who-does-what with their iModels.
 
 > See [Accessing iModels](../backend/AccessingIModels.md) for further details.
 

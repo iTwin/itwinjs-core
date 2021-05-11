@@ -16,7 +16,7 @@ const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;
 
 /**
  * Props for the [[usePropertyDataProviderWithUnifiedSelection]] hook
- * @beta
+ * @public
  */
 export interface PropertyDataProviderWithUnifiedSelectionProps {
   /** The data provider used by the property grid. */
@@ -26,7 +26,7 @@ export interface PropertyDataProviderWithUnifiedSelectionProps {
    * Maximum number of instances to request content for.
    *
    * When the number of selected instances is higher than this value, `dataProvider.keys` is set to an
-   * empty [[KeySet] and the result of the hook has `isOverLimit = true`.
+   * empty [[KeySet]] and the result of the hook has `isOverLimit = true`.
    *
    * Defaults to `100`.
    */
@@ -38,8 +38,7 @@ export interface PropertyDataProviderWithUnifiedSelectionProps {
 
 /**
  * A React hook that adds unified selection functionality to the provided data provider.
- *
- * @beta
+ * @public
  */
 export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps) {
   const { dataProvider } = props;

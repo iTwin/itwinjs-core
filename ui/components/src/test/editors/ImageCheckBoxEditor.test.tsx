@@ -5,12 +5,15 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
+import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import { PrimitiveValue } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import { ImageCheckBoxEditor } from "../../ui-components/editors/ImageCheckBoxEditor";
 import TestUtils from "../TestUtils";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 describe("<ImageCheckBoxEditor />", () => {
   it("should render", () => {
@@ -103,6 +106,36 @@ describe("<ImageCheckBoxEditor />", () => {
     expect(editor.state.checkboxValue).to.equal(true);
 
     wrapper.unmount();
+  });
+
+  class MineDataController extends DataControllerBase {
+    public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+    }
+  }
+
+  it("should not commit if DataController fails to validate", async () => {
+    PropertyEditorManager.registerDataController("myData", MineDataController);
+    const record = TestUtils.createImageCheckBoxProperty("Test", false);
+    record.property.dataController = "myData";
+
+    const spyOnCommit = sinon.spy();
+    const spyOnCancel = sinon.spy();
+    const renderedComponent = render(<EditorContainer propertyRecord={record} title="abc" onCommit={spyOnCommit} onCancel={spyOnCancel} />);
+    expect(renderedComponent).not.to.be.undefined;
+
+    const inputNode = renderedComponent.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
+
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCommit.called).to.be.false;
+
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Escape });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCancel.calledOnce).to.be.true;
+
+    PropertyEditorManager.deregisterDataController("myData");
   });
 
 });

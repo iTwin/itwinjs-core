@@ -7,13 +7,14 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { fireEvent, render } from "@testing-library/react";
 import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { CardContainer, CardInfo, FrontstageManager, SheetCard, SheetData, SheetsModalFrontstage } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("SheetsModalFrontstage", () => {
-
   let modal: SheetsModalFrontstage;
+
   before(async () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
@@ -44,19 +45,12 @@ describe("SheetsModalFrontstage", () => {
       expect(content).to.not.be.null;
     });
 
-    it("search box calls onValueChanged after 250ms delay", () => {
-      const content = modal.appBarRight;
-      const wrapper = mount(content as React.ReactElement<any>);
-      const onChange = sinon.spy();
-      const removeListener = FrontstageManager.onModalFrontstageChangedEvent.addListener(onChange);
-      wrapper.find("input").simulate("change", { target: { value: "search value" } });
-      setTimeout(() => {
-        expect(onChange.called).to.be.true;
-        removeListener();
-      }, 251);
-    });
-
     it("SheetCard onClick selects the card", () => {
+      modal = new SheetsModalFrontstage(new Array<SheetData>({
+        name: "Name",
+        viewId: "viewId",
+      }), connection.object, 0);
+
       const content = modal.content;
       const wrapper = mount(content as React.ReactElement<any>);
       const onCardSelected = sinon.spy();
@@ -64,6 +58,29 @@ describe("SheetsModalFrontstage", () => {
       wrapper.find("div.uifw-sheet-card").simulate("click");
       expect(onCardSelected.called).to.be.true;
       removeListener();
+    });
+  });
+
+  describe("CardContainer React Testing", () => {
+    it("search box calls onValueChanged after 250ms delay", async () => {
+      const fakeTimers = sinon.useFakeTimers();
+      modal = new SheetsModalFrontstage(new Array<SheetData>({
+        name: "Name",
+        viewId: "viewId",
+      }), connection.object, 0);
+
+      const content = modal.appBarRight;
+      const wrapper = render(content as React.ReactElement<any>);
+      const onChange = sinon.spy();
+      const removeListener = FrontstageManager.onModalFrontstageChangedEvent.addListener(onChange);
+      const input = wrapper.container.querySelector ("input");
+      expect (input).not.to.be.null;
+      fireEvent.change(input!, { target: { value: "search value" } });
+      await fakeTimers.tickAsync(500);
+      expect(onChange.called).to.be.true;
+      removeListener();
+      fakeTimers.restore();
+      wrapper.unmount();
     });
   });
 

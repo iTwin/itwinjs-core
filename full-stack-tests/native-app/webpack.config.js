@@ -6,7 +6,9 @@
 const path = require("path");
 const glob = require("glob");
 const webpack = require("webpack");
-const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(true /*suppress error*/, true);
+
+// loads into the process.env
+require("@bentley/config-loader").loadEnv(path.join(__dirname, ".env"));
 
 function createConfig(shouldInstrument) {
   const config = {
@@ -49,16 +51,14 @@ function createConfig(shouldInstrument) {
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
       new webpack.DefinePlugin({
-        "process.env": Object.keys(raw)
+        "process.env": Object.keys(process.env)
           .filter((key) => {
             return key.match(/^imjs_/i);
           })
           .reduce((env, key) => {
-            env[key] = JSON.stringify(raw[key]);
+            env[key] = JSON.stringify(process.env[key]);
             return env;
-          }, {
-            IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
-          }),
+          }, {}),
       })
     ]
   };

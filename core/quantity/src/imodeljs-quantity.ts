@@ -15,3 +15,12 @@ export * from "./Formatter/FormatterSpec";
 export * from "./Formatter/FormatEnums";
 export * from "./Formatter/Formatter";
 export * from "./Formatter/Interfaces";
+
+/** @docs-package-description
+ * The imodeljs-quantity package always runs in a web browser. It contains classes, interfaces, and definitions for formatting and parsing quantity values.
+ */
+
+/**
+ * @docs-group-description Quantity
+ * Classes, Interfaces, and definitions used to format and parse quantity values.
+ */

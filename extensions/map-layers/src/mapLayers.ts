@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Extension, IModelApp } from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@bentley/ui-abstract";
 import { ConfigurableUiManager } from "@bentley/ui-framework";
@@ -18,6 +18,7 @@ import { ConfigurableUiManager } from "@bentley/ui-framework";
  * @beta
  */
 export class MapLayersUI {
+  private static _i18n?: I18N;
   private static _defaultNs = "mapLayers";
   private static _uiItemsProvider: MapLayersUiItemsProvider;
 
@@ -29,16 +30,30 @@ export class MapLayersUI {
    *   iconSpec={MapLayersWidgetControl.iconSpec} />,
    * ```
    */
-  public static async initialize(registerItemsProvider = true): Promise<void> {
+  public static async initialize(registerItemsProvider = true, i18n?: I18N): Promise<void> {
     // register namespace containing localized strings for this package
-    const namespace = IModelApp.i18n.registerNamespace(MapLayersUI._defaultNs);
+    this._i18n = (i18n ? i18n : IModelApp.i18n);
+    const namespace = this._i18n.registerNamespace(this.i18nNamespace);
     await namespace.readFinished;
+
     // _uiItemsProvider always created to provide access to i18n.
-    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(IModelApp.i18n);
+    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(this._i18n);
     if (registerItemsProvider)
       UiItemsManager.register(MapLayersUI._uiItemsProvider);
     else
       ConfigurableUiManager.registerControl(MapLayersWidgetControl.id, MapLayersWidgetControl);
+  }
+
+  /** Unregisters the GeoTools internationalization service namespace */
+  public static terminate() {
+    if (MapLayersUI._i18n)
+      MapLayersUI._i18n.unregisterNamespace(this.i18nNamespace);
+    MapLayersUI._i18n = undefined;
+  }
+
+  /** The internationalization service namespace. */
+  public static get i18nNamespace(): string {
+    return this._defaultNs;
   }
 }
 
@@ -46,7 +61,6 @@ export class MapLayersUI {
  * Extension that provides MapLayers widget
  */
 class MapLayersExtension extends Extension {
-  protected _defaultNs = "mapLayers";
   private _i18NNamespace?: I18NNamespace;
   /** The uiProvider will add a widget to any stage with its usage set to "General" in the host AppUi compatible application */
   public uiProvider?: MapLayersUiItemsProvider;
@@ -57,7 +71,7 @@ class MapLayersExtension extends Extension {
 
   /** Invoked the first time this extension is loaded. */
   public async onLoad(_args: string[]): Promise<void> {
-    this._i18NNamespace = this.i18n.getNamespace(this._defaultNs);
+    this._i18NNamespace = this.i18n.getNamespace(MapLayersUI.i18nNamespace);
     await this._i18NNamespace!.readFinished;
     UiItemsManager.register(new MapLayersUiItemsProvider(this.i18n));
   }

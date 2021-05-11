@@ -57,6 +57,14 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
     return propertyValue;
   }
 
+  public get htmlElement(): HTMLElement | null {
+    return this._buttonElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    return document.activeElement === this._buttonElement.current;
+  }
+
   private setFocus(): void {
     // istanbul ignore else
     if (this._buttonElement && this._buttonElement.current && !this.state.isDisabled) {
@@ -101,8 +109,8 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
       const colorValue = record.value.value as number;
       let numColumns = 4;
       const availableColors = new Array<ColorDef>();
-      const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;
-      const isDisabled = record ? record.isDisabled : undefined;
+      const readonly = record && undefined !== record.isReadonly ? record.isReadonly : /* istanbul ignore next */ false;
+      const isDisabled = record ? record.isDisabled : /* istanbul ignore next */ undefined;
 
       if (record.property.editor && record.property.editor.params) {
         const colorParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.ColorData) as ColorEditorParams;

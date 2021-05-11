@@ -2,6 +2,144 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.15.1",
+      "tag": "@bentley/presentation-components_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/presentation-components_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Refactor the way presentation type of content is mapped to UI type of content. This is a more flexible approach and allowed to fix invalid properties display when an element had multiple aspects with categorized properties."
+          },
+          {
+            "comment": "Change hierarchy auto updating after iModel data changes to reload only nodes visible in the tree"
+          },
+          {
+            "comment": "Disable hierarchy preloading"
+          },
+          {
+            "comment": "Fix compatibility issue when multiple versions of `rxjs` are in use."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@bentley/presentation-components_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@bentley/presentation-components_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/presentation-components_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/presentation-components_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/presentation-components_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Apply unified selection on newly created viewports"
+          },
+          {
+            "comment": "Added expanded nodes tracking in trees using usePresentationTreeNodeLoader with enabled hierarchy auto update"
+          },
+          {
+            "comment": "Changed `PresentationManager` to **not** set link information on created `PropertyRecords`. Default behavior should be handled by UI components. Custom behavior can be injected by overriding data providers that return the records."
+          },
+          {
+            "comment": "Always set `PropertyDescription.typename` to lowercase when creating content."
+          },
+          {
+            "comment": " Handle partial hierarchy updates without loosing tree state."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@bentley/presentation-components_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/presentation-components_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/presentation-components_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.1",
+      "tag": "@bentley/presentation-components_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/presentation-components_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Ignore update records for unrelated iModels."
+          },
+          {
+            "comment": "Added IFilteredPresentationTreeDataProvider interface"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@bentley/presentation-components_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/presentation-components_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.11.0",
       "tag": "@bentley/presentation-components_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",

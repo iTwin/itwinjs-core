@@ -668,6 +668,7 @@ abstract class Compositor extends SceneCompositor {
   protected _translucentRenderState = new RenderState();
   protected _hiliteRenderState = new RenderState();
   protected _noDepthMaskRenderState = new RenderState();
+  protected _backgroundMapRenderState = new RenderState();
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
   protected _vcBranchState?: BranchState;
   protected _vcSetStencilRenderState?: RenderState;
@@ -757,6 +758,11 @@ abstract class Compositor extends SceneCompositor {
     this._hiliteRenderState.blend.functionDestAlpha = GL.BlendFactor.One;
 
     this._noDepthMaskRenderState.flags.depthMask = false;
+
+    // Background map supports transparency, even when depth is off, which is mostly useless but should blend with background color / skybox.
+    this._backgroundMapRenderState.flags.depthMask = false;
+    this._backgroundMapRenderState.flags.blend = true;
+    this._backgroundMapRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
 
     // Can't write depth without enabling depth test - so make depth test always pass
     this._layerRenderState.flags.depthTest = true;
@@ -1674,7 +1680,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Process the volume classifiers.
     const vcHiliteCmds = commands.getCommands(RenderPass.HiliteClassification);
-    if (0 !== vcHiliteCmds.length) {
+    if (0 !== vcHiliteCmds.length && undefined !== this._vcBranchState) {
       // Set the stencil for the given classifier stencil volume.
       system.frameBufferStack.execute(this._frameBuffers.stencilSet!, false, false, () => {
         this.target.pushState(this._vcBranchState!);
@@ -1719,6 +1725,8 @@ abstract class Compositor extends SceneCompositor {
         return this._translucentRenderState;
       case RenderPass.Hilite:
         return this._hiliteRenderState;
+      case RenderPass.BackgroundMap:
+        return this._backgroundMapRenderState;
       default:
         return this._noDepthMaskRenderState;
     }

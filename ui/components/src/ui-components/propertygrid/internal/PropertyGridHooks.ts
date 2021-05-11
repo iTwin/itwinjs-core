@@ -19,7 +19,7 @@ import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGri
 /**
  * Custom hook that gets propertyData from data provider and subscribes to further data changes.
  * Returned property data has links.onClick replaced by passed onPropertyLinkClick or default implementation
- * @alpha
+ * @beta
  */
 export function usePropertyData(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (property: PropertyRecord, text: string) => void }) {
   const { dataProvider, onPropertyLinkClick } = { ...props };
@@ -38,9 +38,11 @@ export function usePropertyData(props: { dataProvider: IPropertyDataProvider, on
   return useMemo(() => {
     if (value) {
       for (const categoryName in value.records) {
+        // Support for deprecated onPropertyLinkClick
         // istanbul ignore else
-        if (value.records.hasOwnProperty(categoryName))
+        if (onPropertyLinkClick && value.records.hasOwnProperty(categoryName))
           PropertyGridCommons.assignRecordClickHandlers(value.records[categoryName], onPropertyLinkClick);
+
       }
     }
     return { value, inProgress };
@@ -49,7 +51,7 @@ export function usePropertyData(props: { dataProvider: IPropertyDataProvider, on
 
 /**
  * Custom hook that creates a PropertyGridModelSource and subscribes it to data updates from the data provider.
- * @alpha
+ * @beta
  */
 export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (property: PropertyRecord, text: string) => void }) {
   const { value: propertyData } = usePropertyData(props);
@@ -69,7 +71,7 @@ export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataP
 
 /**
  * Custom hook that creates memoized version of PropertyGridEventHandler that modifies given modelSource
- * @alpha
+ * @beta
  */
 export function usePropertyGridEventHandler(props: { modelSource: IPropertyGridModelSource }) {
   return useMemo(() => new PropertyGridEventHandler(props.modelSource), [props.modelSource]);
@@ -77,7 +79,7 @@ export function usePropertyGridEventHandler(props: { modelSource: IPropertyGridM
 
 /**
  * Custom hook that automatically listens and retrieves latest model from model source
- * @alpha
+ * @beta
  */
 export function usePropertyGridModel(props: { modelSource: IPropertyGridModelSource }) {
   const { modelSource } = { ...props };

@@ -54,9 +54,8 @@ export class RbacClient extends WsgClient {
     getObjectTypeId(requestContext: AuthorizedClientRequestContext, objectTypeName: string, serviceGPRId: number): Promise<string>;
     getPermissions(requestContext: AuthorizedClientRequestContext, projectId: string, serviceGPRId: number): Promise<Permission[]>;
     protected getRelyingPartyUrl(): string;
-    protected getUrlSearchKey(): string;
     // (undocumented)
-    static readonly searchKey: string;
+    protected getUrlSearchKey(): string;
 }
 
 

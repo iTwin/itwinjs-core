@@ -62,19 +62,29 @@ export class SubCategoryOverride {
    * @internal
    */
   public toJSON(): SubCategoryAppearance.Props {
-    const val: SubCategoryAppearance.Props = {
-      invisible: this.invisible,
-      weight: this.weight,
-      style: this.style,
-      material: this.material,
-      priority: this.priority,
-      transp: this.transparency,
-    };
+    const props: SubCategoryAppearance.Props = { };
+    if (undefined !== this.invisible)
+      props.invisible = this.invisible;
+
+    if (undefined !== this.weight)
+      props.weight = this.weight;
+
+    if (undefined !== this.style)
+      props.style = this.style;
+
+    if (undefined !== this.material)
+      props.material = this.material;
+
+    if (undefined !== this.priority)
+      props.priority = this.priority;
+
+    if (undefined !== this.transparency)
+      props.transp = this.transparency;
 
     if (undefined !== this.color)
-      val.color = this.color.toJSON();
+      props.color = this.color.toJSON();
 
-    return val;
+    return props;
   }
 
   /** Perform equality comparison against another SubCategoryOverride. */

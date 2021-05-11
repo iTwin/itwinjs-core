@@ -1,10 +1,10 @@
 # Portability
 
-This article describes the technologies and best practices that make iModel.js apps portable. A well-written iModel.js app will run on many platforms without modification.
+This article describes the technologies and best practices that make iTwin.js apps portable. A well-written iTwin.js app will run on many platforms without modification.
 
-In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iModel.js app must be the same in all configurations. In fact, the iModel.js architecture makes it easy to [make the app fit the platform](../learning/AppTailoring.md).
+In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iTwin.js app must be the same in all configurations. In fact, the iTwin.js architecture makes it easy to [make the app fit the platform](../learning/AppTailoring.md).
 
-This degree of portability and configurability is possible because of the technologies used by iModel.js apps and the iModel.js app architecture.
+This degree of portability and configurability is possible because of the technologies used by iTwin.js apps and the iTwin.js app architecture.
 
 ## Cross-Platform Technologies
 
@@ -18,7 +18,7 @@ Web UI technology, including HTML and CSS, makes it possible to write a cross-pl
 
 ## Frontend Portability
 
-Since an iModel.js app [frontend](../learning/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
+Since an iTwin.js app [frontend](../learning/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
 
 ### Using Platform-specific Modules in the Frontend
 
@@ -37,7 +37,7 @@ if (isIos) {
 
 ### Services and Agents
 
-True services and agents are easy to make portable, since they always run in Node.js and they always run on a server. Services always run a Web server and always use [Web RPC configuration](../learning/RpcInterface.md#web-rpc-configuration). Note that an iModel.js service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModel.js services and agents are cloud-neutral and run on many cloud infrastructures.
+True services and agents are easy to make portable, since they always run in Node.js and they always run on a server. Services always run a Web server and always use [Web RPC configuration](../learning/RpcInterface.md#web-rpc-configuration). Note that an iTwin.js service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iTwin.js services and agents are cloud-neutral and run on many cloud infrastructures.
 
 ### App Backends
 

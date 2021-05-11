@@ -1084,7 +1084,7 @@ export class Sample {
   }
   /** assorted small polyface grids, possibly expanded by gridMultiplier */
   public static createSimpleIndexedPolyfaces(gridMultiplier: number): IndexedPolyface[] {
-    return [
+    const meshes = [
       Sample.createTriangularUnitGridPolyface(
         Point3d.create(),
         Vector3d.unitX(),
@@ -1111,6 +1111,9 @@ export class Sample {
         Vector3d.unitY(),
         3 * gridMultiplier, 2 * gridMultiplier, true, true, true),
     ];
+    for (const m of meshes)
+      m.expectedClosure = 1;
+    return meshes;
   }
   /**
    * Build a mesh that is a (possibly skewed) grid in a plane.

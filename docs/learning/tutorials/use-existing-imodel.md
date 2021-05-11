@@ -1,6 +1,6 @@
 # iTwin Hub
 
-If you already have access to an iModel this will guide you through locating the name of the Project, iModel, and viewing the iModel in an iModel.js based online viewer.
+If you already have access to an iModel this will guide you through locating the name of the Project, iModel, and viewing the iModel in an iTwin.js based online viewer.
 
 - [Navigate to iTwin Hub](https://itwin.bentley.com/)
 - Login

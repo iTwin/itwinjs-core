@@ -12,7 +12,7 @@ import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ProvidedItem } from "../items/ProvidedItem";
 
 /** Used to specify the item type added to the backstage menu.
- * @beta
+ * @public
  */
 export enum BackstageItemType {
   /** Item that executes an action function */
@@ -22,7 +22,7 @@ export enum BackstageItemType {
 }
 
 /** Describes the data needed to insert a button into the backstage menu.
- * @beta
+ * @public
  */
 export interface CommonBackstageItem extends ProvidedItem {
   /** can be used by application to store miscellaneous data. */
@@ -52,43 +52,45 @@ export interface CommonBackstageItem extends ProvidedItem {
   readonly subtitle?: string | ConditionalStringValue;
   /** Tooltip. */
   readonly tooltip?: string | ConditionalStringValue;
+  /** Describes if the item is active. The default is for the item to be active if stageId matches activeFrontstageId */
+  readonly isActive?: boolean | ConditionalBooleanValue;
 }
 
 /** Describes the data needed to insert an action button into the backstage menu.
- * @beta
+ * @public
  */
 export interface BackstageActionItem extends CommonBackstageItem {
   readonly execute: () => void;
 }
 
 /** Describes the data needed to insert an action button into the backstage menu.
- * @beta
+ * @public
  */
 export interface BackstageStageLauncher extends CommonBackstageItem {
   readonly stageId: string;
 }
 
 /** Describes the data needed to insert a button into the backstage menu.
- * @beta
+ * @public
  */
 export type BackstageItem = BackstageActionItem | BackstageStageLauncher;
 
 /** BackstageActionItem type guard.
- * @beta
+ * @public
  */
 export const isActionItem = (item: BackstageItem): item is BackstageActionItem => {
   return (item as BackstageActionItem).execute !== undefined;
 };
 
 /** BackstageStageLauncher type guard.
- * @beta
+ * @public
  */
 export const isStageLauncher = (item: BackstageItem): item is BackstageStageLauncher => {
   return (item as BackstageStageLauncher).stageId !== undefined;
 };
 
 /** Utilities for creating and maintaining backstage items
- * @beta
+ * @public
  */
 export class BackstageItemUtilities {
   /** Creates a stage launcher backstage item */

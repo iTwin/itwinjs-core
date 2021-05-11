@@ -234,7 +234,7 @@ export class KindOfQuantity extends SchemaItem {
 
     if (undefined !== this.presentationFormats) {
       const presUnitStrings = this.presentationFormats.map((format: Format | OverrideFormat) => {
-        if (format instanceof Format)
+        if (!OverrideFormat.isOverrideFormat(format))
           return XmlSerializationUtils.createXmlTypedName(this.schema, format.schema, format.name);
         return format.fullNameXml(this.schema);
       });

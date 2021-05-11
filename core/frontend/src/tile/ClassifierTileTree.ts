@@ -6,7 +6,7 @@
  * @module Tiles
  */
 import { compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString } from "@bentley/imodeljs-common";
+import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -15,7 +15,7 @@ import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
-  IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier,
+  DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
@@ -39,7 +39,6 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     loadTree: async () => undefined,
     iModel: undefined as unknown as IModelConnection,
   };
-
   public compareTileTreeIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
     return compareIds(lhs, rhs);
   }
@@ -51,7 +50,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
       return undefined;
 
     const idStr = iModelTileTreeIdToString(id.modelId, id, IModelApp.tileAdmin);
-    const props = await iModel.tiles.getTileTreeProps(idStr);
+    const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
     const options = {
       edgesRequired: false,
@@ -74,6 +73,8 @@ const classifierTreeSupplier = new ClassifierTreeSupplier();
 /** @internal */
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
   public abstract get classifiers(): SpatialClassifiers;
+  public abstract get isPlanar(): boolean;
+  public abstract get activeClassifier(): SpatialClassificationProps.Classifier | undefined;
 }
 
 /** @internal */
@@ -96,6 +97,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   }
 
   public get classifiers(): SpatialClassifiers { return this._classifiers; }
+  public get activeClassifier(): SpatialClassificationProps.Classifier | undefined { return this.classifiers.active; }
 
   public get castsShadows() {
     return false;
@@ -111,34 +113,36 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     return this._owner;
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     // NB: We do NOT call super because we don't use our tree if no classifier is active.
     trees.disclose(this._classifiedTree);
 
-    const classifier = this._classifiers.active;
+    const classifier = this.activeClassifier;
     const classifierTree = undefined !== classifier ? this.treeOwner.tileTree : undefined;
     if (undefined !== classifierTree)
       trees.add(classifierTree);
   }
+  public get isPlanar() { return BatchType.PlanarClassifier === this._id.type; }
 
+  // Add volume classifiers to scene (planar classifiers are added seperately.)
   public addToScene(context: SceneContext): void {
+    if (this.isPlanar)
+      return;
+
     const classifiedTree = this._classifiedTree.treeOwner.load();
     if (undefined === classifiedTree)
       return;
 
     const classifier = this._classifiers.active;
-    const classifierTree = undefined !== classifier ? this.treeOwner.load() : undefined;
-    if (undefined === classifier || undefined === classifierTree)
+    if (undefined === classifier)
       return;
 
-    context.modelClassifiers.set(classifiedTree.modelId, classifier.modelId);
+    const classifierTree = this.treeOwner.load();
+    if (undefined === classifierTree)
+      return;
 
-    if (BatchType.PlanarClassifier === this._id.type) {
-      context.addPlanarClassifier(classifier, this, this._classifiedTree);
-    } else {
-      context.setVolumeClassifier(classifier, classifiedTree.modelId);
-      super.addToScene(context);
-    }
+    context.setVolumeClassifier(classifier, classifiedTree.modelId);
+    super.addToScene(context);
   }
 
   private createId(classifiers: SpatialClassifiers, source: ViewState | DisplayStyleState): ClassifierTreeId {
@@ -147,7 +151,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
       return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
 
     const type = active.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
-    const script = source.scheduleScript;
+    const script = source.scheduleState;
     const animationId = (undefined !== script) ? script.getModelAnimationId(active.modelId) : undefined;
     return {
       modelId: active.modelId,

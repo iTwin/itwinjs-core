@@ -133,6 +133,10 @@ export type ProgressCallback = (progress: ProgressInfo) => void;
 /** @beta */
 export class RequestGlobalOptions {
   public static httpsProxy?: https.Agent = undefined;
+  /** Creates an agent for any user defined proxy using the supplied additional options. Returns undefined if user hasn't defined a proxy.
+   * @internal
+   */
+  public static createHttpsProxy: (additionalOptions?: https.AgentOptions) => https.Agent | undefined = (_additionalOptions?: https.AgentOptions) => undefined;
   public static maxRetries: number = 4;
   public static timeout: RequestTimeoutOptions = {
     deadline: 25000,
@@ -337,6 +341,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
   if (options.parser)
     sareq = sareq.parse(options.parser);
 
+  /** Default to any globally supplied proxy, unless an agent is specified in this call */
   if (options.agent)
     sareq = sareq.agent(options.agent);
   else if (RequestGlobalOptions.httpsProxy)

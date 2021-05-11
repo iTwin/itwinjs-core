@@ -1,6 +1,6 @@
 # @bentley/presentation-backend
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
@@ -9,4 +9,4 @@ can use query presentation data directly from iModels.
 
 ## Documentation
 
-See the [iModel.js](https://www.imodeljs.org) documentation for more information.
+See the [iTwin.js](https://www.itwinjs.org) documentation for more information.

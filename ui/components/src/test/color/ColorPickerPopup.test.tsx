@@ -45,12 +45,13 @@ describe("<ColorPickerPopup/>", () => {
       spyOnColorPick();
     }
 
-    const renderedComponent = render(<ColorPickerPopup initialColor={colorDef} onColorChange={handleColorPick} />);
+    const renderedComponent = render(<ColorPickerPopup initialColor={colorDef} onColorChange={handleColorPick} showCaret />);
     expect(renderedComponent.getByTestId("components-colorpicker-popup-button")).to.exist;
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
-    // renderedComponent.debug();
     expect(pickerButton.tagName).to.be.equal("BUTTON");
+    expect(renderedComponent.container.querySelector(".icon-caret-down")).not.to.be.null;
     fireEvent.click(pickerButton);
+    expect(renderedComponent.container.querySelector(".icon-caret-up")).not.to.be.null;
 
     const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
     expect(popupDiv).not.to.be.undefined;
@@ -129,4 +130,47 @@ describe("<ColorPickerPopup/>", () => {
     expect(spyOnColorPopupClosed).to.be.calledOnce;
   });
 
+  it("captureClicks property should stop mouse click propagation", async () =>{
+    const spyOnClick = sinon.spy();
+
+    /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
+    const renderedComponent = render(<div onClick={spyOnClick}>
+      <ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight} colorDefs={[ColorDef.green, ColorDef.black, ColorDef.red]} captureClicks={true} />
+    </div>);
+    const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
+    fireEvent.click(pickerButton);
+    expect(spyOnClick).not.to.be.called;
+
+    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
+    expect(popupDiv).not.to.be.undefined;
+
+    if (popupDiv) {
+      const colorSwatch = popupDiv.querySelector("button.components-colorpicker-panel-swatch") as HTMLElement;
+      expect(colorSwatch).not.to.be.null;
+      fireEvent.click(colorSwatch);
+    }
+    expect(spyOnClick).not.to.be.called;
+  });
+
+  it("mouse click should propagate if captureClicks not set to true", async () =>{
+    const spyOnClick = sinon.spy();
+
+    /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
+    const renderedComponent = render(<div onClick={spyOnClick}>
+      <ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight} colorDefs={[ColorDef.green, ColorDef.black, ColorDef.red]} />
+    </div>);
+    const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
+    fireEvent.click(pickerButton);
+    expect(spyOnClick).to.be.called;
+
+    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
+    expect(popupDiv).not.to.be.undefined;
+
+    if (popupDiv) {
+      const colorSwatch = popupDiv.querySelector("button.components-colorpicker-panel-swatch") as HTMLElement;
+      expect(colorSwatch).not.to.be.null;
+      fireEvent.click(colorSwatch);
+    }
+    expect(spyOnClick).to.be.calledTwice;
+  });
 });

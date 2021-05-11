@@ -13,7 +13,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
-  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, ModelClipGroups, Npc, RenderMaterial,
+  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, ModelClipGroups, Npc, RenderMaterial, RenderSchedule,
   SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -29,9 +29,9 @@ import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManag
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
-import { RenderScheduleState } from "./RenderScheduleState";
+import {RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { TileTreeReference, TileTreeSet } from "./tile/internal";
+import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -56,7 +56,7 @@ export interface ExtentLimits {
 /** Interface adopted by an object that wants to apply a per-model display transform.
  * This is intended chiefly for use by model alignment tools.
  * @see [[ViewState.modelDisplayTransformProvider]].
- * @alpha
+ * @beta
  */
 export interface ModelDisplayTransformProvider {
   getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
@@ -116,19 +116,16 @@ export abstract class ViewState extends ElementState {
   private _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
 
-  /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]].
-   * @beta
-   */
+  /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]]. */
   public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
 
   /** An event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
    * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
-   * @beta
    */
   public readonly onDisplayStyleChanged = new BeEvent<(newStyle: DisplayStyleState) => void>();
 
   /** Event raised just before assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
-   * @alpha
+   * @beta
    */
   public readonly onModelDisplayTransformProviderChanged = new BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>();
 
@@ -201,27 +198,34 @@ export abstract class ViewState extends ElementState {
     };
   }
 
-  /** Get the ViewFlags from the [[DisplayStyleState]] of this ViewState.
-   * @note Do not modify this object directly. Instead, use the setter as follows:
-   *
-   *  ```ts
-   *  const flags = viewState.viewFlags.clone();
-   *  flags.renderMode = RenderMode.SmoothShade; // or whatever alterations are desired
-   *  viewState.viewFlags = flags;
-   *  ```ts
+  /** Flags controlling various aspects of this view's [[DisplayStyleState]].
+   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
+   * @see [DisplayStyleSettings.viewFlags]($common)
    */
-  public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
+  public get viewFlags(): ViewFlags {
+    return this.displayStyle.viewFlags;
+  }
+  public set viewFlags(flags: ViewFlags) {
+    this.displayStyle.viewFlags = flags;
+  }
+
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
   public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.settings.analysisStyle; }
 
-  /**
-   * Get the RenderSchedule.Script from the displayStyle of this viewState
-   * @internal
+  /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
+   * @see [[DisplayStyleState.scheduleScript]].
+   * @beta
    */
-  public get scheduleScript(): RenderScheduleState.Script | undefined { return this.displayStyle.scheduleScript; }
+  public get scheduleScript(): RenderSchedule.Script | undefined {
+    return this.displayStyle.scheduleScript;
+  }
 
-  /**
-   * Get the globe projection mode.
+  /** @internal */
+  public get scheduleState(): RenderScheduleState | undefined {
+    return this.displayStyle.scheduleState;
+  }
+
+  /** Get the globe projection mode.
    * @internal
    */
   public get globeMode(): GlobeMode { return this.displayStyle.globeMode; }
@@ -229,6 +233,7 @@ export abstract class ViewState extends ElementState {
   /** Determine whether this ViewState exactly matches another. */
   public equals(other: this): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
+  /** Convert to JSON representation. */
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelector.id;
@@ -238,12 +243,7 @@ export abstract class ViewState extends ElementState {
     return json;
   }
 
-  /** Asynchronously load any required data for this ViewState from the backend.
-   * @note callers should await the Promise returned by this method before using this ViewState.
-   * @see [Views]($docs/learning/frontend/Views.md)
-   */
-  public async load(): Promise<void> {
-    await this.iModel.backgroundMapLocation.initialize(this.iModel);
+  private async loadAcs(): Promise<void> {
     this._auxCoordSystem = undefined;
     const acsId = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValid(acsId)) {
@@ -253,13 +253,30 @@ export abstract class ViewState extends ElementState {
           this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
       } catch { }
     }
+  }
+
+  /** Asynchronously load any required data for this ViewState from the backend.
+   * @note callers should await the Promise returned by this method before using this ViewState.
+   * @see [Views]($docs/learning/frontend/Views.md)
+   */
+  public async load(): Promise<void> {
+    const promises = [
+      this.iModel.backgroundMapLocation.initialize(this.iModel),
+      this.loadAcs(),
+      this.displayStyle.load(),
+    ];
 
     const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
     if (undefined !== subcategories)
-      await subcategories.promise;
+      promises.push(subcategories.promise.then((_) => { }));
+
+    await Promise.all(promises);
   }
 
-  /** @internal */
+  /** Returns true if all [[TileTree]]s required by this view have been loaded.
+   * Note that the map tile trees associated to the viewport rather than the view, to check the
+   * map tiles as well call [[Viewport.areAreAllTileTreesLoaded]].
+   */
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeRef((ref) => {
@@ -270,10 +287,14 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the name of the [[ViewDefinition]] from which this ViewState originated. */
-  public get name(): string { return this.code.getValue(); }
+  public get name(): string {
+    return this.code.value;
+  }
 
   /** Get this view's background color. */
-  public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
+  public get backgroundColor(): ColorDef {
+    return this.displayStyle.backgroundColor;
+  }
 
   /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered using this ViewState.
    * @param id The Id of the subcategory.
@@ -290,6 +311,7 @@ export abstract class ViewState extends ElementState {
   public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
     return this.displayStyle.getModelAppearanceOverride(id);
   }
+
   /** @internal */
   public isSubCategoryVisible(id: Id64String): boolean {
     const app = this.iModel.subcategories.getSubCategoryAppearance(id);
@@ -303,9 +325,7 @@ export abstract class ViewState extends ElementState {
     return !ovr.invisible;
   }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public abstract get details(): ViewDetails;
 
   /** Returns true if this ViewState is-a [[ViewState3d]] */
@@ -371,7 +391,6 @@ export abstract class ViewState extends ElementState {
    * @note This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
    * @internal
    */
-  /** @internal */
   public forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void {
     this.forEachModelTreeRef(func);
     this.displayStyle.forEachTileTreeRef(func);
@@ -380,7 +399,7 @@ export abstract class ViewState extends ElementState {
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     this.forEachTileTreeRef((ref) => trees.disclose(ref));
   }
 
@@ -388,9 +407,9 @@ export abstract class ViewState extends ElementState {
    * @internal
    */
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    const trees = new TileTreeSet();
+    const trees = new DisclosedTileTreeSet();
     this.discloseTileTrees(trees);
-    for (const tree of trees.trees)
+    for (const tree of trees)
       tree.collectStatistics(stats);
 
     this.collectNonTileTreeStatistics(stats);
@@ -412,6 +431,7 @@ export abstract class ViewState extends ElementState {
   /** @internal */
   public createScene(context: SceneContext): void {
     this.forEachTileTreeRef((ref: TileTreeReference) => ref.addToScene(context));
+    context.viewport.forEachMapTreeRef((ref: TileTreeReference) => ref.addToScene(context));
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
@@ -962,19 +982,26 @@ export abstract class ViewState extends ElementState {
 
   /** Determine whether this ViewState has the same coordinate system as another one.
    * They must be from the same iModel, and view a model in common.
-   * @internal
    */
   public hasSameCoordinates(other: ViewState): boolean {
     if (this.iModel !== other.iModel)
       return false;
+
+    // Spatial views view any number of spatial models all sharing one coordinate system.
     if (this.isSpatialView() && other.isSpatialView())
       return true;
+
+    // People sometimes mistakenly stick 2d models into spatial views' model selectors.
+    if (this.isSpatialView() || other.isSpatialView())
+      return false;
+
+    // Non-spatial views view exactly one model. If they view the same model, they share a coordinate system.
     let allowView = false;
     this.forEachModel((model) => {
-      if (!allowView && other.viewsModel(model.id))
-        allowView = true;
+      allowView ||= other.viewsModel(model.id);
     });
-    return allowView; // Accept if this view shares a model in common with target.
+
+    return allowView;
   }
 
   public getUpVector(point: Point3d): Vector3d {
@@ -999,7 +1026,7 @@ export abstract class ViewState extends ElementState {
    * if the view is of a limited area or if it has ever viewed the entire globe and therefore may be assumed to view it again
    * and therefore may warrant resources for displaying the globe, such as an expanded viewing frustum and preloading globe map tiles.
    * A value greater than one indicates that the viewport has been used to view globally at least once.
-   * @alpha
+   * @internal
    */
   public get maxGlobalScopeFactor() { return this._maxGlobalScopeFactor; }
 
@@ -1012,7 +1039,7 @@ export abstract class ViewState extends ElementState {
 
   /** Specify a provider of per-model display transforms. Intended chiefly for use by model alignment tools.
    * @note The transform supplied is used for display purposes **only**. Do not expect operations like snapping to account for the display transform.
-   * @alpha
+   * @beta
    */
   public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
     return this._modelDisplayTransformProvider;
@@ -1028,9 +1055,33 @@ export abstract class ViewState extends ElementState {
     this._modelDisplayTransformProvider = provider;
   }
 
-  /** @internal */
+  /** Obtain the transform with which the specified model will be displayed, accounting for this view's [[ModelDisplayTransformProvider]].
+   * @beta
+   */
   public getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform {
     return this.modelDisplayTransformProvider ? this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, baseTransform) : baseTransform;
+  }
+
+  /** @internal */
+  public transformPointByModelDisplayTransform(modelId: string | undefined, pnt: Point3d, inverse: boolean): void {
+    if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
+      const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
+      const newPnt = inverse ? transform.multiplyInversePoint3d(pnt) : transform.multiplyPoint3d(pnt);
+      if (undefined !== newPnt)
+        pnt.set(newPnt.x, newPnt.y, newPnt.z);
+    }
+  }
+
+  /** @internal */
+  public transformNormalByModelDisplayTransform(modelId: string | undefined, normal: Vector3d): void {
+    if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
+      const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
+      const newVec = transform.matrix.multiplyInverse(normal);
+      if (undefined !== newVec) {
+        newVec.normalizeInPlace();
+        normal.set(newVec.x, newVec.y, newVec.z);
+      }
+    }
   }
 
   /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
@@ -1073,12 +1124,20 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Returns whether this view is currently being displayed by a [[Viewport]].
-   * @alpha
+   * @public
    */
   public get isAttachedToViewport(): boolean {
     // In attachToViewport, we register event listeners on the category selector. We remove them in detachFromViewport.
     // So a non-empty list of event listener removal functions indicates we are currently attached to a viewport.
     return this._unregisterCategorySelectorListeners.length > 0;
+  }
+
+  /** Returns an iterator over additional Viewports used to construct this view's scene. e.g., those used for ViewAttachments and section drawings.
+   * This exists chiefly for display-performance-test-app to determine when all tiles required for the view have been loaded.
+   * @internal
+   */
+  public get secondaryViewports(): Iterable<Viewport> {
+    return [];
   }
 }
 
@@ -1108,9 +1167,7 @@ export abstract class ViewState3d extends ViewState {
    */
   public onRenderFrame(_viewport: Viewport): void { }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public get details(): ViewDetails3d {
     return this._details;
   }
@@ -1145,9 +1202,6 @@ export abstract class ViewState3d extends ViewState {
   }
 
   private updateModelClips(groups: ModelClipGroups): void {
-    for (const clip of this._modelClips)
-      clip?.dispose();
-
     this._modelClips.length = 0;
     for (const group of groups.groups) {
       const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;
@@ -1157,10 +1211,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** @internal */
   public getModelClip(modelId: Id64String): RenderClipVolume | undefined {
-    // If the view has a clip, or clipping is turned off, the model clips are ignored.
-    if (undefined !== this.getViewClip() || !this.viewFlags.clipVolume)
-      return undefined;
-
+    // ###TODO: ViewFlags.clipVolume is for the *view clip* only. Some tiles will want to ignore *all* clips (i.e., section-cut tiles).
     const index = this.details.modelClipGroups.findGroupIndex(modelId);
     return -1 !== index ? this._modelClips[index] : undefined;
   }
@@ -1207,7 +1258,9 @@ export abstract class ViewState3d extends ViewState {
     return this.globalScopeFactor >= 1;
   }
 
-  /** A value that represents the global scope of the view -- a value greater than one indicates that the scope of this view is global. */
+  /** A value that represents the global scope of the view -- a value greater than one indicates that the scope of this view is global.
+   * @see [[isGlobalView]].
+   */
   public get globalScopeFactor(): number {
     const eyeHeight = this.getEyeCartographicHeight();
     return (undefined === eyeHeight) ? (this.extents.magnitudeXY() / Constant.earthRadiusWGS84.equator) : (eyeHeight / ViewState3d._minGlobeEyeHeight);
@@ -1256,7 +1309,7 @@ export abstract class ViewState3d extends ViewState {
    *  Otherwise, this function views a point on the earth as if the current eye point was placed on the earth. If the eyePoint parameter is defined, instead this point will be placed on the earth and viewed.
    *  Specify pitchAngleRadians to tilt the final view; this defaults to 0.
    *  Returns the distance from original eye point to new eye point.
-   *  @alpha
+   *  @public
    */
   public lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians = 0, location?: GlobalLocation, eyePoint?: Point3d): number {
     if (!this.iModel.isGeoLocated)
@@ -1283,7 +1336,7 @@ export abstract class ViewState3d extends ViewState {
    *  Otherwise, this function views a point on the earth as if the current eye point was placed on the earth. If the eyePoint parameter is defined, instead this point will be placed on the earth and viewed.
    *  Specify pitchAngleRadians to tilt the final view; this defaults to 0.
    *  Returns the distance from original eye point to new eye point.
-   *  @alpha
+   *  @public
    */
   public async lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians = 0, location?: GlobalLocation, eyePoint?: Point3d): Promise<number> {
     if (!this.iModel.isGeoLocated)
@@ -1864,7 +1917,6 @@ export abstract class ViewState3d extends ViewState {
     const mapParams = new TextureMapping.Params();
     const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
     mapParams.textureMatrix = transform;
-    mapParams.textureMatrix.setTransform();
     matParams.textureMapping = new TextureMapping(texture, mapParams);
     const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
     if (!material)
@@ -1973,7 +2025,7 @@ export abstract class ViewState2d extends ViewState {
    * @note The new model should be of the same type (drawing or sheet) as the current viewed model.
    * @throws Error if attempting to change the viewed model while the view is attached to a viewport.
    * @see [[Viewport.changeViewedModel2d]].
-   * @alpha
+   * @public
    */
   public async changeViewedModel(newViewedModelId: Id64String): Promise<void> {
     if (this.isAttachedToViewport)
@@ -1997,9 +2049,7 @@ export abstract class ViewState2d extends ViewState {
     return this.iModel.models.load(this.baseModelId);
   }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public get details(): ViewDetails {
     return this._details;
   }

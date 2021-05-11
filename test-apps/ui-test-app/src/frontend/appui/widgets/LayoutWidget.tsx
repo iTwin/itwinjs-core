@@ -7,7 +7,7 @@ import {
   FrontstageManager, StagePanelState, useActiveFrontstageDef,
 } from "@bentley/ui-framework";
 import { SpecialKey, StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { Input, Select } from "@bentley/ui-core";
+import { Button, ButtonType, Input, NumberInput, Select } from "@bentley/ui-core";
 
 function usePanelDef(location: StagePanelLocation) {
   const frontstageDef = useActiveFrontstageDef();
@@ -190,9 +190,55 @@ function WidgetInfo({
   id: string;
 }) {
   const state = useWidgetState(id);
+  const frontstageDef = useActiveFrontstageDef();
+  const [isFloating, setIsFloating] = React.useState (frontstageDef ? frontstageDef.isFloatingWidget(id):false);
+
+  React.useEffect(() => {
+    setIsFloating(frontstageDef ? frontstageDef.isFloatingWidget(id):false);
+
+    return FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener((e) => {
+      if (e.frontstageDef === frontstageDef)
+        setIsFloating(frontstageDef ? frontstageDef.isFloatingWidget(id):false);
+    });
+  }, [frontstageDef, id]);
+
+  const handleDockClick = React.useCallback(()=>{
+    frontstageDef!.dockWidgetContainer(id);
+  }, [frontstageDef, id]);
+
+  const [xPos, setXPos] = React.useState (50);
+  const [yPos, setYPos] = React.useState (100);
+
+  const handleFloatClick = React.useCallback(()=>{
+    frontstageDef!.floatWidget(id, {x:xPos, y:yPos} );
+  }, [frontstageDef, id, xPos, yPos]);
+
+  const handleXChanged = React.useCallback((value: number | undefined) =>{
+    if (undefined !== value)
+      setXPos(value);
+  }, []);
+
+  const handleYChanged = React.useCallback((value: number | undefined) =>{
+    if (undefined !== value)
+      setYPos(value);
+  }, []);
+
   return (
     <>
       {state !== undefined && <div>state={WidgetState[state]}</div>}
+      {<div>Location={isFloating?"Floating":"Panel"}</div>}
+      <div style={{display: "flex", alignItems: "center"}}>
+        <div style={{display: "flex"}}>
+          <span>X:</span>
+          <NumberInput style={{width: "60px"}} disabled={isFloating} value={xPos} step={5} onChange={handleXChanged} />
+        </div>
+        <div style={{display: "flex"}}>
+          <span>Y:</span>
+          <NumberInput style={{width: "60px"}} disabled={isFloating} value={yPos} step={5} onChange={handleYChanged} />
+        </div>
+        <Button buttonType={ButtonType.Hollow} disabled={isFloating} onClick={handleFloatClick} >Float</Button>
+      </div>
+      <Button buttonType={ButtonType.Hollow} disabled={!isFloating} onClick={handleDockClick} >Dock</Button>
     </>
   );
 }

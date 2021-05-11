@@ -9,7 +9,7 @@
 import "./Tabs.scss";
 import * as React from "react";
 import { useResizeObserver } from "@bentley/ui-core";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { TabsStateContext } from "../base/NineZone";
 import { getChildKey, useOverflow } from "../tool-settings/Docked";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
@@ -23,7 +23,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
   const tabs = React.useContext(TabsStateContext);
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
-  assert(widget);
+  assert(!!widget);
   const activeTabIndex = widget.tabs.indexOf(widget.activeTabId);
   const children = React.useMemo<React.ReactNode>(() => {
     return widget.tabs.map((tabId, index, array) => {

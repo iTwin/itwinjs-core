@@ -1,16 +1,16 @@
-﻿# iModel.js
+﻿# iTwin.js
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](./LICENSE.md) for license terms and full copyright notice.
 
-[iModel.js](http://imodeljs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
+[iTwin.js](http://www.itwinjs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
 
-If you have questions, or wish to contribute to iModel.js, see our [Contributing guide](./CONTRIBUTING.md).
+If you have questions, or wish to contribute to iTwin.js, see our [Contributing guide](./CONTRIBUTING.md).
 
 ## About this Repository
 
 [![Build status](https://dev.azure.com/imodeljs/imodeljs/_apis/build/status/iModel.js)](https://dev.azure.com/imodeljs/imodeljs/_build/latest?definitionId=12)
 
-This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that holds the source code to multiple iModel.js npm packages. It is built using [Rush](http://rushjs.io/).
+This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that holds the source code to multiple iTwin.js npm packages. It is built using [Rush](http://rushjs.io/).
 
 See [rush.json](./rush.json) for the complete list of packages.
 

@@ -52,7 +52,7 @@ export class SweepContour {
   public static createForLinearSweep(contour: CurveCollection, defaultNormal?: Vector3d): SweepContour | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, contour);
     if (localToWorld) {
-      return new SweepContour(contour, localToWorld, undefined);
+    return new SweepContour(contour, localToWorld, undefined);
     }
     return undefined;
   }
@@ -136,7 +136,7 @@ export class SweepContour {
 
   private _xyStrokes?: AnyCurve;
   private _facets?: IndexedPolyface;
-
+  public get xyStrokes(): AnyCurve | undefined { return this._xyStrokes;}
   /**
    * build the (cached) internal facets.
    * @param options options for stroking the curves.
@@ -175,6 +175,7 @@ export class SweepContour {
             }
           }
           const numLoops = strokes.length;
+      /** Try the earcut algorithm first -- lots less machinery, but can't handle any form of overlap */
           const graph = Triangulator.createTriangulatedGraphFromLoops(strokes);
           if (graph && HalfEdgeGraphSearch.isTriangulatedCCW(graph, true, numLoops - 1)) {
             Triangulator.flipTriangles(graph);
@@ -189,6 +190,7 @@ export class SweepContour {
               this._facets.tryTransformInPlace(this.localToWorld);
             }
           }
+
         }
       }
     }

@@ -5,12 +5,12 @@
 import * as React from "react";
 import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
-import { CommonToolbarItem, ConditionalBooleanValue, StagePanelLocation, StageUsage, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { CommonToolbarItem, ConditionalBooleanValue, StageUsage, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import {
-  AccuDrawDialog, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps, CoreTools,
-  CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager, ModelsTreeNodeType, StagePanel,
-  StagePanelHeader, StagePanelState, ToolbarHelper, VisibilityComponentHierarchy, VisibilityWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
+  AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps,
+  CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager, ModelsTreeNodeType,
+  StagePanel, ToolbarHelper, VisibilityComponentHierarchy, VisibilityWidget, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../../frontend/index";
 import { EditTools } from "../../../tools/editing/ToolSpecifications";
@@ -41,12 +41,10 @@ export class EditFrontstage extends FrontstageProvider {
     ],
   };
 
-  private _rightPanel = {
-    allowedZones: [2, 6, 9],
-  };
-
   private _bottomPanel = {
-    allowedZones: [2, 7],
+    widgets: [
+      <Widget id={AccuDrawWidgetControl.id} label={AccuDrawWidgetControl.label} control={AccuDrawWidgetControl} />,
+    ],
   };
 
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
@@ -96,7 +94,7 @@ export class EditFrontstage extends FrontstageProvider {
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage={StageUsage.Edit}
         contentManipulationTools={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this._additionalTools.additionalHorizontalToolbarItems}
@@ -105,7 +103,7 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         toolSettings={
-          < Zone
+          <Zone
             allowsMerging
             widgets={
               [
@@ -117,7 +115,7 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         viewNavigationTools={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isFreeform={true} element={
@@ -127,7 +125,7 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         centerLeft={
-          < Zone
+          <Zone
             allowsMerging
             defaultState={ZoneState.Minimized}
             initialWidth={250}
@@ -145,14 +143,12 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         centerRight={
-          < Zone
+          <Zone
             allowsMerging
             defaultState={ZoneState.Minimized}
             initialWidth={350}
             widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
-              <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
+              <Widget id="VisibilityWidget" iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
                 applicationData={{
                   iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories], useControlledTree: true,
                   config: { modelsTreeConfig: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
@@ -161,18 +157,8 @@ export class EditFrontstage extends FrontstageProvider {
             ]}
           />
         }
-        bottomLeft={
-          < Zone
-            allowsMerging
-            defaultState={ZoneState.Minimized}
-            initialWidth={450}
-            widgets={
-              [
-              ]}
-          />
-        }
         statusBar={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isStatusBar={true} control={EditStatusBarWidgetControl} />,
@@ -180,35 +166,15 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         bottomRight={
-          < Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
             widgets={
               [
               ]}
           />
         }
-        leftPanel={
-          < StagePanel
-            header={< StagePanelHeader
-              collapseButton
-              collapseButtonTitle="Collapse"
-              location={StagePanelLocation.Left}
-              title="Visibility tree"
-            />}
-            defaultState={StagePanelState.Minimized}
-            size={280}
-            minSize={300}
-            maxSize={800}
-            widgets={this._leftPanel.widgets}
-          />
-        }
-        rightPanel={
-          < StagePanel
-            allowedZones={this._rightPanel.allowedZones}
-          />
-        }
         bottomPanel={
-          < StagePanel
-            allowedZones={this._bottomPanel.allowedZones}
+          <StagePanel
+            widgets={this._bottomPanel.widgets}
           />
         }
       />
@@ -220,13 +186,12 @@ export class EditFrontstage extends FrontstageProvider {
  */
 class AdditionalTools {
 
-  public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    ToolbarHelper.createToolbarItemFromItemDef(110, CoreTools.keyinBrowserButtonItemDef),
-    ToolbarHelper.createToolbarItemFromItemDef(115, EditTools.deleteElementTool),
-    ToolbarHelper.createToolbarItemFromItemDef(115, EditTools.moveElementTool),
-    ToolbarHelper.createToolbarItemFromItemDef(120, EditTools.placeLineStringTool),
-    ToolbarHelper.createToolbarItemFromItemDef(130, EditTools.placeBlockTool),
-  ];
+  public additionalHorizontalToolbarItems: CommonToolbarItem[] = ToolbarHelper.createToolbarItemsFromItemDefs(
+    [
+      CoreTools.keyinPaletteButtonItemDef, EditTools.deleteElementTool,
+      EditTools.moveElementTool, EditTools.rotateElementTool,
+      EditTools.placeLineStringTool, EditTools.placeBlockTool,
+    ], 100);
 
   private get _accudrawDialogItemVertical() {
     const dialogId = "accudraw-vertical";

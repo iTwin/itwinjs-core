@@ -6,32 +6,36 @@
  * @module Editing
  */
 
-import { ECClass, MutableClass, MutableStructClass, StructClass } from "../Metadata/Class";
-import { MutableSchema, Schema } from "../Metadata/Schema";
-import { EntityClass, MutableEntityClass } from "../Metadata/EntityClass";
-import { CustomAttributeContainerType, ECClassModifier, PrimitiveType, SchemaItemType, SchemaMatchType, StrengthDirection } from "../ECObjects";
-import { CustomAttributeClass, MutableCAClass } from "../Metadata/CustomAttributeClass";
-import { CustomAttribute } from "../Metadata/CustomAttribute";
-import { MutableRelationshipClass, RelationshipClass } from "../Metadata/RelationshipClass";
-import { AnyEnumerator, Enumeration, MutableEnumeration } from "../Metadata/Enumeration";
-import { MutableUnit, Unit } from "../Metadata/Unit";
-import { MutableConstant } from "../Metadata/Constant";
-import { InvertedUnit, MutableInvertedUnit } from "../Metadata/InvertedUnit";
-import { MutablePhenomenon, Phenomenon } from "../Metadata/Phenomenon";
-import { Format, MutableFormat } from "../Metadata/Format";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaContext } from "../Context";
-import { Mixin, MutableMixin } from "../Metadata/Mixin";
-import { SchemaItemKey, SchemaKey } from "../SchemaKey";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps, MixinProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, RelationshipClassProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitProps, UnitSystemProps } from "../Deserialization/JsonProps";
-import { FormatType } from "../utils/FormatEnums";
-import { MutableKindOfQuantity } from "../Metadata/KindOfQuantity";
-import { OverrideFormat } from "../Metadata/OverrideFormat";
-import { MutableUnitSystem, UnitSystem } from "../Metadata/UnitSystem";
-import { MutablePropertyCategory } from "../Metadata/PropertyCategory";
-import * as Rules from "../Validation/ECRules";
 import { assert } from "@bentley/bentleyjs-core";
+import { SchemaContext } from "../Context";
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import {
+  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, FormatProps, InvertedUnitProps,
+  KindOfQuantityProps, MixinProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps,
+  RelationshipClassProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitProps, UnitSystemProps,
+} from "../Deserialization/JsonProps";
+import { CustomAttributeContainerType, ECClassModifier, PrimitiveType, SchemaItemType, SchemaMatchType, StrengthDirection } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECClass, MutableClass, MutableStructClass, StructClass } from "../Metadata/Class";
+import { MutableConstant } from "../Metadata/Constant";
+import { CustomAttribute } from "../Metadata/CustomAttribute";
+import { CustomAttributeClass, MutableCAClass } from "../Metadata/CustomAttributeClass";
+import { EntityClass, MutableEntityClass } from "../Metadata/EntityClass";
+import { AnyEnumerator, Enumeration, MutableEnumeration } from "../Metadata/Enumeration";
+import { Format, MutableFormat } from "../Metadata/Format";
+import { InvertedUnit, MutableInvertedUnit } from "../Metadata/InvertedUnit";
+import { MutableKindOfQuantity } from "../Metadata/KindOfQuantity";
+import { Mixin, MutableMixin } from "../Metadata/Mixin";
+import { OverrideFormat } from "../Metadata/OverrideFormat";
+import { MutablePhenomenon, Phenomenon } from "../Metadata/Phenomenon";
+import { MutablePropertyCategory } from "../Metadata/PropertyCategory";
+import { MutableRelationshipClass, RelationshipClass } from "../Metadata/RelationshipClass";
+import { MutableSchema, Schema } from "../Metadata/Schema";
+import { MutableUnit, Unit } from "../Metadata/Unit";
+import { MutableUnitSystem, UnitSystem } from "../Metadata/UnitSystem";
+import { SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { FormatType } from "../utils/FormatEnums";
+import * as Rules from "../Validation/ECRules";
 
 // We can either add validation in Editor, or in the protected methods of Schema.
 // TODO: Add an error code so we can do something programmatic with the error.
@@ -910,7 +914,7 @@ export namespace Editors {
       if (koqProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
       const newKoQ = (await schema.createKindOfQuantity(koqProps.name)) as MutableKindOfQuantity;
       if (newKoQ === undefined) {
-        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+        return { errorMessage: `Failed to create class ${koqProps.name} in schema ${schemaKey.toString(true)}.` };
       }
 
       await newKoQ.fromJSON(koqProps);

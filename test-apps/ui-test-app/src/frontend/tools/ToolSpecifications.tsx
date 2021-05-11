@@ -7,17 +7,18 @@ import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";
 import {
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
-  QuantityType,
-  SelectionTool, SnapMode,
+  QuantityType, SelectionTool, SnapMode,
 } from "@bentley/imodeljs-frontend";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
 import {
   BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType, StatusBarSection,
-  UiItemsManager, UiItemsProvider,
+  UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
 import { Dialog, MessageSeverity, Radio, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager,
-  ReactNotifyMessageDetails, StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, WidgetState, withStatusFieldProps,
+  Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../";
@@ -28,8 +29,6 @@ import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "./ToolWithSettings";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention

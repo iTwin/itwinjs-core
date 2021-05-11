@@ -3,22 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyLoggerCategory, Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelJsExpressServer } from "@bentley/express-server";
-import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
-import { BackendLoggerCategory, IModelHostConfiguration, NativeAppBackend, NativeLoggerCategory } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
-import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
-// Sets up certa to allow a method on the frontend to get an access token
+// required to get certa to read the .env file - should be reworked
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import * as nock from "nock";
 import * as path from "path";
-import { rpcInterfaces } from "../common/RpcInterfaces";
+import { BentleyLoggerCategory, ClientRequestContext, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { loadEnv } from "@bentley/config-loader";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
+import { BackendLoggerCategory, IModelHostConfiguration, IModelJsFs, IpcHandler, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
+import { RpcConfiguration } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
+import { TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { testIpcChannel, TestIpcInterface, TestProjectProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
-import "./RpcImpl";
-
-/* eslint-disable no-console */
 
 function initDebugLogLevels(reset?: boolean) {
   Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
@@ -39,36 +38,64 @@ export function setupDebugLogLevels() {
   initDebugLogLevels(false);
 }
 
+class TestIpcHandler extends IpcHandler implements TestIpcInterface {
+  public get channelName() { return testIpcChannel; }
+
+  public async getTestProjectProps(user: TestUserCredentials): Promise<TestProjectProps> {
+    // first, perform silent login
+    NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));
+
+    const projectName = Config.App.get("imjs_test_project_name");
+
+    if (CloudEnv.cloudEnv.isIModelHub) {
+      const region = Config.App.get("imjs_buddi_resolve_url_using_region") || "0";
+      return { projectName, iModelHub: { region } };
+    }
+    const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(ClientRequestContext.current as AuthorizedClientRequestContext);
+    return { projectName, iModelBank: { url } };
+  }
+
+  public async purgeStorageCache(): Promise<void> {
+    return IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);
+  }
+
+  public async beginOfflineScope(): Promise<void> {
+    nock(/^ https: \/\/.*$/i)
+      .log((message: any, optionalParams: any[]) => {
+        // eslint-disable-next-line no-console
+        console.log(message, optionalParams);
+      }).get("/").reply(503);
+  }
+
+  public async endOfflineScope(): Promise<void> {
+    nock.cleanAll();
+  }
+}
+
 async function init() {
-  IModelJsConfig.init(true, true, Config.App);
+  loadEnv(path.join(__dirname, "..", "..", ".env"));
 
   RpcConfiguration.developmentMode = true;
 
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
 
-  if (isElectronMain) {
-    ElectronBackend.initialize({ rpcInterfaces });
-  } else {
-    const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
-
-    // create a basic express web server
-    const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const server = new IModelJsExpressServer(rpcConfig.protocol);
-    await server.initialize(port);
-    console.log(`Web backend for full-stack-tests listening on port ${port}`);
-  }
-
   // Start the backend
-  const hostConfig = new IModelHostConfiguration();
-  hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
-  hostConfig.cacheDir = path.join(__dirname, "out");
-  await NativeAppBackend.startup(hostConfig);
+  const iModelHost = new IModelHostConfiguration();
+  iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
+  iModelHost.concurrentQuery.concurrent = 2;
+  iModelHost.concurrentQuery.pollInterval = 5;
+  iModelHost.cacheDir = path.join(__dirname, "out");
 
-  Logger.initializeToConsole();
-  // setupDebugLogLevels();
+  await ElectronHost.startup({
+    electronHost: {
+      ipcHandlers: [TestIpcHandler],
+      authConfig: {
+        clientId: "testapp", redirectUri: "", scope: "",
+      },
+    },
+    iModelHost,
+  });
 }
 
 module.exports = init();

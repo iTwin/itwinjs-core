@@ -1,6 +1,138 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+This log was last generated on Wed, 05 May 2021 13:18:31 GMT and should not be manually modified.
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Update test for AzCopyFileHandler
+- Fix tests for changed elements processing
+- Properly declare changeSetId variables as string.
+- Promote display-related APIs.
+- IModelDb.generateElementGraphics can generate graphics for a non-persistent geometry stream.
+- Add TypeScript wrappers for ExternalSource and related classes and relationships.
+- Fixes to desktop and iOS apps.
+- Remove deprecated ElementEditor that was replaced by EditCommands.
+- rename (deprecate) BriefcaseIdValue.Standalone to BriefcaseIdValue.Unassigned to reduce confusion
+- Add onModelsChanged and onModelGeometryChanged events to TxnManager.
+- Saving & restoring Electron main window size, position & maximized state
+- add NativeHost.settingsStore
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:33 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+_Version update only_
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.14.6
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- move BriefcaseIdValue to imodeljs-common
+- Cherry-pick logout fix
+- rework Authentication to use IpcHost
+- Detect provenance scope conflicts in IModelTransformer
+- Update to @bentley/imodeljs-native@2.14.0
+- Update to @bentley/imodeljs-native@2.14.4
+- Add new exportGraphics options
+- add `bindings` member to EntityQueryParams
+- Support working in world coords with ElementGeometry.Builder/Iterator. Place line string using ipc command.
+- Basic proxy support for web backends and electron applications (WIP)
+- Add IpcHost.queryConcurrency.
+- Removed hard coded test values in tile upload integration test
+- Add additional metadata to tile upload on cache
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Fixed broken double angle bracket link syntax
+- Ensure elements passed to native code are in proper JSON format.
+- refactor Ipc layers to use IpcHost/IpcApp
+- The export methods of IModelExporter and the process methods of IModelTransformer are now async.
+- IPC shim (WIP) for local webviewer apps.
+- Add docs and test for CTE support
+- Update to @bentley/imodeljs-native@2.13.1
+- Update to @bentley/imodeljs-native@2.13.3
+- Support Node 14
+- add notifications for changed elements on SaveChanges
+- Updated to use TypeScript 4.1
+- Undo/Redo shortcuts
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:52 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.12.6
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- Element.code is no longer readonly, so can now be updated
+- Deprecate detachChangeCache()
+- added optional flag to abbreviate blob properties in queries
+- Implement external textures for iModel tiles.
+- Updated create display style test to remove credentials from backgroundLayers definition.
+- Add IModelTransformerOptions.wasSourceIModelCopiedToTarget to better support branching scenarios.
+- Add IModelTransformOptions.isReverseSynchronization to better support synchronizing changes from a branch back to master.
+- Mobile IPC fix
+- Bump native version to 2.12.1
+- Update to @bentley/imodeljs-native@2.12.4
+- lock test
+- add IpcSocket
+- Add beta API for TemplateRecipe2d
+- fix incorrect version logic in UsageLoggingUtilities
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+### Updates
+
+- NativeApp download cancellation fix
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
@@ -20,6 +152,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 - Add IModelExportHandler.onProgress and IModelImporter.onProgress callbacks
 - Separated out API to upgrade iModels.
 - Version compare property checksums
+- return LocalBriefcaseProps from BriefcaseManager.downloadBriefcase
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

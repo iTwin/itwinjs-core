@@ -33,7 +33,7 @@ import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
-import { Range1d } from "../geometry3d/Range";
+import { Range1d, Range3d } from "../geometry3d/Range";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { UVSurfaceOps } from "../geometry3d/UVSurfaceOps";
@@ -225,18 +225,28 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /** add facets for a transformed unit box. */
   public addTransformedUnitBox(transform: Transform) {
-    const pointIndex0 = this._polyface.data.pointCount;
-    // these will have sequential indices starting at pointIndex0 . . .
-    for (const p of BoxTopology.points)
-      this._polyface.addPoint(transform.multiplyPoint3d(p));
-
-    for (const facet of BoxTopology.cornerIndexCCW) {
-      for (const pointIndex of facet)
-        this._polyface.addPointIndex(pointIndex0 + pointIndex);
-      this._polyface.terminateFacet();
-    }
+    this.addTransformedRangeMesh(transform, Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1));
   }
 
+  /** add facets for a transformed unit box.
+   * * for each face in the order of BoxTopology.cornerIndexCCW, faceSelector[i]===false skips that facet.
+  */
+  public addTransformedRangeMesh(transform: Transform, range: Range3d, faceSelector?: boolean[]) {
+    const pointIndex0 = this._polyface.data.pointCount;
+    // these will have sequential indices starting at pointIndex0 . . .
+    const points = range.corners();
+    for (const p of points)
+      this._polyface.addPoint(transform.multiplyPoint3d(p));
+    let faceCounter = 0;
+    for (const facet of BoxTopology.cornerIndexCCW) {
+      if (!faceSelector || (faceCounter < faceSelector.length && faceSelector[faceCounter])){
+      for (const pointIndex of facet)
+        this._polyface.addPointIndex(pointIndex0 + pointIndex);
+        this._polyface.terminateFacet();
+      }
+      faceCounter++;
+    }
+  }
   /** Add triangles from points[0] to each far edge.
    * @param ls linestring with point coordinates
    * @param toggle if true, wrap the triangle creation in toggleReversedFacetFlag.

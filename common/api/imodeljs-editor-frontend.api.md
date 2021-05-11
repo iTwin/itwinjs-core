@@ -4,16 +4,380 @@
 
 ```ts
 
+import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
+import { BeButtonEvent } from '@bentley/imodeljs-frontend';
+import { DecorateContext } from '@bentley/imodeljs-frontend';
+import { DialogItem } from '@bentley/ui-abstract';
+import { DialogPropertySyncItem } from '@bentley/ui-abstract';
+import { DynamicsContext } from '@bentley/imodeljs-frontend';
+import { ElementSetTool } from '@bentley/imodeljs-frontend';
+import { EventHandled } from '@bentley/imodeljs-frontend';
+import { FlatBufferGeometryStream } from '@bentley/imodeljs-common';
+import { GeometricElementProps } from '@bentley/imodeljs-common';
+import { GeometryStreamProps } from '@bentley/imodeljs-common';
+import { HitDetail } from '@bentley/imodeljs-frontend';
+import { Id64Arg } from '@bentley/bentleyjs-core';
+import { Id64String } from '@bentley/bentleyjs-core';
+import { IModelConnection } from '@bentley/imodeljs-frontend';
+import { JsonGeometryStream } from '@bentley/imodeljs-common';
+import { Placement } from '@bentley/imodeljs-common';
+import { PlacementProps } from '@bentley/imodeljs-common';
+import { Point3d } from '@bentley/geometry-core';
 import { PrimitiveTool } from '@bentley/imodeljs-frontend';
+import { PropertyDescription } from '@bentley/ui-abstract';
+import { Range3d } from '@bentley/geometry-core';
+import { RenderGraphic } from '@bentley/imodeljs-frontend';
+import { RenderGraphicOwner } from '@bentley/imodeljs-frontend';
+import { Tool } from '@bentley/imodeljs-frontend';
+import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
+import { Transform } from '@bentley/geometry-core';
+import { Viewport } from '@bentley/imodeljs-frontend';
 
 // @alpha (undocumented)
-export class EditTool extends PrimitiveTool {
+export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number;
+
+// @alpha (undocumented)
+export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): number;
+
+// @alpha
+export abstract class CreateElementTool extends PrimitiveTool {
+    protected abstract createElement(): Promise<void>;
     // (undocumented)
-    static callCommand(methodName: string, ...args: any[]): Promise<any>;
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    onPostInstall(): void;
+    onUnsuspend(): void;
+    protected processDataButton(ev: BeButtonEvent): Promise<EventHandled>;
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    get targetCategory(): Id64String;
+    // (undocumented)
+    get targetModelId(): Id64String;
+    protected get wantAccuSnap(): boolean;
+    protected get wantDynamics(): boolean;
+}
+
+// @alpha
+export class CreateLineStringTool extends CreateElementTool {
+    // (undocumented)
+    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected clearGraphics(): void;
+    // (undocumented)
+    protected createElement(): Promise<void>;
+    // (undocumented)
+    protected createGraphics(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
+    // (undocumented)
+    protected getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
+    // (undocumented)
+    protected getGeometryProps(placement: PlacementProps, ev?: BeButtonEvent): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
+    protected getPlacementProps(ev?: BeButtonEvent): PlacementProps | undefined;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
+    // (undocumented)
+    protected _graphicsProvider?: DynamicGraphicsProvider;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
+    onUndoPreviousStep(): Promise<boolean>;
+    // (undocumented)
+    protected readonly _points: Point3d[];
+    // (undocumented)
+    protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected _snapGeomId?: Id64String;
+    // (undocumented)
+    protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
+    // (undocumented)
+    testDecorationHit(id: Id64String): boolean;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+}
+
+// @alpha
+export class DeleteElementsTool extends ElementSetTool {
+    // (undocumented)
+    protected get allowDragSelect(): boolean;
+    // (undocumented)
+    protected get allowGroups(): boolean;
+    // (undocumented)
+    protected get allowSelectionSet(): boolean;
+    // (undocumented)
+    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    processAgendaImmediate(): Promise<void>;
+    // (undocumented)
+    protected get requireAcceptForSelectionSetOperation(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha (undocumented)
+export class DynamicGraphicsProvider {
+    constructor(iModel: IModelConnection, prefix: string);
+    // (undocumented)
+    addGraphic(context: DynamicsContext, transform?: Transform): void;
+    chordTolerance: number;
+    cleanupGraphic(): void;
+    createGraphic(categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): Promise<boolean>;
+    createGraphicAndUpdateDynamics(ev: BeButtonEvent, categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): void;
+    elementId?: Id64String;
+    // (undocumented)
+    graphic?: RenderGraphicOwner;
+    // (undocumented)
+    readonly iModel: IModelConnection;
+    modelId?: Id64String;
+    // (undocumented)
+    readonly prefix: string;
+}
+
+// @alpha
+export interface EditorOptions {
+    registerBasicManipulationTools?: true | undefined;
+    registerSketchTools?: true | undefined;
+    registerUndoRedoTools?: true | undefined;
+}
+
+// @alpha
+export class EditTools {
+    // (undocumented)
+    static callCommand(methodName: string, ...args: any[]): Promise<any>;
+    static initialize(options?: EditorOptions): Promise<void>;
+    // (undocumented)
+    static namespace: string;
+    // (undocumented)
     static startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T>;
+    // (undocumented)
+    static tools: string;
+    // @internal (undocumented)
+    static translate(prompt: string): string;
+}
+
+// @alpha
+export class MoveElementsTool extends TransformElementsTool {
+    // (undocumented)
+    protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class RedoTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha (undocumented)
+export enum RotateAbout {
+    // (undocumented)
+    Center = 2,
+    // (undocumented)
+    Origin = 1,
+    // (undocumented)
+    Point = 0
+}
+
+// @alpha
+export class RotateElementsTool extends TransformElementsTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    // (undocumented)
+    protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
+    // (undocumented)
+    protected _getAboutDescription: () => PropertyDescription;
+    // (undocumented)
+    protected _getMethodDescription: () => PropertyDescription;
+    // (undocumented)
+    protected haveFinalPoint: boolean;
+    // (undocumented)
+    protected havePivotPoint: boolean;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onRestartTool(): void;
+    parseAndRun(...inputArgs: string[]): boolean;
+    // (undocumented)
+    protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    protected get requireAcceptForSelectionSetDynamics(): boolean;
+    // (undocumented)
+    get rotateAbout(): RotateAbout;
+    set rotateAbout(about: RotateAbout);
+    // (undocumented)
+    get rotateAngle(): number;
+    set rotateAngle(value: number);
+    // (undocumented)
+    get rotateMethod(): RotateMethod;
+    set rotateMethod(method: RotateMethod);
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected transformAgenda(transform: Transform): Promise<void>;
+    // (undocumented)
+    protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
+    protected get wantAdditionalInput(): boolean;
+    // (undocumented)
+    protected wantProcessAgenda(ev: BeButtonEvent): boolean;
+    // (undocumented)
+    protected xAxisPoint?: Point3d;
+}
+
+// @alpha (undocumented)
+export enum RotateMethod {
+    // (undocumented)
+    By3Points = 0,
+    // (undocumented)
+    ByAngle = 1
+}
+
+// @alpha
+export abstract class TransformElementsTool extends ElementSetTool {
+    // (undocumented)
+    protected get allowDragSelect(): boolean;
+    // (undocumented)
+    protected get allowGroups(): boolean;
+    // (undocumented)
+    protected get allowSelectionSet(): boolean;
+    // (undocumented)
+    protected abstract calculateTransform(ev: BeButtonEvent): Transform | undefined;
+    // (undocumented)
+    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected clearAgendaGraphics(): Promise<void>;
+    // (undocumented)
+    protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    protected createAgendaGraphics(changed: boolean): Promise<void>;
+    // (undocumented)
+    protected _graphicsProvider?: TransformGraphicsProvider;
+    // (undocumented)
+    protected initAgendaDynamics(): Promise<boolean>;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onProcessComplete(): Promise<void>;
+    // (undocumented)
+    processAgenda(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
+    // (undocumented)
+    protected transformAgenda(transform: Transform): Promise<void>;
+    // (undocumented)
+    protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
+    protected updateAnchorLocation(transform: Transform): void;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+    // (undocumented)
+    protected get wantMakeCopy(): boolean;
+}
+
+// @alpha (undocumented)
+export interface TransformGraphicsData {
+    // (undocumented)
+    graphic: RenderGraphicOwner;
+    // (undocumented)
+    id: Id64String;
+    // (undocumented)
+    placement: Placement;
+}
+
+// @alpha (undocumented)
+export class TransformGraphicsProvider {
+    constructor(iModel: IModelConnection, prefix: string);
+    // (undocumented)
+    addGraphics(transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
+    addSingleGraphic(graphic: RenderGraphic, transform: Transform, context: DynamicsContext): void;
+    chordTolerance: number;
+    cleanupGraphics(): Promise<void>;
+    createGraphics(elements: Id64Arg): void;
+    createSingleGraphic(id: Id64String): Promise<boolean>;
+    // (undocumented)
+    readonly data: TransformGraphicsData[];
+    // (undocumented)
+    readonly iModel: IModelConnection;
+    // (undocumented)
+    readonly pending: Map<Id64String, string>;
+    // (undocumented)
+    readonly prefix: string;
+}
+
+// @alpha
+export class UndoAllTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class UndoTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 

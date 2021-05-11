@@ -1,43 +1,141 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ExpandedNodeUpdateRecord fromJSON deserializes partial \`ExpandedNodeUpdateRecord\` from JSON 1`] = `
+Object {
+  "node": Object {
+    "key": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
+    },
+    "label": Object {
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
+      "typeName": "string",
+    },
+  },
+  "position": 1,
+}
+`;
+
+exports[`ExpandedNodeUpdateRecord toJSON serializes partial \`ExpandedNodeUpdateRecord\` to JSON 1`] = `
+Object {
+  "node": Object {
+    "key": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
+    },
+    "labelDefinition": Object {
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
+      "typeName": "string",
+    },
+  },
+  "position": 1,
+}
+`;
+
+exports[`HierarchyCompareInfo fromJSON deserializes \`HierarchyCompareInfo\` from JSON 1`] = `
+Object {
+  "changes": Array [
+    Object {
+      "node": Object {
+        "key": Object {
+          "instanceKeys": Array [],
+          "pathFromRoot": Array [],
+          "type": "ECInstancesNode",
+        },
+        "label": Object {
+          "displayValue": "TestNode",
+          "rawValue": "test_node",
+          "typeName": "string",
+        },
+      },
+      "parent": undefined,
+      "position": 123,
+      "type": "Insert",
+    },
+    Object {
+      "changes": Object {
+        "backColor": "new value",
+      },
+      "target": Object {
+        "instanceKeys": Array [],
+        "pathFromRoot": Array [],
+        "type": "ECInstancesNode",
+      },
+      "type": "Update",
+    },
+    Object {
+      "target": Object {
+        "instanceKeys": Array [],
+        "pathFromRoot": Array [],
+        "type": "ECInstancesNode",
+      },
+      "type": "Delete",
+    },
+  ],
+  "continuationToken": Object {
+    "currHierarchyNode": "currHierarchyNode",
+    "prevHierarchyNode": "prevHierarchyNode",
+  },
+}
+`;
+
+exports[`HierarchyCompareInfo toJSON serializes \`HierarchyCompareInfo\` to JSON 1`] = `
+Object {
+  "changes": Array [
+    Object {
+      "node": Object {
+        "key": Object {
+          "instanceKeys": Array [],
+          "pathFromRoot": Array [],
+          "type": "ECInstancesNode",
+        },
+        "labelDefinition": Object {
+          "displayValue": "TestNode",
+          "rawValue": "test_node",
+          "typeName": "string",
+        },
+      },
+      "parent": undefined,
+      "position": 123,
+      "type": "Insert",
+    },
+    Object {
+      "changes": Object {
+        "backColor": "new value",
+      },
+      "target": Object {
+        "instanceKeys": Array [],
+        "pathFromRoot": Array [],
+        "type": "ECInstancesNode",
+      },
+      "type": "Update",
+    },
+    Object {
+      "target": Object {
+        "instanceKeys": Array [],
+        "pathFromRoot": Array [],
+        "type": "ECInstancesNode",
+      },
+      "type": "Delete",
+    },
+  ],
+  "continuationToken": Object {
+    "currHierarchyNode": "currHierarchyNode",
+    "prevHierarchyNode": "prevHierarchyNode",
+  },
+}
+`;
+
 exports[`HierarchyUpdateInfo fromJSON deserializes partial \`HierarchyUpdateInfo\` from JSON 1`] = `
 Array [
   Object {
-    "node": Object {
-      "backColor": undefined,
-      "description": undefined,
-      "foreColor": "#BFA47D",
-      "hasChildren": true,
-      "isCheckboxEnabled": true,
-      "isCheckboxVisible": true,
-      "isChecked": false,
-      "isEditable": false,
-      "isExpanded": false,
-      "isSelectionDisabled": true,
-      "key": Object {
-        "instanceKeys": Array [
-          Object {
-            "className": "RAM",
-            "id": "0x9856000000fe7f",
-          },
-          Object {
-            "className": "Pine",
-            "id": "0x45250000003fa8",
-          },
-        ],
-        "pathFromRoot": Array [
-          "317b549e-3c73-4bd9-ae80-2dfd597e172a",
-          "44fe303f-9afb-4bbf-a5a5-a3fa88fc211e",
-        ],
-        "type": "ECInstancesNode",
-      },
-      "label": Object {
-        "displayValue": "Road",
-        "rawValue": "Computers",
-        "typeName": "string",
-      },
-    },
-    "type": "Delete",
+    "expandedNodes": undefined,
+    "nodesCount": 1,
+    "parent": undefined,
   },
 ]
 `;
@@ -45,122 +143,119 @@ Array [
 exports[`HierarchyUpdateInfo toJSON serializes partial \`HierarchyUpdateInfo\` to JSON 1`] = `
 Array [
   Object {
-    "node": Object {
-      "backColor": undefined,
-      "description": "Culpa sunt nisi.",
-      "foreColor": "#3C13EE",
-      "hasChildren": true,
-      "imageId": "Accounts",
-      "isCheckboxEnabled": true,
-      "isCheckboxVisible": false,
-      "isChecked": true,
-      "isEditable": false,
-      "isExpanded": true,
-      "isSelectionDisabled": true,
-      "key": Object {
-        "instanceKeys": Array [
-          Object {
-            "className": "withdrawal",
-            "id": "0x11d820000000a56",
-          },
-          Object {
-            "className": "sexy",
-            "id": "0x1315e0000003973",
-          },
-        ],
-        "pathFromRoot": Array [
-          "2c700ce5-f43f-4b56-97a6-2acd5f77d6c9",
-          "6c8d5cf6-cf78-4921-81ee-a1dc1afa9812",
-        ],
-        "type": "ECInstancesNode",
-      },
-      "labelDefinition": Object {
-        "displayValue": "analyzer",
-        "rawValue": "Automotive",
-        "typeName": "string",
-      },
-    },
-    "type": "Delete",
+    "expandedNodes": undefined,
+    "nodesCount": 1,
+    "parent": undefined,
   },
 ]
 `;
 
+exports[`HierarchyUpdateRecord fromJSON deserializes partial \`HierarchyUpdateRecord\` from JSON 1`] = `
+Object {
+  "expandedNodes": Array [
+    Object {
+      "node": Object {
+        "key": Object {
+          "instanceKeys": Array [],
+          "pathFromRoot": Array [],
+          "type": "ECInstancesNode",
+        },
+        "label": Object {
+          "displayValue": "TestNode",
+          "rawValue": "test_node",
+          "typeName": "string",
+        },
+      },
+      "position": 0,
+    },
+  ],
+  "nodesCount": 2,
+  "parent": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+  },
+}
+`;
+
+exports[`HierarchyUpdateRecord toJSON serializes partial \`HierarchyUpdateRecord\` to JSON 1`] = `
+Object {
+  "expandedNodes": Array [
+    Object {
+      "node": Object {
+        "key": Object {
+          "instanceKeys": Array [],
+          "pathFromRoot": Array [],
+          "type": "ECInstancesNode",
+        },
+        "labelDefinition": Object {
+          "displayValue": "TestNode",
+          "rawValue": "test_node",
+          "typeName": "string",
+        },
+      },
+      "position": 0,
+    },
+  ],
+  "nodesCount": 2,
+  "parent": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+  },
+}
+`;
+
 exports[`PartialHierarchyModification fromJSON deserializes \`NodeDeletionInfo\` from JSON 1`] = `
 Object {
-  "node": Object {
-    "backColor": undefined,
-    "description": undefined,
-    "foreColor": "#499304",
-    "hasChildren": false,
-    "isCheckboxEnabled": false,
-    "isCheckboxVisible": false,
-    "isChecked": true,
-    "isEditable": true,
-    "isExpanded": false,
-    "isSelectionDisabled": false,
-    "key": Object {
-      "instanceKeys": Array [
-        Object {
-          "className": "motivating",
-          "id": "0x8b3f0000011e2c",
-        },
-        Object {
-          "className": "grey",
-          "id": "0xf7c3000000bc76",
-        },
-      ],
-      "pathFromRoot": Array [
-        "d17bc3ce-8630-454c-90ee-7772fc7c6911",
-        "1555f40b-1303-4b4e-a55c-9c0f1463cbc4",
-      ],
-      "type": "ECInstancesNode",
-    },
-    "label": Object {
-      "displayValue": "solid state",
-      "rawValue": "Georgia",
-      "typeName": "string",
-    },
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
   },
   "type": "Delete",
 }
 `;
 
-exports[`PartialHierarchyModification fromJSON deserializes \`NodeInsertionInfo\` from JSON 1`] = `
+exports[`PartialHierarchyModification fromJSON deserializes \`NodeInsertionInfo\` with parent from JSON 1`] = `
 Object {
   "node": Object {
-    "backColor": undefined,
-    "description": undefined,
-    "foreColor": "#BC2579",
-    "hasChildren": false,
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": true,
-    "isChecked": true,
-    "isEditable": false,
-    "isExpanded": false,
-    "isSelectionDisabled": true,
     "key": Object {
-      "instanceKeys": Array [
-        Object {
-          "className": "reinvent",
-          "id": "0x9728000000d3c9",
-        },
-        Object {
-          "className": "Ergonomic",
-          "id": "0x107cc0000013d29",
-        },
-      ],
-      "pathFromRoot": Array [
-        "89c19c44-3035-468a-bced-15ec6c92fd41",
-        "8176fe06-d004-41dc-b0dd-c37cc7533d8d",
-      ],
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
       "type": "ECInstancesNode",
     },
     "label": Object {
-      "displayValue": "Drive",
-      "rawValue": "Lead",
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
       "typeName": "string",
     },
   },
+  "parent": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+  },
+  "position": 123,
+  "type": "Insert",
+}
+`;
+
+exports[`PartialHierarchyModification fromJSON deserializes \`NodeInsertionInfo\` without parent from JSON 1`] = `
+Object {
+  "node": Object {
+    "key": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
+    },
+    "label": Object {
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
+      "typeName": "string",
+    },
+  },
+  "parent": undefined,
   "position": 123,
   "type": "Insert",
 }
@@ -168,50 +263,13 @@ Object {
 
 exports[`PartialHierarchyModification fromJSON deserializes \`NodeUpdateInfo\` from JSON 1`] = `
 Object {
-  "changes": Array [
-    Object {
-      "name": "test",
-      "new": "new value",
-      "old": "old value",
-    },
-  ],
-  "node": Object {
-    "backColor": "rgb(
-    69,
-    153,
-    147
-  )",
-    "description": "Omnis et quos est quo.",
-    "foreColor": "#BC5D2F",
-    "hasChildren": true,
-    "isCheckboxEnabled": false,
-    "isCheckboxVisible": false,
-    "isChecked": true,
-    "isEditable": false,
-    "isExpanded": true,
-    "isSelectionDisabled": true,
-    "key": Object {
-      "instanceKeys": Array [
-        Object {
-          "className": "Beauty",
-          "id": "0x78020000013472",
-        },
-        Object {
-          "className": "SAS",
-          "id": "0xdaf20000008622",
-        },
-      ],
-      "pathFromRoot": Array [
-        "07f1ece1-741c-4759-a398-d8f6a8ff2536",
-        "9841298a-a7fa-43a1-9d8f-7b116fdeed3b",
-      ],
-      "type": "ECInstancesNode",
-    },
-    "label": Object {
-      "displayValue": "Marshall Islands",
-      "rawValue": "Convertible Marks",
-      "typeName": "string",
-    },
+  "changes": Object {
+    "backColor": "new value",
+  },
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
   },
   "type": "Update",
 }
@@ -219,90 +277,54 @@ Object {
 
 exports[`PartialHierarchyModification toJSON serializes \`NodeDeletionInfo\` 1`] = `
 Object {
-  "node": Object {
-    "backColor": "rgb(
-    43,
-    198,
-    190
-  )",
-    "description": "Ut officia nulla quasi est quos.",
-    "foreColor": undefined,
-    "hasChildren": true,
-    "imageId": "Division",
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": false,
-    "isChecked": false,
-    "isEditable": false,
-    "isExpanded": true,
-    "isSelectionDisabled": false,
-    "key": Object {
-      "instanceKeys": Array [
-        Object {
-          "className": "optical",
-          "id": "0x74bf000001174e",
-        },
-        Object {
-          "className": "Handmade",
-          "id": "0xd80c000000013b",
-        },
-      ],
-      "pathFromRoot": Array [
-        "297fed4f-a3bc-40e4-ae10-75a62191d735",
-        "69664ce6-9915-4927-99d9-de82cb09cd98",
-      ],
-      "type": "ECInstancesNode",
-    },
-    "labelDefinition": Object {
-      "displayValue": "Practical",
-      "rawValue": "channels",
-      "typeName": "string",
-    },
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
   },
   "type": "Delete",
 }
 `;
 
-exports[`PartialHierarchyModification toJSON serializes \`NodeInsertionInfo\` 1`] = `
+exports[`PartialHierarchyModification toJSON serializes \`NodeInsertionInfo\` with parent 1`] = `
 Object {
   "node": Object {
-    "backColor": "rgb(
-    29,
-    73,
-    13
-  )",
-    "description": undefined,
-    "foreColor": undefined,
-    "hasChildren": false,
-    "imageId": undefined,
-    "isCheckboxEnabled": false,
-    "isCheckboxVisible": false,
-    "isChecked": true,
-    "isEditable": false,
-    "isExpanded": false,
-    "isSelectionDisabled": false,
     "key": Object {
-      "instanceKeys": Array [
-        Object {
-          "className": "Handcrafted",
-          "id": "0xe8c50000017c92",
-        },
-        Object {
-          "className": "connecting",
-          "id": "0xdf5d000001227b",
-        },
-      ],
-      "pathFromRoot": Array [
-        "eb9f6cdb-590c-40eb-8410-b47b478e6354",
-        "5f1bd9a6-011b-42bf-ad4b-762bd50d35ac",
-      ],
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
       "type": "ECInstancesNode",
     },
     "labelDefinition": Object {
-      "displayValue": "e-business",
-      "rawValue": "red",
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
       "typeName": "string",
     },
   },
+  "parent": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+  },
+  "position": 123,
+  "type": "Insert",
+}
+`;
+
+exports[`PartialHierarchyModification toJSON serializes \`NodeInsertionInfo\` without parent 1`] = `
+Object {
+  "node": Object {
+    "key": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
+    },
+    "labelDefinition": Object {
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
+      "typeName": "string",
+    },
+  },
+  "parent": undefined,
   "position": 123,
   "type": "Insert",
 }
@@ -310,47 +332,13 @@ Object {
 
 exports[`PartialHierarchyModification toJSON serializes \`NodeUpdateInfo\` 1`] = `
 Object {
-  "changes": Array [
-    Object {
-      "name": "test",
-      "new": "new value",
-      "old": "old value",
-    },
-  ],
-  "node": Object {
-    "backColor": undefined,
-    "description": undefined,
-    "foreColor": "#223566",
-    "hasChildren": false,
-    "imageId": "transform",
-    "isCheckboxEnabled": false,
-    "isCheckboxVisible": true,
-    "isChecked": false,
-    "isEditable": true,
-    "isExpanded": true,
-    "isSelectionDisabled": false,
-    "key": Object {
-      "instanceKeys": Array [
-        Object {
-          "className": "compressing",
-          "id": "0x13e7000000b21f",
-        },
-        Object {
-          "className": "driver",
-          "id": "0xa0c60000003686",
-        },
-      ],
-      "pathFromRoot": Array [
-        "58f308fb-296a-44e8-a3d6-3c04430a4490",
-        "29cb5697-c7a2-4d0e-831c-3ae57f696b21",
-      ],
-      "type": "ECInstancesNode",
-    },
-    "labelDefinition": Object {
-      "displayValue": "Virginia",
-      "rawValue": "foreground",
-      "typeName": "string",
-    },
+  "changes": Object {
+    "backColor": "new value",
+  },
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
   },
   "type": "Update",
 }
@@ -373,45 +361,9 @@ Object {
       "content": undefined,
       "hierarchy": Array [
         Object {
-          "node": Object {
-            "backColor": "rgb(
-    193,
-    243,
-    39
-  )",
-            "description": "Architecto pariatur magnam nam quisquam.",
-            "foreColor": "#F4E98F",
-            "hasChildren": false,
-            "isCheckboxEnabled": true,
-            "isCheckboxVisible": true,
-            "isChecked": true,
-            "isEditable": true,
-            "isExpanded": false,
-            "isSelectionDisabled": false,
-            "key": Object {
-              "instanceKeys": Array [
-                Object {
-                  "className": "internet solution",
-                  "id": "0xd5c10000004941",
-                },
-                Object {
-                  "className": "RAM",
-                  "id": "0x702300000184a5",
-                },
-              ],
-              "pathFromRoot": Array [
-                "609c256d-9938-42d0-b65c-afd19e430113",
-                "181aeb51-d8bb-4081-91eb-dc6a3ed59ec2",
-              ],
-              "type": "ECInstancesNode",
-            },
-            "label": Object {
-              "displayValue": "User-centric",
-              "rawValue": "invoice",
-              "typeName": "string",
-            },
-          },
-          "type": "Delete",
+          "expandedNodes": undefined,
+          "nodesCount": 1,
+          "parent": undefined,
         },
       ],
     },
@@ -436,42 +388,9 @@ Object {
       "content": undefined,
       "hierarchy": Array [
         Object {
-          "node": Object {
-            "backColor": undefined,
-            "description": "Doloribus exercitationem eius debitis quidem.",
-            "foreColor": "#CB2FF4",
-            "hasChildren": false,
-            "imageId": "Progressive",
-            "isCheckboxEnabled": true,
-            "isCheckboxVisible": false,
-            "isChecked": true,
-            "isEditable": true,
-            "isExpanded": false,
-            "isSelectionDisabled": false,
-            "key": Object {
-              "instanceKeys": Array [
-                Object {
-                  "className": "transmitter",
-                  "id": "0x42290000009bd8",
-                },
-                Object {
-                  "className": "Bedfordshire",
-                  "id": "0x11fb000000f97b",
-                },
-              ],
-              "pathFromRoot": Array [
-                "86c178ef-2a83-4ef6-a2ab-1556ecfc57e6",
-                "18dad7d8-a0cd-41ed-b11f-462952cd6500",
-              ],
-              "type": "ECInstancesNode",
-            },
-            "labelDefinition": Object {
-              "displayValue": "Sausages",
-              "rawValue": "Manat",
-              "typeName": "string",
-            },
-          },
-          "type": "Delete",
+          "expandedNodes": undefined,
+          "nodesCount": 1,
+          "parent": undefined,
         },
       ],
     },

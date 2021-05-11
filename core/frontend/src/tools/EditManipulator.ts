@@ -8,26 +8,22 @@
 
 import { AxisOrder, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Ray3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { ColorDef, Npc } from "@bentley/imodeljs-common";
-import { AccuDraw } from "../AccuDraw";
-import { TentativeOrAccuSnap } from "../AccuSnap";
+import { CoordSystem } from "../CoordSystem";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { SelectionSetEvent } from "../SelectionSet";
-import { StandardViewId } from "../StandardView";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem } from "../CoordSystem";
 import { Viewport } from "../Viewport";
 import { BeButton, BeButtonEvent, BeTouchEvent, CoordinateLockOverrides, EventHandled, InputCollector, InputSource, Tool } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 
 /** A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
  * Interactive modification is handled by installing an InputCollector tool.
- * @alpha
+ * @internal
  */
 export namespace EditManipulator {
   export enum EventType { Synch, Cancel, Accept }
-  export enum RotationType { Top, Front, Left, Bottom, Back, Right, View, Face }
 
   export abstract class HandleTool extends InputCollector {
     public static toolId = "Select.Manipulator";
@@ -119,7 +115,7 @@ export namespace EditManipulator {
     /** Provider is responsible for checking if modification by controls is valid.
      * May still wish to present controls for "transient" geometry in non-read/write applications, etc.
      */
-    protected abstract async createControls(): Promise<boolean>;
+    protected abstract createControls(): Promise<boolean>;
 
     protected async updateControls(): Promise<void> {
       const created = await this.createControls();
@@ -231,37 +227,6 @@ export namespace EditManipulator {
       return lineRay.projectPointToRay(projectedPt);
     }
 
-    public static getRotation(rotation: RotationType, viewport: Viewport): Matrix3d | undefined {
-      switch (rotation) {
-        case RotationType.Top:
-          return AccuDraw.getStandardRotation(StandardViewId.Top, viewport, viewport.isContextRotationRequired).inverse();
-        case RotationType.Front:
-          return AccuDraw.getStandardRotation(StandardViewId.Front, viewport, viewport.isContextRotationRequired).inverse();
-        case RotationType.Left:
-          return AccuDraw.getStandardRotation(StandardViewId.Left, viewport, viewport.isContextRotationRequired).inverse();
-        case RotationType.Bottom:
-          return AccuDraw.getStandardRotation(StandardViewId.Bottom, viewport, viewport.isContextRotationRequired).inverse();
-        case RotationType.Back:
-          return AccuDraw.getStandardRotation(StandardViewId.Back, viewport, viewport.isContextRotationRequired).inverse();
-        case RotationType.Right:
-          return AccuDraw.getStandardRotation(StandardViewId.Right, viewport, viewport.isContextRotationRequired).inverse();
-        case RotationType.View:
-          return viewport.view.getRotation().inverse();
-        case RotationType.Face:
-          const snap = TentativeOrAccuSnap.getCurrentSnap(false);
-          if (undefined === snap || undefined === snap.normal)
-            return undefined;
-          const normal = Vector3d.createZero();
-          const boresite = EditManipulator.HandleUtils.getBoresite(snap.hitPoint, viewport);
-          if (snap.normal.dotProduct(boresite.direction) < 0.0)
-            normal.setFrom(snap.normal);
-          else
-            snap.normal.negate(normal);
-          return Matrix3d.createRigidHeadsUp(normal);
-      }
-      return undefined;
-    }
-
     /** Get a transform to orient arrow shape to view direction. If arrow direction is close to perpendicular to view direction will return undefined. */
     public static getArrowTransform(vp: Viewport, base: Point3d, direction: Vector3d, sizeInches: number): Transform | undefined {
       const boresite = EditManipulator.HandleUtils.getBoresite(base, vp);
@@ -292,7 +257,7 @@ export namespace EditManipulator {
       return shapePts;
     }
 
-    /** @internal Adjust for contrast against view background color when it's relevant */
+    /** Adjust for contrast against view background color when it's relevant */
     public static adjustForBackgroundColor(color: ColorDef, vp: Viewport): ColorDef {
       if (vp.view.is3d() && vp.view.getDisplayStyle3d().environment.sky.display)
         return color;

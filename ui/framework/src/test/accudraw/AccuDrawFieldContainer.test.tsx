@@ -6,6 +6,7 @@ import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { CompassMode, IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
 import { AccuDrawUiAdmin, SpecialKey } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
@@ -14,6 +15,7 @@ import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw
 import { AccuDrawFieldContainer } from "../../ui-framework/accudraw/AccuDrawFieldContainer";
 import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
 import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+import { AccuDrawUiSettings } from "../../ui-framework/accudraw/AccuDrawUiSettings";
 
 // cspell:ignore uiadmin
 
@@ -123,12 +125,8 @@ describe("AccuDrawFieldContainer", () => {
     expect(document.activeElement === input).to.be.true;
     spy.resetHistory();
 
-    IModelApp.accuDraw.setFocusItem(ItemField.Z_Item);
-    spy.calledOnce.should.true;
     input = wrapper.queryByTestId("uifw-accudraw-z");
-    expect(input).not.to.be.null;
-    expect(document.activeElement === input).to.be.true;
-    spy.resetHistory();
+    expect(input).to.be.null;
 
     IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
     await TestUtils.flushAsyncOperations();
@@ -143,6 +141,28 @@ describe("AccuDrawFieldContainer", () => {
     IModelApp.accuDraw.setFocusItem(ItemField.DIST_Item);
     spy.calledOnce.should.true;
     input = wrapper.queryByTestId("uifw-accudraw-distance");
+    expect(input).not.to.be.null;
+    expect(document.activeElement === input).to.be.true;
+    spy.resetHistory();
+
+    await TestUtils.flushAsyncOperations();
+    expect(IModelApp.accuDraw.hasInputFocus).to.be.true;
+
+    remove();
+  });
+
+  it("should emit onAccuDrawSetFieldFocusEvent and show Z field", async () => {
+    const spy = sinon.spy();
+    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spy);
+    const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
+    expect(IModelApp.accuDraw.hasInputFocus).to.be.false;
+
+    IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+    await TestUtils.flushAsyncOperations();
+
+    IModelApp.accuDraw.setFocusItem(ItemField.Z_Item);
+    spy.calledOnce.should.true;
+    const input = wrapper.queryByTestId("uifw-accudraw-z");
     expect(input).not.to.be.null;
     expect(document.activeElement === input).to.be.true;
     spy.resetHistory();
@@ -215,11 +235,7 @@ describe("AccuDrawFieldContainer", () => {
     spy.resetHistory();
 
     input = wrapper.queryByTestId("uifw-accudraw-z");
-    expect(input).not.to.be.null;
-    fireEvent.change(input!, { target: { value: "22.3" } });
-    fakeTimers.tick(300);
-    spy.calledOnce.should.true;
-    spy.resetHistory();
+    expect(input).to.be.null;
 
     IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
 
@@ -231,6 +247,25 @@ describe("AccuDrawFieldContainer", () => {
     spy.resetHistory();
 
     input = wrapper.queryByTestId("uifw-accudraw-distance");
+    expect(input).not.to.be.null;
+    fireEvent.change(input!, { target: { value: "22.3" } });
+    fakeTimers.tick(300);
+    spy.calledOnce.should.true;
+    spy.resetHistory();
+
+    remove();
+    fakeTimers.restore();
+  });
+
+  it("should call onValueChanged & setFieldValueFromUi & show the Z field", () => {
+    const fakeTimers = sinon.useFakeTimers();
+    const spy = sinon.spy();
+    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.addListener(spy);
+    const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
+
+    IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+
+    const input = wrapper.queryByTestId("uifw-accudraw-z");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
     fakeTimers.tick(300);
@@ -253,6 +288,169 @@ describe("AccuDrawFieldContainer", () => {
     spy.calledOnce.should.true;
 
     (KeyboardShortcutManager.setFocusToHome as any).restore();
+  });
+
+  describe("FrameworkAccuDraw.uiSettings", () => {
+    const bgColorTest = ColorByName.red;
+    const fgColorTest = ColorByName.black;
+    const labelTest = "label-test";
+    const iconTest = "icon-test";
+
+    const fullSettings: AccuDrawUiSettings = {
+      xStyle: {display: "inline"},
+      yStyle: {display: "inline"},
+      zStyle: {display: "inline"},
+      angleStyle: {display: "inline"},
+      distanceStyle: {display: "inline"},
+      xBackgroundColor: ColorDef.create(bgColorTest),
+      yBackgroundColor: ColorDef.create(bgColorTest),
+      zBackgroundColor: ColorDef.create(bgColorTest),
+      angleBackgroundColor: ColorDef.create(bgColorTest),
+      distanceBackgroundColor: ColorDef.create(bgColorTest),
+      xForegroundColor: ColorDef.create(fgColorTest),
+      yForegroundColor: ColorDef.create(fgColorTest),
+      zForegroundColor: ColorDef.create(fgColorTest),
+      angleForegroundColor: ColorDef.create(fgColorTest),
+      distanceForegroundColor: ColorDef.create(fgColorTest),
+      xLabel: labelTest,
+      yLabel: labelTest,
+      zLabel: labelTest,
+      angleLabel: labelTest,
+      distanceLabel: labelTest,
+      xIcon: iconTest,
+      yIcon: iconTest,
+      zIcon: iconTest,
+      angleIcon: iconTest,
+      distanceIcon: iconTest,
+    };
+
+    it("should support FrameworkAccuDraw.uiSettings- set after render", async () => {
+      const emptySettings: AccuDrawUiSettings = {};
+
+      const spy = sinon.spy();
+      FrameworkAccuDraw.uiSettings = undefined;
+      const remove = FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.addListener(spy);
+      const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
+
+      const settingsTest = (count: number) => {
+        spy.calledOnce.should.true;
+
+        let labelElements = wrapper.queryAllByLabelText(labelTest);
+        expect(labelElements.length).to.eq(count);
+
+        const inputElements = wrapper.container.querySelectorAll("input");
+        expect(inputElements.length).to.eq(count);
+        for (const inputElement of inputElements) {
+          expect(inputElement.getAttribute("style")).to.eq("display: inline; background-color: rgb(255, 0, 0); color: rgb(0, 0, 0);");
+        }
+
+        const iElements = wrapper.container.querySelectorAll(`i.${iconTest}`);
+        expect(iElements.length).to.eq(count);
+
+        FrameworkAccuDraw.uiSettings = emptySettings;
+        spy.calledTwice.should.true;
+        labelElements = wrapper.queryAllByLabelText(labelTest);
+        expect(labelElements.length).to.eq(0);
+
+        FrameworkAccuDraw.uiSettings = undefined;
+        spy.calledThrice.should.true;
+        labelElements = wrapper.queryAllByLabelText(labelTest);
+        expect(labelElements.length).to.eq(0);
+      };
+
+      IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+      expect(wrapper.queryAllByLabelText(labelTest).length).to.eq(0);
+      FrameworkAccuDraw.uiSettings = fullSettings;
+      await TestUtils.flushAsyncOperations();
+      settingsTest(3);
+
+      spy.resetHistory();
+
+      IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
+      expect(wrapper.queryAllByLabelText(labelTest).length).to.eq(0);
+      FrameworkAccuDraw.uiSettings = fullSettings;
+      await TestUtils.flushAsyncOperations();
+      settingsTest(2);
+
+      remove();
+    });
+
+    it("should support FrameworkAccuDraw.uiSettings - set before render", async () => {
+      const spy = sinon.spy();
+      FrameworkAccuDraw.uiSettings = fullSettings;
+      const remove = FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.addListener(spy);
+      const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
+
+      const settingsTest = (count: number) => {
+        const labelElements = wrapper.queryAllByLabelText(labelTest);
+        expect(labelElements.length).to.eq(count);
+
+        const inputElements = wrapper.container.querySelectorAll("input");
+        expect(inputElements.length).to.eq(count);
+        for (const inputElement of inputElements) {
+          expect(inputElement.getAttribute("style")).to.eq("display: inline; background-color: rgb(255, 0, 0); color: rgb(0, 0, 0);");
+        }
+
+        const iElements = wrapper.container.querySelectorAll(`i.${iconTest}`);
+        expect(iElements.length).to.eq(count);
+      };
+
+      IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+      await TestUtils.flushAsyncOperations();
+      settingsTest(3);
+
+      IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
+      await TestUtils.flushAsyncOperations();
+      settingsTest(2);
+
+      remove();
+    });
+
+    it("should support FrameworkAccuDraw.uiSettings with various color combinations", async () => {
+      const backgroundSettings: AccuDrawUiSettings = {
+        xBackgroundColor: ColorDef.create(bgColorTest),
+      };
+
+      const foregroundSettings: AccuDrawUiSettings = {
+        xForegroundColor: ColorDef.create(fgColorTest),
+      };
+
+      const bgStringSettings: AccuDrawUiSettings = {
+        xBackgroundColor: "rgba(255, 0, 0, 0.5)",
+      };
+
+      const fgStringSettings: AccuDrawUiSettings = {
+        xForegroundColor: "rgba(0, 0, 255, 0.5)",
+      };
+
+      const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
+      IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+
+      FrameworkAccuDraw.uiSettings = backgroundSettings;
+      await TestUtils.flushAsyncOperations();
+      let input = wrapper.queryByTestId("uifw-accudraw-x");
+      expect(input).not.to.be.null;
+      expect(input!.getAttribute("style")).to.eq("background-color: rgb(255, 0, 0);");
+
+      FrameworkAccuDraw.uiSettings = foregroundSettings;
+      await TestUtils.flushAsyncOperations();
+      input = wrapper.queryByTestId("uifw-accudraw-x");
+      expect(input).not.to.be.null;
+      expect(input!.getAttribute("style")).to.eq("color: rgb(0, 0, 0);");
+
+      FrameworkAccuDraw.uiSettings = bgStringSettings;
+      await TestUtils.flushAsyncOperations();
+      input = wrapper.queryByTestId("uifw-accudraw-x");
+      expect(input).not.to.be.null;
+      expect(input!.getAttribute("style")).to.eq("background-color: rgba(255, 0, 0, 0.5);");
+
+      FrameworkAccuDraw.uiSettings = fgStringSettings;
+      await TestUtils.flushAsyncOperations();
+      input = wrapper.queryByTestId("uifw-accudraw-x");
+      expect(input).not.to.be.null;
+      expect(input!.getAttribute("style")).to.eq("color: rgba(0, 0, 255, 0.5);");
+    });
+
   });
 
 });

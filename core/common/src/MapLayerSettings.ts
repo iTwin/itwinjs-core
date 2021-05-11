@@ -8,14 +8,14 @@
 
 import { BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSettings";
 
-/** @alpha */
+/** @beta */
 export type SubLayerId = string | number;
 
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
- * A map sub layer represents a set of objects within the layer that can be controlled seperately.  These
+ * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
  * @see [[MapLayerProps]]
- * @alpha
+ * @beta
  */
 export interface MapSubLayerProps {
   name?: string;
@@ -28,11 +28,11 @@ export interface MapSubLayerProps {
 
 /** Normalized representation of a [[MapSubLayerProps]] for which values
  * have been validated and default values have been applied where explicit values not defined.
- * A map sub layer represents a set of objects within the layer that can be controlled seperately.  These
+ * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
- * [[MapSubLayers]] can represent a hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
+ * This class can represent an hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
  * @see [[MapLayerSettings]]
- * @alpha
+ * @beta
  */
 export class MapSubLayerSettings {
   /** Typically Name is a single word used for machine-to-machine communication while the Title is for the benefit of humans (WMS) */
@@ -106,7 +106,7 @@ export class MapSubLayerSettings {
 
 /** JSON representation of the settings associated with a map layer.  One or more map layers may be included within a [[MapImageryProps]] object.
  * @see [[MapImageryProps]]
- * @alpha
+ * @beta
  */
 export interface MapLayerProps {
   /** Controls visibility of layer */
@@ -127,10 +127,6 @@ export interface MapLayerProps {
   maxZoom?: number;
   /** Is a base layer */
   isBase?: boolean;
-  /** User name - if required for authentication. */
-  userName?: string;
-  /** Password - if required for authentication */
-  password?: string;
   /** Access Key for the Layer, like a subscription key or access token */
   accessKey?: MapLayerKey;
 }
@@ -146,7 +142,7 @@ export interface MapLayerKey {
 /** Normalized representation of a [[MapLayerProps]] for which values have been  validated and default values have been applied where explicit values not defined.
  * One or more map layers may be included within [[MapImagerySettings]] object.
  * @see [[MapImagerySettings]]
- * @alpha
+ * @beta
  */
 export class MapLayerSettings {
   public readonly visible: boolean;
@@ -157,11 +153,19 @@ export class MapLayerSettings {
   public readonly subLayers: MapSubLayerSettings[];
   public readonly transparentBackground: boolean;
   public readonly isBase: boolean;
-  public readonly userName?: string;
-  public readonly password?: string;
+  public userName?: string;
+  public password?: string;
   public readonly accessKey?: MapLayerKey;
+
+  public setCredentials(userName?: string, password?: string) {
+    this.userName = userName;
+    this.password = password;
+  }
+
   // eslint-disable-next-line no-undef-init
-  private constructor(url: string, name: string, formatId: string = "WMS", visible = true, jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0, transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey) {
+  private constructor(url: string, name: string, formatId: string = "WMS", visible = true,
+    jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0,
+    transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey) {
     this.formatId = formatId;
     this.name = name;
     this.visible = visible;
@@ -192,7 +196,7 @@ export class MapLayerSettings {
       return undefined;
 
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new MapLayerSettings(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, json.userName, json.password, json.accessKey);
+    return new MapLayerSettings(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, undefined, undefined, json.accessKey);
   }
   /** return JSON representation of this MapLayerSettings object */
   public toJSON(): MapLayerProps {
@@ -208,8 +212,6 @@ export class MapLayerSettings {
     props.formatId = this.formatId;
     props.name = this.name;
     props.url = this.url;
-    props.userName = this.userName;
-    props.password = this.password;
     props.accessKey = this.accessKey;
     if (0 !== this.transparency)
       props.transparency = this.transparency;
@@ -217,9 +219,9 @@ export class MapLayerSettings {
       props.transparentBackground = this.transparentBackground;
     if (this.isBase === true)
       props.isBase = this.isBase;
-
     return props;
   }
+
   /** @internal */
   private static mapTypeName(type: BackgroundMapType) {   // TBD.. Localization.
     switch (type) {
@@ -292,17 +294,30 @@ export class MapLayerSettings {
       transparency: undefined !== changedProps.transparency ? changedProps.transparency : this.transparency,
       transparentBackground: undefined !== changedProps.transparentBackground ? changedProps.transparentBackground : this.transparentBackground,
       subLayers: undefined !== changedProps.subLayers ? changedProps.subLayers : this.subLayers,
-      userName: undefined !== changedProps.userName ? changedProps.userName : this.userName,
-      password: undefined !== changedProps.password ? changedProps.password : this.password,
       accessKey: undefined !== changedProps.accessKey ? changedProps.accessKey : this.accessKey,
     };
-    return MapLayerSettings.fromJSON(props)!;
+    const clone = MapLayerSettings.fromJSON(props)!;
+
+    // Clone members not part of MapLayerProps
+    clone.userName = this.userName;
+    clone.password = this.password;
+
+    return clone;
   }
 
   /** @internal */
   public displayMatches(other: MapLayerSettings): boolean {
-    if (!this.matchesNameAndUrl(other.name, other.url) || this.visible !== other.visible || this.transparency !== other.transparency || this.transparentBackground !== other.transparentBackground || this.subLayers.length !== other.subLayers.length)
+    if (!this.matchesNameAndUrl(other.name, other.url)
+      || this.visible !== other.visible
+      || this.transparency !== other.transparency
+      || this.transparentBackground !== other.transparentBackground
+      || this.subLayers.length !== other.subLayers.length) {
       return false;
+    }
+
+    if (this.userName !== other.userName || this.password !== other.password) {
+      return false;
+    }
 
     for (let i = 0; i < this.subLayers.length; i++)
       if (!this.subLayers[i].displayMatches(other.subLayers[i]))

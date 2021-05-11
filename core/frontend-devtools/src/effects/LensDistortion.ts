@@ -8,7 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
-import { AddEffectTool, redrawSelectedView } from "./EffectTools";
+import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 import { parseArgs } from "../tools/parseArgs";
 
 /** Adds a screen-space effect to the selected [[Viewport]] to simulate the lens distortion produced by real-world cameras with very wide fields of view.
@@ -104,7 +104,7 @@ export class LensDistortionConfig extends Tool {
   public run(strength?: number, ratio?: number): boolean {
     LensDistortionConfig.strength = strength ?? 0.5;
     LensDistortionConfig.cylindricalRatio = ratio ?? 0.5;
-    redrawSelectedView();
+    refreshViewportsForEffect("fdt lensdistortion");
     return true;
   }
 

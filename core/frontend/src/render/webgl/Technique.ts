@@ -8,12 +8,14 @@
 
 import { assert, dispose, using } from "@bentley/bentleyjs-core";
 import { WebGLContext } from "@bentley/webgl-compatibility";
+import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
+import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
 import { createCombineTexturesProgram } from "./glsl/CombineTextures";
 import { addEyeSpace, addFrustum, addShaderFlags } from "./glsl/Common";
 import { createCompositeProgram } from "./glsl/Composite";
@@ -29,18 +31,18 @@ import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSym
 import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
 import { addLogDepth } from "./glsl/LogarithmicDepthBuffer";
 import { addUnlitMonochrome } from "./glsl/Monochrome";
+import createPlanarGridProgram from "./glsl/PlanarGrid";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
+import createRealityMeshBuilder, { createClassifierRealityMeshHiliter, createRealityMeshHiliter } from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
-import createTerrainMeshBuilder from "./glsl/TerrainMesh";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";
 import { ProgramBuilder } from "./ShaderBuilder";
-import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -637,29 +639,34 @@ class PointCloudTechnique extends VariedTechnique {
   }
 }
 
-class TerrainMeshTechnique extends VariedTechnique {
-  private static readonly _numVariants = 32;
+class RealityMeshTechnique extends VariedTechnique {
+  private static readonly _numVariants = 50;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(TerrainMeshTechnique._numVariants);
+    super(RealityMeshTechnique._numVariants);
+    this._earlyZFlags = [
+      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
+    ];
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.No, createRealityMeshHiliter);
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, createClassifierRealityMeshHiliter);
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
           for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
             const flags = scratchTechniqueFlags;
-            const terrainMeshFeatureModes = [FeatureMode.None, FeatureMode.Pick];
-            for (const featureMode of terrainMeshFeatureModes) {
+            for (const featureMode of featureModes) {
               flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
               flags.isClassified = iClassified;
               flags.isTranslucent = 1 === iTranslucent;
-              const builder = createTerrainMeshBuilder(flags.isClassified, featureMode, flags.isShadowable, thematic);
-              if (FeatureMode.Pick === featureMode)
-                addUniformFeatureSymbology(builder, false);
+              const builder = createRealityMeshBuilder(flags);
+
               if (flags.isTranslucent) {
                 addShaderFlags(builder);
                 addTranslucency(builder);
               } else
                 this.addFeatureId(builder, featureMode);
+
               this.addShader(builder, flags, gl);
             }
           }
@@ -670,20 +677,21 @@ class TerrainMeshTechnique extends VariedTechnique {
     this.finishConstruction();
   }
 
-  protected get _debugDescription() { return "TerrainMesh"; }
+  protected get _debugDescription() { return "RealityMesh"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    let ndx = 0;
+    if (flags.isHilite)
+      return flags.isClassified ? 1 : 0;
+    let ndx = 2;
     if (flags.isClassified)
       ndx++;
     if (flags.isShadowable)
       ndx += 2;
     if (flags.isTranslucent)
       ndx += 4;
-    if (flags.featureMode !== FeatureMode.None)
-      ndx += 8;
+    ndx += 8 * flags.featureMode;
     if (flags.isThematic)
-      ndx += 16;
+      ndx += 24;
     return ndx;
   }
 }
@@ -722,7 +730,7 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.Polyline },
   { techniqueId: TechniqueId.PointString },
   { techniqueId: TechniqueId.PointCloud },
-  { techniqueId: TechniqueId.TerrainMesh },
+  { techniqueId: TechniqueId.RealityMesh },
 
   // The following techniques take a trivial amount of time to compile - do them last
   { techniqueId: TechniqueId.OITClearTranslucent },
@@ -748,6 +756,8 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.VolClassCopyZ },
   { techniqueId: TechniqueId.VolClassSetBlend },
   { techniqueId: TechniqueId.VolClassBlend },
+  { techniqueId: TechniqueId.Combine3Textures },
+  { techniqueId: TechniqueId.PlanarGrid },
 ];
 const numTechniquesByPriority = techniquesByPriority.length;
 
@@ -906,13 +916,15 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(createAmbientOcclusionProgram(gl));
     this._list[TechniqueId.Blur] = new SingularTechnique(createBlurProgram(gl));
     this._list[TechniqueId.CombineTextures] = new SingularTechnique(createCombineTexturesProgram(gl));
+    this._list[TechniqueId.Combine3Textures] = new SingularTechnique(createCombine3TexturesProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
     this._list[TechniqueId.Edge] = new EdgeTechnique(gl, false);
     this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
-    this._list[TechniqueId.TerrainMesh] = new TerrainMeshTechnique(gl);
+    this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
+    this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
     if (System.instance.capabilities.supportsFragDepth)
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     else

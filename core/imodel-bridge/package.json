@@ -1,12 +1,12 @@
 {
   "name": "@bentley/imodel-bridge",
-  "version": "2.12.0-dev.22",
+  "version": "2.17.0-dev.1",
   "description": "iModel.js bridge components",
   "main": "lib/imodel-bridge.js",
   "typings": "lib/imodel-bridge",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <13.0"
+    "node": ">=10.17.0 <15.0"
   },
   "repository": {
     "type": "git",
@@ -18,6 +18,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --tsIndexFile=./imodel-bridge.ts --json=../../generated-docs/core/imodel-bridge/file.json --onlyJson",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
+    "copy:config": "internal-tools copy-config",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "nyc npm test",
     "cover:integration": "nyc npm run test:integration",
@@ -39,48 +40,49 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "^2.12.0-dev.22",
-    "@bentley/bentleyjs-core": "^2.12.0-dev.22",
-    "@bentley/context-registry-client": "^2.12.0-dev.22",
-    "@bentley/geometry-core": "^2.12.0-dev.22",
-    "@bentley/imodelhub-client": "^2.12.0-dev.22",
-    "@bentley/imodeljs-backend": "^2.12.0-dev.22",
-    "@bentley/imodeljs-common": "^2.12.0-dev.22",
-    "@bentley/rbac-client": "^2.12.0-dev.22"
+    "@bentley/backend-itwin-client": "^2.17.0-dev.1",
+    "@bentley/bentleyjs-core": "^2.17.0-dev.1",
+    "@bentley/context-registry-client": "^2.17.0-dev.1",
+    "@bentley/geometry-core": "^2.17.0-dev.1",
+    "@bentley/imodelhub-client": "^2.17.0-dev.1",
+    "@bentley/imodeljs-backend": "^2.17.0-dev.1",
+    "@bentley/imodeljs-common": "^2.17.0-dev.1",
+    "@bentley/rbac-client": "^2.17.0-dev.1"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/backend-itwin-client": "2.12.0-dev.22",
-    "@bentley/bentleyjs-core": "2.12.0-dev.22",
-    "@bentley/build-tools": "2.12.0-dev.22",
-    "@bentley/config-loader": "2.12.0-dev.22",
-    "@bentley/eslint-plugin": "2.12.0-dev.22",
-    "@bentley/geometry-core": "2.12.0-dev.22",
-    "@bentley/imodeljs-backend": "2.12.0-dev.22",
-    "@bentley/imodeljs-common": "2.12.0-dev.22",
-    "@bentley/itwin-client": "2.12.0-dev.22",
-    "@bentley/oidc-signin-tool": "2.12.0-dev.22",
-    "@bentley/rbac-client": "2.12.0-dev.22",
+    "@bentley/backend-itwin-client": "2.17.0-dev.1",
+    "@bentley/bentleyjs-core": "2.17.0-dev.1",
+    "@bentley/build-tools": "2.17.0-dev.1",
+    "@bentley/config-loader": "2.17.0-dev.1",
+    "@bentley/eslint-plugin": "2.17.0-dev.1",
+    "@bentley/geometry-core": "2.17.0-dev.1",
+    "@bentley/imodeljs-backend": "2.17.0-dev.1",
+    "@bentley/imodeljs-common": "2.17.0-dev.1",
+    "@bentley/itwin-client": "2.17.0-dev.1",
+    "@bentley/oidc-signin-tool": "2.17.0-dev.1",
+    "@bentley/rbac-client": "2.17.0-dev.1",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/object-hash": "^1.3.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "eslint": "^6.8.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "internal-tools": "0.0.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~3.7.4"
+    "typescript": "~4.1.0"
   },
   "dependencies": {
     "object-hash": "^1.3.1"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

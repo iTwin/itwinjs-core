@@ -64,7 +64,7 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
   /** Use it only if you need to customize the rendering of the input.
    * @internal
    */
-  renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
+  renderInputComponent?: any; // ReactAutosuggest.RenderInputComponent<AutoSuggestData>; NOTE: changed to "any" because build was failing with RenderInputComponent is not generic?
   /** Use it if you want to customize things inside the suggestions container beyond rendering the suggestions themselves.
    * @internal
    */

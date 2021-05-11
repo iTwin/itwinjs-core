@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as UiCore from "@bentley/ui-core";
+import * as timerModule from "@bentley/ui-core/lib/ui-core/utils/Timer";
 import { Toast } from "../../../ui-ninezone";
 import { createBoundingClientRect, mount } from "../../Utils";
 
@@ -20,9 +20,9 @@ describe("<Toast />", () => {
   });
 
   it("should stop the timer when unmounting", () => {
-    const timer = new UiCore.Timer(1000);
+    const timer = new timerModule.Timer(1000);
     const stopSpy = sinon.spy(timer, "stop");
-    sinon.stub(UiCore, "Timer").returns(timer);
+    sinon.stub(timerModule, "Timer").returns(timer);
 
     const sut = mount(<Toast />);
     sut.unmount();

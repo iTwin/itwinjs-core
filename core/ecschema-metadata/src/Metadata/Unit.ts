@@ -49,6 +49,19 @@ export class Unit extends SchemaItem {
   public get denominator(): number { return this._denominator; }
 
   /**
+   * Returns true if a conversion can be calculated between the input units
+   * @alpha
+   */
+  public static async areCompatible(unitA: Unit, unitB: Unit): Promise<boolean> {
+    const unitAPhenomenon = await unitA.phenomenon;
+    const unitBPhenomenon = await unitB.phenomenon;
+
+    if (!unitAPhenomenon || !unitBPhenomenon || !unitAPhenomenon.key.matches(unitBPhenomenon.key))
+      return false;
+    return true;
+  }
+
+  /**
    * Save this Unit's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
@@ -170,8 +183,8 @@ export class Unit extends SchemaItem {
  * An abstract class used for schema editing.
  */
 export abstract class MutableUnit extends Unit {
-  public abstract async setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
-  public abstract async setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
-  public abstract async setDefinition(definition: string): Promise<void>;
+  public abstract setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
+  public abstract setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
+  public abstract setDefinition(definition: string): Promise<void>;
   public abstract setDisplayLabel(displayLabel: string): void;
 }

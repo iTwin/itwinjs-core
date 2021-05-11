@@ -29,15 +29,18 @@ export const getFavoritesCategory = (): CategoryDescription => {
 };
 
 /**
- * An data provider interface for returning Favorite properties for the given elements
- * @beta
+ * An data provider interface for returning favorite properties for the given elements
+ * @public
  */
 export interface IFavoritePropertiesDataProvider {
   /** Returns property data for an element. */
   getData: (imodel: IModelConnection, elementIds: Id64Arg | KeySet) => Promise<PropertyData>;
 }
 
-/** @beta */
+/**
+ * Props for [[FavoritePropertiesDataProvider]]
+ * @public
+ */
 export interface FavoritePropertiesDataProviderProps {
   /**
    * Id of the ruleset to use when requesting properties or a ruleset itself. If not
@@ -51,7 +54,7 @@ export interface FavoritePropertiesDataProviderProps {
 
 /**
  * Presentation Rules-driven element favorite properties data provider implementation.
- * @beta
+ * @public
  */
 export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataProvider {
 
