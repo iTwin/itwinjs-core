@@ -10,18 +10,19 @@ import { IDisposable } from "@bentley/bentleyjs-core";
 
 /** Represents a texture image applied to a surface during rendering.
  * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].
- * @see [[RenderSystem]] for functions used to create RenderTextures.
- * @beta
+ * @see [RenderSystem.createTextureFromImage]($frontend) to obtain a texture from an HTML image.
+ * @see [RenderSystem.createTextureFromElement]($frontend) to obtain a texture from a [Texture]($backend) element.
+ * @public
  */
 export abstract class RenderTexture implements IDisposable {
-  /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element Id of the corresponding Texture element in the [[IModelDb]].
+  /** A string uniquely identifying this texture within the context of an [[IModel]]. Typically this is the element Id of the corresponding [Texture]($backend).
    * Textures created on the front-end generally have no key.
    */
   public readonly key: string | undefined;
   /** Indicates the type of texture. */
   public readonly type: RenderTexture.Type;
   /** Indicates that some object is managing the lifetime of this texture and will take care of calling its dispose function appropriately.
-   * An unowned texture associated with a [[RenderGraphic]] will be disposed when the RenderGraphic is disposed.
+   * An unowned texture associated with a [RenderGraphic]($frontend) will be disposed when the RenderGraphic is disposed.
    */
   public readonly isOwned: boolean;
 
@@ -38,16 +39,12 @@ export abstract class RenderTexture implements IDisposable {
 
   /** Releases any WebGL resources owned by this texture.
    * If [[RenderTexture.isOwned]] is true, then whatever object claims ownership of the texture is responsible for disposing of it when it is no longer needed.
-   * Otherwise, imodeljs will handle its disposal.
+   * Otherwise, the [RenderSystem]($frontend) will handle its disposal.
    */
   public abstract dispose(): void;
 }
 
-/** Represents a texture image applied to a surface during rendering.
- * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].
- * @see [[RenderSystem]] for functions used to create RenderTextures.
- * @beta
- */
+/** @public */
 export namespace RenderTexture { // eslint-disable-line no-redeclare
   /** Enumerates the types of [[RenderTexture]]s. */
   export enum Type {
@@ -67,16 +64,16 @@ export namespace RenderTexture { // eslint-disable-line no-redeclare
 
   /** Parameters used to construct a [[RenderTexture]]. */
   export class Params {
-    /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element Id of the corresponding Texture element in the [[IModelDb]].
+    /** A string uniquely identifying this texture within the context of an [[IModel]]. Typically this is the element Id of the corresponding [Texture]($backend) element.
      * Textures created on the front-end generally have no key.
      */
     public readonly key?: string;
     /** Indicates the type of texture. */
     public readonly type: Type;
     /** Indicates that some object is managing the lifetime of this texture and will take care of calling its dispose function appropriately.
-     * An unowned texture associated with a [[RenderGraphic]] will be disposed when the RenderGraphic is disposed.
+     * An unowned texture associated with a [RenderGraphic]($frontend) will be disposed when the RenderGraphic is disposed.
      */
-    public readonly isOwned: boolean; // For unnamed textures
+    public readonly isOwned: boolean;
 
     public constructor(key?: string, type: Type = Type.Normal, isOwned: boolean = false) {
       this.key = key;

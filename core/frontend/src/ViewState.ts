@@ -1917,7 +1917,6 @@ export abstract class ViewState3d extends ViewState {
     const mapParams = new TextureMapping.Params();
     const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
     mapParams.textureMatrix = transform;
-    mapParams.textureMatrix.setTransform();
     matParams.textureMapping = new TextureMapping(texture, mapParams);
     const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
     if (!material)

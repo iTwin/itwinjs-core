@@ -419,7 +419,7 @@ describe("Disposal of WebGL Resources", () => {
     // Create a graphic and a texture
     const textureParams = new RenderTexture.Params("-192837465");
     let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
-    const graphicBuilder = target.createGraphicBuilder(GraphicType.Scene, viewport);
+    const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
     const graphic = graphicBuilder.finish();
 

@@ -7,21 +7,33 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { AxisOrder, LinearSweep, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+import { CreateElementTool, EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
   AccuDrawHintBuilder, BeButtonEvent, ContextRotationId, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistance,
   ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport,
 } from "@bentley/imodeljs-frontend";
-import { PrimitiveToolEx } from "./PrimitiveToolEx";
 
-export class PlaceBlockTool extends PrimitiveToolEx {
+export class PlaceBlockTool extends CreateElementTool {
   public static toolId = "PlaceBlock";
   public static iconSpec = "icon-cube-faces-bottom";
+  protected _startedCmd?: string;
 
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
   protected _isComplete = false;
   public height = 2.75;
   public story = "1";
+
+  protected async startCommand(): Promise<string> {
+    if (undefined !== this._startedCmd)
+      return this._startedCmd;
+    return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
+  }
+
+  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
+    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
+  }
 
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
@@ -155,7 +167,7 @@ export class PlaceBlockTool extends PrimitiveToolEx {
   public decorateSuspended(context: DecorateContext): void { if (this._isComplete) this.decorate(context); }
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._points.length > 0 && undefined !== ev.viewport && !this._isComplete) ev.viewport.invalidateDecorations(); }
 
-  private async createElement(): Promise<void> {
+  protected async createElement(): Promise<void> {
     assert(this._matrix !== undefined, "should have defined orientation by now");
     const vp = this.targetView;
     if (undefined === vp || this._points.length < 3)
@@ -185,7 +197,7 @@ export class PlaceBlockTool extends PrimitiveToolEx {
         return;
 
       const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-      await PrimitiveToolEx.callCommand("insertGeometricElement", elemProps);
+      await PlaceBlockTool.callCommand("insertGeometricElement", elemProps);
       await this.saveChanges();
 
     } catch (err) {

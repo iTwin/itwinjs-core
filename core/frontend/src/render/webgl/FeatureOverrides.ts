@@ -10,7 +10,7 @@ import { assert, dispose, Id64 } from "@bentley/bentleyjs-core";
 import { PackedFeature, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { DisplayParams } from "../primitives/DisplayParams";
-import { BatchOptions } from "../RenderSystem";
+import { BatchOptions } from "../GraphicBuilder";
 import { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";
 import { GL } from "./GL";
