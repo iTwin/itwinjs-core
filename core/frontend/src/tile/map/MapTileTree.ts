@@ -524,7 +524,6 @@ export class MapTileTreeReference extends TileTreeReference {
   private _baseTransparent = false;
   private _symbologyOverrides: FeatureSymbology.Overrides | undefined;
   private _planarClipMask?: PlanarClipMaskState;
-  private _emptySymbologyOverrides = new FeatureSymbology.Overrides();   /** Empty overrides so that maps ignore the view overrides (isolate etc.) */
 
   public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, public isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
     super();
@@ -706,12 +705,10 @@ export class MapTileTreeReference extends TileTreeReference {
 
     const nonLocatable = this.settings.locatable ? undefined : true;
     const transparency = this.settings.transparency ? this.settings.transparency : undefined;
-    if (nonLocatable || transparency) {
-      this._symbologyOverrides = new FeatureSymbology.Overrides();
+    this._symbologyOverrides = new FeatureSymbology.Overrides();
+    if (nonLocatable || transparency)
+
       this._symbologyOverrides.overrideModel(tree.modelId, FeatureAppearance.fromJSON({ transparency, nonLocatable }));
-    } else {
-      this._symbologyOverrides = this._emptySymbologyOverrides;    // Empty overrides so that maps ingnore view overrides (isolate etc.)
-    }
 
     const args = this.createDrawArgs(context);
     if (undefined !== args)
