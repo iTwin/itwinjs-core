@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-common",
-      "comment": "",
+      "comment": "Add RenderSchedule.ScriptBuilder for assembling a new schedule script.",
       "type": "none"
     }
   ],
