@@ -111,7 +111,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     };
 
     if (reportProgress) {
-      const interval = progressInterval ?? 500; // by default, only send progress events every 500 milliseconds
+      const interval = progressInterval ?? 250; // by default, only send progress events every 250 milliseconds
       let nextTime = Date.now() + interval;
       args.onProgress = (loaded, total) => {
         const now = Date.now();
