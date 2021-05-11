@@ -1002,12 +1002,12 @@ describe("Full Schema Deserialization", () => {
           </ECCustomAttributes>
         </ECEntityClass>
       </ECSchema>`;
-      const document = parser.parseFromString(schemaXml);
-      const context = new SchemaContext();
-      const schema: Schema = new Schema(context);
-      const reader = new SchemaReadHelper(XmlParser, context);
+    const document = parser.parseFromString(schemaXml);
+    const context = new SchemaContext();
+    const schema: Schema = new Schema(context);
+    const reader = new SchemaReadHelper(XmlParser, context);
 
-      expect(() => reader.readSchemaSync(schema, document)).not.to.throw(ECObjectsError, "Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.");
+    expect(() => reader.readSchemaSync(schema, document)).not.to.throw(ECObjectsError, "Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.");
   });
 
   it("with invalid custom attribute namespace", () => {
@@ -1022,12 +1022,12 @@ describe("Full Schema Deserialization", () => {
           </ECCustomAttributes>
         </ECEntityClass>
       </ECSchema>`;
-      const document = parser.parseFromString(schemaXml);
-      const context = new SchemaContext();
-      const schema: Schema = new Schema(context);
-      const reader = new SchemaReadHelper(XmlParser, context);
+    const document = parser.parseFromString(schemaXml);
+    const context = new SchemaContext();
+    const schema: Schema = new Schema(context);
+    const reader = new SchemaReadHelper(XmlParser, context);
 
-      expect(() => reader.readSchemaSync(schema, document)).to.throw(ECObjectsError, "Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.");
+    expect(() => reader.readSchemaSync(schema, document)).to.throw(ECObjectsError, "Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.");
   });
 
   describe("with property custom attributes", () => {
