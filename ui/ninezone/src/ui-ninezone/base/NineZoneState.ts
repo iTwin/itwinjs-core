@@ -21,6 +21,7 @@ export interface TabState {
   readonly preferredPopoutWidgetSize?: SizeProps;
   readonly preferredPanelWidgetSize?: "fit-content";
   readonly allowedPanelTargets?: PanelSide[];
+  readonly canPopout?: boolean;
 }
 
 /** @internal future */
@@ -295,6 +296,12 @@ export interface WidgetTabDoubleClickAction {
 }
 
 /** @internal future */
+export interface WidgetTabPopoutAction {
+  readonly type: "WIDGET_TAB_POPOUT";
+  readonly id: WidgetState["activeTabId"];
+}
+
+/** @internal future */
 export interface WidgetTabDragStartAction {
   readonly type: "WIDGET_TAB_DRAG_START";
   readonly side: PanelSide | undefined;
@@ -349,6 +356,7 @@ export type NineZoneActionTypes =
   WidgetTabDragStartAction |
   WidgetTabDragAction |
   WidgetTabDragEndAction |
+  WidgetTabPopoutAction |
   ToolSettingsDragStartAction |
   ToolSettingsDockAction;
 
@@ -621,6 +629,12 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         widget.minimized = true;
       if (action.floatingWidgetId !== undefined)
         widget.minimized = true;
+      return;
+    }
+    case "WIDGET_TAB_POPOUT": {
+
+      // const tabId = action.id;
+      // export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps) {
       return;
     }
     case "WIDGET_TAB_DRAG_START": {

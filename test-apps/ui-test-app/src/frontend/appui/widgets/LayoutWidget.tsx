@@ -191,9 +191,10 @@ function WidgetInfo({
 }) {
   const state = useWidgetState(id);
   const frontstageDef = useActiveFrontstageDef();
+  const widgetDef = useWidgetDef(id);
+
   const [isFloating, setIsFloating] = React.useState(frontstageDef ? frontstageDef.isFloatingWidget(id) : false);
   const [isPopout, setIsPopout] = React.useState(frontstageDef ? frontstageDef.isPopoutWidget(id) : false);
-
   React.useEffect(() => {
     setIsFloating(frontstageDef ? frontstageDef.isFloatingWidget(id) : false);
     setIsPopout(frontstageDef ? frontstageDef.isPopoutWidget(id) : false);
@@ -245,7 +246,7 @@ function WidgetInfo({
           <NumberInput style={{ width: "60px" }} disabled={isFloating} value={yPos} step={5} onChange={handleYChanged} />
         </div>
         <Button buttonType={ButtonType.Hollow} disabled={isFloating} onClick={handleFloatClick} >Float</Button>
-        <Button buttonType={ButtonType.Hollow} disabled={isPopout} onClick={handlePopoutClick} >Pop Out</Button>
+        <Button buttonType={ButtonType.Hollow} disabled={isPopout || !widgetDef?.canPopout} onClick={handlePopoutClick} >Pop Out</Button>
       </div>
       <Button buttonType={ButtonType.Hollow} disabled={!(isFloating || isPopout)} onClick={handleDockClick} >Dock</Button>
     </>

@@ -6,6 +6,9 @@
 /** @packageDocumentation
  * @module Frontstage
  */
+
+// cSpell:ignore popout
+
 import "./Frontstage.scss";
 import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
@@ -148,6 +151,11 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       UiFramework.postTelemetry("Tool Settings Docking to Settings Bar", "BEDE684B-B3DB-4637-B3AF-DC3CBA223F94");
     }
+    if (action.type === "WIDGET_TAB_POPOUT") {
+      const tabId = action.id;
+      frontstageDef.popoutWidget(tabId);
+      return;
+    }
     const nineZoneState = frontstageDef.nineZoneState;
     if (!nineZoneState)
       return;
@@ -229,6 +237,7 @@ export function useLabels() {
     sendWidgetHomeTitle: UiFramework.translate("widget.tooltips.sendHome"),
     toolSettingsHandleTitle: UiFramework.translate("widget.tooltips.toolSettingsHandle"),
     unpinPanelTitle: UiFramework.translate("widget.tooltips.unpinPanel"),
+    popoutActiveTab: UiFramework.translate("widget.tooltips.popoutActiveTab"),
   }), []);
 }
 
@@ -243,6 +252,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
     state = addTab(state, widget.id, {
       label,
       preferredPanelWidgetSize: widget.preferredPanelSize,
+      canPopout: widget.canPopout,
     });
     tabs.push(widget.id);
   }
@@ -270,6 +280,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
     state = addTab(state, widgetDef.id, {
       label,
       preferredPanelWidgetSize: widgetDef.preferredPanelSize,
+      canPopout: widgetDef.canPopout,
     });
     tabs.push(widgetDef.id);
   }
@@ -618,6 +629,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
       draft.tabs[tab.id] = {
         ...tab,
         label: getWidgetLabel(widgetDef.label),
+        canPopout: widgetDef.canPopout,
       };
     }
     return;
@@ -675,8 +687,8 @@ export interface WidgetPanelsFrontstageState {
   stateVersion: number;
 }
 
-// We don't save tab labels.
-type SavedTabState = Omit<TabState, "label">;
+// We don't save tab labels or if widget is allowed to "pop-out".
+type SavedTabState = Omit<TabState, "label" | "canPopout">;
 
 interface SavedTabsState {
   readonly [id: string]: SavedTabState;
@@ -689,6 +701,7 @@ interface SavedNineZoneState extends Omit<NineZoneState, "tabs"> {
 function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
   const newTab = createTabState(widgetDef.id, {
     label: getWidgetLabel(widgetDef.label),
+    canPopout: widgetDef.canPopout,
     preferredPanelWidgetSize: widgetDef.preferredPanelSize,
   });
   nineZone.tabs[newTab.id] = newTab;
