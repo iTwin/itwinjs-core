@@ -32,6 +32,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@bentley/backend-itwin-client": "2.15.1",
     "@bentley/bentleyjs-core": "2.15.1",
     "@bentley/context-registry-client": "2.15.1",
@@ -45,6 +46,22 @@
     "@bentley/itwin-client": "2.15.1",
     "@bentley/rbac-client": "2.15.1",
     "@bentley/telemetry-client": "2.15.1",
+=======
+    "@bentley/backend-itwin-client": "2.17.0-dev.1",
+    "@bentley/bentleyjs-core": "2.17.0-dev.1",
+    "@bentley/context-registry-client": "2.17.0-dev.1",
+    "@bentley/ecschema-metadata": "2.17.0-dev.1",
+    "@bentley/electron-manager": "2.17.0-dev.1",
+    "@bentley/extension-client": "2.17.0-dev.1",
+    "@bentley/geometry-core": "2.17.0-dev.1",
+    "@bentley/imodelhub-client": "2.17.0-dev.1",
+    "@bentley/imodeljs-backend": "2.17.0-dev.1",
+    "@bentley/imodeljs-common": "2.17.0-dev.1",
+    "@bentley/itwin-client": "2.17.0-dev.1",
+    "@bentley/presentation-common": "2.17.0-dev.1",
+    "@bentley/rbac-client": "2.17.0-dev.1",
+    "@bentley/telemetry-client": "2.17.0-dev.1",
+>>>>>>> 4a54eb5963... Fix missing presentation-common dependency in extension-cli (#1138)
     "electron": "^11.1.0",
     "fast-sha256": "1.3.0",
     "rimraf": "^3.0.2",
