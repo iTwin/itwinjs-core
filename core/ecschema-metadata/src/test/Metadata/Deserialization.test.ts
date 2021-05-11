@@ -990,6 +990,46 @@ describe("Full Schema Deserialization", () => {
     });
   });
 
+  it("with valid custom attribute namespace and version", () => {
+    const parser = new DOMParser();
+    const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="EntityTest"
+                      description="Test Entity Class"
+                      modifier="None">
+          <ECCustomAttributes>
+            <TestAttribute xmlns="TestSchemaName.1.2.3"/>
+          </ECCustomAttributes>
+        </ECEntityClass>
+      </ECSchema>`;
+      const document = parser.parseFromString(schemaXml);
+      const context = new SchemaContext();
+      const schema: Schema = new Schema(context);
+      const reader = new SchemaReadHelper(XmlParser, context);
+
+      expect(() => reader.readSchemaSync(schema, document)).not.to.throw(ECObjectsError, "Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.");
+  });
+
+  it("with invalid custom attribute namespace", () => {
+    const parser = new DOMParser();
+    const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="EntityTest"
+                      description="Test Entity Class"
+                      modifier="None">
+          <ECCustomAttributes>
+            <TestAttribute xmlns="TestSchemaName.1.2"/>
+          </ECCustomAttributes>
+        </ECEntityClass>
+      </ECSchema>`;
+      const document = parser.parseFromString(schemaXml);
+      const context = new SchemaContext();
+      const schema: Schema = new Schema(context);
+      const reader = new SchemaReadHelper(XmlParser, context);
+
+      expect(() => reader.readSchemaSync(schema, document)).to.throw(ECObjectsError, "Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.");
+  });
+
   describe("with property custom attributes", () => {
     const getSchemaJson = (propJson: any) => ({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
