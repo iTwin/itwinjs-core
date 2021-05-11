@@ -6,12 +6,11 @@
  * @module Rendering
  */
 
-import { IndexedPolyfaceVisitor, Point2d, PolyfaceVisitor, Transform, Vector3d } from "@bentley/geometry-core";
+import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d } from "@bentley/geometry-core";
 import { RenderTexture } from "./RenderTexture";
 
-/** Describes how to map a [[RenderTexture]] image onto a surface.
- * @see [[RenderMaterial]].
- * @beta
+/** Describes how to map a [[RenderTexture]]'s image onto a surface as part of a [[RenderMaterial]].
+ * @public
  */
 export class TextureMapping {
   /** The texture to be mapped to the surface. */
@@ -30,7 +29,7 @@ export class TextureMapping {
   }
 }
 
-/** @beta */
+/** @public */
 export namespace TextureMapping { // eslint-disable-line no-redeclare
   /** Enumerates the possible texture mapping modes. */
   export enum Mode {
@@ -54,28 +53,26 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
 
   /** A 2x3 matrix for mapping a texture image to a surface. */
   export class Trans2x3 {
-    private _vals = new Array<[number, number, number]>(2);
-    private _transform?: Transform;
+    /** The 3x4 transform produced from the 2x3 matrix. */
+    public readonly transform: Transform;
 
-    public constructor(t00: number = 1, t01: number = 0, t02: number = 0, t10: number = 0, t11: number = 1, t12: number = 0) {
-      const vals = this._vals;
-      vals[0] = [t00, t01, t02]; vals[1] = [t10, t11, t12];
+    /** Construct from the two rows of the matrix:
+     * ```
+     *  | m00 m01 originX |
+     *  | m10 m11 originY |
+     * ```
+     * Producing the [Transform]($geometry-core):
+     * ```
+     *  | m00 m01 0 originX |
+     *  | m10 m11 0 originY |
+     *  | 0   0   1 0       |
+     * ```
+     */
+    public constructor(m00 = 1, m01 = 0, originX = 0, m10 = 0, m11 = 1, originY = 0) {
+      const origin = new Point3d(originX, originY, 0);
+      const matrix = Matrix3d.createRowValues(m00, m01, 0, m10, m11, 0, 0, 0, 1);
+      this.transform = Transform.createRefs(origin, matrix);
     }
-
-    public setTransform(): void {
-      const transform = Transform.createIdentity(), vals = this._vals, matrix = transform.matrix;
-
-      for (let i = 0, len = 2; i < 2; ++i)
-        for (let j = 0; j < len; ++j)
-          matrix.setAt(i, j, vals[i][j]);
-
-      transform.origin.x = vals[0][2];
-      transform.origin.y = vals[1][2];
-
-      this._transform = transform;
-    }
-
-    public get transform(): Transform { if (undefined === this._transform) this.setTransform(); return this._transform!; }
   }
 
   /** Properties used to construct a [[TextureMapping.Params]]. */
@@ -96,7 +93,7 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     worldMapping?: boolean;
   }
 
-  /** Parameters describing how a texture image is mapped to a surface. */
+  /** Parameters describing how a [[RenderTexture]]'s image is mapped to a surface. */
   export class Params {
     /** The matrix used to map the image to a surface. */
     public textureMatrix: TextureMapping.Trans2x3;
