@@ -186,7 +186,6 @@ import { SubjectProps } from '@bentley/imodeljs-common';
 import { SynchronizationConfigLinkProps } from '@bentley/imodeljs-common';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { TelemetryManager } from '@bentley/telemetry-client';
-import { TextureFlags } from '@bentley/imodeljs-common';
 import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
@@ -3763,10 +3762,8 @@ export class RenderMaterialElement extends DefinitionElement implements RenderMa
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): RenderMaterialElement;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
-    // (undocumented)
     description?: string;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String;
-    // (undocumented)
     paletteName: string;
     // @internal (undocumented)
     toJSON(): RenderMaterialProps;
@@ -4315,22 +4312,26 @@ export class Texture extends DefinitionElement {
     constructor(props: TextureCreateProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Texture;
+    // @deprecated
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, _width: number, _height: number, description: string, _flags: 0): Texture;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
+    static createTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Texture;
     // (undocumented)
     data: Uint8Array;
     // (undocumented)
     description?: string;
-    // (undocumented)
-    flags: TextureFlags;
+    // @deprecated (undocumented)
+    flags: 0;
     // (undocumented)
     format: ImageSourceFormat;
-    // (undocumented)
+    // @deprecated (undocumented)
     height: number;
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Id64String;
+    // @deprecated
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, _width: number, _height: number, description: string, _flags: 0): Id64String;
+    static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
     // @internal (undocumented)
     toJSON(): TextureProps;
-    // (undocumented)
+    // @deprecated (undocumented)
     width: number;
 }
 
