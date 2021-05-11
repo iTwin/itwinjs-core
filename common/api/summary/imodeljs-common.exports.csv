@@ -120,7 +120,6 @@ public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
 internal;DownloadBriefcaseStatus
-beta;DPoint2dProps = number[]
 beta;DynamicGraphicsRequest2dProps 
 beta;DynamicGraphicsRequest3dProps 
 beta;DynamicGraphicsRequestProps 
@@ -392,6 +391,7 @@ beta;PlanarClipMaskSettings
 public;PlanProjectionSettings
 public;PlanProjectionSettingsProps
 internal;PntsHeader 
+public;Point2dProps = number[]
 beta;PointWithStatus
 internal;POLICY: unique symbol
 internal;PolylineData
@@ -427,14 +427,15 @@ public;RelatedElement
 public;RelatedElementProps
 public;RelationshipProps 
 public;RemoveFunction = () => void
-beta;class RenderMaterial
-beta;RenderMaterial
-beta;RenderMaterialProps 
+public;class RenderMaterial
+public;RenderMaterial
+public;RenderMaterialAssetProps
+public;RenderMaterialProps 
 public;RenderMode
 beta;RenderSchedule
 internal;Interval
-beta;class RenderTexture 
-beta;RenderTexture
+public;class RenderTexture 
+public;RenderTexture
 beta;RenderTimelineLoadProps
 beta;RenderTimelineProps 
 public;RepositoryLinkProps 
@@ -442,7 +443,7 @@ beta;RequestNewBriefcaseProps
 public;ResponseLike 
 public;RgbColor
 public;RgbColorProps
-beta;RgbFactorProps = number[]
+public;RgbFactorProps = number[]
 public;RootSubjectProps
 public;class RpcConfiguration
 public;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
@@ -546,13 +547,13 @@ internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
 public;TextStringProps
-beta;TextureFlags
+public;TextureFlags
 alpha;TextureLoadProps
-beta;TextureMapping
-beta;TextureMapping
-beta;TextureMapProps
-beta;TextureMapUnits
-beta;TextureProps 
+public;TextureMapping
+public;TextureMapping
+public;TextureMapProps
+public;TextureMapUnits
+public;TextureProps 
 public;ThematicDisplay
 public;ThematicDisplayMode
 public;ThematicDisplayProps

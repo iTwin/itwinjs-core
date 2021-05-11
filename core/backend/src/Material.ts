@@ -53,7 +53,10 @@ export abstract class PhysicalMaterial extends DefinitionElement {
 export class RenderMaterialElement extends DefinitionElement implements RenderMaterialProps {
   /** @internal */
   public static get className(): string { return "RenderMaterial"; }
+
+  /** The name of a palette that can be used to categorize multiple materials. */
   public paletteName: string;
+  /** An optional description of the material. */
   public description?: string;
   /** @internal */
   constructor(props: RenderMaterialProps, iModel: IModelDb) {
