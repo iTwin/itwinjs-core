@@ -705,12 +705,10 @@ export class MapTileTreeReference extends TileTreeReference {
 
     const nonLocatable = this.settings.locatable ? undefined : true;
     const transparency = this.settings.transparency ? this.settings.transparency : undefined;
-    if (nonLocatable || transparency) {
-      this._symbologyOverrides = new FeatureSymbology.Overrides();
+    this._symbologyOverrides = new FeatureSymbology.Overrides();
+    if (nonLocatable || transparency)
+
       this._symbologyOverrides.overrideModel(tree.modelId, FeatureAppearance.fromJSON({ transparency, nonLocatable }));
-    } else {
-      this._symbologyOverrides = undefined;
-    }
 
     const args = this.createDrawArgs(context);
     if (undefined !== args)
