@@ -10,7 +10,7 @@ import { ColorDef } from "./ColorDef";
 import { TextureMapping } from "./TextureMapping";
 
 /** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, texture, and so on.
- * @beta
+ * @public
  */
 export abstract class RenderMaterial {
   /** If the material originated from a Material element in the [[IModelDb]], the Id of that element. */
@@ -23,12 +23,12 @@ export abstract class RenderMaterial {
     this.textureMapping = params.textureMapping;
   }
 
-  public get hasTexture(): boolean { return this.textureMapping !== undefined && this.textureMapping.texture !== undefined; }
+  public get hasTexture(): boolean {
+    return undefined !== this.textureMapping?.texture;
+  }
 }
 
-/** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, and so on.
- * @beta
- */
+/** @public */
 export namespace RenderMaterial { // eslint-disable-line no-redeclare
   function clampToNormalizedRange(value: number): number {
     return Math.max(0.0, Math.min(1.0, value));
@@ -36,7 +36,7 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
 
   /** Parameters used to construct a [[RenderMaterial]] */
   export class Params {
-    /** If the material originates from a Material element in the [[IModelDb]], the Id of that element. */
+    /** If the material originates from a Material element in the [[IModel]], the Id of that element. */
     public key?: string;
     /** Diffuse color, or undefined if this material does not override the surface's own color. */
     public diffuseColor?: ColorDef;
@@ -89,4 +89,5 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     }
   }
 }
+
 Object.freeze(RenderMaterial.Params.defaults);
