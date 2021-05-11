@@ -644,10 +644,7 @@ class RealityMeshTechnique extends VariedTechnique {
 
   public constructor(gl: WebGLRenderingContext) {
     super(RealityMeshTechnique._numVariants);
-    this._earlyZFlags = [
-      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
-      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
-    ];
+    this._earlyZFlags =  [ TechniqueFlags.fromDescription("Opaque-Hilite-Classified") ];
     this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, createClassifierRealityMeshHiliter);
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
