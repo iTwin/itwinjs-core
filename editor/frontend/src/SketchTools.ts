@@ -43,7 +43,6 @@ export class CreateLineStringTool extends CreateElementTool {
 
     if (0 !== nPts) {
       const hints = new AccuDrawHintBuilder();
-      hints.enableSmartRotation = true;
 
       if (nPts > 1 && !this._points[nPts - 1].isAlmostEqual(this._points[nPts - 2]))
         hints.setXAxis(Vector3d.createStartEnd(this._points[nPts - 2], this._points[nPts - 1])); // Rotate AccuDraw to last segment.
@@ -105,9 +104,8 @@ export class CreateLineStringTool extends CreateElementTool {
     if (undefined === this._snapGeomId)
       this._snapGeomId = this.iModel.transientIds.next;
 
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._snapGeomId);
-    const color = ColorDef.from(0, 0, 0, 250); // TODO: Mostly transparent until we have a "for pick only" option...
-    builder.setSymbology(color, color, 1);
+    const builder = context.createGraphic({ type: GraphicType.WorldDecoration, pickable: { id: this._snapGeomId, locateOnly: true }});
+    builder.setSymbology(ColorDef.white, ColorDef.white, 1);
     builder.addLineString(this._points); // Allow snapping to accepted segments...
     context.addDecorationFromBuilder(builder);
   }
@@ -119,7 +117,7 @@ export class CreateLineStringTool extends CreateElementTool {
     this._graphicsProvider = undefined;
   }
 
-  protected createGraphics(ev: BeButtonEvent): void {
+  protected async createGraphics(ev: BeButtonEvent): Promise<void> {
     const placement = this.getPlacementProps(ev);
     if (undefined === placement)
       return;
@@ -131,7 +129,7 @@ export class CreateLineStringTool extends CreateElementTool {
     if (undefined === this._graphicsProvider)
       this._graphicsProvider = new DynamicGraphicsProvider(this.iModel, this.toolId);
 
-    this._graphicsProvider.createGraphicAndUpdateDynamics(ev, this.targetCategory, placement, geometry);
+    await this._graphicsProvider.createGraphic(this.targetCategory, placement, geometry);
   }
 
   public onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
@@ -140,7 +138,7 @@ export class CreateLineStringTool extends CreateElementTool {
   }
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
-    this.createGraphics(ev);
+    return this.createGraphics(ev);
   }
 
   protected getPlacementProps(ev?: BeButtonEvent): PlacementProps | undefined {
