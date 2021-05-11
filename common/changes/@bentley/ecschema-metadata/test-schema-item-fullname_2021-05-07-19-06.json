@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-metadata",
+      "comment": "Added get fullName tests for each schema item type if they didn't exist before",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Ivan.Kok@bentley.com"
+}

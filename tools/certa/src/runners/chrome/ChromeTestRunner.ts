@@ -97,6 +97,7 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       const testBundle = (config.cover && config.instrumentedTestBundle) || config.testBundle;
       await page.goto(`http://localhost:${port}`);
       await page.addScriptTag({ content: `var _CERTA_CONFIG = ${JSON.stringify(config)};` });
+      await loadScript(page, require.resolve("../../utils/initLogging.js"));
       await loadScript(page, require.resolve("mocha/mocha.js"));
       await loadScript(page, require.resolve("source-map-support/browser-source-map-support.js"));
       await loadScript(page, require.resolve("../../utils/initSourceMaps.js"));
