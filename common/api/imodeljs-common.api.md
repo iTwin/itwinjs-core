@@ -5858,6 +5858,12 @@ export namespace RenderSchedule {
         // (undocumented)
         toJSON(): ElementTimelineProps;
     }
+    export class ElementTimelineBuilder extends TimelineBuilder {
+        constructor(batchId: number, elementIds: CompressedId64Set);
+        readonly batchId: number;
+        readonly elementIds: CompressedId64Set;
+        finish(): ElementTimelineProps;
+    }
     export interface ElementTimelineProps extends TimelineProps {
         batchId: number;
         elementIds: Id64String[] | CompressedId64Set;
@@ -5896,6 +5902,14 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         readonly transformBatchIds: ReadonlyArray<number>;
     }
+    export class ModelTimelineBuilder extends TimelineBuilder {
+        constructor(modelId: Id64String, obtainNextBatchId: () => number);
+        addElementTimeline(elementIds: CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder;
+        finish(): ModelTimelineProps;
+        readonly modelId: Id64String;
+        // @internal (undocumented)
+        realityModelUrl?: string;
+    }
     export interface ModelTimelineProps extends TimelineProps {
         elementTimelines: ElementTimelineProps[];
         modelId: Id64String;
@@ -5925,6 +5939,10 @@ export namespace RenderSchedule {
         // (undocumented)
         toJSON(): ScriptProps;
     }
+    export class ScriptBuilder {
+        addModelTimeline(modelId: Id64String): ModelTimelineBuilder;
+        finish(): ScriptProps;
+        }
     export type ScriptProps = ModelTimelineProps[];
     export class ScriptReference {
         constructor(sourceId: Id64String, script: Script);
@@ -5947,6 +5965,30 @@ export namespace RenderSchedule {
         toJSON(): TimelineProps;
         readonly transform?: TransformTimelineEntries;
         readonly visibility?: VisibilityTimelineEntries;
+    }
+    export class TimelineBuilder {
+        addColor(time: number, color: RgbColor | {
+            red: number;
+            green: number;
+            blue: number;
+        } | undefined, interpolation?: Interpolation): void;
+        addCuttingPlane(time: number, plane: {
+            position: XYAndZ;
+            direction: XYAndZ;
+            visible?: boolean;
+            hidden?: boolean;
+        } | undefined, interpolation?: Interpolation): void;
+        addTransform(time: number, transform: Transform | undefined, components?: {
+            pivot: XYAndZ;
+            orientation: Point4d;
+            position: XYAndZ;
+        }, interpolation?: Interpolation): void;
+        addVisibility(time: number, visibility: number | undefined, interpolation?: Interpolation): void;
+        color?: ColorEntryProps[];
+        cuttingPlane?: CuttingPlaneEntryProps[];
+        finish(): TimelineProps;
+        transform?: TransformEntryProps[];
+        visibility?: VisibilityEntryProps[];
     }
     export class TimelineEntry {
         constructor(props: TimelineEntryProps);
