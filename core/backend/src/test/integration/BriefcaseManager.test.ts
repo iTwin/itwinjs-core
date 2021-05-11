@@ -636,7 +636,7 @@ describe("BriefcaseManager (#integration)", () => {
       contextId: testContextId,
       iModelId: testIModelId,
       briefcaseId: BriefcaseIdValue.Unassigned,
-      onProgress: (_loaded: number, _total: number) => aborted,
+      onProgress: () => aborted,
     };
     await BriefcaseManager.deleteBriefcaseFiles(BriefcaseManager.getFileName(args), requestContext);
 
