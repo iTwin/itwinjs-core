@@ -7356,11 +7356,6 @@ export interface TextStringProps {
     widthFactor?: number;
 }
 
-// @public
-export enum TextureFlags {
-    None = 0
-}
-
 // @alpha
 export interface TextureLoadProps {
     name: Id64String;
@@ -7452,10 +7447,7 @@ export enum TextureMapUnits {
 export interface TextureProps extends DefinitionElementProps {
     data: Base64EncodedString;
     description?: string;
-    flags: TextureFlags;
     format: ImageSourceFormat;
-    height: number;
-    width: number;
 }
 
 // @public

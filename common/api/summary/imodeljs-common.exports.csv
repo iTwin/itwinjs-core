@@ -547,7 +547,6 @@ internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
 public;TextStringProps
-public;TextureFlags
 alpha;TextureLoadProps
 public;TextureMapping
 public;TextureMapping
