@@ -550,6 +550,8 @@ export abstract class IModelConnection extends IModel {
     if (this.tiles)
       this.tiles.onEcefChanged();
   }
+
+  /** @internal */
   public getMapEcefToDb(bimElevationBias: number): Transform {
     if (!this.ecefLocation)
       return Transform.createIdentity();
