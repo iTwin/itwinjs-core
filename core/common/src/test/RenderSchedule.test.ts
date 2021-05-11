@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Transform, TransformProps } from "@bentley/geometry-core";
+import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@bentley/geometry-core";
 import { RenderSchedule } from "../RenderSchedule";
+import { RgbColor } from "../RgbColor";
 
 describe("RenderSchedule", () => {
   it("interpolates transforms", () => {
@@ -149,5 +150,116 @@ describe("RenderSchedule", () => {
       [0.29684190212797457,0.9549219611634173,-0.002988850758880856,21679.967974600604],
       [0.03702965424240229,-0.008383153301704048,0.9992790038059481,2437.9638765390373],
     ]);
+  });
+
+  describe("ScriptBuilder", () => {
+    it("sorts and compresses element Ids", () => {
+      function expectIds(input: string | string[], expected: string): void {
+        const script = new RenderSchedule.ScriptBuilder();
+        const model = script.addModelTimeline("0x123");
+        const element = model.addElementTimeline(input);
+        expect(element.elementIds).to.equal(expected);
+      }
+
+      expectIds("+1+4", "+1+4");
+      expectIds(["0x1", "0x5"], "+1+4");
+      expectIds(["0x5", "0x1"], "+1+4");
+    });
+
+    it ("assigns unique consecutive batch Ids", () => {
+      const script = new RenderSchedule.ScriptBuilder();
+      const modelA = script.addModelTimeline("0xa");
+      const modelB = script.addModelTimeline("0xb");
+
+      const elemA1 = modelA.addElementTimeline(["0xa1"]);
+      const elemB1 = modelB.addElementTimeline(["0xb1"]);
+      const elemB2 = modelB.addElementTimeline(["0xb2"]);
+      const elemA2 = modelA.addElementTimeline(["0xa2"]);
+
+      expect(elemA1.batchId).to.equal(1);
+      expect(elemB1.batchId).to.equal(2);
+      expect(elemB2.batchId).to.equal(3);
+      expect(elemA2.batchId).to.equal(4);
+    });
+
+    it("produces expected JSON", () => {
+      const linear = RenderSchedule.Interpolation.Linear;
+      const expected: RenderSchedule.ScriptProps = [{
+        modelId: "0x1",
+        visibilityTimeline: [{
+          time: 100,
+          interpolation: linear,
+          value: undefined,
+        }, {
+          time: 200,
+          interpolation: linear,
+          value: 50,
+        }],
+        elementTimelines: [{
+          elementIds: "+1+4",
+          batchId: 1,
+          colorTimeline: [{
+            time: 300,
+            interpolation: RenderSchedule.Interpolation.Step,
+            value: { red: 1, green: 2, blue: 3 },
+          }],
+        }],
+      }, {
+        modelId:"0x2",
+        realityModelUrl: "https://google.com",
+        elementTimelines: [{
+          elementIds: "+ABC",
+          batchId: 2,
+          transformTimeline: [{
+            time: 400,
+            interpolation: linear,
+            value: {
+              transform: [ [ 1, 0, 0, 4 ], [ 0, 1, 0, 5 ], [ 0, 0, 1, 6] ],
+            },
+          }, {
+            time: 500,
+            interpolation: linear,
+            value: {
+              transform: [ [ 1, 0, 0, 4 ], [ 0, 1, 0, 5 ], [ 0, 0, 1, 6] ],
+              pivot: [ 1, 2, 3 ],
+              orientation: [ 4, 5, 6, 7 ],
+              position: [ 8, 9, 0 ],
+            },
+          }],
+        }, {
+          elementIds: "+DEF",
+          batchId: 3,
+          cuttingPlaneTimeline: [{
+            time: 600,
+            interpolation: linear,
+            value: {
+              position: [ 1, 2, 3 ],
+              direction: [ 0, 0, -1 ],
+              visible: true,
+            },
+          }],
+        }],
+      }];
+
+      const script = new RenderSchedule.ScriptBuilder();
+      const model1 = script.addModelTimeline("0x1");
+      model1.addVisibility(100, undefined);
+      model1.addVisibility(200, 50);
+
+      const elem1 = model1.addElementTimeline("+1+4");
+      elem1.addColor(300, new RgbColor(1, 2, 3), RenderSchedule.Interpolation.Step);
+
+      const model2 = script.addModelTimeline("0x2");
+      model2.realityModelUrl = "https://google.com";
+
+      const elem2 = model2.addElementTimeline(["0xabc"]);
+      elem2.addTransform(400, Transform.createRefs(new Point3d(4, 5, 6), Matrix3d.createIdentity()));
+      elem2.addTransform(500, Transform.createRefs(new Point3d(4, 5, 6), Matrix3d.createIdentity()), { pivot: new Point3d(1, 2, 3), position: new Point3d(8, 9, 0), orientation: Point4d.create(4, 5, 6, 7) });
+
+      const elem3 = model2.addElementTimeline(["0xdef"]);
+      elem3.addCuttingPlane(600, { position: new Point3d(1, 2, 3), direction: new Point3d(0, 0, -1), visible: true });
+
+      expect(script.finish()).to.deep.equal(expected);
+    });
   });
 });
