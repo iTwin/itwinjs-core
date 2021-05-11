@@ -61,7 +61,7 @@ export interface TextureMapProps {
   TextureId: Id64String;
 }
 
-/** Describes the graphical properties of a [RenderMaterial]($backend) as part of a [[RenderMaterialProps]].
+/** Describes the graphical properties of a [RenderMaterialElement]($backend) as part of a [[RenderMaterialProps]].
  * @public
  */
 export interface RenderMaterialAssetProps {
