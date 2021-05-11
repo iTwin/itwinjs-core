@@ -42,17 +42,21 @@ export class HorizontalCRSArea implements HorizontalCRSAreaProps {
     }
   }
 
-  /** @internal */
+  /** Creates an Area object from JSON representation.
+   * @public */
   public static fromJSON(data: HorizontalCRSAreaProps): HorizontalCRSArea {
     return new HorizontalCRSArea(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Area definition
+   * @public */
   public toJSON(): HorizontalCRSAreaProps {
     return { latitude: this.latitude.toJSON(), longitude: this.longitude.toJSON() };
   }
 
-  /** @internal */
+  /** Compares two Areas. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: HorizontalCRSArea): boolean {
     return this.latitude.equals(other.latitude) && this.longitude.equals(other.longitude);
   }
@@ -183,12 +187,14 @@ export class HorizontalCRS implements HorizontalCRSProps {
     }
   }
 
-  /** @internal */
+  /** Creates an Horizontal CRS from JSON representation.
+   * @public */
   public static fromJSON(data: HorizontalCRSProps): HorizontalCRS {
     return new HorizontalCRS(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Horizontal CRS definition
+   * @public */
   public toJSON(): HorizontalCRSProps {
     const data: HorizontalCRSProps = {};
     data.id = this.id;
@@ -207,7 +213,10 @@ export class HorizontalCRS implements HorizontalCRSProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two horizontal CRS. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: HorizontalCRS): boolean {
     if (this.id !== other.id ||
       this.description !== other.description ||
@@ -272,17 +281,22 @@ export class VerticalCRS implements VerticalCRSProps {
       this.id = data.id;
   }
 
-  /** @internal */
+  /** Creates a Vertical CRS from JSON representation.
+   * @public */
   public static fromJSON(data: VerticalCRSProps): VerticalCRS {
     return new VerticalCRS(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Vertical CRS definition
+   * @public */
   public toJSON(): VerticalCRSProps {
     return { id: this.id };
   }
 
-  /** @internal */
+  /** Compares two vertical CRS. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: VerticalCRS): boolean {
     return (this.id === other.id);
   }
@@ -341,12 +355,14 @@ export class GeographicCRS implements GeographicCRSProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Geographic CRS from JSON representation.
+   * @public */
   public static fromJSON(data: GeographicCRSProps): GeographicCRS {
     return new GeographicCRS(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geographic CRS definition
+   * @public */
   public toJSON(): GeographicCRSProps {
     const data: GeographicCRSProps = {};
     data.horizontalCRS = this.horizontalCRS ? this.horizontalCRS.toJSON() : undefined;
@@ -355,7 +371,10 @@ export class GeographicCRS implements GeographicCRSProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two Geographic CRS. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GeographicCRS): boolean {
     if ((this.horizontalCRS === undefined) !== (other.horizontalCRS === undefined))
       return false;

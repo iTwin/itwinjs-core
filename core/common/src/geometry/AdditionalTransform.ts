@@ -57,17 +57,21 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
     }
   }
 
-  /** @internal */
+  /** Creates an Helmert Transform from JSON representation.
+   * @public */
   public static fromJSON(data: Helmert2DWithZOffsetProps): Helmert2DWithZOffset {
     return new Helmert2DWithZOffset(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Helmert Transform definition
+   * @public */
   public toJSON(): Helmert2DWithZOffsetProps {
     return { translationX: this.translationX, translationY: this.translationY, translationZ: this.translationZ, rotDeg: this.rotDeg, scale: this.scale };
   }
 
-  /** @internal */
+  /** Compares two Helmert2DWithZOffset objects. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: Helmert2DWithZOffset): boolean {
     return (this.translationX === other.translationX &&
       this.translationY === other.translationY &&
@@ -101,17 +105,21 @@ export class AdditionalTransform implements AdditionalTransformProps {
       this.helmert2DWithZOffset = data.helmert2DWithZOffset ? Helmert2DWithZOffset.fromJSON(data.helmert2DWithZOffset) : undefined;
   }
 
-  /** @internal */
+  /** Creates an Additional Transform from JSON representation.
+   * @public */
   public static fromJSON(data: AdditionalTransformProps): AdditionalTransform {
     return new AdditionalTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Additional Transform definition
+   * @public */
   public toJSON(): AdditionalTransformProps {
     return { helmert2DWithZOffset: this.helmert2DWithZOffset };
   }
 
-  /** @internal */
+  /** Compares two additional transforms. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: AdditionalTransform): boolean {
     if ((this.helmert2DWithZOffset === undefined) !== (other.helmert2DWithZOffset === undefined))
       return false;

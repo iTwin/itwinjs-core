@@ -114,17 +114,21 @@ export class AffineTransform implements AffineTransformProps {
     }
   }
 
-  /** @internal */
+  /** Creates an Affine Transform from JSON representation.
+   * @public */
   public static fromJSON(data: AffineTransformProps): AffineTransform {
     return new AffineTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Affine Transform definition
+   * @public */
   public toJSON(): AffineTransformProps {
     return { translationX: this.translationX, a1: this.a1, a2: this.a2, translationY: this.translationY, b1: this.b1, b2: this.b2 };
   }
 
-  /** @internal */
+  /** Compares two Affine Transforms. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: AffineTransform): boolean {
     return (this.translationX === other.translationX &&
       this.translationY === other.translationY &&
@@ -301,12 +305,14 @@ export class Projection implements ProjectionProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Projection from JSON representation.
+   * @public */
   public static fromJSON(data: ProjectionProps): Projection {
     return new Projection(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Projection definition
+   * @public */
   public toJSON(): ProjectionProps {
     const data: ProjectionProps = { method: this.method };
     data.falseEasting = this.falseEasting;
@@ -334,7 +340,9 @@ export class Projection implements ProjectionProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two projections. It is a strict compare operation and not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: Projection): boolean {
     if (this.method !== other.method ||
       this.falseEasting !== other.falseEasting ||
@@ -397,17 +405,21 @@ export class MinMax implements MinMaxProps {
     }
   }
 
-  /** @internal */
+  /** Creates a MinMax object from JSON representation.
+   * @public */
   public static fromJSON(data: MinMaxProps): MinMax {
     return new MinMax(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the MinMax definition
+   * @public */
   public toJSON(): MinMaxProps {
     return { min: this.min, max: this.max };
   }
 
-  /** @internal */
+  /** Compares two Min Max object. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: MinMax): boolean {
     return (this.min === other.min && this.max === other.max);
   }

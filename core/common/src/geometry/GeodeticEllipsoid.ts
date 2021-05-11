@@ -73,12 +73,14 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Geodetic Ellipsoid from JSON representation.
+   * @public */
   public static fromJSON(data: GeodeticEllipsoidProps): GeodeticEllipsoid {
     return new GeodeticEllipsoid(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geodetic Ellipsoid definition
+   * @public */
   public toJSON(): GeodeticEllipsoidProps {
     const data: GeodeticEllipsoidProps = { equatorialRadius: this.equatorialRadius, polarRadius: this.polarRadius };
     data.id = this.id;
@@ -92,7 +94,10 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two Geodetic Ellipsoid. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GeodeticEllipsoid): boolean {
     return this.id === other.id &&
       this.description === other.description &&

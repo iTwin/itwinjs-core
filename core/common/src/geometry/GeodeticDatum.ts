@@ -38,17 +38,21 @@ export class XyzRotation implements XyzRotationProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Rotations object from JSON representation.
+   * @public */
   public static fromJSON(data: XyzRotationProps): XyzRotation {
     return new XyzRotation(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Rotations definition
+   * @public */
   public toJSON(): XyzRotationProps {
     return { x: this.x, y: this.y, z: this.z };
   }
 
-  /** @internal */
+  /** Compares two geodetic rotations. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: XyzRotation): boolean {
     return (this.x === other.x && this.y === other.y && this.z === other.z);
   }
@@ -84,17 +88,21 @@ export class GeocentricTransform implements GeocentricTransformProps {
     this.delta = data ? Vector3d.fromJSON(data.delta) : new Vector3d();
   }
 
-  /** @internal */
+  /** Creates a Geocentric Transform from JSON representation.
+   * @public */
   public static fromJSON(data: GeocentricTransformProps): GeocentricTransform {
     return new GeocentricTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geodetic GeocentricTransform definition
+   * @public */
   public toJSON(): GeocentricTransformProps {
     return { delta: { x: this.delta.x, y: this.delta.y, z: this.delta.z } };
   }
 
-  /** @internal */
+  /** Compares two geodetic transforms. It is a strict compare operation not equivalence test.
+   *  It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GeocentricTransform): boolean {
     return (this.delta.x === other.delta.x && this.delta.z === other.delta.z);
   }
@@ -137,12 +145,14 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
     }
   }
 
-  /** @internal */
+  /** Creates a Positional Vector Transform from JSON representation.
+   * @public */
   public static fromJSON(data: PositionalVectorTransformProps): PositionalVectorTransform {
     return new PositionalVectorTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Positional Vector Transform definition
+   * @public */
   public toJSON(): PositionalVectorTransformProps {
     return {
       delta: { x: this.delta.x, y: this.delta.y, z: this.delta.z },
@@ -151,7 +161,9 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
     };
   }
 
-  /** @internal */
+  /** Compares two Positional Vector Transforms. It is a strict compare operation not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: PositionalVectorTransform): boolean {
     if (this.delta.x !== other.delta.x || this.delta.z !== other.delta.z || this.scalePPM !== other.scalePPM)
       return false;
@@ -219,17 +231,21 @@ export class GridFileDefinition implements GridFileDefinitionProps {
     this.direction = data ? data.direction : "Direct";
   }
 
-  /** @internal */
+  /** Creates a Grid File Definition from JSON representation.
+   * @public */
   public static fromJSON(data: GridFileDefinitionProps): GridFileDefinition {
     return new GridFileDefinition(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Grid File Definition
+   * @public */
   public toJSON(): GridFileDefinitionProps {
     return { fileName: this.fileName, format: this.format, direction: this.direction };
   }
 
-  /** @internal */
+  /** Compares two grid file definition. It is a strict compare operation not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GridFileDefinition): boolean {
     return (this.fileName === other.fileName && this.direction === other.direction && this.format === other.format);
   }
@@ -268,12 +284,14 @@ export class GridFileTransform implements GridFileTransformProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Grid File Transform from JSON representation.
+   * @public */
   public static fromJSON(data: GridFileTransformProps): GridFileTransform {
     return new GridFileTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Grid File Transform definition
+   * @public */
   public toJSON(): GridFileTransformProps {
     const data: GridFileTransformProps = { files: [] };
     data.fallback = this.fallback ? this.fallback.toJSON() : undefined;
@@ -284,7 +302,9 @@ export class GridFileTransform implements GridFileTransformProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two Grid File Transforms. It is a strict compare operation not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GridFileTransform): boolean {
     if (this.files.length !== other.files.length)
       return false;
@@ -310,19 +330,11 @@ export class GridFileTransform implements GridFileTransformProps {
 export interface GeodeticTransformProps {
   /* The method used by the geodetic transform */
   method: GeodeticTransformMethod;
-  /** The identifier of the source geodetic datum as stored in the dictionary or the service database.
-   *  This identifier is optional and informational only.
-   */
-  sourceEllipsoidId?: string;
   /** The complete definition of the source geodetic ellipsoid referred to by ellipsoidId.
    *  The source ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.
   */
   sourceEllipsoid?: GeodeticEllipsoidProps;
-  /** The identifier of the target geodetic datum as stored in the dictionary or the service database.
-   *  This identifier is optional and informational only.
-   */
-  targetEllipsoidId?: string;
   /** The complete definition of the target geodetic ellipsoid referred to by ellipsoidId.
    *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.*/
@@ -345,16 +357,7 @@ export class GeodeticTransform implements GeodeticTransformProps {
   /** The identifier of the source geodetic datum as stored in the dictionary or the service database.
    *  This identifier is optional and informational only.
    */
-  public readonly sourceEllipsoidId?: string;
-  /** The complete definition of the source geodetic ellipsoid referred to by ellipsoidId.
-   *  The source ellipsoid identifier enables obtaining the shape of the Earth mathematical model
-   *  for the purpose of performing the transformation.
-  */
   public readonly sourceEllipsoid?: GeodeticEllipsoid;
-  /** The identifier of the target geodetic datum as stored in the dictionary or the service database.
-   *  This identifier is optional and informational only.
-   */
-  public readonly targetEllipsoidId?: string;
   /** The complete definition of the target geodetic ellipsoid referred to by ellipsoidId.
    *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.*/
@@ -370,8 +373,6 @@ export class GeodeticTransform implements GeodeticTransformProps {
     this.method = "None";
     if (data) {
       this.method = data.method;
-      this.sourceEllipsoidId = data.sourceEllipsoidId;
-      this.targetEllipsoidId = data.targetEllipsoidId;
       this.sourceEllipsoid = data.sourceEllipsoid ? GeodeticEllipsoid.fromJSON(data.sourceEllipsoid) : undefined;
       this.targetEllipsoid = data.targetEllipsoid ? GeodeticEllipsoid.fromJSON(data.targetEllipsoid) : undefined;
       this.geocentric = data.geocentric ? GeocentricTransform.fromJSON(data.geocentric) : undefined;
@@ -380,16 +381,16 @@ export class GeodeticTransform implements GeodeticTransformProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Geodetic Transform from JSON representation.
+   * @public */
   public static fromJSON(data: GeodeticTransformProps): GeodeticTransform {
     return new GeodeticTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geodetic Transform definition
+   * @public */
   public toJSON(): GeodeticTransformProps {
     const data: GeodeticTransformProps = { method: this.method };
-    data.sourceEllipsoidId = this.sourceEllipsoidId;
-    data.targetEllipsoidId = this.targetEllipsoidId;
     data.sourceEllipsoid = this.sourceEllipsoid ? this.sourceEllipsoid.toJSON() : undefined;
     data.targetEllipsoid = this.targetEllipsoid ? this.targetEllipsoid.toJSON() : undefined;
     data.geocentric = this.geocentric ? this.geocentric.toJSON() : undefined;
@@ -398,11 +399,11 @@ export class GeodeticTransform implements GeodeticTransformProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two geodetic Transforms. It is a strict compare operation not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GeodeticTransform): boolean {
-    if (this.method !== other.method ||
-      this.sourceEllipsoidId !== other.sourceEllipsoidId ||
-      this.targetEllipsoidId !== other.targetEllipsoidId)
+    if (this.method !== other.method)
       return false;
 
     if ((this.sourceEllipsoid === undefined) !== (other.sourceEllipsoid === undefined))
@@ -527,12 +528,14 @@ export class GeodeticDatum implements GeodeticDatumProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Geodetic Datum from JSON representation.
+   * @public */
   public static fromJSON(data: GeodeticDatumProps): GeodeticDatum {
     return new GeodeticDatum(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geodetic Datum definition
+   * @public */
   public toJSON(): GeodeticDatumProps {
     const data: GeodeticDatumProps = {};
     data.id = this.id;
@@ -551,7 +554,10 @@ export class GeodeticDatum implements GeodeticDatumProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two Geodetic Datums. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GeodeticDatum): boolean {
     if (this.id !== other.id ||
       this.description !== other.description ||
