@@ -32,6 +32,7 @@ interface CommandLineArgs {
   clean?: boolean;
   logChangeSets: boolean;
   logNamedVersions: boolean;
+  logProvenanceScopes: boolean;
   logTransformer: boolean;
   validation: boolean;
   simplifyElementGeometry?: boolean;
@@ -74,6 +75,7 @@ void (async () => {
     // print/debug options
     Yargs.option("logChangeSets", { desc: "If true, log the list of changeSets", type: "boolean", default: false });
     Yargs.option("logNamedVersions", { desc: "If true, log the list of named versions", type: "boolean", default: false });
+    Yargs.option("logProvenanceScopes", { desc: "If true, log the provenance scopes in the source and target iModels", type: "boolean", default: false });
     Yargs.option("logTransformer", { desc: "If true, turn on verbose logging for iModel transformation", type: "boolean", default: false });
     Yargs.option("validation", { desc: "If true, perform extra and potentially expensive validation to assist with finding issues and confirming results", type: "boolean", default: false });
 
@@ -219,6 +221,21 @@ void (async () => {
         rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
         ecefLocation: sourceDb.ecefLocation,
       });
+    }
+
+    if (args.logProvenanceScopes) {
+      const sourceScopeIds = ElementUtils.queryProvenanceScopeIds(sourceDb);
+      if (sourceScopeIds.size === 0) {
+        Logger.logInfo(loggerCategory, "Source Provenance Scope: Not Found");
+      } else {
+        sourceScopeIds.forEach((scopeId) => Logger.logInfo(loggerCategory, `Source Provenance Scope: ${scopeId} ${sourceDb.elements.getElement(scopeId).getDisplayLabel()}`));
+      }
+      const targetScopeIds = ElementUtils.queryProvenanceScopeIds(targetDb);
+      if (targetScopeIds.size === 0) {
+        Logger.logInfo(loggerCategory, "Target Provenance Scope: Not Found");
+      } else {
+        targetScopeIds.forEach((scopeId) => Logger.logInfo(loggerCategory, `Target Provenance Scope: ${scopeId} ${targetDb.elements.getElement(scopeId).getDisplayLabel()}`));
+      }
     }
 
     const excludeSubCategories = args.excludeSubCategories?.split(",");
