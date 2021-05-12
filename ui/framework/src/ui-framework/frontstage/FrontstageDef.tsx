@@ -36,6 +36,7 @@ import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { setImmediate } from "timers";
+import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -131,10 +132,12 @@ export class FrontstageDef {
     if (this._nineZoneState === state)
       return;
     this._nineZoneState = state;
-    FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
-      frontstageDef: this,
-      state,
-    });
+    if (!(this._isStageClosing || this._isApplicationClosing)) {
+      FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
+        frontstageDef: this,
+        state,
+      });
+    }
   }
 
   /** @internal */
@@ -621,13 +624,15 @@ export class FrontstageDef {
       const widgetDefs = (state.widgets[widgetContainerId].tabs.map((widgetId: string) => this.findWidgetDef(widgetId))).filter((val: WidgetDef | undefined) => !!val);
       if (widgetDefs && Array.isArray(widgetDefs) && widgetDefs.length && widgetDefs[0]) {
         const widgetDef = widgetDefs[0];
+        const tab = state.tabs[widgetDef.id];
+
         // TODO: only popout single widget?
         const popoutContent = (<PopoutWidget widgetPanelId={widgetContainerId} widgetDefs={[widgetDef]} activeWidgetId={widgetDef.id} frontstageDef={this} />);
         const position: ChildWindowLocationProps = {
-          width: 800,
-          height: 600,
-          left: 0,
-          top: 0,
+          width: tab.preferredPopoutWidgetSize?.width ?? 600,
+          height: tab.preferredPopoutWidgetSize?.height ?? 800,
+          left: tab.preferredPopoutWidgetSize?.x ?? 0,
+          top: tab.preferredPopoutWidgetSize?.y ?? 0,
         };
         UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDefs[0].label, popoutContent, position);
       }
@@ -637,9 +642,9 @@ export class FrontstageDef {
   /** Create a new popout/child window that contains the widget specified by its Id. Supported only when in
    *  UI 2.0 or higher.
    * @param widgetId case sensitive Wigdet Id
-   * @param point Position of top left corner of floating panel in pixels. If undefined {x:50, y:100} is used.
+   * @param point Position of top left corner of floating panel in pixels. If undefined {x:0, y:0} is used.
    * @param size defines the width and height of the floating panel. If undefined and widget has been floated before
-   * the previous size is used, else {height:400, width:400} is used.
+   * the previous size is used, else {height:800, width:600} is used.
    * @beta
    */
   public popoutWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
@@ -652,6 +657,7 @@ export class FrontstageDef {
         if (isPopoutLocation(location))
           return;
 
+        // get the state to apply that will pop-out the specified WidgetTab to child window.
         const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, point, size);
         if (state) {
           location = findTab(state, widgetId);
@@ -659,14 +665,15 @@ export class FrontstageDef {
             const widgetDef = this.findWidgetDef(widgetId);
             if (widgetDef) {
               const widgetPanelId = location.widgetId;
+              const tab = state.tabs[widgetId];
               this.nineZoneState = state;
               setImmediate(() => {
                 const popoutContent = (<PopoutWidget widgetPanelId={widgetPanelId} widgetDefs={[widgetDef]} activeWidgetId={widgetId} frontstageDef={this} />);
                 const position: ChildWindowLocationProps = {
-                  width: 800,
-                  height: 600,
-                  left: 0,
-                  top: 0,
+                  width: tab.preferredPopoutWidgetSize?.width ?? 600,
+                  height: tab.preferredPopoutWidgetSize?.height ?? 800,
+                  left: tab.preferredPopoutWidgetSize?.x ?? 0,
+                  top: tab.preferredPopoutWidgetSize?.y ?? 0,
                 };
                 UiFramework.childWindowManager.openChildWindow(widgetPanelId, widgetDef.label, popoutContent, position);
               });
@@ -674,6 +681,24 @@ export class FrontstageDef {
           }
         }
       }
+    }
+  }
+
+  public get isStageClosing() {
+    return this._isStageClosing;
+  }
+
+  public get isApplicationClosing() {
+    return this._isApplicationClosing;
+  }
+
+  /** @internal */
+  public async saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window) {
+    // eslint-disable-next-line no-console
+    // console.log(`Closing window ${childWindowId} x=${childWindow.screenX} y=${childWindow.screenX} width=${childWindow.innerWidth} height=${childWindow.innerHeight}`);
+    if (this.nineZoneState) {
+      const newState = await saveFrontstagePopoutWidgetSizeAndPosition(this.nineZoneState, this.id, this.version, childWindowId, childWindow);
+      this.nineZoneState = newState;
     }
   }
 
@@ -687,7 +712,7 @@ export class FrontstageDef {
       // Make sure the widgetContainerId is still in popout state. We don't want to set it to docked if the window is being closed because
       // an API call has moved the widget from a popout state to a floating state.
       if (location && isPopoutWidgetLocation(location)) {
-        const state = this.nineZoneState && dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
+        const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
         if (state)
           this.nineZoneState = state;
       }

@@ -14,11 +14,14 @@ import { assert } from "@bentley/bentleyjs-core";
 import { getUniqueId } from "./NineZone";
 
 /** @internal future */
+export interface SizeAndPositionProps extends SizeProps, PointProps { }
+
+/** @internal future */
 export interface TabState {
   readonly id: string;
   readonly label: string;
   readonly preferredFloatingWidgetSize?: SizeProps;
-  readonly preferredPopoutWidgetSize?: SizeProps;
+  readonly preferredPopoutWidgetSize?: SizeAndPositionProps;
   readonly preferredPanelWidgetSize?: "fit-content";
   readonly allowedPanelTargets?: PanelSide[];
   readonly canPopout?: boolean;
@@ -1104,6 +1107,7 @@ function setSizeProps(props: Draft<SizeProps>, size: SizeProps) {
 }
 
 type KeysOfType<T, Type> = { [K in keyof T]: T[K] extends Type ? K : never }[keyof T];
+
 function initSizeProps<T, K extends KeysOfType<T, SizeProps | undefined>>(obj: T, key: K, size: SizeProps) {
   if (obj[key]) {
     setSizeProps(obj[key], size);
@@ -1112,6 +1116,26 @@ function initSizeProps<T, K extends KeysOfType<T, SizeProps | undefined>>(obj: T
   (obj[key] as SizeProps) = {
     height: size.height,
     width: size.width,
+  };
+}
+
+function setSizeAndPointProps(props: Draft<SizeAndPositionProps>, inValue: SizeAndPositionProps) {
+  props.x = inValue.x;
+  props.y = inValue.y;
+  props.height = inValue.height;
+  props.width = inValue.width;
+}
+
+function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPositionProps | undefined>>(obj: T, key: K, inValue: SizeAndPositionProps) {
+  if (obj[key]) {
+    setSizeAndPointProps(obj[key], inValue);
+    return;
+  }
+  (obj[key] as SizeAndPositionProps) = {
+    x: inValue.x,
+    y: inValue.y,
+    height: inValue.height,
+    width: inValue.width,
   };
 }
 
@@ -1377,9 +1401,9 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
       return undefined; // already popout
 
     const tab = state.tabs[widgetTabId];
-    const preferredSize = size ?? (tab.preferredPopoutWidgetSize ?? { height: 800, width: 600 });
-    const preferredPoint = point ?? { x: 50, y: 100 };
-    const preferredBounds = Rectangle.createFromSize(preferredSize).offset(preferredPoint);
+    const preferredSizeAndPosition = { height: 800, width: 600, x: 50, y: 100, ...tab.preferredPopoutWidgetSize, ...size, ...point };
+    const preferredBounds = Rectangle.createFromSize(preferredSizeAndPosition).offset(preferredSizeAndPosition);
+
     const nzBounds = Rectangle.createFromSize(state.size);
     const containedBounds = preferredBounds.containIn(nzBounds);
 
@@ -1391,7 +1415,7 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
 
       return produce(state, (draft) => {
         const popoutTab = draft.tabs[widgetTabId];
-        initSizeProps(popoutTab, "preferredPopoutWidgetSize", preferredSize);
+        initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
         removeWidgetTab(draft, widgetTabId);
         if (!draft.popoutWidgets) {
           draft.popoutWidgets = {

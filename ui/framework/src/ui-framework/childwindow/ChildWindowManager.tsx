@@ -19,6 +19,7 @@ import { PopupRenderer } from "../popup/PopupManager";
 import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
 import { CursorPopupMenu } from "../../ui-framework";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 /** @alpha */
 export interface OpenChildWindowInfo {
@@ -93,6 +94,8 @@ export class ChildWindowManager {
       });
 
       childWindow.onbeforeunload = () => {
+        const frontStageDef = FrontstageManager.activeFrontstageDef;
+        frontStageDef && frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow);
         this.closeChildWindow(childWindowId, false);
       };
     }
@@ -147,7 +150,7 @@ export class ChildWindowManager {
 
     location = this.adjustWidowLocation(location);
     const url = useBlankUrl ? "" : "/iTwinPopup.html";
-    const childWindow = window.open(url, "", `width=${location.width},height=${location.height},left=${location.left},top=${location.top},menubar=no,resizable=no,scrollbars=no,status=no,location=no`);
+    const childWindow = window.open(url, "", `width = ${location.width}, height = ${location.height}, left = ${location.left}, top = ${location.top}, menubar = no, resizable = yes, scrollbars = no, status = no, location = no`);
     if (!childWindow)
       return false;
 
