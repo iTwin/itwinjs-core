@@ -5,7 +5,7 @@
 
 import { DbResult, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import {
-  Category, CategorySelector, DisplayStyle, ECSqlStatement, GeometricModel3d, IModelDb, ModelSelector, SubCategory,
+  Category, CategorySelector, DisplayStyle, ECSqlStatement, ExternalSourceAspect, GeometricModel3d, IModelDb, ModelSelector, SubCategory,
 } from "@bentley/imodeljs-backend";
 
 export namespace ElementUtils {
@@ -67,8 +67,22 @@ export namespace ElementUtils {
     }
     if (displayStyle.settings?.excludedElementIds) {
       for (const elementId of displayStyle.settings.excludedElementIds) {
-        iModelDb.elements.getElement(elementId);
+        iModelDb.elements.getElement(elementId); // will throw Error if not a valid Element
       }
     }
+  }
+
+  export function queryProvenanceScopeIds(iModelDb: IModelDb): Id64Set {
+    const elementIds = new Set<Id64String>();
+    if (iModelDb.containsClass(ExternalSourceAspect.classFullName)) {
+      const sql = `SELECT Element.Id FROM ${ExternalSourceAspect.classFullName} WHERE Kind=:kind`;
+      iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+        statement.bindString("kind", ExternalSourceAspect.Kind.Scope);
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          elementIds.add(statement.getValue(0).getId());
+        }
+      });
+    }
+    return elementIds;
   }
 }

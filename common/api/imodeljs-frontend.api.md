@@ -3817,6 +3817,32 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
 }
 
 // @public
+export interface GraphicArc {
+    // (undocumented)
+    arc: Arc3d;
+    // (undocumented)
+    filled?: boolean;
+    // (undocumented)
+    isEllipse?: boolean;
+    // (undocumented)
+    type: "arc";
+}
+
+// @public
+export interface GraphicArc2d {
+    // (undocumented)
+    arc: Arc3d;
+    // (undocumented)
+    filled?: boolean;
+    // (undocumented)
+    isEllipse?: boolean;
+    // (undocumented)
+    type: "arc2d";
+    // (undocumented)
+    zDepth: number;
+}
+
+// @public
 export class GraphicBranch implements IDisposable {
     constructor(ownsEntries?: boolean);
     add(graphic: RenderGraphic): void;
@@ -3880,6 +3906,7 @@ export abstract class GraphicBuilder {
     abstract addPointString(points: Point3d[]): void;
     abstract addPointString2d(points: Point2d[], zDepth: number): void;
     abstract addPolyface(meshData: Polyface, filled: boolean): void;
+    addPrimitive(primitive: GraphicPrimitive): void;
     addRangeBox(range: Range3d): void;
     addRangeBoxFromCorners(p: Point3d[]): void;
     abstract addShape(points: Point3d[]): void;
@@ -3921,7 +3948,73 @@ export interface GraphicBuilderOptions {
 }
 
 // @public
+export interface GraphicLineString {
+    // (undocumented)
+    points: Point3d[];
+    // (undocumented)
+    type: "linestring";
+}
+
+// @public
+export interface GraphicLineString2d extends GraphicPrimitive2d {
+    // (undocumented)
+    points: Point2d[];
+    // (undocumented)
+    type: "linestring2d";
+}
+
+// @public
 export type GraphicList = RenderGraphic[];
+
+// @public
+export interface GraphicLoop {
+    // (undocumented)
+    loop: Loop;
+    // (undocumented)
+    type: "loop";
+}
+
+// @public
+export interface GraphicPath {
+    // (undocumented)
+    path: Path;
+    // (undocumented)
+    type: "path";
+}
+
+// @public
+export interface GraphicPointString {
+    // (undocumented)
+    points: Point3d[];
+    // (undocumented)
+    type: "pointstring";
+}
+
+// @public
+export interface GraphicPointString2d extends GraphicPrimitive2d {
+    // (undocumented)
+    points: Point2d[];
+    // (undocumented)
+    type: "pointstring2d";
+}
+
+// @public
+export interface GraphicPolyface {
+    // (undocumented)
+    filled?: boolean;
+    // (undocumented)
+    polyface: Polyface;
+    // (undocumented)
+    type: "polyface";
+}
+
+// @public
+export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface;
+
+// @public
+export interface GraphicPrimitive2d {
+    zDepth: number;
+}
 
 // @internal (undocumented)
 export interface GraphicsCollector {
@@ -3942,6 +4035,22 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
     // (undocumented)
     get worldToViewMap(): Map4d;
     }
+
+// @public
+export interface GraphicShape {
+    // (undocumented)
+    points: Point3d[];
+    // (undocumented)
+    type: "shape";
+}
+
+// @public
+export interface GraphicShape2d extends GraphicPrimitive2d {
+    // (undocumented)
+    points: Point2d[];
+    // (undocumented)
+    type: "shape2d";
+}
 
 // @public
 export enum GraphicType {
