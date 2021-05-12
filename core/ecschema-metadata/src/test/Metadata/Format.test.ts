@@ -39,6 +39,21 @@ describe("Format", () => {
   let schema: Schema;
   let testFormat: Format;
 
+  it("should get fullName", async () => {
+    const schemaJson = createSchemaJsonWithItems({
+      TestFormat: {
+        schemaItemType: "Format",
+        type: "Decimal",
+      },
+    });
+
+    const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
+    assert.isDefined(ecSchema);
+    const format = await ecSchema.getItem<Format>("TestFormat");
+    assert.isDefined(format);
+    expect(format!.fullName).eq("TestSchema.TestFormat");
+  });
+
   describe("type checking json", () => {
     let jsonParser: JsonParser; // This is an easy way to test the logic directly in the parser without having to go through deserialization every time.
 

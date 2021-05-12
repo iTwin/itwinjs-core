@@ -55,6 +55,7 @@ import { OrderedId64Iterable } from '@bentley/bentleyjs-core';
 import { Plane3dByOriginAndUnitNormal } from '@bentley/geometry-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
+import { Point4d } from '@bentley/geometry-core';
 import { PolyfaceVisitor } from '@bentley/geometry-core';
 import { Range1d } from '@bentley/geometry-core';
 import { Range1dProps } from '@bentley/geometry-core';
@@ -1904,9 +1905,6 @@ export enum DownloadBriefcaseStatus {
     // (undocumented)
     QueryCheckpointService = 2
 }
-
-// @beta
-export type DPoint2dProps = number[];
 
 // @beta
 export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
@@ -5302,6 +5300,9 @@ export class PntsHeader extends TileHeader {
     readonly length: number;
 }
 
+// @public
+export type Point2dProps = number[];
+
 // @beta
 export interface PointWithStatus {
     // (undocumented)
@@ -5728,7 +5729,7 @@ export interface RelationshipProps extends EntityProps, SourceAndTarget {
 // @public
 export type RemoveFunction = () => void;
 
-// @beta
+// @public
 export abstract class RenderMaterial {
     protected constructor(params: RenderMaterial.Params);
     // (undocumented)
@@ -5737,7 +5738,7 @@ export abstract class RenderMaterial {
     readonly textureMapping?: TextureMapping;
 }
 
-// @beta
+// @public (undocumented)
 export namespace RenderMaterial {
     export class Params {
         constructor(key?: string);
@@ -5762,33 +5763,36 @@ export namespace RenderMaterial {
     }
 }
 
-// @beta
+// @public
+export interface RenderMaterialAssetProps {
+    color?: RgbFactorProps;
+    diffuse?: number;
+    finish?: number;
+    HasBaseColor?: boolean;
+    HasDiffuse?: boolean;
+    HasFinish?: boolean;
+    HasReflect?: boolean;
+    HasReflectColor?: boolean;
+    HasSpecular?: boolean;
+    HasSpecularColor?: boolean;
+    HasTransmit?: boolean;
+    Map?: {
+        Pattern?: TextureMapProps;
+    };
+    reflect?: number;
+    reflect_color?: RgbFactorProps;
+    specular?: number;
+    specular_color?: RgbFactorProps;
+    transmit?: number;
+}
+
+// @public
 export interface RenderMaterialProps extends DefinitionElementProps {
     description?: string;
     // (undocumented)
     jsonProperties?: {
         materialAssets?: {
-            renderMaterial?: {
-                HasBaseColor?: boolean;
-                color?: RgbFactorProps;
-                HasSpecularColor?: boolean;
-                specular_color?: RgbFactorProps;
-                HasFinish?: boolean;
-                finish?: number;
-                HasTransmit?: boolean;
-                transmit?: number;
-                HasDiffuse?: boolean;
-                diffuse?: number;
-                HasSpecular?: boolean;
-                specular?: number;
-                HasReflect?: boolean;
-                reflect?: number;
-                HasReflectColor?: boolean;
-                reflect_color?: RgbFactorProps;
-                Map?: {
-                    Pattern?: TextureMapProps;
-                };
-            };
+            renderMaterial?: RenderMaterialAssetProps;
         };
     };
     paletteName: string;
@@ -5857,6 +5861,12 @@ export namespace RenderSchedule {
         // (undocumented)
         toJSON(): ElementTimelineProps;
     }
+    export class ElementTimelineBuilder extends TimelineBuilder {
+        constructor(batchId: number, elementIds: CompressedId64Set);
+        readonly batchId: number;
+        readonly elementIds: CompressedId64Set;
+        finish(): ElementTimelineProps;
+    }
     export interface ElementTimelineProps extends TimelineProps {
         batchId: number;
         elementIds: Id64String[] | CompressedId64Set;
@@ -5895,6 +5905,14 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         readonly transformBatchIds: ReadonlyArray<number>;
     }
+    export class ModelTimelineBuilder extends TimelineBuilder {
+        constructor(modelId: Id64String, obtainNextBatchId: () => number);
+        addElementTimeline(elementIds: CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder;
+        finish(): ModelTimelineProps;
+        readonly modelId: Id64String;
+        // @internal (undocumented)
+        realityModelUrl?: string;
+    }
     export interface ModelTimelineProps extends TimelineProps {
         elementTimelines: ElementTimelineProps[];
         modelId: Id64String;
@@ -5924,6 +5942,10 @@ export namespace RenderSchedule {
         // (undocumented)
         toJSON(): ScriptProps;
     }
+    export class ScriptBuilder {
+        addModelTimeline(modelId: Id64String): ModelTimelineBuilder;
+        finish(): ScriptProps;
+        }
     export type ScriptProps = ModelTimelineProps[];
     export class ScriptReference {
         constructor(sourceId: Id64String, script: Script);
@@ -5946,6 +5968,30 @@ export namespace RenderSchedule {
         toJSON(): TimelineProps;
         readonly transform?: TransformTimelineEntries;
         readonly visibility?: VisibilityTimelineEntries;
+    }
+    export class TimelineBuilder {
+        addColor(time: number, color: RgbColor | {
+            red: number;
+            green: number;
+            blue: number;
+        } | undefined, interpolation?: Interpolation): void;
+        addCuttingPlane(time: number, plane: {
+            position: XYAndZ;
+            direction: XYAndZ;
+            visible?: boolean;
+            hidden?: boolean;
+        } | undefined, interpolation?: Interpolation): void;
+        addTransform(time: number, transform: Transform | undefined, components?: {
+            pivot: XYAndZ;
+            orientation: Point4d;
+            position: XYAndZ;
+        }, interpolation?: Interpolation): void;
+        addVisibility(time: number, visibility: number | undefined, interpolation?: Interpolation): void;
+        color?: ColorEntryProps[];
+        cuttingPlane?: CuttingPlaneEntryProps[];
+        finish(): TimelineProps;
+        transform?: TransformEntryProps[];
+        visibility?: VisibilityEntryProps[];
     }
     export class TimelineEntry {
         constructor(props: TimelineEntryProps);
@@ -5978,22 +6024,32 @@ export namespace RenderSchedule {
         transformTimeline?: TransformEntryProps[];
         visibilityTimeline?: VisibilityEntryProps[];
     }
+    export class TransformComponents {
+        constructor(position: Vector3d, pivot: Vector3d, orientation: Point4d);
+        // (undocumented)
+        static fromJSON(props: TransformComponentsProps): TransformComponents | undefined;
+        readonly orientation: Point4d;
+        readonly pivot: Vector3d;
+        readonly position: Vector3d;
+        // (undocumented)
+        toJSON(): TransformComponentsProps;
+    }
+    export interface TransformComponentsProps {
+        orientation?: number[];
+        pivot?: number[];
+        position?: number[];
+    }
     export class TransformEntry extends TimelineEntry {
         constructor(props: TransformEntryProps);
+        readonly components?: TransformComponents;
         // (undocumented)
         toJSON(): TransformEntryProps;
         readonly value: Readonly<Transform>;
-        }
+    }
     export interface TransformEntryProps extends TimelineEntryProps {
         value?: TransformProps;
     }
-    export interface TransformProps {
-        // @internal
-        orientation?: number[];
-        // @internal
-        pivot?: number[];
-        // @internal
-        position?: number[];
+    export interface TransformProps extends TransformComponentsProps {
         transform?: number[][];
     }
     export class TransformTimelineEntries extends TimelineEntryList<TransformEntry, TransformEntryProps, Readonly<Transform>> {
@@ -6013,7 +6069,7 @@ export namespace RenderSchedule {
     }
 }
 
-// @beta
+// @public
 export abstract class RenderTexture implements IDisposable {
     protected constructor(params: RenderTexture.Params);
     // (undocumented)
@@ -6030,7 +6086,7 @@ export abstract class RenderTexture implements IDisposable {
     readonly type: RenderTexture.Type;
 }
 
-// @beta
+// @public (undocumented)
 export namespace RenderTexture {
     export class Params {
         constructor(key?: string, type?: Type, isOwned?: boolean);
@@ -6151,7 +6207,7 @@ export interface RgbColorProps {
     r: number;
 }
 
-// @beta
+// @public
 export type RgbFactorProps = number[];
 
 // @public
@@ -7342,18 +7398,12 @@ export interface TextStringProps {
     widthFactor?: number;
 }
 
-// @beta (undocumented)
-export enum TextureFlags {
-    // (undocumented)
-    None = 0
-}
-
 // @alpha
 export interface TextureLoadProps {
     name: Id64String;
 }
 
-// @beta
+// @public
 export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
     // @internal (undocumented)
@@ -7362,7 +7412,7 @@ export class TextureMapping {
     readonly texture: RenderTexture;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export namespace TextureMapping {
     export enum Mode {
         // @internal (undocumented)
@@ -7404,28 +7454,25 @@ export namespace TextureMapping {
         worldMapping: boolean;
     }
     export class Trans2x3 {
-        constructor(t00?: number, t01?: number, t02?: number, t10?: number, t11?: number, t12?: number);
-        // (undocumented)
-        setTransform(): void;
-        // (undocumented)
-        get transform(): Transform;
-        }
+        constructor(m00?: number, m01?: number, originX?: number, m10?: number, m11?: number, originY?: number);
+        readonly transform: Transform;
+    }
 }
 
-// @beta
+// @public
 export interface TextureMapProps {
     pattern_angle?: number;
     pattern_flip?: boolean;
     pattern_mapping?: TextureMapping.Mode;
-    pattern_offset?: DPoint2dProps;
-    pattern_scale?: DPoint2dProps;
+    pattern_offset?: Point2dProps;
+    pattern_scale?: Point2dProps;
     pattern_scalemode?: TextureMapUnits;
     pattern_u_flip?: boolean;
     pattern_weight?: number;
     TextureId: Id64String;
 }
 
-// @beta (undocumented)
+// @public
 export enum TextureMapUnits {
     // (undocumented)
     Feet = 5,
@@ -7435,18 +7482,14 @@ export enum TextureMapUnits {
     Meters = 3,
     // (undocumented)
     Millimeters = 4,
-    // (undocumented)
     Relative = 0
 }
 
-// @beta
+// @public
 export interface TextureProps extends DefinitionElementProps {
     data: Base64EncodedString;
     description?: string;
-    flags: TextureFlags;
     format: ImageSourceFormat;
-    height: number;
-    width: number;
 }
 
 // @public
