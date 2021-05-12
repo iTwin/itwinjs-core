@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
 } from "@bentley/geometry-core";
@@ -86,26 +86,22 @@ export namespace RenderSchedule {
     value?: CuttingPlaneProps;
   }
 
-  /** JSON representation of a [Transform]($geometry-core) associated with a [[RenderSchedule.TransformEntryProps]]. */
-  export interface TransformProps {
-    /** (x, y, z) of position  - applied after rotation.
-     * This property is preserved but unused by iTwin.js.
-     * @internal
-     */
+  /** JSON representation of a [[RenderSchedule.TransformComponents]]. */
+  export interface TransformComponentsProps {
+    /** (x, y, z) of position  - applied after rotation. */
     position?: number[];
-    /** quaternion representing rotation.
-     * This property is preserved but unused by iTwin.js.
-     * @internal
-     */
+    /** Quaternion representing rotation. */
     orientation?: number[];
-    /** x, y, z) of pivot - applied before rotation.
-     * This property is preserved but unused by iTwin.js.
-     * @internal
-     */
+    /** (x, y, z) of pivot - applied before rotation. */
     pivot?: number[];
+  }
+
+  /** JSON representation of a [Transform]($geometry-core) associated with a [[RenderSchedule.TransformEntryProps]]. */
+  export interface TransformProps extends TransformComponentsProps {
     /** 3 X 4 transformation matrix containing 3 arrays of matrix rows consisting of 4 numbers each: [qx qy qz ax]
      * where the fourth columnn in each row holds the translation.
      * `undefined` is equivalent to an identity transform.
+     * This transform is only used if position, orientation, and/or pivot are undefined.
      */
     transform?: number[][];
   }
@@ -231,25 +227,59 @@ export namespace RenderSchedule {
     }
   }
 
+  /** Describes the components of a [[RenderSchedule.TransformEntry]] as a rotation around a pivot point followed by a translation. */
+  export class TransformComponents {
+    /** Pivot point - applied before rotation. */
+    public readonly pivot: Vector3d;
+    /** Quaternion rotation. */
+    public readonly orientation: Point4d;
+    /** Translation - applied after rotation. */
+    public readonly position: Vector3d;
+
+    public constructor(position: Vector3d, pivot: Vector3d, orientation: Point4d) {
+      this.position = position;
+      this.pivot = pivot;
+      this.orientation = orientation;
+    }
+
+    public static fromJSON(props: TransformComponentsProps): TransformComponents | undefined {
+      if (props.pivot && props.position && props.orientation)
+        return new TransformComponents(Vector3d.fromJSON(props.position), Vector3d.fromJSON(props.pivot), Point4d.fromJSON(props.orientation));
+      else
+        return undefined;
+    }
+
+    public toJSON(): TransformComponentsProps {
+      return {
+        position: [ this.position.x, this.position.y, this.position.z ],
+        pivot: [ this.pivot.x, this.pivot.y, this.pivot.z ],
+        orientation: [ this.orientation.x, this.orientation.y, this.orientation.z, this.orientation.w ],
+      };
+    }
+  }
+
   /** A timeline entry that applies rotation, scaling, and/or translation to the affected geometry. */
   export class TransformEntry extends TimelineEntry {
-    /** The transform matrix to be applied to the geometry. */
+    /** The transform matrix to be applied to the geometry, used only if [[components]] is not defined. */
     public readonly value: Readonly<Transform>;
-    private readonly _value?: TransformProps;
+    /** The transform represented as a rotation about a pivot point followed by a translation. If undefined, [[value]] is used instead. */
+    public readonly components?: TransformComponents;
 
     public constructor(props: TransformEntryProps) {
       super(props);
       this.value = props.value ? Transform.fromJSON(props.value.transform) : Transform.identity;
-      if (props.value) {
-        // Preserve the other properties for toJSON(). We don't use them but other apps could.
-        this._value = { ...props.value };
-      }
+      if (props.value)
+        this.components = TransformComponents.fromJSON(props.value);
     }
 
     public toJSON(): TransformEntryProps {
       const props = super.toJSON() as TransformEntryProps;
-      if (this._value)
-        props.value = { ...this._value };
+      if (this.components) {
+        props.value = this.components.toJSON();
+        props.value.transform = this.value.toRows();
+      } else {
+        props.value = { transform: this.value.toRows() };
+      }
 
       return props;
     }
@@ -514,16 +544,28 @@ export namespace RenderSchedule {
 
       let transform = this.transform.getValue(interval.lowerIndex);
       if (interval.fraction > 0) {
-        const end = this.transform.getValue(interval.upperIndex);
-        const q0 = transform.matrix.inverse()?.toQuaternion();
-        const q1 = end.matrix.inverse()?.toQuaternion();
-        if (q0 && q1) {
-          const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
+        const comp0 = this.transform.getEntry(interval.lowerIndex)?.components;
+        const comp1 = this.transform.getEntry(interval.upperIndex)?.components;
+        if (comp0 && comp1) {
+          const sum = Point4d.interpolateQuaternions(comp0.orientation, interval.fraction, comp1.orientation);
           const matrix = Matrix3d.createFromQuaternion(sum);
+          const pre = Transform.createTranslation(comp0.pivot);
+          const post = Transform.createTranslation(comp0.position.interpolate(interval.fraction, comp1.position));
+          const product = post.multiplyTransformMatrix3d(matrix);
+          product.multiplyTransformTransform(pre, product);
+          transform = product;
+        } else {
+          const end = this.transform.getValue(interval.upperIndex);
+          const q0 = transform.matrix.inverse()?.toQuaternion();
+          const q1 = end.matrix.inverse()?.toQuaternion();
+          if (q0 && q1) {
+            const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
+            const matrix = Matrix3d.createFromQuaternion(sum);
 
-          const origin0 = Vector3d.createFrom(transform.origin);
-          const origin1 = Vector3d.createFrom(end.origin);
-          transform = Transform.createRefs(origin0.interpolate(interval.fraction, origin1), matrix);
+            const origin0 = Vector3d.createFrom(transform.origin);
+            const origin1 = Vector3d.createFrom(end.origin);
+            transform = Transform.createRefs(origin0.interpolate(interval.fraction, origin1), matrix);
+          }
         }
       }
 
@@ -751,6 +793,7 @@ export namespace RenderSchedule {
    * @see [RenderTimeline]($backend) to create an [Element]($backend) to host a script.
    * @see [[DisplayStyleSettings.renderTimeline]] to associate a [RenderTimeline]($backend)'s script with a [DisplayStyle]($backend).
    * @see [DisplayStyleState.scheduleScript]($frontend) to obtain the script associated with a display style.
+   * @see [[RenderSchedule.ScriptBuilder]] to define a new script.
    */
   export class Script {
     /** Timelines specifying how to animate individual models within the view. */
@@ -855,6 +898,207 @@ export namespace RenderSchedule {
     public constructor(sourceId: Id64String, script: Script) {
       this.sourceId = sourceId;
       this.script = script;
+    }
+  }
+
+  /** Used as part of a [[RenderSchedule.ScriptBuilder]] to define a [[RenderSchedule.Timeline]].
+   * @see [[RenderSchedule.ElementTimelineBuilder]] and [[RenderSchedule.ModelTimelineBuilder]].
+   */
+  export class TimelineBuilder {
+    /** Timeline controlling visibility. */
+    public visibility?: VisibilityEntryProps[];
+    /** Timeline controlling color. */
+    public color?: ColorEntryProps[];
+    /** Timeline controlling position and orientation. */
+    public transform?: TransformEntryProps[];
+    /** Timeline controlling clipping. */
+    public cuttingPlane?: CuttingPlaneEntryProps[];
+
+    /** Append a new [[RenderSchedule.VisibilityEntry]] to the timeline. */
+    public addVisibility(time: number, visibility: number | undefined, interpolation = Interpolation.Linear): void {
+      if (!this.visibility)
+        this.visibility = [];
+
+      this.visibility.push({ time, value: visibility, interpolation });
+    }
+
+    /** Append a new [[RenderSchedule.ColorEntry]] to the timeline. */
+    public addColor(time: number, color: RgbColor | { red: number, green: number, blue: number } | undefined, interpolation = Interpolation.Linear): void {
+      if (!this.color)
+        this.color = [];
+
+      const value = color instanceof RgbColor ? { red: color.r, green: color.g, blue: color.b } : color;
+      this.color.push({ time, value, interpolation });
+    }
+
+    /** Append a new [[RenderSchedule.CuttingPlaneEntry]] to the timeline. */
+    public addCuttingPlane(time: number, plane: { position: XYAndZ, direction: XYAndZ, visible?: boolean, hidden?: boolean } | undefined, interpolation = Interpolation.Linear): void {
+      if (!this.cuttingPlane)
+        this.cuttingPlane = [];
+
+      let value: CuttingPlaneProps | undefined;
+      if (plane) {
+        value = {
+          position: [ plane.position.x, plane.position.y, plane.position.z ],
+          direction: [ plane.direction.x, plane.direction.y, plane.direction.z ],
+        };
+
+        if (plane.visible)
+          value.visible = true;
+
+        if (plane.hidden)
+          value.hidden = true;
+      }
+
+      this.cuttingPlane.push({ time, value, interpolation });
+    }
+
+    /** Append a new [[RenderSchedule.TransformEntry]] to the timeline. */
+    public addTransform(time: number, transform: Transform | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
+      if (!this.transform)
+        this.transform = [];
+
+      const value: TransformProps = { transform: transform?.toRows() };
+      if (components) {
+        value.pivot = [ components.pivot.x, components.pivot.y, components.pivot.z ];
+        value.orientation = components.orientation.toJSON();
+        value.position = [ components.position.x, components.position.y, components.position.z ];
+      }
+
+      this.transform.push({ time, value, interpolation });
+    }
+
+    /** Obtain the JSON representation of the [[RenderSchedule.Timeline]] produced by this builder.
+     * @see [[RenderSchedule.ScriptBuilder.finish]] to obtain the JSON for the entire [[RenderSchedule.Script]].
+     */
+    public finish(): TimelineProps {
+      const props: TimelineProps = { };
+      if (this.visibility?.length)
+        props.visibilityTimeline = this.visibility;
+
+      if (this.color?.length)
+        props.colorTimeline = this.color;
+
+      if (this.transform?.length)
+        props.transformTimeline = this.transform;
+
+      if (this.cuttingPlane?.length)
+        props.cuttingPlaneTimeline = this.cuttingPlane;
+
+      return props;
+    }
+  }
+
+  /** As part of a [[RenderSchedule.ScriptBuilder]], assembles a [[RenderSchedule.ElementTimeline]].
+   * @see [[RenderSchedule.ModelTimelineBuilder.addElementTimeline]].
+   */
+  export class ElementTimelineBuilder extends TimelineBuilder {
+    /** A positive integer that uniquely identifies this timeline among all element timelines in the [[RenderSchedule.Script]].
+     * [[RenderSchedule.ScriptBuilder]] ensures each ElementTimelineBuilder receives a unique batch Id.
+     */
+    public readonly batchId: number;
+    /** The compressed set of Ids of the elements affected by this timeline. */
+    public readonly elementIds: CompressedId64Set;
+
+    /** Constructor - typically not used directly.
+     * @see [[RenderSchedule.ModelTimelineBuilder.addElementTimeline]] to create an ElementTimelineBuilder.
+     */
+    public constructor(batchId: number, elementIds: CompressedId64Set) {
+      super();
+      this.batchId = batchId;
+      this.elementIds = elementIds;
+    }
+
+    /** Obtain the JSON representation of the [[RenderSchedule.ElementTimeline]] produced by this builder.
+     * @see [[RenderSchedule.ScriptBuilder.finish]] to obtain the JSON for the entire [[RenderSchedule.Script]].
+     */
+    public finish(): ElementTimelineProps {
+      const props = super.finish() as ElementTimelineProps;
+      props.batchId = this.batchId;
+      props.elementIds = this.elementIds;
+      return props;
+    }
+  }
+
+  /** As part of a [[RenderSchedule.ScriptBuilder, assembles a [[RenderSchedule.ModelTimeline]].
+   * @see [[RenderSchedule.ScriptBuilder.addModelTimeline]].
+   */
+  export class ModelTimelineBuilder extends TimelineBuilder {
+    /** The Id of the model affected by this timeline. */
+    public readonly modelId: Id64String;
+    /** @internal */
+    public realityModelUrl?: string;
+    private readonly _obtainNextBatchId: () => number;
+    private readonly _elements: ElementTimelineBuilder[] = [];
+
+    /** Constructor - typically not used directly.
+     * @see [[RenderSchedule.ScriptBuilder.addModelTimeline]] to create a ModelTimelineBuilder.
+     */
+    public constructor(modelId: Id64String, obtainNextBatchId: () => number) {
+      super();
+      this.modelId = modelId;
+      this._obtainNextBatchId = obtainNextBatchId;
+    }
+
+    /** Add a new [[RenderSchedule.ElementTimeline]] to be applied to the specified elements.
+     * This function will sort and compress the Ids if they are not already compressed.
+     *
+     */
+    public addElementTimeline(elementIds: CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder {
+      const batchId = this._obtainNextBatchId();
+      let ids: CompressedId64Set;
+      if (typeof elementIds === "string") {
+        ids = elementIds;
+      } else {
+        const sorted = Array.from(elementIds);
+        OrderedId64Iterable.sortArray(sorted);
+        ids = CompressedId64Set.compressIds(sorted);
+      }
+
+      const builder = new ElementTimelineBuilder(batchId, ids);
+      this._elements.push(builder);
+      return builder;
+    }
+
+    /** Obtain the JSON representation of the [[RenderSchedule.ModelTimeline]] produced by this builder.
+     * @see [[RenderSchedule.ScriptBuilder.finish]] to obtain the JSON for the entire [[RenderSchedule.Script]].
+     */
+    public finish(): ModelTimelineProps {
+      const props = super.finish() as ModelTimelineProps;
+      props.modelId = this.modelId;
+      if (undefined !== this.realityModelUrl)
+        props.realityModelUrl = this.realityModelUrl;
+
+      props.elementTimelines = this._elements.map((x) => x.finish());
+      return props;
+    }
+  }
+
+  /** Assembles the JSON representation for a new [[RenderSchedule.Script]]. As an extremely simple example, the following code produces a script that changes the color of a single element:
+   * ```ts
+   *  const script = new ScriptBuilder();
+   *  const model = script.addModelTimeline("0x123");
+   *  const element = model.addElementTimeline([ "0x456" ]);
+   *  element.addColor(Date.now(), new RgbColor(0xff, 0x7f, 0));
+   *  const scriptProps = script.finish();
+   * ```
+   */
+  export class ScriptBuilder {
+    private _nextBatchId = 1;
+    private readonly _models: ModelTimelineBuilder[] = [];
+
+    /** Add a new [[RenderSchedule.ModelTimeline]] to be applied to the specified model. */
+    public addModelTimeline(modelId: Id64String): ModelTimelineBuilder {
+      const builder = new ModelTimelineBuilder(modelId, () => this._nextBatchId++);
+      this._models.push(builder);
+      return builder;
+    }
+
+    /** Obtain the JSON representation of the [[RenderSchedule.Script]] produced by this builder.
+     * @see [RenderTimeline.scriptProps]($backend) to assign the new script to a RenderTimeline element.
+     */
+    public finish(): ScriptProps {
+      return this._models.map((x) => x.finish());
     }
   }
 }
