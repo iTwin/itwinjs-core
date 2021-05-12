@@ -270,11 +270,11 @@ steps:
 
           shutil.copy(file, destFilePath)
 
-      arguments: --output '$(Build.BinariesDirectory)'
-    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
+      arguments: --output '$(Build.SourcesDirectory)'
+    # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
   - task: PublishCodeCoverageResults@1
     displayName: "Publish code coverage"
     inputs:
       codeCoverageTool: Cobertura
-      summaryFileLocation: $(Build.BinariesDirectory)/coverageXMLs/**/**/cobertura-coverage.xml
+      summaryFileLocation: $(Build.SourcesDirectory)/coverageXMLs/**/**/cobertura-coverage.xml
     condition: succeededOrFailed()
