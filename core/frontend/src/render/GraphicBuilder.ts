@@ -12,6 +12,7 @@ import { ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@bentley/imod
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
+import { GraphicPrimitive } from "./GraphicPrimitive";
 
 /**
  * Describes the type of a [[GraphicBuilder]], which defines the coordinate system in which the builder's geometry is defined and
@@ -351,6 +352,47 @@ export abstract class GraphicBuilder {
    * @param filled If the mesh describes a planar region, indicates whether its interior area should be drawn with fill in [[RenderMode.Wireframe]].
    */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;
+
+  /** Append any primitive to the builder.
+   * @param primitive The graphic primitive to append.
+   */
+  public addPrimitive(primitive: GraphicPrimitive): void {
+    switch (primitive.type) {
+      case "linestring":
+        this.addLineString(primitive.points);
+        break;
+      case "linestring2d":
+        this.addLineString2d(primitive.points, primitive.zDepth);
+        break;
+      case "pointstring":
+        this.addPointString(primitive.points);
+        break;
+      case "pointstring2d":
+        this.addPointString2d(primitive.points, primitive.zDepth);
+        break;
+      case "shape":
+        this.addShape(primitive.points);
+        break;
+      case "shape2d":
+        this.addShape2d(primitive.points, primitive.zDepth);
+        break;
+      case "arc":
+        this.addArc(primitive.arc, true === primitive.isEllipse, true === primitive.filled);
+        break;
+      case "arc2d":
+        this.addArc2d(primitive.arc, true === primitive.isEllipse, true === primitive.filled, primitive.zDepth);
+        break;
+      case "path":
+        this.addPath(primitive.path);
+        break;
+      case "loop":
+        this.addLoop(primitive.loop);
+        break;
+      case "polyface":
+        this.addPolyface(primitive.polyface, true === primitive.filled);
+        break;
+    }
+  }
 
   /** Add Range3d edges. Useful for debugging. */
   public addRangeBox(range: Range3d) {
