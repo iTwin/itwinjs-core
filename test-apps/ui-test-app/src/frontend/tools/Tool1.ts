@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { AttachArcGISMapLayerByUrlTool } from "@bentley/frontend-devtools";
+import { Point3d, Range2d, Range3d } from "@bentley/geometry-core";
+import { CartographicRange, ColorDef } from "@bentley/imodeljs-common";
 import {
-  BeButtonEvent, EventHandled, IModelApp, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, ToolAssistance, ToolAssistanceImage,
+  BeButtonEvent, EventHandled, IModelApp, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ViewRect,
 } from "@bentley/imodeljs-frontend";
 import { DialogItemValue, DialogPropertySyncItem } from "@bentley/ui-abstract";
 
@@ -41,7 +42,16 @@ export class Tool1 extends PrimitiveTool {
   }
 
   public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onPostInstall() {
+    super.onPostInstall(); this.setupAndPromptForNextAction();
+
+    // ArcGis Mapserver
+    const mlTool = new AttachArcGISMapLayerByUrlTool();
+    if (!mlTool.parseAndRun("https://dtlgeoarcgis.adtl.com/server/rest/services/SampleWorldCities/MapServer", "SampleWorldCities", "test", "test")) {
+      throw new Error();
+    }
+
+  }
   public onUnsuspend(): void { this.provideToolAssistance(); }
 
   /** Establish current tool state and initialize drawing aides following onPostInstall, onDataButtonDown, onUndoPreviousStep, or other events that advance or back up the current tool state.
@@ -87,9 +97,48 @@ export class Tool1 extends PrimitiveTool {
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+
+    this.testMapServerIdentify();
     this.points.push(ev.point.clone());
     this.setupAndPromptForNextAction();
     return EventHandled.No;
+  }
+
+  private testMapServerIdentify() {
+    // const viewRangeRad = Tool1.getFrustumLonLatBBox();
+  }
+
+  private static getViewRect(): ViewRect | undefined {
+    const vp = IModelApp.viewManager?.selectedView;
+    if (vp === undefined) {
+      return undefined;
+    }
+
+    return vp.viewRect;
+  }
+
+  private static getFrustumLonLatBBox(): Range2d | undefined {
+    let result: Range2d | undefined;
+
+    const vp = IModelApp.viewManager?.selectedView;
+    if (vp === undefined) {
+      return result;
+    }
+
+    const view = vp.view;
+    const ecef = vp.iModel.ecefLocation;
+    if (!view.isSpatialView() || undefined === ecef) {
+      return result;
+    }
+
+    const frustum = view.calculateFrustum();
+    if (!frustum) {
+      return result;
+    }
+
+    const viewRange = Range3d.createArray(frustum.points);
+    const range = new CartographicRange(viewRange, ecef.getTransform());
+    return range.getLongitudeLatitudeBoundingBox();
   }
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {

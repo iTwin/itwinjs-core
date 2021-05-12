@@ -11,6 +11,7 @@ import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarCl
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { EsriFeatureDecorator } from "../../EsriFeatureDecorator";
 
 enum MapMaskingOption
   {
@@ -125,6 +126,19 @@ export function MapManagerSettings() {
     setTransparency(newTransparency);
   }, [activeViewport]);
 
+  const [testEsriFeature, setTestEsriFeature] = React.useState(() => IModelApp.viewManager.decorators.includes(EsriFeatureDecorator.decorator));
+
+  const onToggleTestEsriFeature = React.useCallback(async (checked: boolean) => {
+    if (checked) {
+      const esriFeatureDecorator = EsriFeatureDecorator.decorator;
+      await esriFeatureDecorator.initialize();
+      IModelApp.viewManager.addDecorator(esriFeatureDecorator);
+    } else {
+      IModelApp.viewManager.dropDecorator(EsriFeatureDecorator.decorator);
+    }
+    setTestEsriFeature(checked);
+  }, []);
+
   const [applyTerrain, setApplyTerrain] = React.useState(() => backgroundMapSettings.applyTerrain);
 
   const onToggleTerrain = React.useCallback((checked: boolean) => {
@@ -192,6 +206,9 @@ export function MapManagerSettings() {
 
         <span className="map-manager-settings-label">{terrainLabel}</span>
         <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />
+
+        <span className="map-manager-settings-label">Esri Feature</span>
+        <Toggle onChange={onToggleTestEsriFeature} isOn={testEsriFeature} />
 
         {!applyTerrain && (
           <>
