@@ -28,8 +28,6 @@ import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
 
-let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
-let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
 let gpuFramesCollected = 0; // Keep track of how many gpu timings we have collected
 const fixed = 4; // The number of decimal places the csv file should save for each data point
 const testNamesImages = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for images
@@ -38,7 +36,11 @@ const defaultHilite = new Hilite.Settings();
 const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
 const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 
-let minimize = false;
+interface IModelAppOpts {
+  readonly render: Readonly<RenderSystem.Options>;
+  readonly tile: Readonly<TileAdmin.Props>;
+}
+
 interface Options {
   [key: string]: any; // Add index signature
 }
@@ -89,21 +91,6 @@ function matchRule(strToTest: string, rule: string) {
   rule = rule.toLowerCase();
   const escapeRegex = (str: string) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
   return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`).test(strToTest);
-}
-
-function removeFilesFromDir(_startPath: string, _filter: string) {
-  // if (!fs.existsSync(startPath))
-  //   return;
-  // const files = fs.readdirSync(startPath);
-  // files.forEach((file) => {
-  //   const filename = path.join(startPath, file);
-  //   if (fs.lstatSync(filename).isDirectory()) {
-  //     removeFilesFromDir(filename, filter); // recurse
-  //   } else if (filename.indexOf(filter) >= 0) {
-  //     debugPrint("deleting file " + filename);
-  //     fs.unlinkSync(filename); // Delete file
-  //   }
-  // });
 }
 
 function combineFilePaths(additionalPath: string, initPath?: string) {
@@ -159,102 +146,81 @@ function getRenderMode(): string {
   }
 }
 
-function getRenderOpts(): string {
+function getRenderOpts(opts: Readonly<RenderSystem.Options>): string {
   let optString = "";
-  for (const [key, value] of Object.entries(curRenderOpts)) {
-    switch (key) {
-      case "disabledExtensions":
-        if (value) {
-          for (const ext of value) {
-            switch (ext) {
-              case "WEBGL_draw_buffers":
-                optString += "-drawBuf";
-                break;
-              case "OES_element_index_uint":
-                optString += "-unsignedInt";
-                break;
-              case "OES_texture_float":
-                optString += "-texFloat";
-                break;
-              case "OES_texture_half_float":
-                optString += "-texHalfFloat";
-                break;
-              case "WEBGL_depth_texture":
-                optString += "-depthTex";
-                break;
-              case "EXT_color_buffer_float":
-                optString += "-floats";
-                break;
-              case "EXT_shader_texture_lod":
-                optString += "-texLod";
-                break;
-              case "ANGLE_instanced_arrays":
-                optString += "-instArrays";
-                break;
-              case "EXT_frag_depth":
-                optString += "-fragDepth";
-                break;
-              default:
-                optString += `-${ext}`;
-                break;
-            }
-          }
-        }
-        break;
-      // case "enableOptimizedSurfaceShaders": // No longer supported
-      //   if (value) optString += "+optSurf";
-      //   break;
-      // case "cullAgainstActiveVolume": // No longer supported
-      //   if (value) optString += "+cullActVol";
-      //   break;
-      case "preserveShaderSourceCode":
-        if (value) optString += "+shadeSrc";
-        break;
-      case "displaySolarShadows":
-        if (!value) optString += "-solShd";
-        break;
-      case "logarithmicZBuffer":
-        if (value) optString += "+logZBuf";
-        break;
-      case "useWebGL2":
-        if (value) optString += "+webGL2";
-        break;
-      case "antialiasSamples":
-        if (value > 1) optString += `+aa${value as number}`;
-        break;
-      default:
-        if (value) optString += `+${key}`;
+  if (opts.disabledExtensions) {
+    for (const ext of opts.disabledExtensions) {
+      switch (ext) {
+        case "WEBGL_draw_buffers":
+          optString += "-drawBuf";
+          break;
+        case "OES_element_index_uint":
+          optString += "-unsignedInt";
+          break;
+        case "OES_texture_float":
+          optString += "-texFloat";
+          break;
+        case "OES_texture_half_float":
+          optString += "-texHalfFloat";
+          break;
+        case "WEBGL_depth_texture":
+          optString += "-depthTex";
+          break;
+        case "EXT_color_buffer_float":
+          optString += "-floats";
+          break;
+        case "EXT_shader_texture_lod":
+          optString += "-texLod";
+          break;
+        case "ANGLE_instanced_arrays":
+          optString += "-instArrays";
+          break;
+        case "EXT_frag_depth":
+          optString += "-fragDepth";
+          break;
+        default:
+          optString += `-${ext}`;
+          break;
+      }
     }
   }
+
+  if (opts.preserveShaderSourceCode)
+    optString += "+shadeSrc";
+
+  if (false === opts.displaySolarShadows)
+    optString += "-solShd";
+
+  if (opts.logarithmicDepthBuffer)
+    optString += "+logZBuf";
+
+  if (opts.useWebGL2)
+    optString += "+webGL2";
+
+  if (opts.antialiasSamples)
+    optString += `+a${opts.antialiasSamples}`;
+
+  // ###TODO does this ever happen?
+  // if (value) optString += `+${key}`;
+
   return optString;
 }
 
-function getTileProps(): string {
+function getTileProps(props: Readonly<TileAdmin.Props>): string {
   let tilePropsStr = "";
-  for (const [key, value] of Object.entries(curTileProps)) {
-    switch (key) {
-      // case "disableThrottling": // No longer supported
-      //   if (value) tilePropsStr += "-throt";
-      //   break;
-      case "elideEmptyChildContentRequests":
-        if (value) tilePropsStr += "+elide";
-        break;
-      case "enableInstancing":
-        if (value) tilePropsStr += "+inst";
-        break;
-      case "maxActiveRequests":
-        if (value !== 10) tilePropsStr += `+max${value}`;
-        break;
-      case "retryInterval":
-        if (value) tilePropsStr += `+retry${value}`;
-        break;
-      case "disableMagnification":
-        if (value) tilePropsStr += "-mag";
-        break;
-      default:
-        if (value) tilePropsStr += `+${key}`;
-    }
-  }
+
+  if (props.enableInstancing)
+    tilePropsStr += "+inst";
+
+  if (undefined !== props.retryInterval)
+    tilePropsStr += `+retry${props.retryInterval}`;
+
+  if (props.disableMagnification)
+    tilePropsStr += "-mag";
+
+  // ###TODO does this ever happen?
+  // if (value) tilePropsStr += `+${key}`;
+
   return tilePropsStr;
 }
 
@@ -404,9 +370,9 @@ function getViewFlagsString(): string {
  *    ...
  * Sorted by tree Id and then by tile Id so that the output is consistent from run to run unless the set of selected tiles changed between runs.
  */
-let formattedSelectedTileIds = "Selected tiles:\n";
-function formatSelectedTileIds(vp: Viewport): void {
-  formattedSelectedTileIds = "Selected tiles:\n";
+function formatSelectedTileIds(vp: Viewport): string {
+  let formattedSelectedTileIds = "Selected tiles:\n";
+
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
   for (const viewport of [vp, ...vp.view.secondaryViewports]) {
     const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
@@ -423,22 +389,16 @@ function formatSelectedTileIds(vp: Viewport): void {
     }
   }
 
-  if (dict.size === 0)
-    return;
-
   for (const kvp of dict) {
     const contentIds = kvp.value.extractArray().join(",");
     const line = `  ${kvp.key}: ${contentIds}`;
     formattedSelectedTileIds = `${formattedSelectedTileIds}${line}\n`;
   }
+
+  return formattedSelectedTileIds;
 }
 
-async function waitForTilesToLoad(modelLocation?: string) {
-  if (modelLocation) {
-    removeFilesFromDir(modelLocation, ".Tiles");
-    removeFilesFromDir(modelLocation, ".TileCache");
-  }
-
+async function waitForTilesToLoad() {
   theViewport!.continuousRendering = false;
 
   // Start timer for tile loading time
@@ -483,10 +443,12 @@ async function waitForTilesToLoad(modelLocation?: string) {
   theViewport!.continuousRendering = false;
   theViewport!.renderFrame();
   timer.stop();
-  curTileLoadingTime = timer.current.milliseconds;
 
   // Record the Ids of all the tiles that were selected for display.
-  formatSelectedTileIds(theViewport!);
+  return {
+    tileLoadingTime: timer.current.milliseconds,
+    selectedTileIds: formatSelectedTileIds(theViewport!),
+  };
 }
 
 // ###TODO this should be using Viewport.devicePixelRatio.
@@ -502,7 +464,7 @@ function cssPixelsToDevicePixels(css: number): number {
   return Math.floor(css * queryDevicePixelRatio());
 }
 
-function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrameTimings: Map<string, number[]>, timingsForActualFPS: Array<Map<string, number>>, configs: DefaultConfigs, pixSelectStr?: string): Map<string, number | string> {
+function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrameTimings: Map<string, number[]>, timingsForActualFPS: Array<Map<string, number>>, configs: DefaultConfigs, minimizeOutput: boolean, opts: IModelAppOpts, tileLoadingTime: number, pixSelectStr?: string): Map<string, number | string> {
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
@@ -513,14 +475,14 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrame
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
   rowData.set("View Flags", getViewFlagsString() !== "" ? ` ${getViewFlagsString()}` : "");
-  rowData.set("Render Options", getRenderOpts() !== "" ? ` ${getRenderOpts()}` : "");
-  rowData.set("Tile Props", getTileProps() !== "" ? ` ${getTileProps()}` : "");
+  rowData.set("Render Options", getRenderOpts(opts.render) !== "" ? ` ${getRenderOpts(opts.render)}` : "");
+  rowData.set("Tile Props", getTileProps(opts.tile) !== "" ? ` ${getTileProps(opts.tile)}` : "");
   rowData.set("Bkg Map Props", getBackgroundMapProps() !== "" ? ` ${getBackgroundMapProps()}` : "");
   if (getOtherProps() !== "") rowData.set("Other Props", ` ${getOtherProps()}`);
   if (pixSelectStr) rowData.set("ReadPixels Selector", ` ${pixSelectStr}`);
-  rowData.set("Test Name", getTestName(configs));
+  rowData.set("Test Name", getTestName(configs, opts));
   rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
-  if (!minimize) rowData.set("Tile Loading Time", curTileLoadingTime);
+  if (!minimizeOutput) rowData.set("Tile Loading Time", tileLoadingTime);
 
   const setGpuData = (name: string) => {
     if (name === "CPU Total Time")
@@ -542,7 +504,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrame
         const data = timing.get(colName);
         sum += data ? data : 0;
       });
-      if (!minimize || (minimize && colName === "CPU Total Time")) {
+      if (!minimizeOutput || colName === "CPU Total Time") {
         rowData.set(colName, (sum / finalFrameTimings.length).toFixed(fixed));
         setGpuData(colName);
       }
@@ -554,7 +516,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrame
         const data = timing.get(colName);
         sum += data ? data : 0;
       });
-      if (!minimize || (minimize && colName === "CPU Total Time")) {
+      if (!minimizeOutput || colName === "CPU Total Time") {
         rowData.set(colName, sum / finalFrameTimings.length);
         setGpuData(colName);
       }
@@ -614,14 +576,14 @@ function removeOptsFromString(input: string, ignore: string[] | string | undefin
   return output;
 }
 
-function getImageString(configs: DefaultConfigs, prefix = ""): string {
-  const filename = `${getTestName(configs, prefix, true)}.png`;
+function getImageString(configs: DefaultConfigs, opts: IModelAppOpts, prefix = ""): string {
+  const filename = `${getTestName(configs, opts, prefix, true)}.png`;
   if (ProcessDetector.isMobileAppFrontend)
     return filename; // skip path for mobile - we use device's Documents path as determined by mobile backend
   return path.join(configs.outputPath ? configs.outputPath : "", filename);
 }
 
-function getTestName(configs: DefaultConfigs, prefix?: string, isImage = false, ignoreDupes = false): string {
+function getTestName(configs: DefaultConfigs, opts: IModelAppOpts, prefix?: string, isImage = false, ignoreDupes = false): string {
   let testName = "";
   if (prefix) testName += prefix;
   testName += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
@@ -629,8 +591,8 @@ function getTestName(configs: DefaultConfigs, prefix?: string, isImage = false, 
   testName += configs.displayStyle ? `_${configs.displayStyle.trim()}` : "";
   testName += getRenderMode() !== "" ? `_${getRenderMode()}` : "";
   testName += getViewFlagsString() !== "" ? `_${getViewFlagsString()}` : "";
-  testName += getRenderOpts() !== "" ? `_${getRenderOpts()}` : "";
-  testName += getTileProps() !== "" ? `_${getTileProps()}` : "";
+  testName += getRenderOpts(opts.render) !== "" ? `_${getRenderOpts(opts.render)}` : "";
+  testName += getTileProps(opts.tile) !== "" ? `_${getTileProps(opts.tile)}` : "";
   testName += getBackgroundMapProps() !== "" ? `_${getBackgroundMapProps()}` : "";
   testName += getOtherProps() !== "" ? `_${getOtherProps()}` : "";
   testName = removeOptsFromString(testName, configs.filenameOptsToIgnore);
@@ -643,11 +605,11 @@ function getTestName(configs: DefaultConfigs, prefix?: string, isImage = false, 
   return testName;
 }
 
-function updateTestNames(configs: DefaultConfigs, prefix?: string, isImage = false) {
+function updateTestNames(configs: DefaultConfigs, opts: IModelAppOpts, prefix?: string, isImage = false) {
   const testNames = isImage ? testNamesImages : testNamesTimings;
-  let testNameDupes = testNames.get(getTestName(configs, prefix, false, true));
+  let testNameDupes = testNames.get(getTestName(configs, opts, prefix, false, true));
   if (testNameDupes === undefined) testNameDupes = 0;
-  testNames.set(getTestName(configs, prefix, false, true), testNameDupes + 1);
+  testNames.set(getTestName(configs, opts, prefix, false, true), testNameDupes + 1);
 }
 
 async function savePng(fileName: string, canvas?: HTMLCanvasElement): Promise<void> {
@@ -962,7 +924,6 @@ class FOProvider implements FeatureOverrideProvider {
 
 let theViewport: ScreenViewport | undefined;
 let activeViewState: SimpleViewState = new SimpleViewState();
-let curTileLoadingTime = 0;
 
 async function _changeView(view: ViewState) {
   HyperModeling.stop(theViewport!);
@@ -1163,7 +1124,7 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
 
 }
 
-async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise<boolean> {
+async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]) {
   await openImodelAndLoadExtViews(testConfig, extViews); // Open iModel & load all external saved views into activeViewState
   if (activeViewState.iModelConnection)
     await activeViewState.iModelConnection?.backgroundMapLocation.initialize(activeViewState.iModelConnection);
@@ -1180,11 +1141,11 @@ async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise
   else if (undefined !== testConfig.viewName)
     await loadView(activeViewState, testConfig.viewName);
   else
-    return false;
+    return undefined;
 
   // Make sure the view was set up.  If not (probably because the name wasn't found anywhere) just skip this test.
   if (undefined === activeViewState.viewState)
-    return false;
+    return undefined;
 
   // now connect the view to the canvas
   await openView(activeViewState, testConfig.view!);
@@ -1233,7 +1194,7 @@ async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise
   }
 
   // Load all tiles
-  await waitForTilesToLoad(testConfig.iModelLocation);
+  const result = await waitForTilesToLoad();
 
   // Set the selected elements (if there are any)
   if (undefined !== iModCon && undefined !== activeViewState.selectedElements) {
@@ -1242,7 +1203,7 @@ async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise
     theViewport!.renderFrame();
   }
 
-  return true;
+  return result;
 }
 
 async function closeIModel() {
@@ -1253,56 +1214,68 @@ async function closeIModel() {
   debugPrint("end closeIModel");
 }
 
+function areEqual(a: any, b: any): boolean {
+  if (typeof a !== typeof b)
+    return false;
+
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length)
+      return false;
+
+    for (let i = 0; i < a.length; i++)
+      if (!areEqual(a[i], b[i]))
+        return false;
+
+    return true;
+  }
+
+  if (typeof a === "object")
+    return areObjectsEqual(a, b as object);
+
+  return a === b;
+}
+
+function areObjectsEqual(a: object, b: object): boolean {
+  if (Object.keys(a).length !== Object.keys(b).length)
+    return false;
+
+  for (const [key, value] of Object.entries(a))
+    if (!areEqual(value, (b as Options)[key]))
+      return false;
+
+  return true;
+}
+
 // Restart the IModelApp if either the TileAdmin.Props or the Render.Options has changed
-async function restartIModelApp(testConfig: DefaultConfigs): Promise<void> {
-  const newRenderOpts: RenderSystem.Options = testConfig.renderOptions ? testConfig.renderOptions : {};
-  const newTileProps: TileAdmin.Props = testConfig.tileProps ? testConfig.tileProps : {};
+async function restartIModelApp(testConfig: DefaultConfigs, prevOpts: IModelAppOpts): Promise<IModelAppOpts> {
+  const newOpts = {
+    render: testConfig.renderOptions ?? prevOpts.render,
+    tile: testConfig.tileProps ?? prevOpts.tile,
+  };
+
   if (IModelApp.initialized) {
-    let restart = false; // Determine if anything in renderOpts or tileProps changed that requires the IModelApp to be reinitialized
-    if (Object.keys(curTileProps).length !== Object.keys(newTileProps).length || Object.keys(curRenderOpts).length !== Object.keys(newRenderOpts).length)
-      restart = true;
-    for (const [key, value] of Object.entries(curTileProps)) {
-      if (value !== (newTileProps as Options)[key]) {
-        restart = true;
-        break;
-      }
-    }
-    for (const [key, value] of Object.entries(curRenderOpts)) {
-      if (key === "disabledExtensions") {
-        if ((value ? value.length : 0) !== ((newRenderOpts && newRenderOpts.disabledExtensions) ? newRenderOpts.disabledExtensions.length : 0)) {
-          restart = true;
-          break;
-        }
-        for (let i = 0; i < (value ? value.length : 0); i++) {
-          if (value && newRenderOpts.disabledExtensions && value[i] !== newRenderOpts.disabledExtensions[i]) {
-            restart = true;
-            break;
-          }
-        }
-      } else if (value !== (newRenderOpts as Options)[key]) {
-        restart = true;
-        break;
-      }
-    }
-    if (restart) {
+    // If the tile or render system options changed, shut-down IModelApp so we can restart with the new options.
+    if (!areObjectsEqual(newOpts.render, prevOpts.render) || !areObjectsEqual(newOpts.tile, prevOpts.tile)) {
       if (theViewport) {
         theViewport.dispose();
         theViewport = undefined;
       }
+
       await IModelApp.shutdown();
     }
   }
-  curRenderOpts = newRenderOpts;
-  curTileProps = newTileProps;
+
   if (!IModelApp.initialized) {
     await DisplayPerfTestApp.startup({
-      renderSys: testConfig.renderOptions,
-      tileAdmin: curTileProps,
+      renderSys: newOpts.render,
+      tileAdmin: newOpts.tile,
     });
   }
+
+  return newOpts;
 }
 
-async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Selector, pixStr: string) {
+async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Selector, pixStr: string, opts: IModelAppOpts) {
   const canvas = theViewport !== undefined ? theViewport.readImageToCanvas() : undefined;
   if (canvas !== undefined) {
     const ctx = canvas.getContext("2d");
@@ -1384,15 +1357,15 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
       });
       if (elemIdImgData !== undefined) {
         ctx.putImageData(elemIdImgData, 0, 0);
-        await savePng(getImageString(testConfig, `elemId_${pixStr}_`), canvas);
+        await savePng(getImageString(testConfig, opts, `elemId_${pixStr}_`), canvas);
       }
       if (depthImgData !== undefined) {
         ctx.putImageData(depthImgData, 0, 0);
-        await savePng(getImageString(testConfig, `depth_${pixStr}_`), canvas);
+        await savePng(getImageString(testConfig, opts, `depth_${pixStr}_`), canvas);
       }
       if (typeImgData !== undefined) {
         ctx.putImageData(typeImgData, 0, 0);
-        await savePng(getImageString(testConfig, `type_${pixStr}_`), canvas);
+        await savePng(getImageString(testConfig, opts, `type_${pixStr}_`), canvas);
       }
     }
   }
@@ -1448,9 +1421,13 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
   });
 }
 
-async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
+interface TestRunResult extends IModelAppOpts {
+  selectedTileIds?: string;
+}
+
+async function runTest(testConfig: DefaultConfigs, extViews: any[] | undefined, minimizeOutput: boolean, inputOpts: IModelAppOpts): Promise<TestRunResult> {
   // Restart the IModelApp if needed
-  await restartIModelApp(testConfig);
+  const newOpts = await restartIModelApp(testConfig, inputOpts);
 
   // Reset the title bar to include the current model and view name
   document.title = "Display Performance Test App:  ".concat(testConfig.iModelName ?? "", "  [", testConfig.viewName ?? "", "]");
@@ -1459,16 +1436,16 @@ async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
   const loaded = await loadIModel(testConfig, extViews);
   if (!loaded) {
     await closeIModel();
-    return; // could not properly open the given model or saved view so skip test
+    return newOpts; // could not properly open the given model or saved view so skip test
   }
 
   if (testConfig.testType === "image" || testConfig.testType === "both") {
-    updateTestNames(testConfig, undefined, true); // Update the list of image test names
-    await savePng(getImageString(testConfig));
+    updateTestNames(testConfig, newOpts, undefined, true); // Update the list of image test names
+    await savePng(getImageString(testConfig, newOpts));
     if (testConfig.testType === "image") {
       // Close the imodel & exit if nothing else needs to happen
       await closeIModel();
-      return;
+      return newOpts;
     }
   }
 
@@ -1504,7 +1481,7 @@ async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
   // Add a pause so that user can start the GPU Performance Capture program
   // await resolveAfterXMilSeconds(7000);
 
-  updateTestNames(testConfig); // Update the list of timing test names
+  updateTestNames(testConfig, newOpts); // Update the list of timing test names
   if (testConfig.testType === "readPixels") {
     const width = testConfig.view!.width;
     const height = testConfig.view!.height;
@@ -1523,13 +1500,13 @@ async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
       (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false, gpuResultsCallback);
       await renderAsync(theViewport!, testConfig.numRendersToTime!, timingsForActualFPS, gpuResultsCallback);
       debugControl.resultsCallback = undefined; // Turn off glTimer metrics
-      updateTestNames(testConfig, pixSelectStr, true); // Update the list of image test names
-      updateTestNames(testConfig, pixSelectStr, false); // Update the list of timing test names
-      const rowData = getRowData(finalCPUFrameTimings, finalGPUFrameTimings, timingsForActualFPS, testConfig, pixSelectStr);
+      updateTestNames(testConfig, newOpts, pixSelectStr, true); // Update the list of image test names
+      updateTestNames(testConfig, newOpts, pixSelectStr, false); // Update the list of timing test names
+      const rowData = getRowData(finalCPUFrameTimings, finalGPUFrameTimings, timingsForActualFPS, testConfig, minimizeOutput, newOpts, loaded.tileLoadingTime, pixSelectStr);
       await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
 
       // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
-      await createReadPixelsImages(testConfig, pixSelect, pixSelectStr);
+      await createReadPixelsImages(testConfig, pixSelect, pixSelectStr, newOpts);
     };
     // Test each combo of pixel selectors, then close the iModel
     await testReadPix(Pixel.Selector.Feature, "+feature");
@@ -1541,24 +1518,26 @@ async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
     await renderAsync(theViewport!, testConfig.numRendersToTime, timingsForActualFPS, gpuResultsCallback);
     // Close model & save csv file
     await closeIModel();
-    const rowData = getRowData(timingsForActualFPS, finalGPUFrameTimings, timingsForActualFPS, testConfig);
+    const rowData = getRowData(timingsForActualFPS, finalGPUFrameTimings, timingsForActualFPS, testConfig, minimizeOutput, newOpts, loaded.tileLoadingTime);
     await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
 
     if (wantConsoleOutput) { // Debug purposes only
       debugPrint("------------ ");
-      debugPrint(`Tile Loading Time: ${curTileLoadingTime}`);
+      debugPrint(`Tile Loading Time: ${loaded.tileLoadingTime}`);
       for (const t of finalCPUFrameTimings) {
         let timingsString = "[";
         t.forEach((val) => {
           timingsString += `${val}, `;
         });
         debugPrint(`${timingsString}]`);
-        // Save all of the individual runs in the csv file, not just the average
-        // const rowData = getRowData([t], testConfig);
-        // await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
       }
     }
   }
+
+  return {
+    ...newOpts,
+    selectedTileIds: loaded.selectedTileIds,
+  };
 }
 
 // selects the configured view.
@@ -1618,9 +1597,8 @@ async function loadViewString(state: SimpleViewState, viewStatePropsString: stri
   }
 }
 
-async function testSet(configs: DefaultConfigs, setData: any, logFileName: string) {
-  if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
-  if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");
+async function testSet(configs: DefaultConfigs, setData: any, logFileName: string, minimizeOutput: boolean, initialOpts: IModelAppOpts): Promise<IModelAppOpts> {
+  let newOpts = initialOpts;
 
   // Create DefaultModelConfigs
   const modConfigs = new DefaultConfigs(setData, configs);
@@ -1664,14 +1642,14 @@ async function testSet(configs: DefaultConfigs, setData: any, logFileName: strin
         await consoleLog(outStr);
         await writeExternalFile(testConfig.outputPath!, logFileName, true, `${outStr}\n`);
 
-        await runTest(testConfig, extViews);
-
-        await writeExternalFile(testConfig.outputPath!, logFileName, true, formattedSelectedTileIds);
+        const result = await runTest(testConfig, extViews, minimizeOutput, newOpts);
+        await writeExternalFile(testConfig.outputPath!, logFileName, true, result.selectedTileIds ?? "");
+        newOpts = result;
       }
     }
   }
-  if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
-  if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");
+
+  return newOpts;
 }
 
 async function main() {
@@ -1691,13 +1669,15 @@ async function main() {
     if (!signedIn)
       return;
   }
-  if (jsonData.minimize)
-    minimize = jsonData.minimize;
+
+  const minimizeOutput = true === jsonData.minimize;
+
+  let appOpts: IModelAppOpts = { render: { }, tile: { } };
 
   for (const i in jsonData.testSet) {
     if (i) {
       const setData = jsonData.testSet[i];
-      await testSet(testConfig, setData, logFileName);
+      appOpts = await testSet(testConfig, setData, logFileName, minimizeOutput, appOpts);
     }
   }
 
@@ -1738,3 +1718,5 @@ window.onload = async () => {
 
   await main();
 };
+
+
