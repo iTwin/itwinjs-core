@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Fix animations from schedule script being erroneously applied to tile graphics.",
+      "comment": "Add GraphicBuilder.addPrimitive accepting any type of primitive.",
       "type": "none"
     }
   ],
