@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 05 May 2021 13:18:31 GMT and should not be manually modified.
+This log was last generated on Wed, 12 May 2021 18:08:13 GMT and should not be manually modified.
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+### Updates
+
+- Fix animations from schedule script being erroneously applied to tile graphics.
+- Return empty symbology overrides for maps to avoid inheriting from view
 
 ## 2.15.1
 Wed, 05 May 2021 13:18:31 GMT
