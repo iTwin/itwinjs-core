@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream } from "@bentley/bentleyjs-core";
-import { Point3d, Transform } from "@bentley/geometry-core";
+import { Point3d, Polyface, Transform } from "@bentley/geometry-core";
 import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -63,11 +63,30 @@ export abstract class RealityTileLoader {
     const streamBuffer = new ByteStream(blob.buffer);
     return this.loadTileContentFromStream(tile as RealityTile, streamBuffer, system, isCanceled);
   }
-
-  public async loadTileContentFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
+  private _getFormat(streamBuffer: ByteStream) {
     const position = streamBuffer.curPos;
     const format = streamBuffer.nextUint32;
     streamBuffer.curPos = position;
+    return format;
+  }
+
+  public loadMeshes(tile: RealityTile,  data: TileRequest.ResponseData, system: RenderSystem): Polyface[] | undefined {
+    if (! (data instanceof Uint8Array))
+      return undefined;
+
+    const streamBuffer = new ByteStream(data.buffer);
+
+    const format = this._getFormat(streamBuffer);
+    if (format !== TileFormat.B3dm)
+      return undefined;
+
+    const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
+    const reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, undefined, this.getBatchIdMap());
+    return reader?.readGltfAndCreatePolyfaces();
+  }
+
+  public async loadTileContentFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
+    const format = this._getFormat(streamBuffer);
 
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
