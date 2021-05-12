@@ -19,8 +19,8 @@ import {
   UserCancelledError,
 } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
-import { downloadFileAtomic } from "../downloadFileAtomic";
 import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "../util/AzCopy";
+import { BlobDownloader, ProgressData } from "./BlobDownloader";
 
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
@@ -185,9 +185,18 @@ export class AzureFileHandler implements FileHandler {
     }
   }
 
-  private async downloadFileUsingHttps(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
-    const bufferThreshold = (this.useBufferedDownload(downloadToPathname)) ? this._threshold : undefined;
-    return downloadFileAtomic(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest, bufferThreshold);
+  private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+    let lastProgressStat: any;
+    const onProgress = (data: ProgressData) => {
+      if (progressCallback)
+        progressCallback({percent: data.percentage,loaded: data.bytesDone, total: data.bytesTotal});
+      lastProgressStat = data;
+    };
+    await BlobDownloader.downloadFile(downloadUrl, downloadToPathname, {}, onProgress, cancelRequest);
+    if (!fs.existsSync(downloadToPathname)) {
+      throw new Error("file not found");
+    }
+    Logger.logInfo(loggerCategory, `Download completed ${downloadToPathname} to  `, () => lastProgressStat );
   }
 
   /**
