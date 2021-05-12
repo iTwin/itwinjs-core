@@ -5,8 +5,8 @@
 // cSpell:ignore Modeless WMTS
 
 import * as React from "react";
-import { Input, LabeledInput, Radio } from "@itwin/itwinui-react";
-import { Dialog, DialogButtonType, Icon, InputStatus, ProgressBar, Select } from "@bentley/ui-core";
+import { Input, LabeledInput, ProgressLinear, Radio } from "@itwin/itwinui-react";
+import { Dialog, DialogButtonType, Icon, InputStatus, Select } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
@@ -395,7 +395,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         {/* Progress bar */}
         {layerAttachPending &&
           <div className="map-layer-source-progressBar">
-            <ProgressBar indeterminate />
+            <ProgressLinear indeterminate />
           </div>
         }
       </Dialog>

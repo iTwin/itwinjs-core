@@ -1611,10 +1611,10 @@ export interface ProcessSettingsTabActivationEventArgs {
     readonly tabSelectionFunc: (tabId: string) => void;
 }
 
-// @beta
+// @beta @deprecated
 export function ProgressBar(props: ProgressBarProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export interface ProgressBarProps extends CommonProps {
     barHeight?: number;
     indeterminate?: boolean;
@@ -1623,10 +1623,10 @@ export interface ProgressBarProps extends CommonProps {
     percent?: number;
 }
 
-// @beta
+// @beta @deprecated
 export function ProgressSpinner(props: ProgressSpinnerProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export interface ProgressSpinnerProps extends CommonProps {
     children?: React.ReactNode;
     error?: boolean;

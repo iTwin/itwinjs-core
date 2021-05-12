@@ -530,6 +530,8 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
 // @beta
 export class BooleanPropertyEditor extends PropertyEditorBase {
     // (undocumented)
+    get containerHandlesBlur(): boolean;
+    // (undocumented)
     get reactNode(): React.ReactNode;
 }
 
@@ -4851,6 +4853,8 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 
 // @beta
 export class TogglePropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesBlur(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }

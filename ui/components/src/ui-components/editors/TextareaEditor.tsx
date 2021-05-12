@@ -158,11 +158,6 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
     }
   };
 
-  // private _handleBlur = (_event: React.FocusEvent): void => {
-  //   // eslint-disable-next-line no-console
-  //   console.log("_handleBlur");
-  // }
-
   /** @internal */
   public render(): React.ReactNode {
     const className = classnames("components-cell-editor", "components-textarea-editor", this.props.className);
@@ -179,7 +174,6 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
       disabled: this.state.isDisabled,
       maxLength: this.state.maxLength,
       value: this.state.inputValue,
-      // onBlur: this._handleBlur,
       onChange: this._updateTextareaValue,
       setFocus: this.props.setFocus && !this.state.isDisabled,
     };

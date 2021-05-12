@@ -222,9 +222,13 @@ beta;ProcessSettingsContainerCloseEventArgs
 beta;ProcessSettingsTabActivationEvent 
 beta;ProcessSettingsTabActivationEventArgs
 beta;ProgressBar(props: ProgressBarProps): JSX.Element
+deprecated;ProgressBar(props: ProgressBarProps): JSX.Element
 beta;ProgressBarProps 
+deprecated;ProgressBarProps 
 beta;ProgressSpinner(props: ProgressSpinnerProps): JSX.Element
+deprecated;ProgressSpinner(props: ProgressSpinnerProps): JSX.Element
 beta;ProgressSpinnerProps 
+deprecated;ProgressSpinnerProps 
 internal;PROXIMITY_THRESHOLD_DEFAULT = 100
 beta;RadialButton 
 beta;RadialButtonProps 

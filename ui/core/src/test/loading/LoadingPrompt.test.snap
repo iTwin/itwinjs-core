@@ -20,7 +20,7 @@ exports[`<LoadingPrompt /> renders with indeterminate ProgressBar 1`] = `
   <span
     className="title"
   />
-  <ProgressBar
+  <ProgressLinear
     indeterminate={true}
   />
 </div>

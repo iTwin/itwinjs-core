@@ -16,6 +16,24 @@
   height: 100%;
   overflow: hidden;
   font-size: $iui-font-size;
+
+  // Override some iTwinUI-css padding and minimums
+  .iui-input {
+    padding: $iui-xxs $iui-s;
+  }
+
+  .iui-select {
+    >.iui-select-button {
+      min-height: 24px;
+      padding-top: 1px;
+      padding-bottom: 1px;
+      padding-right: 24px;
+    }
+
+    >.iui-select-button::after {
+      right: 6px;
+    }
+  }
 }
 
 #uifw-frontstage-composer {
