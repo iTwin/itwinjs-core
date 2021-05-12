@@ -346,7 +346,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
                 <ToolAssistanceItem key="prompt-item">
                   <LabeledToggle
                     label={UiFramework.translate("toolAssistance.promptAtCursor")}
-                    isOn={this.state.showPromptAtCursor} onChange={this._onPromptAtCursorChange} />
+                    checked={this.state.showPromptAtCursor} onChange={this._onPromptAtCursorChange} />
                 </ToolAssistanceItem>
               </>
             }
@@ -423,11 +423,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     this._target = target;
   };
 
-  private _onPromptAtCursorChange = async (checked: boolean) => {
+  private _onPromptAtCursorChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (this._isMounted)
       this.setState({
-        showPromptAtCursor: checked,
+        showPromptAtCursor: e.target.checked,
       }, async () => {
         await this._showPromptAtCursorSetting.saveSetting(this._uiSettingsStorage);
       });

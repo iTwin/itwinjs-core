@@ -14,8 +14,8 @@ import {
   PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider,
   Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget, TypeConverter, TypeConverterManager,
 } from "@bentley/ui-components";
-import { BodyText, Toggle } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
+import { Body, ToggleSwitch } from "@itwin/itwinui-react";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -370,12 +370,14 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
     console.log(`rowIndex ${args.rowIndex}, colIndex ${args.colIndex}, cellKey ${args.cellKey}`);
   };
 
-  private _onUtcChange = (checked: boolean) => {
+  private _onUtcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     this.setState({ useUtc: checked });
     this.loadData(checked);
   };
 
-  private _onFilteringChange = (checked: boolean) => {
+  private _onFilteringChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     this._columns.forEach((column: ColumnDescription) => {
       column.filterable = checked;
     });
@@ -402,7 +404,7 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
           </select>
           <Gap />
           <label>
-            <BodyText>Top row:</BodyText>
+            <Body>Top row:</Body>
             &nbsp;
             <input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
             &nbsp;
@@ -410,14 +412,14 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
           </label>
           <Gap />
           <label>
-            <BodyText>Filtering:</BodyText>
+            <Body>Filtering:</Body>
             &nbsp;
-            <Toggle isOn={this.state.filtering} onChange={this._onFilteringChange} title="Filtering" />
+            <ToggleSwitch checked={this.state.filtering} onChange={this._onFilteringChange} title="Filtering" />
           </label>
           <label>
-            <BodyText>UTC:</BodyText>
+            <Body>UTC:</Body>
             &nbsp;
-            <Toggle isOn={this.state.useUtc} onChange={this._onUtcChange} title="Use UTC in lieu of local time" />
+            <ToggleSwitch checked={this.state.useUtc} onChange={this._onUtcChange} title="Use UTC in lieu of local time" />
           </label>
         </div>
         <div style={{ flex: "1", height: "calc(100% - 22px)" }}>

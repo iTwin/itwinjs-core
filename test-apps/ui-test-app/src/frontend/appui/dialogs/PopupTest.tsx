@@ -5,8 +5,9 @@
 import "./PopupTest.scss";
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { Dialog, DialogButtonType, Popup, Toggle } from "@bentley/ui-core";
+import { Dialog, DialogButtonType, Popup } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 
 interface PopupTestProps {
   opened: boolean;
@@ -250,11 +251,11 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
           <div className="options">
             <div>
               <label>Arrow</label>
-              <Toggle className="popup-toggle" onChange={this._onArrowChange} isOn={this.state.showArrow} />
+              <ToggleSwitch className="popup-toggle" onChange={this._onArrowChange} checked={this.state.showArrow} />
             </div>
             <div>
               <label>Shadow</label>
-              <Toggle className="popup-toggle" onChange={this._onShadowChange} isOn={this.state.showShadow} />
+              <ToggleSwitch className="popup-toggle" onChange={this._onShadowChange} checked={this.state.showShadow} />
             </div>
           </div>
         </div>

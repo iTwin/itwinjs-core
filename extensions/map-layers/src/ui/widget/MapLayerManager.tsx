@@ -12,7 +12,7 @@ import {
   ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSettingsService, MapLayerSource,
   MapLayerSources, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, TileTreeOwner, Viewport,
 } from "@bentley/imodeljs-frontend";
-import { Toggle } from "@bentley/ui-core";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import * as React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
@@ -189,19 +189,19 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       // This is where the list of layers first gets populated.. I need to update it
       // MapUrlDialog gets around knowing MapLayerManager exists and vice versa by affecting the viewports displayStyle which MapLayerManager is listening for
       // We know when displayStyle changes we've added a layer, this layer may not be a custom layer
-      sourceLayers?.layers.forEach((source: MapLayerSource) => {sources.push(source);});
+      sourceLayers?.layers.forEach((source: MapLayerSource) => { sources.push(source); });
       setMapSources(sources);
-      sourceLayers?.bases.forEach((source: MapLayerSource) => {bases.push(source);});
+      sourceLayers?.bases.forEach((source: MapLayerSource) => { bases.push(source); });
       setBaseSources(bases);
     }
 
     setLoadingSources(true);
-    fetchWmsMapData().then(()=>{
+    fetchWmsMapData().then(() => {
       if (isMounted.current) {
         setLoadingSources(false);
       }
 
-    }).catch(()=>{
+    }).catch(() => {
       if (isMounted.current) {
         setLoadingSources(false);
       }
@@ -402,7 +402,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       <div className="map-manager-top-header">
         <span className="map-manager-header-label">{baseMapPanelLabel}</span>
         <div className="map-manager-header-buttons-group">
-          <Toggle className="map-manager-toggle" isOn={backgroundMapVisible} onChange={handleMapLayersToggle} />
+          <ToggleSwitch className="map-manager-toggle" checked={backgroundMapVisible} onChange={handleMapLayersToggle} />
           <MapLayerSettingsPopupButton />
         </div>
       </div>

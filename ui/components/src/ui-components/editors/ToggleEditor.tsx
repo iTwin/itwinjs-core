@@ -119,6 +119,9 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
     const inOn = this.state.toggleValue;
     const isDisabled = !!this.state.isDisabled;
 
+    // NEEDSWORK: Switching to the itwinui-react ToggleSwitch breaks this editor.
+    // The ui-core Toggle has special code for handling the input onBlur. The itwinui-react ToggleSwitch needs that.
+
     return (
       <Toggle
         ref={this._inputElement}

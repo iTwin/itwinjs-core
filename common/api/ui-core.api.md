@@ -29,6 +29,7 @@ import * as ReactAutosuggest from 'react-autosuggest';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
+import { ToggleSwitchProps } from '@itwin/itwinui-react';
 import { ValueType } from 'react-select/src/types';
 
 // @beta
@@ -1137,7 +1138,7 @@ export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
 }
 
 // @public
-export interface LabeledToggleProps extends ToggleProps {
+export interface LabeledToggleProps extends ToggleSwitchProps {
     label?: string;
     labelClassName?: string;
     labelStyle?: React.CSSProperties;
@@ -1689,13 +1690,13 @@ export interface RadialMenuProps extends CommonProps {
     top?: number | string;
 }
 
-// @public
+// @public @deprecated
 export class Radio extends React.PureComponent<RadioProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
 }
 
@@ -2353,17 +2354,18 @@ export function Title(props: TextProps): JSX.Element;
 // @public @deprecated
 export function Title2(props: TextProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export const Toggle: (props: ToggleProps) => JSX.Element | null;
 
-// @public
+// @public @deprecated
 export enum ToggleButtonType {
     Blue = 1,
     Primary = 0
 }
 
-// @public
+// @public @deprecated
 export interface ToggleProps extends CommonProps {
+    // @deprecated
     buttonType?: ToggleButtonType;
     disabled?: boolean;
     isOn?: boolean;

@@ -231,7 +231,9 @@ beta;RadialButtonProps
 beta;RadialMenu 
 beta;RadialMenuProps 
 public;Radio 
+deprecated;Radio 
 public;RadioProps 
+deprecated;RadioProps 
 public;RatioChangeResult
 public;ReactMessage
 internal;ReactNumericInput 
@@ -310,8 +312,11 @@ deprecated;Title(props: TextProps): JSX.Element
 public;Title2(props: TextProps): JSX.Element
 deprecated;Title2(props: TextProps): JSX.Element
 public;Toggle: (props: ToggleProps) => JSX.Element | null
+deprecated;Toggle: (props: ToggleProps) => JSX.Element | null
 public;ToggleButtonType
+deprecated;ToggleButtonType
 public;ToggleProps 
+deprecated;ToggleProps 
 internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10
 internal;TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35
 internal;TOOLBAR_OPACITY_DEFAULT = 0.5

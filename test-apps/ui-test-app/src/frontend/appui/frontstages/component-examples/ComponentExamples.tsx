@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import "./ComponentExamples.scss";
 import * as React from "react";
-import { CommonProps, Toggle, VerticalTabs } from "@bentley/ui-core";
+import { CommonProps, VerticalTabs } from "@bentley/ui-core";
 import { ColorTheme, MessageManager, MessageRenderer, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import { ComponentExamplesProvider } from "./ComponentExamplesProvider";
 
 export interface ComponentExampleCategory {
@@ -35,17 +36,19 @@ const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: Comp
   const themeDescription: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeDescription");
 
   const [activeIndex, setActiveIndex] = React.useState(0);
+  const [colorTheme, setColorTheme] = React.useState(() => UiFramework.getColorTheme());
 
   const onThemeChange = () => {
     const theme = isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
     UiFramework.setColorTheme(theme);
+    setColorTheme(theme);
   };
 
   const isLightTheme = (): boolean => {
-    return (UiFramework.getColorTheme() === ColorTheme.Light);
+    return (colorTheme === ColorTheme.Light);
   };
 
-  const isOn = isLightTheme();
+  const isChecked = isLightTheme();
   const darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
   const lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
 
@@ -66,7 +69,7 @@ const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: Comp
             <>
               {darkLabel}
               &nbsp;
-              <Toggle isOn={isOn} showCheckmark={false} onChange={onThemeChange} />
+              <ToggleSwitch checked={isChecked} onChange={onThemeChange} />
               &nbsp;
               {lightLabel}
             </>

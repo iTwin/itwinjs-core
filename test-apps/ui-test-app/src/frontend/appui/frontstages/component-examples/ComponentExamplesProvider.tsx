@@ -1074,12 +1074,13 @@ export class ComponentExamplesProvider {
       title: "Toggle",
       examples: [
         createComponentExample("Basic Toggle", undefined, <Toggle isOn={true} />),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Primary Toggle", "Toggle with buttonType={ToggleButtonType.Primary}", <Toggle isOn={true} buttonType={ToggleButtonType.Primary} />),
         createComponentExample("Large Toggle", "Toggle with large={true}", <Toggle isOn={true} large={true} />),
         createComponentExample("Square Toggle", "Toggle with rounded={false}", <Toggle isOn={true} rounded={false} />),
         createComponentExample("Toggle with Checkmark", "Toggle with showCheckmark prop", <Toggle isOn={true} showCheckmark={true} />),
         createComponentExample("Disabled Toggle", "Toggle with disabled prop", <Toggle isOn={true} showCheckmark={true} disabled />),
-        createComponentExample("LabeledToggle", undefined, <LabeledToggle isOn={true} label="Toggle label" />),
+        createComponentExample("LabeledToggle", undefined, <LabeledToggle checked={true} label="Toggle label" />),
       ],
     };
   }

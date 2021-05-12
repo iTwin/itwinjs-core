@@ -1,11 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<BooleanEditor /> renders correctly 1`] = `
-<ForwardRef
+<Checkbox
   checked={false}
   className="components-cell-editor components-boolean-editor"
   data-testid="components-checkbox-editor"
   disabled={false}
+  inputRef={
+    Object {
+      "current": null,
+    }
+  }
   onChange={[Function]}
 />
 `;

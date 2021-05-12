@@ -5,15 +5,15 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { NumberInput, Select, Slider, Toggle } from "@bentley/ui-core";
+import { NumberInput, Select, Slider } from "@bentley/ui-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, ViewState3d } from "@bentley/imodeljs-frontend";
 import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 
-enum MapMaskingOption
-  {
+enum MapMaskingOption {
   None,
   AllModels
 }
@@ -21,7 +21,7 @@ enum MapMaskingOption
 function getMapMaskingFromBackgroundMapSetting(backgroundMapSettings: BackgroundMapSettings): MapMaskingOption {
   if (backgroundMapSettings.planarClipMask.mode === PlanarClipMaskMode.Priority && backgroundMapSettings.planarClipMask.priority) {
     if (backgroundMapSettings.planarClipMask.priority >= PlanarClipMaskPriority.BackgroundMap) {
-      return  MapMaskingOption.AllModels;
+      return MapMaskingOption.AllModels;
     }
 
   }
@@ -101,7 +101,8 @@ export function MapManagerSettings() {
 
   const [masking, setMasking] = React.useState(() => getMapMaskingFromBackgroundMapSetting(backgroundMapSettings));
 
-  const onMaskingToggle = React.useCallback((checked: boolean) => {
+  const onMaskingToggle = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     const maskingOption = checked ? MapMaskingOption.AllModels : MapMaskingOption.None;
     updateMaskingSettings(maskingOption);
     setMasking(maskingOption);
@@ -127,7 +128,8 @@ export function MapManagerSettings() {
 
   const [applyTerrain, setApplyTerrain] = React.useState(() => backgroundMapSettings.applyTerrain);
 
-  const onToggleTerrain = React.useCallback((checked: boolean) => {
+  const onToggleTerrain = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     updateBackgroundMap({ applyTerrain: checked });
     setApplyTerrain(checked);
   }, [updateBackgroundMap]);
@@ -150,7 +152,8 @@ export function MapManagerSettings() {
   }, [updateTerrainSettings]);
 
   const [useDepthBuffer, setUseDepthBuffer] = React.useState(() => backgroundMapSettings.useDepthBuffer);
-  const onToggleUseDepthBuffer = React.useCallback((checked: boolean) => {
+  const onToggleUseDepthBuffer = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     updateBackgroundMap({ useDepthBuffer: checked });
     setUseDepthBuffer(checked);
   }, [updateBackgroundMap]);
@@ -162,7 +165,8 @@ export function MapManagerSettings() {
   }, []);
 
   const [isLocatable, setIsLocatable] = React.useState(() => backgroundMapSettings.locatable);
-  const onLocatableToggle = React.useCallback((checked: boolean) => {
+  const onLocatableToggle = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     updateBackgroundMap({ nonLocatable: !checked });
     setIsLocatable(checked);
   }, [updateBackgroundMap]);
@@ -175,7 +179,7 @@ export function MapManagerSettings() {
   const [heightOriginLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.HeightOrigin"));
   const [exaggerationLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Exaggeration"));
   const [locatableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Locatable"));
-  const [maskingLabel] =  React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Mask"));
+  const [maskingLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Mask"));
 
   return (
     <>
@@ -185,13 +189,13 @@ export function MapManagerSettings() {
         <Slider min={0} max={100} showMinMax showTooltip values={[transparency * 100]} onChange={handleAlphaChange} step={1} />
 
         <span className="map-manager-settings-label">{locatableLabel}</span>
-        <Toggle onChange={onLocatableToggle} isOn={isLocatable} />
+        <ToggleSwitch onChange={onLocatableToggle} checked={isLocatable} />
 
         <span className="map-manager-settings-label">{maskingLabel}</span>
-        <Toggle onChange={onMaskingToggle} isOn={masking !== MapMaskingOption.None} />
+        <ToggleSwitch onChange={onMaskingToggle} checked={masking !== MapMaskingOption.None} />
 
         <span className="map-manager-settings-label">{terrainLabel}</span>
-        <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />
+        <ToggleSwitch onChange={onToggleTerrain} checked={applyTerrain} />
 
         {!applyTerrain && (
           <>
@@ -199,7 +203,7 @@ export function MapManagerSettings() {
             <NumberInput value={groundBias} onChange={handleElevationChange} onKeyDown={onKeyDown} />
 
             <span className="map-manager-settings-label">{useDepthBufferLabel}</span>
-            <Toggle onChange={onToggleUseDepthBuffer} isOn={useDepthBuffer} />
+            <ToggleSwitch onChange={onToggleUseDepthBuffer} checked={useDepthBuffer} />
           </>
         )}
         {applyTerrain && (

@@ -9,12 +9,12 @@
 import "./LabeledToggle.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Toggle, ToggleProps } from "./Toggle";
+import { ToggleSwitch, ToggleSwitchProps } from "@itwin/itwinui-react";
 
 /** Properties for [[LabeledToggle]]
  * @public
  */
-export interface LabeledToggleProps extends ToggleProps {
+export interface LabeledToggleProps extends ToggleSwitchProps {
   /** Text that will be shown next to the Toggle. */
   label?: string;
   /** Custom CSS class name for the label */
@@ -36,7 +36,7 @@ export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
         this.props.disabled && "uicore-disabled",
         this.props.className,
       )}>
-        <Toggle className={className} style={style} {...props} />
+        <ToggleSwitch className={className} style={style} {...props} />
         {label &&
           <div className={classnames("uicore-label", labelClassName)}>{label}</div>
         }

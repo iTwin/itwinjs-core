@@ -42,6 +42,9 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
     setPosition(undefined);
     onDiagnosticsOptionsChanged(result);
   }, [onDiagnosticsOptionsChanged, result]);
+  const handleMeasurePerformanceChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    toggleMeasurePerformance(e.target.checked);
+  }, []);
 
   return (
     <React.Fragment>
@@ -59,7 +62,7 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
       >
         <LabeledSelect label="Editor severity" options={["error", "warning", "info"]} value={editorSeverity} onChange={(e) => setEditorSeverity(e.currentTarget.value)}></LabeledSelect>
         <LabeledSelect label="Dev severity" options={["error", "warning", "info", "debug", "trace"]} value={devSeverity} onChange={(e) => setDevSeverity(e.currentTarget.value)}></LabeledSelect>
-        <LabeledToggle label="Measure performance" isOn={shouldMeasurePerformance} onChange={toggleMeasurePerformance} />
+        <LabeledToggle label="Measure performance" checked={shouldMeasurePerformance} onChange={handleMeasurePerformanceChange} />
       </GlobalContextMenu>
     </React.Fragment>
   );

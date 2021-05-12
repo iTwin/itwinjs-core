@@ -101,8 +101,8 @@ export default class App extends React.Component<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onPersistSettingsValueChange = (enabled: boolean) => {
-    this.setState({ persistSettings: enabled }, () => this.updateAppSettings());
+  private onPersistSettingsValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ persistSettings: e.target.checked }, () => this.updateAppSettings());
   };
 
   private _onTreePaneRatioChanged = (ratio: number): RatioChangeResult => {
@@ -265,7 +265,7 @@ export default class App extends React.Component<{}, State> {
           <IModelSelector onIModelSelected={this.onIModelSelected} activeIModelPath={this.state.imodelPath} />
           <RulesetSelector onRulesetSelected={this.onRulesetSelected} activeRulesetId={this.state.currentRulesetId} />
           <UnitSystemSelector selectedUnitSystem={this.state.activeUnitSystem} onUnitSystemSelected={this.onUnitSystemSelected} />
-          <LabeledToggle label="Persist settings" isOn={this.state.persistSettings} onChange={this.onPersistSettingsValueChange} />
+          <LabeledToggle label="Persist settings" checked={this.state.persistSettings} onChange={this.onPersistSettingsValueChange} />
         </div>
         {imodelComponents}
       </div>

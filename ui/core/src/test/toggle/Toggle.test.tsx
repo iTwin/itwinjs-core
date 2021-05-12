@@ -115,6 +115,7 @@ describe("<Toggle />", () => {
     };
 
     const wrapper = mount(
+      // eslint-disable-next-line deprecation/deprecation
       <Toggle isOn={false} onChange={handleChange} disabled={false} buttonType={ToggleButtonType.Primary} showCheckmark={true} rounded={false} />,
     );
 
