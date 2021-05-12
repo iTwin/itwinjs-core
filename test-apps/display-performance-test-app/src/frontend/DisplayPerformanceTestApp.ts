@@ -23,6 +23,7 @@ import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccessToken } from "@bentley/itwin-client";
 import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "@bentley/projectshare-client";
+import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
@@ -141,6 +142,9 @@ class DisplayPerfTestApp {
       await ElectronApp.startup({ iModelApp });
     else
       await IModelApp.startup(iModelApp);
+
+    await HyperModeling.initialize();
+
     IModelApp.animationInterval = undefined;
   }
 }
@@ -961,6 +965,7 @@ let activeViewState: SimpleViewState = new SimpleViewState();
 let curTileLoadingTime = 0;
 
 async function _changeView(view: ViewState) {
+  HyperModeling.stop(theViewport!);
   theViewport!.changeView(view);
   activeViewState.viewState = view;
 }
