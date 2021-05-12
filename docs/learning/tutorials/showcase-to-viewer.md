@@ -9,7 +9,7 @@ This tutorial assumes that you already have:
 - Configured your local source to open the "House Model" sample iModel.
   - Instructions to use this sample iModel can be found [here]($docs/learning/tutorials/create-test-imodel-sample/).
 - Understand the concept of a [UI Provider]($docs/learning/ui/abstract/uiitemsprovider) and adding [widgets]($docs/reference/ui-abstract/uiitemsprovider/uiitemsprovider/).
-- Completed ["Customizing the iTwin Viewer"](./hello-world-viewer.md) tutorial.
+- Completed ["Customizing the iTwin Viewer"]($docs/learning/tutorials/hello-world-viewer) tutorial.
 
 ### Goal
 
@@ -19,7 +19,7 @@ This tutorial will take widgets from the sample showcase and add them into your 
 
 We hope you have given the [sample showcase](https://www.itwinjs.org/sample-showcase) a tour and enjoyed the many samples we provide. You may want to use some of these samples in your own iTwin Viewer, and to do so you'll first need to understand how the showcase works.
 
-If we take a closer look at the files involved in each sample, you'll notice they all follow the same pattern containing some important files:
+If we take a closer look at the files involved in each sample, you'll notice they all follow the same pattern containing a few important files:
 
 1. ```[SampleName]App.tsx``` - Corresponds to ```App.tsx``` in the itwin viewer template and provides the main ```Viewer``` component.
 2. ```[SampleName]Widget.tsx``` - Defines the ```UiItemsProvider``` that will be passed into prop ```uiProviders``` for our sample widget component. This widget is the controller for our samples.
