@@ -9,7 +9,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
-
+import { query } from "jsonpath";
 chai.should();
 
 describe("RealityServicesClient Normal (#integration)", () => {
@@ -108,38 +108,34 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(url);
   });
 
-  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
-  it.skip("should be able to get model data json", async () => {
+  it("should be able to get model data json", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
     chai.assert(rootData);
 
-    const rootDataJson = JSON.parse(rootData.toString("utf8"));
+    const jsonName = query(rootData.root.children, '$..url').find(u => u.endsWith(".json"));
 
-    const modelName = rootDataJson.root.children[0].content.url;
-    chai.assert(modelName);
-
-    const modelData: any = await realityData.getModelData(requestContext, modelName);
-
-    chai.assert(modelData);
+    chai.assert(jsonName);
+    const jsonData: any = await realityData.getTileJson(requestContext, jsonName);
+    chai.assert(jsonData);
+    chai.assert(jsonData.asset.version);
   });
 
-  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
-  it.skip("should be able to get model data content", async () => {
+  it("should be able to get model data content", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
+    const decoder = new TextDecoder("utf-8");
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
-    const rootDataJson = JSON.parse(rootData.toString("utf8"));
-
-    const modelName = rootDataJson.root.children[0].content.url;
-
     chai.assert(rootData);
+
+    const modelName = query(rootData.root.children, '$..url').find(u => u.endsWith(".b3dm"));
     chai.assert(modelName);
 
-    const modelData: any = await realityData.getModelData(requestContext, modelName);
-
+    const modelData: any = await realityData.getTileContent(requestContext, modelName);
     chai.assert(modelData);
+    const modelDataString = decoder.decode(new Uint8Array(modelData)).substring(0,4);
+    chai.assert(modelDataString == "b3dm");
   });
 
   it("should be able to create a reality data (without specific identifier) and delete it", async () => {
@@ -562,8 +558,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
   });
 
-  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
-  it.skip("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
+  it("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesIdWithRootDocPath);
 
     // The root document of this reality should not be at the root of the blob
@@ -573,9 +568,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const rootDocPath: string = `${rootParts.join("/")}/`;
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
-    const rootDataJson = JSON.parse(rootData.toString("utf8"));
 
-    const modelName = rootDataJson.root.children[0].children[0].content.url;
+    const modelName = rootData.root.children[0].children[0].content.url;
 
     chai.assert(rootData);
     chai.assert(modelName);
@@ -611,8 +605,7 @@ describe("RealityServicesClient Admin (#integration)", () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.manager);
   });
 
-  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
-  it.skip("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
+  it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.
