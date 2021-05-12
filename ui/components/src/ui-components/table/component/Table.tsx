@@ -8,7 +8,8 @@
 
 import "./Table.scss";
 import "../columnfiltering/ColumnFiltering.scss";
-import classnames from "classnames/dedupe";
+import classnamesDedupe from "classnames/dedupe";
+import classnames from "classnames";
 import { memoize } from "lodash";
 import * as React from "react";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
@@ -1133,7 +1134,7 @@ export class Table extends React.Component<TableProps, TableState> {
         }
         const mergedColumn = this.state.columns[index + i];
         const emptyCellKey = { rowIndex: rowProps.index, columnKey: mergedColumn.key };
-        className = classnames(className, this.getCellBorderStyle(emptyCellKey));
+        className = classnamesDedupe(className, this.getCellBorderStyle(emptyCellKey));
       }
       index += mergedAdjacentCellsCount;
 
