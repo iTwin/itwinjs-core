@@ -93,6 +93,8 @@ alpha;CardSelectedEventArgs
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
 internal;ChangeSetInfo
+alpha;ChildWindowLocationProps
+alpha;ChildWindowManager
 beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 internal;clearKeyinPaletteHistory(): void
@@ -413,6 +415,7 @@ public;NestedFrontstage
 public;NineZoneChangeHandler
 public;NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessageDetails
 public;NotifyMessageType = MessageType
+alpha;OpenChildWindowInfo
 public;OpenMessageCenterEvent 
 internal;packNineZoneState(state: NineZoneState): SavedNineZoneState
 internal;PanelSizeChangedEvent 

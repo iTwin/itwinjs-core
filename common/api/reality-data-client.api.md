@@ -170,6 +170,20 @@ export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
     project?: string;
 }
 
+// @internal
+export enum RealityDataType {
+    // (undocumented)
+    CESIUM_3DTILE = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    REALITYMESH3DTILES = "RealityMesh3DTiles",
+    // (undocumented)
+    TERRAIN3DTILE = "Terrain3DTiles"
+}
+
 
 // (No @packageDocumentation comment for this package)
 

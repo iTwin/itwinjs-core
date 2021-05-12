@@ -13,10 +13,9 @@ import "./SolarTimeline.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { GetHandleProps, Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider";
-import ReactResizeDetector from "react-resize-detector";
 import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
-import { BodyText, CommonProps, Popup, Tooltip } from "@bentley/ui-core";
+import { BodyText, CommonProps, ElementResizeObserver, Popup, Tooltip } from "@bentley/ui-core";
 import { UiComponents } from "../../ui-components/UiComponents";
 import { HueSlider } from "../color/HueSlider";
 import { SaturationPicker } from "../color/SaturationPicker";
@@ -202,6 +201,7 @@ interface TimelineState {
 }
 
 class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
+  private _timelineRef = React.createRef<HTMLDivElement>();
   public readonly state = {
     sunriseTooltipTarget: undefined,
     sunsetTooltipTarget: undefined,
@@ -251,61 +251,63 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
             {sunRiseFormat}
           </Tooltip>
         </span>
-        <ReactResizeDetector handleWidth
-          render={({ width }) => (
-            <Slider
-              mode={(curr, next) => {
-                // hodgepodge way to get around type issue in react-compound-slider package
-                const nextValue = ((next[0] as unknown) as MySliderModeValue).val;
-                if (nextValue > sunSetOffsetMs || nextValue < sunRiseOffsetMs) {
-                  return curr;
-                }
-                return next;
-              }}
-              step={scrubberIncrement}
-              domain={domain}
-              rootStyle={{ position: "relative", height: "100%", flex: "1", margin: "0 10px" }}
-              onChange={onChange}
-              onUpdate={onUpdate}
-              values={[currentTimeOffsetMs]}>
-              <Rail>
-                {(railProps) => <TooltipRail {...railProps} dayStartMs={dayStartMs} sunset={sunSetOffsetMs} sunrise={sunRiseOffsetMs} formatTime={formatTime} />}
-              </Rail>
-              <Handles>
-                {({ handles, getHandleProps }) => (
-                  <div className="slider-handles">
-                    {handles.map((handle: SliderItem) => (
-                      <Handle
-                        key={handle.id}
-                        handle={handle}
-                        domain={[sunRiseOffsetMs, sunSetOffsetMs]}
-                        getHandleProps={getHandleProps}
-                      />
-                    ))}
-                  </div>
-                )}
-              </Handles>
-              {formatTick &&
-                <Ticks values={this._getTickValues(width)}>
-                  {({ ticks }) => (
-                    <div className="slider-ticks">
-                      {ticks.map((tick: any, index: number) => (
-                        <Tick
-                          key={tick.id}
-                          tick={tick}
-                          count={ticks.length}
-                          width={width}
-                          index={index}
-                          formatTick={formatTick}
+        <div ref={this._timelineRef} className="ui-component-solar-slider-sizer">
+          <ElementResizeObserver watchedElement={this._timelineRef}
+            render={({ width }) => (
+              <Slider
+                mode={(curr, next) => {
+                  // hodgepodge way to get around type issue in react-compound-slider package
+                  const nextValue = ((next[0] as unknown) as MySliderModeValue).val;
+                  if (nextValue > sunSetOffsetMs || nextValue < sunRiseOffsetMs) {
+                    return curr;
+                  }
+                  return next;
+                }}
+                step={scrubberIncrement}
+                domain={domain}
+                rootStyle={{ position: "relative", height: "100%", flex: "1", margin: "0 10px" }}
+                onChange={onChange}
+                onUpdate={onUpdate}
+                values={[currentTimeOffsetMs]}>
+                <Rail>
+                  {(railProps) => <TooltipRail {...railProps} dayStartMs={dayStartMs} sunset={sunSetOffsetMs} sunrise={sunRiseOffsetMs} formatTime={formatTime} />}
+                </Rail>
+                <Handles>
+                  {({ handles, getHandleProps }) => (
+                    <div className="slider-handles">
+                      {handles.map((handle: SliderItem) => (
+                        <Handle
+                          key={handle.id}
+                          handle={handle}
+                          domain={[sunRiseOffsetMs, sunSetOffsetMs]}
+                          getHandleProps={getHandleProps}
                         />
                       ))}
                     </div>
                   )}
-                </Ticks>
-              }
-            </Slider>
-          )}
-        />
+                </Handles>
+                {formatTick && width &&
+                  <Ticks values={this._getTickValues(width)}>
+                    {({ ticks }) => (
+                      <div className="slider-ticks">
+                        {ticks.map((tick: any, index: number) => (
+                          <Tick
+                            key={tick.id}
+                            tick={tick}
+                            count={ticks.length}
+                            width={width}
+                            index={index}
+                            formatTick={formatTick}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </Ticks>
+                }
+              </Slider>
+            )}
+          />
+        </div>
         <span className="sunset" ref={this._handleSunsetTooltipTarget}>
           &#x263D;
           <Tooltip target={this.state.sunsetTooltipTarget}>
@@ -528,8 +530,8 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   /** note the day passed in is in the time of the current user not in project time because the date picker works in
    * local time  */
   private _onDayClick = (day: Date) => {
-    const selectedDate = new Date(day.getTime()+this.state.currentTimeOffsetMs);
-    this.props.dataProvider.setDateAndTime (selectedDate);
+    const selectedDate = new Date(day.getTime() + this.state.currentTimeOffsetMs);
+    this.props.dataProvider.setDateAndTime(selectedDate);
     const dayStartMs = this.props.dataProvider.dayStartMs;
     const sunRiseOffsetMs = this.props.dataProvider.sunrise.getTime() - dayStartMs;
     const sunSetOffsetMs = this.props.dataProvider.sunset.getTime() - dayStartMs;
@@ -552,7 +554,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     const dayStartMs = this.props.dataProvider.dayStartMs;
     const sunTime = (time.hours * millisecPerHour) + (time.minutes * millisecPerMinute);
     const dateWithNewTime = new Date(dayStartMs + sunTime);
-    this.props.dataProvider.setDateAndTime (dateWithNewTime, true);
+    this.props.dataProvider.setDateAndTime(dateWithNewTime, true);
 
     // notify the provider to update style
     if (this.props.dataProvider.onTimeChanged)
@@ -639,7 +641,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   private _formatTime = (millisec: number) => {
     const date = new Date(millisec);
     // convert project date to browser locale date
-    const localTime = adjustDateToTimezone (date, this.props.dataProvider.timeZoneOffset*60);
+    const localTime = adjustDateToTimezone(date, this.props.dataProvider.timeZoneOffset * 60);
     let hours = localTime.getHours();
     const minutes = addZero(date.getMinutes());
     const abbrev = (hours < 12) ? this._amLabel : (hours === 24) ? this._amLabel : this._pmLabel;
@@ -660,9 +662,9 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   };
 
   public getLocalTime(ticks: number): Date {
-    const projectTime = new Date (ticks);
+    const projectTime = new Date(ticks);
     // convert project date to browser locale date
-    return adjustDateToTimezone (projectTime, this.props.dataProvider.timeZoneOffset*60);
+    return adjustDateToTimezone(projectTime, this.props.dataProvider.timeZoneOffset * 60);
   }
 
   public render() {

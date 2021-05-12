@@ -45,7 +45,7 @@ describe("iModelHub CheckpointHandler", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
-    this.enableTimeouts(false);
+    this.timeout(0);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 

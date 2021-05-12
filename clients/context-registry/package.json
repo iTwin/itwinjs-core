@@ -1,6 +1,6 @@
 {
   "name": "@bentley/context-registry-client",
-  "version": "2.16.0-dev.24",
+  "version": "2.17.0-dev.2",
   "description": "iModel.js Context Registry Client",
   "main": "lib/context-registry-client.js",
   "typings": "lib/context-registry-client",
@@ -39,32 +39,28 @@
     "deep-assign": "^2.0.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.24",
-    "@bentley/itwin-client": "^2.16.0-dev.24"
+    "@bentley/bentleyjs-core": "^2.17.0-dev.2",
+    "@bentley/itwin-client": "^2.17.0-dev.2"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.24",
-    "@bentley/certa": "2.16.0-dev.24",
-    "@bentley/config-loader": "2.16.0-dev.24",
-    "@bentley/eslint-plugin": "2.16.0-dev.24",
-    "@bentley/itwin-client": "2.16.0-dev.24",
-    "@bentley/oidc-signin-tool": "2.16.0-dev.24",
+    "@bentley/build-tools": "2.17.0-dev.2",
+    "@bentley/certa": "2.17.0-dev.2",
+    "@bentley/config-loader": "2.17.0-dev.2",
+    "@bentley/eslint-plugin": "2.17.0-dev.2",
+    "@bentley/itwin-client": "2.17.0-dev.2",
+    "@bentley/oidc-signin-tool": "2.17.0-dev.2",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "eslint": "^6.8.0",
     "internal-tools": "0.0.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
     "typescript": "~4.1.0",
     "webpack": "4.42.0"
-  },
-  "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

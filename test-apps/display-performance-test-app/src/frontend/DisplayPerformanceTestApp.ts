@@ -449,7 +449,7 @@ async function waitForTilesToLoad(modelLocation?: string) {
     const sceneContext = theViewport!.createSceneContext();
     activeViewState.viewState!.createScene(sceneContext);
     sceneContext.requestMissingTiles();
-    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles || 0 < sceneContext.missingTiles.size;
+    haveNewTiles = !(theViewport!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles || 0 < sceneContext.missingTiles.size;
 
     if (!haveNewTiles) {
       // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports. Check those too.
@@ -1090,6 +1090,7 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
       alert(`openSnapshot failed: ${err.toString()}`);
       openLocalIModel = false;
     }
+
     if (extViews) {
       activeViewState.externalSavedViews = extViews;
     } else {
@@ -1159,6 +1160,8 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
 
 async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise<boolean> {
   await openImodelAndLoadExtViews(testConfig, extViews); // Open iModel & load all external saved views into activeViewState
+  if (activeViewState.iModelConnection)
+    await activeViewState.iModelConnection?.backgroundMapLocation.initialize(activeViewState.iModelConnection);
 
   // Workaround for shifting map geometry when location is not initialized.
   if (activeViewState.iModelConnection)

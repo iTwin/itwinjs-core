@@ -30,27 +30,9 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
 ) => {
   return class WithOnOutsideClick extends React.PureComponent<ComponentProps & WithOnOutsideClickProps> {
     /** @internal */
-    public ref = React.createRef<HTMLDivElement>();
+    public outsideClickContainerDiv?: HTMLDivElement | null = null;
     /** @internal */
     public isDownOutside = false;
-
-    /** @internal */
-    public componentDidMount() {
-      if (usePointerEvents) {
-        document.addEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
-        document.addEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
-      } else
-        document.addEventListener("click", this.handleDocumentClick, useCapture);
-    }
-
-    /** @internal */
-    public componentWillUnmount() {
-      if (usePointerEvents) {
-        document.removeEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
-        document.removeEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
-      } else
-        document.removeEventListener("click", this.handleDocumentClick, useCapture);
-    }
 
     /** @internal */
     public isInCorePopup(element: HTMLElement): boolean {
@@ -84,7 +66,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
 
     /** @internal */
     public handleDocumentClick = (e: MouseEvent) => {
-      if (!this.ref.current || !(e.target instanceof Node) || this.ref.current.contains(e.target))
+      if (!this.outsideClickContainerDiv || !(e.target instanceof Node) || this.outsideClickContainerDiv.contains(e.target))
         return;
 
       return this.onOutsideClick(e);
@@ -92,20 +74,57 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
 
     /** @internal */
     public handleDocumentPointerDown = (e: PointerEvent) => {
-      this.isDownOutside = !!this.ref.current && (e.target instanceof Node) && !this.ref.current.contains(e.target);
+      this.isDownOutside = true;
+      if (this.outsideClickContainerDiv) {
+        // typically e.target test for instance of Node, but this is not working from pop out windows
+        this.isDownOutside = !!e.target && !this.outsideClickContainerDiv.contains(e.target as any);
+      }
     };
 
     /** @internal */
     public handleDocumentPointerUp = (e: PointerEvent) => {
-      const isOutsideClick = this.ref.current && e.target instanceof Node && !this.ref.current.contains(e.target) && this.isDownOutside;
+      let isUpOutside = true;
+      if (this.outsideClickContainerDiv) {
+        // typically e.target test for instance of Node, but this is not working from pop out windows
+        isUpOutside = !!e.target && !this.outsideClickContainerDiv.contains(e.target as any);
+      }
+
+      const isOutsideClick = isUpOutside && this.isDownOutside;
       this.isDownOutside = false;
-      return isOutsideClick ? this.onOutsideClick(e) : 0;
+      isOutsideClick && this.onOutsideClick(e);
     };
+
+    public handleOutsideClickContainerDivSet = (outsideClickContainerDiv: HTMLDivElement | null) => {
+      this.outsideClickContainerDiv = outsideClickContainerDiv;
+    };
+
+    public getParentDocument() {
+      return this.outsideClickContainerDiv?.ownerDocument ?? document;
+    }
+
+    public componentDidMount() {
+      const outsideClickParentDocument = this.getParentDocument();
+      if (usePointerEvents) {
+        outsideClickParentDocument.addEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
+        outsideClickParentDocument.addEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
+      } else
+        outsideClickParentDocument.addEventListener("click", this.handleDocumentClick, useCapture);
+    }
+
+    /** @internal */
+    public componentWillUnmount() {
+      const outsideClickParentDocument = this.getParentDocument();
+      if (usePointerEvents) {
+        outsideClickParentDocument.removeEventListener("pointerdown", this.handleDocumentPointerDown, useCapture);
+        outsideClickParentDocument.removeEventListener("pointerup", this.handleDocumentPointerUp, useCapture);
+      } else
+        outsideClickParentDocument.removeEventListener("click", this.handleDocumentClick, useCapture);
+    }
 
     public render() {
       const { onOutsideClick, closeOnNestedPopupOutsideClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
-        <div ref={this.ref}>
+        <div ref={this.handleOutsideClickContainerDivSet}>
           <Component {...props as ComponentProps} />
         </div>
       );

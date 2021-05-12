@@ -447,6 +447,7 @@ export class IModelApp {
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this._renderSystem = dispose(this._renderSystem);
     this._entityClasses.clear();
+    this.authorizationClient = undefined;
     this._initialized = false;
   }
 
