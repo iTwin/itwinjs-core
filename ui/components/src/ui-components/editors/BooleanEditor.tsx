@@ -10,7 +10,7 @@ import "./BooleanEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PropertyValue, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
-import { Checkbox } from "@bentley/ui-core";
+import { Checkbox } from "@itwin/itwinui-react";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
@@ -130,12 +130,9 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
     const checked = this.state.checkboxValue;
     const isDisabled = !!this.state.isDisabled;
 
-    // NEEDSWORK: Switching to the itwinui-react Checkbox breaks this editor.
-    // The ui-core Checkbox has special code for handling the input onBlur. The itwinui-react Checkbox needs that.
-
     return (
       <Checkbox
-        inputRef={this._inputElement}
+        ref={this._inputElement}
         onBlur={this.props.onBlur}
         className={className}
         style={this.props.style}
@@ -154,6 +151,11 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
  * @beta
  */
 export class BooleanPropertyEditor extends PropertyEditorBase {
+  // istanbul ignore next
+  public get containerHandlesBlur(): boolean {
+    return false;
+  }
+
   public get reactNode(): React.ReactNode {
     return <BooleanEditor />;
   }
