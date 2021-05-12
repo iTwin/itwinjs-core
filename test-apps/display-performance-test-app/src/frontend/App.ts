@@ -385,9 +385,9 @@ function getViewFlagsString(): string {
  *    ...
  * Sorted by tree Id and then by tile Id so that the output is consistent from run to run unless the set of selected tiles changed between runs.
  */
-let formattedSelectedTileIds = "Selected tiles:\n";
-function formatSelectedTileIds(vp: Viewport): void {
-  formattedSelectedTileIds = "Selected tiles:\n";
+function formatSelectedTileIds(vp: Viewport): string {
+  let formattedSelectedTileIds = "Selected tiles:\n";
+
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
   for (const viewport of [vp, ...vp.view.secondaryViewports]) {
     const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
@@ -404,14 +404,13 @@ function formatSelectedTileIds(vp: Viewport): void {
     }
   }
 
-  if (dict.size === 0)
-    return;
-
   for (const kvp of dict) {
     const contentIds = kvp.value.extractArray().join(",");
     const line = `  ${kvp.key}: ${contentIds}`;
     formattedSelectedTileIds = `${formattedSelectedTileIds}${line}\n`;
   }
+
+  return formattedSelectedTileIds;
 }
 
 async function waitForTilesToLoad(modelLocation?: string) {
@@ -464,10 +463,12 @@ async function waitForTilesToLoad(modelLocation?: string) {
   theViewport!.continuousRendering = false;
   theViewport!.renderFrame();
   timer.stop();
-  curTileLoadingTime = timer.current.milliseconds;
 
   // Record the Ids of all the tiles that were selected for display.
-  formatSelectedTileIds(theViewport!);
+  return {
+    tileLoadingTime: timer.current.milliseconds,
+    selectedTileIds: formatSelectedTileIds(theViewport!),
+  };
 }
 
 // ###TODO this should be using Viewport.devicePixelRatio.
@@ -483,7 +484,7 @@ function cssPixelsToDevicePixels(css: number): number {
   return Math.floor(css * queryDevicePixelRatio());
 }
 
-function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrameTimings: Map<string, number[]>, timingsForActualFPS: Array<Map<string, number>>, configs: DefaultConfigs, minimizeOutput: boolean, opts: IModelAppOpts, pixSelectStr?: string): Map<string, number | string> {
+function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrameTimings: Map<string, number[]>, timingsForActualFPS: Array<Map<string, number>>, configs: DefaultConfigs, minimizeOutput: boolean, opts: IModelAppOpts, tileLoadingTime: number, pixSelectStr?: string): Map<string, number | string> {
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
@@ -501,7 +502,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrame
   if (pixSelectStr) rowData.set("ReadPixels Selector", ` ${pixSelectStr}`);
   rowData.set("Test Name", getTestName(configs, opts));
   rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
-  if (!minimizeOutput) rowData.set("Tile Loading Time", curTileLoadingTime);
+  if (!minimizeOutput) rowData.set("Tile Loading Time", tileLoadingTime);
 
   const setGpuData = (name: string) => {
     if (name === "CPU Total Time")
@@ -943,7 +944,6 @@ class FOProvider implements FeatureOverrideProvider {
 
 let theViewport: ScreenViewport | undefined;
 let activeViewState: SimpleViewState = new SimpleViewState();
-let curTileLoadingTime = 0;
 
 async function _changeView(view: ViewState) {
   HyperModeling.stop(theViewport!);
@@ -1144,7 +1144,7 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
 
 }
 
-async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise<boolean> {
+async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]) {
   await openImodelAndLoadExtViews(testConfig, extViews); // Open iModel & load all external saved views into activeViewState
   if (activeViewState.iModelConnection)
     await activeViewState.iModelConnection?.backgroundMapLocation.initialize(activeViewState.iModelConnection);
@@ -1161,11 +1161,11 @@ async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise
   else if (undefined !== testConfig.viewName)
     await loadView(activeViewState, testConfig.viewName);
   else
-    return false;
+    return undefined;
 
   // Make sure the view was set up.  If not (probably because the name wasn't found anywhere) just skip this test.
   if (undefined === activeViewState.viewState)
-    return false;
+    return undefined;
 
   // now connect the view to the canvas
   await openView(activeViewState, testConfig.view!);
@@ -1214,7 +1214,7 @@ async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise
   }
 
   // Load all tiles
-  await waitForTilesToLoad(testConfig.iModelLocation);
+  const result = await waitForTilesToLoad(testConfig.iModelLocation);
 
   // Set the selected elements (if there are any)
   if (undefined !== iModCon && undefined !== activeViewState.selectedElements) {
@@ -1223,7 +1223,7 @@ async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise
     theViewport!.renderFrame();
   }
 
-  return true;
+  return result;
 }
 
 async function closeIModel() {
@@ -1441,9 +1441,13 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
   });
 }
 
-async function runTest(testConfig: DefaultConfigs, extViews: any[] | undefined, minimizeOutput: boolean, opts: IModelAppOpts): Promise<IModelAppOpts> {
+interface TestRunResult extends IModelAppOpts {
+  selectedTileIds?: string;
+}
+
+async function runTest(testConfig: DefaultConfigs, extViews: any[] | undefined, minimizeOutput: boolean, inputOpts: IModelAppOpts): Promise<TestRunResult> {
   // Restart the IModelApp if needed
-  const newOpts = await restartIModelApp(testConfig, opts);
+  const newOpts = await restartIModelApp(testConfig, inputOpts);
 
   // Reset the title bar to include the current model and view name
   document.title = "Display Performance Test App:  ".concat(testConfig.iModelName ?? "", "  [", testConfig.viewName ?? "", "]");
@@ -1456,8 +1460,8 @@ async function runTest(testConfig: DefaultConfigs, extViews: any[] | undefined, 
   }
 
   if (testConfig.testType === "image" || testConfig.testType === "both") {
-    updateTestNames(testConfig, opts, undefined, true); // Update the list of image test names
-    await savePng(getImageString(testConfig, opts));
+    updateTestNames(testConfig, newOpts, undefined, true); // Update the list of image test names
+    await savePng(getImageString(testConfig, newOpts));
     if (testConfig.testType === "image") {
       // Close the imodel & exit if nothing else needs to happen
       await closeIModel();
@@ -1497,7 +1501,7 @@ async function runTest(testConfig: DefaultConfigs, extViews: any[] | undefined, 
   // Add a pause so that user can start the GPU Performance Capture program
   // await resolveAfterXMilSeconds(7000);
 
-  updateTestNames(testConfig, opts); // Update the list of timing test names
+  updateTestNames(testConfig, newOpts); // Update the list of timing test names
   if (testConfig.testType === "readPixels") {
     const width = testConfig.view!.width;
     const height = testConfig.view!.height;
@@ -1516,13 +1520,13 @@ async function runTest(testConfig: DefaultConfigs, extViews: any[] | undefined, 
       (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false, gpuResultsCallback);
       await renderAsync(theViewport!, testConfig.numRendersToTime!, timingsForActualFPS, gpuResultsCallback);
       debugControl.resultsCallback = undefined; // Turn off glTimer metrics
-      updateTestNames(testConfig, opts, pixSelectStr, true); // Update the list of image test names
-      updateTestNames(testConfig, opts, pixSelectStr, false); // Update the list of timing test names
-      const rowData = getRowData(finalCPUFrameTimings, finalGPUFrameTimings, timingsForActualFPS, testConfig, minimizeOutput, opts, pixSelectStr);
+      updateTestNames(testConfig, newOpts, pixSelectStr, true); // Update the list of image test names
+      updateTestNames(testConfig, newOpts, pixSelectStr, false); // Update the list of timing test names
+      const rowData = getRowData(finalCPUFrameTimings, finalGPUFrameTimings, timingsForActualFPS, testConfig, minimizeOutput, newOpts, loaded.tileLoadingTime, pixSelectStr);
       await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
 
       // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
-      await createReadPixelsImages(testConfig, pixSelect, pixSelectStr, opts);
+      await createReadPixelsImages(testConfig, pixSelect, pixSelectStr, newOpts);
     };
     // Test each combo of pixel selectors, then close the iModel
     await testReadPix(Pixel.Selector.Feature, "+feature");
@@ -1534,12 +1538,12 @@ async function runTest(testConfig: DefaultConfigs, extViews: any[] | undefined, 
     await renderAsync(theViewport!, testConfig.numRendersToTime, timingsForActualFPS, gpuResultsCallback);
     // Close model & save csv file
     await closeIModel();
-    const rowData = getRowData(timingsForActualFPS, finalGPUFrameTimings, timingsForActualFPS, testConfig, minimizeOutput, opts);
+    const rowData = getRowData(timingsForActualFPS, finalGPUFrameTimings, timingsForActualFPS, testConfig, minimizeOutput, newOpts, loaded.tileLoadingTime);
     await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
 
     if (wantConsoleOutput) { // Debug purposes only
       debugPrint("------------ ");
-      debugPrint(`Tile Loading Time: ${curTileLoadingTime}`);
+      debugPrint(`Tile Loading Time: ${loaded.tileLoadingTime}`);
       for (const t of finalCPUFrameTimings) {
         let timingsString = "[";
         t.forEach((val) => {
@@ -1550,7 +1554,10 @@ async function runTest(testConfig: DefaultConfigs, extViews: any[] | undefined, 
     }
   }
 
-  return newOpts;
+  return {
+    ...newOpts,
+    selectedTileIds: loaded.selectedTileIds,
+  };
 }
 
 // selects the configured view.
@@ -1658,9 +1665,9 @@ async function testSet(configs: DefaultConfigs, setData: any, logFileName: strin
         await consoleLog(outStr);
         await writeExternalFile(testConfig.outputPath!, logFileName, true, `${outStr}\n`);
 
-        newOpts = await runTest(testConfig, extViews, minimizeOutput, newOpts);
-
-        await writeExternalFile(testConfig.outputPath!, logFileName, true, formattedSelectedTileIds);
+        const result = await runTest(testConfig, extViews, minimizeOutput, newOpts);
+        await writeExternalFile(testConfig.outputPath!, logFileName, true, result.selectedTileIds ?? "");
+        newOpts = result;
       }
     }
   }
