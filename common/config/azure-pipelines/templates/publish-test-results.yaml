@@ -219,56 +219,57 @@ steps:
     displayName: "Combine code coverage"
     inputs:
       workingDirectory: ${{ parameters.workingDir }}
-      scriptSource: inline
-      script: |
-        import os
-        import argparse
-        import shutil
-        from pathlib import *
-        import glob
+      scriptSource: filePath
+      scriptPath: "../combineReports.py"
+      # script: |
+      #   import os
+      #   import argparse
+      #   import shutil
+      #   from pathlib import *
+      #   import glob
 
 
-        def readXML(compName, filePath):
-          covFile = open(filePath).read()
-          pattern = 'package name="'
-          component = 'package name="' + compName
-          covFile = covFile.replace(pattern, component)
-          outfile = open(filePath, 'w')
-          outfile.write(covFile)
-          outfile.close()
+      #   def readXML(compName, filePath):
+      #     covFile = open(filePath).read()
+      #     pattern = 'package name="'
+      #     component = 'package name="' + compName
+      #     covFile = covFile.replace(pattern, component)
+      #     outfile = open(filePath, 'w')
+      #     outfile.write(covFile)
+      #     outfile.close()
 
-        def getParentDirectory(path, levels = 1):
-          for _ in range(levels):
-            path = os.path.dirname(path)
-          return path
+      #   def getParentDirectory(path, levels = 1):
+      #     for _ in range(levels):
+      #       path = os.path.dirname(path)
+      #     return path
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument(
-          "--output", help="Output path where xml reports will be copied")
-        args = parser.parse_args()
-        workDir = os.getcwd()
+      #   parser = argparse.ArgumentParser()
+      #   parser.add_argument(
+      #     "--output", help="Output path where xml reports will be copied")
+      #   args = parser.parse_args()
+      #   workDir = os.getcwd()
 
-        listOfFiles = []
+      #   listOfFiles = []
 
-        projDir = getParentDirectory(Path.cwd(), 3)
-        for path in glob.iglob((projDir + "/*/*/lib/**/cobertura-coverage.xml"), recursive=True):
-          listOfFiles.append(path)
+      #   projDir = getParentDirectory(Path.cwd(), 3)
+      #   for path in glob.iglob((projDir + "/*/*/lib/**/cobertura-coverage.xml"), recursive=True):
+      #     listOfFiles.append(path)
 
-        outputDir = os.path.join(args.output, "coverageXMLs")
-        if not os.path.exists(outputDir):
-          os.makedirs(outputDir)
+      #   outputDir = os.path.join(args.output, "coverageXMLs")
+      #   if not os.path.exists(outputDir):
+      #     os.makedirs(outputDir)
 
-        start = "imodeljs"
-        end = "lib"
-        for file in listOfFiles:
-          filePathParts = list(Path(file).parts)
-          coveragePath = os.path.join(*filePathParts[filePathParts.index((start))+1:filePathParts.index(end)])
-          destFilePath = os.path.join(outputDir, coveragePath)
+      #   start = "imodeljs"
+      #   end = "lib"
+      #   for file in listOfFiles:
+      #     filePathParts = list(Path(file).parts)
+      #     coveragePath = os.path.join(*filePathParts[filePathParts.index((start))+1:filePathParts.index(end)])
+      #     destFilePath = os.path.join(outputDir, coveragePath)
 
-          if not Path(destFilePath).exists():
-            os.makedirs(destFilePath)
+      #     if not Path(destFilePath).exists():
+      #       os.makedirs(destFilePath)
 
-          shutil.copy(file, destFilePath)
+      #     shutil.copy(file, destFilePath)
 
       arguments: --output '$(Build.SourcesDirectory)'
     # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
