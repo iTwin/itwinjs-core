@@ -777,7 +777,7 @@ export class IModelTransformer extends IModelExportHandler {
         const [_fullNameMatch, schemaName] = schemaNameMatch;
         const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
         const versionToImport = Schema.toSemverString(versionString);
-        if (versionInTarget && Semver.eq(versionToImport, versionInTarget))
+        if (versionInTarget && Semver.lte(versionToImport, versionInTarget))
           return false;
         return true;
       });
