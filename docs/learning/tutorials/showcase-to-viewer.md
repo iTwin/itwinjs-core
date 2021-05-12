@@ -21,9 +21,9 @@ We hope you have given the [sample showcase](https://www.itwinjs.org/sample-show
 
 If we take a closer look at the files involved in each sample, you'll notice they all follow the same pattern containing a few important files:
 
-1. ```[SampleName]App.tsx``` - Corresponds to ```App.tsx``` in the itwin viewer template and provides the main ```Viewer``` component.
+1. ```[SampleName]App.tsx``` - Corresponds to ```App.tsx``` in the iTwin Viewer template and provides the main ```Viewer``` component.
 2. ```[SampleName]Widget.tsx``` - Defines the ```UiItemsProvider``` that will be passed into prop ```uiProviders``` for our sample widget component. This widget is the controller for our samples.
-3. ```[SampleName]Api.ts``` - Defines widget functionality that uses the itwin.js API being showcased.
+3. ```[SampleName]Api.ts``` - Defines widget functionality that uses the iTwin.js API being showcased.
 4. ```[SampleName].scss``` - Defines the styles in our css classes used inside the widget.
 
 Given this pattern, it's simple to identify the parts required to bring our sample showcase to your iTwin Viewer. The component revolves around the ```[SampleName]Widget.tsx``` file so we need to copy all the files associated with our custom widget's ```UiItemsProvider``` and pass it in the ```Viewer``` component.
