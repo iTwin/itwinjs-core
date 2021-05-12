@@ -217,7 +217,7 @@ steps:
   ## TODO: Fix combining code coverage into a single xml file to publish
   - task: UsePythonVersion@0
     inputs:
-    versionSpec: '3.5'
+      versionSpec: '3.5'
   - task: PythonScript@0
     displayName: "Combine code coverage"
     inputs:
