@@ -1122,7 +1122,7 @@ export class Table extends React.Component<TableProps, TableState> {
         if (i > 0) {
           cells[col.key] = (
             <TableCell
-              className={className}
+              className={className.replace("border-bottom", "")}
               title={"empty-cell"}
               onClick={onClick}
               onMouseMove={onMouseMove}
@@ -1131,6 +1131,9 @@ export class Table extends React.Component<TableProps, TableState> {
             </TableCell>
           );
         }
+        const mergedColumn = this.state.columns[index + i];
+        const emptyCellKey = { rowIndex: rowProps.index, columnKey: mergedColumn.key };
+        className = this.mergeClassNames(className, this.getCellBorderStyle(emptyCellKey));
       }
       index += mergedAdjacentCellsCount;
 
@@ -1154,6 +1157,23 @@ export class Table extends React.Component<TableProps, TableState> {
       );
     }
     return cells;
+  }
+
+  private mergeClassNames(classNames1: string, classNames2: string): string{
+    if (classNames1.length === 0)
+      return classNames2;
+
+    if (classNames2.length === 0)
+      return classNames1;
+
+    const arr1 = classNames1.split(" ");
+    const arr2 = classNames2.split(" ");
+
+    const set = new Set();
+    arr1.forEach((className) => set.add(className));
+    arr2.forEach((className) => set.add(className));
+
+    return [...set].join(" ");
   }
 
   private getCellBorderStyle(key: CellKey): string {
