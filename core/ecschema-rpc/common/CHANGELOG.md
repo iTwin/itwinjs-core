@@ -1,6 +1,11 @@
 # Change Log - @bentley/ecschema-rpcinterface-common
 
-This log was last generated on Wed, 05 May 2021 13:18:31 GMT and should not be manually modified.
+This log was last generated on Wed, 12 May 2021 18:08:13 GMT and should not be manually modified.
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
 
 ## 2.15.1
 Wed, 05 May 2021 13:18:31 GMT
