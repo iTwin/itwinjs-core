@@ -7,8 +7,8 @@ This tutorial assumes that you already have:
 - Explored the [sample showcase](https://www.itwinjs.org/sample-showcase).
 - Your own local source for the iTwin Web Viewer based on the template @bentley/itwin-viewer
 - Configured your local source to open the "House Model" sample iModel.
-  - Instructions to use this sample iModel can be found [here](https://www.itwinjs.org/learning/tutorials/create-test-imodel-sample/).
-- Understand the concept of a [UI Provider](https://www.itwinjs.org/learning/ui/abstract/uiitemsprovider) and adding [widgets](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/#providewidgets).
+  - Instructions to use this sample iModel can be found [here]($docs/learning/tutorials/create-test-imodel-sample/).
+- Understand the concept of a [UI Provider]($docs/learning/ui/abstract/uiitemsprovider) and adding [widgets]($docs/reference/ui-abstract/uiitemsprovider/uiitemsprovider/).
 - Completed ["Customizing the iTwin Viewer"](./hello-world-viewer.md) tutorial.
 
 ### Goal
@@ -74,11 +74,11 @@ We now have made all the necessary coding modifications to our iTwin Viewer. We'
 
 For this tutorial, these files will be placed directly in our src directory so your file structure should look similar to this:
 
-![ViewAttributesStructure](./images/sample_viewer_port_to_itwin_viewer.png)
+![ViewAttributesStructure]($docs/learning/tutorials/images/sample_viewer_port_to_itwin_viewer.png)
 
 Running our iTwin Viewer now, you'll notice the exact same fully functional widget from the sample showcase in your iTwin Viewer.
 
-![ViewAttributesResults](./images/view_attributes_ported_results.png)
+![ViewAttributesResults]($docs/learning/tutorials/images/view_attributes_ported_results.png)
 
 Feel free to customize these widgets to your liking.
 
@@ -135,9 +135,7 @@ It's completely up to you on how you want to structure your directories and comp
 
 ## Useful Links
 
-- [UI Provider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/)
+- [UI Provider]($docs/reference/ui-abstract/uiitemsprovider/uiitemsprovider/)
 - [View Attributes Sample](https://www.itwinjs.org/sample-showcase/?group=Viewer&sample=view-attributes-sample&imodel=House+Sample)
+- [Sample Showcase](https://www.itwinjs.org/sample-showcase/)
 
-## Next Steps
-
-- [Using the Sample Showcase](https://www.itwinjs.org/sample-showcase/)
