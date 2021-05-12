@@ -760,7 +760,7 @@ export class IModelTransformer extends IModelExportHandler {
       // some schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
       const importSchemasFullPaths = schemaFiles.map((schema) => path.join(schemasDir, schema));
       const filteredSchemaPaths = importSchemasFullPaths.filter((schemaPath) => {
-        let schemaSource = "";
+        let schemaSource: string;
         try {
           schemaSource = IModelJsFs.readFileSync(schemaPath).toString("utf8");
         } catch (err) {
