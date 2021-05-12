@@ -3857,6 +3857,8 @@ export class Schema {
     // @internal
     static get missingRequiredBehavior(): boolean;
     static get schemaName(): string;
+    // @beta
+    static toSemverString(paddedVersion: string): string;
 }
 
 // @internal (undocumented)
