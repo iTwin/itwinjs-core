@@ -67,7 +67,7 @@ export class BasisLoader {
   private _compressedTextureExtensions: any;
   private _initPromise?: Promise<void>;
   private static _instance?: BasisLoader;
-  private _basisWorker?: Worker; // ###TODO: potentially allow more than one worker
+  private _basisWorker?: Worker;
   private _wasmBinary: any;
   private _pendingTranscodeJobs: Array<TranscodeJob> = [];
   private _activeTranscodeJob?: TranscodeJob;
