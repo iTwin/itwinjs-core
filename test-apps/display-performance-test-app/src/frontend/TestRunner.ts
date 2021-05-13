@@ -539,7 +539,7 @@ export class TestRunner {
     const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}  ${testConfig.iModelName}  [${testConfig.viewName}]`;
 
     await this.logToConsole(outStr);
-    return this.logToFile(outStr);
+    return this.logToFile(`${outStr}\n`);
   }
 
   private async openIModel(): Promise<TestContext | undefined> {
