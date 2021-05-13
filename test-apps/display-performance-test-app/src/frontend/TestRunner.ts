@@ -19,37 +19,44 @@ import {
 } from "./TestConfig";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 
+/** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
   tests: TestConfigProps[];
 }
 
+/** JSON representation of TestRunner. The tests inherit the base configuration options. */
 export interface TestSetsProps extends TestConfigProps {
   signIn?: boolean;
   minimize?: boolean;
   testSet: TestSetProps[];
 }
 
+/** Context for any number of TestCases to be run against an iModel. */
 interface TestContext {
   readonly iModel: IModelConnection;
   readonly externalSavedViews: ViewStateSpec[];
 }
 
+/** The view against which a specific TestCase is to be run. */
 interface TestViewState {
   readonly view: ViewState;
   readonly elementOverrides?: ElementOverrideProps[];
   readonly selectedElements?: Id64String | Id64Array;
 }
 
+/** The result of TestRunner.runTest. */
 interface TestResult {
   selectedTileIds: string;
   tileLoadingTime: number;
 }
 
+/** A test being executed in a viewport. */
 interface TestCase extends TestResult {
   readonly viewport: ScreenViewport;
   view: TestViewState;
 }
 
+/** Timings collected during TestRunner.runTest. */
 class Timings {
   public readonly cpu = new Array<Map<string, number>>();
   public readonly gpu = new Map<string, number[]>();
@@ -79,6 +86,7 @@ class Timings {
   }
 }
 
+/** Applies ELementOverrideProps to elements in a viewport for a TestCase. */
 class OverrideProvider {
   private readonly _elementOvrs = new Map<Id64String, FeatureAppearance>();
   private readonly _defaultOvrs?: FeatureAppearance;
@@ -107,6 +115,7 @@ class OverrideProvider {
   }
 }
 
+/** Given the JSON representation of a set of tests, executes them and records output (CSV timing info, images, logs, etc). */
 export class TestRunner {
   private readonly _config: TestConfigStack;
   private readonly _minimizeOutput: boolean;
@@ -131,6 +140,7 @@ export class TestRunner {
     return new TestRunner(props);
   }
 
+  /** Run all the tests. */
   public async run(): Promise<void> {
     const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation!}\n  format: Time_started  ModelName  [ViewName]`;
     await this.logToConsole(msg);
@@ -148,8 +158,6 @@ export class TestRunner {
 
     // Write WebGL compatibility info to CSV.
     await this.finish();
-
-    return IModelApp.shutdown();
   }
 
   private async runTestSet(set: TestSetProps): Promise<void> {
