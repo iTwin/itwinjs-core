@@ -14,7 +14,6 @@ internal;BadgeUtilities
 internal;BetaBadge(props: CommonProps): JSX.Element
 public;BlockText(props: TextProps): JSX.Element
 public;BodyText(props: TextProps): JSX.Element
-deprecated;BodyText(props: TextProps): JSX.Element
 beta;BoundsFunctionProp = number | (() => number | undefined)
 deprecated;BoundsFunctionProp = number | (() => number | undefined)
 public;Button 

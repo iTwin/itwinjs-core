@@ -10,15 +10,11 @@
  */
 
 @mixin light-theme {
-  // --buic-foreground-body-reverse-rgb: 255, 255, 255;
-
   --buic-button-gradient1:            rgba(var(--buic-foreground-body-reverse-rgb), 0.65);
   --buic-button-gradient2:            rgba(var(--buic-foreground-body-reverse-rgb), 0.00);
 }
 
 @mixin dark-theme {
-  // --buic-foreground-body-reverse-rgb: 000, 000, 000;
-
   --buic-button-gradient1:            rgba(var(--buic-foreground-body-reverse-rgb), 0.00);
   --buic-button-gradient2:            rgba(var(--buic-foreground-body-reverse-rgb), 0.25);
 }

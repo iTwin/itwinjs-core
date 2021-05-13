@@ -15,8 +15,7 @@ import * as React from "react";
 import { GetHandleProps, Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider";
 import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
-import { CommonProps, ElementResizeObserver, Popup, Tooltip } from "@bentley/ui-core";
-import { Body } from "@itwin/itwinui-react";
+import { BodyText, CommonProps, ElementResizeObserver, Popup, Tooltip } from "@bentley/ui-core";
 import { UiComponents } from "../../ui-components/UiComponents";
 import { HueSlider } from "../color/HueSlider";
 import { SaturationPicker } from "../color/SaturationPicker";
@@ -705,7 +704,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
             <div className="components-date-picker-calendar-popup-panel" data-testid="components-date-picker-calendar-popup-panel">
               <DatePicker selected={localTime} onDateChange={this._onDayClick} showFocusOutline={false} />
               <div className="time-container">
-                <Body className="time-label">{this._timeLabel}</Body>
+                <BodyText className="time-label">{this._timeLabel}</BodyText>
                 <TimeField time={{ hours: localTime.getHours(), minutes: localTime.getMinutes(), seconds: 0 }} timeDisplay={TimeDisplay.H12MC} onTimeChange={this._onTimeChanged} />
               </div>
             </div>

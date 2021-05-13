@@ -15,7 +15,8 @@ import {
   Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget, TypeConverter, TypeConverterManager,
 } from "@bentley/ui-components";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
-import { Body, ToggleSwitch } from "@itwin/itwinui-react";
+import { ToggleSwitch } from "@itwin/itwinui-react";
+import { BodyText } from "@bentley/ui-core";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -378,6 +379,7 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
 
   private _onFilteringChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
+    this.setState({ filtering: checked });
     this._columns.forEach((column: ColumnDescription) => {
       column.filterable = checked;
     });
@@ -390,7 +392,7 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
   public render(): React.ReactNode {
     return (
       <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
-        <div style={{ marginTop: "3px", marginBottom: "4px" }}>
+        <div style={{ display: "flex", alignItems: "center", height: "32px" }}>
           <select onChange={this._onChangeSelectionMode} aria-label="Selection Mode">
             <option value={SelectionMode.Single}>Single</option>
             <option value={SelectionMode.SingleAllowDeselect}>SingleAllowDeselect</option>
@@ -404,25 +406,26 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
           </select>
           <Gap />
           <label>
-            <Body>Top row:</Body>
+            <BodyText>Top row:</BodyText>
             &nbsp;
             <input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
             &nbsp;
             <span>({this.state.topRow})</span>
           </label>
           <Gap />
-          <label>
-            <Body>Filtering:</Body>
+          <label style={{ display: "flex" }}>
+            <BodyText>Filtering:</BodyText>
             &nbsp;
             <ToggleSwitch checked={this.state.filtering} onChange={this._onFilteringChange} title="Filtering" />
           </label>
-          <label>
-            <Body>UTC:</Body>
+          <Gap />
+          <label style={{ display: "flex" }}>
+            <BodyText>UTC:</BodyText>
             &nbsp;
             <ToggleSwitch checked={this.state.useUtc} onChange={this._onUtcChange} title="Use UTC in lieu of local time" />
           </label>
         </div>
-        <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
+        <div style={{ flex: "1", height: "calc(100% - 32px)" }}>
           {this.state.dataProvider &&
             <Table
               dataProvider={this.state.dataProvider}

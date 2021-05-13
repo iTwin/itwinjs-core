@@ -12,7 +12,6 @@ import { TextProps } from "./TextProps";
 
 /** Styled body text React functional component
  * @public
- * @deprecated Use Body in itwinui-react instead
  */
 export function BodyText(props: TextProps) {
   return <StyledText {...props} mainClassName="uicore-text-body" />;

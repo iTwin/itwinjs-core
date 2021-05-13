@@ -12,10 +12,10 @@ import * as React from "react";
 import {
   Slider as CompoundSlider, GetRailProps, GetTrackProps, Handles, Rail, SliderItem, SliderModeFunction, Ticks, Tracks,
 } from "react-compound-slider";
-import { Body } from "@itwin/itwinui-react";
 import { CommonProps } from "../utils/Props";
 import { useRefState } from "../utils/hooks/useRefState";
 import { Tooltip } from "../tooltip/Tooltip";
+import { BodyText } from "../text/BodyText";
 
 // cspell:ignore pushable
 
@@ -247,7 +247,7 @@ function MinMax(props: MinMaxProps) {
   if (image)
     element = <>{image}</>;
   else
-    element = <Body className="core-slider-minmax" data-testid={testId}>{displayValue}</Body>;
+    element = <BodyText className="core-slider-minmax" data-testid={testId}>{displayValue}</BodyText>;
 
   return element;
 }

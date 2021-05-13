@@ -144,7 +144,7 @@ export function BetaBadge(props: CommonProps): JSX.Element;
 // @public
 export function BlockText(props: TextProps): JSX.Element;
 
-// @public @deprecated
+// @public
 export function BodyText(props: TextProps): JSX.Element;
 
 // @beta @deprecated

@@ -12,7 +12,6 @@ import * as React from "react";
 import {
   AlternateDateFormats, PropertyValue, PropertyValueFormat, StandardTypeNames, TimeDisplay,
 } from "@bentley/ui-abstract";
-import { Body } from "@itwin/itwinui-react";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
@@ -21,6 +20,7 @@ import { TypeConverter } from "../converters/TypeConverter";
 import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { DateTimeTypeConverterBase } from "../converters/DateTimeTypeConverter";
+import { BodyText } from "@bentley/ui-core";
 
 // cSpell:ignore datepicker
 
@@ -287,7 +287,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
                 <DatePicker selected={date} onDateChange={this._handleChange} showFocusOutline={false} />
                 {this.state.timeDisplay &&
                   <div className="time-container">
-                    <Body className="time-label">{"Time"}</Body>
+                    <BodyText className="time-label">{"Time"}</BodyText>
                     <TimeField time={timeSpec} timeDisplay={this.state.timeDisplay} onTimeChange={this._handleTimeChange} />
                   </div>
                 }

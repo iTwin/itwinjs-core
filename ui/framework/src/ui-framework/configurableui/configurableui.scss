@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/base/base";
+@import "~@bentley/ui-core/lib/ui-core/inputs/variables";
 @import "~@bentley/ui-core/lib/ui-core/z-index";
 @import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/variables";
-@import "../variables";
 @import "~@itwin/itwinui-css/scss/style/typography";
+@import "../variables";
 
 #uifw-configurableui-wrapper {
   position: relative;
@@ -19,7 +20,7 @@
 
   // Override some iTwinUI-css padding and minimums
   .iui-input {
-    padding: $iui-xxs $iui-s;
+    padding: $uicore-iui-input-padding;
   }
 
   .iui-select {
@@ -33,6 +34,10 @@
     >.iui-select-button::after {
       right: 6px;
     }
+  }
+
+  .iui-toggle-switch {
+    padding: 1px 0;
   }
 }
 
