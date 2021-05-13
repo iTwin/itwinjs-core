@@ -602,7 +602,7 @@ export interface BRepThickenProps {
     frontDistance?: number;
 }
 
-// @beta
+// @public
 export interface BriefcaseDownloader {
     briefcaseId: number;
     downloadPromise: Promise<void>;
@@ -623,7 +623,7 @@ export enum BriefcaseIdValue {
     Unassigned = 0
 }
 
-// @beta
+// @public
 export interface BriefcaseProps {
     briefcaseId: number;
     iModelId: GuidString;
@@ -1884,26 +1884,6 @@ export enum DomainOptions {
     CheckRequiredUpgrades = 0,
     SkipCheck = 3,
     Upgrade = 2
-}
-
-// @internal
-export enum DownloadBriefcaseStatus {
-    // (undocumented)
-    ApplyingChangeSets = 5,
-    // (undocumented)
-    Complete = 6,
-    // (undocumented)
-    DownloadingChangeSets = 4,
-    // (undocumented)
-    DownloadingCheckpoint = 3,
-    // (undocumented)
-    Error = 7,
-    // (undocumented)
-    Initializing = 1,
-    // (undocumented)
-    NotStarted = 0,
-    // (undocumented)
-    QueryCheckpointService = 2
 }
 
 // @beta
@@ -4384,7 +4364,7 @@ export interface LineStyleProps extends DefinitionElementProps {
 // @public
 export type LocalAlignedBox3d = Range3d;
 
-// @beta
+// @public
 export interface LocalBriefcaseProps {
     briefcaseId: number;
     changeSetId: string;
@@ -5031,12 +5011,12 @@ export interface OpenAPISchema {
     type?: "boolean" | "object" | "array" | "number" | "string";
 }
 
-// @beta
+// @public
 export interface OpenBriefcaseOptions {
     openAsReadOnly?: boolean;
 }
 
-// @beta
+// @public
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
     fileName: string;
     readonly?: boolean;
@@ -6132,7 +6112,7 @@ export interface RepositoryLinkProps extends UrlLinkProps {
 
 export { RepositoryStatus }
 
-// @beta
+// @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
     briefcaseId?: number;
