@@ -5,7 +5,7 @@
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { TestConfig, TestConfigProps } from "./TestConfig";
+import { TestConfig, TestConfigProps, TestConfigStack } from "./TestConfig";
 
 export interface TestSetProps extends TestConfigProps {
   tests: TestConfigProps[];
@@ -18,13 +18,17 @@ export interface TestSetsProps extends TestConfigProps {
 }
 
 export class TestRunner {
-  private readonly _baseConfig: TestConfig;
+  private readonly _configStack: TestConfigStack;
   private readonly _minimizeOutput: boolean;
   private readonly _testSets: TestSetProps[];
   private readonly _logFileName: string;
 
+  private get curConfig(): TestConfig {
+    return this._configStack.top;
+  }
+
   private constructor(props: TestSetsProps) {
-    this._baseConfig = new TestConfig(props);
+    this._configStack = new TestConfigStack(new TestConfig(props));
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
@@ -36,9 +40,9 @@ export class TestRunner {
   }
 
   public async run(): Promise<void> {
-    const msg = `View Log,  Model Base Location: ${this._baseConfig.iModelLocation!}\n  format: Time_started  ModelName  [ViewName]`;
+    const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation!}\n  format: Time_started  ModelName  [ViewName]`;
     await this.logToConsole(msg);
-    await this.logToFile(this._baseConfig.outputPath, msg);
+    await this.logToFile(this.curConfig.outputPath, msg);
 
     // Run all the tests
     for (const set of this._testSets)
@@ -56,8 +60,10 @@ export class TestRunner {
     return IModelApp.shutdown();
   }
 
-  private async runTestSet(_set: TestSetProps): Promise<void> {
-    // ###TODO
+  private async runTestSet(set: TestSetProps): Promise<void> {
+    this._configStack.push(set);
+
+    this._configStack.pop();
   }
 
   private async finish(): Promise<void> {
@@ -79,7 +85,7 @@ export class TestRunner {
     if (renderComp.missingOptionalFeatures)
       renderData += `Missing Optional Features: ${renderComp.missingOptionalFeatures}"\r\n`;
 
-    await DisplayPerfRpcInterface.getClient().finishCsv(renderData, this._baseConfig.outputPath, this._baseConfig.outputName, this._baseConfig.csvFormat);
+    await DisplayPerfRpcInterface.getClient().finishCsv(renderData, this.curConfig.outputPath, this.curConfig.outputName, this.curConfig.csvFormat);
     return DisplayPerfRpcInterface.getClient().finishTest();
   }
 

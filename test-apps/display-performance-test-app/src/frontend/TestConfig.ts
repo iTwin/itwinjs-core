@@ -247,6 +247,29 @@ export class TestConfig {
   }
 }
 
+/** Maintains a stack of TestConfigs such that entries pushed on the stack inherit properties from the entry currently on the top of the stack. */
+export class TestConfigStack {
+  private readonly _stack: TestConfig[] = [];
+
+  public constructor(base: TestConfig) {
+    this._stack.push(base);
+  }
+
+  public get top(): TestConfig {
+    assert(this._stack.length > 0);
+    return this._stack[this._stack.length - 1];
+  }
+
+  public push(props: TestConfigProps): void {
+    this._stack.push(new TestConfig(props, this.top));
+  }
+
+  public pop(): void {
+    assert(this._stack.length > 1); // never pop the base of the stack.
+    this._stack.pop();
+  }
+}
+
 /** Override properties of settings with those defined by props. */
 function hiliteSettings(settings: Hilite.Settings, props: HiliteProps): Hilite.Settings {
   const colors = settings.color.colors;
