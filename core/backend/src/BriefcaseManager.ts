@@ -48,11 +48,14 @@ export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
   onProgress?: ProgressFunction;
 };
 
-/** A token that represents a ChangeSet
+/** Parameters of a changeset to be applied
  * @internal
  */
-export class ChangeSetToken {
-  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public changeType: ChangesType, public pushDate?: string) { }
+export interface ChangeSetApply {
+  id: string;
+  parentId: string;
+  pathname: string;
+  isSchemaChange?: boolean;
 }
 
 /** Utility to manage downloading Briefcases and applying and uploading changesets.
@@ -546,20 +549,21 @@ export class BriefcaseManager {
       changeSets.reverse();
 
     // Gather the changeset tokens
-    const changeSetTokens = new Array<ChangeSetToken>();
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(db.iModelId);
-    let maxFileSize: number = 0;
+    let maxFileSize = 0;
     let containsSchemaChanges = false;
-    changeSets.forEach((changeSet: ChangeSet) => {
-      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      assert(IModelJsFs.existsSync(changeSetPathname), `Change set file ${changeSetPathname} does not exist`);
-      const changeSetToken = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!);
-      changeSetTokens.push(changeSetToken);
-      if (+changeSet.fileSize! > maxFileSize)
+    for (const changeSet of changeSets) {
+      changeSetTokens.push({
+        id: changeSet.wsgId,
+        parentId: changeSet.parentId!,
+        pathname: path.join(changeSetsPath, changeSet.fileName!),
+        changeType: changeSet.changesType,
+      });
+      if (+ changeSet.fileSize! > maxFileSize)
         maxFileSize = +changeSet.fileSize!;
       if (changeSet.changesType === ChangesType.Schema)
         containsSchemaChanges = true;
-    });
+    }
 
     /* Apply change sets
      * If any of the change sets contain schema changes, or are otherwise too large, we process them asynchronously
