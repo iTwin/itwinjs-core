@@ -215,6 +215,14 @@ steps:
   # Code Coverage Tests
   #-------
   ## TODO: Fix combining code coverage into a single xml file to publish
+  - task: CmdLine@2
+    displayName: "Check Dir before combining"
+    inputs:
+      script: "dir"
+  - task: CmdLine@2
+    displayName: "Check working dir"
+    inputs:
+      script: echo ${{ parameters.workingDir }}
   - task: PythonScript@0
     displayName: "Combine code coverage"
     inputs:
@@ -241,8 +249,13 @@ steps:
         listOfFiles = []
 
         projDir = getParentDirectory(workDir, 4)
+
+        print("projDir is ", projDir)
+
         for path in glob.iglob((projDir + "/*/*/lib/**/cobertura-coverage.xml"), recursive=True):
           listOfFiles.append(path)
+
+        print("List of Files : ", listOfFiles)
 
         outputDir = os.path.join(args.output, "coverageXMLs")
         if not os.path.exists(outputDir):
@@ -265,6 +278,10 @@ steps:
 
       arguments: --output .
     # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
+  - task: CmdLine@2
+    displayName: "Check Dir after combining"
+    inputs:
+      script: "dir"
   - task: PublishCodeCoverageResults@1
     displayName: "Publish code coverage"
     inputs:
