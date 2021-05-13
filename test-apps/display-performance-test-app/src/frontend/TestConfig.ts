@@ -1,0 +1,270 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+import { assert, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { BackgroundMapProps, ColorDef, FeatureAppearanceProps, Hilite, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { RenderSystem, TileAdmin } from "@bentley/imodeljs-frontend";
+
+/** Dimensions of the Viewport for a TestConfig. */
+export interface ViewSize {
+  readonly width: number;
+  readonly height: number;
+}
+
+/** Selectively overrides individual ViewFlags for a TestConfig.
+ * @note renderMode can be a "wireframe", "hiddenline", "solidfill", or "smoothshade" (case-insensitive).
+ */
+export type ViewFlagProps = Partial<Omit<ViewFlags, "renderMode">> & { renderMode?: string | RenderMode };
+
+/** The types of saved views to include in a TestConfig. Case-insensitive in TestConfigProps; always lower-case in TestConfig.
+ * local and internal mean exactly the same thing - include all persistent views from the iModel, including private ones.
+ * external means to include external saved views from a *_ESV.json file
+ * both means to include both types.
+ */
+export type SavedViewType = "both" | "external" | "internal" | "local";
+
+/** The type(s) of tests specified by a TestConfig.
+ * timing means to record and output timing for drawing to the screen.
+ * readPixels means to record and output timing for drawing to an offscreen framebuffer for reading pixel data.
+ * image means to save an image of the screen.
+ * both means to do "timing" and "image".
+ */
+export type TestType = "timing" | "readPixels" | "image" | "both";
+
+/** Specifies symbology overrides to apply to elements in a TestConfig. */
+export interface ElementOverrideProps {
+  /** The Id of the affected element, or "-default-" to apply to all elements not otherwise overridden. */
+  id: Id64String | "-default-";
+  /** The symbology overrides to apply. */
+  fsa: FeatureAppearanceProps;
+}
+
+/** Overrides aspects of the Hilite.Settings used for emphasis or hilite in a TestConfig. */
+export interface HiliteProps {
+  visibleRatio?: number;
+  hiddenRatio?: number;
+  silhouette?: Hilite.Silhouette;
+  colors?: {
+    red?: number;
+    green?: number;
+    blue?: number;
+  };
+}
+
+/** JSON representation of a TestConfig. */
+export interface TestConfigProps {
+  /** The default output path. Not stored in the JSON file but supplied by the backend for the base config. Ignored if outputPath is defined. */
+  argOutputPath?: string;
+  /** The dimensions of the viewport.
+   * Default: 1000x1000.
+   */
+  view?: ViewSize;
+  /** The number of frames to draw while recording timings. Timings are averaged over these frames.
+   * Default: 50
+   */
+  numRendersToTime?: number;
+  /** The number of frames to draw without recording timings, to prime the system so that recorded timings are more consistent.
+   * Default: 100
+   */
+  numRendersToSkip?: number;
+  /** The name of the output .csv file to contain the recorded timing data.
+   * Default: performanceResults.csv
+   */
+  outputName?: string;
+  /** The directory to contain output like the .csv file containing timing data, saved images, log files, etc.
+   * Default: d:\output\performanceData\
+   */
+  outputPath?: string;
+  /** The location of the iModel file(s) used by the test.
+   * Default: ""
+   */
+  iModelLocation?: string;
+  /** The name of the iModel(s) to test. Can include wildcards.
+   * Default: "*"
+   */
+  iModelName?: string;
+  /** The name of the iModelHub project from which to obtain iModels. Currently not supported.
+   * Default: "iModel Testing"
+   */
+  iModelHubProject?: string;
+  /** The format in which to output the timing data. See DisplayPerfRpcImpl.saveCsv - only "original" is treated specially.
+   * Default: "original".
+   */
+  csvFormat?: string;
+  /** Substrings to omit from generated file names. See removeOptsFromString. */
+  filenameOptsToIgnore?: string[] | string;
+  /** The name of the view(s) to test. Can include wildcards.
+   * Default: "*"
+   */
+  viewName?: string;
+  /** The name of an external saved view to test. Supersedes viewName if defined. */
+  extViewName?: string;
+  /** The type of test(s) to run. */
+  testType?: TestType;
+  /** The name (Code value) of a display style to apply to the view. */
+  displayStyle?: string;
+  /** Overrides for selected ViewFlags to apply to the view. */
+  viewFlags?: ViewFlagProps;
+  /** Selectively overrides how the background map is drawn. */
+  backgroundMap?: BackgroundMapProps;
+  /** Selectively overrides options used to initialize the RenderSystem. */
+  renderOptions?: RenderSystem.Options;
+  /** Selectively overrides options used to initialize the TileAdmin. */
+  tileProps?: TileAdmin.Props;
+  hilite?: HiliteProps;
+  emphasis?: HiliteProps;
+  /** The type(s) of saved views to include. */
+  savedViewType?: SavedViewType;
+  /** An object (not a string) describing a non-persistent view. Supersedes viewName if defined. */
+  viewString?: {
+    _name: string;
+    _viewString: any;
+    _overrideElements?: ElementOverrideProps;
+    _selectedElements?: Id64String | Id64Array;
+  };
+}
+
+const defaultHilite = new Hilite.Settings();
+const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+
+/** Configures how one or more tests are run.
+ * A single base config is supplied by the backend.
+ * Each TestSet can override aspects of that base config.
+ * Each Test within a TestSet receives the TestSet's config and can override aspects of it.
+ * Most properties have the same meanings as those in TestConfigProps.
+ */
+export class TestConfig {
+  public readonly view: ViewSize;
+  public readonly numRendersToTime: number;
+  public readonly numRendersToSkip: number;
+  public readonly outputName: string;
+  public readonly outputPath: string;
+  public readonly iModelName: string;
+  public readonly iModelHubProject: string;
+  public readonly viewName: string;
+  public readonly testType: TestType;
+  public readonly csvFormat: string;
+  public readonly renderOptions: RenderSystem.Options;
+  public readonly savedViewType: SavedViewType;
+  public readonly iModelLocation: string;
+
+  public readonly extViewName?: string;
+  public readonly displayStyle?: string;
+  public readonly viewFlags?: ViewFlagProps;
+  public readonly tileProps?: TileAdmin.Props;
+  public readonly hilite?: Hilite.Settings;
+  public readonly emphasis?: Hilite.Settings;
+
+  /** A string representation of a ViewState, produced from TestConfigProps.viewString. */
+  public readonly viewStatePropsString?: string;
+  public readonly overrideElements?: ElementOverrideProps;
+  public readonly selectedElements?: Id64String | Id64Array;
+  public readonly filenameOptsToIgnore?: string[] | string;
+  public readonly backgroundMap?: BackgroundMapProps;
+
+  /** Construct a new TestConfig with properties initialized by following priority:
+   *  As defined by `props`; or
+   *  as defined by `prevConfig` if not defined by props; or
+   *  to default values if not defined by prevConfig or prevConfig is not supplied.
+   */
+  public constructor(props: TestConfigProps, prevConfig?: TestConfig) {
+    this.view = props.view ?? prevConfig?.view ?? { width: 1000, height: 1000 };
+    this.numRendersToTime = props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
+    this.numRendersToSkip = props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
+    this.outputName = props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
+    this.outputPath = props.outputPath ?? prevConfig?.outputPath ?? "D:\\output\\performanceData\\";
+    this.iModelLocation = props.iModelLocation ?? prevConfig?.iModelLocation ?? "";
+    this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
+    this.iModelHubProject = props.iModelHubProject ?? prevConfig?.iModelHubProject ?? "iModel Testing";
+    this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
+    this.viewName = props.viewName ?? prevConfig?.viewName ?? "*";
+    this.extViewName = props.extViewName;
+    this.testType = props.testType ?? prevConfig?.testType ?? "timing";
+    this.savedViewType = (props.savedViewType?.toLowerCase() as SavedViewType) ?? prevConfig?.savedViewType ?? "both";
+    this.renderOptions = prevConfig?.renderOptions ? { ...prevConfig.renderOptions } : { useWebGL2: true, dpiAwareLOD: true };
+    this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
+    this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
+
+    if (prevConfig) {
+      this.viewStatePropsString = prevConfig.viewStatePropsString;
+      this.hilite = prevConfig.hilite;
+      this.emphasis = prevConfig.emphasis;
+
+      if (prevConfig.backgroundMap)
+        this.backgroundMap = { ...prevConfig.backgroundMap };
+
+      if (prevConfig.tileProps)
+        this.tileProps = { ...prevConfig.tileProps };
+
+      if (prevConfig.viewFlags)
+        this.viewFlags = { ...prevConfig.viewFlags };
+
+    } else if (props.argOutputPath) {
+      this.outputPath = props.argOutputPath;
+    }
+
+    if (props.iModelLocation)
+      this.iModelLocation = combineFilePaths(props.iModelLocation, this.iModelLocation);
+
+    if (props.viewString) {
+      this.viewName = props.viewString._name;
+      this.viewStatePropsString = props.viewString._viewString;
+      this.overrideElements = props.viewString._overrideElements;
+      this.selectedElements = props.viewString._selectedElements;
+    }
+
+    if (props.renderOptions) {
+      const options = merge(this.renderOptions, props.renderOptions);
+      assert(options !== undefined);
+      this.renderOptions = options;
+    }
+
+    this.tileProps = merge(this.tileProps, props.tileProps);
+    this.backgroundMap = merge(this.backgroundMap, props.backgroundMap);
+    this.viewFlags = merge(this.viewFlags, props.viewFlags);
+
+    if (props.hilite)
+      this.hilite = hiliteSettings(this.hilite ?? defaultHilite, props.hilite);
+
+    if (props.emphasis)
+      this.emphasis = hiliteSettings(this.emphasis ?? defaultEmphasis, props.emphasis);
+  }
+}
+
+/** Override properties of settings with those defined by props. */
+function hiliteSettings(settings: Hilite.Settings, props: HiliteProps): Hilite.Settings {
+  const colors = settings.color.colors;
+  const color = ColorDef.from(props.colors?.red ?? colors.r, props.colors?.green ?? colors.g, props.colors?.blue ?? colors.b, 0);
+  return new Hilite.Settings(color, props.visibleRatio ?? settings.visibleRatio, props.hiddenRatio ?? settings.hiddenRatio, props.silhouette ?? settings.silhouette);
+}
+
+/** Merge two objects of type T such that any property defined by second overrides the value supplied for that property by first.
+ * The inputs are not modified - a new object is returned if two objects are supplied.
+ */
+function merge<T extends object>(first: T | undefined, second: T | undefined): T | undefined {
+  if (!first)
+    return second;
+  else if (!second)
+    return first;
+  else
+    return { ...first, ...second };
+}
+
+/** Combine two file paths. e.g., combineFilePaths("images/img.png", "/usr/tmp") returns "/usr/tmp/images/img.png".
+ * If additionalPath begins with a drive letter, initialPath is ignored.
+ */
+function combineFilePaths(additionalPath: string, initialPath: string): string {
+  if (initialPath.length === 0 || additionalPath[1] === ":")
+    return additionalPath;
+
+  let combined = initialPath;
+  while (combined.endsWith("\\") || combined.endsWith("/"))
+    combined = combined.slice(0, -1);
+
+  if (additionalPath[0] !== "\\" && additionalPath[0] !== "/")
+    combined += (additionalPath[0] === "\\" ? "\\" : "/");
+
+  return combined + additionalPath;
+}

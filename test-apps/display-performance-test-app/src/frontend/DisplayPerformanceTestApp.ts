@@ -695,8 +695,10 @@ class DefaultConfigs {
         this.hilite = Hilite.cloneSettings(prevConfigs.hilite);
       if (undefined !== prevConfigs.emphasis)
         this.emphasis = Hilite.cloneSettings(prevConfigs.emphasis);
-    } else if (jsonData.argOutputPath)
+    } else if (jsonData.argOutputPath) {
       this.outputPath = jsonData.argOutputPath;
+    }
+
     if (jsonData.view) this.view = new ViewSize(jsonData.view.width, jsonData.view.height);
     if (jsonData.numRendersToTime) this.numRendersToTime = jsonData.numRendersToTime;
     if (jsonData.numRendersToSkip) this.numRendersToSkip = jsonData.numRendersToSkip;
