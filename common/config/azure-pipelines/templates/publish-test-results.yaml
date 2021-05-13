@@ -248,6 +248,7 @@ steps:
         if not os.path.exists(outputDir):
           os.makedirs(outputDir)
 
+        print(outputDir)
         start = "imodeljs"
         end = "lib"
         for file in listOfFiles:
@@ -266,5 +267,5 @@ steps:
     displayName: "Publish code coverage"
     inputs:
       codeCoverageTool: Cobertura
-      summaryFileLocation: common/config/azure-pipelines/templates/coverageXMLs/**/cobertura-coverage.xml
+      summaryFileLocation: ./coverageXMLs/**/cobertura-coverage.xml
     condition: succeededOrFailed()
