@@ -10,7 +10,7 @@ import {
 import { BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps } from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
-  PerformanceMetrics, Pixel, RenderSystem, SnapshotConnection, ScreenViewport, Target, TileAdmin, ViewRect, ViewState,
+  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -124,7 +124,7 @@ export class TestRunner {
   private readonly _testNamesImages = new Map<string, number>();
   private readonly _testNamesTimings = new Map<string, number>();
 
-  private get curConfig(): TestConfig {
+  public get curConfig(): TestConfig {
     return this._config.top;
   }
 
@@ -142,7 +142,7 @@ export class TestRunner {
 
   /** Run all the tests. */
   public async run(): Promise<void> {
-    const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation!}\n  format: Time_started  ModelName  [ViewName]`;
+    const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation}\n  format: Time_started  ModelName  [ViewName]`;
     await this.logToConsole(msg);
     await this.logToFile(msg);
 
@@ -242,7 +242,7 @@ export class TestRunner {
     }
 
     this.updateTestNames(test);
-    await testConfig.testType === "readPixels" ? this.recordReadPixels(test) : this.recordRender(test);
+    await (testConfig.testType === "readPixels" ? this.recordReadPixels(test) : this.recordRender(test));
 
     vp.dispose();
     return test;
@@ -486,7 +486,7 @@ export class TestRunner {
       // A external and persistent view may exist with the same name. Check for external first.
       // (Note: the old code used to check for persistent first.)
       const name = config.extViewName ?? config.viewName;
-      spec = context.externalSavedViews.find((x) => x.name === config.extViewName);
+      spec = context.externalSavedViews.find((x) => x.name === name);
       if (!spec)
         return undefined;
     }
@@ -699,8 +699,8 @@ export class TestRunner {
     const configs = this.curConfig;
     const rowData = new Map<string, number | string>();
 
-    rowData.set("iModel", configs.iModelName!);
-    rowData.set("View", configs.viewName!);
+    rowData.set("iModel", configs.iModelName);
+    rowData.set("View", configs.viewName);
 
     const w = test.viewport.cssPixelsToDevicePixels(configs.view.width);
     const h = test.viewport.cssPixelsToDevicePixels(configs.view.height);
@@ -1238,11 +1238,4 @@ async function savePng(fileName: string, canvas: HTMLCanvasElement): Promise<voi
 
 function setPerformanceMetrics(vp: ScreenViewport, metrics: PerformanceMetrics | undefined): void {
   (vp.target as Target).performanceMetrics = metrics;
-}
-
-async function main(): Promise<void> {
-  const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
-  const props = JSON.parse(configStr) as TestSetsProps;
-  const runner = await TestRunner.create(props);
-  return runner.run();
 }
