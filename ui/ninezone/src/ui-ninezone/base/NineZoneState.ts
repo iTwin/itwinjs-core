@@ -1401,15 +1401,15 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
       return undefined; // already popout
 
     const tab = state.tabs[widgetTabId];
-    const preferredSizeAndPosition = { height: 800, width: 600, x: 50, y: 100, ...tab.preferredPopoutWidgetSize, ...size, ...point };
+    const preferredSizeAndPosition = { height: 800, width: 600, x: 0, y: 0, ...tab.preferredPopoutWidgetSize, ...size, ...point };
     const preferredBounds = Rectangle.createFromSize(preferredSizeAndPosition).offset(preferredSizeAndPosition);
 
     const nzBounds = Rectangle.createFromSize(state.size);
     const containedBounds = preferredBounds.containIn(nzBounds);
+    const popoutWidgetId = getUniqueId();
 
     // istanbul ignore else - no else/using as type guard to cast
     if (isPanelLocation(location)) {
-      const popoutWidgetId = getUniqueId();
       const panel = state.panels[location.side];
       const widgetIndex = panel.widgets.indexOf(location.widgetId);
 
@@ -1441,7 +1441,38 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
         };
       });
     } else if (isFloatingLocation(location)) {
-      return convertFloatingWidgetToPopout(state, location.floatingWidgetId);
+      const floatingWidget = state.widgets[location.floatingWidgetId];
+      // popout widget can only have a single widgetTab so if that is the case just convert floating container to popout container
+      if (floatingWidget.tabs.length === 1) {
+        return convertFloatingWidgetToPopout(state, location.floatingWidgetId);
+      }
+
+      // remove the tab from the floating container and create a new popout container
+      const home = state.floatingWidgets.byId[location.floatingWidgetId].home;
+      return produce(state, (draft) => {
+        const popoutTab = draft.tabs[widgetTabId];
+        initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
+        removeWidgetTab(draft, widgetTabId);
+        if (!draft.popoutWidgets) {
+          draft.popoutWidgets = {
+            byId: {},
+            allIds: [],
+          };
+        }
+        draft.popoutWidgets.byId[popoutWidgetId] = {
+          bounds: containedBounds.toProps(),
+          id: popoutWidgetId,
+          home,
+        };
+        draft.popoutWidgets.allIds.push(popoutWidgetId);
+        draft.widgets[popoutWidgetId] = {
+          activeTabId: widgetTabId,
+          id: popoutWidgetId,
+          minimized: false,
+          tabs: [widgetTabId],
+        };
+      });
+
     }
   }
 

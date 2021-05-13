@@ -122,20 +122,20 @@ export class ChildWindowManager {
   // istanbul ignore next
   private adjustWidowLocation(location: ChildWindowLocationProps, center?: boolean): ChildWindowLocationProps {
     const outLocation = { ...location };
+    if (0 === location.top && 0 === location.left) {
+      center = center ?? true;
 
-    if (undefined === center && 0 === location.top && 0 === location.left)
-      center = true;
-
-    // Prepare position of the new window to be centered against the 'parent' window.
-    if (center) {
-      outLocation.left =
-        window.top.outerWidth / 2 + window.top.screenX - location.width / 2;
-      outLocation.top =
-        window.top.outerHeight / 2 + window.top.screenY - location.height / 2;
-    } else {
-      if (undefined !== window.screenLeft && undefined !== window.screenTop) {
-        outLocation.top = window.screenTop + location.top;
-        outLocation.left = window.screenLeft + location.left;
+      // Prepare position of the new window to be centered against the 'parent' window.
+      if (center) {
+        outLocation.left =
+          window.top.outerWidth / 2 + window.top.screenX - location.width / 2;
+        outLocation.top =
+          window.top.outerHeight / 2 + window.top.screenY - location.height / 2;
+      } else {
+        if (undefined !== window.screenLeft && undefined !== window.screenTop) {
+          outLocation.top = window.screenTop + location.top;
+          outLocation.left = window.screenLeft + location.left;
+        }
       }
     }
     return outLocation;
@@ -150,7 +150,7 @@ export class ChildWindowManager {
 
     location = this.adjustWidowLocation(location);
     const url = useBlankUrl ? "" : "/iTwinPopup.html";
-    const childWindow = window.open(url, "", `width = ${location.width}, height = ${location.height}, left = ${location.left}, top = ${location.top}, menubar = no, resizable = yes, scrollbars = no, status = no, location = no`);
+    const childWindow = window.open(url, "", `width=${location.width},height=${location.height},left=${location.left},top=${location.top},menubar=no,resizable=yes,scrollbars=no,status=no,location=no`);
     if (!childWindow)
       return false;
 

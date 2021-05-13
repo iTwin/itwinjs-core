@@ -13,22 +13,21 @@ import { FrontstageDef } from "../frontstage/FrontstageDef";
 
 // cSpell:ignore popout
 interface PopoutWidgetProps {
-  widgetPanelId: string;
-  widgetDefs: WidgetDef[];
-  activeWidgetId: string;
+  widgetContainerId: string;
+  widgetDef: WidgetDef;
   frontstageDef: FrontstageDef;
 }
 
 /** Component used to wrap a widget for use is a child window.
  * @internal
  */
-export function PopoutWidget({ widgetPanelId, widgetDefs, activeWidgetId, frontstageDef }: PopoutWidgetProps) {
+export function PopoutWidget({ widgetContainerId, widgetDef, frontstageDef }: PopoutWidgetProps) {
   const divRef = React.useRef<HTMLDivElement>(null);
   const owningWindowRef = React.useRef<any>(null);
 
   React.useEffect(() => {
     const triggerDockWidgetProcessing = () => {
-      frontstageDef.processChildWindowClose(widgetPanelId);
+      frontstageDef.processChildWindowClose(widgetContainerId);
     };
 
     owningWindowRef.current = divRef.current!.ownerDocument.defaultView;
@@ -38,14 +37,12 @@ export function PopoutWidget({ widgetPanelId, widgetDefs, activeWidgetId, fronts
       if (owningWindowRef.current)
         owningWindowRef.current.removeEventListener("beforeunload", triggerDockWidgetProcessing);
     };
-  }, [frontstageDef, widgetPanelId]);
-
-  const index = widgetDefs.findIndex((def) => def.id === activeWidgetId);
+  }, [frontstageDef, widgetContainerId]);
 
   // TODO: Currently we only render first widget
   return (
     <div ref={divRef}>
-      {widgetDefs.length > 0 && widgetDefs[index >= 0 && index < widgetDefs.length ? index : 0].reactNode}
+      {widgetDef.reactNode}
     </div>
   );
 }
