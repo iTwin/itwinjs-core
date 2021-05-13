@@ -4,12 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { BeDuration, Dictionary, Id64Array, Id64String, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
+import {
+  assert, BeDuration, Dictionary, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
+} from "@bentley/bentleyjs-core";
 import { BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps } from "@bentley/imodeljs-common";
 import {
-  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, IModelApp, IModelConnection, RenderSystem, SnapshotConnection,
-  ScreenViewport, TileAdmin, ViewState,
+  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
+  PerformanceMetrics, Pixel, RenderSystem, SnapshotConnection, ScreenViewport, Target, TileAdmin, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
+import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
@@ -47,6 +50,34 @@ interface TestCase extends TestResult {
   view: TestViewState;
 }
 
+class Timings {
+  public readonly cpu = new Array<Map<string, number>>();
+  public readonly gpu = new Map<string, number[]>();
+  public readonly actualFps = new Array<Map<string, number>>();
+  public gpuFramesCollected = 0;
+  public readonly callback: GLTimerResultCallback;
+
+  public constructor(numFramesToCollect: number) {
+    this.callback = (result: GLTimerResult) => {
+      if (this.gpuFramesCollected >= numFramesToCollect)
+        return;
+
+      const label = result.label;
+      const timings = this.gpu.get(label);
+      this.gpu.set(label, timings ? timings.concat(result.nanoseconds / 1e6) : [result.nanoseconds / 1e6]); // save as milliseconds
+      if (result.children)
+        for (const child of result.children)
+          this.callback(child);
+
+      if ("Total" === label)
+        ++this.gpuFramesCollected;
+    };
+  }
+
+  public set callbackEnabled(enabled: boolean) {
+    IModelApp.renderSystem.debugControl!.resultsCallback = enabled ? this.callback : undefined;
+  }
+}
 
 class OverrideProvider {
   private readonly _elementOvrs = new Map<Id64String, FeatureAppearance>();
@@ -186,9 +217,119 @@ export class TestRunner {
     const vp = test.viewport;
     if (testConfig.testType === "image" || testConfig.testType === "both") {
       this.updateTestNames(test, undefined, true);
+
+      const canvas = vp.readImageToCanvas();
+      await savePng(this.getImageName(test), canvas);
+
+      if (testConfig.testType === "image") {
+        vp.dispose();
+        return test;
+      }
     }
 
+    // Throw away the first N frames until the timings become more consistent.
+    for (let i = 0; i < this.curConfig.numRendersToSkip; i++) {
+      vp.requestRedraw();
+      vp.renderFrame();
+    }
+
+    this.updateTestNames(test);
+    await testConfig.testType === "readPixels" ? this.recordReadPixels(test) : this.recordRender(test);
+
+    vp.dispose();
     return test;
+  }
+
+  private async recordReadPixels(test: TestCase): Promise<void> {
+    const vp = test.viewport;
+    const viewRect = new ViewRect(0, 0, this.curConfig.view.width, this.curConfig.view.height);
+    const timings = new Timings(this.curConfig.numRendersToTime);
+
+    const testReadPix = async (pixSelect: Pixel.Selector, pixSelectStr: string) => {
+      // Collect CPU timings.
+      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, undefined));
+      for (let i = 0; i < this.curConfig.numRendersToTime; ++i) {
+        vp.readPixels(viewRect, pixSelect, () => { });
+        timings.cpu[i] = (vp.target as Target).performanceMetrics!.frameTimings;
+        timings.cpu[i].delete("Scene Time");
+      }
+
+      // Collect GPU timings.
+      timings.gpuFramesCollected = 0;
+      timings.callbackEnabled = true;
+      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, timings.callback));
+      await this.renderAsync(vp, this.curConfig.numRendersToTime, timings);
+      timings.callbackEnabled = false;
+
+      this.updateTestNames(test, pixSelectStr, true);
+      this.updateTestNames(test, pixSelectStr, false);
+
+      const row = this.getRowData(timings, test, pixSelectStr);
+      await this.saveCsv(row);
+      await this.createReadPixelsImages(pixSelect, pixSelectStr);
+    };
+
+    // Test each combo of pixel selectors.
+    await testReadPix(Pixel.Selector.Feature, "+feature");
+    await testReadPix(Pixel.Selector.GeometryAndDistance, "+geom+dist");
+    await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
+  }
+
+  private async recordRender(test: TestCase): Promise<void> {
+    const timings = new Timings(this.curConfig.numRendersToTime);
+    setPerformanceMetrics(test.viewport, new PerformanceMetrics(true, false, timings.callback));
+    await this.renderAsync(test.viewport, this.curConfig.numRendersToTime, timings);
+
+  }
+
+  private async renderAsync(vp: ScreenViewport, numFrames: number, timings: Timings): Promise<void> {
+    IModelApp.viewManager.addViewport(vp);
+
+    const target = vp.target as Target;
+    const metrics = target.performanceMetrics;
+    assert(undefined !== metrics);
+
+    target.performanceMetrics = undefined;
+    timings.callbackEnabled = false;
+
+    const numFramesToIgnore = 120;
+    let ignoreFrameCount = 0;
+    let frameCount = 0;
+    vp.continuousRendering = true;
+    return new Promise((resolve: () => void, _reject) => {
+      const timer = new StopWatch();
+      const removeListener = vp.onRender.addListener(() => {
+        // Ignore the first N frames - they seem to have more variable frame rate.
+        if (++ignoreFrameCount <= numFramesToIgnore) {
+          if (ignoreFrameCount === numFramesToIgnore) {
+            // Time to start recording.
+            target.performanceMetrics = metrics;
+            timings.callbackEnabled = true;
+            timer.start();
+          }
+
+          return;
+        }
+
+        timer.stop();
+        timings.actualFps[frameCount] = metrics.frameTimings;
+        timings.actualFps[frameCount].set("Total Time", timer.current.milliseconds);
+
+        if (++frameCount === numFrames)
+          target.performanceMetrics = undefined;
+
+        if (timings.gpuFramesCollected >= numFrames || (frameCount >= numFrames && !(IModelApp.renderSystem as System).isGLTimerSupported)) {
+          removeListener();
+          IModelApp.viewManager.dropViewport(vp, false);
+          vp.continuousRendering = false;
+          timings.callbackEnabled = false;
+          resolve();
+        } else {
+          vp.requestRedraw();
+          timer.start();
+        }
+      });
+    });
   }
 
   private async setupTest(context: TestContext): Promise<TestCase | undefined> {
@@ -479,6 +620,12 @@ export class TestRunner {
     return DisplayPerfRpcInterface.getClient().finishTest();
   }
 
+  private async saveCsv(row: Map<string, number | string>): Promise<void> {
+    const outputPath = this.curConfig.outputPath;
+    const outputName = this.curConfig.outputName;
+    return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...row]), this.curConfig.csvFormat);
+  }
+
   private async logToFile(message: string): Promise<void> {
     return DisplayPerfRpcInterface.getClient().writeExternalFile(this.curConfig.outputPath, this._logFileName, true, message);
   }
@@ -529,6 +676,128 @@ export class TestRunner {
     }
 
     return testName;
+  }
+
+  private getImageName(test: TestCase, prefix?: string): string {
+    const filename = `${this.getTestName(test, prefix, true)}.png`;
+    if (ProcessDetector.isMobileAppFrontend)
+      return filename; // on mobile we use device's Documents path as determined by mobile backend
+
+    return path.join(this.curConfig.outputPath, filename);
+  }
+
+  private getRowData(timings: Timings, test: TestCase, pixSelectStr?: string): Map<string, number | string> {
+    const fixed = 4;
+    const configs = this.curConfig;
+    const rowData = new Map<string, number | string>();
+
+    rowData.set("iModel", configs.iModelName!);
+    rowData.set("View", configs.viewName!);
+
+    const w = test.viewport.cssPixelsToDevicePixels(configs.view.width);
+    const h = test.viewport.cssPixelsToDevicePixels(configs.view.height);
+    rowData.set("Screen Size", `${w}X${h}`);
+
+    rowData.set("Skip & Time Renders", `${configs.numRendersToSkip} & ${configs.numRendersToTime}`);
+    rowData.set("Display Style", test.viewport.displayStyle.name);
+    rowData.set("Render Mode", getRenderMode(test.viewport));
+    rowData.set("View Flags", getViewFlagsString(test) !== "" ? ` ${getViewFlagsString(test)}` : "");
+    rowData.set("Render Options", getRenderOpts(configs.renderOptions) !== "" ? ` ${getRenderOpts(configs.renderOptions)}` : "");
+
+    const tileProps = configs.tileProps ? getTileProps(configs.tileProps) : "";
+    rowData.set("Tile Props", "" !== tileProps ? ` ${tileProps}` : "");
+    rowData.set("Bkg Map Props", getBackgroundMapProps(test.viewport) !== "" ? ` ${getBackgroundMapProps(test.viewport)}` : "");
+
+    const other = getOtherProps(test.viewport);
+    if ("" !== other)
+      rowData.set("Other Props", ` ${other}`);
+
+    if (pixSelectStr)
+      rowData.set("ReadPixels Selector", ` ${pixSelectStr}`);
+
+    rowData.set("Test Name", this.getTestName(test));
+    rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
+    if (!this._minimizeOutput)
+      rowData.set("Tile Loading Time", test.tileLoadingTime);
+
+    const setGpuData = (name: string) => {
+      if (name === "CPU Total Time")
+        name = "Total";
+
+      const gpuDataArray = timings.gpu.get(name);
+      if (gpuDataArray) {
+        let gpuSum = 0;
+        for (const gpuData of gpuDataArray)
+          gpuSum += gpuData;
+
+        rowData.set(`GPU-${name}`, gpuDataArray.length ? (gpuSum / gpuDataArray.length).toFixed(fixed) : gpuSum.toFixed(fixed));
+      }
+    };
+
+    // Calculate average timings
+    if (pixSelectStr) { // timing read pixels
+      for (const colName of timings.cpu[0].keys()) {
+        let sum = 0;
+        timings.cpu.forEach((timing) => {
+          const data = timing.get(colName);
+          sum += data ? data : 0;
+        });
+
+        if (!this._minimizeOutput || colName === "CPU Total Time") {
+          rowData.set(colName, (sum / timings.cpu.length).toFixed(fixed));
+          setGpuData(colName);
+        }
+      }
+    } else { // timing render frame
+      for (const colName of timings.cpu[0].keys()) {
+        let sum = 0;
+        timings.cpu.forEach((timing) => {
+          const data = timing.get(colName);
+          sum += data ? data : 0;
+        });
+
+        if (!this._minimizeOutput || colName === "CPU Total Time") {
+          rowData.set(colName, sum / timings.cpu.length);
+          setGpuData(colName);
+        }
+      }
+    }
+
+    let totalTime: number;
+    if (rowData.get("Finish GPU Queue")) { // If we can't collect GPU data, get non-interactive total time with 'Finish GPU Queue' time
+      totalTime = Number(rowData.get("CPU Total Time")) + Number(rowData.get("Finish GPU Queue"));
+      rowData.set("Non-Interactive Total Time", totalTime);
+      rowData.set("Non-Interactive FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
+    }
+
+    // Get these values from the timings.actualFps -- timings.actualFps === timings.cpu, unless in readPixels mode
+    let totalRenderTime = 0;
+    totalTime = 0;
+    for (const time of timings.actualFps) {
+      let timing = time.get("CPU Total Time");
+      totalRenderTime += timing ? timing : 0;
+      timing = time.get("Total Time");
+      totalTime += timing ? timing : 0;
+    }
+
+    rowData.delete("Total Time");
+    totalRenderTime /= timings.actualFps.length;
+    totalTime /= timings.actualFps.length;
+    const totalGpuTime = Number(rowData.get("GPU-Total"));
+    if (totalGpuTime) {
+      const gpuBound = totalGpuTime > totalRenderTime;
+      const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalRenderTime);
+      rowData.delete("GPU-Total");
+      rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed)); // Change the name of this column & change column order
+      rowData.set("Bound By", gpuBound ? (effectiveFps < 60.0 ? "gpu" : "gpu ?") : "cpu *");
+      rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalRenderTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
+      rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
+    }
+
+    rowData.set("Actual Total Time", totalTime.toFixed(fixed));
+    rowData.set("Actual FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
+
+    return rowData;
   }
 }
 
@@ -851,6 +1120,16 @@ function formatSelectedTileIds(vp: ScreenViewport): string {
   }
 
   return formattedSelectedTileIds;
+}
+
+async function savePng(fileName: string, canvas: HTMLCanvasElement): Promise<void> {
+  const img = canvas.toDataURL("image/png");
+  const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
+  return DisplayPerfRpcInterface.getClient().savePng(fileName, data);
+}
+
+function setPerformanceMetrics(vp: ScreenViewport, metrics: PerformanceMetrics | undefined): void {
+  (vp.target as Target).performanceMetrics = metrics;
 }
 
 async function main(): Promise<void> {
