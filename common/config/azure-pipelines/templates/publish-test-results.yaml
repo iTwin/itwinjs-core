@@ -235,10 +235,12 @@ steps:
         import shutil
         import glob
 
-        def getParentDirectory(path, levels = 1):
-          for _ in range(levels):
-            path = os.path.dirname(path)
-          return path
+        def readXML(compName, filePath):
+          covFile = open(filePath).read()
+          pattern = 'package name="'
+          component = 'package name="'+ compName
+          covFile = covFile.replace(pattern, component)
+
 
         parser = argparse.ArgumentParser()
         parser.add_argument(
@@ -247,12 +249,7 @@ steps:
         workDir = os.getcwd()
 
         listOfFiles = []
-
-        print("Working Dir is : ", workDir)
-
-        projDir = getParentDirectory(workDir, 4)
-
-        print("projDir is ", projDir)
+        print(workDir)
 
         for path in glob.iglob((workDir + "/*/*/lib/**/cobertura-coverage.xml"), recursive=True):
           listOfFiles.append(path)
@@ -264,8 +261,14 @@ steps:
           os.makedirs(outputDir)
 
         print(os.path.abspath(outputDir))
-        start = "s"
+
+        start = "imodeljs"
         end = "lib"
+
+        outputXML = "coverage.xml"
+
+        outfile = open(os.path.join(outputDir, outputXML), 'w')
+
         for file in listOfFiles:
           filePathParts = file.split(os.sep)
           coveragePath = os.path.join(*filePathParts[filePathParts.index((start))+1:filePathParts.index(end)])
@@ -275,8 +278,18 @@ steps:
             os.makedirs(destFilePath)
 
           shutil.copy(file, destFilePath)
+          print(coveragePath)
+
+          covFile = open(os.path.join(destFilePath, "cobertura-coverage.xml")).read()
+          pattern = 'package name="'
+          component = 'package name="'+ coveragePath + os.sep
+          covFile = covFile.replace(pattern, component)
+
+          outfile.write(covFile)
 
           print(os.path.abspath(destFilePath))
+
+        outfile.close()
 
       arguments: --output common/config/azure-pipelines/templates
     # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
