@@ -261,7 +261,7 @@ steps:
 
           shutil.copy(file, destFilePath)
 
-      arguments: --output '.'
+      arguments: --output .
     # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
   - task: PublishCodeCoverageResults@1
     displayName: "Publish code coverage"
