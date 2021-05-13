@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import {
-  assert, BeDuration, Dictionary, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
+  assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@bentley/bentleyjs-core";
 import { BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps } from "@bentley/imodeljs-common";
 import {
@@ -266,7 +266,7 @@ export class TestRunner {
 
       const row = this.getRowData(timings, test, pixSelectStr);
       await this.saveCsv(row);
-      await this.createReadPixelsImages(pixSelect, pixSelectStr);
+      await this.createReadPixelsImages(test, pixSelect, pixSelectStr);
     };
 
     // Test each combo of pixel selectors.
@@ -798,6 +798,106 @@ export class TestRunner {
     rowData.set("Actual FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
 
     return rowData;
+  }
+
+  private async createReadPixelsImages(test: TestCase, pix: Pixel.Selector, pixStr: string): Promise<void> {
+    const vp = test.viewport;
+    const canvas = vp.readImageToCanvas();
+    const ctx = canvas.getContext("2d");
+    if (!ctx)
+      return;
+
+    const cssRect = new ViewRect(0, 0, this.curConfig.view.width, this.curConfig.view.height);
+    const imgWidth = vp.cssPixelsToDevicePixels(cssRect.width);
+    const imgHeight = vp.cssPixelsToDevicePixels(cssRect.height);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+    const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+    const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(imgWidth, imgHeight) : undefined;
+
+    vp.readPixels(cssRect, pix, (pixels) => {
+      if (!pixels)
+        return;
+
+      for (let y = 0; y < imgHeight; ++y) {
+        for (let x = 0; x < imgWidth; ++x) {
+          const index = (x * 4) + (y * 4 * imgWidth);
+          const pixel = pixels.getPixel(x, y);
+
+          // RGB for element ID
+          if (elemIdImgData !== undefined) {
+            const elemId = Id64.getLowerUint32(pixel.elementId ? pixel.elementId : "");
+            elemIdImgData.data[index + 0] = elemId % 256;
+            elemIdImgData.data[index + 1] = (Math.floor(elemId / 256)) % 256;
+            elemIdImgData.data[index + 2] = (Math.floor(elemId / (256 ^ 2))) % 256;
+            elemIdImgData.data[index + 3] = 255; // Set alpha to 100% opaque
+          }
+
+          // RGB for Depth
+          if (depthImgData !== undefined) {
+            const distColor = pixels.getPixel(x, y).distanceFraction * 255;
+            depthImgData.data[index + 0] = depthImgData.data[index + 1] = depthImgData.data[index + 2] = distColor;
+            depthImgData.data[index + 3] = 255; // Set alpha to 100% opaque
+          }
+
+          // RGB for type
+          if (typeImgData !== undefined) {
+            const type = pixels.getPixel(x, y).type;
+            switch (type) {
+              case Pixel.GeometryType.None: // White
+                typeImgData.data[index + 0] = 255;
+                typeImgData.data[index + 1] = 255;
+                typeImgData.data[index + 2] = 255;
+                break;
+              case Pixel.GeometryType.Surface: // Red
+                typeImgData.data[index + 0] = 255;
+                typeImgData.data[index + 1] = 0;
+                typeImgData.data[index + 2] = 0;
+                break;
+              case Pixel.GeometryType.Linear: // Green
+                typeImgData.data[index + 0] = 0;
+                typeImgData.data[index + 1] = 255;
+                typeImgData.data[index + 2] = 0;
+                break;
+              case Pixel.GeometryType.Edge: // Blue
+                typeImgData.data[index + 0] = 0;
+                typeImgData.data[index + 1] = 0;
+                typeImgData.data[index + 2] = 255;
+                break;
+              case Pixel.GeometryType.Silhouette: // Purple
+                typeImgData.data[index + 0] = 255;
+                typeImgData.data[index + 1] = 0;
+                typeImgData.data[index + 2] = 255;
+                break;
+              case Pixel.GeometryType.Unknown: // Black
+              default:
+                typeImgData.data[index + 0] = 0;
+                typeImgData.data[index + 1] = 0;
+                typeImgData.data[index + 2] = 0;
+                break;
+            }
+
+            typeImgData.data[index + 3] = 255; // Set alpha to 100% opaque
+          }
+        }
+      }
+    });
+
+    if (elemIdImgData !== undefined) {
+      ctx.putImageData(elemIdImgData, 0, 0);
+      await savePng(this.getImageName(test, `elemId_${pixStr}_`), canvas);
+    }
+
+    if (depthImgData !== undefined) {
+      ctx.putImageData(depthImgData, 0, 0);
+      await savePng(this.getImageName(test, `depth_${pixStr}_`), canvas);
+    }
+
+    if (typeImgData !== undefined) {
+      ctx.putImageData(typeImgData, 0, 0);
+      await savePng(this.getImageName(test, `type_${pixStr}_`), canvas);
+    }
   }
 }
 
