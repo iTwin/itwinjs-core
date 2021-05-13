@@ -42,9 +42,9 @@ alpha;BRepHollowProps
 public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
-beta;BriefcaseDownloader
+public;BriefcaseDownloader
 public;BriefcaseIdValue
-beta;BriefcaseProps
+public;BriefcaseProps
 public;calculateSolarAngles(date: Date, location: Cartographic):
 public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 public;calculateSolarDirectionFromAngles(azimuthElevation:
@@ -119,7 +119,6 @@ public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
-internal;DownloadBriefcaseStatus
 beta;DynamicGraphicsRequest2dProps 
 beta;DynamicGraphicsRequest3dProps 
 beta;DynamicGraphicsRequestProps 
@@ -306,7 +305,7 @@ public;LinePixels
 public;LineStyle
 public;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
-beta;LocalBriefcaseProps
+public;LocalBriefcaseProps
 beta;MapImageryProps
 beta;MapImagerySettings
 beta;MapLayerKey
@@ -366,8 +365,8 @@ internal;OpenAPIRequestBody
 internal;OpenAPIResponse
 internal;OpenAPIResponses
 internal;OpenAPISchema
-beta;OpenBriefcaseOptions
-beta;OpenBriefcaseProps 
+public;OpenBriefcaseOptions
+public;OpenBriefcaseProps 
 public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
@@ -439,7 +438,7 @@ public;RenderTexture
 beta;RenderTimelineLoadProps
 beta;RenderTimelineProps 
 public;RepositoryLinkProps 
-beta;RequestNewBriefcaseProps
+public;RequestNewBriefcaseProps
 public;ResponseLike 
 public;RgbColor
 public;RgbColorProps

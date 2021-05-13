@@ -39,7 +39,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 export type BriefcaseId = number;
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
- * @beta
+ * @public
 */
 export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
   /** If present, a function called periodically during the download to indicate progress.
