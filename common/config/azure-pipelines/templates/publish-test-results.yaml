@@ -218,7 +218,7 @@ steps:
   - task: CmdLine@2
     displayName: "Check Dir before combining"
     inputs:
-      script: "dir"
+      script: dir
   - task: CmdLine@2
     displayName: "Check working dir"
     inputs:
@@ -281,7 +281,7 @@ steps:
   - task: CmdLine@2
     displayName: "Check Dir after combining"
     inputs:
-      script: "dir"
+      script: dir
   - task: PublishCodeCoverageResults@1
     displayName: "Publish code coverage"
     inputs:
