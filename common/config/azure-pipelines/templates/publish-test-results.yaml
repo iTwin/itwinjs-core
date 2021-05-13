@@ -262,7 +262,7 @@ steps:
 
         print(os.path.abspath(outputDir))
 
-        start = "imodeljs"
+        start = "s"
         end = "lib"
 
         outputXML = "coverage.xml"
