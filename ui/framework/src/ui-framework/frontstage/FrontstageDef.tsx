@@ -627,7 +627,7 @@ export class FrontstageDef {
         const tab = state.tabs[widgetDef.id];
 
         // TODO: only popout single widget?
-        const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} frontstageDef={this} />);
+        const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
         const position: ChildWindowLocationProps = {
           width: tab.preferredPopoutWidgetSize?.width ?? 600,
           height: tab.preferredPopoutWidgetSize?.height ?? 800,
@@ -669,7 +669,7 @@ export class FrontstageDef {
               const tab = state.tabs[widgetId];
               this.nineZoneState = state;
               setImmediate(() => {
-                const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} frontstageDef={this} />);
+                const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
                 const position: ChildWindowLocationProps = {
                   width: tab.preferredPopoutWidgetSize?.width ?? 600,
                   height: tab.preferredPopoutWidgetSize?.height ?? 800,
@@ -699,15 +699,15 @@ export class FrontstageDef {
     // console.log(`Closing window ${childWindowId} x=${childWindow.screenX} y=${childWindow.screenX} width=${childWindow.innerWidth} height=${childWindow.innerHeight}`);
     if (this.nineZoneState) {
       const newState = await saveFrontstagePopoutWidgetSizeAndPosition(this.nineZoneState, this.id, this.version, childWindowId, childWindow);
-      this.nineZoneState = newState;
+      this._nineZoneState = newState; // set without triggering new render as only preferred floating position set
     }
   }
 
-  public processChildWindowClose(widgetContainerId: string) {
-    if (this._isStageClosing || this._isApplicationClosing) {
-      return;
-    }
-
+  /** Method used to possibly change a Popout Wigdet back to a docked widget if the user was the one closing the popout's child
+   * window (i.e. UiFramework.childWindowManager.isClosingChildWindow === false).
+   *  @internal
+   */
+  public dockPopoutWidgetContainer(widgetContainerId: string) {
     if (this.nineZoneState) {
       const location = findWidget(this.nineZoneState, widgetContainerId);
       // Make sure the widgetContainerId is still in popout state. We don't want to set it to docked if the window is being closed because

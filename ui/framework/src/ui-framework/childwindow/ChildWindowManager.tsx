@@ -93,10 +93,14 @@ export class ChildWindowManager {
         );
       });
 
-      childWindow.onbeforeunload = () => {
+      childWindow.onbeforeunload = (e: Event) => {
         const frontStageDef = FrontstageManager.activeFrontstageDef;
-        frontStageDef && frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow);
-        this.closeChildWindow(childWindowId, false);
+        if (frontStageDef) {
+          void frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow).then(() => {
+            this.closeChildWindow(childWindowId, false);
+          });
+        }
+        e.preventDefault();
       };
     }
   }
@@ -115,6 +119,12 @@ export class ChildWindowManager {
     this.openChildWindows.splice(windowIndex, 1);
     if (processWindowClose) {
       childWindow.window.close();
+    } else {
+      // call the following to convert popout to docked widget
+      const frontStageDef = FrontstageManager.activeFrontstageDef;
+      if (frontStageDef) {
+        frontStageDef.dockPopoutWidgetContainer(childWindowId);
+      }
     }
     return true;
   };

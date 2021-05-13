@@ -1,89 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
-<NavigationWidgetWithDef
-  horizontalToolbar={
-    <Toolbar
-      expandsTo={4}
-      items={
-        <UNDEFINED>
-          <ToolButton
-            iconSpec="icon-placeholder"
-            labelKey="SampleApp:buttons.tool1"
-            toolId="tool1"
-          />
-          <ToolButton
-            iconSpec="icon-placeholder"
-            labelKey="SampleApp:buttons.tool2"
-            toolId="tool2"
-          />
-        </UNDEFINED>
-      }
-      panelAlignment={0}
-    />
-  }
-  navigationWidgetDef={
-    NavigationWidgetDef {
-      "_classId": undefined,
-      "_defaultState": 4,
-      "_fillZone": false,
-      "_handleSyncUiEvent": [Function],
-      "_id": "navigationWidget",
-      "_isFloatingStateSupported": false,
-      "_isFloatingStateWindowResizable": true,
-      "_isFreeform": false,
-      "_isStatusBar": false,
-      "_isToolSettings": false,
-      "_label": "",
-      "_navigationAidId": "",
-      "_onWidgetStateChanged": undefined,
-      "_preferredPanelSize": undefined,
-      "_priority": 0,
-      "_restoreTransientState": undefined,
-      "_saveTransientState": undefined,
-      "_state": 4,
-      "_stateChanged": false,
-      "_syncEventIds": Array [],
-      "_tabLocation": Object {
-        "side": "left",
-        "tabIndex": 0,
-        "widgetId": "",
-        "widgetIndex": 0,
-      },
-      "_toolbarBaseName": "[]NavigationWidget",
-      "_tooltip": "",
-      "_widgetType": 1,
-      "horizontalDirection": 4,
-      "horizontalItems": undefined,
-      "horizontalPanelAlignment": 1,
-      "verticalDirection": 1,
-      "verticalItems": undefined,
-      "verticalPanelAlignment": 0,
-    }
-  }
-  verticalToolbar={
-    <Toolbar
-      expandsTo={1}
-      items={
-        <UNDEFINED>
-          <ToolButton
-            iconSpec="icon-placeholder"
-            labelKey="SampleApp:buttons.tool1"
-            toolId="tool1"
-          />
-          <ToolButton
-            iconSpec="icon-placeholder"
-            labelKey="SampleApp:buttons.tool2"
-            toolId="tool2"
-          />
-        </UNDEFINED>
-      }
-      panelAlignment={0}
-    />
-  }
-/>
-`;
-
 exports[`NavigationWidget localStorage Wrapper NavigationWidget NavigationWidget should render correctly 1`] = `
 <NavigationWidgetWithDef
   horizontalToolbar={
@@ -108,6 +24,7 @@ exports[`NavigationWidget localStorage Wrapper NavigationWidget NavigationWidget
   }
   navigationWidgetDef={
     NavigationWidgetDef {
+      "_canPopout": undefined,
       "_classId": undefined,
       "_defaultState": 4,
       "_fillZone": false,
