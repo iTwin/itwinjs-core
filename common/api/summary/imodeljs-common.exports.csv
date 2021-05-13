@@ -42,9 +42,9 @@ alpha;BRepHollowProps
 public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
-beta;BriefcaseDownloader
+public;BriefcaseDownloader
 public;BriefcaseIdValue
-beta;BriefcaseProps
+public;BriefcaseProps
 public;calculateSolarAngles(date: Date, location: Cartographic):
 public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 public;calculateSolarDirectionFromAngles(azimuthElevation:
@@ -119,8 +119,6 @@ public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
-internal;DownloadBriefcaseStatus
-beta;DPoint2dProps = number[]
 beta;DynamicGraphicsRequest2dProps 
 beta;DynamicGraphicsRequest3dProps 
 beta;DynamicGraphicsRequestProps 
@@ -175,6 +173,7 @@ internal;FeatureTableHeader
 public;FilePropertyProps
 public;FillDisplay
 public;FillFlags
+beta;FlatBufferGeometryStream
 public;FontMap
 public;FontMapProps
 public;FontProps
@@ -296,6 +295,7 @@ public;isPlacement3dProps(props: PlacementProps): props is Placement3dProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 beta;iTwinChannel: (channel: string) => string
+beta;JsonGeometryStream
 public;LatAndLong
 public;LatLongAndHeight 
 internal;LightLocationProps 
@@ -305,7 +305,7 @@ public;LinePixels
 public;LineStyle
 public;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
-beta;LocalBriefcaseProps
+public;LocalBriefcaseProps
 beta;MapImageryProps
 beta;MapImagerySettings
 beta;MapLayerKey
@@ -336,7 +336,7 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-alpha;NativeAppAuthorizationConfiguration
+beta;NativeAppAuthorizationConfiguration
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications
@@ -365,8 +365,8 @@ internal;OpenAPIRequestBody
 internal;OpenAPIResponse
 internal;OpenAPIResponses
 internal;OpenAPISchema
-beta;OpenBriefcaseOptions
-beta;OpenBriefcaseProps 
+public;OpenBriefcaseOptions
+public;OpenBriefcaseProps 
 public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
@@ -390,6 +390,7 @@ beta;PlanarClipMaskSettings
 public;PlanProjectionSettings
 public;PlanProjectionSettingsProps
 internal;PntsHeader 
+public;Point2dProps = number[]
 beta;PointWithStatus
 internal;POLICY: unique symbol
 internal;PolylineData
@@ -425,19 +426,23 @@ public;RelatedElement
 public;RelatedElementProps
 public;RelationshipProps 
 public;RemoveFunction = () => void
-beta;class RenderMaterial
-beta;RenderMaterial
-beta;RenderMaterialProps 
+public;class RenderMaterial
+public;RenderMaterial
+public;RenderMaterialAssetProps
+public;RenderMaterialProps 
 public;RenderMode
 beta;RenderSchedule
-beta;class RenderTexture 
-beta;RenderTexture
+internal;Interval
+public;class RenderTexture 
+public;RenderTexture
+beta;RenderTimelineLoadProps
+beta;RenderTimelineProps 
 public;RepositoryLinkProps 
-beta;RequestNewBriefcaseProps
+public;RequestNewBriefcaseProps
 public;ResponseLike 
 public;RgbColor
 public;RgbColorProps
-beta;RgbFactorProps = number[]
+public;RgbFactorProps = number[]
 public;RootSubjectProps
 public;class RpcConfiguration
 public;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
@@ -541,13 +546,12 @@ internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
 public;TextStringProps
-beta;TextureFlags
 alpha;TextureLoadProps
-beta;TextureMapping
-beta;TextureMapping
-beta;TextureMapProps
-beta;TextureMapUnits
-beta;TextureProps 
+public;TextureMapping
+public;TextureMapping
+public;TextureMapProps
+public;TextureMapUnits
+public;TextureProps 
 public;ThematicDisplay
 public;ThematicDisplayMode
 public;ThematicDisplayProps

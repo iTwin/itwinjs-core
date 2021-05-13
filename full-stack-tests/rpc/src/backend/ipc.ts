@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { IpcWebSocketBackend } from "@bentley/imodeljs-common";
+import { IpcWebSocketBackend, iTwinChannel } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 
 export async function setupIpcTest(before = async () => { }) {
@@ -24,6 +24,14 @@ export async function setupIpcTest(before = async () => { }) {
 
       socket.handle("testinvoke", async (_event: Event, methodName: string, ...args: any[]) => {
         return [methodName, ...args];
+      });
+
+      socket.handle(iTwinChannel("ipc-app"), async (_event: Event, _methodName: string, ..._args: any[]) => {
+        return { result: undefined };
+      });
+
+      socket.handle(iTwinChannel("nativeApp"), async (_event: Event, methodName: string, ..._args: any[]) => {
+        return { result: (methodName === "initializeAuth") ? 0 : {} };
       });
 
       ready();

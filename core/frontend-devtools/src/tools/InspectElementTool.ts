@@ -25,7 +25,7 @@ import { parseArgs } from "./parseArgs";
  *  - `copy=0|1` where 1 indicates the output should be copied to the clipboard. Defaults to true.
  *  - `refs=0|1` where 1 indicates that for geometry parts a list of all elements referencing that part should be included in the output. This is extremely computationally expensive.
  * If no id is specified, the tool runs in interactive mode: first operating upon the selection set (if any), then allowing the user to select additional elements.
- * @alpha
+ * @beta
  */
 export class InspectElementTool extends PrimitiveTool {
   public static toolId = "InspectElement";

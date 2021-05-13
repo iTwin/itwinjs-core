@@ -206,7 +206,7 @@ export class ECSchemaToTs {
       return interfacesTs;
 
     // only generate props interface for entity if the class has properties
-    if (ecClass.schemaItemType === SchemaItemType.EntityClass && (!ecClass.properties || ecClass.properties.length === 0))
+    if (ecClass.schemaItemType === SchemaItemType.EntityClass && (!ecClass.properties || ecClass.properties.next().done))
       return interfacesTs;
 
     // convert description to typescript comment only for mixin or struct
@@ -290,7 +290,7 @@ export class ECSchemaToTs {
     // determine prop type to pass in the constructor
     let propsBaseTsType: string;
     const propsBase = this.getBaseClassWithProps(ecClass);
-    if (ecClass.fullName !== elementECClassName && ecClass.properties && ecClass.properties.length > 0) {
+    if (ecClass.fullName !== elementECClassName && ecClass.properties && !ecClass.properties.next().done) {
       const moduleName: string = `${this._schema!.schemaKey.name}ElementProps`;
       propsBaseTsType = this.addImportClass(classNameToModule, moduleName, `${ecClass.name}Props`);
     } else if (propsBase.length > 0)
@@ -321,7 +321,7 @@ export class ECSchemaToTs {
    * @param classNameToModule Typescrip modules to be updated after the conversion
    */
   private convertPropsToTsVars(ecClass: ECClass, classNameToModule: Map<string, string>): string[] {
-    if (ecClass.properties === undefined || ecClass.properties.length === 0)
+    if (ecClass.properties === undefined || ecClass.properties.next().done)
       return [];
 
     const outputStrings: string[] = [];
@@ -495,7 +495,7 @@ export class ECSchemaToTs {
     const visited: Set<string> = new Set<string>();
     visited.add(ecClass.fullName);
     this.traverseBaseClass(ecClass, visited, (base: ECClass) => {
-      if (base.properties && base.properties.length > 0) {
+      if (base.properties && !base.properties.next().done) {
         res.push(base);
         return false;
       }

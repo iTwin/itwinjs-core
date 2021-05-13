@@ -1,6 +1,26 @@
 # Change Log - @bentley/itwin-client
 
-This log was last generated on Thu, 22 Apr 2021 21:07:33 GMT and should not be manually modified.
+This log was last generated on Wed, 12 May 2021 18:08:13 GMT and should not be manually modified.
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Added new exception type
+- Add baseUrl field for static API URL
+- fix parsing of buddi fallback for clients. imjs_buddi_resolve_url_using_region should support both strings and numbers
+- update xmldom to 0.5.0
 
 ## 2.14.4
 Thu, 22 Apr 2021 21:07:33 GMT

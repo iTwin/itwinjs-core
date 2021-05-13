@@ -2,6 +2,51 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.15.2",
+      "tag": "@bentley/ui-components_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@bentley/ui-components_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/ui-components_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to use UiSettingsStorage."
+          },
+          {
+            "comment": "Fix color picker hue display in DR by removing webkit prefix. Adjust max slider value."
+          },
+          {
+            "comment": "'TreeModel': Fixed 'changeNodeId' to set new id on TreeModelNode"
+          },
+          {
+            "comment": "'TreeNodeLoader': Changed nodes loading to avoid removing subtrees of existing expanded nodes"
+          },
+          {
+            "comment": "Added ability to track rendered nodes in ControlledTree"
+          },
+          {
+            "comment": "Fix number editor so it can process Enter key and call OnCommit processing."
+          },
+          {
+            "comment": "Fix compatibility issue when multiple versions of `rxjs` are in use."
+          },
+          {
+            "comment": "Fix a crash when clicking on a `ControlledTree` node when the tree contains placeholder nodes and using `SelectionMode.Multiple`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.14.4",
       "tag": "@bentley/ui-components_v2.14.4",
       "date": "Thu, 22 Apr 2021 21:07:33 GMT",

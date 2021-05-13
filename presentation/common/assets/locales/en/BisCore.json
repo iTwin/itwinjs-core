@@ -1,10 +1,18 @@
 {
   "Categories": {
-    "SourceFileInformation": "Source File Information"
+    "SourceFileInformation": "Source File Information",
+    "SourceInformation": "Source Information",
+    "SourceInformationModelSource": "Model Source",
+    "SourceInformationSecondarySources": "Secondary Sources"
   },
   "Properties": {
     "SourceElementId": "Source Element ID",
     "SourceFileName": "Source File Name",
-    "SourceFilePath": "Source File Path"
+    "SourceFilePath": "Source File Path",
+    "SourceInformation": {
+      "ElementId": "Element ID",
+      "Name": "Name",
+      "Path": "Path"
+    }
   }
 }

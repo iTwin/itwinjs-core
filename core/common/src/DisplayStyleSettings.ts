@@ -140,14 +140,21 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   analysisFraction?: number;
-  /** Schedule script
+  /** A schedule script embedded into the display style settings. This is how schedule scripts were stored prior to the introduction of
+   * [RenderTimeline]($backend) elements. It should no longer be used - instead, set [[renderTimeline]] to the Id of the RenderTimeline element
+   * that hosts the script.
    * @note For a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend), the element Ids will be omitted from all
-   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory - they are not needed for display on the frontend.
-   * @beta
+   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory, because they are not needed for display on the frontend.
+   * @deprecated Use DisplayStyleSettingsProps.renderTimeline.
+   * @internal
    */
   scheduleScript?: RenderSchedule.ModelTimelineProps[];
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view.
+   * @beta
+   */
+  renderTimeline?: Id64String;
   /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
+   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    * @beta
    */
   timePoint?: number;
@@ -401,9 +408,15 @@ export class DisplayStyleSettings {
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
+   * @deprecated Use onRenderTimelineChanged
    * @internal
    */
   public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>();
+
+  /** Event raised just prior to assignment to the [[renderTimeline]] property.
+   * @beta
+   */
+  public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
   /** Event raised just prior to assignment to the [[timePoint]] property.
    * @beta
    */
@@ -607,17 +620,31 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** @internal */
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view.
+   * @beta
+   */
+  public get renderTimeline(): Id64String | undefined {
+    return this._json.renderTimeline;
+  }
+  public set renderTimeline(id: Id64String | undefined) {
+    this.onRenderTimelineChanged.raiseEvent(id);
+    this._json.renderTimeline = id;
+  }
+
+  /** @internal @deprecated */
   public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
+    // eslint-disable-next-line deprecation/deprecation
     return this._json.scheduleScript;
   }
   public set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined) {
+    // eslint-disable-next-line deprecation/deprecation
     this.onScheduleScriptPropsChanged.raiseEvent(props);
+    // eslint-disable-next-line deprecation/deprecation
     this._json.scheduleScript = props;
   }
 
   /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
+   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    * @beta
    */
   public get timePoint(): number | undefined {
@@ -874,8 +901,14 @@ export class DisplayStyleSettings {
         props.analysisFraction = this.analysisFraction;
       }
 
-      if (this.scheduleScriptProps)
+      // eslint-disable-next-line deprecation/deprecation
+      if (this.scheduleScriptProps) {
+        // eslint-disable-next-line deprecation/deprecation
         props.scheduleScript = [...this.scheduleScriptProps];
+      }
+
+      if (this.renderTimeline)
+        props.renderTimeline = this.renderTimeline;
 
       props.subCategoryOvr = this._json.subCategoryOvr ? [...this._json.subCategoryOvr] : [];
       props.modelOvr = this._json.modelOvr ? [...this._json.modelOvr] : [];
@@ -939,8 +972,14 @@ export class DisplayStyleSettings {
     if (undefined !== overrides.analysisFraction)
       this.analysisFraction = overrides.analysisFraction;
 
-    if (overrides.scheduleScript)
+    // eslint-disable-next-line deprecation/deprecation
+    if (overrides.scheduleScript) {
+      // eslint-disable-next-line deprecation/deprecation
       this.scheduleScriptProps = [...overrides.scheduleScript];
+    }
+
+    if (overrides.renderTimeline)
+      this.renderTimeline = overrides.renderTimeline;
 
     if (overrides.subCategoryOvr) {
       this._json.subCategoryOvr = [...overrides.subCategoryOvr];

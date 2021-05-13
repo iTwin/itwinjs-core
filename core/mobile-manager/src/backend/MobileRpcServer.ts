@@ -96,10 +96,10 @@ export class MobileRpcServer {
 
     if (Buffer.isBuffer(message)) {
       if (message.byteOffset !== 0 || message.byteLength !== message.buffer.byteLength) {
-        throw new IModelError(BentleyStatus.ERROR, "Slices are not supported.");
+        message = new Uint8Array(message.buffer, message.byteOffset, message.byteLength);
+      } else {
+        message = message.buffer;
       }
-
-      message = message.buffer;
     }
 
     MobileRpcServer.interop.handler(message, this._connectionId);

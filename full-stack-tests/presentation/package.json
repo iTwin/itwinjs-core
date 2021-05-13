@@ -16,29 +16,29 @@
     "docs": "npm run extract",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "cross-env NODE_ENV=development mocha --opts ./mocha.opts \"./lib/**/*.js\" --grep \"#with-services\" --invert",
-    "test:integration": "mocha --opts ./mocha.opts \"./lib/**/*.js\" --grep \"#with-services\"",
+    "test": "cross-env NODE_ENV=development mocha \"./lib/**/*.js\" --grep \"#with-services\" --invert",
+    "test:integration": "mocha \"./lib/**/*.js\" --grep \"#with-services\"",
     "copy:config": "internal-tools copy-config",
     "cover": "npm run test"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.18",
-    "@bentley/geometry-core": "2.16.0-dev.18",
-    "@bentley/imodeljs-i18n": "2.16.0-dev.18",
-    "@bentley/itwin-client": "2.16.0-dev.18",
-    "@bentley/imodeljs-common": "2.16.0-dev.18",
-    "@bentley/imodeljs-backend": "2.16.0-dev.18",
-    "@bentley/imodeljs-frontend": "2.16.0-dev.18",
-    "@bentley/oidc-signin-tool": "2.16.0-dev.18",
-    "@bentley/presentation-common": "2.16.0-dev.18",
-    "@bentley/presentation-backend": "2.16.0-dev.18",
-    "@bentley/presentation-frontend": "2.16.0-dev.18",
-    "@bentley/presentation-components": "2.16.0-dev.18",
-    "@bentley/presentation-testing": "2.16.0-dev.18",
-    "@bentley/product-settings-client": "2.16.0-dev.18",
-    "@bentley/ui-core": "2.16.0-dev.18",
-    "@bentley/ui-components": "2.16.0-dev.18",
-    "@bentley/ui-abstract": "2.16.0-dev.18",
+    "@bentley/bentleyjs-core": "2.17.0-dev.3",
+    "@bentley/geometry-core": "2.17.0-dev.3",
+    "@bentley/imodeljs-i18n": "2.17.0-dev.3",
+    "@bentley/itwin-client": "2.17.0-dev.3",
+    "@bentley/imodeljs-common": "2.17.0-dev.3",
+    "@bentley/imodeljs-backend": "2.17.0-dev.3",
+    "@bentley/imodeljs-frontend": "2.17.0-dev.3",
+    "@bentley/oidc-signin-tool": "2.17.0-dev.3",
+    "@bentley/presentation-common": "2.17.0-dev.3",
+    "@bentley/presentation-backend": "2.17.0-dev.3",
+    "@bentley/presentation-frontend": "2.17.0-dev.3",
+    "@bentley/presentation-components": "2.17.0-dev.3",
+    "@bentley/presentation-testing": "2.17.0-dev.3",
+    "@bentley/product-settings-client": "2.17.0-dev.3",
+    "@bentley/ui-core": "2.17.0-dev.3",
+    "@bentley/ui-components": "2.17.0-dev.3",
+    "@bentley/ui-abstract": "2.17.0-dev.3",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -47,7 +47,7 @@
     "@types/cpx": "1.5",
     "@types/deep-equal": "^1",
     "@types/faker": "^4.1.0",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/rimraf": "^2.0.2",
     "@types/sinon": "^9.0.0",
@@ -60,7 +60,7 @@
     "deep-equal": "^1",
     "faker": "^4.1.0",
     "immer": "^9.0.1",
-    "mocha": "^5.2.0",
+    "mocha": "^8.3.2",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-test-renderer": "^16.13.1",
@@ -71,9 +71,9 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
-    "@bentley/config-loader": "2.16.0-dev.18",
-    "@bentley/build-tools": "2.16.0-dev.18",
-    "@bentley/eslint-plugin": "2.16.0-dev.18",
+    "@bentley/config-loader": "2.17.0-dev.3",
+    "@bentley/build-tools": "2.17.0-dev.3",
+    "@bentley/eslint-plugin": "2.17.0-dev.3",
     "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",
     "@types/testing-library__react-hooks": "^3.1.0",
@@ -90,5 +90,24 @@
       "@bentley"
     ],
     "extends": "plugin:@bentley/imodeljs-recommended"
+  },
+  "mocha": {
+    "require": [
+      "scripts/copy-test-setup.js",
+      "source-map-support/register",
+      "jsdom-global/register",
+      "ignore-styles"
+    ],
+    "checkLeaks": true,
+    "timeout": 60000,
+    "file": [
+      "lib/setup.js"
+    ],
+    "reporter": [
+      "node_modules/@bentley/build-tools/mocha-reporter"
+    ],
+    "reporterOptions": [
+      "mochaFile=lib/test/junit_results.xml"
+    ]
   }
 }

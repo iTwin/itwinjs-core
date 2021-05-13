@@ -51,6 +51,20 @@ export class VertexIndices {
     bytes[byteIndex + 1] = (index & 0x0000ff00) >> 8;
     bytes[byteIndex + 2] = (index & 0x00ff0000) >> 16;
   }
+
+  public decodeIndex(index: number): number {
+    assert(index < this.length);
+    const byteIndex = index * 3;
+    return this.data[byteIndex] | (this.data[byteIndex + 1] << 8) | (this.data[byteIndex + 2] << 16);
+  }
+
+  public decodeIndices(): number[] {
+    const indices = [];
+    for (let i = 0; i < this.length; i++)
+      indices.push(this.decodeIndex(i));
+
+    return indices;
+  }
 }
 
 interface Dimensions {
@@ -320,7 +334,7 @@ class PolylineTesselator {
   private _nextParam: number[] = [];
   private _position: Point3d[] = [];
 
-  private constructor(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean) {
+  public constructor(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean) {
     this._polylines = polylines;
     this._points = points;
     this._doJoints = doJointTriangles;
@@ -399,6 +413,12 @@ class PolylineTesselator {
           this._addVertex(v0, v0.computeParam(false, jointAt0, false, false));
           this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
           this._addVertex(v1, v1.computeParam(true, jointAt1, false, false));
+
+          if (jointAt0)
+            this.addJointTriangles(v0, v0.computeParam(false, true, false, true), v0);
+
+          if (jointAt1)
+            this.addJointTriangles(v1, v1.computeParam(false, true, false, true), v1);
         } else {
           this._addVertex(v0, v0.computeParam(true));
           this._addVertex(v1, v1.computeParam(false));
@@ -408,6 +428,15 @@ class PolylineTesselator {
           this._addVertex(v1, v1.computeParam(true));
         }
       }
+    }
+  }
+
+  private addJointTriangles(v0: PolylineVertex, p0: number, v1: PolylineVertex): void {
+    const param = v1.computeParam(false, false, true);
+    for (let i = 0; i < 3; i++) {
+      this._addVertex(v0, p0);
+      this._addVertex(v1, param + i + 1);
+      this._addVertex(v1, param + i);
     }
   }
 
@@ -425,6 +454,12 @@ class PolylineTesselator {
     this._nextParam[this._numIndices] = param;
     this._numIndices++;
   }
+}
+
+/** Strictly for tests. @internal */
+export function tesselatePolyline(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline {
+  const tesselator = new PolylineTesselator(polylines, points, doJointTriangles);
+  return tesselator.tesselate();
 }
 
 /** @internal */
@@ -623,8 +658,8 @@ export interface EdgeParams {
 
 function wantJointTriangles(weight: number, is2d: boolean): boolean {
   // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
-  const jointWidthThreshold = 5;
-  return is2d || weight > jointWidthThreshold;
+  const jointWidthThreshold = 3;
+  return is2d || weight >= jointWidthThreshold;
 }
 
 function convertEdges(meshArgs: MeshArgs): EdgeParams | undefined {

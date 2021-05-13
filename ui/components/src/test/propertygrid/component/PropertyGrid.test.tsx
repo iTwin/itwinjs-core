@@ -6,11 +6,10 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
+import { Orientation, ResizableContainerObserver } from "@bentley/ui-core";
 import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock";
 import { PropertyGrid } from "../../../ui-components/propertygrid/component/PropertyGrid";
 import {
@@ -345,7 +344,7 @@ describe("PropertyGrid", () => {
         await TestUtils.flushAsyncOperations();
         propertyGridMount.update();
 
-        const resizeDetector = propertyGridMount.find(ReactResizeDetector);
+        const resizeDetector = propertyGridMount.find(ResizableContainerObserver);
         expect(resizeDetector.length).to.eq(1);
 
         resizeDetector.prop("onResize")!(250, 400);
@@ -641,6 +640,20 @@ describe("PropertyGrid", () => {
       expect(wrapper.container.querySelector(".components-cell-editor"), "Cell editor did not disappear after pressing Escape").to.be.null;
     });
 
+  });
+
+  describe("property hover", () => {
+    it("enables property hovering", async () => {
+      const { findByText, getByRole } = render(
+        <PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider}
+          isPropertyHoverEnabled={true}
+        />);
+
+      await findByText("Group 1");
+      expect([...getByRole("presentation").classList.values()]).to.contain("components--hoverable");
+    });
   });
 
   describe("context menu", () => {

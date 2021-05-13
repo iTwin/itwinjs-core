@@ -12,8 +12,9 @@ RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;
 
 if (ProcessDetector.isElectronAppFrontend) {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  ElectronApp.startup({ iModelApp: { rpcInterfaces } });
+  before(async () => {
+    await ElectronApp.startup({ iModelApp: { rpcInterfaces } });
+  });
 } else {
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
   config.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;

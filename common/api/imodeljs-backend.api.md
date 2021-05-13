@@ -51,7 +51,6 @@ import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
-import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { EditingScopeNotifications } from '@bentley/imodeljs-common';
@@ -119,7 +118,6 @@ import { LockLevel } from '@bentley/imodelhub-client';
 import { LockType } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
-import { MapImageryProps } from '@bentley/imodeljs-common';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
@@ -160,6 +158,7 @@ import { RelationshipProps } from '@bentley/imodeljs-common';
 import { RemoveFunction } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
+import { RenderTimelineProps } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { RequestNewBriefcaseProps } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
@@ -186,7 +185,6 @@ import { SubjectProps } from '@bentley/imodeljs-common';
 import { SynchronizationConfigLinkProps } from '@bentley/imodeljs-common';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { TelemetryManager } from '@bentley/telemetry-client';
-import { TextureFlags } from '@bentley/imodeljs-common';
 import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
@@ -436,7 +434,9 @@ export class BriefcaseDb extends IModelDb {
     static open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<string>;
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
+    // @deprecated
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+    // @deprecated
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     saveChanges(description?: string): void;
     // (undocumented)
@@ -460,14 +460,16 @@ export enum BriefcaseIdValue {
     Standalone = 0
 }
 
-// @beta
+// @public
 export class BriefcaseManager {
     static acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number>;
     static get cacheDir(): string;
+    // @beta
     static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
     // @internal (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
     static deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void>;
+    // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
     // @internal
@@ -492,21 +494,22 @@ export class BriefcaseManager {
     static getCompatibilityPath(iModelId: GuidString): string;
     static getFileName(briefcase: BriefcaseProps): string;
     static getIModelPath(iModelId: GuidString): string;
-    static initialize(cacheRootDir: string, compatibilityDir: string): void;
+    static initialize(cacheRootDir: string, compatibilityDir?: string): void;
+    // @deprecated
     static isStandaloneBriefcaseId(id: BriefcaseId): boolean;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps): void;
+    // @internal
     static processChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex?: number): Promise<void>;
     // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, mergeToVersion?: IModelVersion): Promise<void>;
     // @internal
     static pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType?: ChangesType, relinquishCodesLocks?: boolean): Promise<void>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     static reinstateChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reinstateToVersion?: IModelVersion): Promise<void>;
-    // (undocumented)
     static releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     static reverseChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reverseToVersion: IModelVersion): Promise<void>;
     }
 
@@ -574,6 +577,7 @@ export class ChangedElementsDb implements IDisposable {
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+    processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
 // @internal
@@ -669,7 +673,7 @@ export class CheckpointManager {
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean;
 }
 
-// @beta
+// @public
 export interface CheckpointProps {
     changeSetId: string;
     contextId: GuidString;
@@ -1222,10 +1226,12 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @internal (undocumented)
+    // (undocumented)
+    loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
+    // @alpha (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
     // (undocumented)
     abstract get settings(): DisplayStyleSettings;
@@ -1249,11 +1255,11 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
     constructor(props: DisplayStyle3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
@@ -1263,9 +1269,6 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
 export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
     // (undocumented)
     backgroundColor?: ColorDef | number;
-    // (undocumented)
-    mapImagery?: MapImageryProps;
-    scheduleScript?: object | RenderSchedule.ModelTimelineProps[];
     viewFlags?: ViewFlags;
 }
 
@@ -1303,8 +1306,6 @@ export interface DownloadJob {
     promise?: Promise<any>;
     // (undocumented)
     request: DownloadRequest;
-    // (undocumented)
-    status: DownloadBriefcaseStatus;
 }
 
 // @internal
@@ -1993,6 +1994,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     jsonProperties?: string;
     kind: string;
     scope: RelatedElement;
+    source?: RelatedElement;
     // @internal (undocumented)
     toJSON(): ExternalSourceAspectProps;
     version?: string;
@@ -2697,9 +2699,10 @@ export class IModelExporter {
     exportFontByNumber(fontNumber: number): Promise<void>;
     exportFonts(): Promise<void>;
     exportModel(modeledElementId: Id64String): Promise<void>;
-    exportModelContents(modelId: Id64String, elementClassFullName?: string): Promise<void>;
+    exportModelContents(modelId: Id64String, elementClassFullName?: string, skipRootSubject?: boolean): Promise<void>;
     exportRelationship(relClassFullName: string, relInstanceId: Id64String): Promise<void>;
     exportRelationships(baseRelClassFullName: string): Promise<void>;
+    // @deprecated
     exportRepositoryLinks(): Promise<void>;
     exportSchemas(): Promise<void>;
     exportSubModels(parentModelId: Id64String): Promise<void>;
@@ -2730,7 +2733,7 @@ export abstract class IModelExportHandler {
     protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     protected onExportSchema(_schema: Schema_2): void;
-    protected onProgress(): void;
+    protected onProgress(): Promise<void>;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
@@ -2850,7 +2853,7 @@ export class IModelImporter {
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
     importElement(elementProps: ElementProps): Id64String;
-    importElementMultiAspects(aspectPropsArray: ElementAspectProps[]): void;
+    importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): void;
     importElementUniqueAspect(aspectProps: ElementAspectProps): void;
     importModel(modelProps: ModelProps): void;
     importRelationship(relationshipProps: RelationshipProps): Id64String;
@@ -2955,7 +2958,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
     protected onTransformElement(sourceElement: Element): ElementProps;
-    protected onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
+    protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
@@ -2985,6 +2988,7 @@ export class IModelTransformer extends IModelExportHandler {
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
+    includeSourceProvenance?: boolean;
     isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
@@ -3404,10 +3408,11 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 
 // @internal (undocumented)
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
+    protected constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
     // (undocumented)
-    config: NativeAppAuthorizationConfiguration;
+    config?: NativeAppAuthorizationConfiguration;
     // (undocumented)
     expireSafety: number;
     // (undocumented)
@@ -3415,9 +3420,11 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
-    initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void>;
+    initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
     get isAuthorized(): boolean;
+    // (undocumented)
+    issuerUrl?: string;
     // (undocumented)
     protected abstract refreshToken(): Promise<AccessToken>;
     // (undocumented)
@@ -3700,7 +3707,7 @@ export interface ProcessChangesetOptions {
     wantPropertyChecksums?: boolean;
 }
 
-// @beta
+// @public
 export type ProgressFunction = (loaded: number, total: number) => number;
 
 // @beta
@@ -3757,10 +3764,8 @@ export class RenderMaterialElement extends DefinitionElement implements RenderMa
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): RenderMaterialElement;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
-    // (undocumented)
     description?: string;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String;
-    // (undocumented)
     paletteName: string;
     // @internal (undocumented)
     toJSON(): RenderMaterialProps;
@@ -3791,6 +3796,26 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
     static classFullName: string;
 }
 
+// @beta
+export class RenderTimeline extends InformationRecordElement {
+    // @internal
+    protected constructor(props: RenderTimelineProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(ids: Id64Set): void;
+    description: string;
+    // (undocumented)
+    static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
+    // @alpha (undocumented)
+    protected static onCloned(context: IModelCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void;
+    // @internal
+    static remapScript(context: IModelCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps;
+    scriptProps: RenderSchedule.ScriptProps;
+    // (undocumented)
+    toJSON(): RenderTimelineProps;
+}
+
 // @public
 export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
     // @internal
@@ -3810,7 +3835,7 @@ export class RepositoryModel extends DefinitionModel {
     static get className(): string;
 }
 
-// @beta
+// @public
 export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
     onProgress?: ProgressFunction;
 };
@@ -3834,6 +3859,8 @@ export class Schema {
     // @internal
     static get missingRequiredBehavior(): boolean;
     static get schemaName(): string;
+    // @beta
+    static toSemverString(paddedVersion: string): string;
 }
 
 // @internal (undocumented)
@@ -4287,22 +4314,26 @@ export class Texture extends DefinitionElement {
     constructor(props: TextureCreateProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Texture;
+    // @deprecated
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, _width: number, _height: number, description: string, _flags: 0): Texture;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
+    static createTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Texture;
     // (undocumented)
     data: Uint8Array;
     // (undocumented)
     description?: string;
-    // (undocumented)
-    flags: TextureFlags;
+    // @deprecated (undocumented)
+    flags: 0;
     // (undocumented)
     format: ImageSourceFormat;
-    // (undocumented)
+    // @deprecated (undocumented)
     height: number;
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Id64String;
+    // @deprecated
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, _width: number, _height: number, description: string, _flags: 0): Id64String;
+    static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
     // @internal (undocumented)
     toJSON(): TextureProps;
-    // (undocumented)
+    // @deprecated (undocumented)
     width: number;
 }
 
