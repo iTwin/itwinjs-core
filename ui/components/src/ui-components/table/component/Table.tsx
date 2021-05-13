@@ -8,6 +8,7 @@
 
 import "./Table.scss";
 import "../columnfiltering/ColumnFiltering.scss";
+import classnamesDedupe from "classnames/dedupe";
 import classnames from "classnames";
 import { memoize } from "lodash";
 import * as React from "react";
@@ -387,7 +388,7 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   /** @internal */
-  public componentDidUpdate(previousProps: TableProps) {
+  public componentDidUpdate(previousProps: TableProps, previousState: TableState) {
     this._rowSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
     this._cellSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
 
@@ -402,6 +403,10 @@ export class Table extends React.Component<TableProps, TableState> {
       this.update();
       return;
     }
+
+    // When hiddenColumns length is changed, we need to re-render component so that cell widths would be calculated appropriately.
+    if (previousState.hiddenColumns.length !== this.state.hiddenColumns.length)
+      this.forceUpdate();
 
     if (this.props.isCellSelected !== previousProps.isCellSelected
       || this.props.isRowSelected !== previousProps.isRowSelected
@@ -931,6 +936,7 @@ export class Table extends React.Component<TableProps, TableState> {
         propertyValueRendererManager={this.props.propertyValueRendererManager
           ? this.props.propertyValueRendererManager
           : PropertyValueRendererManager.defaultManager}
+        style={{ zIndex: ((cellItem.mergedCellsCount ?? 1) > 1) ? 1 : undefined }}
       />
     );
   }
@@ -1054,6 +1060,12 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private createRowCells(rowProps: RowProps, isSelected: boolean): { [columnKey: string]: React.ReactNode } {
     const cells: { [columnKey: string]: React.ReactNode } = {};
+    let gridColumns: HTMLElement[] = [];
+    let foundHiddenColumns = 0;
+
+    // istanbul ignore else
+    if (this._gridRef.current && (this._gridRef.current as any).getDataGridDOMNode)
+      gridColumns = (this._gridRef.current as any).getDataGridDOMNode().querySelectorAll(".react-grid-HeaderCell");
 
     for (let index = 0; index < this.state.columns.length; index++) {
       const column = this.state.columns[index];
@@ -1095,6 +1107,37 @@ export class Table extends React.Component<TableProps, TableState> {
       }
 
       className = classnames(className, this.getCellBorderStyle(cellKey));
+      const mergedAdjacentCellsCount = (cellProps.item.mergedCellsCount ?? 1) - 1;
+      let cellWidth = 0;
+
+      for (let i = 0; i <= mergedAdjacentCellsCount; i++) {
+        const col = this.state.columns[index + i];
+        if (this.state.hiddenColumns.indexOf(col.key) === -1) {
+          const gridColumn = gridColumns[index + i - foundHiddenColumns];
+          const gridColumnWidth = gridColumn ? gridColumn.getBoundingClientRect().width : 0;
+          cellWidth += gridColumnWidth;
+        } else {
+          foundHiddenColumns++;
+        }
+
+        if (i > 0) {
+          cells[col.key] = (
+            <TableCell
+              className={className.replace("border-bottom", "")}
+              title={"empty-cell"}
+              onClick={onClick}
+              onMouseMove={onMouseMove}
+              onMouseDown={onMouseDown}
+            >
+            </TableCell>
+          );
+        }
+        const mergedColumn = this.state.columns[index + i];
+        const emptyCellKey = { rowIndex: rowProps.index, columnKey: mergedColumn.key };
+        className = classnamesDedupe(className, this.getCellBorderStyle(emptyCellKey));
+      }
+      index += mergedAdjacentCellsCount;
+
       cells[column.key] = (
         <TableCell
           className={className}
@@ -1108,6 +1151,7 @@ export class Table extends React.Component<TableProps, TableState> {
             propertyRecord: cellProps.item.record!,
             setFocus: true,
           } : undefined}
+          style={{ width: (mergedAdjacentCellsCount > 0) ? cellWidth : undefined }}
         >
           <CellContent isSelected={isSelected} />
         </TableCell>

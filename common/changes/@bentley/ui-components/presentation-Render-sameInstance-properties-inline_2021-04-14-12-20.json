@@ -1,0 +1,21 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added `mergedCellsCount` property to `CellItem`. It is used for determining width of the cell.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added `overflow` property for `react-grid-Cell__value` element. `zIndex` is set in `TableCellContent` style property. These updates are necessary for rendering merged cells in `Table` component.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Updated `Table` component so that it would be possible to merge cells in it",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}
