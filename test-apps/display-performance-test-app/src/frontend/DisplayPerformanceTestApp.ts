@@ -120,7 +120,7 @@ function getBrowserName(userAgent: string) {
   return "Unknown";
 }
 
-class DisplayPerfTestApp {
+export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
     iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;

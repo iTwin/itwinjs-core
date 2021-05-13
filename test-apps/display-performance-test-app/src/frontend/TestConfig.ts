@@ -44,11 +44,19 @@ export interface ElementOverrideProps {
 }
 
 /** JSON representation of a ViewState with some additional data used by external saved views in a *_ESV.json file and by TestConfigProps.viewString. */
-export interface ViewStateSpec {
+export interface ViewStateSpecProps {
   _name: string;
-  _viewString: ViewStateProps;
-  _overrideElements?: ElementOverrideProps;
-  _selectedElements?: Id64String | Id64Array;
+  _viewString: string;
+  _overrideElements?: string;
+  _selectedElements?: string;
+}
+
+/** Parsed in-memory representation of a ViewStateSpecProps. */
+export interface ViewStateSpec {
+  name: string;
+  viewProps: ViewStateProps;
+  elementOverrides?: ElementOverrideProps[];
+  selectedElements?: Id64String | Id64Array;
 }
 
 /** Overrides aspects of the Hilite.Settings used for emphasis or hilite in a TestConfig. */
@@ -128,7 +136,7 @@ export interface TestConfigProps {
   /** The type(s) of saved views to include. */
   savedViewType?: SavedViewType;
   /** An object (not a string) describing a non-persistent view. Supersedes viewName if defined. */
-  viewString?: ViewStateSpec;
+  viewString?: ViewStateSpecProps;
 }
 
 const defaultHilite = new Hilite.Settings();
@@ -146,9 +154,9 @@ export class TestConfig {
   public readonly numRendersToSkip: number;
   public readonly outputName: string;
   public readonly outputPath: string;
-  public readonly iModelName: string;
+  public iModelName: string;
   public readonly iModelHubProject: string;
-  public readonly viewName: string;
+  public viewName: string;
   public readonly testType: TestType;
   public readonly csvFormat: string;
   public readonly renderOptions: RenderSystem.Options;
@@ -193,7 +201,7 @@ export class TestConfig {
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
         // Don't preserve selected elements or appearance overrides.
-        this.viewStateSpec = { _name: prevConfig.viewStateSpec._name, _viewString: prevConfig.viewStateSpec._viewString };
+        this.viewStateSpec = { name: prevConfig.viewStateSpec.name, viewProps: prevConfig.viewStateSpec.viewProps };
       }
 
       this.hilite = prevConfig.hilite;
@@ -215,8 +223,18 @@ export class TestConfig {
     if (props.iModelLocation)
       this.iModelLocation = combineFilePaths(props.iModelLocation, this.iModelLocation);
 
-    if (props.viewString)
-      this.viewStateSpec = props.viewString;
+    if (props.viewString) {
+      this.viewStateSpec = {
+        name: props.viewString._name,
+        viewProps: JSON.parse(props.viewString._viewString),
+      };
+
+      if (props.viewString._overrideElements)
+        this.viewStateSpec.elementOverrides = JSON.parse(props.viewString._overrideElements);
+
+      if (props.viewString._selectedElements)
+        this.viewStateSpec.selectedElements = JSON.parse(props.viewString._selectedElements);
+    }
 
     if (props.renderOptions) {
       const options = merge(this.renderOptions, props.renderOptions);
@@ -260,8 +278,12 @@ export class TestConfigStack {
     return this._stack[this._stack.length - 1];
   }
 
-  public push(props: TestConfigProps): void {
-    this._stack.push(new TestConfig(props, this.top));
+  // Push to the top of the stack and return true if the new config requires restarting IModelApp.
+  public push(props: TestConfigProps): boolean {
+    const config = new TestConfig(props, this.top);
+    const requiresRestart = this.top.requiresRestart(config);
+    this._stack.push(config);
+    return requiresRestart;
   }
 
   public pop(): void {
