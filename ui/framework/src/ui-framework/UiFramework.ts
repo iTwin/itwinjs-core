@@ -38,6 +38,7 @@ import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
+import { ChildWindowManager } from "./childwindow/ChildWindowManager";
 
 // cSpell:ignore Mobi
 
@@ -103,6 +104,12 @@ export class UiFramework {
   private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage(); // this provides a default storage location for settings
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
+  private static _PopupWindowManager = new ChildWindowManager();
+
+  /** @alpha */
+  public static get ChildWindowManager(): ChildWindowManager {
+    return UiFramework._PopupWindowManager;
+  }
 
   /** Registers class that will be informed when the UserSettingsStorage location has been set or changed. This allows
    * classes to load any previously saved settings from the new storage location. Common storage locations are the browser's

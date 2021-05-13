@@ -9,22 +9,21 @@ import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs
 import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
   BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps,
+  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
-  SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
+  SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { ElementState } from "./EntityState";
-import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapLayerImageryProvider, MapTileTree, MapTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
+import { getCesiumOSMBuildingsUrl, MapCartoRectangle, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 
@@ -40,9 +39,6 @@ export class TerrainDisplayOverrides {
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
   public static get className() { return "DisplayStyle"; }
-  private _backgroundMap: MapTileTreeReference;
-  private _overlayMap: MapTileTreeReference;
-  private readonly _backgroundDrapeMap: MapTileTreeReference;
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
   private _scheduleState?: RenderScheduleState;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
@@ -66,11 +62,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState) {
     super(props, iModel);
     const styles = this.jsonProperties.styles;
-    const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || {});
-    const mapImagery = MapImagerySettings.fromJSON(styles?.mapImagery, mapSettings.toJSON());
-    this._backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, false, () => this.overrideTerrainDisplay());
-    this._overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, iModel, true, false);
-    this._backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, true);
 
     if (source)
       this._scheduleState = source._scheduleState;
@@ -140,15 +131,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public get backgroundMap(): MapTileTreeReference { return this._backgroundMap; }
-
-  /** @internal */
-  public get overlayMap(): MapTileTreeReference { return this._overlayMap; }
-
-  /** @internal */
-  public get backgroundDrapeMap(): MapTileTreeReference { return this._backgroundDrapeMap; }
-
-  /** @internal */
   public get globeMode(): GlobeMode { return this.settings.backgroundMap.globeMode; }
 
   /** @internal */
@@ -163,7 +145,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
    */
-  public get backgroundMapSettings(): BackgroundMapSettings { return this._backgroundMap.settings; }
+  public get backgroundMapSettings(): BackgroundMapSettings { return this.settings.backgroundMap; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this.settings.backgroundMap = settings;
   }
@@ -179,16 +161,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * ```
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
-    this.backgroundMapSettings = this.backgroundMapSettings.clone(props);
+    const newSettings = this.backgroundMapSettings.clone(props);
+    this.backgroundMapSettings = newSettings;
     if (props.providerName !== undefined || props.providerData?.mapType !== undefined) {
-      const mapBase = MapLayerSettings.fromMapSettings(this.backgroundMapSettings);
-      this._backgroundMap.setBaseLayerSettings(mapBase);
-      this._backgroundDrapeMap.setBaseLayerSettings(mapBase);
+      const mapBase = MapLayerSettings.fromMapSettings(newSettings);
       this.settings.mapImagery.backgroundBase = mapBase;
     }
-    // The settings change may cause a different tree to be used... make sure its imagery is in synch.
-    this._backgroundMap.clearLayers();
-    this._backgroundDrapeMap.clearLayers();
   }
 
   /** @beta
@@ -208,10 +186,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.forEachRealityTileTreeRef(func);
-    if (this.viewFlags.backgroundMap) {
-      func(this._backgroundMap);
-      func(this._overlayMap);
-    }
   }
 
   /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.
@@ -563,15 +537,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return modelIdOrIndex >= 0 && modelIdOrIndex < this._contextRealityModels.length ? this._contextRealityModels[modelIdOrIndex]?.planarClipMask : undefined;
     }
   }
-  /** @internal */
-  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined {
-    const layers = this.getMapLayers(isOverlay);
-    if (index < 0 || index >= layers.length)
-      return undefined;
-
-    const imageryTreeRef = isOverlay ? this._overlayMap.getLayerImageryTreeRef(index) : this._backgroundMap.getLayerImageryTreeRef(index);
-    return imageryTreeRef?.imageryProvider;
-  }
 
   /** @internal */
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
@@ -740,11 +705,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /* @internal */
   private _synchBackgroundMapImagery() {
-    this._backgroundMap.setBaseLayerSettings(this.settings.mapImagery.backgroundBase);
-    this._backgroundMap.setLayerSettings(this.settings.mapImagery.backgroundLayers);
-    this._backgroundDrapeMap.setBaseLayerSettings(this.settings.mapImagery.backgroundBase);
-    this._backgroundDrapeMap.setLayerSettings(this.settings.mapImagery.backgroundLayers);
-    this._overlayMap.setLayerSettings(this.settings.mapImagery.overlayLayers);
     this.settings.synchMapImagery();
   }
 
@@ -777,20 +737,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       layers.unshift(layer[0]);
       this._synchBackgroundMapImagery();
     }
-  }
-
-  /** @internal */
-  public mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined {
-    return undefined === hit.modelId ? undefined : this.mapLayerFromIds(hit.modelId, hit.sourceId);
-  }
-
-  /** @internal */
-  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
-    let mapLayer;
-    if (undefined === (mapLayer = this.backgroundMap.layerFromTreeModelIds(mapTreeId, layerTreeId)))
-      mapLayer = this._overlayMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
-
-    return mapLayer;
   }
 
   /**
@@ -850,16 +796,23 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getIsBackgroundMapVisible(): boolean {
     return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
   }
-
-  /** @internal */
   public get backgroundMapElevationBias(): number {
-    let bimElevationBias = this.backgroundMapSettings.groundBias;
-    const mapTree = this.backgroundMap.treeOwner.load() as MapTileTree;
+    if (this.backgroundMapSettings.applyTerrain) {
+      const terrainSettings = this.backgroundMapSettings.terrainSettings;
+      switch (terrainSettings.heightOriginMode) {
+        case TerrainHeightOriginMode.Ground:
+          return terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.backgroundMapLocation.projectCenterAltitude;
 
-    if (mapTree !== undefined)
-      bimElevationBias = mapTree.bimElevationBias;    // Terrain trees calculate their bias when loaded (sea level or ground offset).
+        case TerrainHeightOriginMode.Geodetic:
+          return terrainSettings.heightOrigin;
 
-    return bimElevationBias;
+        case TerrainHeightOriginMode.Geoid:
+          return terrainSettings.heightOrigin + this.iModel.backgroundMapLocation.geodeticToSeaLevel;
+      }
+    } else {
+      return this.backgroundMapSettings.groundBias;
+    }
+
   }
 
   /** @internal */
@@ -950,10 +903,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
         this.onScheduleScriptReferenceChanged.raiseEvent(undefined);
         this._scheduleState = undefined;
       }
-    });
-
-    this.settings.onBackgroundMapChanged.addListener((mapSettings: BackgroundMapSettings) => {
-      this._backgroundMap.settings = this._overlayMap.settings = this._backgroundDrapeMap.settings = mapSettings;
     });
 
     this.settings.onRealityModelPlanarClipMaskChanged.addListener((id: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => {

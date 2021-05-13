@@ -201,7 +201,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
               vp.displayStyle.changeMapLayerCredentials(layerIdxToEdit, isOverlay, source.userName, source.password,);
 
               // Reset the provider's status
-              const provider = vp.displayStyle.getMapLayerImageryProvider(layerIdxToEdit, isOverlay);
+              const provider = vp.getMapLayerImageryProvider(layerIdxToEdit, isOverlay);
               if (provider && provider.status !== MapLayerImageryProviderStatus.Valid) {
                 provider.status = MapLayerImageryProviderStatus.Valid;
               }

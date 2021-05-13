@@ -538,9 +538,10 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   /** @internal */
   public componentDidMount() {
     this._mounted = true;
-    window.addEventListener("click", this._handleClick);
     // istanbul ignore else
     if (this._inputElement) {
+      const activeWindow = this._inputElement.ownerDocument.defaultView;
+      activeWindow && activeWindow.addEventListener("click", this._handleClick);
       this._inputElement.value = this.props.pathString;
       this._inputElement.focus();
     }
@@ -548,7 +549,11 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
   /** @internal */
   public componentWillUnmount() {
-    window.removeEventListener("click", this._handleClick);
+    // istanbul ignore else
+    if (this._inputElement) {
+      const activeWindow = this._inputElement.ownerDocument.defaultView;
+      activeWindow && activeWindow.removeEventListener("click", this._handleClick);
+    }
     this._mounted = false;
   }
 
