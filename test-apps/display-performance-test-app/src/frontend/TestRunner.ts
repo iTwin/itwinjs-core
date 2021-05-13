@@ -5,13 +5,14 @@
 
 import * as path from "path";
 import { BeDuration, Dictionary, Id64Array, Id64String, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
-import { DisplayStyleProps, FeatureAppearance, RenderMode, ViewStateProps } from "@bentley/imodeljs-common";
+import { BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps } from "@bentley/imodeljs-common";
 import {
-  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, ScreenViewport, ViewState,
+  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, IModelApp, IModelConnection, RenderSystem, SnapshotConnection,
+  ScreenViewport, TileAdmin, ViewState,
 } from "@bentley/imodeljs-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
-  ElementOverrideProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
+  defaultEmphasis, defaultHilite, ElementOverrideProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 
@@ -40,6 +41,12 @@ interface TestResult {
   selectedTileIds: string;
   tileLoadingTime: number;
 }
+
+interface TestCase extends TestResult {
+  readonly viewport: ScreenViewport;
+  view: TestViewState;
+}
+
 
 class OverrideProvider {
   private readonly _elementOvrs = new Map<Id64String, FeatureAppearance>();
@@ -162,20 +169,29 @@ export class TestRunner {
       await this.logTest();
 
       const result = await this.runTest(context);
-      await this.logToFile(result.selectedTileIds);
+      if (result)
+        await this.logToFile(result.selectedTileIds);
     }
   }
 
-  private async runTest(context: TestContext): Promise<TestResult> {
+  private async runTest(context: TestContext): Promise<TestResult | undefined> {
   // Reset the title bar to include the current model and view name
     const testConfig = this.curConfig;
     document.title = "Display Performance Test App:  ".concat(testConfig.iModelName ?? "", "  [", testConfig.viewName ?? "", "]");
 
+    const test = await this.setupTest(context);
+    if (!test)
+      return undefined;
+
+    const vp = test.viewport;
     if (testConfig.testType === "image" || testConfig.testType === "both") {
+      this.updateTestNames(test, undefined, true);
     }
+
+    return test;
   }
 
-  private async setupTest(context: TestContext) { // ###TODO return type
+  private async setupTest(context: TestContext): Promise<TestCase | undefined> {
     // Workaround for shifting map geometry when location needs to be asynchronously initialized.
     const imodel = context.iModel;
     await imodel.backgroundMapLocation.initialize(imodel);
@@ -245,7 +261,7 @@ export class TestRunner {
       viewport.renderFrame();
     }
 
-    return result;
+    return { ...result, viewport, view };
   }
 
   private async waitForTilesToLoad(viewport: ScreenViewport): Promise<TestResult> {
@@ -355,12 +371,12 @@ export class TestRunner {
     return ctor ? ctor.createFromProps(json, imodel) : undefined;
   }
 
-  // private updateTestNames(prefix?: string, isImage = false): void {
-  //   const testNames = isImage ? this._testNamesImages : this._testNamesTimings;
-  //   const testName = this.getTestName(prefix, false, true);
-  //   const testNameDupes = testNames.get(testName) ?? 0;
-  //   testNames.set(testName, testNameDupes + 1);
-  // }
+  private updateTestNames(test: TestCase, prefix?: string, isImage = false): void {
+    const testNames = isImage ? this._testNamesImages : this._testNamesTimings;
+    const testName = this.getTestName(test, prefix, false, true);
+    const testNameDupes = testNames.get(testName) ?? 0;
+    testNames.set(testName, testNameDupes + 1);
+  }
 
   private async logTest(): Promise<void> {
     const testConfig = this.curConfig;
@@ -394,7 +410,7 @@ export class TestRunner {
       externalSavedViews = json.map((x) => {
         return {
           name: x._name,
-          view: JSON.parse(x._viewString) as ViewStateProps,
+          viewProps: JSON.parse(x._viewString) as ViewStateProps,
           elementOverrides: x._overrideElements ? JSON.parse(x._overrideElements) as ElementOverrideProps[] : undefined,
           selectedElements: x._selectedElements ? JSON.parse(x._selectedElements) as Id64String | Id64Array : undefined,
         };
@@ -471,30 +487,309 @@ export class TestRunner {
     return DisplayPerfRpcInterface.getClient().consoleLog(message);
   }
 
-  // private getTestName(prefix?: string, isImage = false, ignoreDupes = false): string {
-  //   let testName = prefix ?? "";
-  //   const configs = this.curConfig;
+  private getTestName(test: TestCase, prefix?: string, isImage = false, ignoreDupes = false): string {
+    let testName = prefix ?? "";
+    const configs = this.curConfig;
 
-  //   testName += configs.iModelName.replace(/\.[^/.]+$/, "") : "";
-  //   testName += `_${configs.viewName}` : "";
-  //   testName += configs.displayStyle ? `_${configs.displayStyle.trim()}` : "";
-  //   testName += getRenderMode() !== "" ? `_${getRenderMode()}` : "";
-  //   testName += getViewFlagsString() !== "" ? `_${getViewFlagsString()}` : "";
-  //   testName += getRenderOpts(opts.render) !== "" ? `_${getRenderOpts(opts.render)}` : "";
-  //   testName += getTileProps(opts.tile) !== "" ? `_${getTileProps(opts.tile)}` : "";
-  //   testName += getBackgroundMapProps() !== "" ? `_${getBackgroundMapProps()}` : "";
-  //   testName += getOtherProps() !== "" ? `_${getOtherProps()}` : "";
-  //   testName = removeOptsFromString(testName, configs.filenameOptsToIgnore);
-  //   if (!ignoreDupes) {
-  //     let testNum = isImage ? this._testNamesImages.get(testName) : this._testNamesTimings.get(testName);
-  //     if (testNum === undefined)
-  //       testNum = 0;
+    testName += configs.iModelName.replace(/\.[^/.]+$/, "");
+    testName += `_${configs.viewName}`;
+    testName += configs.displayStyle ? `_${configs.displayStyle.trim()}` : "";
 
-  //     testName += (testNum > 1) ? (`---${testNum}`) : "";
-  //   }
+    const renderMode = getRenderMode(test.viewport);
+    if (renderMode)
+      testName += `_${renderMode}`;
 
-  //   return testName;
-  // }
+    const vf = getViewFlagsString(test);
+    if (vf)
+      testName += `_${vf}`;
+
+    const renderOpts = getRenderOpts(configs.renderOptions);
+    if (renderOpts)
+      testName += `_${renderOpts}`;
+
+    const tileProps = configs.tileProps ? getTileProps(configs.tileProps) : undefined;
+    if (tileProps)
+      testName += `_${tileProps}`;
+
+    const map = getBackgroundMapProps(test.viewport);
+    if (map)
+      testName += `_${map}`;
+
+    const other = getOtherProps(test.viewport);
+    if (other)
+      testName += `_${other}`;
+
+    testName = removeOptsFromString(testName, configs.filenameOptsToIgnore);
+    if (!ignoreDupes) {
+      let testNum = isImage ? this._testNamesImages.get(testName) : this._testNamesTimings.get(testName);
+      if (testNum === undefined)
+        testNum = 0;
+
+      testName += (testNum > 1) ? (`---${testNum}`) : "";
+    }
+
+    return testName;
+  }
+}
+
+function removeOptsFromString(input: string, ignore: string[] | string | undefined): string {
+  if (!ignore)
+    return input;
+
+  let output = input;
+  if (!(ignore instanceof Array))
+    ignore = ignore.split(" ");
+
+  ignore.forEach((del: string) => {
+    if (del === "+max")
+      output = output.replace(/\+max\d+/, "");
+    else
+      output = output.replace(del, "");
+  });
+
+  output = output.replace(/__+/, "_");
+  if (output[output.length - 1] === "_")
+    output = output.slice(0, output.length - 1);
+
+  return output;
+}
+
+function getRenderMode(vp: ScreenViewport): string {
+  switch (vp.viewFlags.renderMode) {
+    case RenderMode.Wireframe: return "Wireframe";
+    case RenderMode.HiddenLine: return "HiddenLine";
+    case RenderMode.SolidFill: return "SolidFill";
+    case RenderMode.SmoothShade: return "SmoothShade";
+    default: return "";
+  }
+}
+
+function getRenderOpts(opts: Readonly<RenderSystem.Options>): string {
+  let optString = "";
+  if (opts.disabledExtensions) {
+    for (const ext of opts.disabledExtensions) {
+      switch (ext) {
+        case "WEBGL_draw_buffers":
+          optString += "-drawBuf";
+          break;
+        case "OES_element_index_uint":
+          optString += "-unsignedInt";
+          break;
+        case "OES_texture_float":
+          optString += "-texFloat";
+          break;
+        case "OES_texture_half_float":
+          optString += "-texHalfFloat";
+          break;
+        case "WEBGL_depth_texture":
+          optString += "-depthTex";
+          break;
+        case "EXT_color_buffer_float":
+          optString += "-floats";
+          break;
+        case "EXT_shader_texture_lod":
+          optString += "-texLod";
+          break;
+        case "ANGLE_instanced_arrays":
+          optString += "-instArrays";
+          break;
+        case "EXT_frag_depth":
+          optString += "-fragDepth";
+          break;
+        default:
+          optString += `-${ext}`;
+          break;
+      }
+    }
+  }
+
+  if (opts.preserveShaderSourceCode)
+    optString += "+shadeSrc";
+
+  if (false === opts.displaySolarShadows)
+    optString += "-solShd";
+
+  if (opts.logarithmicDepthBuffer)
+    optString += "+logZBuf";
+
+  if (opts.useWebGL2)
+    optString += "+webGL2";
+
+  if (opts.antialiasSamples)
+    optString += `+a${opts.antialiasSamples}`;
+
+  // ###TODO does this ever happen?
+  // if (value) optString += `+${key}`;
+
+  return optString;
+}
+
+function getTileProps(props: Readonly<TileAdmin.Props>): string {
+  let tilePropsStr = "";
+
+  if (props.enableInstancing)
+    tilePropsStr += "+inst";
+
+  if (undefined !== props.retryInterval)
+    tilePropsStr += `+retry${props.retryInterval}`;
+
+  if (props.disableMagnification)
+    tilePropsStr += "-mag";
+
+  // ###TODO does this ever happen?
+  // if (value) tilePropsStr += `+${key}`;
+
+  return tilePropsStr;
+}
+
+function getBackgroundMapProps(vp: ScreenViewport): string {
+  let bmPropsStr = "";
+  const bmProps = vp.displayStyle.settings.backgroundMap;
+  switch (bmProps.providerName) {
+    case "BingProvider":
+      break;
+    case "MapBoxProvider":
+      bmPropsStr += "MapBox";
+      break;
+    default:
+      bmPropsStr += bmProps.providerName;
+      break;
+  }
+
+  switch (bmProps.mapType) {
+    case BackgroundMapType.Hybrid:
+      break;
+    case BackgroundMapType.Aerial:
+      bmPropsStr += "+aer";
+      break;
+    case BackgroundMapType.Street:
+      bmPropsStr += "+st";
+      break;
+    default:
+      bmPropsStr += `+type${bmProps.mapType}`;
+      break;
+  }
+
+  if (bmProps.groundBias !== 0)
+    bmPropsStr += `+bias${bmProps.groundBias}`;
+
+  if (bmProps.applyTerrain)
+    bmPropsStr += "+terr";
+
+  if (bmProps.useDepthBuffer)
+    bmPropsStr += "+depth";
+
+  if (typeof (bmProps.transparency) === "number")
+    bmPropsStr += `+trans${bmProps.transparency}`;
+
+  return bmPropsStr;
+}
+
+function hiliteSettingsStr(settings: Hilite.Settings): string {
+  let hsStr = (settings.color.colors.r * 256 * 256 + settings.color.colors.g * 256 + settings.color.colors.b).toString(36).padStart(5, "0");
+  hsStr += (settings.silhouette * 256 * 256 + Math.round(settings.visibleRatio * 255) * 256 + Math.round(settings.hiddenRatio * 255)).toString(36).padStart(4, "0");
+  return hsStr.toUpperCase();
+}
+
+function getOtherProps(vp: ScreenViewport): string {
+  let propsStr = "";
+  if (!Hilite.equalSettings(vp.hilite, defaultHilite))
+    propsStr += `+h${hiliteSettingsStr(vp.hilite)}`;
+
+  if (!Hilite.equalSettings(vp.emphasisSettings, defaultEmphasis))
+    propsStr += `+e${hiliteSettingsStr(vp.emphasisSettings)}`;
+
+  return propsStr;
+}
+
+function getViewFlagsString(test: TestCase): string {
+  let vfString = "";
+  for (const [key, value] of Object.entries(test.viewport.viewFlags)) {
+    switch (key) {
+      case "renderMode":
+        break;
+      case "dimensions":
+        if (!value) vfString += "-dim";
+        break;
+      case "patterns":
+        if (!value) vfString += "-pat";
+        break;
+      case "weights":
+        if (!value) vfString += "-wt";
+        break;
+      case "styles":
+        if (!value) vfString += "-sty";
+        break;
+      case "transparency":
+        if (!value) vfString += "-trn";
+        break;
+      case "fill":
+        if (!value) vfString += "-fll";
+        break;
+      case "textures":
+        if (!value) vfString += "-txt";
+        break;
+      case "materials":
+        if (!value) vfString += "-mat";
+        break;
+      case "visibleEdges":
+        if (value) vfString += "+vsE";
+        break;
+      case "hiddenEdges":
+        if (value) vfString += "+hdE";
+        break;
+      case "sourceLights":
+        if (value) vfString += "+scL";
+        break;
+      case "cameraLights":
+        if (value) vfString += "+cmL";
+        break;
+      case "solarLight":
+        if (value) vfString += "+slL";
+        break;
+      case "shadows":
+        if (value) vfString += "+shd";
+        break;
+      case "clipVolume":
+        if (!value) vfString += "-clp";
+        break;
+      case "constructions":
+        if (value) vfString += "+con";
+        break;
+      case "monochrome":
+        if (value) vfString += "+mno";
+        break;
+      case "noGeometryMap":
+        if (value) vfString += "+noG";
+        break;
+      case "backgroundMap":
+        if (value) vfString += "+bkg";
+        break;
+      case "hLineMaterialColors":
+        if (value) vfString += "+hln";
+        break;
+      case "edgeMask":
+        if (value === 1) vfString += "+genM";
+        if (value === 2) vfString += "+useM";
+        break;
+      case "ambientOcclusion":
+        if (value) vfString += "+ao";
+        break;
+      case "forceSurfaceDiscard":
+        if (value) vfString += "+fsd";
+        break;
+      default:
+        if (value) vfString += `+${key}`;
+    }
+  }
+
+  if (undefined !== test.view.elementOverrides)
+    vfString += "+ovrEl";
+
+  if (undefined !== test.view.selectedElements)
+    vfString += "+selEl";
+
+  return vfString;
 }
 
 function getBrowserName(userAgent: string): string {

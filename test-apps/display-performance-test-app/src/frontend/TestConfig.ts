@@ -139,8 +139,8 @@ export interface TestConfigProps {
   viewString?: ViewStateSpecProps;
 }
 
-const defaultHilite = new Hilite.Settings();
-const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+export const defaultHilite = new Hilite.Settings();
+export const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
 
 /** Configures how one or more tests are run. A Test belongs to a TestSet and can test multiple iModels and views thereof.
  * A single base config is supplied by the backend.
