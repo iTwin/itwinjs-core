@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { BackgroundMapProps, ColorDef, FeatureAppearanceProps, Hilite, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import {
+  BackgroundMapProps, ColorDef, FeatureAppearanceProps, Hilite, RenderMode, ViewFlags, ViewStateProps,
+} from "@bentley/imodeljs-common";
 import { RenderSystem, TileAdmin } from "@bentley/imodeljs-frontend";
 
 /** Dimensions of the Viewport for a TestConfig. */
@@ -39,6 +41,14 @@ export interface ElementOverrideProps {
   id: Id64String | "-default-";
   /** The symbology overrides to apply. */
   fsa: FeatureAppearanceProps;
+}
+
+/** JSON representation of a ViewState with some additional data used by external saved views in a *_ESV.json file and by TestConfigProps.viewString. */
+export interface ViewStateSpec {
+  _name: string;
+  _viewString: ViewStateProps;
+  _overrideElements?: ElementOverrideProps;
+  _selectedElements?: Id64String | Id64Array;
 }
 
 /** Overrides aspects of the Hilite.Settings used for emphasis or hilite in a TestConfig. */
@@ -118,18 +128,13 @@ export interface TestConfigProps {
   /** The type(s) of saved views to include. */
   savedViewType?: SavedViewType;
   /** An object (not a string) describing a non-persistent view. Supersedes viewName if defined. */
-  viewString?: {
-    _name: string;
-    _viewString: any;
-    _overrideElements?: ElementOverrideProps;
-    _selectedElements?: Id64String | Id64Array;
-  };
+  viewString?: ViewStateSpec;
 }
 
 const defaultHilite = new Hilite.Settings();
 const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
 
-/** Configures how one or more tests are run.
+/** Configures how one or more tests are run. A Test belongs to a TestSet and can test multiple iModels and views thereof.
  * A single base config is supplied by the backend.
  * Each TestSet can override aspects of that base config.
  * Each Test within a TestSet receives the TestSet's config and can override aspects of it.
@@ -158,9 +163,7 @@ export class TestConfig {
   public readonly emphasis?: Hilite.Settings;
 
   /** A string representation of a ViewState, produced from TestConfigProps.viewString. */
-  public readonly viewStatePropsString?: string;
-  public readonly overrideElements?: ElementOverrideProps;
-  public readonly selectedElements?: Id64String | Id64Array;
+  public readonly viewStateSpec?: ViewStateSpec;
   public readonly filenameOptsToIgnore?: string[] | string;
   public readonly backgroundMap?: BackgroundMapProps;
 
@@ -188,7 +191,11 @@ export class TestConfig {
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
 
     if (prevConfig) {
-      this.viewStatePropsString = prevConfig.viewStatePropsString;
+      if (prevConfig.viewStateSpec) {
+        // Don't preserve selected elements or appearance overrides.
+        this.viewStateSpec = { _name: prevConfig.viewStateSpec._name, _viewString: prevConfig.viewStateSpec._viewString };
+      }
+
       this.hilite = prevConfig.hilite;
       this.emphasis = prevConfig.emphasis;
 
@@ -208,12 +215,8 @@ export class TestConfig {
     if (props.iModelLocation)
       this.iModelLocation = combineFilePaths(props.iModelLocation, this.iModelLocation);
 
-    if (props.viewString) {
-      this.viewName = props.viewString._name;
-      this.viewStatePropsString = props.viewString._viewString;
-      this.overrideElements = props.viewString._overrideElements;
-      this.selectedElements = props.viewString._selectedElements;
-    }
+    if (props.viewString)
+      this.viewStateSpec = props.viewString;
 
     if (props.renderOptions) {
       const options = merge(this.renderOptions, props.renderOptions);
@@ -230,6 +233,17 @@ export class TestConfig {
 
     if (props.emphasis)
       this.emphasis = hiliteSettings(this.emphasis ?? defaultEmphasis, props.emphasis);
+  }
+
+  /** Returns true if IModelApp must be restarted when transitioning from this config to the specified config. */
+  public requiresRestart(newConfig: TestConfig): boolean {
+    if (!areObjectsEqual(this.renderOptions, newConfig.renderOptions))
+      return true;
+
+    if (!this.tileProps || !newConfig.tileProps)
+      return undefined !== this.tileProps || undefined !== newConfig.tileProps;
+
+    return !areObjectsEqual(this.tileProps, newConfig.tileProps);
   }
 }
 
@@ -267,4 +281,39 @@ function combineFilePaths(additionalPath: string, initialPath: string): string {
     combined += (additionalPath[0] === "\\" ? "\\" : "/");
 
   return combined + additionalPath;
+}
+
+/** Compare two values for equality, recursing into arrays and object fields. */
+function areEqual(a: any, b: any): boolean {
+  if (typeof a !== typeof b)
+    return false;
+
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length)
+      return false;
+
+    for (let i = 0; i < a.length; i++)
+      if (!areEqual(a[i], b[i]))
+        return false;
+
+    return true;
+  }
+
+  if (typeof a === "object")
+    return areObjectsEqual(a, b as object);
+
+  return a === b;
+}
+
+/** Compare the fields of each object for equality. */
+function areObjectsEqual(a: object, b: object): boolean {
+  if (Object.keys(a).length !== Object.keys(b).length)
+    return false;
+
+  const ob = b as { [key: string]: any };
+  for (const [key, value] of Object.entries(a))
+    if (!areEqual(value, ob[key]))
+      return false;
+
+  return true;
 }
