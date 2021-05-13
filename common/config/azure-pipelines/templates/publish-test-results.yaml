@@ -306,5 +306,5 @@ steps:
     displayName: "Publish code coverage"
     inputs:
       codeCoverageTool: Cobertura
-      summaryFileLocation: "common/config/azure-pipelines/templates/coverageXMLs/cobertura-coverage.xml"
+      summaryFileLocation: "common/config/azure-pipelines/templates/coverageXMLs/coverage.xml"
     condition: succeededOrFailed()
