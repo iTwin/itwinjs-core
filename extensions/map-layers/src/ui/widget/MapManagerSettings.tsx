@@ -12,6 +12,7 @@ import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { EsriFeatureDecorator } from "../../EsriFeatureDecorator";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 
 enum MapMaskingOption
   {
@@ -130,8 +131,13 @@ export function MapManagerSettings() {
 
   const onToggleTestEsriFeature = React.useCallback(async (checked: boolean) => {
     if (checked) {
+
       const esriFeatureDecorator = EsriFeatureDecorator.decorator;
-      await esriFeatureDecorator.initialize();
+      esriFeatureDecorator.serverUrl = "https://dtlgeoarcgis.adtl.com/server/rest/services/SampleWorldCities/FeatureServer";
+      assert(false, "You need to set credentials in code.");
+      //esriFeatureDecorator.userName =
+      //esriFeatureDecorator.password =
+      esriFeatureDecorator.layerId = 0;
       IModelApp.viewManager.addDecorator(esriFeatureDecorator);
     } else {
       IModelApp.viewManager.dropDecorator(EsriFeatureDecorator.decorator);

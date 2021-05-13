@@ -3,13 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ColorDef, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { DecorateContext, GraphicBuilder, GraphicType, imageElementFromImageSource, RenderGraphic } from "@bentley/imodeljs-frontend";
+import { DecorateContext, GraphicBuilder, GraphicPrimitive, GraphicType, imageElementFromImageSource, RenderGraphic } from "@bentley/imodeljs-frontend";
 import { Point2d, Point3d, Range2d, XYProps } from "@bentley/geometry-core";
-
-export interface TypedRenderGraphic{
-  type: GraphicType;
-  graphic: RenderGraphic;
-}
 
 abstract class GeometryLayout {
   // Operations names
@@ -24,37 +19,20 @@ interface EsriFeatureReadOptions {
 }
 
 export class EsriFeatureJSON  {
-  private _builder: GraphicBuilder|undefined;
   private _defaultZDepth  = 0.0;  // TODO: figure out the proper value here
-  private _cachedGeometries: Point3d[][]|undefined;
 
-  public readRenderGraphics(_source: string, context: DecorateContext): TypedRenderGraphic[]|undefined {
-    // Check view type, project extents is only applicable to show in spatial views.
-
-    const addProjectExtent = false;
-    const graphics = this.readFeaturesFromObject(JSON.parse(_source), context);
-    // let graphics;
+  public readPrimitives(_source: string, context: DecorateContext, addProjectExtent=false): GraphicPrimitive[]|undefined {
+    let primitives = this.readFeaturesFromObject(JSON.parse(_source));
 
     if (addProjectExtent) {
-      /*
-          const vp = context.viewport;
-      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
-      // Set edge color to white or black depending on current view background color and set line weight to 2.
-      builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.white, 2);
-      // Add range box edge geometry to builder.
-
-      const projectExtents = vp.iModel.projectExtents;
-
-      builder.addRangeBox(projectExtents);
-      const graphic = builder.finish();
-      if (!graphics) {
-        graphics = [];
+      if (primitives === undefined) {
+        primitives = [];
       }
-      graphics.push({type:builder.type, graphic});
-      */
+      const vp = context.viewport;
+      primitives?.push({type:"shape", points:vp.iModel.projectExtents.corners()});
     }
 
-    return graphics;
+    return primitives;
   }
 
   protected getGeometryLayout(object: any) {
@@ -166,70 +144,58 @@ export class EsriFeatureJSON  {
     return outerRings;
   }
 
-  protected readFeaturesFromObject(object: any, context: DecorateContext, options?: EsriFeatureReadOptions): TypedRenderGraphic[]|undefined  {
+  protected readFeaturesFromObject(object: any, options?: EsriFeatureReadOptions): GraphicPrimitive[]|undefined  {
     if (object === undefined)
       return undefined;
 
-    this._builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
-
-    if (this._cachedGeometries) {
-
-      // Create graphics from cached geometries
-      this._builder.setSymbology(ColorDef.blue, ColorDef.blue, 15 /* lineWidth */);
-      for (const points of this._cachedGeometries) {
-        this._builder.addShape( points);
-      }
-
+    // Parse geometries
+    let primitives: GraphicPrimitive[]|undefined;
+    if (object.features === undefined) {
+      primitives = [];
+      const primitive = this.readFeatureFromObject(object, options);
+      if (primitive !== undefined)
+      primitives.push(primitive);
     } else {
-      // Parse geometries
-      this._cachedGeometries = [];
-      let graphics: TypedRenderGraphic[]|undefined;
-      if (object.features === undefined) {
-        graphics = [];
-        const featureGraphic = this.readFeatureFromObject(object, context, options);
-        if (featureGraphic !== undefined)
-          graphics.push(featureGraphic);
-      } else {
-        graphics = [];
-        for (const feature of object.features) {
-          if (feature !== undefined) {
-            const featureGraphic = this.readFeatureFromObject(feature, context, options);
-            if (featureGraphic !== undefined)
-              graphics.push(featureGraphic);
-          }
+      primitives = [];
+      for (const feature of object.features) {
+        if (feature !== undefined) {
+          const primitive = this.readFeatureFromObject(feature, options);
+          if (primitive !== undefined)
+          primitives.push(primitive);
         }
       }
     }
 
-    const finalGraphics = [{type:this._builder.type, graphic: this._builder.finish()}];
-    this._builder  = undefined;
-    return finalGraphics;
+
+    return primitives;
   }
 
-  protected readFeatureFromObject(object: any, context: DecorateContext, options?: EsriFeatureReadOptions): TypedRenderGraphic|undefined {
+  protected readFeatureFromObject(object: any, options?: EsriFeatureReadOptions): GraphicPrimitive|undefined {
     if (object === undefined)
       return undefined;
 
-    return this.readGeometry(object.geometry, context, options);
+    return this.readGeometry(object.geometry, options);
   }
 
-  protected readGeometry(object: any, context: DecorateContext, _options?: EsriFeatureReadOptions): TypedRenderGraphic|undefined {
+  protected readGeometry(object: any, _options?: EsriFeatureReadOptions): GraphicPrimitive|undefined {
     if (object === undefined)
       return undefined;
-
-    const builder = this._builder ?? context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
 
     if (typeof object.x === "number" && typeof object.x === "number") {
-      builder.setSymbology(ColorDef.blue, ColorDef.blue, 15 /* lineWidth */);
+      /********* */
+      /* Point */
+      /********* */
       const squareSize = 10000;
       const squareRange = new Range2d(object.x, object.y, object.x+squareSize, object.y+squareSize);
       // builder.addPointString2d([Point2d.create(object.x, object.y)], this._defaultZDepth);
 
-      const vertices = squareRange.corners3d(true, 0);
-      this._cachedGeometries?.push(vertices);
-      builder.addShape(vertices);
-
+      const points = squareRange.corners3d(true, 0);
+      return { type: "shape", points }
     } else if (object.rings) {
+      /********* */
+      /* Polygon */
+      /********* */
+
       const layout = this.getGeometryLayout(object);
       const rings = this.convertRings(object.rings, layout);
 
@@ -237,23 +203,18 @@ export class EsriFeatureJSON  {
       // TODO: holes
       for (let i = rings.length - 1; i >= 0; i--) {
         const outerRing = rings[i][0];
-        const pointsArray = [];
+        const points = [];
         for (const point of outerRing) {
           const point2d = Point2d.create();
           point2d.setFromJSON(point as XYProps);
-          pointsArray.push(point2d);
+          points.push(point2d);
         }
 
-        builder.setSymbology(ColorDef.white, ColorDef.from(200, 0, 0, 100), 4);
-        builder.addShape2d(pointsArray, this._defaultZDepth);
+        return { type: "shape2d", points, zDepth: this._defaultZDepth }
       }
       if (rings.length === 0)
         return undefined;
     }
-
-    // const graphic = builder.finish();
-    // return {type:builder.type, graphic};
-
     return undefined;
   }
 
