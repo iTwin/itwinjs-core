@@ -5,7 +5,7 @@
 This tutorial assumes that you already have:
 
 - Explored the [sample showcase](https://www.itwinjs.org/sample-showcase).
-- Your own local source for the iTwin Web Viewer based on the template @bentley/itwin-viewer
+- Your own [local source](https://github.com/imodeljs/itwin-viewer) for the iTwin Web Viewer based on the template @bentley/itwin-viewer
 - Configured your local source to open the "House Model" sample iModel.
   - Instructions to use this sample iModel can be found [here]($docs/learning/tutorials/create-test-imodel-sample/).
 - Understand the concept of a [UI Provider]($docs/learning/ui/abstract/uiitemsprovider) and adding [widgets]($docs/reference/ui-abstract/uiitemsprovider/uiitemsprovider/).
@@ -34,22 +34,22 @@ For this tutorial, we'll be taking the widget from sample [View Attributes](http
 
 Starting with our entry file ```ViewAttributesApp.tsx```, the ```Viewer``` component is defined as follows:
 
-``` HTML
-        <Viewer
-          contextId={sampleIModelInfo.contextId}
-          iModelId={sampleIModelInfo.iModelId}
-          authConfig={{ oidcClient: AuthorizationClient.oidcClient }}
-          viewportOptions={viewportOptions}
-          onIModelConnected={_oniModelReady}
-          defaultUiConfig={default3DSandboxUi}
-          theme="dark"
-          uiProviders={uiProviders}
-        />
+``` jsx
+<Viewer
+  contextId={sampleIModelInfo.contextId}
+  iModelId={sampleIModelInfo.iModelId}
+  authConfig={{ oidcClient: AuthorizationClient.oidcClient }}
+  viewportOptions={viewportOptions}
+  onIModelConnected={_oniModelReady}
+  defaultUiConfig={default3DSandboxUi}
+  theme="dark"
+  uiProviders={uiProviders}
+/>
 ```
 
 Prop ```uiProviders``` is passed in an array that contains the ```ViewAttributesWidgetProvider```, imported and defined at the top of the file:
 
-``` typescript
+``` jsx
 import { ViewAttributesWidgetProvider } from "./ViewAttributesWidget";
 ...
 const uiProviders = [new ViewAttributesWidgetProvider()];
@@ -57,13 +57,13 @@ const uiProviders = [new ViewAttributesWidgetProvider()];
 
 To sum it up, these three lines are the only lines you'll need to add in your iTwin Viewer in ```App.tsx```:
 
-``` typescript
+``` jsx
 ... // Import the widget provider
 import { ViewAttributesWidgetProvider } from "./ViewAttributesWidget";
 ... // Construct the widget provider
 const uiProviders = [new ViewAttributesWidgetProvider()];
-... // Passed into the viewer component
-      uiProviders={uiProviders}
+... // A Prop passed into the <Viewer> component
+uiProviders={uiProviders}
 ```
 
 We now have made all the necessary coding modifications to our iTwin Viewer. We'll just need to copy the remaining three files to bring our widget over.
@@ -88,30 +88,30 @@ If you already have a ```uiProviders``` prop passed in or would like to add more
 
 You can add to the uiProviders const variable, i.e.:
 
-``` typescript
+``` jsx
 const uiProviders = [new ViewAttributesWidgetProvider(), new HyerModelingWidgetProvider(), ...]
 ```
 
 or ignore the variable completely and pass the array in directly:
 
-``` HTML
-        <Viewer
-          contextId={sampleIModelInfo.contextId}
-          iModelId={sampleIModelInfo.iModelId}
-          authConfig={{ oidcClient: AuthorizationClient.oidcClient }}
-          viewportOptions={viewportOptions}
-          onIModelConnected={_oniModelReady}
-          defaultUiConfig={default3DSandboxUi}
-          theme="dark"
-          uiProviders={[new ViewAttributesWidgetProvider(), new HyperModelingWidgetProvider(), ...]}
-        />
+``` jsx
+<Viewer
+  contextId={sampleIModelInfo.contextId}
+  iModelId={sampleIModelInfo.iModelId}
+  authConfig={{ oidcClient: AuthorizationClient.oidcClient }}
+  viewportOptions={viewportOptions}
+  onIModelConnected={_oniModelReady}
+  defaultUiConfig={default3DSandboxUi}
+  theme="dark"
+  uiProviders={[new ViewAttributesWidgetProvider(), new HyperModelingWidgetProvider(), ...]}
+/>
 ```
 
 Just remember to copy corresponding files to your source.
 
 If you'd like to use an existing UiItemsProvider instead of passing in multiple new ones, just add the widget in your ```provideWigets()``` function along with copying and pasting the react component to your desired location:
 
-``` typescript
+``` jsx
 export class MyCustomUiProvider extends UiItemsProvider
 {
   ... // Your custom code
