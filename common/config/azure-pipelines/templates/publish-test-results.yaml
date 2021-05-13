@@ -248,11 +248,13 @@ steps:
 
         listOfFiles = []
 
+        print("Working Dir is : ", workDir)
+
         projDir = getParentDirectory(workDir, 4)
 
         print("projDir is ", projDir)
 
-        for path in glob.iglob((projDir + "/*/*/lib/**/cobertura-coverage.xml"), recursive=True):
+        for path in glob.iglob((workDir + "/*/*/lib/**/cobertura-coverage.xml"), recursive=True):
           listOfFiles.append(path)
 
         print("List of Files : ", listOfFiles)
@@ -276,12 +278,17 @@ steps:
 
           print(os.path.abspath(destFilePath))
 
-      arguments: --output .
+      arguments: --output common/config/azure-pipelines/templates
     # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
   - task: CmdLine@2
     displayName: "Check Dir after combining"
     inputs:
       script: dir
+  - task: CmdLine@2
+    displayName: "Check Dir after combining"
+    inputs:
+      script: dir
+      workingDirectory: common/config/azure-pipelines/templates/coverageXMLs
   - task: PublishCodeCoverageResults@1
     displayName: "Publish code coverage"
     inputs:
