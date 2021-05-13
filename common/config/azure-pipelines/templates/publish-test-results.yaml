@@ -264,7 +264,7 @@ steps:
           os.makedirs(outputDir)
 
         print(os.path.abspath(outputDir))
-        start = "imodeljs"
+        start = "s"
         end = "lib"
         for file in listOfFiles:
           filePathParts = file.split(os.sep)
