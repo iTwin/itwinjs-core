@@ -248,7 +248,7 @@ steps:
         if not os.path.exists(outputDir):
           os.makedirs(outputDir)
 
-        print(outputDir)
+        print(os.path.abspath(outputDir))
         start = "imodeljs"
         end = "lib"
         for file in listOfFiles:
@@ -261,11 +261,13 @@ steps:
 
           shutil.copy(file, destFilePath)
 
+          print(os.path.abspath(destFilePath))
+
       arguments: --output .
     # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
   - task: PublishCodeCoverageResults@1
     displayName: "Publish code coverage"
     inputs:
       codeCoverageTool: Cobertura
-      summaryFileLocation: ./coverageXMLs/**/cobertura-coverage.xml
+      summaryFileLocation: "./coverageXMLs/**/cobertura-coverage.xml"
     condition: succeededOrFailed()
