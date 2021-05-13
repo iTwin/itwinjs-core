@@ -69,8 +69,7 @@ export abstract class RealityTileLoader {
     streamBuffer.curPos = position;
     return format;
   }
-
-  public loadMeshes(tile: RealityTile,  data: TileRequest.ResponseData, system: RenderSystem): Polyface[] | undefined {
+  public loadPolyfaces(tile: RealityTile,  data: TileRequest.ResponseData, system: RenderSystem): Polyface[] | undefined {
     if (! (data instanceof Uint8Array))
       return undefined;
 

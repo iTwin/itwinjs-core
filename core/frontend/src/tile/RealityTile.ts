@@ -9,6 +9,7 @@
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
+import { RealityTileCollector, TileCollectionSelectionStatus } from "../imodeljs-frontend";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
@@ -274,5 +275,32 @@ export class RealityTile extends Tile {
 
     // For global tiles (as in OSM buildings) return the range corners - this allows an algorithm that uses the area of the projected corners to attenuate horizon tiles.
     return this.range.corners(scratchCorners);
+  }
+  public collectRealityTiles(collector: RealityTileCollector) {
+    const status = collector.selectTile(this);
+
+    switch(status) {
+      case TileCollectionSelectionStatus.Reject:
+        return;
+
+      case TileCollectionSelectionStatus.Continue:
+        const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
+        if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
+          collector.markChildrenLoading();
+          return;
+        }
+        if (undefined !== this.realityChildren)
+          for (const child of this.realityChildren)
+            child.collectRealityTiles(collector);
+        break;
+
+      case TileCollectionSelectionStatus.Accept:
+        if (this.isLoaded)
+          collector.accepted.push(this);
+        else
+          collector.missing.push(this);
+
+        break;
+    }
   }
 }

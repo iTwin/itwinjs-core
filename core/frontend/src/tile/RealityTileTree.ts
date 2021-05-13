@@ -7,7 +7,7 @@
  */
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
+import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -112,6 +112,36 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly rootTile: RealityTileParams;
 }
 
+export enum TileCollectionSelectionStatus { Continue, Reject, Accept }
+export enum TileCollectionStatus { Loading, Success }
+export enum RealityTileDrapeStatus { Loading, Success, Error }
+export abstract class RealityTileCollector {
+  public missing = new Array<RealityTile>();
+  public accepted = new Array<RealityTile>();
+  private _childrenLoading = false;
+
+  public markChildrenLoading() {
+    this._childrenLoading = true;
+  }
+  public abstract selectTile(tile: Tile): TileCollectionSelectionStatus;
+  public get loadingComplete() {
+    return !this._childrenLoading && 0 === this.missing.length;
+  }
+}
+
+class RealityTileByRangeCollector extends RealityTileCollector {
+  constructor(private _range: Range3d, private _tolerance: number) {
+    super();
+  }
+  public selectTile(tile: Tile): TileCollectionSelectionStatus {
+    if (!tile.range.intersect(this._range))
+      return TileCollectionSelectionStatus.Reject;
+
+    const tileTolerance = tile.range.diagonal.length / tile.maximumSize;
+    return tileTolerance < this._tolerance ? TileCollectionSelectionStatus.Accept : TileCollectionSelectionStatus.Continue;
+  }
+}
+
 /** @internal */
 export class RealityTileTree extends TileTree {
   public traversalChildrenByDepth: TraversalChildrenDetails[] = [];
@@ -136,6 +166,12 @@ export class RealityTileTree extends TileTree {
   public get parentsAndChildrenExclusive() { return this.loader.parentsAndChildrenExclusive; }
 
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
+
+  public collectRealityTiles(collector: RealityTileCollector) {
+    this.rootTile.collectRealityTiles(collector);
+
+    return collector.loadingComplete ? TileCollectionStatus.Success : TileCollectionStatus.Loading;
+  }
 
   public prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
@@ -318,4 +354,14 @@ export class RealityTileTree extends TileTree {
     depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
     console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // eslint-disable-line
   }
+
+  public drapeLinestring(points: Point3d[], tolerance: number): RealityTileDrapeStatus {
+    const rangeSelector = new RealityTileByRangeCollector(Range3d.createArray(points), tolerance);
+
+    if (this.collectRealityTiles(rangeSelector) === TileCollectionStatus.Loading)
+      return RealityTileDrapeStatus.Loading;
+
+    return RealityTileDrapeStatus.Success;
+  }
 }
+
