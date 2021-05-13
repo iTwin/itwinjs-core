@@ -55,8 +55,8 @@ export class ChangeSetToken {
   constructor(public id: string, public parentId: string, public index: number, public pathname: string, public changeType: ChangesType, public pushDate?: string) { }
 }
 
-/** Utility to manage downloading Briefcases and applying and uploading changesets.
- * @beta
+/** Manages downloading Briefcases and downloading and uploading changesets.
+ * @public
  */
 export class BriefcaseManager {
   /** @internal
@@ -65,7 +65,7 @@ export class BriefcaseManager {
    */
   public static getCompatibilityPath(iModelId: GuidString): string { return path.join(this._compatibilityDir, iModelId, "bc"); }
 
-  /** Get the local path of the folder storing files associated with an imodel */
+  /** Get the local path of the folder storing files that are associated with an imodel */
   public static getIModelPath(iModelId: GuidString): string { return path.join(this._cacheDir, iModelId); }
 
   /** @internal */
@@ -77,17 +77,17 @@ export class BriefcaseManager {
   /** @internal */
   public static getChangedElementsPathName(iModelId: GuidString): string { return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
 
-  private static _bcSubDir = "briefcases";
+  private static _briefcaseSubDir = "briefcases";
   /** @internal */
   public static getBriefcaseBasePath(iModelId: GuidString): string {
-    return path.join(this.getIModelPath(iModelId), this._bcSubDir);
+    return path.join(this.getIModelPath(iModelId), this._briefcaseSubDir);
   }
 
-  /** Get the name of the local file that holds, or will hold, a briefcase in the briefcase cache established in the call to [[BriefcaseManager.initialize]], based
- * on an iModelId and BriefcaseId.
- * @param briefcase the iModelId and BriefcaseId for the filename
- * @see getIModelPath
- */
+  /** Get the name of the local file that holds, or will hold, a local briefcase in the briefcase cache.
+   * @note The briefcase cache is a local directory established in the call to [[BriefcaseManager.initialize]].
+   * @param briefcase the iModelId and BriefcaseId for the filename
+   * @see getIModelPath
+   */
   public static getFileName(briefcase: BriefcaseProps): string {
     return path.join(this.getBriefcaseBasePath(briefcase.iModelId), `${briefcase.briefcaseId}.bim`);
   }
@@ -110,13 +110,14 @@ export class BriefcaseManager {
   private static _compatibilityDir: string;
   private static _initialized?: boolean;
   /** Initialize BriefcaseManager
-   * @param cacheRootDir The root directory for storing a cache of downloaded briefcase files. Briefcases are stored relative to this path in sub-folders organized by IModelId.
+   * @param cacheRootDir The root directory for storing a cache of downloaded briefcase files on the local computer.
+   * Briefcases are stored relative to this path in sub-folders organized by IModelId.
    * @note It is perfectly valid for applications to store briefcases in locations they manage, outside of `cacheRootDir`.
    */
-  public static initialize(cacheRootDir: string, compatibilityDir: string) {
+  public static initialize(cacheRootDir: string, compatibilityDir?: string) {
     if (this._initialized)
       return;
-    this._compatibilityDir = compatibilityDir;
+    this._compatibilityDir = compatibilityDir ?? "";
     this.setupCacheDir(cacheRootDir);
     IModelHost.onBeforeShutdown.addOnce(this.finalize, this);
     this._initialized = true;
@@ -126,16 +127,17 @@ export class BriefcaseManager {
     this._initialized = false;
   }
 
-  /** Get a list of all local briefcase held in the system briefcase cache, optionally for a single iModelId
+  /** Get a list of the local briefcase held in the briefcase cache, optionally for a single iModelId
    * @param iModelId if present, only briefcases for this iModelId are returned
-  */
+   * @note usually there should only be one briefcase per iModel.
+   */
   public static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[] {
     const briefcaseList: LocalBriefcaseProps[] = [];
     const iModelDirs = IModelJsFs.readdirSync(this._cacheDir);
     for (const iModelDir of iModelDirs) {
       if (iModelId && iModelId !== iModelDir)
         continue;
-      const bcPath = path.join(this._cacheDir, iModelDir, this._bcSubDir);
+      const bcPath = path.join(this._cacheDir, iModelDir, this._briefcaseSubDir);
       try {
         if (!IModelJsFs.lstatSync(bcPath)?.isDirectory)
           continue;
@@ -176,13 +178,16 @@ export class BriefcaseManager {
     return +changeSet.index!;
   }
 
-  /** Determine whether the supplied briefcaseId is a standalone briefcase */
+  /** Determine whether the supplied briefcaseId is a standalone briefcase
+   * @note this function returns true if the id is either unassigned or the value "DeprecatedStandalone"
+   * @deprecated use id === BriefcaseIdValue.Unassigned
+   */
   public static isStandaloneBriefcaseId(id: BriefcaseId) {
     // eslint-disable-next-line deprecation/deprecation
     return id === BriefcaseIdValue.Unassigned || id === BriefcaseIdValue.DeprecatedStandalone;
   }
 
-  /** Determine whether the supplied briefcaseId is in the range of BriefcaseIds issued by iModelHub
+  /** Determine whether the supplied briefcaseId is in the range of assigned BriefcaseIds issued by iModelHub
    * @note this does check whether the id was actually acquired by the caller.
    */
   public static isValidBriefcaseId(id: BriefcaseId) {
@@ -190,6 +195,7 @@ export class BriefcaseManager {
   }
 
   /** Acquire a new briefcaseId from iModelHub for the supplied iModelId
+   * @note usually there should only be one briefcase per iModel per user.
    * @throws IModelError if a new briefcaseId could not be acquired.
    */
   public static async acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number> {
@@ -223,7 +229,7 @@ export class BriefcaseManager {
    * a filename, the local briefcase cache is used by creating a file with the briefcaseId as its name in the `briefcases` folder below the folder named
    * for the IModelId.
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
-   * @note The special briefcaseId [[BriefcaseIdValue.Unassigned]] (0) can be used for a local briefcase that can accept changesets but may not be changed locally.
+   * @note The special briefcaseId [[BriefcaseIdValue.Unassigned]] (0) can be used for a local briefcase that can accept changesets but may not be generate changesets.
    * @see CheckpointManager.downloadCheckpoint
    */
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
@@ -268,13 +274,19 @@ export class BriefcaseManager {
     return response;
   }
 
-  /** Deletes change sets of an iModel from local disk */
+  /** Deletes change sets of an iModel from local disk
+   * @internal
+   */
   public static deleteChangeSetsFromLocalDisk(iModelId: string) {
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
     if (BriefcaseManager.deleteFolderAndContents(changeSetsPath))
       Logger.logTrace(loggerCategory, "Deleted change sets from local disk", () => ({ iModelId, changeSetsPath }));
   }
 
+  /** Releases a briefcaseId from iModelHub. After this call it is illegal to generate changesets for the released briefcaseId.
+   * @note generally, this method should not be called directly. Instead use [[deleteBriefcaseFiles]].
+   * @see deleteBriefcaseFiles
+   */
   public static async releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void> {
     requestContext.enter();
     const { briefcaseId, iModelId } = briefcase;
@@ -296,10 +308,11 @@ export class BriefcaseManager {
   }
 
   /**
-   * Delete all files associated with a local briefcase. First releases the BriefcaseId from iModelHub, if a requestContext is supplied.
+   * Delete and clean up a briefcase and all of its associated files. First, this method opens the supplied filename to determine its briefcaseId.
+   * Then, if a requestContenxt is supplied, it releases a BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
+   * associated files (that is, all files in the same directory that start with the briefcase name).
    * @param filePath the full file name of the Briefcase to delete
    * @param requestContext context to delete
-   * @throws [[IModelError]] If unable to delete the briefcase
    */
   public static async deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void> {
     try {
@@ -459,6 +472,7 @@ export class BriefcaseManager {
 
   /** Processes (merges, reverses, reinstates) change sets to get the briefcase to the specified target version.
    * Note: The briefcase must have been opened ReadWrite, and the method keeps it in the same state.
+   * @internal
    */
   public static async processChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex?: number): Promise<void> {
     requestContext.enter();
@@ -633,7 +647,10 @@ export class BriefcaseManager {
     return status;
   }
 
-  /** @internal */
+  /**
+   * @internal
+   * @deprecated - reversing previously applied changesets is not supported.
+  */
   public static async reverseChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reverseToVersion: IModelVersion): Promise<void> {
     requestContext.enter();
     if (db.openMode === OpenMode.Readonly)
@@ -649,7 +666,10 @@ export class BriefcaseManager {
     return BriefcaseManager.processChangeSets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
   }
 
-  /** @internal */
+  /**
+   * @internal
+   * @deprecated - reversing previously applied changesets is not supported.
+   */
   public static async reinstateChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reinstateToVersion?: IModelVersion): Promise<void> {
     requestContext.enter();
     if (db.openMode === OpenMode.Readonly)
@@ -666,7 +686,7 @@ export class BriefcaseManager {
     return BriefcaseManager.processChangeSets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
   }
 
-  /** Pull and merge changes from the hub
+  /** Pull and merge changes from iModelHub
    * @param requestContext The client request context
    * @param briefcase Local briefcase
    * @param mergeToVersion Version of the iModel to merge until.
@@ -954,6 +974,7 @@ export class BriefcaseManager {
     return Promise.all(promises);
   }
 
+  /** @internal */
   public static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps) {
     // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
