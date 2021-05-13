@@ -3737,19 +3737,6 @@ export class MessageManager {
     static updateMessages(): void;
 }
 
-// @beta
-export function MessageRenderer(props: MessageRendererProps): JSX.Element | null;
-
-// @beta
-export interface MessageRendererProps extends CommonProps {
-    // (undocumented)
-    cancelActivityMessage?: () => void;
-    // (undocumented)
-    closeMessage?: (id: string) => void;
-    // (undocumented)
-    dismissActivityMessage?: () => void;
-}
-
 // @public
 export class MessagesUpdatedEvent extends UiEvent<{}> {
 }
@@ -5781,6 +5768,19 @@ export interface StatusFieldProps extends CommonProps {
     isInFooterMode: boolean;
     onOpenWidget: (widget: StatusBarFieldId) => void;
     openWidget: StatusBarFieldId;
+}
+
+// @beta
+export function StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element | null;
+
+// @beta
+export interface StatusMessageRendererProps extends CommonProps {
+    // (undocumented)
+    cancelActivityMessage?: () => void;
+    // (undocumented)
+    closeMessage?: (id: string) => void;
+    // (undocumented)
+    dismissActivityMessage?: () => void;
 }
 
 // @beta

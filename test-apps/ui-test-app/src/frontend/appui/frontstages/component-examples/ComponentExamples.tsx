@@ -5,7 +5,7 @@
 import "./ComponentExamples.scss";
 import * as React from "react";
 import { CommonProps, VerticalTabs } from "@bentley/ui-core";
-import { ColorTheme, MessageManager, MessageRenderer, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
+import { ColorTheme, MessageManager, ModalFrontstageInfo, StatusMessageRenderer, UiFramework } from "@bentley/ui-framework";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { ComponentExamplesProvider } from "./ComponentExamplesProvider";
 
@@ -83,7 +83,7 @@ const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: Comp
           );
         })}
       </div>
-      <MessageRenderer />
+      <StatusMessageRenderer />
     </div>
   );
 };

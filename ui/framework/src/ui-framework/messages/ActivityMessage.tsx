@@ -8,11 +8,10 @@
 
 import * as React from "react";
 import { Icon, UiCore } from "@bentley/ui-core";
-import { Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
-import { Small } from "@itwin/itwinui-react";
+import { MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
+import { Alert, Small } from "@itwin/itwinui-react";
 import { UiFramework } from "../UiFramework";
 import { ActivityMessageEventArgs } from "../messages/MessageManager";
-import { HollowIcon } from "./HollowIcon";
 import { MessageLabel } from "./MessageLabel";
 
 /** Properties for a [[ActivityMessage]]
@@ -33,18 +32,13 @@ export function ActivityMessage(props: ActivityMessageProps) {
   const [cancelLabel] = React.useState(UiCore.translate("dialog.cancel"));
 
   return (
-    <Message
-      status={Status.Information}
-      icon={
-        <HollowIcon iconSpec="icon-info-hollow" />
-      }
-    >
+    <Alert type="informational">
       <MessageLayout
         buttons={
           (messageDetails && messageDetails.supportsCancellation) ?
             <div>
               <MessageHyperlink onClick={props.cancelActivityMessage}>{cancelLabel}</MessageHyperlink>
-              <span>&nbsp;</span>
+              <span style={{ paddingLeft: "10px" }} />
               <MessageButton onClick={props.dismissActivityMessage}>
                 <Icon iconSpec="icon-close" />
               </MessageButton>
@@ -70,6 +64,6 @@ export function ActivityMessage(props: ActivityMessageProps) {
           }
         </div>
       </MessageLayout>
-    </Message>
+    </Alert>
   );
 }

@@ -364,8 +364,6 @@ public;MessageAddedEventArgs
 public;MessageCenterField 
 public;MessageCenterFieldProps 
 public;MessageManager
-beta;MessageRenderer(props: MessageRendererProps): JSX.Element | null
-beta;MessageRendererProps 
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
 public;ModalDialogManager
@@ -562,6 +560,8 @@ public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
+beta;StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element | null
+beta;StatusMessageRendererProps 
 beta;StickyMessage(props: StickyMessageProps): JSX.Element
 beta;StickyMessageProps
 public;SupportsViewSelectorChange
