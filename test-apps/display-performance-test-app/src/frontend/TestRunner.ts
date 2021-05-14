@@ -128,16 +128,11 @@ export class TestRunner {
     return this._config.top;
   }
 
-  private constructor(props: TestSetsProps) {
+  public constructor(props: TestSetsProps) {
     this._config = new TestConfigStack(new TestConfig(props));
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
-  }
-
-  public static async create(props: TestSetsProps): Promise<TestRunner> {
-    // ###TODO: Sign-in, if hub integration ever gets fixed.
-    return new TestRunner(props);
   }
 
   /** Run all the tests. */
