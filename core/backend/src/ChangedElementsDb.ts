@@ -56,7 +56,7 @@ export class ChangedElementsDb implements IDisposable {
     const changeSetTokens: IModelJsNative.ChangeSetProps[] = [];
     changeSets.forEach((changeSet: ChangeSet) => {
       const pathname = path.join(changeSetsPath, changeSet.fileName!);
-      changeSetTokens.push({ id: changeSet.wsgId, parentId: changeSet.parentId!, pathname, changesType: changeSet.changesType });
+      changeSetTokens.push({ id: changeSet.wsgId, parentId: changeSet.parentId!, pathname, changesType: changeSet.changesType, pushDate: changeSet.pushDate });
     });
     return changeSetTokens;
   }
