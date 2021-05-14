@@ -1157,6 +1157,10 @@
       "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/test-apps/display-performance-test-app/lib/backend/WebMain.js",
+      "args": [
+        "d://display-perf-testing//SingleTestCase.json",
+        "d://display-perf-testing//output//"
+      ],
       "outFiles": [
         "${workspaceFolder}/test-apps/display-performance-test-app/lib/{backend}/**/*.js",
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js",

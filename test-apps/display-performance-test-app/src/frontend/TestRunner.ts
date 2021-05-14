@@ -772,15 +772,15 @@ export class TestRunner {
         }
       }
     } else { // timing render frame
-      for (const colName of timings.cpu[0].keys()) {
+      for (const colName of timings.actualFps[0].keys()) {
         let sum = 0;
-        timings.cpu.forEach((timing) => {
+        timings.actualFps.forEach((timing) => {
           const data = timing.get(colName);
           sum += data ? data : 0;
         });
 
         if (!this._minimizeOutput || colName === "CPU Total Time") {
-          rowData.set(colName, sum / timings.cpu.length);
+          rowData.set(colName, sum / timings.actualFps.length);
           setGpuData(colName);
         }
       }
