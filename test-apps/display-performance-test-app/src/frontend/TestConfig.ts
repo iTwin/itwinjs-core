@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as path from "path";
 import { assert, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import {
   BackgroundMapProps, ColorDef, FeatureAppearanceProps, Hilite, RenderMode, ViewFlags, ViewStateProps,
@@ -185,8 +186,8 @@ export class TestConfig {
     this.numRendersToTime = props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
     this.numRendersToSkip = props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
     this.outputName = props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
-    this.outputPath = props.outputPath ?? prevConfig?.outputPath ?? "D:\\output\\performanceData\\";
-    this.iModelLocation = props.iModelLocation ?? prevConfig?.iModelLocation ?? "";
+    this.outputPath = prevConfig?.outputPath ?? "D:\\output\\performanceData\\";
+    this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
     this.iModelHubProject = props.iModelHubProject ?? prevConfig?.iModelHubProject ?? "iModel Testing";
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
@@ -222,6 +223,9 @@ export class TestConfig {
 
     if (props.iModelLocation)
       this.iModelLocation = combineFilePaths(props.iModelLocation, this.iModelLocation);
+
+    if (props.outputPath)
+      this.outputPath = combineFilePaths(props.outputPath, this.outputPath);
 
     if (props.viewString) {
       this.viewStateSpec = {
@@ -318,14 +322,7 @@ function combineFilePaths(additionalPath: string, initialPath: string): string {
   if (initialPath.length === 0 || additionalPath[1] === ":")
     return additionalPath;
 
-  let combined = initialPath;
-  while (combined.endsWith("\\") || combined.endsWith("/"))
-    combined = combined.slice(0, -1);
-
-  if (additionalPath[0] !== "\\" && additionalPath[0] !== "/")
-    combined += (additionalPath[0] === "\\" ? "\\" : "/");
-
-  return combined + additionalPath;
+  return path.join(initialPath, additionalPath);
 }
 
 /** Compare two values for equality, recursing into arrays and object fields. */
