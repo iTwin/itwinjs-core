@@ -295,4 +295,26 @@ declare module "sinon" {
 /** Enzyme mount with automatic unmount after the test. */
 export const mount: typeof enzyme.mount = (global as any).enzymeMount;
 
+/** Get a iTwinUI Button with a given label */
+export function getButtonWithText(container: HTMLElement, label: string, onError?: (msg: string) => void): Element | undefined {
+  const selector = "button.iui-button";
+  const buttons = container.querySelectorAll(selector);
+  if (buttons.length <= 0)
+    onError && onError(`Couldn't find any '${selector}' buttons`);
+
+  const button = [...buttons].find((btn) => {
+    const span = btn.querySelector("span.iui-label");
+    return span!.textContent === label;
+  });
+  if (!button)
+    onError && onError(`No button found with '${label}' label`);
+
+  return button;
+}
+
+/** Handle an error when attempting to get an element */
+export function handleButtonError(msg: string) {
+  console.log(msg); // eslint-disable-line no-console
+}
+
 export default TestUtils;   // eslint-disable-line: no-default-export

@@ -94,6 +94,32 @@ export const selectChangeValueByText = (select: HTMLElement, menuId: string, lab
   fireEvent.click(menuItem!);
 };
 
+/**
+ * Get a iTwinUI Button with a given label
+ */
+export function getButtonWithText(container: HTMLElement, label: string, onError?: (msg: string) => void): Element | undefined {
+  const selector = "button.iui-button";
+  const buttons = container.querySelectorAll(selector);
+  if (buttons.length <= 0)
+    onError && onError(`Couldn't find any '${selector}' buttons`);
+
+  const button = [...buttons].find((btn) => {
+    const span = btn.querySelector("span.iui-label");
+    return span!.textContent === label;
+  });
+  if (!button)
+    onError && onError(`No button found with '${label}' label`);
+
+  return button;
+}
+
+/**
+ * Handle an error when attempting to get an element
+ */
+export function handleButtonError(msg: string) {
+  console.log(msg); // eslint-disable-line no-console
+}
+
 /** Creates Promise */
 export class ResolvablePromise<T> implements PromiseLike<T> {
   private _wrapped: Promise<T>;

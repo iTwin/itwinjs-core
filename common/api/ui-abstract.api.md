@@ -999,13 +999,13 @@ export interface DialogButtonDef {
 // @public
 export enum DialogButtonStyle {
     // (undocumented)
-    Blue = "uicore-buttons-blue",
+    Blue = "iui-high-visibility",
     // (undocumented)
-    Hollow = "uicore-buttons-hollow",
+    Hollow = "iui-default",
     // (undocumented)
     None = "",
     // (undocumented)
-    Primary = "uicore-buttons-primary"
+    Primary = "iui-cta"
 }
 
 // @public

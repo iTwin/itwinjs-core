@@ -32,8 +32,17 @@ describe("<SplitButton />", () => {
     shallow(<SplitButton label="test" popupPosition={RelativePosition.BottomLeft} />).should.matchSnapshot();
   });
 
-  it("renders with buttonType correctly", () => {
-    shallow(<SplitButton label="test" buttonType={ButtonType.Blue} />).should.matchSnapshot();
+  it("renders with buttonType=Blue correctly", () => {
+    shallow(<SplitButton label="test" buttonType={ButtonType.Blue} />).should.matchSnapshot();        // eslint-disable-line deprecation/deprecation
+  });
+  it("renders with buttonType=Disabled correctly", () => {
+    shallow(<SplitButton label="test" buttonType={ButtonType.Disabled} />).should.matchSnapshot();    // eslint-disable-line deprecation/deprecation
+  });
+  it("renders with buttonType=Hollow correctly", () => {
+    shallow(<SplitButton label="test" buttonType={ButtonType.Hollow} />).should.matchSnapshot();      // eslint-disable-line deprecation/deprecation
+  });
+  it("renders with buttonType=Primary correctly", () => {
+    shallow(<SplitButton label="test" buttonType={ButtonType.Primary} />).should.matchSnapshot();     // eslint-disable-line deprecation/deprecation
   });
 
   it("handles keydown/up correctly", () => {

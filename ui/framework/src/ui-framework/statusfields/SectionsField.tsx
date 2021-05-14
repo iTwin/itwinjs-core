@@ -10,9 +10,8 @@ import "./SectionsField.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ClipEventType, IModelApp, ViewClipClearTool, ViewClipDecoration, ViewClipDecorationProvider, Viewport } from "@bentley/imodeljs-frontend";
-import { Button, ButtonType } from "@bentley/ui-core";
 import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
-import { ToggleSwitch } from "@itwin/itwinui-react";
+import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { useActiveViewport } from "../hooks/useActiveViewport";
 import { UiFramework } from "../UiFramework";
 import { Indicator } from "./Indicator";
@@ -94,7 +93,7 @@ export function SectionsStatusField(props: SectionsStatusFieldProps) {
             <TitleBar title={toolTip} />
           }>
           <div className="uifw-sections-footer-contents">
-            <Button buttonType={ButtonType.Hollow} onClick={handleClear}>{clearLabel}</Button>
+            <Button size="small" onClick={handleClear}>{clearLabel}</Button>
             <div className="uifw-uifw-sections-toggle-container">
               <div className={classnames("uifw-sections-label")}>{showHandlesLabel}</div>
               <ToggleSwitch className="uifw-sections-toggle" onChange={toggleManipulators} checked={hasManipulatorsShown} />

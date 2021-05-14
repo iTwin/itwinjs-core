@@ -429,11 +429,17 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Basic Button", "Primary Button", <Button>Primary Button</Button>),
         createComponentExample("Disabled Button", "Button with disabled prop", <Button disabled>Disabled Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Blue Button", "Button with ButtonType.Blue", <Button buttonType={ButtonType.Blue}>Blue Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Hollow Button", "Button with ButtonType.Hollow", <Button buttonType={ButtonType.Hollow}>Hollow Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Large Basic Button", "Primary Button with size={ButtonSize.Large}", <Button size={ButtonSize.Large}>Primary Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Large Disabled Button", "Button with disabled and size={ButtonSize.Large} props", <Button disabled size={ButtonSize.Large}>Disabled Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Large Blue Button", "Button with ButtonType.Blue and size={ButtonSize.Large}", <Button buttonType={ButtonType.Blue} size={ButtonSize.Large}>Blue Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Large Hollow Button", "Button with ButtonType.Hollow and size={ButtonSize.Large}", <Button buttonType={ButtonType.Hollow} size={ButtonSize.Large}>Hollow Button</Button>),
         createComponentExample("Underlined Button", "UnderlinedButton component",
           <UnderlinedButton
@@ -1043,10 +1049,12 @@ export class ComponentExamplesProvider {
             {this.splitButtonMenuItems.map((node) => node)}
           </SplitButton>),
         createComponentExample("SplitButton with Blue buttonType", "SplitButton with buttonType={ButtonType.Blue} prop",
+          // eslint-disable-next-line deprecation/deprecation
           <SplitButton label="Split Button" drawBorder icon="icon-placeholder" onClick={() => { }} buttonType={ButtonType.Blue}>
             {this.splitButtonMenuItems.map((node) => node)}
           </SplitButton>),
         createComponentExample("SplitButton with Primary buttonType", "SplitButton with buttonType={ButtonType.Primary} prop",
+          // eslint-disable-next-line deprecation/deprecation
           <SplitButton label="Split Button" drawBorder icon="icon-placeholder" onClick={() => { }} buttonType={ButtonType.Primary}>
             {this.splitButtonMenuItems.map((node) => node)}
           </SplitButton>),

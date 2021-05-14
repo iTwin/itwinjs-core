@@ -10,8 +10,8 @@ import "./KeyinBrowser.scss";
 // cSpell:ignore Modeless keyins keyinbrowser testid
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Tool } from "@bentley/imodeljs-frontend";
-import { AutoSuggest, AutoSuggestData, Button, CommonProps, InputLabel } from "@bentley/ui-core";
-import { LabeledInput } from "@itwin/itwinui-react";
+import { AutoSuggest, AutoSuggestData, CommonProps, InputLabel } from "@bentley/ui-core";
+import { Button, LabeledInput } from "@itwin/itwinui-react";
 import { UiFramework } from "../UiFramework";
 import { SpecialKey } from "@bentley/ui-abstract";
 
@@ -318,7 +318,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
         <LabeledInput label={this._argsLabel} title={this._argsTip} value={this.state.currentArgs}
           data-testid="uif-keyin-arguments" id="uif-keyin-arguments"
           onKeyDown={this._onKeyDown} onChange={this._onArgumentsChange} onFocus={this._onInputFocus} />
-        <Button data-testid="uif-keyin-browser-execute" onClick={this._onClick}>{this._executeLabel}</Button>
+        <Button size="small" styleType="cta" data-testid="uif-keyin-browser-execute" onClick={this._onClick}>{this._executeLabel}</Button>
       </div>
     );
   }

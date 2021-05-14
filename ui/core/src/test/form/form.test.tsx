@@ -58,7 +58,9 @@ describe("<Form />", () => {
     expect(form).not.to.be.null;
     const button = form.container.querySelector("button") as HTMLButtonElement;
     expect(button).not.to.be.null;
-    expect(button.innerHTML).to.be.eq("form.submitButtonLabel");
+    const span = button.querySelector("span");
+    expect(span).not.to.be.null;
+    expect(span!.innerHTML).to.be.eq("form.submitButtonLabel");
     expect(form.container.querySelector("div.core-form-alert")).to.be.null;
     // fire click to trigger handleFormSubmit processing
     fireEvent.click(button);

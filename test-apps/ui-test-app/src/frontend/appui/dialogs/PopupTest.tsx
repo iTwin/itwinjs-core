@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import "./PopupTest.scss";
 import * as React from "react";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Dialog, DialogButtonType, Popup } from "@bentley/ui-core";
+import { DialogButtonType, RelativePosition } from "@bentley/ui-abstract";
+import { Dialog, Popup } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 

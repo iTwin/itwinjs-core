@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { LoremIpsum } from "lorem-ipsum";
-import { Dialog, DialogButtonType } from "@bentley/ui-core";
+import { Dialog } from "@bentley/ui-core";
+import { DialogButtonType } from "@bentley/ui-abstract";
 import { Checkbox, Input } from "@itwin/itwinui-react";
 
 export interface TestModalDialogProps {

@@ -12,6 +12,7 @@ import Component from 'react-select';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
+import { DialogButtonDef as DialogButtonDef_2 } from '@bentley/ui-abstract';
 import { FocusEventHandler } from 'react-select/src/types';
 import { formatGroupLabel } from 'react-select/src/builtins';
 import { getOptionLabel } from 'react-select/src/builtins';
@@ -150,13 +151,13 @@ export function BodyText(props: TextProps): JSX.Element;
 // @beta @deprecated
 export type BoundsFunctionProp = number | (() => number | undefined);
 
-// @public
+// @public @deprecated
 export class Button extends React.PureComponent<ButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     buttonType?: ButtonType;
     id?: string;
@@ -164,7 +165,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     size?: ButtonSize;
 }
 
-// @public
+// @public @deprecated
 export enum ButtonSize {
     // (undocumented)
     Default = "",
@@ -172,7 +173,7 @@ export enum ButtonSize {
     Large = "large"
 }
 
-// @public
+// @public @deprecated
 export enum ButtonType {
     // (undocumented)
     Blue = "blue",
@@ -525,7 +526,7 @@ export enum DialogAlignment {
     TopRight = "top-right"
 }
 
-// @public
+// @public @deprecated
 export interface DialogButtonDef {
     buttonStyle?: DialogButtonStyle;
     className?: string;
@@ -535,19 +536,19 @@ export interface DialogButtonDef {
     type: DialogButtonType;
 }
 
-// @public
+// @public @deprecated
 export enum DialogButtonStyle {
     // (undocumented)
-    Blue = "uicore-buttons-blue",
+    Blue = "iui-high-visibility",
     // (undocumented)
-    Hollow = "uicore-buttons-hollow",
+    Hollow = "iui-default",
     // (undocumented)
     None = "",
     // (undocumented)
-    Primary = "uicore-buttons-primary"
+    Primary = "iui-cta"
 }
 
-// @public
+// @public @deprecated
 export enum DialogButtonType {
     // (undocumented)
     Cancel = "cancel",
@@ -573,7 +574,7 @@ export enum DialogButtonType {
 export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title">, CommonProps {
     alignment?: DialogAlignment;
     backgroundStyle?: React.CSSProperties;
-    buttonCluster?: DialogButtonDef[];
+    buttonCluster?: DialogButtonDef_2[];
     contentClassName?: string;
     contentStyle?: React.CSSProperties;
     footer?: string | JSX.Element;
@@ -882,6 +883,15 @@ export interface FormProps {
     fields: FieldDefinitions;
     handleFormSubmit: (values: FieldValues) => Promise<void>;
     submitButtonLabel?: string;
+}
+
+// @public
+export function Gap(props: GapProps): JSX.Element;
+
+// @public
+export interface GapProps extends CommonProps {
+    // (undocumented)
+    size?: string;
 }
 
 // @beta
@@ -1310,7 +1320,7 @@ export class MessageBox extends React.PureComponent<MessageBoxProps> {
 
 // @public
 export interface MessageBoxProps extends CommonProps {
-    buttonCluster: DialogButtonDef[];
+    buttonCluster: DialogButtonDef_2[];
     contentClassName?: string;
     contentStyle?: React.CSSProperties;
     height?: string | number;

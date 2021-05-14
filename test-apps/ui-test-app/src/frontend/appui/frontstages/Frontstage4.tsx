@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
+  DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
   PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames, WidgetState,
 } from "@bentley/ui-abstract";
 import {
@@ -30,7 +30,6 @@ import {
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
-import { DialogButtonDef, DialogButtonType } from "@bentley/ui-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { SampleModelessDialog } from "../dialogs/SampleModelessDialog";
 import { SampleModalDialog } from "../dialogs/SampleModalDialog";

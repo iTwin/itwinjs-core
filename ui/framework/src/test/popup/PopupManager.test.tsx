@@ -12,13 +12,14 @@ import {
   DialogPropertySyncItem,
   PropertyChangeResult, PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
 } from "@bentley/ui-abstract";
-import { Button, Point } from "@bentley/ui-core";
+import { Point } from "@bentley/ui-core";
 import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
 import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
 import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
 import TestUtils, { storageMock } from "../TestUtils";
 import { FrameworkUiAdmin, KeyinEntry } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 import { fireEvent, render } from "@testing-library/react";
+import { Button } from "@itwin/itwinui-react";
 const myLocalStorage = storageMock();
 function requestNextAnimation() { }
 

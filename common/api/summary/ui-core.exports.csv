@@ -17,9 +17,13 @@ public;BodyText(props: TextProps): JSX.Element
 beta;BoundsFunctionProp = number | (() => number | undefined)
 deprecated;BoundsFunctionProp = number | (() => number | undefined)
 public;Button 
+deprecated;Button 
 public;ButtonProps 
+deprecated;ButtonProps 
 public;ButtonSize
+deprecated;ButtonSize
 public;ButtonType
+deprecated;ButtonType
 internal;calculateBackdropFilterBlur: (proximityScale: number) => number
 internal;calculateBoxShadowOpacity: (proximityScale: number) => number
 internal;calculateProximityScale: (proximity: number, snap?: boolean, threshold?: number) => number
@@ -57,8 +61,11 @@ public;CubeProps
 public;Dialog 
 public;DialogAlignment
 public;DialogButtonDef
+deprecated;DialogButtonDef
 public;DialogButtonStyle
+deprecated;DialogButtonStyle
 public;DialogButtonType
+deprecated;DialogButtonType
 public;DialogProps 
 public;DisabledText(props: TextProps): JSX.Element
 public;Div(props: DivProps): JSX.Element
@@ -95,6 +102,8 @@ beta;Form
 beta;FormContext: React.Context
 beta;FormContextState 
 beta;FormProps
+public;Gap(props: GapProps): JSX.Element
+public;GapProps 
 beta;GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[]
 internal;getBestBWContrastColor(hexColor: string): "black" | "white"
 internal;getButtonTypeClassName(buttonType?: ButtonType): string

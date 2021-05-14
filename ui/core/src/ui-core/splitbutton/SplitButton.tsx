@@ -41,7 +41,7 @@ export interface SplitButtonProps extends CommonProps {
   /** Direction relative to the button to which the popup is expanded (defaults to Bottom) */
   popupPosition?: RelativePosition;
   /** 4 styles to tweak the content of the button */
-  buttonType?: ButtonType;
+  buttonType?: ButtonType;  // eslint-disable-line deprecation/deprecation
 
   /** @internal */
   initialExpanded?: boolean;

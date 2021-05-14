@@ -27,7 +27,7 @@ import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
-import { ButtonProps } from '@bentley/ui-core';
+import { ButtonProps } from '@itwin/itwinui-react';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommandHandler } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';

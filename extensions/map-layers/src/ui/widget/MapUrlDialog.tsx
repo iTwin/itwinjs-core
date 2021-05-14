@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { Input, LabeledInput, ProgressLinear, Radio } from "@itwin/itwinui-react";
-import { Dialog, DialogButtonType, Icon, InputStatus, Select } from "@bentley/ui-core";
+import { Dialog, Icon, InputStatus, Select } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
@@ -16,7 +16,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
 import "./MapUrlDialog.scss";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { DialogButtonType, SpecialKey } from "@bentley/ui-abstract";
 
 export const MAP_TYPES = {
   wms: "WMS",

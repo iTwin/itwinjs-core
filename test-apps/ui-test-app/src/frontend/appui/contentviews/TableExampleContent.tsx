@@ -16,7 +16,7 @@ import {
 } from "@bentley/ui-components";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
 import { ToggleSwitch } from "@itwin/itwinui-react";
-import { BodyText } from "@bentley/ui-core";
+import { BodyText, Gap } from "@bentley/ui-core";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -441,12 +441,6 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
       </div>
     );
   }
-}
-
-function Gap() {
-  return (
-    <span style={{ paddingLeft: "10px" }} />
-  );
 }
 
 ConfigurableUiManager.registerControl("TableExampleContent", TableExampleContentControl);

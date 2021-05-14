@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Icon, UiCore } from "@bentley/ui-core";
+import { Gap, Icon, UiCore } from "@bentley/ui-core";
 import { MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
 import { Alert, Small } from "@itwin/itwinui-react";
 import { UiFramework } from "../UiFramework";
@@ -38,7 +38,7 @@ export function ActivityMessage(props: ActivityMessageProps) {
           (messageDetails && messageDetails.supportsCancellation) ?
             <div>
               <MessageHyperlink onClick={props.cancelActivityMessage}>{cancelLabel}</MessageHyperlink>
-              <span style={{ paddingLeft: "10px" }} />
+              <Gap />
               <MessageButton onClick={props.dismissActivityMessage}>
                 <Icon iconSpec="icon-close" />
               </MessageButton>
