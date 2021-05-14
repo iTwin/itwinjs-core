@@ -545,7 +545,7 @@ export class TestRunner {
     try {
       iModel = await SnapshotConnection.openFile(path.join(filepath));
     } catch (err) {
-      alert(`openSnapshot failed: ${err.toString()}`);
+      await this.logError(`openSnapshot failed: ${err.toString()}`);
       return undefined;
     }
 
