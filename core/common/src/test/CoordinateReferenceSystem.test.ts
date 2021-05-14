@@ -27,8 +27,6 @@ describe("Geodetic Settings", () => {
       const outTransform = GeodeticTransform.fromJSON(output);
 
       expect(output.method === expected.method).to.be.true;
-      expect(output.sourceEllipsoidId === expected.sourceEllipsoidId).to.be.true;
-      expect(output.targetEllipsoidId === expected.targetEllipsoidId).to.be.true;
       expect((output.sourceEllipsoid === undefined) === (expected.sourceEllipsoid === undefined)).to.be.true;
       // No need to verify the ellipsoid content as they were verified in another test.
       expect((output.targetEllipsoid === undefined) === (expected.targetEllipsoid === undefined)).to.be.true;
@@ -93,7 +91,6 @@ describe("Geodetic Settings", () => {
 
     roundTrip({
       method: "GridFiles",
-      sourceEllipsoidId: "CLRK66",
       sourceEllipsoid: {
         id: "CLRK66",
         epsg: 7008,
@@ -102,7 +99,6 @@ describe("Geodetic Settings", () => {
         equatorialRadius: 6378160.0,
         polarRadius: 6356774.719195305951,
       },
-      targetEllipsoidId: "WGS84",
       targetEllipsoid: {
         id: "WGS84",
         epsg: 6326,
@@ -388,7 +384,6 @@ describe("Geodetic Settings", () => {
       transforms: [
         {
           method: "GridFiles",
-          sourceEllipsoidId: "CLRK66",
           sourceEllipsoid: {
             id: "CLRK66",
             epsg: 7008,
@@ -397,7 +392,6 @@ describe("Geodetic Settings", () => {
             equatorialRadius: 6378160.0,
             polarRadius: 6356774.719195305951,
           },
-          targetEllipsoidId: "WGS84",
           targetEllipsoid: {
             id: "WGS84",
             epsg: 6326,
@@ -546,7 +540,6 @@ describe("Geodetic Settings", () => {
         transforms: [
           {
             method: "GridFiles",
-            sourceEllipsoidId: "CLRK66",
             sourceEllipsoid: {
               id: "CLRK66",
               epsg: 7008,
@@ -555,7 +548,6 @@ describe("Geodetic Settings", () => {
               equatorialRadius: 6378160.0,
               polarRadius: 6356774.719195305951,
             },
-            targetEllipsoidId: "WGS84",
             targetEllipsoid: {
               id: "WGS84",
               epsg: 6326,
@@ -674,7 +666,6 @@ describe("Geodetic Settings", () => {
           transforms: [
             {
               method: "GridFiles",
-              sourceEllipsoidId: "CLRK66",
               sourceEllipsoid: {
                 id: "CLRK66",
                 epsg: 7008,
@@ -683,7 +674,6 @@ describe("Geodetic Settings", () => {
                 equatorialRadius: 6378160.0,
                 polarRadius: 6356774.719195305951,
               },
-              targetEllipsoidId: "WGS84",
               targetEllipsoid: {
                 id: "WGS84",
                 epsg: 6326,
