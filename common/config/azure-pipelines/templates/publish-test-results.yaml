@@ -230,17 +230,28 @@ steps:
       pythonInterpreter: python3
       scriptSource: inline
       script: |
-        import os
-        import argparse
-        import shutil
-        import glob
+        import os, argparse, shutil, glob
+        import xml.etree.ElementTree as ET
+        from xml.dom import minidom
 
-        def readXML(compName, filePath):
+        def prettifyXML(elem):
+          rough_string = ET.tostring(elem, 'utf-8')
+          reparsed = minidom.parseString(rough_string)
+          return reparsed.toprettyxml(indent="  ")
+
+        def replacePackageName(packageSource, filePath):
           covFile = open(filePath).read()
           pattern = 'package name="'
-          component = 'package name="'+ compName
+          component = 'package name="' + packageSource + os.sep
           covFile = covFile.replace(pattern, component)
+          editedCovFile = open(filePath, "w")
+          editedCovFile.write(covFile)
+          editedCovFile.close()
 
+        def getCoverageTag(filePath):
+          tree = ET.parse(filePath)
+          root = tree.getroot()
+          return root
 
         parser = argparse.ArgumentParser()
         parser.add_argument(
@@ -269,25 +280,33 @@ steps:
 
         outfile = open(os.path.join(outputDir, outputXML), 'w')
 
+        count = 0
+
         for file in listOfFiles:
           filePathParts = file.split(os.sep)
           coveragePath = os.path.join(*filePathParts[filePathParts.index((start))+1:filePathParts.index(end)])
           destFilePath = os.path.join(outputDir, coveragePath)
 
+          destFile = os.path.join(destFilePath, "cobertura-coverage.xml")
+          if os.path.exists(destFile):
+            coveragePath = os.path.join(*filePathParts[filePathParts.index(("coverage"))+1:filePathParts.index("cobertura-coverage.xml")])
+            destFilePath = os.path.join(destFilePath, coveragePath)
+
           if not os.path.exists(destFilePath):
             os.makedirs(destFilePath)
 
+          destFile = os.path.join(destFilePath, "cobertura-coverage.xml")
+
           shutil.copy(file, destFilePath)
-          print(coveragePath)
+          replacePackageName(coveragePath, destFile)
 
-          covFile = open(os.path.join(destFilePath, "cobertura-coverage.xml")).read()
-          pattern = 'package name="'
-          component = 'package name="'+ coveragePath + os.sep
-          covFile = covFile.replace(pattern, component)
+          if count != 0:
+            coverage = getCoverageTag(destFile)
+            outfile.write(prettifyXML(coverage))
+          else:
+            outfile.write(open(destFile).read())
 
-          outfile.write(covFile)
-
-          print(os.path.abspath(destFilePath))
+          count += 1
 
         outfile.close()
 
