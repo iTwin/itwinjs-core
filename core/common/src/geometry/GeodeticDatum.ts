@@ -239,22 +239,27 @@ export class GridFileDefinition implements GridFileDefinitionProps {
  *  @alpha
  */
 export interface GridFileTransformProps {
-  /** The list of grid files. The order of file is meaningful, the first encountered that covers the area of coordinate
+  /** The list of grid files. The order of file is meaningful, the first encountered that covers the extent of coordinate
    *  transformation will be used. */
   files: GridFileDefinitionProps[];
+  /** The positional vector fallback transformation used for extents not covered by the grid files */
+  fallback?: PositionalVectorTransformProps;
 }
 
 /** This class represents a grid files based geodetic transformation.
  *  @alpha
  */
 export class GridFileTransform implements GridFileTransformProps {
-  /** The list of grid files. The order of file is meaningful, the first encountered that covers the area of coordinate
+  /** The list of grid files. The order of file is meaningful, the first encountered that covers the extent of coordinate
    *  transformation will be used. */
   public readonly files: GridFileDefinition[];
+  /** The positional vector fallback transformation used for extents not covered by the grid files */
+  public readonly fallback?: PositionalVectorTransform;
 
   public constructor(data?: GridFileTransformProps) {
     this.files = [];
     if (data) {
+      this.fallback = data.fallback ? PositionalVectorTransform.fromJSON(data.fallback) : undefined;
       if (Array.isArray(data.files)) {
         this.files = [];
         for (const item of data.files)
@@ -271,6 +276,7 @@ export class GridFileTransform implements GridFileTransformProps {
   /** @internal */
   public toJSON(): GridFileTransformProps {
     const data: GridFileTransformProps = { files: [] };
+    data.fallback = this.fallback ? this.fallback.toJSON() : undefined;
     if (Array.isArray(this.files)) {
       for (const item of this.files)
         data.files.push(item.toJSON());
@@ -287,6 +293,12 @@ export class GridFileTransform implements GridFileTransformProps {
       if (!this.files[idx].equals(other.files[idx]))
         return false;
 
+    if ((this.fallback === undefined) !== (other.fallback === undefined))
+      return false;
+
+    if (this.fallback && !this.fallback.equals(other.fallback!))
+      return false;
+
     return true;
   }
 }
@@ -298,6 +310,23 @@ export class GridFileTransform implements GridFileTransformProps {
 export interface GeodeticTransformProps {
   /* The method used by the geodetic transform */
   method: GeodeticTransformMethod;
+  /** The identifier of the source geodetic datum as stored in the dictionary or the service database.
+   *  This identifier is optional and informational only.
+   */
+  sourceEllipsoidId?: string;
+  /** The complete definition of the source geodetic ellipsoid referred to by ellipsoidId.
+   *  The source ellipsoid identifier enables obtaining the shape of the Earth mathematical model
+   *  for the purpose of performing the transformation.
+  */
+  sourceEllipsoid?: GeodeticEllipsoidProps;
+  /** The identifier of the target geodetic datum as stored in the dictionary or the service database.
+   *  This identifier is optional and informational only.
+   */
+  targetEllipsoidId?: string;
+  /** The complete definition of the target geodetic ellipsoid referred to by ellipsoidId.
+   *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
+   *  for the purpose of performing the transformation.*/
+  targetEllipsoid?: GeodeticEllipsoidProps;
   /* When method is Geocentric this property contains the geocentric parameters */
   geocentric?: GeocentricTransformProps;
   /* When method is PositionalVector this property contains the positional vector parameters */
@@ -313,6 +342,23 @@ export interface GeodeticTransformProps {
 export class GeodeticTransform implements GeodeticTransformProps {
   /* The method used by the geodetic transform */
   public readonly method: GeodeticTransformMethod;
+  /** The identifier of the source geodetic datum as stored in the dictionary or the service database.
+   *  This identifier is optional and informational only.
+   */
+  public readonly sourceEllipsoidId?: string;
+  /** The complete definition of the source geodetic ellipsoid referred to by ellipsoidId.
+   *  The source ellipsoid identifier enables obtaining the shape of the Earth mathematical model
+   *  for the purpose of performing the transformation.
+  */
+  public readonly sourceEllipsoid?: GeodeticEllipsoid;
+  /** The identifier of the target geodetic datum as stored in the dictionary or the service database.
+   *  This identifier is optional and informational only.
+   */
+  public readonly targetEllipsoidId?: string;
+  /** The complete definition of the target geodetic ellipsoid referred to by ellipsoidId.
+   *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
+   *  for the purpose of performing the transformation.*/
+  public readonly targetEllipsoid?: GeodeticEllipsoid;
   /* When method is Geocentric this property contains the geocentric parameters */
   public readonly geocentric?: GeocentricTransform;
   /* When method is PositionalVector this property contains the positional vector parameters */
@@ -324,6 +370,10 @@ export class GeodeticTransform implements GeodeticTransformProps {
     this.method = "None";
     if (data) {
       this.method = data.method;
+      this.sourceEllipsoidId = data.sourceEllipsoidId;
+      this.targetEllipsoidId = data.targetEllipsoidId;
+      this.sourceEllipsoid = data.sourceEllipsoid ? GeodeticEllipsoid.fromJSON(data.sourceEllipsoid) : undefined;
+      this.targetEllipsoid = data.targetEllipsoid ? GeodeticEllipsoid.fromJSON(data.targetEllipsoid) : undefined;
       this.geocentric = data.geocentric ? GeocentricTransform.fromJSON(data.geocentric) : undefined;
       this.positionalVector = data.positionalVector ? PositionalVectorTransform.fromJSON(data.positionalVector) : undefined;
       this.gridFile = data.gridFile ? GridFileTransform.fromJSON(data.gridFile) : undefined;
@@ -338,6 +388,10 @@ export class GeodeticTransform implements GeodeticTransformProps {
   /** @internal */
   public toJSON(): GeodeticTransformProps {
     const data: GeodeticTransformProps = { method: this.method };
+    data.sourceEllipsoidId = this.sourceEllipsoidId;
+    data.targetEllipsoidId = this.targetEllipsoidId;
+    data.sourceEllipsoid = this.sourceEllipsoid ? this.sourceEllipsoid.toJSON() : undefined;
+    data.targetEllipsoid = this.targetEllipsoid ? this.targetEllipsoid.toJSON() : undefined;
     data.geocentric = this.geocentric ? this.geocentric.toJSON() : undefined;
     data.positionalVector = this.positionalVector ? this.positionalVector.toJSON() : undefined;
     data.gridFile = this.gridFile ? this.gridFile.toJSON() : undefined;
@@ -346,7 +400,19 @@ export class GeodeticTransform implements GeodeticTransformProps {
 
   /** @internal */
   public equals(other: GeodeticTransform): boolean {
-    if (this.method !== other.method)
+    if (this.method !== other.method ||
+      this.sourceEllipsoidId !== other.sourceEllipsoidId ||
+      this.targetEllipsoidId !== other.targetEllipsoidId)
+      return false;
+
+    if ((this.sourceEllipsoid === undefined) !== (other.sourceEllipsoid === undefined))
+      return false;
+    if (this.sourceEllipsoid && !this.sourceEllipsoid.equals(other.sourceEllipsoid!))
+      return false;
+
+    if ((this.targetEllipsoid === undefined) !== (other.targetEllipsoid === undefined))
+      return false;
+    if (this.targetEllipsoid && !this.targetEllipsoid.equals(other.targetEllipsoid!))
       return false;
 
     if ((this.geocentric === undefined) !== (other.geocentric === undefined))

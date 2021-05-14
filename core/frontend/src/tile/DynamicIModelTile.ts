@@ -22,7 +22,7 @@ import {
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
  * Not intended for direct consumption - exported for use by [[IModelTileTree]].
- * [[InteractiveEditingSession]].
+ * [[GraphicalEditingScope]].
  * @internal
  */
 export abstract class DynamicIModelTile extends Tile {
@@ -34,7 +34,7 @@ export abstract class DynamicIModelTile extends Tile {
     return new RootTile(root, elements);
   }
 
-  /** Updates the tiles when elements are modified during the editing session. */
+  /** Updates the tiles when elements are modified during the editing scope. */
   public abstract handleGeometryChanges(changes: Iterable<ElementGeometryChange>): void;
 
   /** Overrides symbology of the *static* [[IModelTile]]s to hide elements that have been deleted or modified. */
@@ -175,7 +175,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   }
 }
 
-/** Represents a single element that has been inserted or had its geometric properties modified during the current [[InteractiveEditingSession]].
+/** Represents a single element that has been inserted or had its geometric properties modified during the current [[GraphicalEditingScope]].
  * It has no graphics of its own; it has any number of child tiles, each of which have graphics of a different level of detail.
  * Its contentId is the element's Id.
  */
@@ -383,7 +383,7 @@ class GraphicsTile extends Tile {
 
     const tree = this.tree;
     assert(tree instanceof IModelTileTree);
-    const reader = ImdlReader.create(stream, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, undefined, this.contentId);
+    const reader = ImdlReader.create(stream, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, undefined, { tileId: this.contentId });
 
     let content: TileContent = { isLeaf: true };
     if (reader) {

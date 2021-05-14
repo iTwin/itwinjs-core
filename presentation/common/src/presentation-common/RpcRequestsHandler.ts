@@ -8,9 +8,10 @@
 
 import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
-import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
+import { DescriptorJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
+import { DiagnosticsScopeLogs } from "./Diagnostics";
 import { InstanceKeyJSON } from "./EC";
 import { PresentationError, PresentationStatus } from "./Error";
 import { NodeKeyJSON } from "./hierarchy/Key";
@@ -19,14 +20,13 @@ import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
-  ContentDescriptorRequestOptions, ContentRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyRequestOptions, Paged, PresentationDataCompareOptions,
-  SelectionScopeRequestOptions,
+  ContentDescriptorRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
+  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, Paged, RequestOptions, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { SelectionScope } from "./selection/SelectionScope";
 import { HierarchyCompareInfoJSON, PartialHierarchyModificationJSON } from "./Update";
-import { Omit, PagedResponse } from "./Utils";
+import { PagedResponse } from "./Utils";
 
 /**
  * Configuration parameters for [[RpcRequestsHandler]].
@@ -65,18 +65,13 @@ export class RpcRequestsHandler implements IDisposable {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private get rpcClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
 
-  private injectClientId<T>(options: T): PresentationRpcRequestOptions<T> {
-    return {
-      ...options,
-      clientId: this.clientId,
-    };
-  }
-
-  private async requestRepeatedly<TResult, TOptions extends PresentationRpcRequestOptions<unknown>>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, repeatCount: number = 1): Promise<TResult> {
+  private async requestRepeatedly<TResult>(func: () => PresentationRpcResponse<TResult>, diagnosticsHandler?: (logs: DiagnosticsScopeLogs[]) => void, repeatCount: number = 1): Promise<TResult> {
+    let diagnostics: DiagnosticsScopeLogs[] | undefined;
     let error: Error | undefined;
     let shouldRepeat = false;
     try {
-      const response = await func(options);
+      const response = await func();
+      diagnostics = response.diagnostics;
 
       if (response.statusCode === PresentationStatus.Success)
         return response.result!;
@@ -90,32 +85,43 @@ export class RpcRequestsHandler implements IDisposable {
       error = e;
       if (repeatCount < this._maxRequestRepeatCount)
         shouldRepeat = true;
+
+    } finally {
+      if (diagnosticsHandler && diagnostics)
+        diagnosticsHandler(diagnostics);
     }
 
     if (shouldRepeat) {
       ++repeatCount;
-      return this.requestRepeatedly(func, options, repeatCount);
+      return this.requestRepeatedly(func, diagnosticsHandler, repeatCount);
     }
 
     throw error;
   }
 
   /**
-   * Send request to current backend. If the backend is unknown to the requestor,
-   * the request is rejected with `PresentationStatus.UnknownBackend` status. In
-   * such case the client is synced with the backend using registered `syncHandlers`
-   * and the request is repeated.
+   * Send the request to backend.
+   *
+   * If the backend responds with [[PresentationStatus.BackendTimeout]] or there's an RPC-related error,
+   * the request is repeated up to `this._maxRequestRepeatCount` times. If we fail to get a valid success or error
+   * response from the backend, throw the last encountered error.
    *
    * @internal
    */
-  public async request<TResult, TOptions extends { imodel: IModelRpcProps }, TArg = any>(
-    func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<Omit<TOptions, "imodel">>, ...args: TArg[]) => PresentationRpcResponse<TResult>,
+  public async request<TResult, TOptions extends RequestOptions<IModelRpcProps>, TArg = any>(
+    func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>,
     options: TOptions,
-    ...args: TArg[]): Promise<TResult> {
-    type TFuncOptions = PresentationRpcRequestOptions<Omit<TOptions, "imodel">>;
-    const { imodel, ...rpcOptions } = options;
-    const doRequest = async (funcOptions: TFuncOptions) => func(imodel, funcOptions, ...args);
-    return this.requestRepeatedly(doRequest, this.injectClientId(rpcOptions));
+    ...additionalOptions: TArg[]): Promise<TResult> {
+    const { imodel, diagnostics, ...optionsNoIModel } = options;
+    const { handler: diagnosticsHandler, ...diagnosticsOptions } = diagnostics ?? {};
+    const rpcOptions: PresentationRpcRequestOptions<TOptions> = {
+      ...optionsNoIModel,
+      clientId: this.clientId,
+    };
+    if (diagnostics)
+      rpcOptions.diagnostics = diagnosticsOptions;
+    const doRequest = async () => func(imodel, rpcOptions, ...additionalOptions);
+    return this.requestRepeatedly(doRequest, diagnosticsHandler);
   }
 
   public async getNodesCount(options: ExtendedHierarchyRequestOptions<IModelRpcProps, NodeKeyJSON>): Promise<number> {
@@ -127,12 +133,12 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient.getPagedNodes.bind(this.rpcClient), options);
   }
 
-  public async getNodePaths(options: HierarchyRequestOptions<IModelRpcProps>, paths: InstanceKeyJSON[][], markedIndex: number): Promise<NodePathElementJSON[]> {
-    return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelRpcProps>>(
+  public async getNodePaths(options: ExtendedHierarchyRequestOptions<IModelRpcProps, never>, paths: InstanceKeyJSON[][], markedIndex: number): Promise<NodePathElementJSON[]> {
+    return this.request<NodePathElementJSON[], ExtendedHierarchyRequestOptions<IModelRpcProps, never>>(
       this.rpcClient.getNodePaths.bind(this.rpcClient), options, paths, markedIndex);
   }
-  public async getFilteredNodePaths(options: HierarchyRequestOptions<IModelRpcProps>, filterText: string): Promise<NodePathElementJSON[]> {
-    return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelRpcProps>>(
+  public async getFilteredNodePaths(options: ExtendedHierarchyRequestOptions<IModelRpcProps, never>, filterText: string): Promise<NodePathElementJSON[]> {
+    return this.request<NodePathElementJSON[], ExtendedHierarchyRequestOptions<IModelRpcProps, never>>(
       this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options, filterText);
   }
 
@@ -153,10 +159,6 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient.getPagedContentSet.bind(this.rpcClient), options);
   }
 
-  public async getDistinctValues(options: ContentRequestOptions<IModelRpcProps>, descriptor: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]> {
-    return this.request<string[], ContentRequestOptions<IModelRpcProps>>(
-      this.rpcClient.getDistinctValues.bind(this.rpcClient), options, descriptor, keys, fieldName, maximumValueCount);
-  }
   public async getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>): Promise<PagedResponse<DisplayValueGroupJSON>> {
     return this.request<PagedResponse<DisplayValueGroupJSON>, DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>(
       this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
@@ -179,12 +181,12 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId);
   }
-  public async compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<PartialHierarchyModificationJSON[]> {
-    return this.request<PartialHierarchyModificationJSON[], PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>>(
+  public async compareHierarchies(options: HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<PartialHierarchyModificationJSON[]> {
+    return this.request<PartialHierarchyModificationJSON[], HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON>>(
       this.rpcClient.compareHierarchies.bind(this.rpcClient), options); // eslint-disable-line deprecation/deprecation
   }
-  public async compareHierarchiesPaged(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<HierarchyCompareInfoJSON> {
-    return this.request<HierarchyCompareInfoJSON, PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>>(
+  public async compareHierarchiesPaged(options: HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<HierarchyCompareInfoJSON> {
+    return this.request<HierarchyCompareInfoJSON, HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON>>(
       this.rpcClient.compareHierarchiesPaged.bind(this.rpcClient), options);
   }
 }

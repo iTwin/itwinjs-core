@@ -8,7 +8,6 @@
 
 import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ViewFlagOverrides } from "@bentley/imodeljs-common";
-import { AnimationBranchState } from "../GraphicBranch";
 import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
@@ -87,6 +86,8 @@ export enum DrawOpCode {
   PushBatch = "pushBatch",
   PopBatch = "popBatch",
   PushState = "pushState",
+  PushClip = "pushClip",
+  PopClip = "popClip",
 }
 
 /** @internal */
@@ -125,15 +126,6 @@ export class PushStateCommand {
 }
 
 /** @internal */
-export function getAnimationBranchState(branch: Branch, target: Target): AnimationBranchState | undefined {
-  const animId = branch.branch.animationId;
-  if (undefined === animId || undefined === target.animationBranches)
-    return undefined;
-
-  return target.animationBranches.get(animId);
-}
-
-/** @internal */
 export class PushBranchCommand {
   public readonly opcode = "pushBranch";
 
@@ -141,34 +133,7 @@ export class PushBranchCommand {
 
   public constructor(public readonly branch: Branch) { }
 
-  private applyAnimation(target: Target): void {
-    const anim = getAnimationBranchState(this.branch, target);
-    if (undefined === anim)
-      return;
-
-    if (undefined !== anim.transform) {
-      let transform = anim.transform;
-      const prevLocalToWorld = target.currentTransform;
-      const prevWorldToLocal = prevLocalToWorld.inverse();
-      if (prevLocalToWorld && prevWorldToLocal)
-        transform = prevWorldToLocal.multiplyTransformTransform(transform.multiplyTransformTransform(prevLocalToWorld));
-
-      this.branch.localToWorldTransform = transform;
-    }
-
-    if (anim.clip !== undefined) {
-      this.branch.clips = anim.clip as ClipVolume;
-      if (undefined === PushBranchCommand._viewFlagOverrides) {
-        PushBranchCommand._viewFlagOverrides = new ViewFlagOverrides();
-        PushBranchCommand._viewFlagOverrides.setShowClipVolume(true);
-      }
-
-      this.branch.branch.setViewFlagOverrides(PushBranchCommand._viewFlagOverrides);
-    }
-  }
-
   public execute(exec: ShaderProgramExecutor): void {
-    this.applyAnimation(exec.target);
     exec.pushBranch(this.branch);
   }
 }
@@ -183,6 +148,30 @@ export class PopBranchCommand {
 
   public execute(exec: ShaderProgramExecutor): void {
     exec.popBranch();
+  }
+}
+
+/** @internal */
+export class PushClipCommand {
+  public readonly opcode = "pushClip";
+
+  public constructor(public readonly clip: ClipVolume) { }
+
+  public execute(exec: ShaderProgramExecutor): void {
+    exec.target.uniforms.branch.clipStack.push(this.clip);
+  }
+}
+
+/** @internal */
+export class PopClipCommand {
+  public readonly opcode = "popClip";
+
+  private constructor() { }
+
+  public static instance = new PopClipCommand();
+
+  public execute(exec: ShaderProgramExecutor): void {
+    exec.target.uniforms.branch.clipStack.pop();
   }
 }
 
@@ -234,9 +223,9 @@ export class PrimitiveCommand {
 }
 
 /** @internal */
-export type PushCommand = PushBranchCommand | PushBatchCommand | PushStateCommand;
+export type PushCommand = PushBranchCommand | PushBatchCommand | PushStateCommand | PushClipCommand;
 /** @internal */
-export type PopCommand = PopBranchCommand | PopBatchCommand;
+export type PopCommand = PopBranchCommand | PopBatchCommand | PopClipCommand;
 /** @internal */
 export type DrawCommand = PushCommand | PopCommand | PrimitiveCommand;
 

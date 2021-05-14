@@ -44,3 +44,5 @@ package-deps.json
 .env
 
 common/api/summary/summary.exports.csv
+
+debug.log

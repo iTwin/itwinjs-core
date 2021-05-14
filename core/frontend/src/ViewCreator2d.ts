@@ -22,23 +22,28 @@ import { DrawingViewState } from "./DrawingViewState";
 import { SheetViewState } from "./SheetViewState";
 import { EntityState, loggerCategory } from "./imodeljs-frontend";
 
-/** @beta Options for creating a 2d [[ViewState]] via [[ViewCreator2d]] */
+/** Options for creating a [[ViewState2d]] via [[ViewCreator2d]].
+ *  @public
+*/
 export interface ViewCreator2dOptions {
-  /** vpAspect aspect ratio of vp to create fit view. */
+  /** Aspect ratio of [[Viewport]]. Required to fit contents of the model in the initial state of the view. */
   vpAspect?: number;
-  /** background color for view (default is white). */
+  /** Background color of the view (default is white). */
   bgColor?: ColorDef;
-  /** if iModel already has a view for given 2D model, merge in its props */
+  /** Checks to see if there already is a [[ViewDefinition2d]] for the given modelId. If so, use it as the seed view, and merge its props into the final view created. */
   useSeedView?: boolean;
 }
 
-/** @beta API for creating a [[ViewState]] for a 2D model ([[GeometricModel2dState]]).
+/**
+ * API for creating a [[ViewState2d]] for a 2D model ([[GeometricModel2dState]]). @see [[ViewCreator3d]] to create a view for a 3d model.
+ * Example usage:
  * ```ts
  * const viewCreator = new ViewCreator2d(imodel);
  * const models = await imodel.models.queryProps({ from: "BisCore.GeometricModel2d" });
  * if (models.length > 0)
- * const view = await viewCreator.createViewForModel(models[0].id!);
+ *   const view = await viewCreator.createViewForModel(models[0].id!);
  * ```
+ * @public
  */
 export class ViewCreator2d {
 
@@ -47,16 +52,16 @@ export class ViewCreator2d {
   private static _sheetModelClasses = [SheetModelState.classFullName];
 
   /**
-   * Constructs ViewCreator2d with [[iModelConnection]].
-   * @param _imodel [[iModelConnection]] to query for categories and/or models.
+   * Constructs a ViewCreator2d using an [[IModelConnection]].
+   * @param _imodel [[IModelConnection]] to query for categories and/or models.
    */
   constructor(private _imodel: IModelConnection) { }
 
   /**
-   * Creates and returns view for given 2D model.
-   * @param modelId of target 2D model.
-   * @param options for view creation.
-   * @throws [IModelError]($common) if modelType is not supported.
+   * Creates and returns view for the 2D model id passed in.
+   * @param modelId Id of the 2D model for the view.
+   * @param [options] Options for creating the view.
+   * @throws [IModelError]($common) If modelType is not supported.
    */
   public async createViewForModel(modelId: Id64String, options?: ViewCreator2dOptions): Promise<ViewState> {
 

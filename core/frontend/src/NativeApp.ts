@@ -52,18 +52,20 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  * @beta
  */
 export class NativeAppAuthorization {
-  private _config: NativeAppAuthorizationConfiguration;
+  private _config?: NativeAppAuthorizationConfiguration;
   private _cachedToken?: AccessToken;
+  private _refreshingToken = false;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
   public get hasSignedIn() { return this._cachedToken !== undefined; }
   public get isAuthorized(): boolean { return this.hasSignedIn && !this._cachedToken!.isExpired(this._expireSafety); }
 
-  public constructor(config: NativeAppAuthorizationConfiguration) {
+  /** ctor for NativeAppAuthorization
+   * @param config if present, overrides backend supplied configuration. Generally not necessary, should be supplied
+   * in [NativeHostOpts]($backend)
+   */
+  public constructor(config?: NativeAppAuthorizationConfiguration) {
     this._config = config;
-    if (config.expiryBuffer)
-      this._expireSafety = config.expiryBuffer;
-
     this.onUserStateChanged.addListener((token?: AccessToken) => {
       this._cachedToken = token;
     });
@@ -71,7 +73,7 @@ export class NativeAppAuthorization {
 
   /** Used to initialize the the backend authorization. Must be awaited before any other methods are called */
   public async initialize(props: SessionProps): Promise<void> {
-    return NativeApp.callNativeHost("initializeAuth", props, this._config);
+    this._expireSafety = await NativeApp.callNativeHost("initializeAuth", props, this._config);
   }
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
@@ -92,8 +94,15 @@ export class NativeAppAuthorization {
    */
   public async getAccessToken(): Promise<AccessToken> {
     // if we have a valid token, return it. Otherwise call backend to refresh the token.
-    if (!this.isAuthorized)
+    if (!this.isAuthorized) {
+      if (this._refreshingToken) {
+        return Promise.reject(); // short-circuits any recursive use of this function
+      }
+
+      this._refreshingToken = true;
       this._cachedToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
+      this._refreshingToken = false;
+    }
 
     return this._cachedToken!;
   }
@@ -105,8 +114,14 @@ export class NativeAppAuthorization {
  */
 export interface NativeAppOpts extends IpcAppOptions {
   nativeApp?: {
-    /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized. */
+    /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized.
+     * @deprecated Initialize authorization for native applications at the backend
+     */
     authConfig?: NativeAppAuthorizationConfiguration;
+    /** if true, do not attempt to initialize AuthorizationClient
+     * @deprecated Initialize authorization for native applications at the backend
+     */
+    noInitializeAuthClient?: boolean;
   };
 }
 
@@ -169,16 +184,17 @@ export class NativeApp {
     Config.App.merge(await this.callNativeHost("getConfig"));
     NativeApp.hookBrowserConnectivityEvents();
 
-    if (opts?.nativeApp?.authConfig) {
-      const auth = new NativeAppAuthorization(opts.nativeApp.authConfig);
-      IModelApp.authorizationClient = auth;
-      await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
-    }
-
     // initialize current online state.
     if (window.navigator.onLine) {
       RequestGlobalOptions.online = window.navigator.onLine;
       await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
+    }
+
+    const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig); // eslint-disable-line deprecation/deprecation
+    IModelApp.authorizationClient = auth;
+    const connStatus = await NativeApp.checkInternetConnectivity();
+    if (opts?.nativeApp?.authConfig && true !== opts?.nativeApp?.noInitializeAuthClient && connStatus === InternetConnectivityStatus.Online) { // eslint-disable-line deprecation/deprecation
+      await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
     }
   }
 

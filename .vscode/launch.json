@@ -67,6 +67,23 @@
       ]
     },
     {
+      "name": "OrbitGT Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/orbitgt/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/orbitgt/lib/**/*.js"
+      ]
+    },
+    {
       "name": "Common Tests",
       "presentation": {
         "group": "0_CoreTests",
@@ -265,7 +282,8 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js",
       ],
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in core/markup/certa.json
@@ -507,8 +525,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/abstract/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "./mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -530,8 +548,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -553,8 +571,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/core/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -572,8 +590,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/framework/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -592,8 +610,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/ninezone/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -632,8 +650,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/backend/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -651,8 +669,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -670,8 +688,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/components/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "-r",
         "ignore-styles",
@@ -693,8 +711,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/frontend/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "-r",
         "jsdom-global/register",
@@ -714,8 +732,6 @@
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "mocha.opts",
         "-r",
         "jsdom-global/register",
         "-r",
@@ -740,8 +756,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/testing/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "mocha.opts",
+        "--config",
+        ".mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -899,7 +915,30 @@
       ]
     },
     {
-      "name": "imodel-transformer tests",
+      "name": "imodel-transformer (app)",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/test-apps/imodel-transformer",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [ // NOTE: edit these to specify the command line arguments for the debugging session
+        "start",
+        "--",
+        "--hub=qa",
+        "--sourceContextId='ec002f93-f0c1-4ab3-a407-351848eba233'", // iModelJsIntegrationTest
+        "--sourceIModelId='73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a'", // ReadOnlyTest
+        "--targetFile='d:/tmp/test-target.bim'",
+        "--logTransformer",
+      ],
+      "outFiles": [
+        "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "imodel-transformer (tests)",
       "presentation": {
         "group": "6_Misc"
       },

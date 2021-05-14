@@ -6,8 +6,9 @@
  * @module iModels
  */
 
-import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, Logger, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { ChangedEntities, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
@@ -111,11 +112,8 @@ class ChangedEntitiesProc implements TxnChangedEntities {
       });
 
       changes.sendEvent(iModel, changedEvent, evtName);
-    } catch (_) {
-      // Presumably, the temp txn tables don't exist, because the native TxnManager is not tracking changes.
-      // This occurs when the application is using a "pull-only" briefcase - they open the briefcase as read-write temporarily,
-      // apply some pulled changesets, and then reopen in read-only mode.
-      // During the read-write phase, we're not tracking changes, and the application isn't interested in the events we'd otherwise generate here.
+    } catch (err) {
+      Logger.logError(BackendLoggerCategory.IModelDb, err.message);
     }
   }
 }
@@ -163,10 +161,6 @@ export class TxnManager {
     this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel);
   }
   /** @internal */
-  protected _onValidateOutput(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onValidateOutput(props, this._iModel);
-  }
-  /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void {
     this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel);
   }
@@ -179,12 +173,13 @@ export class TxnManager {
   protected _onEndValidate() {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onEndValidation.raiseEvent();
+    // TODO: if (this.validationErrors.length !== 0) throw new IModelError(validation ...)
   }
 
   /** @internal */
   protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]) {
     this.onGeometryChanged.raiseEvent(modelProps);
-    IpcHost.notifyEditingSession(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
+    IpcHost.notifyEditingScope(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
   }
 
   /** @internal */
@@ -202,7 +197,7 @@ export class TxnManager {
   /** @internal */
   protected _onCommitted() {
     this.onCommitted.raiseEvent();
-    IpcHost.notifyTxns(this._iModel, "notifyCommitted");
+    IpcHost.notifyTxns(this._iModel, "notifyCommitted", this.hasPendingTxns, Date.now());
   }
 
   /** @internal */

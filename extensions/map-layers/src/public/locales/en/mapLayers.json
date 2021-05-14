@@ -53,7 +53,7 @@
     "UsernameRequired": "Username required"
   },
   "Messages": {
-    "NotSupported": "No active viewport or geo-located Imodel available.",
+    "NotSupported": "No active viewport or geo-located iModel available.",
     "NoRangeDefined": "No range is defined for Map Layer",
     "Start": "Map Layers Extension Loaded",
     "MapLayerAttached": "Map layer {{sourceName}} attached from URL: {{sourceUrl}}",
@@ -87,6 +87,7 @@
     "HeightOrigin": "Height Origin",
     "InvalidElevationError": "Invalid Elevation",
     "InvalidElevationDetails": "Please enter a valid number for elevation.",
+    "Mask": "Mask by Models",
     "ModelHeight": "Model Height (m)",
     "Settings": "Settings",
     "ShowMapLayers": "Show Map Layers",

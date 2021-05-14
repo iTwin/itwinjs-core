@@ -78,12 +78,14 @@ export class CategorySelectorState extends ElementState {
 
   /** Add one or more categories to this CategorySelector */
   public addCategories(arg: Id64Arg): void {
-    Id64.forEach(arg, (id) => this.categories.add(id));
+    for (const id of Id64.iterable(arg))
+      this.categories.add(id);
   }
 
   /** Remove one or more categories from this CategorySelector */
   public dropCategories(arg: Id64Arg) {
-    Id64.forEach(arg, (id) => this.categories.delete(id));
+    for (const id of Id64.iterable(arg))
+      this.categories.delete(id);
   }
 
   /** Add or remove categories from this CategorySelector.

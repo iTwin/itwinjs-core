@@ -4,7 +4,6 @@ exports[`LabelsProvider getLabel returns correct label 1`] = `"Properties_60Inst
 
 exports[`LabelsProvider getLabels returns model labels 1`] = `
 Array [
-  "DgnV8Bridge",
   "Converted Groups",
   "Converted Drawings",
   "Converted Sheets",

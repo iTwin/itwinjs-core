@@ -19,7 +19,7 @@ import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "./primitives/DisplayParams";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
- * @beta
+ * @public
  */
 export interface ParticleCollectionBuilderParams {
   /** The image mapped to each particle quad.
@@ -56,7 +56,7 @@ export interface ParticleCollectionBuilderParams {
 
 /** Describes a particle to to add to a particle collection via [[ParticleCollectionBuilder.addParticle]].
  * The x, y, and z coordinates represent the centroid of the particle quad in the collection's coordinate space.
- * @beta
+ * @public
  */
 export interface ParticleProps extends XYAndZ {
   /** The size of the particle, in the collection's coordinate space. If omitted, it defaults to the size supplied to the collection by [[ParticleCollectionBuilderParams.size]].
@@ -75,8 +75,10 @@ export interface ParticleProps extends XYAndZ {
  * such that the image is fully visible.
  *
  * Creating a particle collection using a ParticleCollectionBuilder is far more efficient (in both CPU and GPU usage) than doing so using a [[GraphicBuilder]].
+ * @see interactive demonstrations of [Snow and Rain](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=snow-rain-sample&imodel=Villa) and
+   * [Fire and Smoke](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=fire-sample&imodel=Villa) particle effects.
  * @see [SnowEffect]($frontend-devtools) for an example of a particle effect.
- * @beta
+ * @public
  */
 export interface ParticleCollectionBuilder {
   /** The default transparency for newly-added particles as an integer in [0,255], used by [[ParticleCollectionBuilder.addParticle]] if [[ParticleProps.transparency]] is omitted.
@@ -101,7 +103,7 @@ export interface ParticleCollectionBuilder {
   finish: () => RenderGraphic | undefined;
 }
 
-/** @beta */
+/** @public */
 export namespace ParticleCollectionBuilder {
   /** Creates a new ParticleCollectionBuilder.
    * @throws Error if size is not greater than zero.

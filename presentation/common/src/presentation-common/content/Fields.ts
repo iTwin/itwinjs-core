@@ -9,6 +9,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
+import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { EditorDescription } from "./Editor";
 import { Property, PropertyJSON } from "./Property";
@@ -45,6 +46,8 @@ export interface PropertiesFieldJSON extends BaseFieldJSON {
 export interface NestedContentFieldJSON extends BaseFieldJSON {
   contentClassInfo: ClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON;
+  /** @alpha */
+  relationshipMeaning?: RelationshipMeaning;
   /** @alpha */
   actualPrimaryClassIds?: Id64String[];
   autoExpand?: boolean;
@@ -131,7 +134,6 @@ export class Field {
    */
   public get parent(): NestedContentField | undefined { return this._parent; }
 
-  /** @alpha */
   public clone() {
     const clone = new Field(
       this.category,
@@ -217,7 +219,7 @@ export class Field {
 
   /**
    * Get descriptor for this field.
-   * @beta
+   * @public
    */
   public getFieldDescriptor(): FieldDescriptor {
     return {
@@ -264,7 +266,6 @@ export class PropertiesField extends Field {
     this.properties = properties;
   }
 
-  /** @alpha */
   public clone() {
     const clone = new PropertiesField(
       this.category,
@@ -312,7 +313,7 @@ export class PropertiesField extends Field {
 
   /**
    * Get descriptor for this field.
-   * @beta
+   * @public
    */
   public getFieldDescriptor(): FieldDescriptor {
     const pathFromPropertyToSelectClass = new Array<RelatedClassInfo>();
@@ -343,6 +344,8 @@ export class NestedContentField extends Field {
   /** Relationship path to [Primary class]($docs/learning/presentation/Content/Terminology#primary-class) */
   public pathToPrimaryClass: RelationshipPath;
   /** @alpha */
+  public relationshipMeaning: RelationshipMeaning;
+  /** @alpha */
   public actualPrimaryClassIds: Id64String[];
   /** Contained nested fields */
   public nestedFields: Field[];
@@ -362,6 +365,7 @@ export class NestedContentField extends Field {
    * @param nestedFields Contained nested fields
    * @param editor Property editor used to edit values of this field
    * @param autoExpand Flag specifying whether field should be expanded
+   * @param relationshipMeaning RelationshipMeaning of the field
    * @param renderer Property renderer used to render values of this field
    */
   public constructor(
@@ -381,12 +385,12 @@ export class NestedContentField extends Field {
     super(category, name, label, description, isReadonly, priority, editor, renderer);
     this.contentClassInfo = contentClassInfo;
     this.pathToPrimaryClass = pathToPrimaryClass;
+    this.relationshipMeaning = RelationshipMeaning.RelatedInstance;
     this.nestedFields = nestedFields;
     this.autoExpand = autoExpand;
     this.actualPrimaryClassIds = [];
   }
 
-  /** @alpha */
   public clone() {
     const clone = new NestedContentField(
       this.category,
@@ -403,6 +407,7 @@ export class NestedContentField extends Field {
       this.renderer,
     );
     clone.actualPrimaryClassIds = this.actualPrimaryClassIds;
+    clone.relationshipMeaning = this.relationshipMeaning;
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -422,6 +427,7 @@ export class NestedContentField extends Field {
       ...super.toJSON(),
       contentClassInfo: this.contentClassInfo,
       pathToPrimaryClass: this.pathToPrimaryClass,
+      relationshipMeaning: this.relationshipMeaning,
       actualPrimaryClassIds: this.actualPrimaryClassIds,
       nestedFields: this.nestedFields.map((field: Field) => field.toJSON()),
       autoExpand: this.autoExpand,
@@ -449,6 +455,7 @@ export class NestedContentField extends Field {
         .filter((nestedField): nestedField is Field => !!nestedField),
       contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
       pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
+      relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
       actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
       autoExpand: json.autoExpand,
     });
@@ -486,7 +493,7 @@ export const getFieldByName = (fields: Field[], name: string, recurse?: boolean)
 
 /**
  * Types of different field descriptors.
- * @beta
+ * @public
  */
 export enum FieldDescriptorType {
   Name = "name",
@@ -495,7 +502,7 @@ export enum FieldDescriptorType {
 
 /**
  * Base for a field descriptor
- * @beta
+ * @public
  */
 export interface FieldDescriptorBase {
   type: FieldDescriptorType;
@@ -503,10 +510,10 @@ export interface FieldDescriptorBase {
 
 /**
  * A union of all possible field descriptor types
- * @beta
+ * @public
  */
 export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor;
-/** @beta */
+/** @public */
 export namespace FieldDescriptor { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is this a named field descriptor */
   export function isNamed(d: FieldDescriptor): d is NamedFieldDescriptor {
@@ -520,7 +527,7 @@ export namespace FieldDescriptor { // eslint-disable-line @typescript-eslint/no-
 
 /**
  * Field descriptor that identifies a content field by its unique name.
- * @beta
+ * @public
  */
 export interface NamedFieldDescriptor extends FieldDescriptorBase {
   type: FieldDescriptorType.Name;
@@ -530,7 +537,7 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
 /**
  * Field descriptor that identifies a properties field using a list of
  * properties that the field contains.
- * @beta
+ * @public
  */
 export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
   type: FieldDescriptorType.Properties;

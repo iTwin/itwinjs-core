@@ -239,7 +239,14 @@ describe("Viewport changed events", async () => {
 
       mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.timePoint = 43);
       expectNoChange(() => settings.timePoint = 43);
+
+      // eslint-disable-next-line deprecation/deprecation
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }]);
+      // eslint-disable-next-line deprecation/deprecation
       mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.scheduleScriptProps = undefined);
+      // If assignment to scheduleScriptProps produces no net change, no event.
+      // eslint-disable-next-line deprecation/deprecation
+      expectNoChange(() => settings.scheduleScriptProps = undefined);
 
       expectChange(() => settings.hiddenLineSettings = settings.hiddenLineSettings.override({ transThreshold: 1.0 - settings.hiddenLineSettings.transThreshold }));
       expectNoChange(() => settings.hiddenLineSettings = settings.hiddenLineSettings.override({}));
@@ -697,7 +704,8 @@ describe("Viewport changed events", async () => {
     expect(vp.view.viewsCategory(id64(0x1c))).to.be.false;
 
     const waitForSubCats = async (catIds: Id64Arg): Promise<void> => {
-      Id64.forEach(catIds, (catId) => expect(subcats.getSubCategories(catId)).to.be.undefined);
+      for (const catId of Id64.iterable(catIds))
+        expect(subcats.getSubCategories(catId)).to.be.undefined;
 
       // We used to wait half a second (no loop). That was sometimes apparently not long enough for the Linux CI job.
       // Waiting for some async operation to happen in background within a limited amount of time is not great, but that is the
@@ -706,10 +714,10 @@ describe("Viewport changed events", async () => {
       for (let i = 1; i < 16; i++) {
         await BeDuration.wait(250);
         let numLoaded = 0;
-        Id64.forEach(catIds, (catId) => {
+        for (const catId of Id64.iterable(catIds)) {
           if (subcats.getSubCategories(catId) !== undefined)
             ++numLoaded;
-        });
+        }
 
         if (0 !== numLoaded) {
           // If one category was loaded, they all should have been.
@@ -718,7 +726,8 @@ describe("Viewport changed events", async () => {
         }
       }
 
-      Id64.forEach(catIds, (catId) => expect(subcats.getSubCategories(catId)).not.to.be.undefined);
+      for (const catId of Id64.iterable(catIds))
+        expect(subcats.getSubCategories(catId)).not.to.be.undefined;
     };
 
     // Turning on another category for the first time causes subcategories to be asynchronously loaded if not in cache

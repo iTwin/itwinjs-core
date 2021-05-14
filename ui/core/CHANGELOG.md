@@ -1,6 +1,57 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+This log was last generated on Wed, 12 May 2021 18:08:13 GMT and should not be manually modified.
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Add more descriptive UiSettingsStorage, LocalSettingsStorage, and SessionSettingsStorage and deprecate badly name beta classes.
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:34 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+### Updates
+
+- Fix z-index of statusbar overflow panel to show footer popups.
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- Add SettingsManager and SettingsContainer for displaying app settings UI.
+- fix height in number control.
+- Fix for listbox not rerendering when selectedVaue prop is changed.
+- Add option to show/hide settings category header text.
+- Improved ui-components test coverage to 100%
+- Support for Focus into Tool Settings
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT
@@ -54,7 +105,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Update components that support providing refs via React.forwardRef to work better with document generation.
+- Update components that support providing refs via React.forwardRef to work better with document generation.  
 - Add option to use a 'x-small' webfont icon.
 - Add nested popup support to components that use HOC withOnOutsideClick.
 - Fix bug processing zero value in Select options.
@@ -325,7 +376,7 @@ Tue, 28 Jul 2020 16:26:24 GMT
 - Add support for a basic single selection aria compliant listbox.
 - Checkboxes in lists & trees are out of place
 - Disabled component styling. Fixed Dialog focus problems.
-- Map Layer UX
+- Map Layer UX 
 - Allowing Input component user to override the type
 - Fix ThemeSelect formatOptionLabel prop to return React.ReactNode.
 - Added Arrow key navigation in Tabs components. Added ItemKeyboardNavigator.
@@ -648,7 +699,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Put sourcemap in npm package.
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
 - Update icons-generic-webfont version to latest available.
 - Added TableProp to hide header and supporting style changes

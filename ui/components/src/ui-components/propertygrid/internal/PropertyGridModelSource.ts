@@ -13,7 +13,7 @@ import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
 import { IMutablePropertyGridModel, IPropertyGridModel, MutablePropertyGridModel } from "./PropertyGridModel";
 import { PropertyGridModelChangeEvent } from "./PropertyGridModelChangeEvent";
 
-/** @alpha */
+/** @beta */
 export interface IPropertyGridModelSource {
   onModelChanged: PropertyGridModelChangeEvent;
   setPropertyData: (data: PropertyData) => void;
@@ -24,7 +24,7 @@ export interface IPropertyGridModelSource {
 /**
  * Controls property grid model.
  * It is used to modify property grid model model and inform when the model changes.
- * @alpha
+ * @beta
  */
 export class PropertyGridModelSource implements IPropertyGridModelSource {
   private _model?: IMutablePropertyGridModel;

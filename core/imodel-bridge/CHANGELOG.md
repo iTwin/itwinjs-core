@@ -1,6 +1,46 @@
 # Change Log - @bentley/imodel-bridge
 
-This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+This log was last generated on Wed, 12 May 2021 18:08:13 GMT and should not be manually modified.
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+_Version update only_
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:33 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+_Version update only_
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+_Version update only_
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT
@@ -30,6 +70,8 @@ _Version update only_
 ## 2.12.0
 Thu, 18 Feb 2021 22:10:13 GMT
 
+_Version update only_
+
 ## 2.11.2
 Thu, 18 Feb 2021 02:50:59 GMT
 
@@ -46,7 +88,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 ### Updates
 
 - Add option to disable automatic element deletion
-- Separated out API to upgrade iModels.
+- Separated out API to upgrade iModels. 
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT
@@ -279,7 +321,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 ### Updates
 
 - First working version
-- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades.
+- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades. 
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

@@ -7,11 +7,13 @@
  */
 
 import * as React from "react";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import { TreeNodeItem, useAsyncValue } from "@bentley/ui-components";
 import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
-import { BeEvent } from "@bentley/bentleyjs-core";
+
+const EMPTY_CATEGORIES_ARRAY: Category[] = [];
 
 /**
  * Loads categories from viewport or uses provided list of categories.
@@ -20,12 +22,13 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 export function useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport) {
   const currentView = view || viewManager.getFirstOpenView();
   const categoriesPromise = React.useMemo(async () => loadCategoriesFromViewport(imodel, currentView), [imodel, currentView]);
-  return useAsyncValue(categoriesPromise) ?? [];
+  return useAsyncValue(categoriesPromise) ?? EMPTY_CATEGORIES_ARRAY;
 }
 
 /** @internal */
 export async function loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport) {
-  if (!vp) return [];
+  if (!vp)
+    return EMPTY_CATEGORIES_ARRAY;
 
   // Query categories and add them to state
   const selectUsedSpatialCategoryIds = "SELECT DISTINCT Category.Id as id from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
@@ -209,7 +212,9 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
 
     // This property let us act on all viewports or just on the selected one, configurable by the app
     if (forAllViewports) {
-      viewManager.forEachViewport(updateViewport);
+      for (const viewport of viewManager) {
+        updateViewport(viewport);
+      }
     } else {
       updateViewport(viewManager.selectedView);
     }
@@ -230,7 +235,9 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
 
     // This property let us act on all viewports or just on the selected one, configurable by the app
     if (forAllViewports) {
-      viewManager.forEachViewport(updateViewport);
+      for (const viewport of viewManager) {
+        updateViewport(viewport);
+      }
     } else {
       updateViewport(viewManager.selectedView);
     }

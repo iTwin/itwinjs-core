@@ -4,27 +4,28 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Guid, GuidString, Id64, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { Schema } from "@bentley/ecschema-metadata";
 import {
   Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
-  FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator,
-  GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, PlanProjectionSettings,
-  RelatedElement, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
+  AuxCoordSystem2dProps, Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
+  ElementProps, ExternalSourceProps, FontProps, FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps,
+  GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps,
+  Placement3d, PlanProjectionSettings, RelatedElement, RepositoryLinkProps, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance,
+  SubCategoryOverride, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
-  DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingModel,
-  DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects,
-  ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d,
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
+  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingModel, DrawingViewDefinition, ECSqlStatement,
+  Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
+  ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GeometricElement3d,
   GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement,
-  InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition,
-  Platform, Relationship, RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition,
-  SubCategory, Subject, TemplateRecipe2d, TemplateRecipe3d, Texture, ViewDefinition,
+  InformationRecordModel, LinkElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject,
+  PhysicalPartition, Platform, Relationship, RelationshipProps, RenderMaterialElement, RepositoryLink, SnapshotDb, SpatialCategory,
+  SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, TemplateRecipe2d, TemplateRecipe3d, Texture, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -1147,9 +1148,7 @@ export namespace IModelTransformerUtils {
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in bottom right pixel. The rest of the square is red.
     const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
     const textureData = Base64.btoa(String.fromCharCode(...pngData));
-    const textureWidth = 3;
-    const textureHeight = 3;
-    return Texture.insert(iModelDb, modelId, textureName, ImageSourceFormat.Png, textureData, textureWidth, textureHeight, `Description for ${textureName}`, TextureFlags.None);
+    return Texture.insertTexture(iModelDb, modelId, textureName, ImageSourceFormat.Png, textureData, `Description for ${textureName}`);
   }
 
   export function queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
@@ -1157,6 +1156,30 @@ export namespace IModelTransformerUtils {
       statement.bindString("userLabel", userLabel);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
     });
+  }
+
+  export function insertRepositoryLink(iModelDb: IModelDb, codeValue: string, url: string, format: string): Id64String {
+    const repositoryLinkProps: RepositoryLinkProps = {
+      classFullName: RepositoryLink.classFullName,
+      model: IModel.repositoryModelId,
+      code: LinkElement.createCode(iModelDb, IModel.repositoryModelId, codeValue),
+      url,
+      format,
+    };
+    return iModelDb.elements.insertElement(repositoryLinkProps);
+  }
+
+  export function insertExternalSource(iModelDb: IModelDb, repositoryId: Id64String, userLabel: string): Id64String {
+    const externalSourceProps: ExternalSourceProps = {
+      classFullName: ExternalSource.classFullName,
+      model: IModel.repositoryModelId,
+      code: Code.createEmpty(),
+      userLabel,
+      repository: new ExternalSourceIsInRepository(repositoryId),
+      connectorName: "Connector",
+      connectorVersion: "0.0.1",
+    };
+    return iModelDb.elements.insertElement(externalSourceProps);
   }
 
   export function dumpIModelInfo(iModelDb: IModelDb): void {
@@ -1261,14 +1284,20 @@ export class PhysicalModelConsolidator extends IModelTransformer {
   }
 }
 
-/** Test IModelTransformer that uses a ViewDefinition to filter the iModel contents. */
+/** Test IModelTransformer that uses a SpatialViewDefinition to filter the iModel contents. */
 export class FilterByViewTransformer extends IModelTransformer {
   private readonly _exportViewDefinitionId: Id64String;
+  private readonly _exportModelSelectorId: Id64String;
+  private readonly _exportCategorySelectorId: Id64String;
+  private readonly _exportDisplayStyleId: Id64String;
   private readonly _exportModelIds: Id64Set;
   public constructor(sourceDb: IModelDb, targetDb: IModelDb, exportViewDefinitionId: Id64String) {
     super(sourceDb, targetDb);
     this._exportViewDefinitionId = exportViewDefinitionId;
     const exportViewDefinition = sourceDb.elements.getElement<SpatialViewDefinition>(exportViewDefinitionId, SpatialViewDefinition);
+    this._exportCategorySelectorId = exportViewDefinition.categorySelectorId;
+    this._exportModelSelectorId = exportViewDefinition.modelSelectorId;
+    this._exportDisplayStyleId = exportViewDefinition.displayStyleId;
     const exportCategorySelector = sourceDb.elements.getElement<CategorySelector>(exportViewDefinition.categorySelectorId, CategorySelector);
     this.excludeCategories(Id64.toIdSet(exportCategorySelector.categories));
     const exportModelSelector = sourceDb.elements.getElement<ModelSelector>(exportViewDefinition.modelSelectorId, ModelSelector);
@@ -1286,27 +1315,20 @@ export class FilterByViewTransformer extends IModelTransformer {
       }
     });
   }
-  /** Override of IModelTransformer.shouldExportElement that excludes PhysicalPartitions/Models not referenced by the export view's ModelSelector */
+  /** Override of IModelTransformer.shouldExportElement that excludes other ViewDefinition-related elements that are not associated with the *export* ViewDefinition. */
   protected shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
-      if (!this._exportModelIds.has(sourceElement.id)) {
-        return false;
-      }
+      return this._exportModelIds.has(sourceElement.id);
     } else if (sourceElement instanceof SpatialViewDefinition) {
-      if (sourceElement.id !== this._exportViewDefinitionId) {
-        return false;
-      }
+      return sourceElement.id === this._exportViewDefinitionId;
+    } else if (sourceElement instanceof CategorySelector) {
+      return sourceElement.id === this._exportCategorySelectorId;
+    } else if (sourceElement instanceof ModelSelector) {
+      return sourceElement.id === this._exportModelSelectorId;
+    } else if (sourceElement instanceof DisplayStyle3d) {
+      return sourceElement.id === this._exportDisplayStyleId;
     }
     return super.shouldExportElement(sourceElement);
-  }
-  /** Override of IModelTransformer.processAll that does additional logging after completion. */
-  public async processAll(): Promise<void> {
-    await super.processAll();
-    Logger.logInfo(BackendLoggerCategory.IModelTransformer, `processAll complete with ${this._deferredElementIds.size} deferred elements remaining`);
-  }
-  /** Override of IModelTransformer.processDeferredElements that catches all exceptions and keeps going. */
-  public async processDeferredElements(numRetries: number = 3): Promise<void> {
-    try { await super.processDeferredElements(numRetries); } catch (error) { }
   }
 }
 

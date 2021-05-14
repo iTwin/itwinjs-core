@@ -12,12 +12,12 @@ import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./Dia
 
 /** Modal Dialog Changed Event class.
  * @public
- */
+ */
 export class ModalDialogChangedEvent extends DialogChangedEvent { }
 
 /** Modal Dialog Manager class displays and manages multiple modal dialogs
  * @public
- */
+ */
 export class ModalDialogManager {
   /** Modal Dialog Changed Event */
   public static readonly onModalDialogChangedEvent = new ModalDialogChangedEvent();
@@ -31,9 +31,10 @@ export class ModalDialogManager {
   /** Open a modal dialog
    * @param dialog The Dialog to open
    * @param id The id of the Dialog. If one is not provided, an id is generated.
+   * @param parentDocument The Document used to determine the owning window.
    */
-  public static openDialog(dialog: React.ReactNode, id?: string): void {
-    ModalDialogManager.dialogManager.openDialog(dialog, id);
+  public static openDialog(dialog: React.ReactNode, id?: string, parentDocument = document): void {
+    ModalDialogManager.dialogManager.openDialog(dialog, id, parentDocument);
   }
 
   /** Close a modal dialog
@@ -66,7 +67,7 @@ export class ModalDialogManager {
 
 /** ModalDialogRenderer React component renders modal dialogs
  * @public
- */
+ */
 export class ModalDialogRenderer extends React.PureComponent<CommonProps> {
 
   constructor(props: CommonProps) {

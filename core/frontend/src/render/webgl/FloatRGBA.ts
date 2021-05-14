@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, RgbColor } from "@bentley/imodeljs-common";
 import { UniformHandle } from "./UniformHandle";
 
 function scale(norm: number): number {
@@ -45,6 +45,10 @@ export abstract class FloatColor {
 
   public setColorDef(def: ColorDef) {
     this.setTbgr(def.tbgr);
+  }
+
+  public setRgbColor(rgb: RgbColor) {
+    this.setTbgr(computeTbgr(rgb.r / 255, rgb.g / 255, rgb.b / 255, 1));
   }
 
   public setTbgr(tbgr: number) {
@@ -92,6 +96,10 @@ export class FloatRgb extends FloatColor {
 
   public static fromColorDef(def: ColorDef): FloatRgb {
     return FloatRgb.fromTbgr(def.tbgr);
+  }
+
+  public static fromRgbColor(rgb: RgbColor): FloatRgb {
+    return FloatRgb.from(rgb.r / 255, rgb.g / 255, rgb.b / 255);
   }
 
   public static from(r: number, g: number, b: number): FloatRgb {

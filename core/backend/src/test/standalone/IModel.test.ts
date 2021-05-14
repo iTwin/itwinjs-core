@@ -18,7 +18,7 @@ import {
   DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
-  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -488,12 +488,9 @@ describe("iModel", () => {
     const testTextureName = "fake texture name";
     const testTextureFormat = ImageSourceFormat.Png;
     const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
-    const testTextureWidth = 3;
-    const testTextureHeight = 3;
     const testTextureDescription = "empty description";
-    const testTextureFlags = TextureFlags.None;
 
-    const texId = Texture.insert(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
+    const texId = Texture.insertTexture(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureDescription);
 
     /* eslint-disable @typescript-eslint/naming-convention */
     const matId = RenderMaterialElement.insert(imodel5, IModel.dictionaryId, "test material name",
@@ -639,9 +636,6 @@ describe("iModel", () => {
       [{ backgroundColor: ColorDef.from(1, 2, 3, 4) }, defaultViewFlags, false],
       [{ backgroundColor: ColorDef.blue.tbgr }, defaultViewFlags, false],
       [{ backgroundColor: ColorDef.from(1, 2, 3, 4).tbgr }, defaultViewFlags, false],
-      [{ scheduleScript: { someRandomProperty: "Not a valid schedule script" } }, defaultViewFlags, false],
-      [{ scheduleScript: [{ modelId: "0xabc", elementTimelines: [] }] }, defaultViewFlags, true],
-      [{ scheduleScript: [{ someRandomProperty: "but still an array" }] }, defaultViewFlags, true],
     ];
 
     let suffix = 123;
@@ -659,8 +653,6 @@ describe("iModel", () => {
       const expectedVf = ViewFlags.fromJSON(test[1]);
       const actualVf = ViewFlags.fromJSON(actual.viewflags);
       expect(actualVf.toJSON()).to.deep.equal(expectedVf.toJSON());
-
-      expect(undefined !== actual.scheduleScript).to.equal(test[2]);
 
       const expectedBGColor = expected.backgroundColor instanceof ColorDef ? expected.backgroundColor.toJSON() : expected.backgroundColor;
       expect(actual.backgroundColor).to.equal(expectedBGColor);
@@ -1295,6 +1287,9 @@ describe("iModel", () => {
       }
     });
 
+    // make sure queryEnityIds works fine when all params are specified
+    const physicalObjectIds = imodel2.queryEntityIds({ from: "generic.PhysicalObject", where: "codevalue is null", limit: 1, offset: 1, only: true, orderBy: "ecinstanceid desc" });
+    assert.equal(physicalObjectIds.size, 1);
   });
 
   it("validate BisCodeSpecs", async () => {
@@ -1941,7 +1936,7 @@ describe("iModel", () => {
 
   function hasClassView(db: IModelDb, name: string): boolean {
     try {
-      return db.withPreparedSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
+      return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
     } catch (e) {
       return false;
     }

@@ -33,6 +33,25 @@ describe("Unit", () => {
     });
   }
 
+  it("should get fullName", async () => {
+    const fullyDefinedUnit = createSchemaJson({
+      label: "Millimeter",
+      description: "A unit defining the millimeter metric unit of length",
+      phenomenon: "TestSchema.TestPhenomenon",
+      unitSystem: "TestSchema.TestUnitSystem",
+      definition: "[MILLI]*Units.MM",
+      numerator: 5,
+      denominator: 1,
+      offset: 4,
+    });
+
+    const ecSchema = await Schema.fromJson(fullyDefinedUnit, new SchemaContext());
+    assert.isDefined(ecSchema);
+    const unit = await ecSchema.getItem<Unit>("TestUnit");
+    assert.isDefined(unit);
+    expect(unit!.fullName).eq("TestSchema.TestUnit");
+  });
+
   describe("deserialization", () => {
     const fullyDefinedUnit = createSchemaJson({
       label: "Millimeter",

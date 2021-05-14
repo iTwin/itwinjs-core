@@ -162,6 +162,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     await page.goto(authorizationUrl, { waitUntil: "networkidle2" });
 
     try {
+      await this.handleErrorPage(page);
+
       await this.handleLoginPage(page);
 
       await this.handlePingLoginPage(page);
@@ -234,6 +236,21 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
         await interceptedRequest.continue();
       });
     });
+  }
+
+  private async handleErrorPage(page: puppeteer.Page): Promise<void> {
+    const errMsgText = await page.evaluate(() => {
+      const title = document.title;
+      if (title.toLocaleLowerCase() === "error")
+        return document.body.textContent;
+      return undefined;
+    });
+
+    if (null === errMsgText)
+      throw new Error("Unknown error page detected.");
+
+    if (undefined !== errMsgText)
+      throw new Error(errMsgText);
   }
 
   private async handleLoginPage(page: puppeteer.Page): Promise<void> {

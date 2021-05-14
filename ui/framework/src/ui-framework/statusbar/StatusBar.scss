@@ -6,6 +6,7 @@
 
 .uifw-statusbar-space-between {
 	width: 100%;
+  height: 100%;
 	display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -35,8 +36,9 @@
 }
 
 .uifw-statusbar-item-container {
+  height: 100%;
   display: flex;
   flex-direction: row;
   align-content: center;
-  width: fit-content;
+  align-items: center;
 }

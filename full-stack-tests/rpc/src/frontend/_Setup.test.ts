@@ -7,7 +7,7 @@ import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
 import { MobileRpcManager } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import { AttachedInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
+import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
 
 RpcConfiguration.disableRoutingValidation = true;
 
@@ -25,7 +25,7 @@ function initializeCloud(protocol: string) {
 
 function setupMockMobileFrontend(port: number) {
   window.location.hash = `port=${port}`;
-  MobileRpcManager.initializeClient([]);
+  MobileRpcManager.initializeClient([MobileTestInterface]);
 }
 
 function initializeMultipleClientsTest(path: string) {

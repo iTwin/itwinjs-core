@@ -145,7 +145,7 @@ export class HitDetail {
     return this.modelId === this.sourceId;
   }
   // return whether the hit point is from map.
-  public get isMapHit(): boolean { return undefined !== this.viewport.displayStyle.mapLayerFromHit(this); }
+  public get isMapHit(): boolean { return undefined !== this.viewport.mapLayerFromHit(this); }
 
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
@@ -213,7 +213,7 @@ export class SnapDetail extends HitDetail {
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
   public getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
-  /** Return true if the pick point was closer than [SnapRequestProps.snapAperture]($common) from the generated snap point. */
+  /** Return true if the pick point was closer than the snap aperture from the generated snap point. */
   public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }

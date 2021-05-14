@@ -14,20 +14,19 @@ import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, P
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
-import {
-  BrowserAuthorizationClientConfiguration, isFrontendAuthorizationClient,
-} from "@bentley/frontend-authorization-client";
+import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcParams, IModelVersion, NativeAppAuthorizationConfiguration, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp,
-  NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOpts,
+  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection,
+  LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
+  WebViewerApp, WebViewerAppOpts,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
@@ -38,10 +37,10 @@ import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
 import {
-  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw, FrameworkReducer,
-  FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
-  IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager, ToolbarDragInteractionContext,
-  UiFramework, UiSettingsProvider, UserSettingsStorage,
+  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw,
+  FrameworkReducer, FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
+  FrontstageManager, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME,
+  ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import { getSupportedRpcs } from "../common/rpcs";
@@ -60,13 +59,12 @@ import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Propert
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
-import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
+import { EditingScopeTool } from "./tools/editing/EditingTools";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
-import { UiProviderTool } from "./tools/UiProviderTool";
-import { EditingSessionTool } from "./tools/editing/PrimitiveToolEx";
+import { OpenCustomPopoutTool, OpenViewPopoutTool, OpenWidgetPopoutTool, UiProviderTool } from "./tools/UiProviderTool";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -184,6 +182,11 @@ export class SampleAppIModelApp {
     else
       await WebViewerApp.startup(opts);
 
+    window.onerror = function (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    };
+
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
@@ -227,12 +230,14 @@ export class SampleAppIModelApp {
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
     ToolWithDynamicSettings.register(this.sampleAppNamespace);
+    OpenWidgetPopoutTool.register(this.sampleAppNamespace);
+    OpenCustomPopoutTool.register(this.sampleAppNamespace);
+    OpenViewPopoutTool.register(this.sampleAppNamespace);
 
     // Register editing tools
     if (this.allowWrite) {
-      EditingSessionTool.register(this.sampleAppNamespace);
+      EditingScopeTool.register(this.sampleAppNamespace);
       PlaceBlockTool.register(this.sampleAppNamespace);
-      PlaceLineStringTool.register(this.sampleAppNamespace);
     }
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
@@ -243,7 +248,7 @@ export class SampleAppIModelApp {
 
     await MarkupApp.initialize();
     await FrontendDevTools.initialize();
-    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true });
+    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true, registerSketchTools: true });
 
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
@@ -261,7 +266,7 @@ export class SampleAppIModelApp {
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
     // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
-    const lastTheme = (window.localStorage&&window.localStorage.getItem("uifw:defaultTheme"))??SYSTEM_PREFERRED_COLOR_THEME;
+    const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
     const defaults = {
       colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
       dragInteraction: false,
@@ -381,6 +386,10 @@ export class SampleAppIModelApp {
       FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
         // Frontstage & ScreenViewports are ready
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
+        if (false && ProcessDetector.isElectronAppFrontend) { // used for testing pop-out support
+          // delay 5 seconds to see if window opens - since web browser will block pop-out if we wait. Also web browser will not allow multiple pop-outs.
+          setTimeout(() => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
+        }
       });
     } else {
       throw new Error(`Frontstage with id "${stageId}" does not exist`);
@@ -587,7 +596,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
     const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
     await UiFramework.setUiSettingsStorage(uiSettingsStorage);
-    this.setState({ authorized, uiSettingsStorage});
+    this.setState({ authorized, uiSettingsStorage });
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
@@ -645,37 +654,18 @@ window.addEventListener("beforeunload", async () => { // eslint-disable-line @ty
   await SampleAppIModelApp.closeCurrentIModel();
 });
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | NativeAppAuthorizationConfiguration {
-  let redirectUri = "http://localhost:3000/signin-callback";
-  if (ProcessDetector.isMobileAppFrontend) {
-    redirectUri = "imodeljs://app/signin-callback";
-  }
-  const baseOidcScopes = [
-    "openid",
-    "email",
-    "profile",
-    "organization",
-    "imodelhub",
-    "context-registry-service:read-only",
-    "product-settings-service",
-    "projectwise-share",
-    "urlps-third-party",
-    "imodel-extension-service-api",
-  ];
-
-  return ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend
-    ? {
-      clientId: "imodeljs-electron-test",
-      redirectUri,
-      scope: baseOidcScopes.concat(["offline_access"]).join(" "),
-    }
-    : {
-      clientId: "imodeljs-spa-test",
-      redirectUri,
-      scope: baseOidcScopes.concat("imodeljs-router").join(" "),
-      responseType: "code",
-    };
-}
+const baseOidcScopes = [
+  "openid",
+  "email",
+  "profile",
+  "organization",
+  "imodelhub",
+  "context-registry-service:read-only",
+  "product-settings-service",
+  "projectwise-share",
+  "urlps-third-party",
+  "imodel-extension-service-api",
+];
 
 // main entry point.
 async function main() {
@@ -710,7 +700,6 @@ async function main() {
     rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
   }
 
-  const authConfig = getOidcConfiguration();
   const opts: WebViewerAppOpts & NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
@@ -724,10 +713,19 @@ async function main() {
     },
     webViewerApp: {
       rpcParams,
-      authConfig,
+      authConfig: {
+        clientId: "imodeljs-spa-test",
+        redirectUri: "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.concat("imodeljs-router").join(" "),
+        responseType: "code",
+      },
     },
     nativeApp: {
-      authConfig,
+      authConfig: {
+        clientId: "imodeljs-electron-test",
+        redirectUri: ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.concat(["offline_access"]).join(" "),
+      },
     },
   };
 

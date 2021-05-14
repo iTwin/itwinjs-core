@@ -31,6 +31,10 @@
         "Center": "Center"
       }
     },
+    "CreateLineString": {
+      "keyin": "editor create linestring",
+      "flyover": "Create Linestring"
+    },
     "UndoAll": {
       "keyin": "editor undo all",
       "flyover": "Undo All"

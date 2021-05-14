@@ -13,7 +13,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
-import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelError, InternetConnectivityStatus, IpcListener, IpcSocketBackend, NativeAppAuthorizationConfiguration, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
@@ -57,8 +57,11 @@ export interface ElectronHostOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** list of [IpcHandler]($common) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
-  /** name of application. Used for naming settings file. */
-  applicationName?: string;
+  /** if present, [[NativeHost.authorizationClient]] will be set to an instance of NativeAppAuthorizationBackend and will be initialized. */
+  authConfig?: NativeAppAuthorizationConfiguration;
+  /** if true, do not attempt to initialize AuthorizationClient on startup */
+  noInitializeAuthClient?: boolean;
+  applicationName?: never; // this should be supplied in NativeHostOpts
 }
 
 /** @beta */
@@ -99,6 +102,9 @@ export class ElectronHost {
   public static get app() { return this._electron.app; }
   public static get electron() { return this._electron; }
 
+  /** @internal */
+  public static get authorization() { return IModelHost.authorizationClient as ElectronAuthorizationBackend; }
+
   private constructor() { }
 
   /**
@@ -113,12 +119,7 @@ export class ElectronHost {
     let assetPath = requestedUrl.substr(this._electronFrontend.length);
     if (assetPath.length === 0)
       assetPath = "index.html";
-    assetPath = assetPath.replace(/(#|\?).*$/, "");
-
-    // NEEDS_WORK: Remove this after migration to DesktopAuthorizationClient
-    assetPath = assetPath.replace("signin-callback", "index.html");
     assetPath = path.normalize(`${this.webResourcesPath}/${assetPath}`);
-
     // File protocols don't follow symlinks, so we need to resolve this to a real path.
     // However, if the file doesn't exist, it's fine to return an invalid path here - the request will just fail with net::ERR_FILE_NOT_FOUND
     try {
@@ -127,22 +128,29 @@ export class ElectronHost {
       // eslint-disable-next-line no-console
       // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }
+    if (!assetPath.startsWith(this.webResourcesPath))
+      throw new Error(`Access to files outside installation directory (${this.webResourcesPath}) is prohibited`);
     return assetPath;
   }
 
   private static _openWindow(options?: ElectronHostWindowOptions) {
     const opts: BrowserWindowConstructorOptions = {
+      ...options,
       autoHideMenuBar: true,
+      icon: this.appIconPath,
       webPreferences: {
+        ...options?.webPreferences,
+
+        // These web preference variables should not be overriden by the ElectronHostWindowOptions
         preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
-        nodeIntegration: false,
         experimentalFeatures: false,
-        enableRemoteModule: false,
+        nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
+        enableRemoteModule: false,
+        nodeIntegrationInWorker: false,
+        nodeIntegrationInSubFrames: false,
       },
-      icon: this.appIconPath,
-      ...options, // overrides everything above
     };
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);
@@ -271,7 +279,13 @@ export class ElectronHost {
       ElectronAppHandler.register();
       opts.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
-    IModelHost.authorizationClient = new ElectronAuthorizationBackend();
+
+    const authorizationBackend = new ElectronAuthorizationBackend(opts.electronHost?.authConfig);
+    const connectivityStatus = NativeHost.checkInternetConnectivity();
+    if (opts.electronHost?.authConfig && true !== opts.electronHost?.noInitializeAuthClient && connectivityStatus === InternetConnectivityStatus.Online)
+      await authorizationBackend.initialize(opts.electronHost?.authConfig);
+
+    IModelHost.authorizationClient = authorizationBackend;
   }
 }
 

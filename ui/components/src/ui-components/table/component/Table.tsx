@@ -8,14 +8,14 @@
 
 import "./Table.scss";
 import "../columnfiltering/ColumnFiltering.scss";
+import classnamesDedupe from "classnames/dedupe";
 import classnames from "classnames";
 import { memoize } from "lodash";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import {
-  CommonProps, Dialog, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage,
+  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage,
   Orientation, SortDirection, UiSettings, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import {
@@ -29,6 +29,7 @@ import { TableRowStyleProvider } from "../../properties/ItemStyle";
 import { PropertyDialogState, PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
 import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
+import { MultiValueFilter } from "../columnfiltering/multi-value-filter/MultiValueFilter";
 import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
 import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
 import { DataGridFilterParser, ReactDataGridFilter } from "../columnfiltering/DataGridFilterParser";
@@ -153,6 +154,8 @@ export interface TableProps extends CommonProps {
 
   /** Called to show a context menu when a cell is right-clicked. @beta */
   onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
+  /** Maximum number of distinct values for filtering */
+  maximumDistinctValues?: number;
 }
 
 /** Properties for a Table cell
@@ -283,7 +286,6 @@ const enum UpdateStatus { // eslint-disable-line no-restricted-syntax
  * @public
  */
 export class Table extends React.Component<TableProps, TableState> {
-
   private _pageAmount = 100;
   private _disposableListeners = new DisposableList();
   private _isMounted = false;
@@ -299,6 +301,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _pressedItemSelected: boolean = false;
   private _tableRef = React.createRef<HTMLDivElement>();
   private _gridRef = React.createRef<ReactDataGrid<any>>();
+  private _gridContainerRef = React.createRef<HTMLDivElement>();
   private _filterDescriptors?: TableFilterDescriptorCollection;
   private _filterRowShown = false;
 
@@ -385,7 +388,7 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   /** @internal */
-  public componentDidUpdate(previousProps: TableProps) {
+  public componentDidUpdate(previousProps: TableProps, previousState: TableState) {
     this._rowSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
     this._cellSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
 
@@ -400,6 +403,10 @@ export class Table extends React.Component<TableProps, TableState> {
       this.update();
       return;
     }
+
+    // When hiddenColumns length is changed, we need to re-render component so that cell widths would be calculated appropriately.
+    if (previousState.hiddenColumns.length !== this.state.hiddenColumns.length)
+      this.forceUpdate();
 
     if (this.props.isCellSelected !== previousProps.isCellSelected
       || this.props.isRowSelected !== previousProps.isRowSelected
@@ -423,6 +430,14 @@ export class Table extends React.Component<TableProps, TableState> {
   public componentDidMount() {
     this._isMounted = true;
 
+    // The previously used ReactResizeDetector, which does not work in popout/child windows, used deprecated React.findDomNode
+    // which is now deprecated so, so new ElementResizeObserver requires you to pass the element to observe. So get the
+    // same HTMLDivElement from grid as was used previously by ReactResizeDetector.
+    if (this._gridRef.current) {
+      const grid = this._gridRef.current as any;
+      // hack force the _gridContainerRef to hold the proper DOM node
+      (this._gridContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = grid.getDataGridDOMNode();
+    }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.update();
   }
@@ -525,6 +540,8 @@ export class Table extends React.Component<TableProps, TableState> {
       tableColumn.dataProvider = this.props.dataProvider;
       if (!keyboardEditorCellKey && tableColumn.columnDescription.editable)
         keyboardEditorCellKey = tableColumn.key;
+      if (tableColumn.filterable)
+        dataGridColumn.filterableColumn = tableColumn;
       return tableColumn;
     });
 
@@ -664,6 +681,9 @@ export class Table extends React.Component<TableProps, TableState> {
           break;
         case FilterRenderer.MultiSelect:
           column.filterRenderer = MultiSelectFilter;
+          break;
+        case FilterRenderer.MultiValue:
+          column.filterRenderer = MultiValueFilter;
           break;
         case FilterRenderer.SingleSelect:
           column.filterRenderer = SingleSelectFilter;
@@ -916,6 +936,7 @@ export class Table extends React.Component<TableProps, TableState> {
         propertyValueRendererManager={this.props.propertyValueRendererManager
           ? this.props.propertyValueRendererManager
           : PropertyValueRendererManager.defaultManager}
+        style={{ zIndex: ((cellItem.mergedCellsCount ?? 1) > 1) ? 1 : undefined }}
       />
     );
   }
@@ -1039,6 +1060,12 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private createRowCells(rowProps: RowProps, isSelected: boolean): { [columnKey: string]: React.ReactNode } {
     const cells: { [columnKey: string]: React.ReactNode } = {};
+    let gridColumns: HTMLElement[] = [];
+    let foundHiddenColumns = 0;
+
+    // istanbul ignore else
+    if (this._gridRef.current && (this._gridRef.current as any).getDataGridDOMNode)
+      gridColumns = (this._gridRef.current as any).getDataGridDOMNode().querySelectorAll(".react-grid-HeaderCell");
 
     for (let index = 0; index < this.state.columns.length; index++) {
       const column = this.state.columns[index];
@@ -1080,6 +1107,37 @@ export class Table extends React.Component<TableProps, TableState> {
       }
 
       className = classnames(className, this.getCellBorderStyle(cellKey));
+      const mergedAdjacentCellsCount = (cellProps.item.mergedCellsCount ?? 1) - 1;
+      let cellWidth = 0;
+
+      for (let i = 0; i <= mergedAdjacentCellsCount; i++) {
+        const col = this.state.columns[index + i];
+        if (this.state.hiddenColumns.indexOf(col.key) === -1) {
+          const gridColumn = gridColumns[index + i - foundHiddenColumns];
+          const gridColumnWidth = gridColumn ? gridColumn.getBoundingClientRect().width : 0;
+          cellWidth += gridColumnWidth;
+        } else {
+          foundHiddenColumns++;
+        }
+
+        if (i > 0) {
+          cells[col.key] = (
+            <TableCell
+              className={className.replace("border-bottom", "")}
+              title={"empty-cell"}
+              onClick={onClick}
+              onMouseMove={onMouseMove}
+              onMouseDown={onMouseDown}
+            >
+            </TableCell>
+          );
+        }
+        const mergedColumn = this.state.columns[index + i];
+        const emptyCellKey = { rowIndex: rowProps.index, columnKey: mergedColumn.key };
+        className = classnamesDedupe(className, this.getCellBorderStyle(emptyCellKey));
+      }
+      index += mergedAdjacentCellsCount;
+
       cells[column.key] = (
         <TableCell
           className={className}
@@ -1093,6 +1151,7 @@ export class Table extends React.Component<TableProps, TableState> {
             propertyRecord: cellProps.item.record!,
             setFocus: true,
           } : undefined}
+          style={{ width: (mergedAdjacentCellsCount > 0) ? cellWidth : undefined }}
         >
           <CellContent isSelected={isSelected} />
         </TableCell>
@@ -1407,7 +1466,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private async loadDistinctValues(): Promise<void> {
     await Promise.all(this.state.columns.map(async (tableColumn: TableColumn) => {
       if (tableColumn.filterable)
-        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(1000);
+        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(this.props.maximumDistinctValues);
     }));
   }
 
@@ -1647,7 +1706,7 @@ export class Table extends React.Component<TableProps, TableState> {
               onClose={this._hideContextMenu}
               onShowHideChange={this._handleShowHideChange} />
           }
-          <ReactResizeDetector handleWidth handleHeight
+          <ElementResizeObserver watchedElement={this._gridContainerRef}
             render={({ width, height }) => (
               <ReactDataGrid
                 ref={this._gridRef}

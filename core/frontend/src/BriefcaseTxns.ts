@@ -15,7 +15,8 @@ import { IpcApp, NotificationHandler } from "./IpcApp";
 
 /**
  * Base class for notification handlers for events from the backend that are specific to a [[BriefcaseConnection]].
- * @beta
+ * @see [[BriefcaseTxns]].
+ * @public
  */
 export abstract class BriefcaseNotificationHandler extends NotificationHandler {
   constructor(private _key: string) { super(); }
@@ -26,7 +27,7 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
 /** Manages local changes to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).
  * @see [[BriefcaseConnection.txns]].
  * @see [TxnManager]($backend) for the backend counterpart.
- * @beta
+ * @public
  */
 export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNotifications {
   private readonly _iModel: BriefcaseConnection;
@@ -61,9 +62,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   public readonly onCommit = new BeEvent<() => void>();
 
   /** Event raised after a commit operation is performed. Initiated by a call to [[BriefcaseConnection.saveChanges]], even if there were no changes to save.
+   * The event supplies the following information:
+   *  - `hasPendingTxns`: true if the briefcase has local changes not yet pushed to the server.
+   *  - `time`: the time at which changes were saved on the backend (obtained via `Date.now()`).
    * @see [[onCommit]] for the event raised before the operation.
    */
-  public readonly onCommitted = new BeEvent<() => void>();
+  public readonly onCommitted = new BeEvent<(hasPendingTxns: boolean, time: number) => void>();
 
   /** Event raised after a changeset has been applied to the briefcase.
    * Changesets may be applied as a result of [[BriefcaseConnection.pullAndMergeChanges]], or by undo/redo operations.
@@ -79,6 +83,16 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    * @see [[onBeforeUndoRedo]] for the event raised before to the operation.
    */
   public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
+
+  /** Event raised after changes are pulled and merged into the briefcase.
+   * @see [[BriefcaseConnection.pullAndMergeChanges]].
+   */
+  public readonly onChangesPulled = new BeEvent<(parentChangeSetId: string) => void>();
+
+  /** Event raised after the briefcase's local changes are pushed.
+   * @see [[BriefcaseConnection.pushChanges]].
+   */
+  public readonly onChangesPushed = new BeEvent<(parentChangeSetId: string) => void>();
 
   /** @internal */
   public constructor(iModel: BriefcaseConnection) {
@@ -101,6 +115,8 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
       this.onChangesApplied.clear();
       this.onBeforeUndoRedo.clear();
       this.onAfterUndoRedo.clear();
+      this.onChangesPulled.clear();
+      this.onChangesPushed.clear();
     }
   }
 
@@ -201,8 +217,8 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** @internal */
-  public notifyCommitted() {
-    this.onCommitted.raiseEvent();
+  public notifyCommitted(hasPendingTxns: boolean, time: number) {
+    this.onCommitted.raiseEvent(hasPendingTxns, time);
   }
 
   /** @internal */
@@ -218,5 +234,15 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** @internal */
   public notifyAfterUndoRedo(isUndo: boolean) {
     this.onAfterUndoRedo.raiseEvent(isUndo);
+  }
+
+  /** @internal */
+  public notifyPulledChanges(parentChangeSetId: string) {
+    this.onChangesPulled.raiseEvent(parentChangeSetId);
+  }
+
+  /** @internal */
+  public notifyPushedChanges(parentChangeSetId: string) {
+    this.onChangesPushed.raiseEvent(parentChangeSetId);
   }
 }
