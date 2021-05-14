@@ -138,7 +138,7 @@ export class TestRunner {
   /** Run all the tests. */
   public async run(): Promise<void> {
     const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation}\n  format: Time_started  ModelName  [ViewName]`;
-    this.logToConsole(msg);
+    await this.logToConsole(msg);
     await this.logToFile(msg, { noAppend: true });
 
     // Run all the tests
@@ -211,7 +211,7 @@ export class TestRunner {
   }
 
   private async runTest(context: TestContext): Promise<TestResult | undefined> {
-  // Reset the title bar to include the current model and view name
+    // Reset the title bar to include the current model and view name
     const testConfig = this.curConfig;
     document.title = "Display Performance Test App:  ".concat(testConfig.iModelName ?? "", "  [", testConfig.viewName ?? "", "]");
 
@@ -542,7 +542,7 @@ export class TestRunner {
     const seconds = (`0${today.getSeconds()}`).slice(-2);
     const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}  ${testConfig.iModelName}  [${testConfig.viewName}]`;
 
-    this.logToConsole(outStr);
+    await this.logToConsole(outStr);
     return this.logToFile(outStr);
   }
 

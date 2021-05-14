@@ -6,7 +6,7 @@
 import * as path from "path";
 import { assert, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import {
-  BackgroundMapProps, ColorDef, FeatureAppearanceProps, Hilite, RenderMode, ViewFlags, ViewStateProps,
+  BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { RenderSystem, TileAdmin } from "@bentley/imodeljs-frontend";
 
@@ -46,10 +46,10 @@ export interface ElementOverrideProps {
 
 /** JSON representation of a ViewState with some additional data used by external saved views in a *_ESV.json file and by TestConfigProps.viewString. */
 export interface ViewStateSpecProps {
-  _name: string;
-  _viewStatePropsString: string;
-  _overrideElements?: string;
-  _selectedElements?: string;
+  _name: string; // eslint-disable-line @typescript-eslint/naming-convention
+  _viewStatePropsString: string; // eslint-disable-line @typescript-eslint/naming-convention
+  _overrideElements?: string; // eslint-disable-line @typescript-eslint/naming-convention
+  _selectedElements?: string; // eslint-disable-line @typescript-eslint/naming-convention
 }
 
 /** Parsed in-memory representation of a ViewStateSpecProps. */
