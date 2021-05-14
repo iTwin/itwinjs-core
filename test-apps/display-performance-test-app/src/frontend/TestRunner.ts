@@ -93,7 +93,7 @@ class OverrideProvider {
 
   private constructor(ovrs: ElementOverrideProps[]) {
     for (const ovr of ovrs) {
-      const app = FeatureAppearance.fromJSON(ovr.fsa);
+      const app = FeatureAppearance.fromJSON(JSON.parse(ovr.fsa));
       if (ovr.id === "-default-")
         this._defaultOvrs = app;
       else

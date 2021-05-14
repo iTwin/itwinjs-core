@@ -40,7 +40,7 @@ export interface ElementOverrideProps {
   /** The Id of the affected element, or "-default-" to apply to all elements not otherwise overridden. */
   id: Id64String | "-default-";
   /** The symbology overrides to apply. */
-  fsa: FeatureAppearanceProps;
+  fsa: string; // A stringified FeatureAppearanceProps. Why is all the JSON double-stringified???
 }
 
 /** JSON representation of a ViewState with some additional data used by external saved views in a *_ESV.json file and by TestConfigProps.viewString. */
