@@ -5,9 +5,10 @@
 // cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, CLRK, Benoit, NAVD, NADCON, Xfrm, prvi, stgeorge, stlrnc, stpaul, helmert, NSRS
 
 import { expect } from "chai";
-import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem";
+import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSExtent, HorizontalCRSExtentProps, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem";
 import { GeodeticDatum, GeodeticDatumProps, GeodeticTransform, GeodeticTransformProps } from "../geometry/GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "../geometry/GeodeticEllipsoid";
+import { Carto2DDegrees } from "../geometry/Projection";
 // import { ProjectionMethod2 } from "../geometry/Projection";
 
 describe("Geodetic Settings", () => {
@@ -198,6 +199,66 @@ describe("Geodetic Settings", () => {
       equatorialRadius: 6378160.0,
       polarRadius: 6356774.719195305951,
     }, "input");
+  });
+
+  /* HorizontalCRSExtent unit tests */
+  it("round-trips Horizontal CRS Extent through JSON", () => {
+    const roundTrip = (input: HorizontalCRSExtentProps | undefined, expected: HorizontalCRSExtentProps | "input") => {
+      if (!input)
+        input = { southWest: { latitude: 0.0, longitude: 0.0 }, northEast: { latitude: 0.0, longitude: 0.0 } };
+
+      if ("input" === expected)
+        expected = JSON.parse(JSON.stringify(input)) as HorizontalCRSExtent;
+
+      const extent = HorizontalCRSExtent.fromJSON(input);
+      const output = extent.toJSON();
+      const outExtent = HorizontalCRSExtent.fromJSON(output);
+
+      expect(output.southWest.latitude === expected.southWest.latitude).to.be.true;
+      expect(output.southWest.longitude === expected.southWest.longitude).to.be.true;
+
+      expect(output.northEast.latitude === expected.northEast.latitude).to.be.true;
+      expect(output.northEast.longitude === expected.northEast.longitude).to.be.true;
+
+      const expectedExtent = HorizontalCRSExtent.fromJSON(expected);
+
+      expect(extent.equals(expectedExtent)).to.be.true;
+      expect(extent.equals(outExtent)).to.be.true;
+
+    };
+
+    roundTrip({ southWest: { latitude: 12.1, longitude: 45.6 }, northEast: { latitude: 14.56, longitude: 58.7 } }, "input");
+    roundTrip({ southWest: { latitude: -90.0, longitude: 45.6 }, northEast: { latitude: 90.0, longitude: 58.7 } }, "input");
+    roundTrip({ southWest: { latitude: 12.1, longitude: -190.1 }, northEast: { latitude: 14.56, longitude: -158.7 } }, "input");
+
+    roundTrip({ southWest: { latitude: 12.1, longitude: 178.1 }, northEast: { latitude: 14.56, longitude: -178.7 } }, "input");
+
+    /* Additional unit tests */
+    const cartoPoint = Carto2DDegrees.fromJSON({ latitude: 23.4, longitude: 123.4 });
+    expect(cartoPoint.latitude === 23.4).to.be.true;
+    expect(cartoPoint.longitude === 123.4).to.be.true;
+
+    cartoPoint.latitude = 100.0; /* Impossible value */
+    expect(cartoPoint.latitude === 100.0).to.be.false;
+    expect(cartoPoint.latitude === 23.4).to.be.true; /* value remained unchanged */
+
+    cartoPoint.longitude = -189.1;
+    expect(cartoPoint.longitude === -189.1).to.be.true;
+    cartoPoint.longitude = 210.2;
+    expect(cartoPoint.longitude === 210.2).to.be.true;
+
+    const extent1 = HorizontalCRSExtent.fromJSON({ southWest: { latitude: 12.1, longitude: 45.6 }, northEast: { latitude: 14.56, longitude: 58.7 } });
+    expect(extent1.southWest.latitude === 12.1).to.be.true;
+    expect(extent1.southWest.longitude === 45.6).to.be.true;
+    expect(extent1.northEast.latitude === 14.56).to.be.true;
+    expect(extent1.northEast.longitude === 58.7).to.be.true;
+
+    const extent2 = HorizontalCRSExtent.fromJSON({ southWest: { latitude: 12.1, longitude: 45.6 }, northEast: { latitude: 10.56, longitude: 58.7 } });
+    expect(extent2.southWest.latitude === 12.1).to.be.true;
+    expect(extent2.southWest.longitude === 45.6).to.be.true;
+    expect(extent2.northEast.latitude === 10.56).to.be.false;
+    expect(extent2.northEast.latitude === 12.1).to.be.true;
+    expect(extent2.northEast.longitude === 58.7).to.be.true;
   });
 
   /* Geodetic Datum unit tests */
@@ -423,9 +484,9 @@ describe("Geodetic Settings", () => {
       epsg: 4326,
       datumId: "WGS84",
       projection: { method: "None" },
-      area: {
-        latitude: { min: 12.1, max: 14.56 },
-        longitude: { min: 45.6, max: 58.7 },
+      extent: {
+        southWest: { latitude: 12.1, longitude: 45.6 },
+        northEast: { latitude: 14.56, longitude: 58.7 },
       },
     }, "input");
 
@@ -433,9 +494,9 @@ describe("Geodetic Settings", () => {
       id: "LatLong-GRS1980",
       ellipsoidId: "GRS1980",
       projection: { method: "None" },
-      area: {
-        latitude: { min: 12.1, max: 14.56 },
-        longitude: { min: 45.6, max: 58.7 },
+      extent: {
+        southWest: { latitude: 12.1, longitude: 45.6 },
+        northEast: { latitude: 14.56, longitude: 58.7 },
       },
     }, "input");
 
@@ -447,7 +508,7 @@ describe("Geodetic Settings", () => {
       datumId: "WGS84",
       datum: { id: "WGS84", description: "A datum description" },
       projection: { method: "None" },
-      area: { latitude: { min: 12.1, max: 14.56 }, longitude: { min: 45.6, max: 58.7 } },
+      extent: { southWest: { latitude: 12.1, longitude: 45.6 }, northEast: { latitude: 14.56, longitude: 58.7 } },
     }, {
       id: "LatLong-GRS1980-INV",
       datumId: "WGS84",
@@ -455,9 +516,9 @@ describe("Geodetic Settings", () => {
       ellipsoidId: undefined,
       ellipsoid: undefined,
       projection: { method: "None" },
-      area: {
-        latitude: { min: 12.1, max: 14.56 },
-        longitude: { min: 45.6, max: 58.7 },
+      extent: {
+        southWest: { latitude: 12.1, longitude: 45.6 },
+        northEast: { latitude: 14.56, longitude: 58.7 },
       },
     });
 
@@ -531,9 +592,9 @@ describe("Geodetic Settings", () => {
         falseEasting: 1.0,
         falseNorthing: 2.0,
       },
-      area: {
-        latitude: { min: 48, max: 84 },
-        longitude: { min: -120.5, max: -109.5 },
+      extent: {
+        southWest: { latitude: 48, longitude: -120.5 },
+        northEast: { latitude: 84, longitude: -109.5 },
       },
     }, "input");
   });
@@ -575,7 +636,7 @@ describe("Geodetic Settings", () => {
     roundTrip({ horizontalCRS: { id: "LL83" }, verticalCRS: { id: "NAVD88" } }, "input");
     roundTrip({ horizontalCRS: { id: "ETRF89" }, verticalCRS: { id: "ELLIPSOID" } }, "input");
     roundTrip({ horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" } }, "input");
-    roundTrip({ horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" }, additionalTransform: { helmert2DWithZOffset: {translationX: 10.0, translationY: 15.0, translationZ: 0.02, rotDeg: 1.2, scale: 1.0001 } } }, "input");
+    roundTrip({ horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" }, additionalTransform: { helmert2DWithZOffset: { translationX: 10.0, translationY: 15.0, translationZ: 0.02, rotDeg: 1.2, scale: 1.0001 } } }, "input");
 
     roundTrip({
       horizontalCRS: {
@@ -583,7 +644,7 @@ describe("Geodetic Settings", () => {
         epsg: 4326,
         datumId: "WGS84",
         projection: { method: "None" },
-        area: { latitude: { min: 12.1, max: 14.56 }, longitude: { min: 45.6, max: 58.7 } },
+        extent: { southWest: { latitude: 12.1, longitude: 45.6 }, northEast: { latitude: 14.56, longitude: 58.7 } },
       },
       verticalCRS: { id: "ELLIPSOID" },
     }, "input");
@@ -659,9 +720,9 @@ describe("Geodetic Settings", () => {
           falseEasting: 1.0,
           falseNorthing: 2.0,
         },
-        area: {
-          latitude: { min: 48, max: 84 },
-          longitude: { min: -120.5, max: -109.5 },
+        extent: {
+          southWest: { latitude: 48, longitude: -120.5 },
+          northEast: { latitude: 84, longitude: -109.5 },
         },
       },
       verticalCRS: { id: "GEOID" },
@@ -759,9 +820,9 @@ describe("Geodetic Settings", () => {
           falseEasting: 1.0,
           falseNorthing: 2.0,
         },
-        area: {
-          latitude: { min: 48, max: 84 },
-          longitude: { min: -120.5, max: -109.5 },
+        extent: {
+          southWest: { latitude: 48, longitude: -120.5 },
+          northEast: { latitude: 84, longitude: -109.5 },
         },
       },
       verticalCRS: { id: "GEOID" },

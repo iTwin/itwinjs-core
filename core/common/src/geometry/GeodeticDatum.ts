@@ -239,10 +239,10 @@ export class GridFileDefinition implements GridFileDefinitionProps {
  *  @alpha
  */
 export interface GridFileTransformProps {
-  /** The list of grid files. The order of file is meaningful, the first encountered that covers the area of coordinate
+  /** The list of grid files. The order of file is meaningful, the first encountered that covers the extent of coordinate
    *  transformation will be used. */
   files: GridFileDefinitionProps[];
-  /** The positional vector fallback transformation used for areas not covered by the grid files */
+  /** The positional vector fallback transformation used for extents not covered by the grid files */
   fallback?: PositionalVectorTransformProps;
 }
 
@@ -250,10 +250,10 @@ export interface GridFileTransformProps {
  *  @alpha
  */
 export class GridFileTransform implements GridFileTransformProps {
-  /** The list of grid files. The order of file is meaningful, the first encountered that covers the area of coordinate
+  /** The list of grid files. The order of file is meaningful, the first encountered that covers the extent of coordinate
    *  transformation will be used. */
   public readonly files: GridFileDefinition[];
-  /** The positional vector fallback transformation used for areas not covered by the grid files */
+  /** The positional vector fallback transformation used for extents not covered by the grid files */
   public readonly fallback?: PositionalVectorTransform;
 
   public constructor(data?: GridFileTransformProps) {
