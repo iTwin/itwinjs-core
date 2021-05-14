@@ -11,6 +11,7 @@
   color: $buic-foreground-body;
   padding: 1px;
   box-sizing: border-box;
+  overflow: hidden;
 
   @mixin define-border($edge) {
     &.border-#{$edge} {

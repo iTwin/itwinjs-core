@@ -164,7 +164,7 @@ export interface ProjectionProps {
   longitudeOfOrigin?: number;
   /** The scale reduction factor applied at origin. The nature of the projection has a
    *  inherent scale factor applied that gradually varies outward from the projection origin.
-   *  The scale factor at origin enables to level the inherent scale factor over an use area.
+   *  The scale factor at origin enables to level the inherent scale factor over an use extent.
    *  For the michigan variation of the Lambert Conformal Conic projection it
    *  can be used instead or in addition to Standard Parallel to define
    *  a scale factor.
@@ -230,7 +230,7 @@ export class Projection implements ProjectionProps {
   public readonly longitudeOfOrigin?: number;
   /** The scale reduction factor applied at origin. The nature of the projection has a
    *  inherent scale factor applied that gradually varies outward from the projection origin.
-   *  The scale factor at origin enables to level the inherent scale factor over an use area.
+   *  The scale factor at origin enables to level the inherent scale factor over an use extent.
    *  For the michigan variation of the Lambert Conformal Conic projection it
    *  can be used instead or in addition to Standard Parallel to define
    *  a scale factor.
@@ -371,45 +371,55 @@ export class Projection implements ProjectionProps {
   }
 }
 
-/** Min and max values
+/** A 2D cartographic point in degrees
  *  @alpha
  */
-export interface MinMaxProps {
-  /** Minimum value */
-  min: number;
-  /** Maximum value */
-  max: number;
+export interface Carto2DDegreesProps {
+  /** Latitude value in degrees */
+  latitude: number;
+  /** Longitude value in degrees */
+  longitude: number;
 }
 
-/** Min and max values
+/** A 2D cartographic point in degrees
  *  @alpha
  */
-export class MinMax implements MinMaxProps {
-  /** Minimum value */
-  public readonly min!: number;
-  /** Maximum value */
-  public readonly max!: number;
+export class Carto2DDegrees implements Carto2DDegreesProps {
+  /** Latitude value in degrees. Must be between -90 and +90 included */
+  private _latitude!: number;
+  public get latitude() { return this._latitude; }
+  public set latitude(newLatitude: number) {
+    if ((newLatitude <= 90.0) && (newLatitude >= -90.0))
+      this._latitude = newLatitude;
+  }
+  /** Longitude value in degrees */
+  public longitude!: number;
 
-  public constructor(data?: MinMaxProps) {
+  public constructor(data?: Carto2DDegreesProps) {
+    this.latitude = 0.0; /* make sure latitude is init even if invalid latitude provided */
     if (data) {
-      this.min = data.min;
-      this.max = data.max;
+      this.latitude = data.latitude;
+      this.longitude = data.longitude;
     }
   }
 
-  /** @internal */
-  public static fromJSON(data: MinMaxProps): MinMax {
-    return new MinMax(data);
+  /** Creates a Carto2DDegrees object from JSON representation.
+  * @internal */
+  public static fromJSON(data: Carto2DDegreesProps): Carto2DDegrees {
+    return new Carto2DDegrees(data);
   }
 
-  /** @internal */
-  public toJSON(): MinMaxProps {
-    return { min: this.min, max: this.max };
+  /** Creates a JSON from the Carto2DDegrees definition
+  * @internal */
+  public toJSON(): Carto2DDegreesProps {
+    return { latitude: this.latitude, longitude: this.longitude };
   }
 
-  /** @internal */
-  public equals(other: MinMax): boolean {
-    return (this.min === other.min && this.max === other.max);
+  /** Compares two Carto2DDegrees object. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
+  public equals(other: Carto2DDegrees): boolean {
+    return (this.latitude === other.latitude && this.longitude === other.longitude);
   }
 }
 
