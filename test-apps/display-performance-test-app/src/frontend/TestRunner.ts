@@ -144,7 +144,7 @@ export class TestRunner {
   public async run(): Promise<void> {
     const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation}\n  format: Time_started  ModelName  [ViewName]`;
     await this.logToConsole(msg);
-    await this.logToFile(`${msg}\n`, false);
+    await this.logToFile(msg, { noAppend: true });
 
     // Run all the tests
     for (const set of this._testSets)
@@ -209,7 +209,7 @@ export class TestRunner {
 
       const result = await this.runTest(context);
       if (result)
-        await this.logToFile(result.selectedTileIds);
+        await this.logToFile(result.selectedTileIds, { noNewLine: true });
     }
   }
 
@@ -539,7 +539,7 @@ export class TestRunner {
     const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}  ${testConfig.iModelName}  [${testConfig.viewName}]`;
 
     await this.logToConsole(outStr);
-    return this.logToFile(`${outStr}\n`);
+    return this.logToFile(outStr);
   }
 
   private async openIModel(): Promise<TestContext | undefined> {
@@ -634,7 +634,11 @@ export class TestRunner {
     return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...row]), this.curConfig.csvFormat);
   }
 
-  private async logToFile(message: string, append = true): Promise<void> {
+  private async logToFile(message: string, opts?: { noAppend?: boolean, noNewLine?: boolean }): Promise<void> {
+    if (!opts?.noNewLine)
+      message = `${message}\n`;
+
+    const append = !opts?.noAppend;
     return DisplayPerfRpcInterface.getClient().writeExternalFile(this.curConfig.outputPath, this._logFileName, append, message);
   }
 
