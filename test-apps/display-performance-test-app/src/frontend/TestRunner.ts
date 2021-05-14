@@ -477,41 +477,48 @@ export class TestRunner {
     return vp;
   }
 
+  private async loadViewFromSpec(spec: ViewStateSpec, context: TestContext): Promise<TestViewState | undefined> {
+    const className = spec.viewProps.viewDefinitionProps.classFullName;
+    const ctor = await context.iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
+    const view = ctor?.createFromProps(spec.viewProps, context.iModel);
+    if (!view) {
+      await this.logError("Failed to create view from spec");
+      return undefined;
+    }
+
+    await view.load();
+    return {
+      view,
+      elementOverrides: spec.elementOverrides,
+      selectedElements: spec.selectedElements,
+    };
+  }
+
   private async loadView(context: TestContext): Promise<TestViewState | undefined> {
+    // If viewStateSpec is defined, use it. If we fail to instantiate it, fail.
     const config = this.curConfig;
+    if (config.viewStateSpec)
+      return this.loadViewFromSpec(config.viewStateSpec, context);
 
-    let spec = config.viewStateSpec;
-    if (!spec) {
-      // A external and persistent view may exist with the same name. Check for external first.
-      // (Note: the old code used to check for persistent first.)
-      const name = config.extViewName ?? config.viewName;
-      spec = context.externalSavedViews.find((x) => x.name === name);
-      if (!spec && config.extViewName) {
-        await this.logError(`Failed to find external saved view ${config.extViewName}`);
-        return undefined;
-      }
+    // If extViewName defined, find the matching external view. If none found, fail.
+    if (config.extViewName) {
+      const spec = context.externalSavedViews.find((x) => x.name === config.extViewName);
+      if (spec)
+        return this.loadViewFromSpec(spec, context);
+
+      await this.logError(`Failed to find external saved view ${config.extViewName}`);
+      return undefined;
     }
 
-    if (spec) {
-      const className = spec.viewProps.viewDefinitionProps.classFullName;
-      const ctor = await context.iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
-      const view = ctor?.createFromProps(spec.viewProps, context.iModel);
-      if (!view) {
-        await this.logError("Failed to create view from spec");
-        return undefined;
-      }
-
-      await view.load();
-      return {
-        view,
-        elementOverrides: spec.elementOverrides,
-        selectedElements: spec.selectedElements,
-      };
-    }
-
+    // If viewName is defined, find a persistent view with that name.
     const ids = await context.iModel.elements.queryIds({ from: ViewState.classFullName, where: `CodeValue='${config.viewName}'` });
     for (const id of ids)
       return { view: await context.iModel.views.load(id) };
+
+    // Try to find an external view matching viewName.
+    const extSpec = context.externalSavedViews.find((x) => x.name === config.viewName);
+    if (extSpec)
+      return this.loadViewFromSpec(extSpec, context);
 
     await this.logError(`Failed to find persistent view ${config.viewName}`);
     return undefined;
