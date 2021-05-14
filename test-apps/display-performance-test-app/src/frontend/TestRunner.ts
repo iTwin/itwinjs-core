@@ -144,7 +144,7 @@ export class TestRunner {
   public async run(): Promise<void> {
     const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation}\n  format: Time_started  ModelName  [ViewName]`;
     await this.logToConsole(msg);
-    await this.logToFile(msg);
+    await this.logToFile(`${msg}\n`, false);
 
     // Run all the tests
     for (const set of this._testSets)
@@ -625,7 +625,7 @@ export class TestRunner {
       renderData += `Missing Optional Features: ${renderComp.missingOptionalFeatures}"\r\n`;
 
     await DisplayPerfRpcInterface.getClient().finishCsv(renderData, this.curConfig.outputPath, this.curConfig.outputName, this.curConfig.csvFormat);
-    return DisplayPerfRpcInterface.getClient().finishTest();
+    /* ###TODO old code did not await return */ DisplayPerfRpcInterface.getClient().finishTest();
   }
 
   private async saveCsv(row: Map<string, number | string>): Promise<void> {
@@ -634,8 +634,8 @@ export class TestRunner {
     return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...row]), this.curConfig.csvFormat);
   }
 
-  private async logToFile(message: string): Promise<void> {
-    return DisplayPerfRpcInterface.getClient().writeExternalFile(this.curConfig.outputPath, this._logFileName, true, message);
+  private async logToFile(message: string, append = true): Promise<void> {
+    return DisplayPerfRpcInterface.getClient().writeExternalFile(this.curConfig.outputPath, this._logFileName, append, message);
   }
 
   private async logToConsole(message: string): Promise<void> {
