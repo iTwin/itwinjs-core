@@ -17,7 +17,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, NpcCenter, Placement, Placement2d,
+  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, NpcCenter, Placement, Placement2d,
   Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
   SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -25,6 +25,7 @@ import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
 import { CoordSystem } from "./CoordSystem";
+import { DecorationsCache } from "./DecorationsCache";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
@@ -47,7 +48,8 @@ import { RenderTarget } from "./render/RenderTarget";
 import { SheetViewState } from "./SheetViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { DisclosedTileTreeSet, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
+import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
+import { MapTiledGraphicsProvider } from "./tile/map/MapTiledGraphicsProvider";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
@@ -58,7 +60,7 @@ import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
-import { DecorationsCache } from "./DecorationsCache";
+import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -414,6 +416,7 @@ export abstract class Viewport implements IDisposable {
   private _alwaysDrawnExclusive: boolean = false;
   private readonly _featureOverrideProviders: FeatureOverrideProvider[] = [];
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
+  private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
 
@@ -818,6 +821,18 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.changeBackgroundMapProps(props);
   }
 
+  /** @internal */
+  public get backgroundMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundMap; }
+
+  /** @internal */
+  public get overlayMap(): MapTileTreeReference  | undefined { return this._mapTiledGraphicsProvider?.overlayMap; }
+
+  /** @internal */
+  public get backgroundDrapeMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundDrapeMap; }
+
+  /** @internal */
+  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined  { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
+
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
 
@@ -967,6 +982,8 @@ export abstract class Viewport implements IDisposable {
         promises.push(tree.getToolTip(hit));
       });
     }
+    this.forEachMapTreeRef(async (tree) => promises.push(tree.getToolTip(hit)));
+
     const results = await Promise.all(promises);
     for (const result of results)
       if (result !== undefined)
@@ -998,6 +1015,8 @@ export abstract class Viewport implements IDisposable {
     if (view === this._view)
       return;
 
+    if (this._mapTiledGraphicsProvider)
+      this._mapTiledGraphicsProvider.setView(view);
     this.detachFromView();
     this._view = view;
     this.attachToView();
@@ -1007,6 +1026,7 @@ export abstract class Viewport implements IDisposable {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
     this.view.attachToViewport();
+    this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
   }
 
   private registerViewListeners(): void {
@@ -1030,6 +1050,7 @@ export abstract class Viewport implements IDisposable {
       this.invalidateRenderPlan();
 
       this.detachFromDisplayStyle();
+      this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
       this.registerDisplayStyleListeners(newStyle);
     }));
 
@@ -1081,7 +1102,8 @@ export abstract class Viewport implements IDisposable {
       this.setFeatureOverrideProviderChanged();
       IModelApp.requestNextAnimation();
     };
-    removals.push(settings.onScheduleScriptPropsChanged.addListener(scheduleChanged));
+
+    removals.push(style.onScheduleScriptReferenceChanged.addListener(scheduleChanged));
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
@@ -1096,7 +1118,6 @@ export abstract class Viewport implements IDisposable {
     // ###TODO detach/attach reality model
     // ###TODO reality model appearance overrides
     // ###TODO OSM Building display
-    // ###TODO map imagery?
 
     removals.push(settings.onBackgroundMapChanged.addListener(() => {
       this.invalidateController();
@@ -1126,11 +1147,17 @@ export abstract class Viewport implements IDisposable {
 
     if (this._view)
       this._view.detachFromViewport();
+
   }
 
   private detachFromDisplayStyle(): void {
     this._detachFromDisplayStyle.forEach((f) => f());
     this._detachFromDisplayStyle.length = 0;
+
+    if (this._mapTiledGraphicsProvider) {
+      this._mapTiledGraphicsProvider.detachFromDisplayStyle();
+      this._mapTiledGraphicsProvider = undefined;
+    }
   }
 
   /** Enables or disables continuous rendering. Ideally, during each render frame a Viewport will do as little work as possible.
@@ -1354,9 +1381,37 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @internal */
+  public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
+    if (this._mapTiledGraphicsProvider)
+      this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
+  }
+
+  /** @internal */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.view.forEachTileTreeRef(func);
     this.forEachTiledGraphicsProviderTree(func);
+    this.forEachMapTreeRef(func);
+  }
+
+  /**
+   * Returns true if all [[TileTree]]s required by this viewport have been loaded.
+   */
+  public get areAllTileTreesLoaded(): boolean {
+    if (!this.view.areAllTileTreesLoaded)
+      return false;
+
+    let allLoaded = true;
+    this.forEachMapTreeRef((ref) => {
+      allLoaded &&= ref.isLoadingComplete;
+    });
+
+    if (allLoaded) {
+      this.forEachTiledGraphicsProviderTree((ref) => {
+        allLoaded &&= ref.isLoadingComplete;
+      });
+    }
+
+    return allLoaded;
   }
 
   /** Disclose *all* TileTrees currently in use by this Viewport. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
@@ -1364,6 +1419,7 @@ export abstract class Viewport implements IDisposable {
    */
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     this.forEachTiledGraphicsProviderTree((ref) => trees.disclose(ref));
+    this.forEachMapTreeRef((ref) => trees.disclose(ref));
     trees.disclose(this.view);
   }
 
@@ -1391,12 +1447,21 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @internal */
+  public mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined {
+    return undefined === hit.modelId ? undefined : this.mapLayerFromIds(hit.modelId, hit.sourceId);
+  }
+
+  /** @internal */
+  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
+    return this._mapTiledGraphicsProvider?.mapLayerFromIds(mapTreeId, layerTreeId);
+  }
+
+  /** @internal */
   public getTerrainHeightRange(): Range1d {
     const heightRange = Range1d.createNull();
     this.forEachTileTreeRef((ref) => ref.getTerrainHeight(heightRange));
     return heightRange;
   }
-
   /** @internal */
   public setViewedCategoriesPerModelChanged(): void {
     this._changeFlags.setViewedCategoriesPerModel();
@@ -1913,8 +1978,8 @@ export abstract class Viewport implements IDisposable {
    * @internal
    */
   public applyViewState(val: ViewState) {
-    this.setView(val);
     this.updateChangeFlags(val);
+    this.setView(val);
     this._viewingSpace.view = val;
     this.synchWithView({ noSaveInUndo: true });
   }
@@ -2149,13 +2214,13 @@ export abstract class Viewport implements IDisposable {
     if (!this._timePointValid) {
       isRedrawNeeded = true;
       this._timePointValid = true;
-      const scheduleScript = view.displayStyle.scheduleScript;
+      const scheduleScript = view.displayStyle.scheduleState;
       if (scheduleScript) {
-        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.getCachedDuration().low);
+        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.duration.low);
         if (scheduleScript.containsFeatureOverrides)
           overridesNeeded = true;
 
-        if (scheduleScript.containsTransform && !this._freezeScene)
+        if (scheduleScript.script.containsTransform && !this._freezeScene)
           this.invalidateScene();
       }
     }
@@ -2273,6 +2338,7 @@ export abstract class Viewport implements IDisposable {
     else
       this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
   }
+
   /** @internal */
   public isPixelSelectable(pixel: Pixel.Data) {
     if (undefined === pixel.featureTable || undefined === pixel.elementId)
@@ -2281,7 +2347,7 @@ export abstract class Viewport implements IDisposable {
     if (pixel.featureTable.modelId === pixel.elementId)
       return false;    // Reality Models not selectable
 
-    return undefined === this.displayStyle.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
+    return undefined === this.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
   }
 
   /** Read the current image from this viewport from the rendering system. If a view rectangle outside the actual view is specified, the entire view is captured.
@@ -2346,6 +2412,16 @@ export abstract class Viewport implements IDisposable {
     }
 
     return npc;
+  }
+
+  /** Query which [Feature]($common)s are currently visible within the viewport.
+   * @param options Specifies how to query.
+   * @param callback Callback to invoke with the results.
+   * @note This function may be slow, especially if the features are being queried from screen pixels. Avoid calling it repeatedly in rapid succession.
+   * @beta
+   */
+  public queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void {
+    return queryVisibleFeatures(this, options, callback);
   }
 
   /** @internal */

@@ -11,6 +11,7 @@ label, but costs more performance-wise.
 Name | Required? | Type | Default | Meaning
 -|-|-|-|-
 *Filtering* |
+`requiredSchemas` | No | [`RequiredSchemaSpecification[]`](../SchemaRequirements.md) | `[]` | Specifications that define schema requirements for the rule to take effect.
 `priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
 `onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
 `class` | Yes | `SingleSchemaClassSpecification` | | Specification of the ECClass to apply this rule to.
@@ -35,6 +36,7 @@ Name | Required? | Type | Default | Meaning
 Name | Required? | Type | Default | Meaning
 -|-|-|-|-
 `propertyName` | Yes | `string` | | Name of the property whose value should be used.
+`propertySource` | No | `RelationshipPathSpecification` | Empty path | [Specification of the relationship path](../RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the property.
 
 ### String
 
@@ -64,6 +66,14 @@ Name | Required? | Type | Default | Meaning
 
 `InstanceLabelOverrideLocalIdSpecification` returns ECInstance's local ID in base36 format. It has no additional attributes.
 
+### RelatedInstanceLabel
+
+`InstanceLabelOverrideRelatedInstanceLabelSpecification` uses label of another related instance as the label content.
+
+Name | Required? | Type | Default | Meaning
+-|-|-|-|-
+`pathToRelatedInstance` | Yes | `RelationshipPathSpecification` | | [Specification of the relationship path](../RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the related instance.
+
 ## Example
 
 The above override takes effect on all `MySchema.MyClass` ECInstances. First, it attempts to use `MyProperty1` value as the label. If that's not
@@ -73,6 +83,7 @@ set, then it uses `{class_label} [{briefcase_id}-{local_id}]` label.
 {
   "ruleType": "InstanceLabelOverride",
   "priority": 999,
+  "requiredSchemas": [{ "name": "MySchema", "minVersion": "1.2.3" }],
   "class": { "schemaName": "MySchema", "className": "MyClass" },
   "values": [{
     "specType": "Property",

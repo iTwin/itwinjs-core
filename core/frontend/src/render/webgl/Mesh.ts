@@ -383,7 +383,11 @@ export class PolylineEdgeGeometry extends MeshGeometry {
   }
 }
 
-function wantMaterials(vf: ViewFlags) { return vf.materials && RenderMode.SmoothShade === vf.renderMode; }
+/** @internal */
+export function wantMaterials(vf: ViewFlags): boolean {
+  return vf.materials && RenderMode.SmoothShade === vf.renderMode;
+}
+
 function wantLighting(vf: ViewFlags) {
   return RenderMode.SmoothShade === vf.renderMode && vf.lighting;
 }

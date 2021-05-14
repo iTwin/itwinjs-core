@@ -48,7 +48,6 @@ describe("Model geometry changes", () => {
 
   function expectChanges(expected: GeometricModelChange | undefined): void {
     if (!expected) {
-
       expect(lastChanges).to.be.undefined;
       return;
     }
@@ -98,7 +97,6 @@ describe("Model geometry changes", () => {
       geom: builder.geometryStream,
     };
 
-    const txnBeforeInsert = imodel.txns.getCurrentTxnId();
     const elemId0 = imodel.elements.insertElement(props);
     imodel.saveChanges("insert elem 0");
     expectChanges({ modelId, inserted: [elemId0] });
@@ -140,12 +138,42 @@ describe("Model geometry changes", () => {
 
     // Restart tracking and undo everything.
     expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
-    expect(imodel.txns.reverseTo(txnBeforeInsert)).to.equal(IModelStatus.Success);
-    expectChanges({ modelId, deleted: [elemId0, elemId1] });
+    expect(imodel.txns.reverseSingleTxn()).to.equal(IModelStatus.Success);
+    expectChanges({ modelId, updated: [elemId1] });
+
+    expect(imodel.txns.reverseSingleTxn()).to.equal(IModelStatus.Success);
+    expectChanges({ modelId, inserted: [elemId0] });
+
+    expect(imodel.txns.reverseSingleTxn()).to.equal(IModelStatus.Success);
+    expectChanges({ modelId, deleted: [elemId1] });
+
+    expect(imodel.txns.reverseSingleTxn()).to.equal(IModelStatus.Success);
+    expectChanges({ modelId, updated: [elemId0] });
+
+    expect(imodel.txns.reverseSingleTxn()).to.equal(IModelStatus.Success);
+    expectNoChanges();
+
+    expect(imodel.txns.reverseSingleTxn()).to.equal(IModelStatus.Success);
+    expectChanges({ modelId, deleted: [elemId0] });
 
     // Redo everything.
     expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
-    expectChanges({ modelId, updated: [elemId1], deleted: [elemId0] });
+    expectChanges({ modelId, inserted: [elemId0] });
+
+    expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
+    expectNoChanges();
+
+    expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
+    expectChanges({ modelId, updated: [elemId0] });
+
+    expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
+    expectChanges({ modelId, inserted: [elemId1] });
+
+    expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
+    expectChanges({ modelId, deleted: [elemId0] });
+
+    expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
+    expectChanges({ modelId, updated: [elemId1] });
 
     expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
   });

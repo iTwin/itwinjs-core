@@ -239,10 +239,10 @@ export class GridFileDefinition implements GridFileDefinitionProps {
  *  @alpha
  */
 export interface GridFileTransformProps {
-  /** The list of grid files. The order of file is meaningful, the first encountered that covers the area of coordinate
+  /** The list of grid files. The order of file is meaningful, the first encountered that covers the extent of coordinate
    *  transformation will be used. */
   files: GridFileDefinitionProps[];
-  /** The positional vector fallback transformation used for areas not covered by the grid files */
+  /** The positional vector fallback transformation used for extents not covered by the grid files */
   fallback?: PositionalVectorTransformProps;
 }
 
@@ -250,10 +250,10 @@ export interface GridFileTransformProps {
  *  @alpha
  */
 export class GridFileTransform implements GridFileTransformProps {
-  /** The list of grid files. The order of file is meaningful, the first encountered that covers the area of coordinate
+  /** The list of grid files. The order of file is meaningful, the first encountered that covers the extent of coordinate
    *  transformation will be used. */
   public readonly files: GridFileDefinition[];
-  /** The positional vector fallback transformation used for areas not covered by the grid files */
+  /** The positional vector fallback transformation used for extents not covered by the grid files */
   public readonly fallback?: PositionalVectorTransform;
 
   public constructor(data?: GridFileTransformProps) {
@@ -310,19 +310,11 @@ export class GridFileTransform implements GridFileTransformProps {
 export interface GeodeticTransformProps {
   /* The method used by the geodetic transform */
   method: GeodeticTransformMethod;
-  /** The identifier of the source geodetic datum as stored in the dictionary or the service database.
-   *  This identifier is optional and informational only.
-   */
-  sourceEllipsoidId?: string;
   /** The complete definition of the source geodetic ellipsoid referred to by ellipsoidId.
    *  The source ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.
   */
   sourceEllipsoid?: GeodeticEllipsoidProps;
-  /** The identifier of the target geodetic datum as stored in the dictionary or the service database.
-   *  This identifier is optional and informational only.
-   */
-  targetEllipsoidId?: string;
   /** The complete definition of the target geodetic ellipsoid referred to by ellipsoidId.
    *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.*/
@@ -345,16 +337,7 @@ export class GeodeticTransform implements GeodeticTransformProps {
   /** The identifier of the source geodetic datum as stored in the dictionary or the service database.
    *  This identifier is optional and informational only.
    */
-  public readonly sourceEllipsoidId?: string;
-  /** The complete definition of the source geodetic ellipsoid referred to by ellipsoidId.
-   *  The source ellipsoid identifier enables obtaining the shape of the Earth mathematical model
-   *  for the purpose of performing the transformation.
-  */
   public readonly sourceEllipsoid?: GeodeticEllipsoid;
-  /** The identifier of the target geodetic datum as stored in the dictionary or the service database.
-   *  This identifier is optional and informational only.
-   */
-  public readonly targetEllipsoidId?: string;
   /** The complete definition of the target geodetic ellipsoid referred to by ellipsoidId.
    *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.*/
@@ -370,8 +353,6 @@ export class GeodeticTransform implements GeodeticTransformProps {
     this.method = "None";
     if (data) {
       this.method = data.method;
-      this.sourceEllipsoidId = data.sourceEllipsoidId;
-      this.targetEllipsoidId = data.targetEllipsoidId;
       this.sourceEllipsoid = data.sourceEllipsoid ? GeodeticEllipsoid.fromJSON(data.sourceEllipsoid) : undefined;
       this.targetEllipsoid = data.targetEllipsoid ? GeodeticEllipsoid.fromJSON(data.targetEllipsoid) : undefined;
       this.geocentric = data.geocentric ? GeocentricTransform.fromJSON(data.geocentric) : undefined;
@@ -388,8 +369,6 @@ export class GeodeticTransform implements GeodeticTransformProps {
   /** @internal */
   public toJSON(): GeodeticTransformProps {
     const data: GeodeticTransformProps = { method: this.method };
-    data.sourceEllipsoidId = this.sourceEllipsoidId;
-    data.targetEllipsoidId = this.targetEllipsoidId;
     data.sourceEllipsoid = this.sourceEllipsoid ? this.sourceEllipsoid.toJSON() : undefined;
     data.targetEllipsoid = this.targetEllipsoid ? this.targetEllipsoid.toJSON() : undefined;
     data.geocentric = this.geocentric ? this.geocentric.toJSON() : undefined;
@@ -400,9 +379,7 @@ export class GeodeticTransform implements GeodeticTransformProps {
 
   /** @internal */
   public equals(other: GeodeticTransform): boolean {
-    if (this.method !== other.method ||
-      this.sourceEllipsoidId !== other.sourceEllipsoidId ||
-      this.targetEllipsoidId !== other.targetEllipsoidId)
+    if (this.method !== other.method)
       return false;
 
     if ((this.sourceEllipsoid === undefined) !== (other.sourceEllipsoid === undefined))

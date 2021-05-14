@@ -63,7 +63,7 @@ class TimePointComparison {
     });
 
     if (!provider) {
-      const timePoint = vp.timePoint ?? vp.view.displayStyle.scheduleScript?.computeDuration().low;
+      const timePoint = vp.timePoint ?? vp.view.displayStyle.scheduleScript?.duration.low;
       if (undefined === timePoint)
         return;
 

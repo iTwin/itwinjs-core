@@ -331,9 +331,7 @@ describe("WidgetPanelProvider", () => {
         stub.reset();
         stub
           .onFirstCall().returns(createDOMRect({ width: 200 }))
-          .onSecondCall().returns(createDOMRect({ width: 300 }))
-          .onThirdCall().returns(createDOMRect({ width: 400 }))
-          .returns(createDOMRect({ width: 900 }));
+          .returns(createDOMRect({ width: 400 }));
 
         rerender(<WidgetPanelProvider
           side="left"

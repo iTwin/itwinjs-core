@@ -2,6 +2,45 @@
   "name": "@bentley/itwin-client",
   "entries": [
     {
+      "version": "2.15.2",
+      "tag": "@bentley/itwin-client_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@bentley/itwin-client_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/itwin-client_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new exception type"
+          },
+          {
+            "comment": "Add baseUrl field for static API URL"
+          },
+          {
+            "comment": "fix parsing of buddi fallback for clients. imjs_buddi_resolve_url_using_region should support both strings and numbers"
+          },
+          {
+            "comment": "update xmldom to 0.5.0"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@bentley/itwin-client_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.14.3",
       "tag": "@bentley/itwin-client_v2.14.3",
       "date": "Thu, 15 Apr 2021 15:13:16 GMT",

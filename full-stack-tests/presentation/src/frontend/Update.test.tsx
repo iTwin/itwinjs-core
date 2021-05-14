@@ -351,8 +351,8 @@ describe("Update", () => {
             },
           ],
           [
-            { label: "Physical Object [0-38]", color: 0xFF0000FF },
-            { label: "Physical Object [0-39]", color: 0xFF0000FF },
+            { label: "Physical Object [0-38]", color: 0xFF0000 },
+            { label: "Physical Object [0-39]", color: 0xFF0000 },
           ],
         );
       });
@@ -397,8 +397,8 @@ describe("Update", () => {
             },
           ],
           [
-            { label: "Physical Object [0-38]", color: 0xFF0000FF },
-            { label: "Physical Object [0-39]", color: 0xFF0000FF },
+            { label: "Physical Object [0-38]", color: 0xFF0000 },
+            { label: "Physical Object [0-39]", color: 0xFF0000 },
           ],
         );
 
@@ -417,8 +417,8 @@ describe("Update", () => {
             },
           ],
           [
-            { label: "Physical Object [0-38]", color: 0x0000FFFF },
-            { label: "Physical Object [0-39]", color: 0x0000FFFF },
+            { label: "Physical Object [0-38]", color: 0x0000FF },
+            { label: "Physical Object [0-39]", color: 0x0000FF },
           ],
         );
       });

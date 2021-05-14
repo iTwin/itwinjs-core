@@ -6,8 +6,8 @@
  * @module OIDC
  */
 
-import { ClientRequestContext, SessionProps } from "@bentley/bentleyjs-core";
-import { NativeAppAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { assert } from "@bentley/bentleyjs-core";
+import { NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
@@ -17,23 +17,16 @@ import { MobileHost } from "./MobileHost";
  */
 export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
   public static defaultRedirectUri = "imodeljs://app/signin-callback";
-  public get redirectUri() { return this.config.redirectUri ?? MobileAuthorizationBackend.defaultRedirectUri; }
+  public get redirectUri() { return this.config?.redirectUri ?? MobileAuthorizationBackend.defaultRedirectUri; }
 
   public constructor(config?: NativeAppAuthorizationConfiguration) {
-    super();
-    this.config = config ?? {
-      clientId: NativeHost.applicationName ?? "mobile-app",
-      scope: "openid email profile organization offline_access",
-    };
+    super(config);
   }
 
   /** Used to initialize the client - must be awaited before any other methods are called */
-  public async initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void> {
-    await super.initialize(props, config);
-
-    const requestContext = ClientRequestContext.fromJSON(props);
-    if (!this.config.issuerUrl)
-      this.config.issuerUrl = await this.getUrl(requestContext);
+  public async initialize(config?: NativeAppAuthorizationConfiguration): Promise<void> {
+    await super.initialize(config);
+    assert(this.config !== undefined && this.issuerUrl !== undefined, "URL of authorization provider was not initialized");
 
     MobileHost.device.authStateChanged = (tokenString?: string) => {
       let token: AccessToken | undefined;
@@ -51,7 +44,8 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
     };
 
     return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authInit(requestContext, this.config, (err?: string) => {
+      assert(this.config !== undefined);
+      MobileHost.device.authInit(this.getClientRequestContext(), { ...this.config, issuerUrl: this.issuerUrl }, (err?: string) => {
         if (!err) {
           resolve();
         } else {

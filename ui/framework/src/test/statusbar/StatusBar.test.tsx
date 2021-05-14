@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
+import { render } from "@testing-library/react";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
 } from "@bentley/imodeljs-frontend";
@@ -17,6 +18,8 @@ import {
 import TestUtils, { mount } from "../TestUtils";
 import { MessageManager } from "../../ui-framework/messages/MessageManager";
 import { StatusMessagesContainer } from "../../ui-framework/messages/StatusMessagesContainer";
+import { createDOMRect } from "../Utils";
+import { MessageSeverity } from "@bentley/ui-core";
 
 describe("StatusBar", () => {
 
@@ -276,4 +279,64 @@ describe("StatusBar", () => {
     wrapper.unmount();
   });
 
+  describe("<StatusMessagesContainer />", () => {
+    const sandbox = sinon.createSandbox();
+    const messages = [
+      { id: "one", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message1", "Detailed message1", OutputMessageType.Toast), severity: MessageSeverity.Information },
+      { id: "two", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message2", "Detailed message3", OutputMessageType.Toast), severity: MessageSeverity.Information },
+      { id: "three", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message3", "Detailed message3", OutputMessageType.Sticky), severity: MessageSeverity.Information },
+    ];
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("will render with message container height < window.innerHeight, not scrollable", () => {
+      sandbox.stub(window, "innerHeight").get(() => 1000);
+
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+      sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+        if (this.classList.contains("uifw-statusbar-messages-container")) {
+          return createDOMRect({ width: 200, height: 200 });
+        }
+        return createDOMRect();
+      });
+
+      const renderedComponent = render(<StatusMessagesContainer
+        messages={messages}
+        activityMessageInfo={undefined}
+        isActivityMessageVisible={false}
+        toastTarget={null}
+        closeMessage={() => { }}
+        cancelActivityMessage={() => { }}
+        dismissActivityMessage={() => { }}
+      />);
+      expect(renderedComponent.container.querySelectorAll("div.uifw-statusbar-messages-container.uifw-scrollable").length).to.eq(0);
+      renderedComponent.unmount();
+    });
+
+    it("will render with message container height > window.innerHeight, scrollable", () => {
+      sandbox.stub(window, "innerHeight").get(() => 200);
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+      sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+        if (this.classList.contains("uifw-statusbar-messages-container")) {
+          return createDOMRect({ width: 200, height: 300 });
+        }
+        return createDOMRect();
+      });
+
+      const renderedComponent = render(<StatusMessagesContainer
+        messages={messages}
+        activityMessageInfo={undefined}
+        isActivityMessageVisible={false}
+        toastTarget={null}
+        closeMessage={() => { }}
+        cancelActivityMessage={() => { }}
+        dismissActivityMessage={() => { }}
+      />);
+      expect(renderedComponent.container.querySelectorAll("div.uifw-statusbar-messages-container.uifw-scrollable").length).to.eq(1);
+      renderedComponent.unmount();
+    });
+
+  });
 });

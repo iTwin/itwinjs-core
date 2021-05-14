@@ -2,6 +2,138 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.15.2",
+      "tag": "@bentley/imodeljs-frontend_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix animations from schedule script being erroneously applied to tile graphics."
+          },
+          {
+            "comment": "Return empty symbology overrides for maps to avoid inheriting from view"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@bentley/imodeljs-frontend_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "EmphasizeElements can override the appearance of unanimated schedule script nodes."
+          },
+          {
+            "comment": "Fix iOS shader bugs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/imodeljs-frontend_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Promote display-related APIs."
+          },
+          {
+            "comment": "Do not drape background map on reality if not geolocated"
+          },
+          {
+            "comment": "Revert the change which defaulted shader precompiling on. It resulted in noticeable UI sluggishness before any viewports were added, while shaders precompiled."
+          },
+          {
+            "comment": "TileAdmin.requestElementGraphics can obtain graphics for a non-persistent geometry stream."
+          },
+          {
+            "comment": "Refactor grid-in-view line creation to make the same context repeatedly callable."
+          },
+          {
+            "comment": "gridline filtering corrections"
+          },
+          {
+            "comment": "Fix orbitgt pointcloud position"
+          },
+          {
+            "comment": "Implement fixes for point cloud relative paths and node transforms"
+          },
+          {
+            "comment": "improved flickering silhouettes"
+          },
+          {
+            "comment": "Fix raster view attachments using black background color."
+          },
+          {
+            "comment": "Fix delay before raster view attachments appear in a sheet view."
+          },
+          {
+            "comment": "Fix WebGL1 clipping shaders."
+          },
+          {
+            "comment": "Fixed silhouettes for instanced geometry when running with WebGL1"
+          },
+          {
+            "comment": "Allow saved map layer definition to be deleted from setting service."
+          },
+          {
+            "comment": "No longer parse MapLayerSource URL for 'basemap' token."
+          },
+          {
+            "comment": "promote NativeApp to beta"
+          },
+          {
+            "comment": "Support nested clip volumes."
+          },
+          {
+            "comment": "Precompile WebGL shaders by default."
+          },
+          {
+            "comment": "Promote globe view tools to public. Add NextVersion promotion entries for these and for thematic display."
+          },
+          {
+            "comment": "Optimize reality model processing."
+          },
+          {
+            "comment": "Drop deprecated ldclient-js dependency"
+          },
+          {
+            "comment": "Remove deprecated ElementEditor that was replaced by EditCommands."
+          },
+          {
+            "comment": "Renamed InteractiveEditingSession to GraphicalEditingScope."
+          },
+          {
+            "comment": "Update release tags."
+          },
+          {
+            "comment": "Add BriefcaseTxns for monitoring changes to the briefcase."
+          },
+          {
+            "comment": "Update api tags"
+          },
+          {
+            "comment": "ViewCreator2d API - modelType parameter removed"
+          },
+          {
+            "comment": "Add an option to use the virtual cursor to help with element locate w/touch input."
+          },
+          {
+            "comment": "Added capability to scale the model display transform nonuniformly and have still Accusnap properly."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@bentley/imodeljs-frontend_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.14.3",
       "tag": "@bentley/imodeljs-frontend_v2.14.3",
       "date": "Thu, 15 Apr 2021 15:13:16 GMT",

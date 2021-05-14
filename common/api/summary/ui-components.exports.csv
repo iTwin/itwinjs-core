@@ -127,7 +127,7 @@ internal;DataRowItem
 internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
 internal;DateFieldProps 
 alpha;DatePicker(props: DatePickerProps): JSX.Element
-alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName }: DatePickerPopupButtonProps): JSX.Element
+alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): JSX.Element
 alpha;DatePickerPopupButtonProps 
 alpha;DatePickerProps
 internal;DateTimeEditor 
@@ -376,6 +376,9 @@ public;PropertyCategoryBlock
 public;PropertyCategoryBlockProps 
 beta;class PropertyCategoryDataFiltererBase 
 beta;PropertyCategoryLabelFilterer 
+beta;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType
+beta;PropertyCategoryRendererManager
+beta;PropertyCategoryRendererProps
 public;PropertyContainerType
 public;PropertyData
 public;PropertyDataChangeEvent 
@@ -397,7 +400,8 @@ public;PropertyGridContextMenuArgs
 beta;PropertyGridEventHandler
 internal;PropertyGridEventsRelatedProps = Pick
 internal;PropertyGridEventsRelatedPropsSupplier 
-internal;PropertyGridEventsRelatedPropsSupplierProps 
+internal;PropertyGridEventsRelatedPropsSupplierProps = Pick
+internal;PropertyGridInternalContext
 beta;PropertyGridModelChangeEvent 
 beta;PropertyGridModelChangeListener = () => void
 beta;PropertyGridModelSource 
@@ -619,7 +623,7 @@ public;ViewRotationChangeEvent
 public;ViewRotationChangeEventArgs
 public;ViewStateProp = ViewState | (() => ViewState)
 beta;VirtualizedPropertyGrid 
-internal;VirtualizedPropertyGridContext
+beta;VirtualizedPropertyGridContext
 beta;VirtualizedPropertyGridProps 
 beta;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
 beta;VirtualizedPropertyGridWithDataProviderProps 
