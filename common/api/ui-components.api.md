@@ -803,6 +803,8 @@ export interface CellItem {
     alignment?: HorizontalAlignment;
     isDisabled?: boolean;
     key: string;
+    // @alpha
+    mergedCellsCount?: number;
     record?: PropertyRecord;
     style?: ItemStyle;
 }
@@ -4431,7 +4433,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
-    componentDidUpdate(previousProps: TableProps): void;
+    componentDidUpdate(previousProps: TableProps, previousState: TableState): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal

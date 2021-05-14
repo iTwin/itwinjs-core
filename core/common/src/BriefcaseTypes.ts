@@ -10,21 +10,6 @@ import { GuidString } from "@bentley/bentleyjs-core";
 import { IModelEncryptionProps, OpenDbKey } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 
-/**
- * Status of downloading a briefcase
- * @internal
- */
-export enum DownloadBriefcaseStatus {
-  NotStarted,
-  Initializing,
-  QueryCheckpointService,
-  DownloadingCheckpoint,
-  DownloadingChangeSets,
-  ApplyingChangeSets,
-  Complete,
-  Error,
-}
-
 /** Values of BriefcaseId that have special meaning.
  * @see [[BriefcaseId]]
  * @public
@@ -81,7 +66,7 @@ export enum SyncMode {
 
 /**
  * Options to open a previously downloaded briefcase
- * @beta
+ * @public
  */
 export interface OpenBriefcaseOptions {
   /** open briefcase Readonly */
@@ -91,7 +76,7 @@ export interface OpenBriefcaseOptions {
 /**
  * Properties that specify a briefcase within the local briefcase cache.
  * @see BriefcaseManager.getFileName
- * @beta
+ * @public
  */
 export interface BriefcaseProps {
   /** Id of the iModel */
@@ -102,7 +87,7 @@ export interface BriefcaseProps {
 }
 
 /** Properties for opening a local briefcase file via [BriefcaseDb.open]($backend)
- * @beta
+ * @public
  */
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
   /** the full path to the briefcase file  */
@@ -112,7 +97,7 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
 }
 
 /** Properties of a local briefcase file, returned by [BriefcaseManager.getCachedBriefcases]($backend) and [BriefcaseManager.downloadBriefcase]($backend)
- * @beta
+ * @public
  */
 export interface LocalBriefcaseProps {
   /** Full path of local file. */
@@ -137,7 +122,7 @@ export interface LocalBriefcaseProps {
 }
 
 /** Properties for downloading a briefcase to a local file, from iModelHub.
- * @beta
+ * @public
  */
 export interface RequestNewBriefcaseProps {
   /** Context (Project or Asset) that the iModel belongs to. */
@@ -164,7 +149,7 @@ export interface RequestNewBriefcaseProps {
 
 /**
  * Manages the download of a briefcase
- * @beta
+ * @public
  */
 export interface BriefcaseDownloader {
   /** Id of the briefcase being downloaded */
