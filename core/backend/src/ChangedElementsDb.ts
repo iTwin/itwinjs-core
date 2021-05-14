@@ -12,7 +12,7 @@ import { ChangeSet } from "@bentley/imodelhub-client";
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseManager, ChangeSetToken } from "./BriefcaseManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
@@ -52,11 +52,11 @@ export class ChangedElementsDb implements IDisposable {
     this._nativeDb = undefined;
   }
 
-  private static buildChangeSetTokens(changeSets: ChangeSet[], changeSetsPath: string): ChangeSetToken[] {
-    const changeSetTokens = new Array<ChangeSetToken>();
+  private static buildChangeSetTokens(changeSets: ChangeSet[], changeSetsPath: string): IModelJsNative.ChangeSetProps[] {
+    const changeSetTokens: IModelJsNative.ChangeSetProps[] = [];
     changeSets.forEach((changeSet: ChangeSet) => {
-      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!, changeSet.pushDate));
+      const pathname = path.join(changeSetsPath, changeSet.fileName!);
+      changeSetTokens.push({ id: changeSet.wsgId, parentId: changeSet.parentId!, pathname, changesType: changeSet.changesType });
     });
     return changeSetTokens;
   }
@@ -121,7 +121,7 @@ export class ChangedElementsDb implements IDisposable {
     tokens.reverse();
     const status: DbResult = this.nativeDb.processChangesets(
       briefcase.nativeDb,
-      JSON.stringify(tokens),
+      tokens,
       options.rulesetId,
       options.filterSpatial,
       options.wantParents,
@@ -156,7 +156,7 @@ export class ChangedElementsDb implements IDisposable {
     const status: DbResult = this.nativeDb.processChangesetsAndRoll(
       dbFilename,
       dbGuid,
-      JSON.stringify(tokens),
+      tokens,
       options.rulesetId,
       options.filterSpatial,
       options.wantParents,

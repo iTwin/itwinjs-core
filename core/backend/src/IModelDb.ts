@@ -1358,14 +1358,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getModelJson
      */
     private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
-      const val = this._iModel.nativeDb.getModel(modelIdArg);
-      if (undefined !== val.error) {
-        if (IModelStatus.NotFound === val.error.status) {
-          return undefined;
-        }
-        throw new IModelError(val.error.status, `Model=${modelIdArg}`);
+      try {
+        return this._iModel.nativeDb.getModel(modelIdArg) as T;
+      } catch (err) {
+        return undefined;
       }
-      return val.result as T;
     }
 
     /** Get the sub-model of the specified Element.
@@ -1411,12 +1408,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the model.
      */
     public insertModel(props: ModelProps): Id64String {
-      const val = this._iModel.nativeDb.insertModel(props instanceof Model ? props.toJSON() : props);
-      if (val.error)
-        throw new IModelError(val.error.status, `error inserting model, class=${props.classFullName}`);
-
-      props.id = Id64.fromJSON(val.result!.id);
-      return props.id;
+      try {
+        return props.id = this._iModel.nativeDb.insertModel(props instanceof Model ? props.toJSON() : props);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
+      }
     }
 
     /** Update an existing model.
@@ -1424,11 +1420,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the model.
      */
     public updateModel(props: UpdateModelOptions): void {
-      const error = this._iModel.nativeDb.updateModel(props instanceof Model ? props.toJSON() : props);
-      if (error !== IModelStatus.Success)
-        throw new IModelError(error, `updating model id=${props.id}`);
+      try {
+        this._iModel.nativeDb.updateModel(props instanceof Model ? props.toJSON() : props);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
+      }
     }
-
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
      * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
@@ -1450,9 +1447,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public deleteModel(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
-        const error = this._iModel.nativeDb.deleteModel(id);
-        if (error !== IModelStatus.Success)
-          throw new IModelError(error, `deleting model id ${id}`);
+        try {
+          this._iModel.nativeDb.deleteModel(id);
+        } catch (err) {
+          throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
+        }
       });
     }
   }
@@ -1472,7 +1471,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @internal
      */
     public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
-      const elementProps: T | undefined = this.tryGetElementJson(elementId);
+      const elementProps = this.tryGetElementJson<T>(elementId);
       if (undefined === elementProps)
         throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
       return elementProps;
@@ -1485,13 +1484,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getElementJson
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
-      const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getElement(loadProps);
-      if (undefined !== val.error) {
-        if (IModelStatus.NotFound === val.error.status)
-          return undefined;
-        throw new IModelError(IModelStatus.NotFound, `reading element=${loadProps}`);
+      try {
+        return this._iModel.nativeDb.getElement(loadProps) as T;
+      } catch (err) {
+        return undefined;
       }
-      return val.result as T;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1612,12 +1609,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the element.
      */
     public insertElement(elProps: ElementProps): Id64String {
-      const val = this._iModel.nativeDb.insertElement(elProps instanceof Element ? elProps.toJSON() : elProps);
-      if (val.error)
-        throw new IModelError(val.error.status, `Error inserting element, class=${elProps.classFullName}`);
-
-      elProps.id = Id64.fromJSON(val.result!.id);
-      return elProps.id;
+      try {
+        return elProps.id = this._iModel.nativeDb.insertElement(elProps instanceof Element ? elProps.toJSON() : elProps);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `Error inserting element [${err.message}], class=${elProps.classFullName}`);
+      }
     }
 
     /** Update some properties of an existing element.
@@ -1628,9 +1624,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
-      const stat = this._iModel.nativeDb.updateElement(elProps instanceof Element ? elProps.toJSON() : elProps);
-      if (stat !== IModelStatus.Success)
-        throw new IModelError(stat, `Error updating element, id:${elProps.id}`);
+      try {
+        this._iModel.nativeDb.updateElement(elProps instanceof Element ? elProps.toJSON() : elProps);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `Error updating element [${err.message}], id:${elProps.id}`);
+      }
     }
 
     /** Delete one or more elements from this iModel.
@@ -1641,9 +1639,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
-        const error = iModel.nativeDb.deleteElement(id);
-        if (error !== IModelStatus.Success)
-          throw new IModelError(error, `Error deleting element, id:${id}`);
+        try {
+          iModel.nativeDb.deleteElement(id);
+        } catch (err) {
+          throw new IModelError(err.errorNumber, `Error deleting element [${err.message}], id:${id}`);
+        }
       });
     }
 
@@ -1730,9 +1730,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see [[IModelDb.Models.getSubModel]]
      */
     public hasSubModel(elementId: Id64String): boolean {
-      if (IModel.rootSubjectId === elementId) {
+      if (IModel.rootSubjectId === elementId)
         return false; // Special case since the RepositoryModel does not sub-model the root Subject
-      }
+
       // A sub-model will have the same Id value as the element it is describing
       const sql = "SELECT ECInstanceId FROM BisCore:Model WHERE ECInstanceId=:elementId";
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
@@ -1821,9 +1821,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      */
     public insertAspect(aspectProps: ElementAspectProps): void {
-      const status = this._iModel.nativeDb.insertElementAspect(aspectProps);
-      if (status !== IModelStatus.Success)
-        throw new IModelError(status, `Error inserting ElementAspect, class: ${aspectProps.classFullName}`);
+      try {
+        this._iModel.nativeDb.insertElementAspect(aspectProps);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
+      }
     }
 
     /** Update an exist ElementAspect within the iModel.
@@ -1831,9 +1833,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the ElementAspect.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
-      const status = this._iModel.nativeDb.updateElementAspect(aspectProps);
-      if (status !== IModelStatus.Success)
-        throw new IModelError(status, `Error updating ElementAspect, id: ${aspectProps.id}`);
+      try {
+        this._iModel.nativeDb.updateElementAspect(aspectProps);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
+      }
     }
 
     /** Delete one or more ElementAspects from this iModel.
@@ -1843,24 +1847,26 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public deleteAspect(aspectInstanceIds: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
-        const status = iModel.nativeDb.deleteElementAspect(aspectInstanceId);
-        if (status !== IModelStatus.Success)
-          throw new IModelError(status, `Error deleting ElementAspect, id: ${aspectInstanceId}`);
+        try {
+          iModel.nativeDb.deleteElementAspect(aspectInstanceId);
+        } catch (err) {
+          throw new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+        }
       });
     }
   }
 
   /** The collection of views in an [[IModelDb]].
-   * @public
-   */
+ * @public
+ */
   export class Views {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
-     * @param className Query for view definitions of this class.
-     * @param wantPrivate If true, include private view definitions.
-     */
+   * @param className Query for view definitions of this class.
+   * @param wantPrivate If true, include private view definitions.
+   */
     public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = IModelDb.defaultLimit, offset = 0, wantPrivate: boolean = false): ViewDefinitionProps[] {
       const where = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
       const ids = this._iModel.queryEntityIds({ from: className, limit, offset, where });
@@ -1880,15 +1886,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public static readonly defaultQueryParams: ViewQueryParams = { from: "BisCore.ViewDefinition", where: "IsPrivate=FALSE" };
 
     /** Iterate all ViewDefinitions matching the supplied query.
-     * @param params Specifies the query by which views are selected.
-     * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
-     * @returns true if all views were iterated, false if iteration was terminated early due to callback returning false.
-     *
-     * **Example: Finding all views of a specific DrawingModel**
-     * ``` ts
-     * [[include:IModelDb.Views.iterateViews]]
-     * ```
-     */
+   * @param params Specifies the query by which views are selected.
+   * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
+   * @returns true if all views were iterated, false if iteration was terminated early due to callback returning false.
+   *
+   * **Example: Finding all views of a specific DrawingModel**
+   * ``` ts
+   * [[include:IModelDb.Views.iterateViews]]
+   * ```
+   */
     public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {
       const ids = this._iModel.queryEntityIds(params);
       let finished = true;
@@ -1964,9 +1970,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Get the thumbnail for a view.
-     * @param viewDefinitionId The Id of the view for thumbnail
-     * @returns the ThumbnailProps, or undefined if no thumbnail exists.
-     */
+   * @param viewDefinitionId The Id of the view for thumbnail
+   * @returns the ThumbnailProps, or undefined if no thumbnail exists.
+   */
     public getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
@@ -1979,10 +1985,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Save a thumbnail for a view.
-     * @param viewDefinitionId The Id of the view for thumbnail
-     * @param thumbnail The thumbnail data.
-     * @returns 0 if successful
-     */
+   * @param viewDefinitionId The Id of the view for thumbnail
+   * @param thumbnail The thumbnail data.
+   * @returns 0 if successful
+   */
     public saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
@@ -1990,8 +1996,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Set the default view property the iModel
-     * @param viewId The Id of the ViewDefinition to use as the default
-     */
+   * @param viewId The Id of the ViewDefinition to use as the default
+   */
     public setDefaultViewId(viewId: Id64String): void {
       const spec = { namespace: "dgn_View", name: "DefaultView" };
       const blob32 = new Uint32Array(2);
@@ -2003,9 +2009,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   }
 
   /** Represents the current state of a pollable tile content request.
-   * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
-   * @internal
-   */
+ * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+ * @internal
+ */
   export enum TileContentState {
     New, // Request was just created and enqueued.
     Pending, // Request is enqueued but not yet being processed.
