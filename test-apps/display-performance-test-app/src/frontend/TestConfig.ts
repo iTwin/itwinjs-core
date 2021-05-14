@@ -46,7 +46,7 @@ export interface ElementOverrideProps {
 /** JSON representation of a ViewState with some additional data used by external saved views in a *_ESV.json file and by TestConfigProps.viewString. */
 export interface ViewStateSpecProps {
   _name: string;
-  _viewString: string;
+  _viewStatePropsString: string;
   _overrideElements?: string;
   _selectedElements?: string;
 }
@@ -226,7 +226,7 @@ export class TestConfig {
     if (props.viewString) {
       this.viewStateSpec = {
         name: props.viewString._name,
-        viewProps: JSON.parse(props.viewString._viewString),
+        viewProps: JSON.parse(props.viewString._viewStatePropsString),
       };
 
       if (props.viewString._overrideElements)

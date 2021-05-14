@@ -556,7 +556,7 @@ export class TestRunner {
       externalSavedViews = json.map((x) => {
         return {
           name: x._name,
-          viewProps: JSON.parse(x._viewString) as ViewStateProps,
+          viewProps: JSON.parse(x._viewStatePropsString) as ViewStateProps,
           elementOverrides: x._overrideElements ? JSON.parse(x._overrideElements) as ElementOverrideProps[] : undefined,
           selectedElements: x._selectedElements ? JSON.parse(x._selectedElements) as Id64String | Id64Array : undefined,
         };
