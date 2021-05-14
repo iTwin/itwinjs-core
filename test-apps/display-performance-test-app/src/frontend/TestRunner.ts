@@ -143,7 +143,7 @@ export class TestRunner {
   /** Run all the tests. */
   public async run(): Promise<void> {
     const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation}\n  format: Time_started  ModelName  [ViewName]`;
-    await this.logToConsole(msg);
+    this.logToConsole(msg);
     await this.logToFile(msg, { noAppend: true });
 
     // Run all the tests
@@ -191,6 +191,8 @@ export class TestRunner {
         if (context) {
           await this.runTests(context);
           await context.iModel.close();
+        } else {
+          await this.logError(`Failed to open iModel ${iModelName}`);
         }
       }
 
@@ -487,16 +489,20 @@ export class TestRunner {
       // (Note: the old code used to check for persistent first.)
       const name = config.extViewName ?? config.viewName;
       spec = context.externalSavedViews.find((x) => x.name === name);
-      if (!spec)
+      if (!spec && config.extViewName) {
+        await this.logError(`Failed to find external saved view ${config.extViewName}`);
         return undefined;
+      }
     }
 
     if (spec) {
       const className = spec.viewProps.viewDefinitionProps.classFullName;
       const ctor = await context.iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
       const view = ctor?.createFromProps(spec.viewProps, context.iModel);
-      if (!view)
+      if (!view) {
+        await this.logError("Failed to create view from spec");
         return undefined;
+      }
 
       await view.load();
       return {
@@ -506,18 +512,12 @@ export class TestRunner {
       };
     }
 
-    const ids = await context.iModel.elements.queryIds({ from: ViewState.classFullName, where: `CodeValue=$'{config.viewName}'` });
+    const ids = await context.iModel.elements.queryIds({ from: ViewState.classFullName, where: `CodeValue='${config.viewName}'` });
     for (const id of ids)
       return { view: await context.iModel.views.load(id) };
 
+    await this.logError(`Failed to find persistent view ${config.viewName}`);
     return undefined;
-  }
-
-  private async loadViewString(viewString: string, imodel: IModelConnection): Promise<ViewState | undefined> {
-    const json = JSON.parse(viewString);
-    const className = json.viewDefinitionProps.classFullName;
-    const ctor = await imodel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
-    return ctor ? ctor.createFromProps(json, imodel) : undefined;
   }
 
   private updateTestNames(test: TestCase, prefix?: string, isImage = false): void {
@@ -538,7 +538,7 @@ export class TestRunner {
     const seconds = (`0${today.getSeconds()}`).slice(-2);
     const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}  ${testConfig.iModelName}  [${testConfig.viewName}]`;
 
-    await this.logToConsole(outStr);
+    this.logToConsole(outStr);
     return this.logToFile(outStr);
   }
 
@@ -625,7 +625,9 @@ export class TestRunner {
       renderData += `Missing Optional Features: ${renderComp.missingOptionalFeatures}"\r\n`;
 
     await DisplayPerfRpcInterface.getClient().finishCsv(renderData, this.curConfig.outputPath, this.curConfig.outputName, this.curConfig.csvFormat);
-    /* ###TODO old code did not await return */ DisplayPerfRpcInterface.getClient().finishTest();
+    await this.logToConsole("Tests complete. Press Ctrl-C to exit.");
+
+    return DisplayPerfRpcInterface.getClient().finishTest();
   }
 
   private async saveCsv(row: Map<string, number | string>): Promise<void> {
@@ -644,6 +646,12 @@ export class TestRunner {
 
   private async logToConsole(message: string): Promise<void> {
     return DisplayPerfRpcInterface.getClient().consoleLog(message);
+  }
+
+  private async logError(message: string): Promise<void> {
+    const msg = `ERROR: ${message}`;
+    await this.logToConsole(msg);
+    return this.logToFile(msg);
   }
 
   private getTestName(test: TestCase, prefix?: string, isImage = false, ignoreDupes = false): string {
