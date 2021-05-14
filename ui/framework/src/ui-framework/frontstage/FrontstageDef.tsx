@@ -246,13 +246,6 @@ export class FrontstageDef {
     if (this.contentGroup)
       this.contentGroup.onFrontstageReady();
 
-    // if running Electron restore all popout widgets
-    if (this.nineZoneState?.popoutWidgets?.allIds.length && ProcessDetector.isElectronAppFrontend) {
-      for (const widgetContainerId of this.nineZoneState.popoutWidgets.allIds) {
-        this.popoutWidgetContainer(this.nineZoneState, widgetContainerId);
-      }
-    }
-
     this._onFrontstageReady();
   }
 

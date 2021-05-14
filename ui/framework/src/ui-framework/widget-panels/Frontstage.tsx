@@ -307,10 +307,19 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
   return state;
 }
 
-function processPopoutWidgets(initialState: NineZoneState): NineZoneState {
-  if (!initialState.popoutWidgets || ProcessDetector.isElectronAppFrontend) {
+function processPopoutWidgets(initialState: NineZoneState, frontstageDef: FrontstageDef): NineZoneState {
+  if (!initialState.popoutWidgets)
+    return initialState;
+
+  if (initialState.popoutWidgets && ProcessDetector.isElectronAppFrontend) {
+    if (initialState.popoutWidgets.allIds.length && ProcessDetector.isElectronAppFrontend) {
+      for (const widgetContainerId of initialState.popoutWidgets.allIds) {
+        frontstageDef.popoutWidgetContainer(initialState, widgetContainerId);
+      }
+    }
     return initialState;
   }
+
   return convertAllPopupWidgetContainersToFloating(initialState);
 }
 
@@ -840,7 +849,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
     async function fetchFrontstageState() {
       if (frontstageDef.nineZoneState) {
-        frontstageDef.nineZoneState = processPopoutWidgets(frontstageDef.nineZoneState);
+        frontstageDef.nineZoneState = processPopoutWidgets(frontstageDef.nineZoneState, frontstageDef);
         return;
       }
       const id = frontstageDef.id;
@@ -852,7 +861,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
       ) {
         const restored = restoreNineZoneState(frontstageDef, settingsResult.setting.nineZone);
         let state = addMissingWidgets(frontstageDef, restored);
-        state = processPopoutWidgets(state);
+        state = processPopoutWidgets(state, frontstageDef);
         frontstageDef.nineZoneState = state;
         return;
       }
@@ -1053,14 +1062,16 @@ export async function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneS
   if (state) {
     const location = findWidget(state, childWindowId);
     if (location) {
+      const adjustmentWidth = ProcessDetector.isElectronAppFrontend ? 16 : 0;
+      const adjustmentHeight = ProcessDetector.isElectronAppFrontend ? 39 : 0;
       const newState = produce(state, (draft) => {
         const widget = draft.widgets[childWindowId];
         const tab = draft.tabs[widget.activeTabId];
         tab.preferredPopoutWidgetSize = {
           x: childWindow.screenX,
           y: childWindow.screenY,
-          width: childWindow.innerWidth,
-          height: childWindow.innerHeight,
+          width: childWindow.innerWidth + adjustmentWidth,
+          height: childWindow.innerHeight + adjustmentHeight,
         };
       });
 
