@@ -754,7 +754,6 @@ export class Carto2DDegrees implements Carto2DDegreesProps {
     // @internal
     equals(other: Carto2DDegrees): boolean;
     static fromJSON(data: Carto2DDegreesProps): Carto2DDegrees;
-    // (undocumented)
     get latitude(): number;
     set latitude(newLatitude: number);
     longitude: number;
@@ -2863,7 +2862,6 @@ export type GateValue = number | boolean | string | undefined;
 // @public
 export class GeocentricTransform implements GeocentricTransformProps {
     constructor(data?: GeocentricTransformProps);
-    // (undocumented)
     readonly delta: Vector3d;
     // @internal
     equals(other: GeocentricTransform): boolean;
@@ -2873,7 +2871,6 @@ export class GeocentricTransform implements GeocentricTransformProps {
 
 // @public
 export interface GeocentricTransformProps {
-    // (undocumented)
     delta: XYAndZ;
 }
 
@@ -2925,7 +2922,6 @@ export class GeodeticDatum implements GeodeticDatumProps {
     equals(other: GeodeticDatum): boolean;
     static fromJSON(data: GeodeticDatumProps): GeodeticDatum;
     readonly id?: string;
-    // (undocumented)
     readonly source?: string;
     toJSON(): GeodeticDatumProps;
     readonly transforms?: GeodeticTransform[];
@@ -2976,13 +2972,9 @@ export class GeodeticTransform implements GeodeticTransformProps {
     // @internal
     equals(other: GeodeticTransform): boolean;
     static fromJSON(data: GeodeticTransformProps): GeodeticTransform;
-    // (undocumented)
     readonly geocentric?: GeocentricTransform;
-    // (undocumented)
     readonly gridFile?: GridFileTransform;
-    // (undocumented)
     readonly method: GeodeticTransformMethod;
-    // (undocumented)
     readonly positionalVector?: PositionalVectorTransform;
     readonly sourceEllipsoid?: GeodeticEllipsoid;
     readonly targetEllipsoid?: GeodeticEllipsoid;
@@ -2994,13 +2986,9 @@ export type GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector"
 
 // @public
 export interface GeodeticTransformProps {
-    // (undocumented)
     geocentric?: GeocentricTransformProps;
-    // (undocumented)
     gridFile?: GridFileTransformProps;
-    // (undocumented)
     method: GeodeticTransformMethod;
-    // (undocumented)
     positionalVector?: PositionalVectorTransformProps;
     sourceEllipsoid?: GeodeticEllipsoidProps;
     targetEllipsoid?: GeodeticEllipsoidProps;
@@ -3544,12 +3532,10 @@ export interface GraphicsRequestProps {
 // @public
 export class GridFileDefinition implements GridFileDefinitionProps {
     constructor(data?: GridFileDefinitionProps);
-    // (undocumented)
     readonly direction: GridFileDirection;
     // @internal
     equals(other: GridFileDefinition): boolean;
     readonly fileName: string;
-    // (undocumented)
     readonly format: GridFileFormat;
     static fromJSON(data: GridFileDefinitionProps): GridFileDefinition;
     toJSON(): GridFileDefinitionProps;
@@ -3557,10 +3543,8 @@ export class GridFileDefinition implements GridFileDefinitionProps {
 
 // @public
 export interface GridFileDefinitionProps {
-    // (undocumented)
     direction: GridFileDirection;
     fileName: string;
-    // (undocumented)
     format: GridFileFormat;
 }
 
@@ -3747,16 +3731,13 @@ export class HorizontalCRS implements HorizontalCRSProps {
     readonly epsg?: number;
     // @internal
     equals(other: HorizontalCRS): boolean;
-    // (undocumented)
     readonly extent?: HorizontalCRSExtent;
     static fromJSON(data: HorizontalCRSProps): HorizontalCRS;
     readonly id?: string;
     readonly name?: string;
-    // (undocumented)
     readonly projection?: Projection;
     readonly source?: string;
     toJSON(): HorizontalCRSProps;
-    // (undocumented)
     readonly unit?: UnitType;
 }
 
@@ -3766,18 +3747,14 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
     // @internal
     equals(other: HorizontalCRSExtent): boolean;
     static fromJSON(data: HorizontalCRSExtentProps): HorizontalCRSExtent;
-    // (undocumented)
     readonly northEast: Carto2DDegrees;
-    // (undocumented)
     readonly southWest: Carto2DDegrees;
     toJSON(): HorizontalCRSExtentProps;
 }
 
 // @public
 export interface HorizontalCRSExtentProps {
-    // (undocumented)
     northEast: Carto2DDegreesProps;
-    // (undocumented)
     southWest: Carto2DDegreesProps;
 }
 
@@ -3790,14 +3767,11 @@ export interface HorizontalCRSProps {
     ellipsoid?: GeodeticEllipsoidProps;
     ellipsoidId?: string;
     epsg?: number;
-    // (undocumented)
     extent?: HorizontalCRSExtentProps;
     id?: string;
     name?: string;
-    // (undocumented)
     projection?: ProjectionProps;
     source?: string;
-    // (undocumented)
     unit?: UnitType;
 }
 
@@ -5697,12 +5671,10 @@ export enum PolylineTypeFlags {
 // @public
 export class PositionalVectorTransform implements PositionalVectorTransformProps {
     constructor(data?: PositionalVectorTransformProps);
-    // (undocumented)
     readonly delta: Vector3d;
     // @internal
     equals(other: PositionalVectorTransform): boolean;
     static fromJSON(data: PositionalVectorTransformProps): PositionalVectorTransform;
-    // (undocumented)
     readonly rotation: XyzRotation;
     readonly scalePPM: number;
     toJSON(): PositionalVectorTransformProps;
@@ -5710,9 +5682,7 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
 
 // @public
 export interface PositionalVectorTransformProps {
-    // (undocumented)
     delta: XYAndZ;
-    // (undocumented)
     rotation: XyzRotationProps;
     scalePPM: number;
 }
@@ -5760,13 +5730,11 @@ export enum ProfileOptions {
 // @public
 export class Projection implements ProjectionProps {
     constructor(_data?: ProjectionProps);
-    // (undocumented)
     readonly affine?: AffineTransform;
     readonly azimuth?: number;
     readonly centralMeridian?: number;
     readonly centralPointLatitude?: number;
     readonly centralPointLongitude?: number;
-    // (undocumented)
     readonly danishSystem34Region?: DanishSystem34Region;
     readonly elevationAboveGeoid?: number;
     // @internal
@@ -5775,11 +5743,9 @@ export class Projection implements ProjectionProps {
     readonly falseNorthing?: number;
     static fromJSON(data: ProjectionProps): Projection;
     readonly geoidSeparation?: number;
-    // (undocumented)
     readonly hemisphere?: HemisphereEnum;
     readonly latitudeOfOrigin?: number;
     readonly longitudeOfOrigin?: number;
-    // (undocumented)
     readonly method: ProjectionMethod;
     readonly point1Latitude?: number;
     readonly point1Longitude?: number;
@@ -5798,23 +5764,19 @@ export type ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTra
 
 // @public
 export interface ProjectionProps {
-    // (undocumented)
     affine?: AffineTransformProps;
     azimuth?: number;
     centralMeridian?: number;
     centralPointLatitude?: number;
     centralPointLongitude?: number;
-    // (undocumented)
     danishSystem34Region?: DanishSystem34Region;
     elevationAboveGeoid?: number;
     falseEasting?: number;
     falseNorthing?: number;
     geoidSeparation?: number;
-    // (undocumented)
     hemisphere?: HemisphereEnum;
     latitudeOfOrigin?: number;
     longitudeOfOrigin?: number;
-    // (undocumented)
     method: ProjectionMethod;
     point1Latitude?: number;
     point1Longitude?: number;

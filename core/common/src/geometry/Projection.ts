@@ -158,6 +158,7 @@ export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
  *  @public
  */
 export interface ProjectionProps {
+  /** The projection method. */
   method: ProjectionMethod;
   /** The False Easting of the projection. */
   falseEasting?: number;
@@ -183,6 +184,7 @@ export interface ProjectionProps {
   elevationAboveGeoid?: number;
   /** The geoid separation. It represents the elevation of the geoid above the ellipsoid at the center of the projection. */
   geoidSeparation?: number;
+  /** The definition of the affine post-transformation for Transverse Mercator and Lambert Conformal Conic with post-affine projections */
   affine?: AffineTransformProps;
   /** Standard parallel for projection that only use one.
    *  For cylindrical projections (mercator, transverse mercator ...) it defines the parallel at
@@ -197,6 +199,7 @@ export interface ProjectionProps {
   standardParallel2?: number;
   /** The UTM zone number. A number from 0 to 60. */
   zoneNumber?: number;
+  /** The hemisphere for Universal Transverse Mercator projection. */
   hemisphere?: HemisphereEnum;
   /** Longitude of the central point. */
   centralPointLongitude?: number;
@@ -210,6 +213,7 @@ export interface ProjectionProps {
   point2Longitude?: number;
   /** Latitude of the second alignment point for some Oblique Mercator projections. */
   point2Latitude?: number;
+  /** The Danish zone for Danish projections. */
   danishSystem34Region?: DanishSystem34Region;
   /** Azimuth. */
   azimuth?: number;
@@ -224,6 +228,7 @@ export interface ProjectionProps {
  *  @public
  */
 export class Projection implements ProjectionProps {
+  /** The projection method. */
   public readonly method!: ProjectionMethod;
   /** The False Easting of the projection. */
   public readonly falseEasting?: number;
@@ -249,6 +254,7 @@ export class Projection implements ProjectionProps {
   public readonly elevationAboveGeoid?: number;
   /** The geoid separation. It represents the elevation of the geoid above the ellipsoid at the center of the projection. */
   public readonly geoidSeparation?: number;
+  /** The definition of the affine post-transformation for Transverse Mercator and Lambert Conformal Conic with post-affine projections */
   public readonly affine?: AffineTransform;
   /** Standard parallel for projection that only use one.
    *  For cylindrical projections (mercator, transverse mercator ...) it defines the parallel at
@@ -263,6 +269,7 @@ export class Projection implements ProjectionProps {
   public readonly standardParallel2?: number;
   /** The UTM zone number. A number from 0 to 60. */
   public readonly zoneNumber?: number;
+  /** The hemisphere for Universal Transverse Mercator projection. */
   public readonly hemisphere?: HemisphereEnum;
   /** Longitude of the central point. */
   public readonly centralPointLongitude?: number;
@@ -276,6 +283,7 @@ export class Projection implements ProjectionProps {
   public readonly point2Longitude?: number;
   /** Latitude of the second alignment point for some Oblique Mercator projections. */
   public readonly point2Latitude?: number;
+  /** The Danish zone for Danish projections. */
   public readonly danishSystem34Region?: DanishSystem34Region;
   /** Azimuth. */
   public readonly azimuth?: number;
@@ -398,6 +406,7 @@ export interface Carto2DDegreesProps {
 export class Carto2DDegrees implements Carto2DDegreesProps {
   /** Latitude value in degrees. Must be between -90 and +90 included */
   private _latitude!: number;
+  /** Returns or sets the latitude in degrees. When setting the provided number must be between or equal from -90 to 90. */
   public get latitude() { return this._latitude; }
   public set latitude(newLatitude: number) {
     if ((newLatitude <= 90.0) && (newLatitude >= -90.0))

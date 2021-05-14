@@ -76,7 +76,7 @@ export type GeodeticTransformMethod =
  *  @public
  */
 export interface GeocentricTransformProps {
-  /* The frame translation components in meters */
+  /** The frame translation components in meters */
   delta: XYAndZ;
 }
 
@@ -84,7 +84,7 @@ export interface GeocentricTransformProps {
  *  @public
  */
 export class GeocentricTransform implements GeocentricTransformProps {
-  /* The frame translation components in meters */
+  /** The frame translation components in meters */
   public readonly delta: Vector3d;
 
   public constructor(data?: GeocentricTransformProps) {
@@ -117,9 +117,9 @@ export class GeocentricTransform implements GeocentricTransformProps {
  *  @public
  */
 export interface PositionalVectorTransformProps {
-  /* The frame translation components in meters */
+  /** The frame translation components in meters */
   delta: XYAndZ;
-  /* The frame rotation components in arc seconds. The rotation sign convention is the one associated with
+  /** The frame rotation components in arc seconds. The rotation sign convention is the one associated with
    * the operation EPSG:9606 following recommendation of ISO 19111 specifications */
   rotation: XyzRotationProps;
   /** Scale in parts per million. The scale effectively applied will be 1 plus scale divided by 1 000 000. */
@@ -132,9 +132,9 @@ export interface PositionalVectorTransformProps {
  *  @public
  */
 export class PositionalVectorTransform implements PositionalVectorTransformProps {
-  /* The frame translation components in meters */
+  /** The frame translation components in meters */
   public readonly delta!: Vector3d;
-  /* The frame rotation components in arc seconds. The rotation sign convention is the one associated with
+  /** The frame rotation components in arc seconds. The rotation sign convention is the one associated with
    * the operation EPSG:9606 following recommendation of ISO 19111 specifications */
   public readonly rotation!: XyzRotation;
   /** Scale in parts per million. The scale effectively applied will be 1 plus scale divided by 1 000 000. */
@@ -207,7 +207,9 @@ export interface GridFileDefinitionProps {
    *  Forward slash is always used to separate the path components.
    */
   fileName: string;
+  /** The grid file format */
   format: GridFileFormat;
+  /** The grid file application direction */
   direction: GridFileDirection;
 }
 
@@ -225,7 +227,9 @@ export class GridFileDefinition implements GridFileDefinitionProps {
    *  Forward slash is always used to separate the path components.
    */
   public readonly fileName: string;
+  /** The grid file format */
   public readonly format: GridFileFormat;
+  /** The grid file application direction */
   public readonly direction: GridFileDirection;
 
   public constructor(data?: GridFileDefinitionProps) {
@@ -331,7 +335,7 @@ export class GridFileTransform implements GridFileTransformProps {
  *  @public
  */
 export interface GeodeticTransformProps {
-  /* The method used by the geodetic transform */
+  /** The method used by the geodetic transform */
   method: GeodeticTransformMethod;
   /** The complete definition of the source geodetic ellipsoid referred to by ellipsoidId.
    *  The source ellipsoid identifier enables obtaining the shape of the Earth mathematical model
@@ -342,11 +346,11 @@ export interface GeodeticTransformProps {
    *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.*/
   targetEllipsoid?: GeodeticEllipsoidProps;
-  /* When method is Geocentric this property contains the geocentric parameters */
+  /** When method is Geocentric this property contains the geocentric parameters */
   geocentric?: GeocentricTransformProps;
-  /* When method is PositionalVector this property contains the positional vector parameters */
+  /** When method is PositionalVector this property contains the positional vector parameters */
   positionalVector?: PositionalVectorTransformProps;
-  /* When method is GridFiles this property contains the grid files parameters */
+  /** When method is GridFiles this property contains the grid files parameters */
   gridFile?: GridFileTransformProps;
 }
 
@@ -355,7 +359,7 @@ export interface GeodeticTransformProps {
  *  @public
  */
 export class GeodeticTransform implements GeodeticTransformProps {
-  /* The method used by the geodetic transform */
+  /** The method used by the geodetic transform */
   public readonly method: GeodeticTransformMethod;
   /** The identifier of the source geodetic datum as stored in the dictionary or the service database.
    *  This identifier is optional and informational only.
@@ -365,11 +369,11 @@ export class GeodeticTransform implements GeodeticTransformProps {
    *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.*/
   public readonly targetEllipsoid?: GeodeticEllipsoid;
-  /* When method is Geocentric this property contains the geocentric parameters */
+  /** When method is Geocentric this property contains the geocentric parameters */
   public readonly geocentric?: GeocentricTransform;
-  /* When method is PositionalVector this property contains the positional vector parameters */
+  /** When method is PositionalVector this property contains the positional vector parameters */
   public readonly positionalVector?: PositionalVectorTransform;
-  /* When method is GridFiles this property contains the grid files parameters */
+  /** When method is GridFiles this property contains the grid files parameters */
   public readonly gridFile?: GridFileTransform;
 
   public constructor(data?: GeodeticTransformProps) {
@@ -493,7 +497,7 @@ export class GeodeticDatum implements GeodeticDatumProps {
    *  If false then the definition is not deprecated. Default is false.
    */
   public readonly deprecated: boolean;
-  /* A textual description of the source of the geodetic datum definition. */
+  /** A textual description of the source of the geodetic datum definition. */
   public readonly source?: string;
   /** The EPSG code of the geodetic datum. If undefined then there is no EPSG code associated. */
   public readonly epsg?: number;

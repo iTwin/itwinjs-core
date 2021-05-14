@@ -20,9 +20,9 @@ export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree"
  *  @public
 */
 export interface HorizontalCRSExtentProps {
-  /* The South West point in latitude and longitude in degrees for the user-defined extent of the CRS */
+  /** The South West point in latitude and longitude in degrees for the user-defined extent of the CRS */
   southWest: Carto2DDegreesProps;
-  /* The North East point in latitude in longitude in degrees for the user-defined extent of the CRS.
+  /** The North East point in latitude in longitude in degrees for the user-defined extent of the CRS.
      The latitude of the North East must be greater or equal to the latitude of the South West point
      It is possible, however, for the longitude of the South West corner to have greater value than the
      longitude of the North East point such as when the west longitude is located on the other side
@@ -34,9 +34,13 @@ export interface HorizontalCRSExtentProps {
  *  @public
  */
 export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
-  /* The latitude minimum and maximum for the user-defined extent of the CRS */
+  /** The latitude minimum and maximum for the user-defined extent of the CRS */
   public readonly southWest: Carto2DDegrees;
-  /* The longitude minimum and maximum for the user-defined extent of the CRS */
+  /** The North East point in latitude in longitude in degrees for the user-defined extent of the CRS.
+     The latitude of the North East must be greater or equal to the latitude of the South West point
+     It is possible, however, for the longitude of the South West corner to have greater value than the
+     longitude of the North East point such as when the west longitude is located on the other side
+     of the -180/180 degree longitude line.*/
   public readonly northEast: Carto2DDegrees;
 
   public constructor(data?: HorizontalCRSExtentProps) {
@@ -105,8 +109,11 @@ export interface HorizontalCRSProps {
    *  in either service or dictionary
    */
   ellipsoid?: GeodeticEllipsoidProps;
+  /** The text indicating the unit used. */
   unit?: UnitType;
+  /** Projection including projection parameters. */
   projection?: ProjectionProps;
+  /** Extent representing the domain of application of the CRS. */
   extent?: HorizontalCRSExtentProps;
 }
 
@@ -169,9 +176,11 @@ export class HorizontalCRS implements HorizontalCRSProps {
    *  of having datumId and datum properties undefined.
   */
   public readonly ellipsoid?: GeodeticEllipsoid;
-
+  /** The text indicating the unit used. */
   public readonly unit?: UnitType;
+  /** Projection including projection parameters. */
   public readonly projection?: Projection;
+  /** Extent representing the domain of application of the CRS. */
   public readonly extent?: HorizontalCRSExtent;
 
   public constructor(_data?: HorizontalCRSProps) {
