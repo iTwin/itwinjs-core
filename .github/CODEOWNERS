@@ -62,22 +62,22 @@ rush.json       @calebmshafer @scsewall
 /common/**/express-server/                        @wgoehrig @calebmshafer
 /common/**/extension-cli/                         @calebmshafer @paulius-valiunas
 /common/**/extension-webpack-tools/               @calebmshafer @wgoehrig
-/common/**/frontend-devtools.*                    @imodeljs/display
-/common/**/frontend-devtools/                     @imodeljs/display
+/common/**/frontend-devtools.*                    @imodeljs/display @Ellord207
+/common/**/frontend-devtools/                     @imodeljs/display @Ellord207
 /common/**/geometry-core.*                        @EarlinLutz @mgooding @RBBentley @bbastings
 /common/**/geometry-core/                         @EarlinLutz @mgooding @RBBentley @bbastings
-/common/**/hypermodeling-frontend.*               @pmconne @bbastings
-/common/**/hypermodeling-frontend/                @pmconne @bbastings
+/common/**/hypermodeling-frontend.*               @imodeljs/display @bbastings
+/common/**/hypermodeling-frontend/                @imodeljs/display @bbastings
 /common/**/imodel-bridge.*                        @abeesh @c-macdonald @swwilson-bsi
 /common/**/imodel-bridge/                         @abeesh @c-macdonald @swwilson-bsi
 /common/**/imodeljs-backend.*                     @imodeljs/admins
 /common/**/imodeljs-backend/                      @imodeljs/admins
-/common/**/imodeljs-common.*                      @imodeljs/admins
-/common/**/imodeljs-common/                       @imodeljs/admins
-/common/**/imodeljs-editor-*.*                    @kabentley @pmconne
-/common/**/imodeljs-editor-*/                     @kabentley @pmconne
-/common/**/imodeljs-frontend.*                    @imodeljs/admins @imodeljs/display
-/common/**/imodeljs-frontend/                     @imodeljs/admins @imodeljs/display
+/common/**/imodeljs-common.*                      @imodeljs/admins @imodeljs/display
+/common/**/imodeljs-common/                       @imodeljs/admins @imodeljs/display
+/common/**/imodeljs-editor-*.*                    @bbastings @kabentley @pmconne
+/common/**/imodeljs-editor-*/                     @bbastings @kabentley @pmconne
+/common/**/imodeljs-frontend.*                    @kabentley @bbastings @imodeljs/display
+/common/**/imodeljs-frontend/                     @kabentley @bbastings @imodeljs/display
 /common/**/imodeljs-i18n.*                        @calebmshafer @wgoehrig
 /common/**/imodeljs-i18n/                         @calebmshafer @wgoehrig
 /common/**/imodeljs-markup.*                      @kabentley @pmconne @bbastings
@@ -92,8 +92,8 @@ rush.json       @calebmshafer @scsewall
 /common/**/logger-config/                         @swwilson-bsi @scsewall
 /common/**/map-layers/                            @bsteinbk @mdastous-bentley
 /common/**/oidc-signin-tool/                      @calebmshafer @wgoehrig
-/common/**/orbitgt-core.*                         @pmconne @RBBentley
-/common/**/orbitgt-core/                          @pmconne @RBBentley
+/common/**/orbitgt-core.*                         @imodeljs/display
+/common/**/orbitgt-core/                          @imodeljs/display
 /common/**/perf-tools.*                           @calebmshafer @wgoehrig
 /common/**/perf-tools/                            @calebmshafer @wgoehrig
 /common/**/physical-material-backend.*            @scsewall
@@ -103,8 +103,8 @@ rush.json       @calebmshafer @scsewall
 /common/**/rpcinterface-full-stack-tests/         @calebmshafer @wgoehrig
 /common/**/ui-*.*                                 @imodeljs/ui
 /common/**/ui-*/                                  @imodeljs/ui
-/common/**/webgl-compatibility.*                  @imodeljs/display
-/common/**/webgl-compatibility/                   @imodeljs/display
+/common/**/webgl-compatibility.*                  @imodeljs/display @Ellord207
+/common/**/webgl-compatibility/                   @imodeljs/display @Ellord207
 /common/**/webpack-tools-core/                    @calebmshafer @wgoehrig
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
@@ -112,27 +112,25 @@ rush.json       @calebmshafer @scsewall
 /core/backend                   @imodeljs/admins
 /core/backend-itwin-client      @calebmshafer @ramanujam-raman
 /core/bentley                   @imodeljs/admins
-/core/common                    @imodeljs/admins
+/core/common                    @imodeljs/admins @imodeljs/display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
 /core/ecschema-locaters         @calebmshafer @ColinKerr @wgoehrig
 /core/ecschema-metadata         @calebmshafer @ColinKerr @wgoehrig
 /core/electron-manager          @wgoehrig @ramanujam-raman
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
-/core/frontend                  @imodeljs/admins
-/core/frontend/src/render       @imodeljs/display
-/core/frontend/src/test/render  @imodeljs/display
-/core/frontend/src/tile         @imodeljs/display
-/core/frontend/src/test/tile    @imodeljs/display
-/core/frontend-devtools         @imodeljs/display
+/core/frontend                  @kabentley @bbastings @imodeljs/display
+/core/frontend/src/oidc         @calebmshafer @ramanujam-raman
+/core/frontend/src/extension    @calebmshafer @wgoehrig
+/core/frontend-devtools         @imodeljs/display @Ellord207
 /core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
-/core/hypermodeling             @bbastings @pmconne
+/core/hypermodeling             @bbastings @imodeljs/display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/imodel-bridge             @abeesh @c-macdonald @swwilson-bsi
 /core/logger-config             @swwilson-bsi @scsewall
 /core/markup                    @kabentley @pmconne @bbastings
-/core/orbitgt                   @RBBentley @pmconne
+/core/orbitgt                   @imodeljs/display
 /core/quantity                  @bsteinbk @calebmshafer
-/core/webgl-compatibility       @imodeljs/display
+/core/webgl-compatibility       @imodeljs/display @Ellord207
 
 /docs/getting-started @calebmshafer @williamkbentley
 /docs/config @calebmshafer @williamkbentley
@@ -143,7 +141,7 @@ rush.json       @calebmshafer @scsewall
 /domains/analytical @diegoalexdiaz @scsewall
 /domains/linear-referencing @diegoalexdiaz @scsewall
 
-/editor                               @kabentley @pmconne
+/editor                               @bbastings @kabentley @pmconne
 
 /example-code                         @scsewall @swwilson-bsi
 
@@ -161,14 +159,14 @@ rush.json       @calebmshafer @scsewall
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
 /test-apps/analysis-importer                @RBBentley @pmconne
-/test-apps/display-performance-test-app     @imodeljs/display
-/test-apps/display-test-app                 @kabentley @imodeljs/display
+/test-apps/display-performance-test-app     @imodeljs/display @hnn0003
+/test-apps/display-test-app                 @bbastings @kabentley @imodeljs/display
 /test-apps/export-gltf                      @mgooding @pmconne
 /test-apps/export-obj                       @mgooding @pmconne
 /test-apps/imjs-importer                    @EarlinLutz
 /test-apps/imodel-from-geojson              @mgooding @pmconne
-/test-apps/imodel-from-orbitgt              @RBBentley @pmconne
-/test-apps/imodel-from-reality-model        @RBBentley @pmconne
+/test-apps/imodel-from-orbitgt              @imodeljs/display
+/test-apps/imodel-from-reality-model        @imodeljs/display
 /test-apps/imodel-transformer               @scsewall @mgooding
 /test-apps/ninezone-test-app                @imodeljs/ui
 /test-apps/presentation-test-app            @imodeljs/presentation
