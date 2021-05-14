@@ -79,6 +79,46 @@ import { YawPitchRollAngles } from '@bentley/geometry-core';
 import { YawPitchRollProps } from '@bentley/geometry-core';
 
 // @public
+export class AdditionalTransform implements AdditionalTransformProps {
+    constructor(data?: AdditionalTransformProps);
+    // @internal
+    equals(other: AdditionalTransform): boolean;
+    static fromJSON(data: AdditionalTransformProps): AdditionalTransform;
+    readonly helmert2DWithZOffset?: Helmert2DWithZOffset;
+    toJSON(): AdditionalTransformProps;
+}
+
+// @public
+export interface AdditionalTransformProps {
+    helmert2DWithZOffset?: Helmert2DWithZOffsetProps;
+}
+
+// @public
+export class AffineTransform implements AffineTransformProps {
+    constructor(data?: AffineTransformProps);
+    readonly a1: number;
+    readonly a2: number;
+    readonly b1: number;
+    readonly b2: number;
+    // @internal
+    equals(other: AffineTransform): boolean;
+    static fromJSON(data: AffineTransformProps): AffineTransform;
+    toJSON(): AffineTransformProps;
+    readonly translationX: number;
+    readonly translationY: number;
+}
+
+// @public
+export interface AffineTransformProps {
+    a1: number;
+    a2: number;
+    b1: number;
+    b2: number;
+    translationX: number;
+    translationY: number;
+}
+
+// @public
 export class AmbientLight {
     constructor(json?: AmbientLightProps);
     clone(changed?: AmbientLightProps): AmbientLight;
@@ -706,6 +746,25 @@ export interface CameraProps {
     focusDist: number;
     // (undocumented)
     lens: AngleProps;
+}
+
+// @public
+export class Carto2DDegrees implements Carto2DDegreesProps {
+    constructor(data?: Carto2DDegreesProps);
+    // @internal
+    equals(other: Carto2DDegrees): boolean;
+    static fromJSON(data: Carto2DDegreesProps): Carto2DDegrees;
+    // (undocumented)
+    get latitude(): number;
+    set latitude(newLatitude: number);
+    longitude: number;
+    toJSON(): Carto2DDegreesProps;
+}
+
+// @public
+export interface Carto2DDegreesProps {
+    latitude: number;
+    longitude: number;
 }
 
 // @public
@@ -1590,6 +1649,9 @@ export interface CutStyleProps {
     hiddenLine?: HiddenLine.SettingsProps;
     viewflags?: ViewFlagOverridesProps;
 }
+
+// @public
+export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
 
 export { DbResult }
 
@@ -2798,6 +2860,23 @@ export interface FunctionalElementProps extends ElementProps {
 // @internal (undocumented)
 export type GateValue = number | boolean | string | undefined;
 
+// @public
+export class GeocentricTransform implements GeocentricTransformProps {
+    constructor(data?: GeocentricTransformProps);
+    // (undocumented)
+    readonly delta: Vector3d;
+    // @internal
+    equals(other: GeocentricTransform): boolean;
+    static fromJSON(data: GeocentricTransformProps): GeocentricTransform;
+    toJSON(): GeocentricTransformProps;
+}
+
+// @public
+export interface GeocentricTransformProps {
+    // (undocumented)
+    delta: XYAndZ;
+}
+
 // @beta
 export interface GeoCoordinatesRequestProps {
     // (undocumented)
@@ -2832,6 +2911,118 @@ export enum GeoCoordStatus {
     Success = 0,
     // (undocumented)
     VerticalDatumConvertError = 26
+}
+
+// @public
+export class GeodeticDatum implements GeodeticDatumProps {
+    constructor(_data?: GeodeticDatumProps);
+    readonly deprecated: boolean;
+    readonly description?: string;
+    readonly ellipsoid?: GeodeticEllipsoid;
+    readonly ellipsoidId?: string;
+    readonly epsg?: number;
+    // @internal
+    equals(other: GeodeticDatum): boolean;
+    static fromJSON(data: GeodeticDatumProps): GeodeticDatum;
+    readonly id?: string;
+    // (undocumented)
+    readonly source?: string;
+    toJSON(): GeodeticDatumProps;
+    readonly transforms?: GeodeticTransform[];
+}
+
+// @public
+export interface GeodeticDatumProps {
+    deprecated?: boolean;
+    description?: string;
+    ellipsoid?: GeodeticEllipsoidProps;
+    ellipsoidId?: string;
+    epsg?: number;
+    id?: string;
+    source?: string;
+    transforms?: GeodeticTransformProps[];
+}
+
+// @public
+export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
+    constructor(data?: GeodeticEllipsoidProps);
+    readonly deprecated: boolean;
+    readonly description?: string;
+    readonly epsg?: number;
+    // @internal
+    equals(other: GeodeticEllipsoid): boolean;
+    readonly equatorialRadius?: number;
+    static fromJSON(data: GeodeticEllipsoidProps): GeodeticEllipsoid;
+    readonly id?: string;
+    readonly polarRadius?: number;
+    readonly source?: string;
+    toJSON(): GeodeticEllipsoidProps;
+}
+
+// @public
+export interface GeodeticEllipsoidProps {
+    deprecated?: boolean;
+    description?: string;
+    epsg?: number;
+    equatorialRadius?: number;
+    id?: string;
+    polarRadius?: number;
+    source?: string;
+}
+
+// @public
+export class GeodeticTransform implements GeodeticTransformProps {
+    constructor(data?: GeodeticTransformProps);
+    // @internal
+    equals(other: GeodeticTransform): boolean;
+    static fromJSON(data: GeodeticTransformProps): GeodeticTransform;
+    // (undocumented)
+    readonly geocentric?: GeocentricTransform;
+    // (undocumented)
+    readonly gridFile?: GridFileTransform;
+    // (undocumented)
+    readonly method: GeodeticTransformMethod;
+    // (undocumented)
+    readonly positionalVector?: PositionalVectorTransform;
+    readonly sourceEllipsoid?: GeodeticEllipsoid;
+    readonly targetEllipsoid?: GeodeticEllipsoid;
+    toJSON(): GeodeticTransformProps;
+}
+
+// @public
+export type GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined";
+
+// @public
+export interface GeodeticTransformProps {
+    // (undocumented)
+    geocentric?: GeocentricTransformProps;
+    // (undocumented)
+    gridFile?: GridFileTransformProps;
+    // (undocumented)
+    method: GeodeticTransformMethod;
+    // (undocumented)
+    positionalVector?: PositionalVectorTransformProps;
+    sourceEllipsoid?: GeodeticEllipsoidProps;
+    targetEllipsoid?: GeodeticEllipsoidProps;
+}
+
+// @public
+export class GeographicCRS implements GeographicCRSProps {
+    constructor(data?: GeographicCRSProps);
+    readonly additionalTransform?: AdditionalTransform;
+    // @internal
+    equals(other: GeographicCRS): boolean;
+    static fromJSON(data: GeographicCRSProps): GeographicCRS;
+    readonly horizontalCRS?: HorizontalCRS;
+    toJSON(): GeographicCRSProps;
+    readonly verticalCRS?: VerticalCRS;
+}
+
+// @public
+export interface GeographicCRSProps {
+    additionalTransform?: AdditionalTransformProps;
+    horizontalCRS?: HorizontalCRSProps;
+    verticalCRS?: VerticalCRSProps;
 }
 
 // @public
@@ -3351,6 +3542,52 @@ export interface GraphicsRequestProps {
 }
 
 // @public
+export class GridFileDefinition implements GridFileDefinitionProps {
+    constructor(data?: GridFileDefinitionProps);
+    // (undocumented)
+    readonly direction: GridFileDirection;
+    // @internal
+    equals(other: GridFileDefinition): boolean;
+    readonly fileName: string;
+    // (undocumented)
+    readonly format: GridFileFormat;
+    static fromJSON(data: GridFileDefinitionProps): GridFileDefinition;
+    toJSON(): GridFileDefinitionProps;
+}
+
+// @public
+export interface GridFileDefinitionProps {
+    // (undocumented)
+    direction: GridFileDirection;
+    fileName: string;
+    // (undocumented)
+    format: GridFileFormat;
+}
+
+// @public
+export type GridFileDirection = "Direct" | "Inverse";
+
+// @public
+export type GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN";
+
+// @public
+export class GridFileTransform implements GridFileTransformProps {
+    constructor(data?: GridFileTransformProps);
+    // @internal
+    equals(other: GridFileTransform): boolean;
+    readonly fallback?: PositionalVectorTransform;
+    readonly files: GridFileDefinition[];
+    static fromJSON(data: GridFileTransformProps): GridFileTransform;
+    toJSON(): GridFileTransformProps;
+}
+
+// @public
+export interface GridFileTransformProps {
+    fallback?: PositionalVectorTransformProps;
+    files: GridFileDefinitionProps[];
+}
+
+// @public
 export enum GridOrientationType {
     AuxCoord = 4,
     View = 0,
@@ -3379,6 +3616,32 @@ export interface GroundPlaneProps {
     display?: boolean;
     elevation?: number;
 }
+
+// @public
+export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
+    constructor(data?: Helmert2DWithZOffsetProps);
+    // @internal
+    equals(other: Helmert2DWithZOffset): boolean;
+    static fromJSON(data: Helmert2DWithZOffsetProps): Helmert2DWithZOffset;
+    rotDeg: number;
+    scale: number;
+    toJSON(): Helmert2DWithZOffsetProps;
+    translationX: number;
+    translationY: number;
+    translationZ: number;
+}
+
+// @public
+export interface Helmert2DWithZOffsetProps {
+    rotDeg: number;
+    scale: number;
+    translationX: number;
+    translationY: number;
+    translationZ: number;
+}
+
+// @public
+export type HemisphereEnum = "South" | "North";
 
 // @public
 export class HemisphereLights {
@@ -3470,6 +3733,72 @@ export namespace Hilite {
         Thick = 2,
         Thin = 1
     }
+}
+
+// @public
+export class HorizontalCRS implements HorizontalCRSProps {
+    constructor(_data?: HorizontalCRSProps);
+    readonly datum?: GeodeticDatum;
+    readonly datumId?: string;
+    readonly deprecated: boolean;
+    readonly description?: string;
+    readonly ellipsoid?: GeodeticEllipsoid;
+    readonly ellipsoidId?: string;
+    readonly epsg?: number;
+    // @internal
+    equals(other: HorizontalCRS): boolean;
+    // (undocumented)
+    readonly extent?: HorizontalCRSExtent;
+    static fromJSON(data: HorizontalCRSProps): HorizontalCRS;
+    readonly id?: string;
+    readonly name?: string;
+    // (undocumented)
+    readonly projection?: Projection;
+    readonly source?: string;
+    toJSON(): HorizontalCRSProps;
+    // (undocumented)
+    readonly unit?: UnitType;
+}
+
+// @public
+export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
+    constructor(data?: HorizontalCRSExtentProps);
+    // @internal
+    equals(other: HorizontalCRSExtent): boolean;
+    static fromJSON(data: HorizontalCRSExtentProps): HorizontalCRSExtent;
+    // (undocumented)
+    readonly northEast: Carto2DDegrees;
+    // (undocumented)
+    readonly southWest: Carto2DDegrees;
+    toJSON(): HorizontalCRSExtentProps;
+}
+
+// @public
+export interface HorizontalCRSExtentProps {
+    // (undocumented)
+    northEast: Carto2DDegreesProps;
+    // (undocumented)
+    southWest: Carto2DDegreesProps;
+}
+
+// @public
+export interface HorizontalCRSProps {
+    datum?: GeodeticDatumProps;
+    datumId?: string;
+    deprecated?: boolean;
+    description?: string;
+    ellipsoid?: GeodeticEllipsoidProps;
+    ellipsoidId?: string;
+    epsg?: number;
+    // (undocumented)
+    extent?: HorizontalCRSExtentProps;
+    id?: string;
+    name?: string;
+    // (undocumented)
+    projection?: ProjectionProps;
+    source?: string;
+    // (undocumented)
+    unit?: UnitType;
 }
 
 // @public
@@ -5365,6 +5694,29 @@ export enum PolylineTypeFlags {
     Outline = 2
 }
 
+// @public
+export class PositionalVectorTransform implements PositionalVectorTransformProps {
+    constructor(data?: PositionalVectorTransformProps);
+    // (undocumented)
+    readonly delta: Vector3d;
+    // @internal
+    equals(other: PositionalVectorTransform): boolean;
+    static fromJSON(data: PositionalVectorTransformProps): PositionalVectorTransform;
+    // (undocumented)
+    readonly rotation: XyzRotation;
+    readonly scalePPM: number;
+    toJSON(): PositionalVectorTransformProps;
+}
+
+// @public
+export interface PositionalVectorTransformProps {
+    // (undocumented)
+    delta: XYAndZ;
+    // (undocumented)
+    rotation: XyzRotationProps;
+    scalePPM: number;
+}
+
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
@@ -5403,6 +5755,76 @@ export enum PrimitiveTypeCode {
 export enum ProfileOptions {
     None = 0,
     Upgrade = 1
+}
+
+// @public
+export class Projection implements ProjectionProps {
+    constructor(_data?: ProjectionProps);
+    // (undocumented)
+    readonly affine?: AffineTransform;
+    readonly azimuth?: number;
+    readonly centralMeridian?: number;
+    readonly centralPointLatitude?: number;
+    readonly centralPointLongitude?: number;
+    // (undocumented)
+    readonly danishSystem34Region?: DanishSystem34Region;
+    readonly elevationAboveGeoid?: number;
+    // @internal
+    equals(other: Projection): boolean;
+    readonly falseEasting?: number;
+    readonly falseNorthing?: number;
+    static fromJSON(data: ProjectionProps): Projection;
+    readonly geoidSeparation?: number;
+    // (undocumented)
+    readonly hemisphere?: HemisphereEnum;
+    readonly latitudeOfOrigin?: number;
+    readonly longitudeOfOrigin?: number;
+    // (undocumented)
+    readonly method: ProjectionMethod;
+    readonly point1Latitude?: number;
+    readonly point1Longitude?: number;
+    readonly point2Latitude?: number;
+    readonly point2Longitude?: number;
+    readonly scaleFactor?: number;
+    readonly standardParallel?: number;
+    readonly standardParallel1?: number;
+    readonly standardParallel2?: number;
+    toJSON(): ProjectionProps;
+    readonly zoneNumber?: number;
+}
+
+// @public
+export type ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransverseMercator" | "TransverseMercatorWisconsin" | "TransverseMercatorMinnesota" | "TransverseMercatorAffine" | "MercatorStandardParallel" | "Mercator" | "UniversalTransverseMercator" | "LambertConformalConicTwoParallels" | "LambertConformalConicBelgium" | "LambertConformalConicAffine" | "LambertConformalConicWisconsin" | "LambertConformalConicMinnesota" | "LambertConformalConicMichigan" | "LambertConformalConicOneParallel" | "AlbersEqualArea" | "NewZealandNationalGrid" | "ObliqueMercator1" | "ObliqueMercator2" | "TransverseMercatorOSTN97" | "TransverseMercatorOSTN02" | "TransverseMercatorOSTN15" | "Krovak" | "KrovakModified" | "ObliqueCylindricalSwiss" | "TransverseMercatorDenmarkSystem34" | "TransverseMercatorDenmarkSystem3499" | "TransverseMercatorDenmarkSystem3401" | "Cassini" | "Sinusoidal" | "VanDerGrinten" | "Bonne" | "Mollweide" | "EckertIV" | "EckertVI" | "GoodeHomolosine" | "Robinson" | "PlateCarree" | "MillerCylindrical" | "WinkelTripel" | "AzimuthalEqualArea" | "ObliqueStereographic" | "RectifiedSkewOrthomorphicCentered" | "RectifiedSkewOrthomorphicOrigin" | "ObliqueCylindricalHungary" | "Orthographic" | "AmericanPolyconic" | "LambertEquidistantAzimuthal" | "ObliqueMercatorMinnesota";
+
+// @public
+export interface ProjectionProps {
+    // (undocumented)
+    affine?: AffineTransformProps;
+    azimuth?: number;
+    centralMeridian?: number;
+    centralPointLatitude?: number;
+    centralPointLongitude?: number;
+    // (undocumented)
+    danishSystem34Region?: DanishSystem34Region;
+    elevationAboveGeoid?: number;
+    falseEasting?: number;
+    falseNorthing?: number;
+    geoidSeparation?: number;
+    // (undocumented)
+    hemisphere?: HemisphereEnum;
+    latitudeOfOrigin?: number;
+    longitudeOfOrigin?: number;
+    // (undocumented)
+    method: ProjectionMethod;
+    point1Latitude?: number;
+    point1Longitude?: number;
+    point2Latitude?: number;
+    point2Longitude?: number;
+    scaleFactor?: number;
+    standardParallel?: number;
+    standardParallel1?: number;
+    standardParallel2?: number;
+    zoneNumber?: number;
 }
 
 // @beta
@@ -7926,6 +8348,9 @@ export enum TypeOfChange {
     Property = 1
 }
 
+// @public
+export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
+
 // @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
 
@@ -7941,6 +8366,21 @@ export interface UrlLinkProps extends ElementProps {
     description?: string;
     // (undocumented)
     url?: string;
+}
+
+// @public
+export class VerticalCRS implements VerticalCRSProps {
+    constructor(data?: VerticalCRSProps);
+    // @internal
+    equals(other: VerticalCRS): boolean;
+    static fromJSON(data: VerticalCRSProps): VerticalCRS;
+    readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
+    toJSON(): VerticalCRSProps;
+}
+
+// @public
+export interface VerticalCRSProps {
+    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
 }
 
 // @public (undocumented)
@@ -8423,6 +8863,25 @@ export abstract class WipRpcInterface extends RpcInterface {
     isChangesetProcessed(_iModelToken: IModelRpcProps, _changesetId: string): Promise<boolean>;
     // (undocumented)
     placeholder(_iModelToken: IModelRpcProps): Promise<string>;
+}
+
+// @public
+export class XyzRotation implements XyzRotationProps {
+    constructor(data?: XyzRotationProps);
+    // @internal
+    equals(other: XyzRotation): boolean;
+    static fromJSON(data: XyzRotationProps): XyzRotation;
+    toJSON(): XyzRotationProps;
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+}
+
+// @public
+export interface XyzRotationProps {
+    x: number;
+    y: number;
+    z: number;
 }
 
 
