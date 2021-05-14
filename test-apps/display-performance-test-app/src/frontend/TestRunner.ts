@@ -290,6 +290,8 @@ export class TestRunner {
     setPerformanceMetrics(test.viewport, new PerformanceMetrics(true, false, timings.callback));
     await this.renderAsync(test.viewport, this.curConfig.numRendersToTime, timings);
 
+    const row = this.getRowData(timings, test);
+    await this.saveCsv(row);
   }
 
   private async renderAsync(vp: ScreenViewport, numFrames: number, timings: Timings): Promise<void> {
@@ -633,7 +635,8 @@ export class TestRunner {
   private async saveCsv(row: Map<string, number | string>): Promise<void> {
     const outputPath = this.curConfig.outputPath;
     const outputName = this.curConfig.outputName;
-    return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...row]), this.curConfig.csvFormat);
+    const msg = JSON.stringify([...row]);
+    return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, msg, this.curConfig.csvFormat);
   }
 
   private async logToFile(message: string, opts?: { noAppend?: boolean, noNewLine?: boolean }): Promise<void> {
