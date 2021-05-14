@@ -215,14 +215,6 @@ steps:
   # Code Coverage Tests
   #-------
   ## TODO: Fix combining code coverage into a single xml file to publish
-  - task: CmdLine@2
-    displayName: "Check Dir before combining"
-    inputs:
-      script: dir
-  - task: CmdLine@2
-    displayName: "Check working dir"
-    inputs:
-      script: echo ${{ parameters.workingDir }}
   - task: PythonScript@0
     displayName: "Combine code coverage"
     inputs:
