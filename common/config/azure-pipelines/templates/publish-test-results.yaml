@@ -272,8 +272,6 @@ steps:
 
         outfile = open(os.path.join(outputDir, outputXML), 'w')
 
-        count = 0
-
         for file in listOfFiles:
           filePathParts = file.split(os.sep)
           coveragePath = os.path.join(*filePathParts[filePathParts.index((start))+1:filePathParts.index(end)])
@@ -292,27 +290,10 @@ steps:
           shutil.copy(file, destFilePath)
           replacePackageName(coveragePath, destFile)
 
-          if count != 0:
-            coverage = getCoverageTag(destFile)
-            outfile.write(prettifyXML(coverage))
-          else:
-            outfile.write(open(destFile).read())
-
-          count += 1
-
         outfile.close()
 
       arguments: --output common/config/azure-pipelines/templates
     # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
-  - task: CmdLine@2
-    displayName: "Check Dir after combining"
-    inputs:
-      script: dir
-  - task: CmdLine@2
-    displayName: "Check Dir after combining"
-    inputs:
-      script: dir
-      workingDirectory: common/config/azure-pipelines/templates/coverageXMLs
   - task: PublishCodeCoverageResults@1
     displayName: "Publish code coverage"
     inputs:
