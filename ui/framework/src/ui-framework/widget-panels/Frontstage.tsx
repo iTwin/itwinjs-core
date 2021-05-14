@@ -17,7 +17,7 @@ import { StagePanelLocation, UiItemsManager, WidgetState } from "@bentley/ui-abs
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
   addPanelWidget, addTab, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, findWidget, floatingWidgetBringToFront,
-  FloatingWidgets, getUniqueId, isFloatingLocation, isHorizontalPanelSide, isPopoutWidgetLocation, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
+  FloatingWidgets, getUniqueId, isFloatingLocation, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";

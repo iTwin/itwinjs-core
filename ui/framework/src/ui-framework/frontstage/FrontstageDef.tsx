@@ -34,7 +34,6 @@ import { TimeTracker } from "../configurableui/TimeTracker";
 import { PointProps, SizeProps } from "@bentley/ui-core";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { setImmediate } from "timers";
 import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
 
