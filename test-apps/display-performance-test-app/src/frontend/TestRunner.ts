@@ -951,81 +951,93 @@ function getRenderMode(vp: ScreenViewport): string {
   }
 }
 
-function getRenderOpts(opts: Readonly<RenderSystem.Options>): string {
+function getRenderOpts(curRenderOpts: RenderSystem.Options): string {
   let optString = "";
-  if (opts.disabledExtensions) {
-    for (const ext of opts.disabledExtensions) {
-      switch (ext) {
-        case "WEBGL_draw_buffers":
-          optString += "-drawBuf";
-          break;
-        case "OES_element_index_uint":
-          optString += "-unsignedInt";
-          break;
-        case "OES_texture_float":
-          optString += "-texFloat";
-          break;
-        case "OES_texture_half_float":
-          optString += "-texHalfFloat";
-          break;
-        case "WEBGL_depth_texture":
-          optString += "-depthTex";
-          break;
-        case "EXT_color_buffer_float":
-          optString += "-floats";
-          break;
-        case "EXT_shader_texture_lod":
-          optString += "-texLod";
-          break;
-        case "ANGLE_instanced_arrays":
-          optString += "-instArrays";
-          break;
-        case "EXT_frag_depth":
-          optString += "-fragDepth";
-          break;
-        default:
-          optString += `-${ext}`;
-          break;
-      }
+  for (const [key, value] of Object.entries(curRenderOpts)) {
+    switch (key) {
+      case "disabledExtensions":
+        if (value) {
+          for (const ext of value) {
+            switch (ext) {
+              case "WEBGL_draw_buffers":
+                optString += "-drawBuf";
+                break;
+              case "OES_element_index_uint":
+                optString += "-unsignedInt";
+                break;
+              case "OES_texture_float":
+                optString += "-texFloat";
+                break;
+              case "OES_texture_half_float":
+                optString += "-texHalfFloat";
+                break;
+              case "WEBGL_depth_texture":
+                optString += "-depthTex";
+                break;
+              case "EXT_color_buffer_float":
+                optString += "-floats";
+                break;
+              case "EXT_shader_texture_lod":
+                optString += "-texLod";
+                break;
+              case "ANGLE_instanced_arrays":
+                optString += "-instArrays";
+                break;
+              case "EXT_frag_depth":
+                optString += "-fragDepth";
+                break;
+              default:
+                optString += `-${ext}`;
+                break;
+            }
+          }
+        }
+        break;
+      case "preserveShaderSourceCode":
+        if (value) optString += "+shadeSrc";
+        break;
+      case "displaySolarShadows":
+        if (!value) optString += "-solShd";
+        break;
+      case "logarithmicZBuffer":
+        if (value) optString += "+logZBuf";
+        break;
+      case "useWebGL2":
+        if (value) optString += "+webGL2";
+        break;
+      case "antialiasSamples":
+        if (value > 1) optString += `+aa${value as number}`;
+        break;
+      default:
+        if (value) optString += `+${key}`;
     }
   }
-
-  if (opts.preserveShaderSourceCode)
-    optString += "+shadeSrc";
-
-  if (false === opts.displaySolarShadows)
-    optString += "-solShd";
-
-  if (opts.logarithmicDepthBuffer)
-    optString += "+logZBuf";
-
-  if (opts.useWebGL2)
-    optString += "+webGL2";
-
-  if (opts.antialiasSamples)
-    optString += `+a${opts.antialiasSamples}`;
-
-  // ###TODO does this ever happen?
-  // if (value) optString += `+${key}`;
-
   return optString;
 }
 
-function getTileProps(props: Readonly<TileAdmin.Props>): string {
+function getTileProps(curTileProps: TileAdmin.Props): string {
   let tilePropsStr = "";
-
-  if (props.enableInstancing)
-    tilePropsStr += "+inst";
-
-  if (undefined !== props.retryInterval)
-    tilePropsStr += `+retry${props.retryInterval}`;
-
-  if (props.disableMagnification)
-    tilePropsStr += "-mag";
-
-  // ###TODO does this ever happen?
-  // if (value) tilePropsStr += `+${key}`;
-
+  for (const [key, value] of Object.entries(curTileProps)) {
+    switch (key) {
+      case "elideEmptyChildContentRequests":
+        if (value) tilePropsStr += "+elide";
+        break;
+      case "enableInstancing":
+        if (value) tilePropsStr += "+inst";
+        break;
+      case "maxActiveRequests":
+        if (value !== 10) tilePropsStr += `+max${value}`;
+        break;
+      case "retryInterval":
+        if (value) tilePropsStr += `+retry${value}`;
+        break;
+      case "disableMagnification":
+        if (value) tilePropsStr += "-mag";
+        break;
+      default:
+        if (value) tilePropsStr += `+${key}`;
+    }
+  }
   return tilePropsStr;
 }
 
