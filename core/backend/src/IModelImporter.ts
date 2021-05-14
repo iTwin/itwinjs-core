@@ -25,6 +25,8 @@ const loggerCategory: string = BackendLoggerCategory.IModelImporter;
 export interface IModelImportOptions {
   /** If `true` (the default), compute the projectExtents of the target iModel after elements are imported.
    * The computed projectExtents will either include or exclude *outliers* depending on the `excludeOutliers` flag that defaults to `false`.
+   * @see [[IModelImporter.autoExtendProjectExtents]]
+   * @see [IModelImporter Options]($docs/learning/backend/IModelTransformation.md#IModelImporter)
    */
   autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
 }
@@ -40,6 +42,8 @@ export class IModelImporter {
   public readonly targetDb: IModelDb;
   /** If `true` (the default), compute the projectExtents of the target iModel after elements are imported.
    * The computed projectExtents will either include or exclude *outliers* depending on the `excludeOutliers` flag that defaults to `false`.
+   * @see [[IModelImportOptions.autoExtendProjectExtents]]
+   * @see [IModelImporter Options]($docs/learning/backend/IModelTransformation.md#IModelImporter)
    */
   public autoExtendProjectExtents: boolean | { excludeOutliers: boolean };
   /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
