@@ -8,7 +8,7 @@
  *  class. The None method indicates there is no projection and thus the CRS is longitude/latitude based
  *  with units as degrees.
  *  All other projection indicated a projected CRS.
- *  @alpha
+ *  @public
  */
 export type ProjectionMethod =
   "None" |
@@ -66,7 +66,7 @@ export type ProjectionMethod =
  *  X1 = a1*X + a2*Y + TranslationX
  *  Y1 = b1*X + b2*Y + translationY
  *  An affine representing no transformation will have: a1 = 1.0, a2 = 0.0, b1 = 0.0, b2 = 1.0.
- *  @alpha
+ *  @public
  */
 export interface AffineTransformProps {
   /** The X post translation */
@@ -87,7 +87,7 @@ export interface AffineTransformProps {
  *  X1 = a1*X + a2*Y + TranslationX
  *  Y1 = b1*X + b2*Y + translationY
  *  An affine representing no transformation will have: a1 = 1.0, a2 = 0.0, b1 = 0.0, b2 = 1.0.
- *  @alpha
+ *  @public
  */
 export class AffineTransform implements AffineTransformProps {
   /** The X post translation */
@@ -114,17 +114,21 @@ export class AffineTransform implements AffineTransformProps {
     }
   }
 
-  /** @internal */
+  /** Creates an Affine Transform from JSON representation.
+   * @public */
   public static fromJSON(data: AffineTransformProps): AffineTransform {
     return new AffineTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Affine Transform definition
+   * @public */
   public toJSON(): AffineTransformProps {
     return { translationX: this.translationX, a1: this.a1, a2: this.a2, translationY: this.translationY, b1: this.b1, b2: this.b2 };
   }
 
-  /** @internal */
+  /** Compares two Affine Transforms. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: AffineTransform): boolean {
     return (this.translationX === other.translationX &&
       this.translationY === other.translationY &&
@@ -137,18 +141,18 @@ export class AffineTransform implements AffineTransformProps {
 
 /** Type used in the definition of UTM Zoning projection. This projection only requires a zone number and
  *  the hemisphere North or South.
- *  @alpha
+ *  @public
  */
 export type HemisphereEnum = "South" | "North";
 
 /** The type to define the three zones of the Danish System 34 projections.
- *  @alpha
+ *  @public
  */
 export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
 
 /** This class encapsulates the projection of the CRS. The projection relies on a projection method
  *  and a set of projection parameters specific to projection method selected.
- *  @alpha
+ *  @public
  */
 export interface ProjectionProps {
   method: ProjectionMethod;
@@ -214,7 +218,7 @@ export interface ProjectionProps {
  *  Refer to appropriate external documentation for details.
  *  @note Various property sets are required for specific projection methods. The current class implementation does not enforce
  *        these rules yet and it is possible to define or not define any property regardless the method used.
- *  @alpha
+ *  @public
  */
 export class Projection implements ProjectionProps {
   public readonly method!: ProjectionMethod;
@@ -301,12 +305,14 @@ export class Projection implements ProjectionProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Projection from JSON representation.
+   * @public */
   public static fromJSON(data: ProjectionProps): Projection {
     return new Projection(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Projection definition
+   * @public */
   public toJSON(): ProjectionProps {
     const data: ProjectionProps = { method: this.method };
     data.falseEasting = this.falseEasting;
@@ -334,7 +340,9 @@ export class Projection implements ProjectionProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two projections. It is a strict compare operation and not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: Projection): boolean {
     if (this.method !== other.method ||
       this.falseEasting !== other.falseEasting ||
@@ -372,7 +380,7 @@ export class Projection implements ProjectionProps {
 }
 
 /** A 2D cartographic point in degrees
- *  @alpha
+ *  @public
  */
 export interface Carto2DDegreesProps {
   /** Latitude value in degrees */
@@ -382,7 +390,7 @@ export interface Carto2DDegreesProps {
 }
 
 /** A 2D cartographic point in degrees
- *  @alpha
+ *  @public
  */
 export class Carto2DDegrees implements Carto2DDegreesProps {
   /** Latitude value in degrees. Must be between -90 and +90 included */
@@ -404,13 +412,13 @@ export class Carto2DDegrees implements Carto2DDegreesProps {
   }
 
   /** Creates a Carto2DDegrees object from JSON representation.
-  * @internal */
+   * @public */
   public static fromJSON(data: Carto2DDegreesProps): Carto2DDegrees {
     return new Carto2DDegrees(data);
   }
 
   /** Creates a JSON from the Carto2DDegrees definition
-  * @internal */
+   * @public */
   public toJSON(): Carto2DDegreesProps {
     return { latitude: this.latitude, longitude: this.longitude };
   }

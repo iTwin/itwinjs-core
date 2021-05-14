@@ -9,12 +9,12 @@ import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
 import { Carto2DDegrees, Carto2DDegreesProps, Projection, ProjectionProps } from "./Projection";
 import { AdditionalTransform, AdditionalTransformProps } from "./AdditionalTransform";
 /** This type indicates possible linear and angular units supported.
- *  @alpha
+ *  @public
 */
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 /** The extent in latitude, longitude bounds where a horizontal CRS is applicable
- *  @alpha
+ *  @public
 */
 export interface HorizontalCRSExtentProps {
   /* The South West point in latitude and longitude in degrees for the user-defined extent of the CRS */
@@ -28,7 +28,7 @@ export interface HorizontalCRSExtentProps {
 }
 
 /** The extent in latitude, longitude bounds where a horizontal CRS is applicable
- *  @alpha
+ *  @public
  */
 export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
   /* The latitude minimum and maximum for the user-defined extent of the CRS */
@@ -49,13 +49,13 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
   }
 
   /** Creates an extent object from JSON representation.
-  * @internal */
+   * @public */
   public static fromJSON(data: HorizontalCRSExtentProps): HorizontalCRSExtent {
     return new HorizontalCRSExtent(data);
   }
 
   /** Creates a JSON from the Extent definition
-  * @internal */
+   * @public */
   public toJSON(): HorizontalCRSExtentProps {
     return { southWest: this.southWest.toJSON(), northEast: this.northEast.toJSON() };
   }
@@ -69,7 +69,7 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
 }
 
 /** Horizontal Geographic Coordinate Reference System definition
- *  @alpha
+ *  @public
  */
 export interface HorizontalCRSProps {
   /** The identifier of the horizontal CRS as stored in the dictionary or the service database */
@@ -131,7 +131,7 @@ export interface HorizontalCRSProps {
  *  ellipsoid properties will automatically be undefined. If datumId or datum is defined then attempts to set ellipsoidId or ellipsoid
  *  will fail silently, the values remaining undefined. The ellipsoidId will not be a repeat of the ellipsoidId property part of the
  *  geodetic datum definition.
- *  @alpha
+ *  @public
  */
 export class HorizontalCRS implements HorizontalCRSProps {
   /** The identifier of the horizontal CRS as stored in the dictionary or the service database */
@@ -159,13 +159,11 @@ export class HorizontalCRS implements HorizontalCRSProps {
 
   /** The identifier of the geodetic ellipsoid as stored in the dictionary or the service database. This property is exclusive
    *  of having datumId and datum properties undefined.
-   *  @alpha
   */
   public readonly ellipsoidId?: string;
   /** The complete definition of the geodetic ellipsoid referred to by ellipsoidId. It can also be used if the ellipsoid is not stored
    *  in either service or dictionary. This property is exclusive
    *  of having datumId and datum properties undefined.
-   *  @alpha
   */
   public readonly ellipsoid?: GeodeticEllipsoid;
 
@@ -193,12 +191,14 @@ export class HorizontalCRS implements HorizontalCRSProps {
     }
   }
 
-  /** @internal */
+  /** Creates an Horizontal CRS from JSON representation.
+   * @public */
   public static fromJSON(data: HorizontalCRSProps): HorizontalCRS {
     return new HorizontalCRS(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Horizontal CRS definition
+   * @public */
   public toJSON(): HorizontalCRSProps {
     const data: HorizontalCRSProps = {};
     data.id = this.id;
@@ -217,7 +217,10 @@ export class HorizontalCRS implements HorizontalCRSProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two horizontal CRS. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: HorizontalCRS): boolean {
     if (this.id !== other.id ||
       this.description !== other.description ||
@@ -258,7 +261,7 @@ export class HorizontalCRS implements HorizontalCRSProps {
 }
 
 /** Vertical Geographic Coordinate reference System definition
- * @alpha
+ * @public
  */
 export interface VerticalCRSProps {
   /** Vertical CRS Key name. */
@@ -270,7 +273,7 @@ export interface VerticalCRSProps {
  *  we currently only support four distinct key values "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29"
  *  we expect to support a broader set in the future including, eventually, user defined vertical CRS
  *  which will require additional parameters to be added.
- *  @alpha
+ *  @public
 */
 export class VerticalCRS implements VerticalCRSProps {
   /** Vertical CRS Key name. The only supported values are currently "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29". The default is ELLIPSOID */
@@ -282,24 +285,29 @@ export class VerticalCRS implements VerticalCRSProps {
       this.id = data.id;
   }
 
-  /** @internal */
+  /** Creates a Vertical CRS from JSON representation.
+   * @public */
   public static fromJSON(data: VerticalCRSProps): VerticalCRS {
     return new VerticalCRS(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Vertical CRS definition
+   * @public */
   public toJSON(): VerticalCRSProps {
     return { id: this.id };
   }
 
-  /** @internal */
+  /** Compares two vertical CRS. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: VerticalCRS): boolean {
     return (this.id === other.id);
   }
 }
 
 /** Geographic Coordinate Reference System definition that includes both the horizontal and vertical definitions
- *  @alpha
+ *  @public
  */
 export interface GeographicCRSProps {
   /** The horizontal portion of the geographic coordinate reference system. */
@@ -333,7 +341,7 @@ export interface GeographicCRSProps {
  *  @note Earth Centered, Earth Fixed coordinate system (ECEF) is a full 3D cartesian system that unambiguously
  *        expressed coordinates relative to the Earth Center. Since there is no horizontal portion independent from
  *        the vertical portion this system cannot be represented by a GeographicCRS and remains a separate concept.
- *  @alpha
+ *  @public
 */
 export class GeographicCRS implements GeographicCRSProps {
   /** The horizontal portion of the geographic coordinate reference system. */
@@ -351,12 +359,14 @@ export class GeographicCRS implements GeographicCRSProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Geographic CRS from JSON representation.
+   * @public */
   public static fromJSON(data: GeographicCRSProps): GeographicCRS {
     return new GeographicCRS(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geographic CRS definition
+   * @public */
   public toJSON(): GeographicCRSProps {
     const data: GeographicCRSProps = {};
     data.horizontalCRS = this.horizontalCRS ? this.horizontalCRS.toJSON() : undefined;
@@ -365,7 +375,10 @@ export class GeographicCRS implements GeographicCRSProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two Geographic CRS. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GeographicCRS): boolean {
     if ((this.horizontalCRS === undefined) !== (other.horizontalCRS === undefined))
       return false;
