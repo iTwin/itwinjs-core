@@ -17,7 +17,7 @@ export interface ViewSize {
 }
 
 /** Selectively overrides individual ViewFlags for a TestConfig.
- * @note renderMode can be a "wireframe", "hiddenline", "solidfill", or "smoothshade" (case-insensitive).
+ * @note renderMode can be a string "wireframe", "hiddenline", "solidfill", or "smoothshade" (case-insensitive).
  */
 export type ViewFlagProps = Partial<Omit<ViewFlags, "renderMode">> & { renderMode?: string | RenderMode };
 
