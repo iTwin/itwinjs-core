@@ -18,7 +18,7 @@ import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps,
   ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps,
-  EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps,
   IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
@@ -41,12 +41,12 @@ import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { IpcHost } from "./IpcHost";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 

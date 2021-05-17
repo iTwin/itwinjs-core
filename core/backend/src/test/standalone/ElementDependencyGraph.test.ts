@@ -7,7 +7,7 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { DbResult, Guid, Id64Array, Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,

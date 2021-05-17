@@ -1684,7 +1684,7 @@ describe("iModel", () => {
     const testValue = "this is a test";
     const nativeDb = iModel.nativeDb;
     assert.isUndefined(nativeDb.queryLocalValue(testLocal));
-    assert.equal(DbResult.BE_SQLITE_DONE, nativeDb.saveLocalValue(testLocal, testValue));
+    nativeDb.saveLocalValue(testLocal, testValue);
     assert.equal(nativeDb.queryLocalValue(testLocal), testValue);
 
     iModel.close();

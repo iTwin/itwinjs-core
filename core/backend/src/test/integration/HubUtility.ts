@@ -2,14 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+
 import * as os from "os";
 import * as path from "path";
+import { assert, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import {
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery,
+} from "@bentley/imodelhub-client";
+import { BriefcaseIdValue } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 
 /** Utility to work with test iModels in the iModelHub */
@@ -379,7 +382,7 @@ export class HubUtility {
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname, iModelName, overwrite);
 
-    let briefcase: HubBriefcase;
+    let briefcase: Briefcase;
     const hubBriefcases = await IModelHost.iModelClient.briefcases.get(requestContext, iModelId);
     if (hubBriefcases.length > 0)
       briefcase = hubBriefcases[0];
@@ -395,7 +398,7 @@ export class HubUtility {
     return iModelId;
   }
 
-  private static async pushChangeSets(requestContext: AuthorizedClientRequestContext, briefcase: HubBriefcase, uploadDir: string): Promise<void> {
+  private static async pushChangeSets(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, uploadDir: string): Promise<void> {
     const changeSetJsonPathname = path.join(uploadDir, "changeSets.json");
     if (!IModelJsFs.existsSync(changeSetJsonPathname))
       return;
@@ -430,7 +433,7 @@ export class HubUtility {
     }
   }
 
-  private static async pushNamedVersions(requestContext: AuthorizedClientRequestContext, briefcase: HubBriefcase, uploadDir: string, overwrite?: boolean): Promise<void> {
+  private static async pushNamedVersions(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, uploadDir: string, overwrite?: boolean): Promise<void> {
     const namedVersionsJsonPathname = path.join(uploadDir, "namedVersions.json");
     if (!IModelJsFs.existsSync(namedVersionsJsonPathname))
       return;
@@ -458,7 +461,7 @@ export class HubUtility {
         onReachThreshold();
 
       const promises = new Array<Promise<void>>();
-      briefcases.forEach((briefcase: HubBriefcase) => {
+      briefcases.forEach((briefcase) => {
         promises.push(IModelHost.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);

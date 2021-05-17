@@ -11,8 +11,8 @@
 import * as os from "os";
 import * as path from "path";
 import {
-  assert, BentleyError, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus, IModelStatus,
-  Logger, OpenMode, PerfLogger,
+  assert, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus, IModelStatus, Logger, OpenMode,
+  PerfLogger,
 } from "@bentley/bentleyjs-core";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, IModelHubError,
