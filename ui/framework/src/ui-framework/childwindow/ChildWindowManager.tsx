@@ -93,14 +93,13 @@ export class ChildWindowManager {
         );
       });
 
-      childWindow.onbeforeunload = (e: Event) => {
+      childWindow.onbeforeunload = () => {
         const frontStageDef = FrontstageManager.activeFrontstageDef;
         if (frontStageDef) {
           void frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow).then(() => {
             this.closeChildWindow(childWindowId, false);
           });
         }
-        e.preventDefault();
       };
     }
   }
@@ -170,7 +169,10 @@ export class ChildWindowManager {
     }, false);
 
     window.addEventListener("beforeunload", () => {
-      this.closeChildWindow(childWindowId);
+      const frontStageDef = FrontstageManager.activeFrontstageDef;
+      if (frontStageDef) {
+        this.closeChildWindow(childWindowId, true);
+      }
     }, false);
 
     return true;
