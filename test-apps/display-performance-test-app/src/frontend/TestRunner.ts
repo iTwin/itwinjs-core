@@ -349,7 +349,7 @@ export class TestRunner {
     if (!view)
       return undefined;
 
-    const viewport = this.openViewport(view.view); // ###TODO make sure this gets disposed.
+    const viewport = this.openViewport(view.view);
 
     // Apply emphasis and hilite settings.
     const config = this.curConfig;
