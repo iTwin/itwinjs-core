@@ -15,7 +15,7 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 export interface FrameStats {
   /** A unique number identifying the frame to which these statistics belong. */
   frameId: number;
-  /** The CPU time in milliseconds spent rendering the frame. */
+  /** The CPU time in milliseconds spent rendering the frame. This does not include the time described by `sceneTime`. */
   totalFrameTime: number;
   /** The CPU time in milliseconds spent setting up the scene. The includes the following:
    * - performing animations
