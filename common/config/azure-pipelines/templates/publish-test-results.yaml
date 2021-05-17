@@ -223,27 +223,6 @@ steps:
       scriptSource: inline
       script: |
         import os, argparse, shutil, glob
-        import xml.etree.ElementTree as ET
-        from xml.dom import minidom
-
-        def prettifyXML(elem):
-          rough_string = ET.tostring(elem, 'utf-8')
-          reparsed = minidom.parseString(rough_string)
-          return reparsed.toprettyxml(indent="  ")
-
-        def replacePackageName(packageSource, filePath):
-          covFile = open(filePath).read()
-          pattern = 'package name="'
-          component = 'package name="' + packageSource + os.sep
-          covFile = covFile.replace(pattern, component)
-          editedCovFile = open(filePath, "w")
-          editedCovFile.write(covFile)
-          editedCovFile.close()
-
-        def getCoverageTag(filePath):
-          tree = ET.parse(filePath)
-          root = tree.getroot()
-          return root
 
         parser = argparse.ArgumentParser()
         parser.add_argument(
@@ -251,52 +230,39 @@ steps:
         args = parser.parse_args()
         workDir = os.getcwd()
 
-        listOfFiles = []
-        print(workDir)
+        listOfPaths = []
 
-        for path in glob.iglob((workDir + "/*/*/lib/**/cobertura-coverage.xml"), recursive=True):
-          listOfFiles.append(path)
+        for path in glob.iglob((workDir + "/*/*/.nyc_output"), recursive=True):
+          listOfPaths.append(path)
 
-        print("List of Files : ", listOfFiles)
+        for path in glob.iglob((workDir + "/*/*/lib/**/.nyc_output"), recursive=True):
+          listOfPaths.append(path)
+
+        for path in glob.iglob((workDir + "/*/*/*/lib/**/.nyc_output"), recursive=True):
+          listOfPaths.append(path)
 
         outputDir = os.path.join(args.output, "coverageXMLs")
-        if not os.path.exists(outputDir):
-          os.makedirs(outputDir)
+        processInfoDir = os.path.join(args.output, "coverageXMLs/processinfo")
+        if not os.path.exists(processInfoDir):
+          os.makedirs(processInfoDir)
 
-        print(os.path.abspath(outputDir))
-
-        start = "s"
-        end = "lib"
-
-        outputXML = "coverage.xml"
-
-        outfile = open(os.path.join(outputDir, outputXML), 'w')
-
-        for file in listOfFiles:
-          filePathParts = file.split(os.sep)
-          coveragePath = os.path.join(*filePathParts[filePathParts.index((start))+1:filePathParts.index(end)])
-          destFilePath = os.path.join(outputDir, coveragePath)
-
-          destFile = os.path.join(destFilePath, "cobertura-coverage.xml")
-          if os.path.exists(destFile):
-            coveragePath = os.path.join(*filePathParts[filePathParts.index(("coverage"))+1:filePathParts.index("cobertura-coverage.xml")])
-            destFilePath = os.path.join(destFilePath, coveragePath)
-
-          if not os.path.exists(destFilePath):
-            os.makedirs(destFilePath)
-
-          destFile = os.path.join(destFilePath, "cobertura-coverage.xml")
-
-          shutil.copy(file, destFilePath)
-          replacePackageName(coveragePath, destFile)
-
-        outfile.close()
+        for path in listOfPaths:
+          for file in glob.iglob((path + "/**"), recursive=True):
+            if os.path.isfile(file):
+              if "processinfo" in file:
+                shutil.copy(file, processInfoDir)
+              else:
+                shutil.copy(file, outputDir)
 
       arguments: --output common/config/azure-pipelines/templates
     # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
+  - task: Npm@1
+    inputs:
+      command: custom
+      customCommand: npx nyc report --temp-dir="common/config/azure-pipelines/templates/coverageXMLs/" --report-dir="common/config/azure-pipelines/templates/coverageResults" --all --reporter=lcov --reporter=cobertura
   - task: PublishCodeCoverageResults@1
-    displayName: "Publish code coverage"
+    displayName: "Publish code cobertura coverage report"
     inputs:
       codeCoverageTool: Cobertura
-      summaryFileLocation: "common/config/azure-pipelines/templates/coverageXMLs/coverage.xml"
+      summaryFileLocation: "common/config/azure-pipelines/templates/coverageResults/cobertura-coverage.xml"
     condition: succeededOrFailed()
