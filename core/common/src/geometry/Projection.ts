@@ -2,13 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Geometry
+ */
 // cspell:ignore Albers, Krovak, OSTN, Cassini, Grinten, Mollweide, Eckert, Homolosine, Carree, Winkel, Tripel, Polyconic
 
 /** This enum contains the list of all projection methods that can be represented as part of the HorizontalCRS
  *  class. The None method indicates there is no projection and thus the CRS is longitude/latitude based
  *  with units as degrees.
  *  All other projection indicated a projected CRS.
- *  @alpha
+ *  @public
  */
 export type ProjectionMethod =
   "None" |
@@ -66,7 +69,7 @@ export type ProjectionMethod =
  *  X1 = a1*X + a2*Y + TranslationX
  *  Y1 = b1*X + b2*Y + translationY
  *  An affine representing no transformation will have: a1 = 1.0, a2 = 0.0, b1 = 0.0, b2 = 1.0.
- *  @alpha
+ *  @public
  */
 export interface AffineTransformProps {
   /** The X post translation */
@@ -87,7 +90,7 @@ export interface AffineTransformProps {
  *  X1 = a1*X + a2*Y + TranslationX
  *  Y1 = b1*X + b2*Y + translationY
  *  An affine representing no transformation will have: a1 = 1.0, a2 = 0.0, b1 = 0.0, b2 = 1.0.
- *  @alpha
+ *  @public
  */
 export class AffineTransform implements AffineTransformProps {
   /** The X post translation */
@@ -114,17 +117,21 @@ export class AffineTransform implements AffineTransformProps {
     }
   }
 
-  /** @internal */
+  /** Creates an Affine Transform from JSON representation.
+   * @public */
   public static fromJSON(data: AffineTransformProps): AffineTransform {
     return new AffineTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Affine Transform definition
+   * @public */
   public toJSON(): AffineTransformProps {
     return { translationX: this.translationX, a1: this.a1, a2: this.a2, translationY: this.translationY, b1: this.b1, b2: this.b2 };
   }
 
-  /** @internal */
+  /** Compares two Affine Transforms. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: AffineTransform): boolean {
     return (this.translationX === other.translationX &&
       this.translationY === other.translationY &&
@@ -137,20 +144,21 @@ export class AffineTransform implements AffineTransformProps {
 
 /** Type used in the definition of UTM Zoning projection. This projection only requires a zone number and
  *  the hemisphere North or South.
- *  @alpha
+ *  @public
  */
 export type HemisphereEnum = "South" | "North";
 
 /** The type to define the three zones of the Danish System 34 projections.
- *  @alpha
+ *  @public
  */
 export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
 
 /** This class encapsulates the projection of the CRS. The projection relies on a projection method
  *  and a set of projection parameters specific to projection method selected.
- *  @alpha
+ *  @public
  */
 export interface ProjectionProps {
+  /** The projection method. */
   method: ProjectionMethod;
   /** The False Easting of the projection. */
   falseEasting?: number;
@@ -164,7 +172,7 @@ export interface ProjectionProps {
   longitudeOfOrigin?: number;
   /** The scale reduction factor applied at origin. The nature of the projection has a
    *  inherent scale factor applied that gradually varies outward from the projection origin.
-   *  The scale factor at origin enables to level the inherent scale factor over an use area.
+   *  The scale factor at origin enables to level the inherent scale factor over an use extent.
    *  For the michigan variation of the Lambert Conformal Conic projection it
    *  can be used instead or in addition to Standard Parallel to define
    *  a scale factor.
@@ -176,6 +184,7 @@ export interface ProjectionProps {
   elevationAboveGeoid?: number;
   /** The geoid separation. It represents the elevation of the geoid above the ellipsoid at the center of the projection. */
   geoidSeparation?: number;
+  /** The definition of the affine post-transformation for Transverse Mercator and Lambert Conformal Conic with post-affine projections */
   affine?: AffineTransformProps;
   /** Standard parallel for projection that only use one.
    *  For cylindrical projections (mercator, transverse mercator ...) it defines the parallel at
@@ -190,6 +199,7 @@ export interface ProjectionProps {
   standardParallel2?: number;
   /** The UTM zone number. A number from 0 to 60. */
   zoneNumber?: number;
+  /** The hemisphere for Universal Transverse Mercator projection. */
   hemisphere?: HemisphereEnum;
   /** Longitude of the central point. */
   centralPointLongitude?: number;
@@ -203,6 +213,7 @@ export interface ProjectionProps {
   point2Longitude?: number;
   /** Latitude of the second alignment point for some Oblique Mercator projections. */
   point2Latitude?: number;
+  /** The Danish zone for Danish projections. */
   danishSystem34Region?: DanishSystem34Region;
   /** Azimuth. */
   azimuth?: number;
@@ -214,9 +225,10 @@ export interface ProjectionProps {
  *  Refer to appropriate external documentation for details.
  *  @note Various property sets are required for specific projection methods. The current class implementation does not enforce
  *        these rules yet and it is possible to define or not define any property regardless the method used.
- *  @alpha
+ *  @public
  */
 export class Projection implements ProjectionProps {
+  /** The projection method. */
   public readonly method!: ProjectionMethod;
   /** The False Easting of the projection. */
   public readonly falseEasting?: number;
@@ -230,7 +242,7 @@ export class Projection implements ProjectionProps {
   public readonly longitudeOfOrigin?: number;
   /** The scale reduction factor applied at origin. The nature of the projection has a
    *  inherent scale factor applied that gradually varies outward from the projection origin.
-   *  The scale factor at origin enables to level the inherent scale factor over an use area.
+   *  The scale factor at origin enables to level the inherent scale factor over an use extent.
    *  For the michigan variation of the Lambert Conformal Conic projection it
    *  can be used instead or in addition to Standard Parallel to define
    *  a scale factor.
@@ -242,6 +254,7 @@ export class Projection implements ProjectionProps {
   public readonly elevationAboveGeoid?: number;
   /** The geoid separation. It represents the elevation of the geoid above the ellipsoid at the center of the projection. */
   public readonly geoidSeparation?: number;
+  /** The definition of the affine post-transformation for Transverse Mercator and Lambert Conformal Conic with post-affine projections */
   public readonly affine?: AffineTransform;
   /** Standard parallel for projection that only use one.
    *  For cylindrical projections (mercator, transverse mercator ...) it defines the parallel at
@@ -256,6 +269,7 @@ export class Projection implements ProjectionProps {
   public readonly standardParallel2?: number;
   /** The UTM zone number. A number from 0 to 60. */
   public readonly zoneNumber?: number;
+  /** The hemisphere for Universal Transverse Mercator projection. */
   public readonly hemisphere?: HemisphereEnum;
   /** Longitude of the central point. */
   public readonly centralPointLongitude?: number;
@@ -269,6 +283,7 @@ export class Projection implements ProjectionProps {
   public readonly point2Longitude?: number;
   /** Latitude of the second alignment point for some Oblique Mercator projections. */
   public readonly point2Latitude?: number;
+  /** The Danish zone for Danish projections. */
   public readonly danishSystem34Region?: DanishSystem34Region;
   /** Azimuth. */
   public readonly azimuth?: number;
@@ -301,12 +316,14 @@ export class Projection implements ProjectionProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Projection from JSON representation.
+   * @public */
   public static fromJSON(data: ProjectionProps): Projection {
     return new Projection(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Projection definition
+   * @public */
   public toJSON(): ProjectionProps {
     const data: ProjectionProps = { method: this.method };
     data.falseEasting = this.falseEasting;
@@ -334,7 +351,9 @@ export class Projection implements ProjectionProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two projections. It is a strict compare operation and not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: Projection): boolean {
     if (this.method !== other.method ||
       this.falseEasting !== other.falseEasting ||
@@ -371,45 +390,56 @@ export class Projection implements ProjectionProps {
   }
 }
 
-/** Min and max values
- *  @alpha
+/** A 2D cartographic point in degrees
+ *  @public
  */
-export interface MinMaxProps {
-  /** Minimum value */
-  min: number;
-  /** Maximum value */
-  max: number;
+export interface Carto2DDegreesProps {
+  /** Latitude value in degrees */
+  latitude: number;
+  /** Longitude value in degrees */
+  longitude: number;
 }
 
-/** Min and max values
- *  @alpha
+/** A 2D cartographic point in degrees
+ *  @public
  */
-export class MinMax implements MinMaxProps {
-  /** Minimum value */
-  public readonly min!: number;
-  /** Maximum value */
-  public readonly max!: number;
+export class Carto2DDegrees implements Carto2DDegreesProps {
+  /** Latitude value in degrees. Must be between -90 and +90 included */
+  private _latitude!: number;
+  /** Returns or sets the latitude in degrees. When setting the provided number must be between or equal from -90 to 90. */
+  public get latitude() { return this._latitude; }
+  public set latitude(newLatitude: number) {
+    if ((newLatitude <= 90.0) && (newLatitude >= -90.0))
+      this._latitude = newLatitude;
+  }
+  /** Longitude value in degrees */
+  public longitude!: number;
 
-  public constructor(data?: MinMaxProps) {
+  public constructor(data?: Carto2DDegreesProps) {
+    this.latitude = 0.0; /* make sure latitude is init even if invalid latitude provided */
     if (data) {
-      this.min = data.min;
-      this.max = data.max;
+      this.latitude = data.latitude;
+      this.longitude = data.longitude;
     }
   }
 
-  /** @internal */
-  public static fromJSON(data: MinMaxProps): MinMax {
-    return new MinMax(data);
+  /** Creates a Carto2DDegrees object from JSON representation.
+   * @public */
+  public static fromJSON(data: Carto2DDegreesProps): Carto2DDegrees {
+    return new Carto2DDegrees(data);
   }
 
-  /** @internal */
-  public toJSON(): MinMaxProps {
-    return { min: this.min, max: this.max };
+  /** Creates a JSON from the Carto2DDegrees definition
+   * @public */
+  public toJSON(): Carto2DDegreesProps {
+    return { latitude: this.latitude, longitude: this.longitude };
   }
 
-  /** @internal */
-  public equals(other: MinMax): boolean {
-    return (this.min === other.min && this.max === other.max);
+  /** Compares two Carto2DDegrees object. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
+  public equals(other: Carto2DDegrees): boolean {
+    return (this.latitude === other.latitude && this.longitude === other.longitude);
   }
 }
 
