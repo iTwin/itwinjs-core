@@ -10,6 +10,13 @@
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
 
+const syntaxKindFriendlyNames = {
+  [ts.SyntaxKind.ClassDeclaration]: "class",
+  [ts.SyntaxKind.EnumDeclaration]: "enum",
+  [ts.SyntaxKind.InterfaceDeclaration]: "interface",
+  [ts.SyntaxKind.ModuleDeclaration]: "module",
+}
+
 /**
  * This rule prevents the use of APIs with specific release tags.
  */
@@ -21,7 +28,7 @@ module.exports = {
       category: "TypeScript",
     },
     messages: {
-      forbidden: `"{{name}}" is {{tag}}.`,
+      forbidden: `{{kind}} "{{name}}" is {{tag}}.`,
     },
     schema: [
       {
@@ -58,6 +65,7 @@ module.exports = {
                 node,
                 messageId: "forbidden",
                 data: {
+                  kind: syntaxKindFriendlyNames.has(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object",
                   name: name || declaration.symbol.escapedName,
                   tag: tag.tagName.escapedText,
                 }
@@ -66,7 +74,7 @@ module.exports = {
     }
 
     function checkWithParent(declaration, node) {
-      if(!declaration)
+      if (!declaration)
         return;
       checkJsDoc(declaration, node);
       if (declaration.parent && [
@@ -90,7 +98,7 @@ module.exports = {
         checkWithParent(resolved.declaration, node);
 
         const resolvedSymbol = typeChecker.getSymbolAtLocation(tsCall.expression);
-        if(resolvedSymbol)
+        if (resolvedSymbol)
           checkWithParent(resolvedSymbol.valueDeclaration, node);
       },
 
@@ -140,7 +148,7 @@ module.exports = {
           return;
         if (resolved.resolvedReturnType && resolved.resolvedReturnType.symbol)
           checkJsDoc(resolved.resolvedReturnType.symbol.valueDeclaration, node); // class
-        if(resolved.declaration)
+        if (resolved.declaration)
           checkJsDoc(resolved.declaration, node); // constructor
       },
 
