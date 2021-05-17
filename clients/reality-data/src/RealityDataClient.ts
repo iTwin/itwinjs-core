@@ -8,7 +8,7 @@
  */
 import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
 import {
-  AuthorizedClientRequestContext, ECJsonTypeMap, getArrayBuffer, getJson, request, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance,
+  AuthorizedClientRequestContext, ECJsonTypeMap, getArrayBuffer, getJson, RequestQueryOptions, WsgClient, WsgInstance,
 } from "@bentley/itwin-client";
 import { URL } from "url";
 
@@ -199,7 +199,7 @@ export class RealityData extends WsgInstance {
    * @deprecated use [[getTileJson]] instead
    * @returns tile data json
    */
-   public async getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
+  public async getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
     requestContext.enter();
     return this.getTileJson(requestContext, name, nameRelativeToRootDocumentPath);
   }

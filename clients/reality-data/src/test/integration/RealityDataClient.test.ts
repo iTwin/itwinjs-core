@@ -114,7 +114,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
     chai.assert(rootData);
 
-    const jsonName = query(rootData.root.children, '$..url').find(u => u.endsWith(".json"));
+    const jsonName = query(rootData.root.children, "$..url").find((u) => u.endsWith(".json"));
 
     chai.assert(jsonName);
     const jsonData: any = await realityData.getTileJson(requestContext, jsonName);
@@ -129,13 +129,13 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
     chai.assert(rootData);
 
-    const modelName = query(rootData.root.children, '$..url').find(u => u.endsWith(".b3dm"));
+    const modelName = query(rootData.root.children, "$..url").find((u) => u.endsWith(".b3dm"));
     chai.assert(modelName);
 
     const modelData: any = await realityData.getTileContent(requestContext, modelName);
     chai.assert(modelData);
     const modelDataString = decoder.decode(new Uint8Array(modelData)).substring(0,4);
-    chai.assert(modelDataString == "b3dm");
+    chai.assert(modelDataString === "b3dm");
   });
 
   it("should be able to create a reality data (without specific identifier) and delete it", async () => {
