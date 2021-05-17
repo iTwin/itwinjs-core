@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@bentley/geometry-core";
 import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
 import {
@@ -363,10 +363,11 @@ export class Viewer extends Window {
     this.updateActiveSettings();
 
     if (true === props.logFrameStats) {
-      const printFrameStats = (stats: FrameStats) => {
+      const printFrameStatsEvent = new BeEvent<(frameStats: FrameStats) => void>();
+      printFrameStatsEvent.addListener((stats: FrameStats) => {
         console.log(`frame stats (vp=${  this.viewport.viewportId  }) = ${ JSON.stringify(stats)}`); // eslint-disable-line no-console
-      };
-      this.viewport.enableFrameStatsCallback(printFrameStats);
+      });
+      this.viewport.enableFrameStatsEvent(printFrameStatsEvent);
     }
   }
 

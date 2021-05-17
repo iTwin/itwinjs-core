@@ -10,6 +10,7 @@ import { createBlankConnection } from "../createBlankConnection";
 import { ScreenViewport } from "../../Viewport";
 import { SpatialViewState } from "../../SpatialViewState";
 import { FrameStats } from "../../render/FrameStats";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 describe("FrameStats", () => {
   let imodel: IModelConnection;
@@ -53,12 +54,13 @@ describe("FrameStats", () => {
       const numFramesToDraw = 9;
       let numFrameStats = 0;
 
-      const callback = (_frameStats: FrameStats) => {
+      const event = new BeEvent<(frameStats: FrameStats) => void>();
+      event.addListener((_frameStats: FrameStats) => {
         numFrameStats++;
-      };
+      });
 
       // make sure we receive frame stats for each rendered frame when enabled
-      vp.enableFrameStatsCallback(callback);
+      vp.enableFrameStatsEvent(event);
       for (let i = 0; i < numFramesToDraw; i++) {
         vp.invalidateScene();
         vp.renderFrame();
@@ -66,7 +68,7 @@ describe("FrameStats", () => {
       expect(numFrameStats).to.equal(numFramesToDraw);
 
       // make sure we do not receive frame stats for any rendered frames when disabled
-      vp.enableFrameStatsCallback(undefined);
+      vp.enableFrameStatsEvent(undefined);
       numFrameStats = 0;
       for (let i = 0; i < numFramesToDraw; i++) {
         vp.invalidateScene();

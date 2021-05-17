@@ -39,7 +39,7 @@ import { ToolTipOptions } from "./NotificationManager";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { FrameStatsCallback } from "./render/FrameStats";
+import { OnFrameStatsReadyEvent } from "./render/FrameStats";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
@@ -1162,14 +1162,14 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** This method enables or disables collection of timing statistics related to rendering frames.
-   * @param callback If defined, this enables collection of timing statistics related to rendering frames. If undefined, this disables the collection of timing statistics. When defined, this parameter specifies a callback function which receives the statistics every time a frame is rendered.
+   * @param event If defined, this enables collection of timing statistics related to rendering frames. If undefined, this disables the collection of timing statistics. When defined, this parameter specifies an event is raised every time a frame is rendered. The event's listeners will receive the frame statistics.
    * @note The timing data collected using this method only collects the amount of time spent on the CPU. Due to performance considerations, time spent on the GPU is not collected. Therefore, these statistics are not a direct mapping to user experience.
-   * @note In order to avoid interfering with the rendering loop, take care to avoid performing any intensive tasks in your callback.
+   * @note In order to avoid interfering with the rendering loop, take care to avoid performing any intensive tasks in your event listeners.
    * @see [[FrameStats]]
    * @alpha
    */
-  public enableFrameStatsCallback(callback?: FrameStatsCallback): void {
-    this.target.enableFrameStatsCallback(callback);
+  public enableFrameStatsEvent(event?: OnFrameStatsReadyEvent): void {
+    this.target.enableFrameStatsEvent(event);
   }
 
   /** Enables or disables continuous rendering. Ideally, during each render frame a Viewport will do as little work as possible.

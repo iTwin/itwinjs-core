@@ -58,7 +58,7 @@ import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
 import { VisibleTileFeatures } from "./VisibleTileFeatures";
-import { FrameStatsCallback, FrameStatsCollector } from "../FrameStats";
+import { FrameStatsCollector, OnFrameStatsReadyEvent } from "../FrameStats";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -595,8 +595,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private _frameStatsCollector = new FrameStatsCollector();
 
-  public enableFrameStatsCallback(callback?: FrameStatsCallback) {
-    this._frameStatsCollector.frameStatsCallback = callback;
+  public enableFrameStatsEvent(event?: OnFrameStatsReadyEvent) {
+    this._frameStatsCollector.onFrameStatsReady = event;
   }
 
   public get frameStatsCollector(): FrameStatsCollector { return this._frameStatsCollector; }

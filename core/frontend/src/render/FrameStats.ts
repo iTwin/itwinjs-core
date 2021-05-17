@@ -6,6 +6,8 @@
  * @module Rendering
  */
 
+import { BeEvent } from "@bentley/bentleyjs-core";
+
 /** Describes timing statistics for a single rendered frame. Aside from `frameId`, `totalFrameTime`, and `sceneTime`, the other entries may represent operations that are not performed every frame and may contain an expected value of zero.
  * @note By default, the display system does not render frames continuously. The display system will render a new frame only when the view changes. Therefore, the data contained within this interface cannot directly be used to compute a representative framerate.
  * @alpha
@@ -42,16 +44,16 @@ export interface FrameStats {
   readonly backgroundTime: number;
 }
 
-/** A callback which will receive a frame statistics object.
- * @see [[Viewport.enableFrameStatsCallback]]
+/** An event which will be raised when a new frame statistics object is available. The listeners will receive that frame statistics object.
+ * @see [[Viewport.enableFrameStatsListener]]
  * @alpha
  */
-export type FrameStatsCallback = (stats: FrameStats) => void;
+export type OnFrameStatsReadyEvent = BeEvent<(frameStats: FrameStats) => void>;
 
 /** @internal */
 export class FrameStatsCollector {
+  private _onFrameStatsReady?: OnFrameStatsReadyEvent;
   private _frameStatsMap = new Map<string, number>();
-  private _frameStatsCallback?: FrameStatsCallback;
   private _sceneTime = 0;
   private _frameId = 0;
   private _shouldRecordFrame = false;
@@ -83,8 +85,8 @@ export class FrameStatsCollector {
     };
   }
 
-  public set frameStatsCallback(cb: FrameStatsCallback | undefined) { this._frameStatsCallback = cb; }
-  public get frameStatsCallback(): FrameStatsCallback | undefined { return this._frameStatsCallback; }
+  public set onFrameStatsReady(ev: OnFrameStatsReadyEvent | undefined) { this._onFrameStatsReady = ev; }
+  public get frameStatsListener(): OnFrameStatsReadyEvent | undefined { return this._onFrameStatsReady; }
 
   private _begin(entry: keyof FrameStats) {
     let prevSpan = this._frameStatsMap.get(entry);
@@ -102,7 +104,7 @@ export class FrameStatsCollector {
   }
 
   public beginFrame(sceneMilSecElapsed = 0) {
-    this._shouldRecordFrame = this._frameStatsCallback !== undefined;
+    this._shouldRecordFrame = this._onFrameStatsReady !== undefined;
     if (this._shouldRecordFrame) {
       this._begin("totalFrameTime");
       this._sceneTime = sceneMilSecElapsed;
@@ -112,8 +114,8 @@ export class FrameStatsCollector {
   public endFrame() {
     if (this._shouldRecordFrame) {
       this._end("totalFrameTime");
-      if (this._frameStatsCallback !== undefined)
-        this._frameStatsCallback(this._createStatsFromMap()); // copy this frame's statistics to the callback
+      if (this._onFrameStatsReady !== undefined)
+        this._onFrameStatsReady.raiseEvent(this._createStatsFromMap()); // send this frame's statistics to the callback
       this._frameId++; // increment frame counter for next pending frame
       this._clearStats();
     }
