@@ -260,5 +260,7 @@ steps:
   - task: PublishCodeCoverageResults@1
     displayName: "Publish code coverage"
     inputs:
-      summaryFileLocation: "common/config/azure-pipelines/templates/coverageResults/lcov-report"
+      codeCoverageTool: Cobertura
+      summaryFileLocation: "common/config/azure-pipelines/templates/coverageResults/cobertura-coverage.xml"
+      reportDirectory: "common/config/azure-pipelines/templates/coverageResults/lcov-report"
     condition: succeededOrFailed()
