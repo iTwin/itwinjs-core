@@ -53,7 +53,7 @@ describe("FrameStats", () => {
       const numFramesToDraw = 9;
       let numFrameStats = 0;
 
-      vp.onFrameStats.addListener((_frameStats: FrameStats) => {
+      vp.onFrameStats.addListener((_frameStats: Readonly<FrameStats>) => {
         numFrameStats++;
       });
 
