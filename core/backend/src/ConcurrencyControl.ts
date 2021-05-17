@@ -1532,7 +1532,14 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       return !foundSignature;
     }
 
+    private doesCacheFileExist(): boolean {
+      return this._locksFileName !== undefined && IModelJsFs.existsSync(this._locksFileName);
+    }
+
     public close(saveChanges: boolean) {
+      if (!this.doesCacheFileExist())
+        return;
+
       if (saveChanges)
         this._db.saveChanges();
       else
@@ -1595,11 +1602,13 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     }
 
     public deleteFile() {
+      if (!this.doesCacheFileExist())
+        return;
+
       if (this.isOpen)
         this.close(false);
 
-      if (this._locksFileName)
-        IModelJsFs.unlinkSync(this._locksFileName);
+      IModelJsFs.unlinkSync(this._locksFileName!);
     }
 
     public clear() {
@@ -1672,6 +1681,9 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     }
 
     public deleteLocksForTxn(txnId: string) {
+      if (!this.doesCacheFileExist())
+        return;
+
       this.mustBeOpenAndWriteable();
       this._db.withPreparedSqliteStatement("delete from heldLocks where txnId=?", (stmt) => {
         stmt.bindValue(1, txnId);
@@ -1704,7 +1716,6 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       this.saveChanges();
     }
   }
-
 }
 
 /**

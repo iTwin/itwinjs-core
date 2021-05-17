@@ -27,6 +27,8 @@ import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
+import * as Semver from "semver";
+import { Schema } from "./Schema";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
@@ -755,7 +757,32 @@ export class IModelTransformer extends IModelExportHandler {
     try {
       this.sourceDb.nativeDb.exportSchemas(schemasDir);
       const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
-      await this.targetDb.importSchemas(requestContext, schemaFiles.map((fileName) => path.join(schemasDir, fileName)));
+      // some schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
+      const importSchemasFullPaths = schemaFiles.map((schema) => path.join(schemasDir, schema));
+      const filteredSchemaPaths = importSchemasFullPaths.filter((schemaPath) => {
+        let schemaSource: string;
+        try {
+          schemaSource = IModelJsFs.readFileSync(schemaPath).toString("utf8");
+        } catch (err) {
+          Logger.logError(loggerCategory, `error reading xml schema file ${schemaPath}`);
+          return true;
+        }
+        const schemaVersionMatch = /<ECSchema .*?version="([0-9.]+)"/.exec(schemaSource);
+        const schemaNameMatch = /<ECSchema .*?schemaName="([^"]+)"/.exec(schemaSource);
+        if (schemaVersionMatch == null || schemaNameMatch == null) {
+          Logger.logError(loggerCategory, `failed to parse schema name or version, first 200 chars: '${schemaSource.slice(0, 200)}'`);
+          return true;
+        }
+        const [_fullVersionMatch, versionString] = schemaVersionMatch;
+        const [_fullNameMatch, schemaName] = schemaNameMatch;
+        const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
+        const versionToImport = Schema.toSemverString(versionString);
+        if (versionInTarget && Semver.lte(versionToImport, versionInTarget))
+          return false;
+        return true;
+      });
+      if (filteredSchemaPaths.length > 0)
+        await this.targetDb.importSchemas(requestContext, filteredSchemaPaths);
     } finally {
       requestContext.enter();
       IModelJsFs.removeSync(schemasDir);
