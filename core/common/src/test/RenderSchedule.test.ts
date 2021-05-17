@@ -152,6 +152,39 @@ describe("RenderSchedule", () => {
     ]);
   });
 
+  it("interpolates visibility", () => {
+    const props: RenderSchedule.TimelineProps = {
+      visibilityTimeline: [{
+        interpolation: 2, time: 1254330000, value: undefined,
+      }, {
+        interpolation: 2, time: 1369123200, value: 70,
+      }, {
+        interpolation: 2, time: 1369123260, value: 69,
+      }, {
+        interpolation: 1, time: 1370710740, value: 30,
+      }],
+    };
+
+    const timeline = new RenderSchedule.Timeline(props);
+    const vis = timeline.visibility!;
+    let i = 0;
+    for (const entry of vis)
+      expect(timeline.getVisibility(entry.time)).to.equal(vis.getValue(i++));
+
+    expect(timeline.getVisibility(timeline.duration.low)).to.equal(100);
+    expect(timeline.getVisibility(timeline.duration.high)).to.equal(30);
+    expect(timeline.getVisibility(timeline.duration.low * 0.5)).to.equal(100);
+    expect(timeline.getVisibility(timeline.duration.high * 2)).to.equal(30);
+
+    for (let j = 0; j < 3; j++) {
+      const a = props.visibilityTimeline![j];
+      const b = props.visibilityTimeline![j + 1];
+      const time = a.time + (b.time - a.time) / 2;
+      const value = (a.value ?? 100) + ((b.value ?? 100) - (a.value ?? 100)) / 2;
+      expect(timeline.getVisibility(time)).to.equal(value);
+    }
+  });
+
   describe("ScriptBuilder", () => {
     it("sorts and compresses element Ids", () => {
       function expectIds(input: string | string[], expected: string): void {
