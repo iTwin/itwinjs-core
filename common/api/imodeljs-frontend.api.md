@@ -3373,16 +3373,16 @@ export interface FrameRenderData {
 
 // @alpha
 export interface FrameStats {
-    readonly backgroundTime: number;
-    readonly classifiersTime: number;
-    readonly frameId: number;
-    readonly opaqueTime: number;
-    readonly overlaysTime: number;
-    readonly sceneTime: number;
-    readonly screenspaceEffectsTime: number;
-    readonly shadowsTime: number;
-    readonly totalFrameTime: number;
-    readonly translucentTime: number;
+    backgroundTime: number;
+    classifiersTime: number;
+    frameId: number;
+    opaqueTime: number;
+    overlaysTime: number;
+    sceneTime: number;
+    screenspaceEffectsTime: number;
+    shadowsTime: number;
+    totalFrameTime: number;
+    translucentTime: number;
 }
 
 // @internal (undocumented)
@@ -6820,7 +6820,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     }
 
 // @alpha
-export type OnFrameStatsReadyEvent = BeEvent<(frameStats: FrameStats) => void>;
+export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
 
 // @internal
 export class OnScreenTarget extends Target {
@@ -8275,8 +8275,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     abstract drawFrame(sceneMilSecElapsed?: number): void;
     // (undocumented)
-    enableFrameStatsEvent(_event?: OnFrameStatsReadyEvent): void;
-    // (undocumented)
     getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
     getTextureDrape(_id: Id64String): RenderTextureDrape | undefined;
@@ -8303,6 +8301,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
     setHiliteSet(_hilited: HiliteSet): void;
+    // (undocumented)
+    setOnFrameStats(_event: OnFrameStatsReadyEvent): void;
     setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
@@ -9574,8 +9574,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     drawTextureDrapes(): void;
     // (undocumented)
-    enableFrameStatsEvent(event?: OnFrameStatsReadyEvent): void;
-    // (undocumented)
     protected abstract _endPaint(): void;
     // (undocumented)
     endPerfMetricFrame(readPixels?: boolean): void;
@@ -9677,6 +9675,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
     setHiliteSet(hilite: HiliteSet): void;
+    // (undocumented)
+    setOnFrameStats(event: OnFrameStatsReadyEvent): void;
     // (undocumented)
     get shadowFrustum(): Frustum | undefined;
     // (undocumented)
@@ -12153,8 +12153,6 @@ export abstract class Viewport implements IDisposable {
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     get emphasisSettings(): Hilite.Settings;
     set emphasisSettings(settings: Hilite.Settings);
-    // @alpha
-    enableFrameStatsEvent(event?: OnFrameStatsReadyEvent): void;
     // @deprecated
     get featureOverrideProvider(): FeatureOverrideProvider | undefined;
     set featureOverrideProvider(provider: FeatureOverrideProvider | undefined);
@@ -12263,6 +12261,8 @@ export abstract class Viewport implements IDisposable {
     readonly onDisposed: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
+    // @alpha
+    onFrameStats: BeEvent<(frameStats: Readonly<FrameStats>) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
     readonly onResized: BeEvent<(vp: Viewport) => void>;
