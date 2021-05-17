@@ -22,9 +22,11 @@ export const TabBarButtons = React.memo(function TabBarButtons() { // eslint-dis
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   const isMainPanelWidget = useIsMainPanelWidget();
   const activeTab = useActiveTab();
+  // istanbul ignore next
+  const canPopout = activeTab?.canPopout ?? false;
   return (
     <div className="nz-widget-tabBarButtons">
-      {activeTab?.canPopout && <PopoutToggle />}
+      {canPopout && <PopoutToggle />}
       {floatingWidgetId && !isToolSettings && <SendBack />}
       {isToolSettings && <Dock />}
       {isMainPanelWidget && <PinToggle />}

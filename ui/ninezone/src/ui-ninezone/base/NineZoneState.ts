@@ -634,12 +634,6 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         widget.minimized = true;
       return;
     }
-    case "WIDGET_TAB_POPOUT": {
-
-      // const tabId = action.id;
-      // export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps) {
-      return;
-    }
     case "WIDGET_TAB_DRAG_START": {
       const tabId = action.id;
       let home: FloatingWidgetHomeState | undefined;
@@ -840,6 +834,7 @@ function removeFloatingWidget(state: Draft<NineZoneState>, id: FloatingWidgetSta
 }
 
 function removePopoutWidget(state: Draft<NineZoneState>, id: PopoutWidgetState["id"]) {
+  // istanbul ignore else
   if (state.popoutWidgets) {
     delete state.popoutWidgets.byId[id];
     const index = state.popoutWidgets.allIds.indexOf(id);
@@ -934,7 +929,6 @@ export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: 
     ...args,
   };
 }
-
 /** @internal */
 export function createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Partial<PopoutWidgetState>): PopoutWidgetState {
   return {
@@ -1126,7 +1120,8 @@ function setSizeAndPointProps(props: Draft<SizeAndPositionProps>, inValue: SizeA
   props.width = inValue.width;
 }
 
-function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPositionProps | undefined>>(obj: T, key: K, inValue: SizeAndPositionProps) {
+/** @internal */
+export function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPositionProps | undefined>>(obj: T, key: K, inValue: SizeAndPositionProps) {
   if (obj[key]) {
     setSizeAndPointProps(obj[key], inValue);
     return;
@@ -1188,11 +1183,6 @@ export function isPopoutWidgetLocation(location: WidgetLocation): location is Po
 }
 
 /** @internal */
-export function isPanelWidgetLocation(location: WidgetLocation): location is PanelLocation {
-  return "side" in location;
-}
-
-/** @internal */
 export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined {
   let widgetId;
   for (const [, widget] of Object.entries(state.widgets)) {
@@ -1223,6 +1213,7 @@ export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetL
       floatingWidgetId: id,
     };
   }
+  // istanbul ignore else
   if (state.popoutWidgets) {
     if (id in state.popoutWidgets.byId) {
       return {
@@ -1284,7 +1275,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
         };
       });
     } else if (isPopoutLocation(location)) {
-      return convertPopoutWidgetToFloating(state, location.popoutWidgetId);
+      return convertPopoutWidgetContainerToFloating(state, location.popoutWidgetId);
     }
   }
   return undefined;
@@ -1302,6 +1293,7 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, i
           id: floatingWidgetId,
         });
       } else {
+        // istanbul ignore else
         if (isPopoutWidgetLocation(widgetLocation)) {
           const popoutWidgetId = widgetLocation.popoutWidgetId;
           return NineZoneStateReducer(state, {
@@ -1321,6 +1313,7 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, i
           id: floatingWidgetId,
         });
       } else {
+        // istanbul ignore else
         if (isPopoutLocation(location)) {
           const popoutWidgetId = location.widgetId;
           return NineZoneStateReducer(state, {
@@ -1335,7 +1328,9 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, i
   return undefined;
 }
 
-function convertFloatingWidgetToPopout(state: NineZoneState, widgetContainerId: string): NineZoneState {
+/** @internal */
+export function convertFloatingWidgetContainerToPopout(state: NineZoneState, widgetContainerId: string): NineZoneState {
+  // istanbul ignore next - not an expected condition
   if (!state.widgets[widgetContainerId]?.tabs || state.widgets[widgetContainerId].tabs.length !== 1) {
     // currently only support popping out a floating widget container if it has a single tab
     return state;
@@ -1355,7 +1350,8 @@ function convertFloatingWidgetToPopout(state: NineZoneState, widgetContainerId: 
   });
 }
 
-function convertPopoutWidgetToFloating(state: NineZoneState, widgetContainerId: string): NineZoneState {
+/** @internal */
+export function convertPopoutWidgetContainerToFloating(state: NineZoneState, widgetContainerId: string): NineZoneState {
   return produce(state, (draft) => {
     const popoutWidget = state.popoutWidgets.byId[widgetContainerId];
     const bounds = popoutWidget.bounds;
@@ -1374,6 +1370,7 @@ function convertPopoutWidgetToFloating(state: NineZoneState, widgetContainerId: 
 /**
    * When running in web-browser - browser prohibits auto opening of popup windows so convert any PopoutWidgets to
    * FloatingWidgets in this situation.
+   * @internal
    */
 export function convertAllPopupWidgetContainersToFloating(state: NineZoneState): NineZoneState {
   return produce(state, (draft) => {
@@ -1396,6 +1393,7 @@ export function convertAllPopupWidgetContainersToFloating(state: NineZoneState):
 /** @internal */
 export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps) {
   const location = findTab(state, widgetTabId);
+  // istanbul ignore else
   if (location) {
     if (isPopoutLocation(location))
       return undefined; // already popout
@@ -1444,7 +1442,7 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
       const floatingWidget = state.widgets[location.floatingWidgetId];
       // popout widget can only have a single widgetTab so if that is the case just convert floating container to popout container
       if (floatingWidget.tabs.length === 1) {
-        return convertFloatingWidgetToPopout(state, location.floatingWidgetId);
+        return convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId);
       }
 
       // remove the tab from the floating container and create a new popout container
