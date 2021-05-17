@@ -164,7 +164,7 @@ export class Transformer extends IModelTransformer {
         statement.bindString("categoryName", categoryName);
         while (DbResult.BE_SQLITE_ROW === statement.step()) {
           const categoryId = statement.getValue(0).getId();
-          this.exporter.excludeElementCategory(categoryId); // exclude elements in this category
+          this.exporter.excludeElementsInCategory(categoryId); // exclude elements in this category
           this.exporter.excludeElement(categoryId); // exclude the category element itself
         }
       });
@@ -178,7 +178,7 @@ export class Transformer extends IModelTransformer {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const categoryId = statement.getValue(0).getId();
         if (!categoryIds.has(categoryId)) {
-          this.exporter.excludeElementCategory(categoryId); // exclude elements in this category
+          this.exporter.excludeElementsInCategory(categoryId); // exclude elements in this category
           this.exporter.excludeElement(categoryId); // exclude the category element itself
         }
       }
