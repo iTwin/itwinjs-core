@@ -119,9 +119,9 @@ export abstract class IModelDb extends IModel {
     this.onChangesetApplied.raiseEvent();
   }
 
-  public readFontJson(): string { return this.nativeDb.readFontMap(); }
-  public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
-  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
+  public readFontJson(): string { return JSON.stringify(this.nativeDb.readFontMap()); }
+  public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
+  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return this.nativeDb.embedFont(prop); }
 
   /** Check if this iModel has been opened read-only or not. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
@@ -136,7 +136,7 @@ export abstract class IModelDb extends IModel {
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
    */
-  public get pathName() { return this.nativeDb.getFilePath(); }
+  public get pathName(): string { return this.nativeDb.getFilePath(); }
 
   /** @internal */
   protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openMode: OpenMode) {
@@ -683,7 +683,7 @@ export abstract class IModelDb extends IModel {
 
   /** Update the IModelProps of this iModel in the database. */
   public updateIModelProps(): void {
-    this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
+    this.nativeDb.updateIModelProps(this.toJSON());
   }
 
   /** Commit pending changes to this iModel.
