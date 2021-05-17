@@ -257,13 +257,9 @@ steps:
       arguments: --output common/config/azure-pipelines/templates
     # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
   - script: npx nyc report --temp-dir="common/config/azure-pipelines/templates/coverageXMLs/" --report-dir="common/config/azure-pipelines/templates/coverageResults" --all --reporter=lcov --reporter=cobertura
-  # - task: Npm@1
-  #   inputs:
-  #     command: custom
-  #     customCommand: npx nyc report --temp-dir="common/config/azure-pipelines/templates/coverageXMLs/" --report-dir="common/config/azure-pipelines/templates/coverageResults" --all --reporter=lcov --reporter=cobertura
   - task: PublishCodeCoverageResults@1
-    displayName: "Publish code cobertura coverage report"
+    displayName: "Publish code coverage report"
     inputs:
-      codeCoverageTool: Cobertura
-      summaryFileLocation: "common/config/azure-pipelines/templates/coverageResults/cobertura-coverage.xml"
+      # codeCoverageTool: Cobertura
+      summaryFileLocation: "common/config/azure-pipelines/templates/coverageResults/lcov-report/index.html"
     condition: succeededOrFailed()
