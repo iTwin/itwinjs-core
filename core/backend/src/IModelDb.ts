@@ -1876,16 +1876,16 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   }
 
   /** The collection of views in an [[IModelDb]].
- * @public
- */
+   * @public
+   */
   export class Views {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
-   * @param className Query for view definitions of this class.
-   * @param wantPrivate If true, include private view definitions.
-   */
+     * @param className Query for view definitions of this class.
+     * @param wantPrivate If true, include private view definitions.
+     */
     public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = IModelDb.defaultLimit, offset = 0, wantPrivate: boolean = false): ViewDefinitionProps[] {
       const where = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
       const ids = this._iModel.queryEntityIds({ from: className, limit, offset, where });
@@ -1905,15 +1905,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public static readonly defaultQueryParams: ViewQueryParams = { from: "BisCore.ViewDefinition", where: "IsPrivate=FALSE" };
 
     /** Iterate all ViewDefinitions matching the supplied query.
-   * @param params Specifies the query by which views are selected.
-   * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
-   * @returns true if all views were iterated, false if iteration was terminated early due to callback returning false.
-   *
-   * **Example: Finding all views of a specific DrawingModel**
-   * ``` ts
-   * [[include:IModelDb.Views.iterateViews]]
-   * ```
-   */
+     * @param params Specifies the query by which views are selected.
+     * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
+     * @returns true if all views were iterated, false if iteration was terminated early due to callback returning false.
+     *
+     * **Example: Finding all views of a specific DrawingModel**
+     * ``` ts
+     * [[include:IModelDb.Views.iterateViews]]
+     * ```
+     */
     public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {
       const ids = this._iModel.queryEntityIds(params);
       let finished = true;
@@ -1988,9 +1988,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Get the thumbnail for a view.
-   * @param viewDefinitionId The Id of the view for thumbnail
-   * @returns the ThumbnailProps, or undefined if no thumbnail exists.
-   */
+     * @param viewDefinitionId The Id of the view for thumbnail
+     * @returns the ThumbnailProps, or undefined if no thumbnail exists.
+     */
     public getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
@@ -2003,10 +2003,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Save a thumbnail for a view.
-   * @param viewDefinitionId The Id of the view for thumbnail
-   * @param thumbnail The thumbnail data.
-   * @returns 0 if successful
-   */
+     * @param viewDefinitionId The Id of the view for thumbnail
+     * @param thumbnail The thumbnail data.
+     * @returns 0 if successful
+     */
     public saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
@@ -2015,8 +2015,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Set the default view property the iModel
-   * @param viewId The Id of the ViewDefinition to use as the default
-   */
+     * @param viewId The Id of the ViewDefinition to use as the default
+     */
     public setDefaultViewId(viewId: Id64String): void {
       const spec = { namespace: "dgn_View", name: "DefaultView" };
       const blob32 = new Uint32Array(2);
@@ -2028,9 +2028,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   }
 
   /** Represents the current state of a pollable tile content request.
- * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
- * @internal
- */
+   * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+   * @internal
+   */
   export enum TileContentState {
     New, // Request was just created and enqueued.
     Pending, // Request is enqueued but not yet being processed.
