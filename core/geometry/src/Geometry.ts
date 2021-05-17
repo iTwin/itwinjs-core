@@ -784,9 +784,9 @@ export class Geometry {
   }
 /** test for EXACT match of number arrays. */
   public static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean {
-  if (Array.isArray(a) && a.length == 0)
+  if (Array.isArray(a) && a.length === 0)
       a = undefined;
-  if (Array.isArray(b) && b.length == 0)
+  if (Array.isArray(b) && b.length === 0)
       b = undefined;
   if (a === undefined && b === undefined)
     return true;
@@ -804,9 +804,9 @@ export class Geometry {
 /** test for  match of XYZ arrays. */
   public static almostEqualArrays<T>(a: T[] | undefined, b: T[] | undefined,
     testFunction: (p: T, q: T) => boolean): boolean{
-    if (Array.isArray(a) && a.length == 0)
+    if (Array.isArray(a) && a.length === 0)
       a = undefined;
-  if (Array.isArray(b) && b.length == 0)
+  if (Array.isArray(b) && b.length === 0)
       b = undefined;
   if (a === undefined && b === undefined)
     return true;
@@ -837,7 +837,9 @@ export class Geometry {
 
 /**
  * interface for method with a clone operation
+ * @public
  */
 export interface Cloneable<T> {
+  /** required method to return a deep clone. */
   clone (): T | undefined;
 }

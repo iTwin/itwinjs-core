@@ -78,7 +78,7 @@ export class BGFBWriter {
    public writeIntArray(data: Int32Array | number[] | undefined): number {
     if (data === undefined)
       return 0;
-    let numInt = data.length;
+    const numInt = data.length;
     if (numInt === 0)
       return 0;
     this.builder.startVector(4, numInt, 4);
@@ -96,7 +96,7 @@ export class BGFBWriter {
    public writePackedYZArray(data: XYZ[] | undefined): number {
     if (data === undefined)
       return 0;
-    let numFloats = data.length * 3;
+    const numFloats = data.length * 3;
     if (numFloats === 0)
       return 0;
      this.builder.startVector(8, numFloats, 8);
@@ -432,14 +432,14 @@ export class BGFBWriter {
     if (Array.isArray(data)) {
       const offsetArray = [];
       for (const d of data) {
-        let intDataOffset = this.writeIntArray(d.intData);
-        let doubleDataOffset = this.writeDoubleArray(d.doubleData);
-        let pointDataOffset = this.writePackedYZArray(d.pointData);
-        let vectorDataOffset = this.writePackedYZArray(d.vectorData);
-        let geometryDataOffset = this.writeGeometryQueryArrayAsFBVariantGeometry(d.geometry);
+        const intDataOffset = this.writeIntArray(d.intData);
+        const doubleDataOffset = this.writeDoubleArray(d.doubleData);
+        const pointDataOffset = this.writePackedYZArray(d.pointData);
+        const vectorDataOffset = this.writePackedYZArray(d.vectorData);
+        const geometryDataOffset = this.writeGeometryQueryArrayAsFBVariantGeometry(d.geometry);
         offsetArray.push(BGFBAccessors.TaggedGeometryData.createTaggedGeometryData(this.builder,
           d.tagA, d.tagB, intDataOffset, doubleDataOffset, pointDataOffset, vectorDataOffset,
-            geometryDataOffset == undefined ? 0 : geometryDataOffset));
+            geometryDataOffset === undefined ? 0 : geometryDataOffset));
       }
       return BGFBAccessors.Polyface.createTaggedGeometryDataVector(this.builder, offsetArray);
     }
@@ -475,12 +475,12 @@ export class BGFBWriter {
 
       if (mesh.data.normalIndex !== undefined && mesh.data.normalIndex.length > 0) {
         this.fillOneBasedIndexArray(mesh, mesh.data.normalIndex, undefined, 0, indexArray);
-        normalIndexOffset = BGFBAccessors.Polyface.createParamIndexVector(this.builder, indexArray);
+        normalIndexOffset = BGFBAccessors.Polyface.createNormalIndexVector(this.builder, indexArray);
       }
 
       if (mesh.data.colorIndex !== undefined && mesh.data.colorIndex.length > 0) {
         this.fillOneBasedIndexArray(mesh, mesh.data.colorIndex, undefined, 0, indexArray);
-        colorIndexOffset = BGFBAccessors.Polyface.createParamIndexVector(this.builder, indexArray);
+        colorIndexOffset = BGFBAccessors.Polyface.createColorIndexVector(this.builder, indexArray);
       }
 
       if (mesh.data.color !== undefined && mesh.data.color.length > 0) {
@@ -577,9 +577,7 @@ export class BGFBWriter {
    */
   public static geometryToBytes(data: GeometryQuery | GeometryQuery[], signatureBytes?: Uint8Array): Uint8Array | undefined {
     const writer = new BGFBWriter();
-    let rootOffset: number | undefined;
-
-    rootOffset = writer.writeGeometryQueryArrayAsFBVariantGeometry(data);
+    const rootOffset = writer.writeGeometryQueryArrayAsFBVariantGeometry(data);
 
     if (rootOffset !== undefined) {
       const builder = writer.builder;

@@ -485,15 +485,23 @@ export namespace IModelJson {
   }
   /**
    * Interface for extra data attached to an indexed mesh.
+   * See `TaggedGeometryData` for further information (e.g. value `tagA` and `tagB` values)
+   * @public
    */
   export interface TaggedGeometryDataProps {
+    /** integer tag identifying the meaning of this tag.  */
     tagA: number;
+    /** Second integer tag.  */
     tagB: number;
-
+/** application specific integer data */
     intData?: number[];
+    /** application specific doubles */
     doubleData?: number[];
+    /** application specific points */
     pointData?: XYZProps[];
+    /** application specific vectors */
     vectorData?: XYZProps[];
+    /** application specific geometry */
     geometry?: GeometryQuery[];
   }
   /**
@@ -1012,7 +1020,7 @@ export namespace IModelJson {
         if (data.hasOwnProperty("taggedGeometry") && Array.isArray (data.taggedGeometry)){
           polyface.data.taggedGeometryData = [];
           for (const t of data.taggedGeometry) {
-            const q = Reader.parseTaggedGeometryProps(data.taggedGeometry);
+            const q = Reader.parseTaggedGeometryProps(t);
             if (q instanceof TaggedGeometryData)
               polyface.data.taggedGeometryData.push(q);
           }

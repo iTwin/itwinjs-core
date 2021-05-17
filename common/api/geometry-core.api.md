@@ -1148,6 +1148,11 @@ export class ClipVector {
 // @public
 export type ClipVectorProps = ClipPrimitiveProps[];
 
+// @public
+export interface Cloneable<T> {
+    clone(): T | undefined;
+}
+
 // @internal
 export class ClusterableArray extends GrowableBlockedArray {
     constructor(numCoordinatePerPoint: number, numExtraDataPerPoint: number, initialBlockCapacity: number);
@@ -1923,10 +1928,12 @@ export class GeodesicPathSolver {
 
 // @public
 export class Geometry {
+    static almostEqualArrays<T>(a: T[] | undefined, b: T[] | undefined, testFunction: (p: T, q: T) => boolean): boolean;
     static axisIndexToRightHandedAxisOrder(axisIndex: AxisIndex): AxisOrder;
     static axisOrderToAxis(order: AxisOrder, index: number): number;
     static clamp(value: number, min: number, max: number): number;
     static clampToStartEnd(x: number, a: number, b: number): number;
+    static cloneMembers<T extends Cloneable<T>>(a: T[] | undefined): T[] | undefined;
     static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult?: number): number | undefined;
     static conditionalDivideFraction(numerator: number, denominator: number): number | undefined;
     static correctSmallMetricDistance(distance: number | undefined, replacement?: number): number;
@@ -1942,6 +1949,7 @@ export class Geometry {
     static dotProductXYXY(ux: number, uy: number, vx: number, vy: number): number;
     static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
     static equalStringNoCase(string1: string, string2: string): boolean;
+    static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean;
     static readonly fullCircleRadiansMinusSmallAngle: number;
     static readonly hugeCoordinate = 1000000000000;
     static hypotenuseSquaredXY(x: number, y: number): number;
@@ -2041,6 +2049,7 @@ export abstract class GeometryHandler {
 
 // @public
 export abstract class GeometryQuery {
+    static areAlmostEqual(a: GeometryQuery | undefined, b: GeometryQuery | undefined): boolean;
     get children(): GeometryQuery[] | undefined;
     abstract clone(): GeometryQuery | undefined;
     abstract cloneTransformed(transform: Transform): GeometryQuery | undefined;
@@ -2469,6 +2478,7 @@ export namespace IModelJson {
         paramIndex?: [number];
         point: [XYZProps];
         pointIndex: [number];
+        taggedGeometry?: [TaggedGeometryDataProps];
     }
     export interface LinearSweepProps {
         capped?: boolean;
@@ -2503,6 +2513,8 @@ export namespace IModelJson {
         static parseRotationalSweep(json?: RotationalSweepProps): RotationalSweep | undefined;
         static parseRuledSweep(json?: RuledSweepProps): RuledSweep | undefined;
         static parseSphere(json?: SphereProps): Sphere | undefined;
+        // @internal (undocumented)
+        static parseTaggedGeometryProps(json: any): TaggedGeometryData | undefined;
         static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined;
         // @alpha
         static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined;
@@ -2540,6 +2552,15 @@ export namespace IModelJson {
         radiusX?: number;
         radiusY?: number;
         radiusZ?: number;
+    }
+    export interface TaggedGeometryDataProps {
+        doubleData?: number[];
+        geometry?: GeometryQuery[];
+        intData?: number[];
+        pointData?: XYZProps[];
+        tagA: number;
+        tagB: number;
+        vectorData?: XYZProps[];
     }
     export interface TorusPipeProps extends AxesProps {
         capped?: boolean;
@@ -2589,6 +2610,8 @@ export namespace IModelJson {
         handleRotationalSweep(data: RotationalSweep): any;
         handleRuledSweep(data: RuledSweep): any;
         handleSphere(data: Sphere): any;
+        // (undocumented)
+        handleTaggedGeometryData(data: TaggedGeometryData): TaggedGeometryDataProps;
         handleTorusPipe(data: TorusPipe): any;
         // @alpha
         handleTransitionSpiral(data: TransitionSpiral3d): any;
@@ -3779,6 +3802,7 @@ export class Point3d extends XYZ {
     static create(x?: number, y?: number, z?: number, result?: Point3d): Point3d;
     static createAdd2Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, result?: Point3d): Point3d;
     static createAdd3Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, pointC: XYAndZ, scaleC: number, result?: Point3d): Point3d;
+    static createArrayFromPackedXYZ(data: Float64Array): Point3d[];
     static createFrom(data: XYAndZ | XAndY | Float64Array, result?: Point3d): Point3d;
     static createFromPacked(xyzData: Float64Array, pointIndex: number, result?: Point3d): Point3d | undefined;
     static createFromPackedXYZW(xyzData: Float64Array, pointIndex: number, result?: Point3d): Point3d | undefined;
@@ -4148,6 +4172,7 @@ export class PolyfaceData {
     point: GrowableXYZArray;
     get pointCount(): number;
     pointIndex: number[];
+    pushTaggedGeometryData(data: TaggedGeometryData): void;
     range(result?: Range3d, transform?: Transform): Range3d;
     get requireNormals(): boolean;
     resizeAllDataArrays(length: number): void;
@@ -4156,6 +4181,7 @@ export class PolyfaceData {
     reverseIndicesSingleFacet(facetId: number, facetStartIndex: number[]): void;
     static reverseIndicesSingleFacet<T>(facetId: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
     reverseNormals(): void;
+    taggedGeometryData: TaggedGeometryData[] | undefined;
     trimAllIndexArrays(length: number): void;
     tryTransformInPlace(transform: Transform): boolean;
     get twoSided(): boolean;
@@ -4829,6 +4855,7 @@ export class Sample {
     static createMessyRigidTransform(fixedPoint?: Point3d): Transform;
     static createMixedBsplineCurves(): BSplineCurve3dBase[];
     static createNonZeroVectors(): Vector3d[];
+    static createPartialTorusAroundZ(majorRadius: number, majorSweep: Angle, minorRadius: number, minorStart: Angle, minorEnd: Angle): RotationalSweep;
     static createPlane(x: number, y: number, z: number, u: number, v: number, w: number): Plane3dByOriginAndUnitNormal;
     static createPoint2dLattice(low: number, step: number, high: number): Point2d[];
     static createPoint3dLattice(low: number, step: number, high: number): Point3d[];
@@ -5138,6 +5165,27 @@ export class SweepContour {
     // (undocumented)
     get xyStrokes(): AnyCurve | undefined;
     }
+
+// @public
+export class TaggedGeometryData {
+    constructor(tagA?: number, tagB?: number, intData?: number[], doubleData?: number[], pointData?: Point3d[], vectorData?: Vector3d[], geometryData?: GeometryQuery[]);
+    // (undocumented)
+    static areAlmostEqualArrays(dataA: TaggedGeometryData[] | undefined, dataB: TaggedGeometryData[] | undefined): boolean;
+    clone(result?: TaggedGeometryData): TaggedGeometryData;
+    doubleData?: number[];
+    geometry?: GeometryQuery[];
+    getDoubleData(index: number, defaultValue: number): number;
+    intData?: number[];
+    isAlmostEqual(other: TaggedGeometryData): boolean;
+    pointData?: Point3d[];
+    pushIndexedDouble(intA: number, valueB: number): void;
+    pushIntPair(intA: number, intB: number): void;
+    tagA: number;
+    tagB: number;
+    tagToIndexedDouble(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
+    tagToInt(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
+    vectorData?: Vector3d[];
+}
 
 // @internal
 export class TorusImplicit {
@@ -5504,6 +5552,7 @@ export class Vector3d extends XYZ {
     static createAdd2Scaled(vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number, result?: Vector3d): Vector3d;
     static createAdd2ScaledXYZ(ax: number, ay: number, az: number, scaleA: number, bx: number, by: number, bz: number, scaleB: number, result?: Vector3d): Vector3d;
     static createAdd3Scaled(vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number, vectorC: XYAndZ, scaleC: number, result?: Vector3d): Vector3d;
+    static createArrayFromPackedXYZ(data: Float64Array): Vector3d[];
     static createCrossProduct(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d): Vector3d;
     static createCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d;
     static createFrom(data: XYAndZ | XAndY | Float64Array, result?: Vector3d): Vector3d;

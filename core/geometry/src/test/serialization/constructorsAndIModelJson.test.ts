@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { table } from "console";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
@@ -23,7 +22,6 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { TaggedGeometryData } from "../../polyface/TaggedGeometryData";
-import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
@@ -276,12 +274,10 @@ describe("constructorsAndImodelJson", () => {
         });
         it("TagLookup", () => {
           const ck = new Checker();
-          const allGeometry: GeometryQuery [] = [];
           const data = new TaggedGeometryData(-1000, 0);
 
           const dataZ = new TaggedGeometryData(-1000, 0, [], [], [], [], []);
           ck.testTrue(dataZ.isAlmostEqual(data), "isAlmostEqual with empty arrays?");
-          const dataZ1 = dataZ.clone();
           const dataB = data.clone();
           const intTags = [4, 2, 9, -30];
           const doubleTags = [100, 3, 5];

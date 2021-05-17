@@ -1460,6 +1460,7 @@ export class Sample {
     result.push(Cone.createAxisPoints(topZ, origin, 0.0, 1.0, true) as Cone);
     return result;
   }
+  /** Return a TorusPipe with swept circle in xz plane rotating through an angle range around the Z axis. */
   public static createPartialTorusAroundZ(majorRadius: number, majorSweep: Angle, minorRadius: number, minorStart: Angle, minorEnd: Angle): RotationalSweep{
     const arc = Arc3d.createXYZXYZXYZ(
       majorRadius, 0, 0,

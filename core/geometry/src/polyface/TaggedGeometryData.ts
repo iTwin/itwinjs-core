@@ -15,17 +15,20 @@ import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
  * TaggedGeometryConstants defines enums with constant values for use in tags of TaggedGeometryData
  * @public
  */
-namespace TaggedGeometryConstants {
+export namespace TaggedGeometryConstants {
   /**  Reserved values for the "tagA" member of TaggedGeometryData
+  * @public
    *
   */
-  const enum TaggedGeometryDataTagType {
+export  enum TaggedGeometryDataTagType {
+    /** `tagA` value identifying a subdivision surface*/
     SubdivisionSurface = -1000
   }
   /**
-   * Supported types of subdivision surfaces
+   * `tagB` values for supported types of subdivision surfaces
+   * @public
    */
-  const enum SubdivisionMethod {
+export enum SubdivisionMethod {
     ChooseBasedOnFacets = 0,
     CatmullClark = 1,
     Loop = 2,
@@ -33,8 +36,9 @@ namespace TaggedGeometryConstants {
   }
   /**
    * numeric values for subdivision control.  These are entered in the intData array as first of a pair.
+   * @public
    */
-  const enum SubdivisionControlCode {
+export  enum SubdivisionControlCode {
     /** pair (FixedDepth, d) indicates subdivision to depth d */
     FixedDepth = -100,
     /** pair (FixedDepth, index) indicates absolute tolerance with value in doubleData[index] */
@@ -49,7 +53,9 @@ namespace TaggedGeometryConstants {
  * @public
  */
 export class TaggedGeometryData {
+  /** Application specific primary tag.   See reserved values in  `TaggedGeometryConstants` */
   public tagA: number;
+  /** Application specific secondary tag.   See reserved values in  `TaggedGeometryConstants` */
   public tagB: number;
 
   public constructor(tagA: number = 0, tagB: number = 0,
@@ -65,12 +71,16 @@ export class TaggedGeometryData {
     if (vectorData) this.vectorData = vectorData;
     if (geometryData) this.geometry = geometryData;
   }
-
+/** Integer data with application-specific meaning */
   public intData?: number[];
-  public doubleData?: number[];
-  public pointData?: Point3d[];
-  public vectorData?: Vector3d[];
-  public geometry?: GeometryQuery[];
+/** Double data with application-specific meaning */
+public doubleData?: number[];
+/** Point data with application-specific meaning */
+public pointData?: Point3d[];
+/** Vector data with application-specific meaning */
+public vectorData?: Vector3d[];
+/** geometry data with application-specific meaning */
+public geometry?: GeometryQuery[];
   /**
    * push a pair of int values on the intData array.
    * @param intA
@@ -100,10 +110,10 @@ export class TaggedGeometryData {
    * @param maxValue
    * @param defaultValue
    */
-  public tagToInt(targetTag: number, minValue: number, maxValue: number, defaultValue: number) : number {
+  public tagToInt(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number {
   if (this.intData) {
     for (let i = 0; i + 1 < this.intData.length; i += 2){
-      if (this.intData[i] == targetTag)
+      if (this.intData[i] === targetTag)
         return Math.min(Math.max(this.intData[i + 1], minValue), maxValue);
       }
     }
@@ -117,10 +127,10 @@ export class TaggedGeometryData {
    * @param maxValue
    * @param defaultValue
    */
-  public tagToIndexedDouble(targetTag: number, minValue: number, maxValue: number, defaultValue: number) : number {
+  public tagToIndexedDouble(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number {
   if (this.intData) {
     for (let i = 0; i + 1 < this.intData.length; i += 2){
-      if (this.intData[i] == targetTag) {
+      if (this.intData[i] === targetTag) {
         return Geometry.clamp(this.getDoubleData (this.intData[i + 1], defaultValue), minValue, maxValue);
         }
       }
@@ -137,6 +147,7 @@ export class TaggedGeometryData {
       return this.doubleData[index];
     return defaultValue;
   }
+  /** Apply isAlmostEqual to all members. */
 public isAlmostEqual(other: TaggedGeometryData): boolean{
     if (other === undefined)
       return false;
@@ -161,7 +172,7 @@ public isAlmostEqual(other: TaggedGeometryData): boolean{
     }
     return true;
   }
-
+/** Return a deep clone.  */
   public clone(result?: TaggedGeometryData): TaggedGeometryData {
     if (!result)
       result = new TaggedGeometryData(this.tagA, this.tagB);

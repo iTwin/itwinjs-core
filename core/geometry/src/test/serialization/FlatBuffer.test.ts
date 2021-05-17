@@ -25,8 +25,6 @@ import { PointString3d } from "../../curve/PointString3d";
 import { AuxChannelDataType } from "../../polyface/AuxData";
 import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
-import { Box } from "../../solid/Box";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { TaggedGeometryData } from "../../polyface/TaggedGeometryData";
 // cSpell:word flatbuffers
 // cSpell:word fbjs
@@ -95,7 +93,7 @@ it("HelloMesh", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it.only("HelloSubdivisionSurface", () => {
+it("HelloSubdivisionSurface", () => {
   const ck = new Checker();
   const mesh = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0),
     Vector3d.unitX(), Vector3d.unitY(), 3, 3);
