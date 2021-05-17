@@ -633,7 +633,7 @@ describe("BriefcaseManager (#integration)", () => {
     requestContext.enter();
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-    assert.isTrue(numProgressCalls > 20);
+    assert.isTrue(numProgressCalls > 10);
   });
 
   it("Should be able to cancel an in progress download (#integration)", async () => {
