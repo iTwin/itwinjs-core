@@ -595,7 +595,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private _frameStatsCollector = new FrameStatsCollector();
 
-  public enableFrameStatsEvent(event?: OnFrameStatsReadyEvent) {
+  public setOnFrameStats(event: OnFrameStatsReadyEvent) {
     this._frameStatsCollector.onFrameStatsReady = event;
   }
 

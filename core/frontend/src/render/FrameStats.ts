@@ -14,9 +14,9 @@ import { BeEvent } from "@bentley/bentleyjs-core";
  */
 export interface FrameStats {
   /** A unique number identifying the frame to which these statistics belong. */
-  readonly frameId: number;
+  frameId: number;
   /** The CPU time in milliseconds spent rendering the frame. */
-  readonly totalFrameTime: number;
+  totalFrameTime: number;
   /** The CPU time in milliseconds spent setting up the scene. The includes the following:
    * - performing animations
    * - setting up from view
@@ -27,87 +27,80 @@ export interface FrameStats {
    * - adding decorations
    * - processing flash
    */
-  readonly sceneTime: number;
+  sceneTime: number;
   /** The CPU time in milliseconds spent rendering opaque geometry. */
-  readonly opaqueTime: number;
+  opaqueTime: number;
   /** The CPU time in milliseconds spent rendering translucent geometry. */
-  readonly translucentTime: number;
+  translucentTime: number;
   /** The CPU time in milliseconds spent rendering overlays. */
-  readonly overlaysTime: number;
+  overlaysTime: number;
   /** The CPU time in milliseconds spent rendering the solar shadow map. */
-  readonly shadowsTime: number;
+  shadowsTime: number;
   /** The CPU time in milliseconds spent rendering both planar and volume classifiers. */
-  readonly classifiersTime: number;
+  classifiersTime: number;
   /** The CPU time in milliseconds spent applying screenspace effects. */
-  readonly screenspaceEffectsTime: number;
+  screenspaceEffectsTime: number;
   /** The CPU time in milliseconds spent rendering background geometry including backgrounds, skyboxes, and background maps. */
-  readonly backgroundTime: number;
+  backgroundTime: number;
 }
 
 /** An event which will be raised when a new frame statistics object is available. The listeners will receive that frame statistics object.
  * @see [[Viewport.enableFrameStatsListener]]
  * @alpha
  */
-export type OnFrameStatsReadyEvent = BeEvent<(frameStats: FrameStats) => void>;
+export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
 
 /** @internal */
 export class FrameStatsCollector {
   private _onFrameStatsReady?: OnFrameStatsReadyEvent;
-  private _frameStatsMap = new Map<string, number>();
-  private _sceneTime = 0;
-  private _frameId = 0;
+  private _frameStats = FrameStatsCollector._createStats();
   private _shouldRecordFrame = false;
 
-  private _clearStats() {
-    this._frameStatsMap.clear();
-    this._sceneTime = 0;
-  }
-
-  private _getFrameStatsMapEntry(entry: keyof FrameStats): number {
-    const entryValue = this._frameStatsMap.get(entry);
-    if (undefined === entryValue)
-      return 0;
-    return entryValue;
-  }
-
-  private _createStatsFromMap(): FrameStats {
+  private static _createStats(): FrameStats {
     return {
-      frameId: this._frameId,
-      totalFrameTime: this._getFrameStatsMapEntry("totalFrameTime"),
-      sceneTime: this._sceneTime,
-      opaqueTime: this._getFrameStatsMapEntry("opaqueTime"),
-      translucentTime: this._getFrameStatsMapEntry("translucentTime"),
-      overlaysTime: this._getFrameStatsMapEntry("overlaysTime"),
-      shadowsTime: this._getFrameStatsMapEntry("shadowsTime"),
-      classifiersTime: this._getFrameStatsMapEntry("classifiersTime"),
-      screenspaceEffectsTime: this._getFrameStatsMapEntry("screenspaceEffectsTime"),
-      backgroundTime: this._getFrameStatsMapEntry("backgroundTime"),
+      frameId: 0,
+      totalFrameTime: 0,
+      sceneTime: 0,
+      opaqueTime: 0,
+      translucentTime: 0,
+      overlaysTime: 0,
+      shadowsTime: 0,
+      classifiersTime: 0,
+      screenspaceEffectsTime: 0,
+      backgroundTime: 0,
     };
+  }
+
+  private _clearStats() {
+    this._frameStats.totalFrameTime = 0;
+    this._frameStats.sceneTime = 0;
+    this._frameStats.opaqueTime = 0;
+    this._frameStats.translucentTime = 0;
+    this._frameStats.overlaysTime = 0;
+    this._frameStats.shadowsTime = 0;
+    this._frameStats.classifiersTime = 0;
+    this._frameStats.screenspaceEffectsTime = 0;
+    this._frameStats.backgroundTime = 0;
   }
 
   public set onFrameStatsReady(ev: OnFrameStatsReadyEvent | undefined) { this._onFrameStatsReady = ev; }
   public get onFrameStatsReady(): OnFrameStatsReadyEvent | undefined { return this._onFrameStatsReady; }
 
   private _begin(entry: keyof FrameStats) {
-    let prevSpan = this._frameStatsMap.get(entry);
-    if (undefined === prevSpan)
-      prevSpan = 0;
-    this._frameStatsMap.set(entry, Date.now() - prevSpan);
+    const prevSpan = this._frameStats[entry];
+    this._frameStats[entry] = Date.now() - prevSpan;
   }
 
   private _end(entry: keyof FrameStats) {
-    const beginTime = this._frameStatsMap.get(entry);
-    if (undefined === beginTime)
-      this._frameStatsMap.set(entry, 0);
-    else
-      this._frameStatsMap.set(entry, Date.now() - beginTime);
+    const beginTime = this._frameStats[entry];
+    this._frameStats[entry] = Date.now() - beginTime;
   }
 
   public beginFrame(sceneMilSecElapsed = 0) {
-    this._shouldRecordFrame = this._onFrameStatsReady !== undefined;
+    this._shouldRecordFrame = this._onFrameStatsReady !== undefined && this._onFrameStatsReady.numberOfListeners > 0;
     if (this._shouldRecordFrame) {
       this._begin("totalFrameTime");
-      this._sceneTime = sceneMilSecElapsed;
+      this._frameStats.sceneTime = sceneMilSecElapsed;
     }
   }
 
@@ -115,8 +108,8 @@ export class FrameStatsCollector {
     if (this._shouldRecordFrame) {
       this._end("totalFrameTime");
       if (this._onFrameStatsReady !== undefined)
-        this._onFrameStatsReady.raiseEvent(this._createStatsFromMap()); // send this frame's statistics to the callback
-      this._frameId++; // increment frame counter for next pending frame
+        this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to the callback
+      this._frameStats.frameId++; // increment frame counter for next pending frame
       this._clearStats();
     }
   }

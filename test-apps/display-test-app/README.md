@@ -163,8 +163,6 @@ You can use these environment variables to alter the default behavior of various
   * See TileAdmin.Props.minimumSpatialTolerance.
 * SVT_NO_EXTERNAL_TEXTURES
   * If defined, the backend will embed all texture image data directly in the tiles.
-* SVT_LOG_FRAMESTATS
-  * If defined, timing statistics for each rendered frame will be logged to the console.
 
 ## Key-ins
 

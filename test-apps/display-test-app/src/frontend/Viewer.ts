@@ -149,7 +149,6 @@ export interface ViewerProps {
   iModel: IModelConnection;
   defaultViewName?: string;
   disableEdges?: boolean;
-  logFrameStats?: boolean;
 }
 
 export class Viewer extends Window {
@@ -361,14 +360,6 @@ export class Viewer extends Window {
 
     this.updateTitle();
     this.updateActiveSettings();
-
-    if (true === props.logFrameStats) {
-      const printFrameStatsEvent = new BeEvent<(frameStats: FrameStats) => void>();
-      printFrameStatsEvent.addListener((stats: FrameStats) => {
-        console.log(`frame stats (vp=${  this.viewport.viewportId  }) = ${ JSON.stringify(stats)}`); // eslint-disable-line no-console
-      });
-      this.viewport.enableFrameStatsEvent(printFrameStatsEvent);
-    }
   }
 
   private updateTitle(): void {

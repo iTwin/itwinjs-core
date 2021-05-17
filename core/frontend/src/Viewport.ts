@@ -39,7 +39,7 @@ import { ToolTipOptions } from "./NotificationManager";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { OnFrameStatsReadyEvent } from "./render/FrameStats";
+import { FrameStats, OnFrameStatsReadyEvent } from "./render/FrameStats";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
@@ -993,9 +993,18 @@ export abstract class Viewport implements IDisposable {
     return "";
   }
 
+  /** If this event has one or more listeners, collection of timing statistics related to rendering frames is enabled. Frame statistics will be received by the listeners whenever a frame is finished rendering.
+   * @note The timing data collected using this event only collects the amount of time spent on the CPU. Due to performance considerations, time spent on the GPU is not collected. Therefore, these statistics are not a direct mapping to user experience.
+   * @note In order to avoid interfering with the rendering loop, take care to avoid performing any intensive tasks in your event listeners.
+   * @see [[FrameStats]]
+   * @alpha
+   */
+  public onFrameStats = new BeEvent<(frameStats: Readonly<FrameStats>) => void>();
+
   /** @internal */
   protected constructor(target: RenderTarget) {
     this._target = target;
+    target.setOnFrameStats(this.onFrameStats);
     this._viewportId = Viewport._nextViewportId++;
     this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
     IModelApp.tileAdmin.registerViewport(this);
@@ -1159,17 +1168,6 @@ export abstract class Viewport implements IDisposable {
       this._mapTiledGraphicsProvider.detachFromDisplayStyle();
       this._mapTiledGraphicsProvider = undefined;
     }
-  }
-
-  /** This method enables or disables collection of timing statistics related to rendering frames.
-   * @param event If defined, this enables collection of timing statistics related to rendering frames. If undefined, this disables the collection of timing statistics. When defined, this parameter specifies an event is raised every time a frame is rendered. The event's listeners will receive the frame statistics.
-   * @note The timing data collected using this method only collects the amount of time spent on the CPU. Due to performance considerations, time spent on the GPU is not collected. Therefore, these statistics are not a direct mapping to user experience.
-   * @note In order to avoid interfering with the rendering loop, take care to avoid performing any intensive tasks in your event listeners.
-   * @see [[FrameStats]]
-   * @alpha
-   */
-  public enableFrameStatsEvent(event?: OnFrameStatsReadyEvent): void {
-    this.target.enableFrameStatsEvent(event);
   }
 
   /** Enables or disables continuous rendering. Ideally, during each render frame a Viewport will do as little work as possible.

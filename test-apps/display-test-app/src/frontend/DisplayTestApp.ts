@@ -214,7 +214,6 @@ async function initView(iModel: IModelConnection | undefined) {
       iModel,
       defaultViewName: configuration.viewName,
       disableEdges: true === configuration.disableEdges,
-      logFrameStats: true === configuration.logFrameStats,
     });
 
     viewer.dock(Dock.Full);

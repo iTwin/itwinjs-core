@@ -40,5 +40,4 @@ export interface DtaConfiguration {
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
   antialiasSamples?: number; // default 1 (No antialiasing)
   openReadWrite?: boolean; // default false
-  logFrameStats?: boolean; // default false
 }
