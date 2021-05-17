@@ -155,7 +155,7 @@ export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement>, 
     onAlphaChange?: ((alpha: number) => void) | undefined;
 }
 
-// @alpha
+// @public
 export type AnimationFractionChangeHandler = (animationFraction: number) => void;
 
 // @public
@@ -1132,7 +1132,7 @@ export enum CubeHover {
     None = 0
 }
 
-// @beta
+// @public
 export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, CubeNavigationAidState> {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -1144,7 +1144,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     readonly state: Readonly<CubeNavigationAidState>;
 }
 
-// @beta
+// @public
 export interface CubeNavigationAidProps extends CommonProps {
     // @internal (undocumented)
     animationTime?: number;
@@ -1154,6 +1154,36 @@ export interface CubeNavigationAidProps extends CommonProps {
     onAnimationEnd?: () => void;
     // (undocumented)
     viewport?: Viewport;
+}
+
+// @public (undocumented)
+export enum CubeNavigationHitBoxX {
+    // (undocumented)
+    Left = -1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Right = 1
+}
+
+// @public (undocumented)
+export enum CubeNavigationHitBoxY {
+    // (undocumented)
+    Back = 1,
+    // (undocumented)
+    Front = -1,
+    // (undocumented)
+    None = 0
+}
+
+// @public (undocumented)
+export enum CubeNavigationHitBoxZ {
+    // (undocumented)
+    Bottom = -1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Top = 1
 }
 
 // @public
@@ -2217,7 +2247,7 @@ export class HighlightingEngine {
     static renderNodeLabel(text: string, props: HighlightableTreeNodeProps): React.ReactNode;
     }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export enum HitBoxX {
     // (undocumented)
     Left = -1,
@@ -2227,7 +2257,7 @@ export enum HitBoxX {
     Right = 1
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export enum HitBoxY {
     // (undocumented)
     Back = 1,
@@ -2237,7 +2267,7 @@ export enum HitBoxY {
     None = 0
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export enum HitBoxZ {
     // (undocumented)
     Bottom = -1,
@@ -2718,7 +2748,7 @@ export interface MenuItem {
     onClick?: () => void;
 }
 
-// @alpha
+// @public
 export interface Milestone {
     // (undocumented)
     children?: Milestone[];
@@ -2732,7 +2762,7 @@ export interface Milestone {
     readonly?: boolean;
 }
 
-// @alpha
+// @public
 export interface MilestoneRange {
     // (undocumented)
     end: Date;
@@ -3235,7 +3265,7 @@ export interface ParsedInputProps extends CommonProps {
     ref?: React.Ref<HTMLInputElement>;
 }
 
-// @alpha
+// @public
 export interface PlaybackSettings {
     allowMilestoneEdits?: boolean;
     dateDisplay?: TimelineDateDisplay;
@@ -3246,7 +3276,7 @@ export interface PlaybackSettings {
     playbackStart?: Date;
 }
 
-// @alpha
+// @public
 export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void;
 
 // @internal
@@ -4746,7 +4776,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
     render(): JSX.Element;
 }
 
-// @alpha
+// @public
 export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
     constructor(props: TimelineComponentProps);
     // (undocumented)
@@ -4759,7 +4789,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     shouldComponentUpdate(nextProps: TimelineComponentProps, nextState: TimelineComponentState): boolean;
     }
 
-// @alpha
+// @public
 export interface TimelineDataProvider {
     animationFraction?: number;
     duration: number;
@@ -4780,13 +4810,13 @@ export interface TimelineDataProvider {
     viewport?: ScreenViewport;
 }
 
-// @alpha
+// @public
 export enum TimelineDateDisplay {
     ActualTime = 0,
     ProjectTime = 1
 }
 
-// @beta
+// @public
 export enum TimelinePausePlayAction {
     // (undocumented)
     Pause = 1,
@@ -4796,7 +4826,7 @@ export enum TimelinePausePlayAction {
     Toggle = 0
 }
 
-// @beta
+// @public
 export interface TimelinePausePlayArgs extends GenericUiEventArgs {
     // (undocumented)
     timelineAction: TimelinePausePlayAction;
@@ -4822,7 +4852,7 @@ export interface TimelineProps extends CommonProps {
     startDate: Date;
 }
 
-// @alpha
+// @public
 export enum TimelineScale {
     Days = 3,
     Hours = 4,

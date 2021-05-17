@@ -11,7 +11,7 @@ beta;ActiveMatchInfo
 alpha;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 beta;AlphaSlider 
 beta;AlphaSliderProps 
-alpha;AnimationFractionChangeHandler = (animationFraction: number) => void
+public;AnimationFractionChangeHandler = (animationFraction: number) => void
 public;ArrayPropertyValueRenderer 
 beta;AsyncErrorMessage
 beta;AsyncValueProcessingResult
@@ -113,8 +113,11 @@ beta;ControlledTreeProps
 public;ConvertedPrimitives
 internal;convertPrimitiveRecordToString(record: PropertyRecord): string | Promise
 internal;CubeHover
-beta;CubeNavigationAid 
-beta;CubeNavigationAidProps 
+public;CubeNavigationAid 
+public;CubeNavigationAidProps 
+public;CubeNavigationHitBoxX
+public;CubeNavigationHitBoxY
+public;CubeNavigationHitBoxZ
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
 internal;CustomItem({ item, addGroupSeparator }:
@@ -239,8 +242,11 @@ beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps
 beta;HighlightingEngine
 internal;HitBoxX
+deprecated;HitBoxX
 internal;HitBoxY
+deprecated;HitBoxY
 internal;HitBoxZ
+deprecated;HitBoxZ
 beta;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element
 beta;HueSliderProps 
 alpha;IconEditor 
@@ -298,8 +304,8 @@ internal;MapMode
 public;MapPayloadToInspireNodeCallback
 deprecated;MapPayloadToInspireNodeCallback
 internal;MenuItem
-alpha;Milestone
-alpha;MilestoneRange
+public;Milestone
+public;MilestoneRange
 alpha;MiscFormatOptions(props: MiscFormatOptionsProps): JSX.Element
 alpha;MiscFormatOptionsProps 
 internal;MultiSelectionHandler
@@ -353,8 +359,8 @@ beta;PagedTreeNodeLoader
 public;PageOptions
 beta;ParsedInput: (props: ParsedInputProps) => JSX.Element | null
 beta;ParsedInputProps 
-alpha;PlaybackSettings
-alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
+public;PlaybackSettings
+public;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
 internal;PlayButton 
 internal;PlayerButton 
 internal;PlayerButtonProps 
@@ -509,13 +515,13 @@ beta;ThemedEnumEditor
 beta;ThemedEnumEditorProps 
 beta;ThemedEnumPropertyEditor 
 internal;Timeline 
-alpha;TimelineComponent 
-alpha;TimelineDataProvider
-alpha;TimelineDateDisplay
-beta;TimelinePausePlayAction
-beta;TimelinePausePlayArgs 
+public;TimelineComponent 
+public;TimelineDataProvider
+public;TimelineDateDisplay
+public;TimelinePausePlayAction
+public;TimelinePausePlayArgs 
 internal;TimelineProps 
-alpha;TimelineScale
+public;TimelineScale
 beta;ToggleEditor 
 beta;TogglePropertyEditor 
 internal;toNode: 
