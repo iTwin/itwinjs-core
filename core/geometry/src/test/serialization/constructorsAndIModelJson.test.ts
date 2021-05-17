@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { table } from "console";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
@@ -255,7 +256,7 @@ describe("constructorsAndImodelJson", () => {
         }
         expect(ck.getNumErrors()).equals(0);
       });
-      it.only("MeshWithTag", () => {
+      it("MeshWithTag", () => {
         const ck = new Checker();
         const allGeometry: GeometryQuery [] = [];
         const tagA = new TaggedGeometryData(-1000, 0);
@@ -272,5 +273,48 @@ describe("constructorsAndImodelJson", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, 0, y0, 0);
         GeometryCoreTestIO.saveGeometry(allGeometry, "TaggedGeometryData", "TorusPipe");
         expect(ck.getNumErrors()).equals(0);
+        });
+        it("TagLookup", () => {
+          const ck = new Checker();
+          const allGeometry: GeometryQuery [] = [];
+          const data = new TaggedGeometryData(-1000, 0);
+
+          const dataZ = new TaggedGeometryData(-1000, 0, [], [], [], [], []);
+          ck.testTrue(dataZ.isAlmostEqual(data), "isAlmostEqual with empty arrays?");
+          const dataZ1 = dataZ.clone();
+          const dataB = data.clone();
+          const intTags = [4, 2, 9, -30];
+          const doubleTags = [100, 3, 5];
+          const intShift = 8;
+          const doubleShift = 1.5;
+          ck.testExactNumber(105, data.tagToIndexedDouble(29, -10000, -5000, 105), "search empty array");
+          ck.testExactNumber(105, data.tagToInt(10, -10000, -5000, 105), "search empty array");
+          for (const t of intTags) {
+            data.pushIntPair(t, t + intShift);
+            ck.testExactNumber(data.tagToInt(t, -100, 1000, 1000), t + intShift, "(int,int)");
+            ck.testExactNumber(data.tagToInt(t, 10000, 20000, 1000), 10000, "clamp int at min");
+            ck.testExactNumber(data.tagToInt(t, -10000, -5000, 1000), -5000, "clamp int at max");
+          }
+          for (const t of doubleTags) {
+            data.pushIndexedDouble(t, t + doubleShift);
+            ck.testExactNumber(data.tagToIndexedDouble(t, -20000, 20000, 1000), t + doubleShift);
+            ck.testExactNumber(data.tagToIndexedDouble(t, 10000, 20000, 1000), 10000);
+            ck.testExactNumber(data.tagToIndexedDouble(t, -10000, -5000, 1000), -5000);
+          }
+          ck.testTrue(data.isAlmostEqual(data), "identity");
+          ck.testFalse(data.isAlmostEqual(dataB));
+          dataB.pushIndexedDouble(100, 0.5);
+          ck.testExactNumber(0.5, dataB.getDoubleData(0, 20));
+          ck.testExactNumber(20, dataB.getDoubleData(1, 20));
+          const dataC = data.clone();
+          ck.testTrue(data.isAlmostEqual(dataC));
+          ck.testFalse(data.isAlmostEqual((undefined as unknown) as TaggedGeometryData));
+          const data21 = new TaggedGeometryData(2, 1);
+          const data12 = new TaggedGeometryData(1, 2);
+          const data13 = new TaggedGeometryData(1, 3);
+          ck.testFalse(data12.isAlmostEqual(data13));
+          ck.testFalse(data12.isAlmostEqual(data21));
+          ck.testExactNumber(new TaggedGeometryData().tagA, 0);
+          ck.testExactNumber(new TaggedGeometryData().tagB, 0);
         });
       });

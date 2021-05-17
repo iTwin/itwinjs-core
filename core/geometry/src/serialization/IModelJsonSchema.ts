@@ -524,6 +524,8 @@ export namespace IModelJson {
     normalIndex?: [number];
     /** ONE BASED ZERO TERMINATED array of color indices. ZERO is terminator for single facet. */
     colorIndex?: [number];
+    /** optional array of tagged geometry (such as to request subdivision surface) */
+    taggedGeometry?: [TaggedGeometryDataProps];
   }
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`

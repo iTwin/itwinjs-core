@@ -783,7 +783,11 @@ export class Geometry {
     return string1.toUpperCase() === string2.toUpperCase();
   }
 /** test for EXACT match of number arrays. */
-public static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean {
+  public static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean {
+  if (Array.isArray(a) && a.length == 0)
+      a = undefined;
+  if (Array.isArray(b) && b.length == 0)
+      b = undefined;
   if (a === undefined && b === undefined)
     return true;
   if (Array.isArray(a) && Array.isArray(b)) {
@@ -800,6 +804,10 @@ public static exactEqualNumberArrays(a: number[] | undefined, b: number[] | unde
 /** test for  match of XYZ arrays. */
   public static almostEqualArrays<T>(a: T[] | undefined, b: T[] | undefined,
     testFunction: (p: T, q: T) => boolean): boolean{
+    if (Array.isArray(a) && a.length == 0)
+      a = undefined;
+  if (Array.isArray(b) && b.length == 0)
+      b = undefined;
   if (a === undefined && b === undefined)
     return true;
   if (Array.isArray(a) && Array.isArray(b)) {

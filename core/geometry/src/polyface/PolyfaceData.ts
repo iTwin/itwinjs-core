@@ -73,6 +73,12 @@ export class PolyfaceData {
   public get twoSided(): boolean { return this._twoSided; }
   public set twoSided(value: boolean) { this._twoSided = value; }
 
+  /** push a TaggedGeometryData.  (Create array if needed) */
+  public pushTaggedGeometryData(data: TaggedGeometryData) {
+    if (!this.taggedGeometryData)
+      this.taggedGeometryData = [];
+    this.taggedGeometryData.push(data);
+  }
   private _expectedClosure: number;
   /** boolean tag indicating if the facets are viewable from the back */
   public get expectedClosure(): number { return this._expectedClosure; }
@@ -148,7 +154,8 @@ export class PolyfaceData {
 
     if (this.expectedClosure !== other.expectedClosure)
       return false;
-
+    if (!TaggedGeometryData.areAlmostEqualArrays(this.taggedGeometryData, other.taggedGeometryData))
+      return false;
     return true;
   }
   /** Ask if normals are required in this mesh. */
