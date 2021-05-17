@@ -255,12 +255,15 @@ steps:
                 shutil.copy(file, outputDir)
 
       arguments: --output common/config/azure-pipelines/templates
-    # condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
-  - script: npx nyc report --temp-dir="common/config/azure-pipelines/templates/coverageXMLs/" --report-dir="common/config/azure-pipelines/templates/coverageResults" --all --reporter=lcov --reporter=cobertura
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
+  - task: Cmdline@2
+    inputs:
+      script: npx nyc report --temp-dir="common/config/azure-pipelines/templates/coverageXMLs/" --report-dir="common/config/azure-pipelines/templates/coverageResults" --all --reporter=lcov --reporter=cobertura
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
   - task: PublishCodeCoverageResults@1
     displayName: "Publish code coverage"
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: "common/config/azure-pipelines/templates/coverageResults/cobertura-coverage.xml"
       reportDirectory: "common/config/azure-pipelines/templates/coverageResults/lcov-report"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
