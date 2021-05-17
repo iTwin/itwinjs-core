@@ -39,6 +39,36 @@ While it is possible to import data into an iModel using the standard [IModelDb]
 - The ability to optionally simplify element geometry to optimize visualization workflows via the [IModelImporter.simplifyElementGeometry]($backend) setting.
 - Integration with [IModelTransformer]($backend)
 
+### IModelImporter.autoExtendProjectExtents
+
+[IModelImporter.autoExtendProjectExtents]($backend) and [IModelImportOptions.autoExtendProjectExtents]($backend) provide different options for handling the projectExtents of the target iModel.
+See the following for more information about projectExtents:
+
+- [IModel.projectExtents]($common)
+- [IModelDb.updateProjectExtents]($backend)
+- [IModelDb.computeProjectExtents]($backend)
+
+#### autoExtendProjectExtents = false
+
+This setting should be used when the target iModel projectExtents are being set directly. For example:
+
+- If the target iModel projectExtents will be the same as the source iModel, then it can just be copied over.
+- If the target iModel projectExtents are known ahead of time, then it can be directly set.
+
+### autoExtendProjectExtents = true
+
+This setting causes the target iModel projectExtents to be extended to include the range box of **every** element that is imported.
+This includes potential *outliers* (one/few elements that are located far away from the main collection of elements).
+*Outliers* tend to suggest a user modeling problem or a Connector problem, but it is difficult for a program to know for sure what the intent was.
+This setting assumes every Element is there for a reason.
+
+#### autoExtendProjectExtents = { excludeOutliers: true }
+
+This setting causes the projectExtents to be extended to include the range box of every element that is imported **except** for *outliers*.
+In this case, *outliers* are assumed to be a mistake and [IModelImporter]($backend) tries to detect them using *fuzzy logic* from the [IModelDb.computeProjectExtents]($backend) method in order to exclude them from the projectExtents calculation.
+
+Either of the non-false autoExtendProjectExtents options are useful for consolidation cases or filtering cases where the target iModel will have different optimal projectExtents than the source iModel(s).
+
 ## IModelCloneContext
 
 The [IModelCloneContext]($backend) class provides the core *cloning* capability required for iModel transformation.

@@ -343,18 +343,18 @@ describe("BriefcaseManager (#integration)", () => {
       if (changeSets[0].changesType === ChangesType.Schema)
         break;
 
-      await iModelPullAndPush.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));
+      await iModelPullAndPush.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));// eslint-disable-line deprecation/deprecation
       assert.equal(readOnlyTestElementCounts[revIndex], getElementCount(iModelPullAndPush));
 
-      await iModelPullOnly.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));
+      await iModelPullOnly.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));// eslint-disable-line deprecation/deprecation
       assert.equal(readOnlyTestElementCounts[revIndex], getElementCount(iModelPullOnly));
     }
 
     for (let fwdIndex = 0; fwdIndex < revIndex; fwdIndex++) {
-      await iModelPullAndPush.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[fwdIndex]));
+      await iModelPullAndPush.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[fwdIndex]));// eslint-disable-line deprecation/deprecation
       assert.equal(readOnlyTestElementCounts[fwdIndex], getElementCount(iModelPullAndPush));
 
-      await iModelPullOnly.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[fwdIndex]));
+      await iModelPullOnly.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[fwdIndex]));// eslint-disable-line deprecation/deprecation
       assert.equal(readOnlyTestElementCounts[fwdIndex], getElementCount(iModelPullOnly));
     }
 

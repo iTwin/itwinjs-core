@@ -97,6 +97,7 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       const testBundle = (config.cover && config.instrumentedTestBundle) || config.testBundle;
       await page.goto(`http://localhost:${port}`);
       await page.addScriptTag({ content: `var _CERTA_CONFIG = ${JSON.stringify(config)};` });
+      await loadScript(page, require.resolve("../../utils/initLogging.js"));
       await loadScript(page, require.resolve("mocha/mocha.js"));
       await loadScript(page, require.resolve("source-map-support/browser-source-map-support.js"));
       await loadScript(page, require.resolve("../../utils/initSourceMaps.js"));
@@ -108,7 +109,7 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       // ...and start the tests
       await page.evaluate(async () => {
         // NB: This is being evaluated in the frontend context!
-        Mocha.reporters.Base.useColors = true;
+        Mocha.reporters.Base.color = true as any;
         const globals = window as any;
         mocha.run((failures) => {
           const coverage = globals.__coverage__;

@@ -27,6 +27,8 @@ import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
+import * as Semver from "semver";
+import { Schema } from "./Schema";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
@@ -114,6 +116,8 @@ export class IModelTransformer extends IModelExportHandler {
   private readonly _wasSourceIModelCopiedToTarget: boolean;
   /** @see [[IModelTransformOptions.isReverseSynchronization]] */
   private readonly _isReverseSynchronization: boolean;
+  /** Set if it can be determined whether this is the first source --> target synchronization. */
+  private _isFirstSynchronization?: boolean;
 
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
@@ -129,6 +133,7 @@ export class IModelTransformer extends IModelExportHandler {
     this._cloneUsingBinaryGeometry = options?.cloneUsingBinaryGeometry ?? true;
     this._wasSourceIModelCopiedToTarget = options?.wasSourceIModelCopiedToTarget ?? false;
     this._isReverseSynchronization = options?.isReverseSynchronization ?? false;
+    this._isFirstSynchronization = this._wasSourceIModelCopiedToTarget ? true : undefined;
     // initialize exporter and sourceDb
     if (source instanceof IModelDb) {
       this.exporter = new IModelExporter(source);
@@ -248,6 +253,7 @@ export class IModelTransformer extends IModelExportHandler {
       }
       if (!this._noProvenance) {
         this.provenanceDb.elements.insertAspect(aspectProps);
+        this._isFirstSynchronization = true; // couldn't tell this is the first time without provenance
       }
     }
   }
@@ -291,6 +297,15 @@ export class IModelTransformer extends IModelExportHandler {
     this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
       this.context.remapElement(sourceElementId, targetElementId);
     });
+  }
+
+  /** Returns `true` if *brute force* delete detections should be run.
+   * @note Not relevant for processChanges when change history is known.
+   */
+  private shouldDetectDeletes(): boolean {
+    if (this._isFirstSynchronization) return false; // not necessary the first time since there are no deletes to detect
+    if (this._isReverseSynchronization) return false; // not possible for a reverse synchronization since provenance will be deleted when element is deleted
+    return true;
   }
 
   /** Detect Element deletes using ExternalSourceAspects in the target iModel and a *brute force* comparison against Elements in the source iModel.
@@ -742,7 +757,32 @@ export class IModelTransformer extends IModelExportHandler {
     try {
       this.sourceDb.nativeDb.exportSchemas(schemasDir);
       const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
-      await this.targetDb.importSchemas(requestContext, schemaFiles.map((fileName) => path.join(schemasDir, fileName)));
+      // some schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
+      const importSchemasFullPaths = schemaFiles.map((schema) => path.join(schemasDir, schema));
+      const filteredSchemaPaths = importSchemasFullPaths.filter((schemaPath) => {
+        let schemaSource: string;
+        try {
+          schemaSource = IModelJsFs.readFileSync(schemaPath).toString("utf8");
+        } catch (err) {
+          Logger.logError(loggerCategory, `error reading xml schema file ${schemaPath}`);
+          return true;
+        }
+        const schemaVersionMatch = /<ECSchema .*?version="([0-9.]+)"/.exec(schemaSource);
+        const schemaNameMatch = /<ECSchema .*?schemaName="([^"]+)"/.exec(schemaSource);
+        if (schemaVersionMatch == null || schemaNameMatch == null) {
+          Logger.logError(loggerCategory, `failed to parse schema name or version, first 200 chars: '${schemaSource.slice(0, 200)}'`);
+          return true;
+        }
+        const [_fullVersionMatch, versionString] = schemaVersionMatch;
+        const [_fullNameMatch, schemaName] = schemaNameMatch;
+        const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
+        const versionToImport = Schema.toSemverString(versionString);
+        if (versionInTarget && Semver.lte(versionToImport, versionInTarget))
+          return false;
+        return true;
+      });
+      if (filteredSchemaPaths.length > 0)
+        await this.targetDb.importSchemas(requestContext, filteredSchemaPaths);
     } finally {
       requestContext.enter();
       IModelJsFs.removeSync(schemasDir);
@@ -811,7 +851,7 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
     await this.exporter.exportRelationships(ElementRefersToElements.classFullName);
     await this.processDeferredElements();
-    if (!this._isReverseSynchronization) {
+    if (this.shouldDetectDeletes()) {
       await this.detectElementDeletes();
       await this.detectRelationshipDeletes();
     }
@@ -823,7 +863,7 @@ export class IModelTransformer extends IModelExportHandler {
  * @param requestContext The request context
  * @param startChangeSetId Include changes from this changeset up through and including the current changeset.
  * If this parameter is not provided, then just the current changeset will be exported.
- * @note To form a range of versions to process, set `startChangeSetId` for the start of the desired range and open the source iModel as of the end of the desired range.
+ * @note To form a range of versions to process, set `startChangeSetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
  */
   public async processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
     requestContext.enter();
