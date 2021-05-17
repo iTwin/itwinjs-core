@@ -162,7 +162,7 @@ describe("ChangeSummary (#integration)", () => {
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     try {
       assert.exists(iModel);
-      await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(changesetId));
+      await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(changesetId));// eslint-disable-line deprecation/deprecation
 
       // now extract change summary for that one changeset
       const summaryIds = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel, { currentVersionOnly: true });
@@ -247,7 +247,7 @@ describe("ChangeSummary (#integration)", () => {
     let iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     try {
       assert.exists(iModel);
-      await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangesetId));
+      await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangesetId));// eslint-disable-line deprecation/deprecation
 
       // now extract change summary for that one changeset
       const summaryIds = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel, { currentVersionOnly: true });

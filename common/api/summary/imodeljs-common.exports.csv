@@ -1,5 +1,9 @@
 sep=;
 Release Tag;API Item
+public;AdditionalTransform 
+public;AdditionalTransformProps
+public;AffineTransform 
+public;AffineTransformProps
 public;AmbientLight
 public;AmbientLightProps
 public;AmbientOcclusion
@@ -42,9 +46,9 @@ alpha;BRepHollowProps
 public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
-beta;BriefcaseDownloader
+public;BriefcaseDownloader
 public;BriefcaseIdValue
-beta;BriefcaseProps
+public;BriefcaseProps
 public;calculateSolarAngles(date: Date, location: Cartographic):
 public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 public;calculateSolarDirectionFromAngles(azimuthElevation:
@@ -52,6 +56,8 @@ public;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boo
 public;CalloutProps 
 public;Camera 
 public;CameraProps
+public;Carto2DDegrees 
+public;Carto2DDegreesProps
 public;Cartographic 
 public;CartographicRange
 public;CategoryProps 
@@ -101,6 +107,7 @@ internal;CurrentImdlVersion
 beta;CustomAttribute
 public;CutStyle
 public;CutStyleProps
+public;DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm"
 internal;DecorationGeometryProps
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
@@ -119,7 +126,6 @@ public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
-internal;DownloadBriefcaseStatus
 beta;DynamicGraphicsRequest2dProps 
 beta;DynamicGraphicsRequest3dProps 
 beta;DynamicGraphicsRequestProps 
@@ -185,9 +191,20 @@ internal;FrustumPlanes
 internal;FrustumPlanes
 public;FunctionalElementProps 
 internal;GateValue = number | boolean | string | undefined
+public;GeocentricTransform 
+public;GeocentricTransformProps
 beta;GeoCoordinatesRequestProps
 beta;GeoCoordinatesResponseProps
 public;GeoCoordStatus
+public;GeodeticDatum 
+public;GeodeticDatumProps
+public;GeodeticEllipsoid 
+public;GeodeticEllipsoidProps
+public;GeodeticTransform 
+public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
+public;GeodeticTransformProps
+public;GeographicCRS 
+public;GeographicCRSProps
 public;GeometricElement2dProps 
 public;GeometricElement3dProps 
 public;GeometricElementProps 
@@ -227,13 +244,26 @@ internal;GltfVersions
 public;Gradient
 public;GraphicParams
 beta;GraphicsRequestProps
+public;GridFileDefinition 
+public;GridFileDefinitionProps
+public;GridFileDirection = "Direct" | "Inverse"
+public;GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN"
+public;GridFileTransform 
+public;GridFileTransformProps
 public;GridOrientationType
 public;GroundPlane
 public;GroundPlaneProps
+public;Helmert2DWithZOffset 
+public;Helmert2DWithZOffsetProps
+public;HemisphereEnum = "South" | "North"
 public;HemisphereLights
 public;HemisphereLightsProps
 public;HiddenLine
 public;Hilite
+public;HorizontalCRS 
+public;HorizontalCRSExtent 
+public;HorizontalCRSExtentProps
+public;HorizontalCRSProps
 public;HSLColor
 public;HSVColor
 public;HSVConstants
@@ -306,7 +336,7 @@ public;LinePixels
 public;LineStyle
 public;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
-beta;LocalBriefcaseProps
+public;LocalBriefcaseProps
 beta;MapImageryProps
 beta;MapImagerySettings
 beta;MapLayerKey
@@ -366,8 +396,8 @@ internal;OpenAPIRequestBody
 internal;OpenAPIResponse
 internal;OpenAPIResponses
 internal;OpenAPISchema
-beta;OpenBriefcaseOptions
-beta;OpenBriefcaseProps 
+public;OpenBriefcaseOptions
+public;OpenBriefcaseProps 
 public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
@@ -398,9 +428,14 @@ internal;PolylineData
 internal;PolylineEdgeArgs
 internal;PolylineFlags
 internal;PolylineTypeFlags
+public;PositionalVectorTransform 
+public;PositionalVectorTransformProps
 internal;PrimaryTileTreeId
 beta;PrimitiveTypeCode
 beta;ProfileOptions
+public;Projection 
+public;ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransverseMercator" | "TransverseMercatorWisconsin" | "TransverseMercatorMinnesota" | "TransverseMercatorAffine" | "MercatorStandardParallel" | "Mercator" | "UniversalTransverseMercator" | "LambertConformalConicTwoParallels" | "LambertConformalConicBelgium" | "LambertConformalConicAffine" | "LambertConformalConicWisconsin" | "LambertConformalConicMinnesota" | "LambertConformalConicMichigan" | "LambertConformalConicOneParallel" | "AlbersEqualArea" | "NewZealandNationalGrid" | "ObliqueMercator1" | "ObliqueMercator2" | "TransverseMercatorOSTN97" | "TransverseMercatorOSTN02" | "TransverseMercatorOSTN15" | "Krovak" | "KrovakModified" | "ObliqueCylindricalSwiss" | "TransverseMercatorDenmarkSystem34" | "TransverseMercatorDenmarkSystem3499" | "TransverseMercatorDenmarkSystem3401" | "Cassini" | "Sinusoidal" | "VanDerGrinten" | "Bonne" | "Mollweide" | "EckertIV" | "EckertVI" | "GoodeHomolosine" | "Robinson" | "PlateCarree" | "MillerCylindrical" | "WinkelTripel" | "AzimuthalEqualArea" | "ObliqueStereographic" | "RectifiedSkewOrthomorphicCentered" | "RectifiedSkewOrthomorphicOrigin" | "ObliqueCylindricalHungary" | "Orthographic" | "AmericanPolyconic" | "LambertEquidistantAzimuthal" | "ObliqueMercatorMinnesota"
+public;ProjectionProps
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataProps
@@ -439,7 +474,7 @@ public;RenderTexture
 beta;RenderTimelineLoadProps
 beta;RenderTimelineProps 
 public;RepositoryLinkProps 
-beta;RequestNewBriefcaseProps
+public;RequestNewBriefcaseProps
 public;ResponseLike 
 public;RgbColor
 public;RgbColorProps
@@ -591,9 +626,12 @@ internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
 internal;TypeOfChange
+public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void
 beta;UpgradeOptions
 public;UrlLinkProps 
+public;VerticalCRS 
+public;VerticalCRSProps
 public;ViewAttachmentLabelProps 
 public;ViewAttachmentProps 
 public;ViewDefinition2dProps 
@@ -615,3 +653,5 @@ internal;WEB_RPC_CONSTANTS:
 public;class WebAppRpcProtocol 
 public;WebAppRpcRequest 
 internal;class WipRpcInterface 
+public;XyzRotation 
+public;XyzRotationProps
