@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbResult, Id64Array, Id64Set, Id64String } from "@bentley/bentleyjs-core";
-import { StandardViewIndex } from "@bentley/geometry-core";
 import {
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, ExternalSourceAspect, GeometricModel3d, IModelDb, ModelSelector,
-  OrthographicViewDefinition, SpatialCategory, SpatialModel, SubCategory, ViewDefinition,
+  SpatialCategory, SpatialModel, SpatialViewDefinition, SubCategory, ViewDefinition,
 } from "@bentley/imodeljs-backend";
 import { IModel } from "@bentley/imodeljs-common";
 
@@ -103,7 +102,7 @@ export namespace ElementUtils {
       const modelSelectorId = ModelSelector.insert(iModelDb, definitionModelId, name, queryModelIds(iModelDb, SpatialModel.classFullName));
       const categorySelectorId = CategorySelector.insert(iModelDb, definitionModelId, name, querySpatialCategoryIds(iModelDb));
       const displayStyleId = DisplayStyle3d.insert(iModelDb, definitionModelId, name);
-      viewId = OrthographicViewDefinition.insert(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, iModelDb.projectExtents, StandardViewIndex.Iso);
+      viewId = SpatialViewDefinition.insertWithCamera(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, iModelDb.projectExtents);
       if (makeDefault) {
         iModelDb.views.setDefaultViewId(viewId);
       }
