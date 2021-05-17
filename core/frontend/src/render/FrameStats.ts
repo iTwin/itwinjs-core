@@ -6,8 +6,6 @@
  * @module Rendering
  */
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
-
 /** Describes timing statistics for a single rendered frame.
  * @alpha
  */
@@ -103,12 +101,12 @@ export class FrameStatsCollector {
 
   private _begin(entry: keyof FrameStats) {
     const prevSpan = this._frameStats[entry];
-    this._frameStats[entry] = BeTimePoint.now().milliseconds - prevSpan;
+    this._frameStats[entry] = Date.now() - prevSpan;
   }
 
   private _end(entry: keyof FrameStats) {
     const beginTime = this._frameStats[entry];
-    this._frameStats[entry] = BeTimePoint.now().milliseconds - beginTime;
+    this._frameStats[entry] = Date.now() - beginTime;
   }
 
   public beginFrame(sceneMilSecElapsed = 0, readPixels = false) {
