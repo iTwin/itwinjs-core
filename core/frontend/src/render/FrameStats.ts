@@ -6,14 +6,15 @@
  * @module Rendering
  */
 
-/** Describes timing statistics for a single rendered frame.
+/** Describes timing statistics for a single rendered frame. Aside from `frameId`, `totalFrameTime`, and `sceneTime`, the other entries may represent operations that are not performed every frame and may contain an expected value of zero.
+ * @note By default, the display system does not render frames continuously. The display system will render a new frame only when the view changes. Therefore, the data contained within this interface cannot directly be used to compute a representative framerate.
  * @alpha
  */
 export interface FrameStats {
   /** A unique number identifying the frame to which these statistics belong. */
-  frameId: number;
+  readonly frameId: number;
   /** The CPU time in milliseconds spent rendering the frame. */
-  totalFrameTime: number;
+  readonly totalFrameTime: number;
   /** The CPU time in milliseconds spent setting up the scene. The includes the following:
    * - performing animations
    * - setting up from view
@@ -24,24 +25,24 @@ export interface FrameStats {
    * - adding decorations
    * - processing flash
    */
-  sceneTime: number;
+  readonly sceneTime: number;
   /** The CPU time in milliseconds spent rendering opaque geometry. */
-  opaqueTime: number;
+  readonly opaqueTime: number;
   /** The CPU time in milliseconds spent rendering translucent geometry. */
-  translucentTime: number;
+  readonly translucentTime: number;
   /** The CPU time in milliseconds spent rendering overlays. */
-  overlaysTime: number;
+  readonly overlaysTime: number;
   /** The CPU time in milliseconds spent rendering the solar shadow map. */
-  shadowsTime: number;
+  readonly shadowsTime: number;
   /** The CPU time in milliseconds spent rendering both planar and volume classifiers. */
-  classifiersTime: number;
+  readonly classifiersTime: number;
   /** The CPU time in milliseconds spent applying screenspace effects. */
-  screenspaceEffectsTime: number;
+  readonly screenspaceEffectsTime: number;
   /** The CPU time in milliseconds spent rendering background geometry including backgrounds, skyboxes, and background maps. */
-  backgroundTime: number;
+  readonly backgroundTime: number;
 }
 
-/** A callback which will return a frame statistics object.
+/** A callback which will receive a frame statistics object.
  * @see [[Viewport.enableFrameStatsCallback]]
  * @alpha
  */
@@ -49,91 +50,82 @@ export type FrameStatsCallback = (stats: FrameStats) => void;
 
 /** @internal */
 export class FrameStatsCollector {
-  private _frameStats = FrameStatsCollector._createStats();
+  private _frameStatsMap = new Map<string, number>();
   private _frameStatsCallback?: FrameStatsCallback;
+  private _sceneTime = 0;
+  private _frameId = 0;
   private _shouldRecordFrame = false;
 
-  private static _createStats(): FrameStats {
-    return {
-      frameId: 0,
-      totalFrameTime: 0,
-      sceneTime: 0,
-      opaqueTime: 0,
-      translucentTime: 0,
-      overlaysTime: 0,
-      shadowsTime: 0,
-      classifiersTime: 0,
-      screenspaceEffectsTime: 0,
-      backgroundTime: 0,
-    };
-  }
-
-  private _cloneStats() {
-    return {
-      frameId: this._frameStats.frameId,
-      totalFrameTime: this._frameStats.totalFrameTime,
-      sceneTime: this._frameStats.sceneTime,
-      opaqueTime: this._frameStats.opaqueTime,
-      translucentTime: this._frameStats.translucentTime,
-      overlaysTime: this._frameStats.overlaysTime,
-      shadowsTime: this._frameStats.shadowsTime,
-      classifiersTime: this._frameStats.classifiersTime,
-      screenspaceEffectsTime: this._frameStats.screenspaceEffectsTime,
-      backgroundTime: this._frameStats.backgroundTime,
-    };
-  }
-
   private _clearStats() {
-    this._frameStats.totalFrameTime = 0;
-    this._frameStats.sceneTime = 0;
-    this._frameStats.opaqueTime = 0;
-    this._frameStats.translucentTime = 0;
-    this._frameStats.overlaysTime = 0;
-    this._frameStats.shadowsTime = 0;
-    this._frameStats.classifiersTime = 0;
-    this._frameStats.screenspaceEffectsTime = 0;
-    this._frameStats.backgroundTime = 0;
+    this._frameStatsMap.clear();
+    this._sceneTime = 0;
+  }
+
+  private _getFrameStatsMapEntry(entry: keyof FrameStats): number {
+    const entryValue = this._frameStatsMap.get(entry);
+    if (undefined === entryValue)
+      return 0;
+    return entryValue;
+  }
+
+  private _createStatsFromMap(): FrameStats {
+    return {
+      frameId: this._frameId,
+      totalFrameTime: this._getFrameStatsMapEntry("totalFrameTime"),
+      sceneTime: this._sceneTime,
+      opaqueTime: this._getFrameStatsMapEntry("opaqueTime"),
+      translucentTime: this._getFrameStatsMapEntry("translucentTime"),
+      overlaysTime: this._getFrameStatsMapEntry("overlaysTime"),
+      shadowsTime: this._getFrameStatsMapEntry("shadowsTime"),
+      classifiersTime: this._getFrameStatsMapEntry("classifiersTime"),
+      screenspaceEffectsTime: this._getFrameStatsMapEntry("screenspaceEffectsTime"),
+      backgroundTime: this._getFrameStatsMapEntry("backgroundTime"),
+    };
   }
 
   public set frameStatsCallback(cb: FrameStatsCallback | undefined) { this._frameStatsCallback = cb; }
   public get frameStatsCallback(): FrameStatsCallback | undefined { return this._frameStatsCallback; }
-  public get frameStats() { return this._frameStats; }
 
   private _begin(entry: keyof FrameStats) {
-    const prevSpan = this._frameStats[entry];
-    this._frameStats[entry] = Date.now() - prevSpan;
+    let prevSpan = this._frameStatsMap.get(entry);
+    if (undefined === prevSpan)
+      prevSpan = 0;
+    this._frameStatsMap.set(entry, Date.now() - prevSpan);
   }
 
   private _end(entry: keyof FrameStats) {
-    const beginTime = this._frameStats[entry];
-    this._frameStats[entry] = Date.now() - beginTime;
+    const beginTime = this._frameStatsMap.get(entry);
+    if (undefined === beginTime)
+      this._frameStatsMap.set(entry, 0);
+    else
+      this._frameStatsMap.set(entry, Date.now() - beginTime);
   }
 
-  public beginFrame(sceneMilSecElapsed = 0, readPixels = false) {
+  public beginFrame(sceneMilSecElapsed = 0) {
     this._shouldRecordFrame = this._frameStatsCallback !== undefined;
-    if (this._shouldRecordFrame && !readPixels) {
+    if (this._shouldRecordFrame) {
       this._begin("totalFrameTime");
-      this._frameStats.sceneTime = sceneMilSecElapsed;
+      this._sceneTime = sceneMilSecElapsed;
     }
   }
 
-  public endFrame(readPixels = false) {
-    if (this._shouldRecordFrame && !readPixels) {
+  public endFrame() {
+    if (this._shouldRecordFrame) {
       this._end("totalFrameTime");
       if (this._frameStatsCallback !== undefined)
-        this._frameStatsCallback(this._cloneStats()); // copy this frame's statistics to the callback
-      this._frameStats.frameId++; // increment frame counter for next pending frame
+        this._frameStatsCallback(this._createStatsFromMap()); // copy this frame's statistics to the callback
+      this._frameId++; // increment frame counter for next pending frame
       this._clearStats();
     }
   }
 
-  public beginTime(entry: keyof FrameStats, readPixels = false) {
-    if (this._shouldRecordFrame && !readPixels)
+  public beginTime(entry: keyof FrameStats) {
+    if (this._shouldRecordFrame)
       this._begin(entry);
   }
 
-  public endTime(entry: keyof FrameStats, readPixels = false) {
-    if (this._shouldRecordFrame && !readPixels)
+  public endTime(entry: keyof FrameStats) {
+    if (this._shouldRecordFrame)
       this._end(entry);
   }
 }

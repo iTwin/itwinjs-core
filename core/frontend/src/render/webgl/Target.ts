@@ -605,7 +605,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (!this._dcAssigned)
       return;
 
-    this.frameStatsCollector.beginFrame(sceneMilSecElapsed, this.drawForReadPixels);
+    this.frameStatsCollector.beginFrame(sceneMilSecElapsed);
     this.beginPerfMetricFrame(sceneMilSecElapsed, this.drawForReadPixels);
     this.beginPerfMetricRecord("Begin Paint", this.drawForReadPixels);
     assert(undefined !== this._fbo);
@@ -667,11 +667,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Apply screen-space effects. Note we do not reset this._isReadPixelsInProgress until *after* doing so, as screen-space effects only apply
     // during readPixels() if the effect shifts pixels from their original locations.
-    this.frameStatsCollector.beginTime("screenspaceEffectsTime", this.drawForReadPixels);
+    this.frameStatsCollector.beginTime("screenspaceEffectsTime");
     this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
     this.renderSystem.screenSpaceEffects.apply(this);
     this.endPerfMetricRecord(this.drawForReadPixels);
-    this.frameStatsCollector.endTime("screenspaceEffectsTime", this.drawForReadPixels);
+    this.frameStatsCollector.endTime("screenspaceEffectsTime");
 
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
@@ -681,7 +681,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.endPerfMetricRecord(this.drawForReadPixels);
 
     this.endPerfMetricFrame(this.drawForReadPixels);
-    this.frameStatsCollector.endFrame(this.drawForReadPixels);
+    this.frameStatsCollector.endFrame();
   }
 
   private drawPass(pass: RenderPass): void {
