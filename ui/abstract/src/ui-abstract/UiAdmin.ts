@@ -62,7 +62,7 @@ export interface UiFlags {
 }
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
- * @beta
+ * @public
  */
 export class UiAdmin {
   private _featureFlags: UiFlags = {};

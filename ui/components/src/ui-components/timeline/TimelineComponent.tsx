@@ -24,6 +24,7 @@ const slowSpeed = 60 * 1000;
 const mediumSpeed = 20 * 1000;
 const fastSpeed = 10 * 1000;
 
+/** @public */
 interface TimelineComponentProps {
   startDate?: Date; // start date
   endDate?: Date;   // end date
@@ -41,6 +42,7 @@ interface TimelineComponentProps {
   componentId?: string; // must be set to use TimelineComponentEvents
 }
 
+/** @public */
 interface TimelineComponentState {
   isSettingsOpen: boolean; // settings popup is opened or closed
   isPlaying: boolean; // timeline is currently playing or paused
@@ -51,7 +53,7 @@ interface TimelineComponentState {
 }
 
 /** Component used to playback timeline data
- * @alpha
+ * @public
  */
 export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
   private _timeLastCycle = 0;

@@ -220,7 +220,7 @@ export abstract class HideIsolateEmphasizeActionHandler {
 }
 
 /** Provides helper functions for doing commands on logical selection like categories and subjects.
- * @alpha
+ * @public
  */
 // istanbul ignore next
 export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {

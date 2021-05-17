@@ -12,7 +12,7 @@ import { GenericUiEventArgs } from "@bentley/ui-abstract";
 
 /**
  * A range of time which can be used to focus in on activities scheduled around a milestone.
- * @alpha
+ * @public
  */
 export interface MilestoneRange {
   start: Date;
@@ -21,7 +21,7 @@ export interface MilestoneRange {
 
 /**
  * A Milestone event that is to be noted in the timeline.
- * @alpha
+ * @public
  */
 export interface Milestone {
   /** uniqueId of milestone */
@@ -40,12 +40,8 @@ export interface Milestone {
   children?: Milestone[];
 }
 
-/** The amount of detail to be displayed in timeline.
- * @alpha
- */
-
 /** The timeline scale.
- * @alpha
+ * @public
  */
 export enum TimelineScale {
   /** Show years */
@@ -61,7 +57,7 @@ export enum TimelineScale {
 }
 
 /** Determines if data displayed to use is the actual date or the amount of time elapsed since project start.
- * @alpha
+ * @public
  */
 export enum TimelineDateDisplay {
   /** Display time axis using actual start/end dates */
@@ -72,7 +68,7 @@ export enum TimelineDateDisplay {
 
 /**
  * Playback Settings.
- * @alpha TODO: do we need a display StartDate/EndData this would allow user to show a timeline that extends beyond the 'start' and 'end' dates.
+ * @public
  */
 export interface PlaybackSettings {
   /** time in milliseconds to play animation from start date to end date */
@@ -93,19 +89,19 @@ export interface PlaybackSettings {
 
 /**
  * An interface used to notify Handlers of the current pointer position in the timeline playback. Valid range is 0 to 1 and it determines percentage complete.
- * @alpha
+ * @public
  */
 export type AnimationFractionChangeHandler = (animationFraction: number) => void;
 
 /**
  * An interface used to notify Handlers of Playback Settings changes.
  * Contains the settings to be used.
- * @alpha
+ * @public
  */
 export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void;
 
 /** Actions for Pause/Play event
- * @beta
+ * @public
  */
 export enum TimelinePausePlayAction {
   Toggle,
@@ -113,13 +109,13 @@ export enum TimelinePausePlayAction {
   Play,
 }
 /** Args for event to pause or play the timeline component
- * @beta
+ * @public
  */
 export interface TimelinePausePlayArgs extends GenericUiEventArgs {
   timelineAction: TimelinePausePlayAction;
 }
 /** Interface for a timeline data provider class
- * @alpha
+ * @public
  */
 export interface TimelineDataProvider {
   /** uniqueId of provider */

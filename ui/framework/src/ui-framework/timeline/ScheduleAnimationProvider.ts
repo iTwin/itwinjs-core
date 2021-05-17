@@ -10,7 +10,7 @@ import { ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
 import { BaseTimelineDataProvider, Milestone, PlaybackSettings } from "@bentley/ui-components";
 
 /** ScheduleAnimation Timeline Data Provider - handles View that define 'scheduleScript' data.
- * @alpha
+ * @public
  */
 // No access to scheduleScript to even mock in test
 // istanbul ignore next
