@@ -7,7 +7,6 @@ import { Volume } from "memfs";
 import { expect } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
-import * as snapshot from "snap-shot-it";
 import { clearCache, clearFileSystem, getTestConfig, runWebpack } from "./TestUtils";
 import { IgnoreOptionalDependenciesPlugin } from "../plugins/OptionalDependenciesPlugin";
 import { resetPaths, setApplicationDir } from "../utils/paths";
@@ -16,7 +15,7 @@ describe("OptionalDependenciesPlugin", () => {
   let testConfig: any;
   const vol = new Volume();
 
-  beforeEach(() => {
+  beforeEach(function () {
     setApplicationDir(path.join(__dirname, "assets/optional-dependencies-plugin-test"));
     testConfig =
       getTestConfig(
@@ -32,7 +31,7 @@ describe("OptionalDependenciesPlugin", () => {
     });
 
     await runWebpack(testConfig, vol);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should ignore optional dependency in try/catch", async () => {
@@ -43,8 +42,8 @@ describe("OptionalDependenciesPlugin", () => {
     });
 
     const result = await runWebpack(testConfig, vol);
-    expect(result.logging.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include(`Ignoring require(\"./bar\")`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
+    expect(result.logging.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include(`Ignoring require("./bar")`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should ignore critical dependency", async () => {
@@ -56,7 +55,7 @@ describe("OptionalDependenciesPlugin", () => {
 
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include(`Ignoring require(<<expression>>)`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should ignore non-call use of require", async () => {
@@ -68,7 +67,7 @@ describe("OptionalDependenciesPlugin", () => {
 
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include("Ignoring non-call require expression");
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   afterEach(() => {

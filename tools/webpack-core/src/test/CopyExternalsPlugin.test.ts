@@ -7,41 +7,32 @@ import { Volume } from "memfs";
 import { expect } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { ufs } from "unionfs";
 import { clearCache, clearFileSystem, fsFromJson, getTestConfig, runWebpack } from "./TestUtils";
 import { CopyExternalsPlugin } from "../plugins/CopyExternalsPlugin";
-import { resetPaths, setApplicationDir } from "../utils/paths";
+import { setApplicationDir } from "../utils/paths";
 
 describe("CopyExternalsPlugin", () => {
   let testConfig: any;
   const vol = new Volume();
 
-  beforeEach(() => {
+  before(() => {
     setApplicationDir(path.join(__dirname, "assets/copy-externals-plugin-test"));
-    ufs
-      .use(vol as any)
-      .use(fs as any);
-    fsFromJson({
-      "lib/test/assets/copy-externals-plugin-test/package.json": `{"dependencies": {"foo": ""}}`,
-    });
   });
 
   it("skips electron", async () => {
-    vol.fromJSON({
+    fsFromJson({
       "lib/test/assets/copy-externals-plugin-test/test.js": `import * as electron from "electron";`,
     });
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["electron"]);
 
-    const result = await runWebpack(testConfig, ufs);
+    const result = await runWebpack(testConfig);
     expect(result.logging).to.not.haveOwnProperty("CopyExternalsPlugin");
     expect(fs.existsSync(path.join(__dirname, "dist/node_modules"))).to.be.false;
   });
 
-  it("should copy direct externals dependency", async () => {
-    vol.fromJSON({
-      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as foo from "foo";`,
-    });
+  it("should copy direct external dependencies", async () => {
     fsFromJson({
+      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as foo from "foo";`,
       "lib/test/assets/copy-externals-plugin-test/node_modules/foo/index.js": `console.log("This is foo");`,
       "lib/test/assets/copy-externals-plugin-test/node_modules/foo/package.json": `{"name": "foo", "dependencies": {"a": "", "b": "", "c":""}}`,
       "lib/test/assets/copy-externals-plugin-test/node_modules/a/index.js": `console.log("This is a");`,
@@ -53,28 +44,26 @@ describe("CopyExternalsPlugin", () => {
     });
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["foo"]);
 
-    await runWebpack(testConfig, ufs);
+    await runWebpack(testConfig);
     expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/foo/index.js"), "utf8")).to.equal(`console.log("This is foo");`);
     expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/a/index.js"), "utf8")).to.equal(`console.log("This is a");`);
     expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/b/index.js"), "utf8")).to.equal(`console.log("This is b");`);
     expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/c/index.js"), "utf8")).to.equal(`console.log("This is c");`);
   });
 
-  it("should copy @bentley/imodeljs-native", async () => {
+  it.only("should copy @bentley/imodeljs-native", async () => {
     vol.fromJSON({
       "lib/test/assets/copy-externals-plugin-test/test.js": `import * as imodeljsnative from "@bentley/imodeljs-native";`,
     });
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["@bentley/imodeljs-native"]);
 
-    await runWebpack(testConfig, ufs);
+    await runWebpack(testConfig, vol);
     expect(fs.existsSync(path.join(__dirname, "dist/node_modules/@bentley/imodeljs-native"))).to.be.true;
   });
 
   it("should copy indirect dependencies with symlink", async () => {
-    vol.fromJSON({
-      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as a from "a";`,
-    });
     fsFromJson({
+      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as a from "a";`,
       "lib/test/assets/copy-externals-plugin-test/node_modules/a/package.json": `{"dependencies": {"b": ""}}`,
       "lib/test/assets/copy-externals-plugin-test/bar/node_modules/b/package.json": `{"name": "b", "dependencies": {"c": ""}}`,
       "lib/test/assets/copy-externals-plugin-test/bar/node_modules/c/package.json": `{"name": "c"}`,
@@ -82,47 +71,42 @@ describe("CopyExternalsPlugin", () => {
     fs.symlinkSync("../bar/node_modules/b", "lib/test/assets/copy-externals-plugin-test/node_modules/b", "junction");
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["a"]);
 
-    const result = await runWebpack(testConfig, ufs);
+    const result = await runWebpack(testConfig);
     expect(result.logging.CopyExternalsPlugin.entries.length, "Length of entries should be 3").to.be.equal(3);
     expect(fs.existsSync(path.join(__dirname, "dist/node_modules/a"))).to.be.true;
     expect(fs.existsSync(path.join(__dirname, "dist/node_modules/b"))).to.be.true;
     expect(fs.existsSync(path.join(__dirname, "dist/node_modules/c"))).to.be.true;
   });
 
-  it("should copy indirect dependency which is not nested", async () => {
-    vol.fromJSON({
-      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as foo from "foo";`,
-    });
+  it("should copy hoisted indirect dependencies", async () => {
     fsFromJson({
+      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as foo from "foo";`,
       "lib/test/assets/copy-externals-plugin-test/node_modules/foo/index.js": `import * as bar from "bar";`,
       "lib/test/assets/copy-externals-plugin-test/node_modules/bar/index.js": `console.log("This is bar");`,
       "lib/test/assets/copy-externals-plugin-test/node_modules/bar/package.json": "{}",
     });
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["bar"]);
 
-    await runWebpack(testConfig, ufs);
+    await runWebpack(testConfig);
     expect(fs.existsSync(path.join(__dirname, "dist/node_modules/bar"))).to.be.true;
     expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/bar/index.js"), "utf8")).to.equal(`console.log("This is bar");`);
   });
 
-  it("should copy indirect dependences which are nested", async () => {
-    vol.fromJSON({
-      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as foo from "foo";`,
-    });
+  it("should copy nested indirect dependencies", async () => {
     fsFromJson({
+      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as foo from "foo";`,
       "lib/test/assets/copy-externals-plugin-test/node_modules/foo/index.js": `import * as bar from "bar";`,
       "lib/test/assets/copy-externals-plugin-test/node_modules/foo/node_modules/bar/index.js": `console.log("This is bar inside foo");`,
       "lib/test/assets/copy-externals-plugin-test/node_modules/foo/node_modules/bar/package.json": "{}",
     });
     testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["bar"]);
 
-    await runWebpack(testConfig, ufs);
+    await runWebpack(testConfig);
     expect(fs.existsSync(path.join(__dirname, "dist/node_modules/bar"))).to.be.true;
     expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/bar/index.js"), "utf8")).to.equal(`console.log("This is bar inside foo");`);
   });
 
   afterEach(() => {
-    resetPaths();
     vol.reset();
     clearFileSystem(__dirname);
     clearCache(__dirname);

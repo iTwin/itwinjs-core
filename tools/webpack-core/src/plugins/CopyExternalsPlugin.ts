@@ -14,16 +14,7 @@ const { builtinModules } = require("module");
 export class CopyExternalsPlugin {
   private _promises: Array<Promise<any>> = [];
   private _copiedPackages: Set<string> = new Set();
-  private _appDependencies: Set<string>;
   private _logger: any;
-
-  constructor() {
-    const paths = getPaths();
-    const appPackageJson = require(paths.appPackageJson);
-    // NEEDSWORK: We need to special case imodeljs-native now that it is not an explicit dependency of most apps.
-    // This is a bit of a hack, but it's easier to just do this for now than build out the entire dependency tree...
-    this._appDependencies = new Set([...Object.keys(appPackageJson.dependencies), "@bentley/imodeljs-native"]);
-  }
 
   public apply(compiler: Compiler) {
     compiler.hooks.compilation.tap("CopyExternalsPlugin", (compilation: any) => {
@@ -42,9 +33,9 @@ export class CopyExternalsPlugin {
 
   public async handleModule(currentModule: any, outputDir: string) {
     const pkgName = this.pathToPackageName(currentModule.request);
-    if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName)) {
+    if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
       return;
-    }
+
     const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [currentModule.issuer.context] });
     await this.copyPackage(pkgName, outputDir, path.dirname(packageJsonPath));
     if (!packageJsonPath)

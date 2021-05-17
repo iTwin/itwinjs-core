@@ -7,25 +7,20 @@ import { Volume } from "memfs";
 import { expect } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { ufs } from "unionfs";
-import * as snapshot from "snap-shot-it";
-import { clearCache, clearFileSystem, getTestConfig, runWebpack } from "./TestUtils";
+import { clearCache, clearFileSystem, getTestConfig, runWebpack, fsFromJson } from "./TestUtils";
 import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExternals, RequireMagicCommentsPlugin } from "../plugins/RequireMagicCommentsPlugin";
 import { ExternalsPlugin } from "webpack";
-import { resetPaths, setApplicationDir } from "../utils/paths";
+import { setApplicationDir } from "../utils/paths";
 
 describe("RequireMagicCommentsPlugin", () => {
   let testConfig: any;
   const vol = new Volume();
 
-  beforeEach(() => {
+  before(() => {
     setApplicationDir(path.join(__dirname, "assets/require-magic-comments-plugin-test"));
-    ufs
-      .use(vol as any)
-      .use(fs as any);
   });
 
-  it("should work with external comments with custom handler", async () => {
+  it("should transform requires with comment via custom handler", async () => {
     vol.fromJSON({
       "lib/test/assets/require-magic-comments-plugin-test/test.js": `require(/*test*/"foo");`,
       "lib/test/assets/require-magic-comments-plugin-test/node_modules/bar/index.js": `console.log("Module bar");`,
@@ -34,8 +29,8 @@ describe("RequireMagicCommentsPlugin", () => {
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest);
 
     const result = await runWebpack(testConfig, vol);
-    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*test*/ - transformed \"foo\" => \"bar\"`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
+    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*test*/ - transformed "foo" => "bar"`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments and addExternalPrefix handler", async () => {
@@ -46,8 +41,8 @@ describe("RequireMagicCommentsPlugin", () => {
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest);
 
     const result = await runWebpack(testConfig, vol);
-    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: external*/ - transformed \"foo\" => \"BeWebpack-EXTERNAL:foo\"`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
+    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments and resolve not converted", async () => {
@@ -59,8 +54,8 @@ describe("RequireMagicCommentsPlugin", () => {
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest);
 
     const result = await runWebpack(testConfig, vol);
-    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*test*/ - transformed \"foo\" => \"bar\"`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
+    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*test*/ - transformed "foo" => "bar"`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments and resolve converted", async () => {
@@ -72,9 +67,9 @@ describe("RequireMagicCommentsPlugin", () => {
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest);
 
     const result = await runWebpack(testConfig, vol);
-    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for \"foo\"`);
-    expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*test*/ - transformed \"foo\" => \"bar\"`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
+    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "foo"`);
+    expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*test*/ - transformed "foo" => "bar"`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments with resolve not converted and addExternalPrefix handler", async () => {
@@ -85,8 +80,8 @@ describe("RequireMagicCommentsPlugin", () => {
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest);
 
     const result = await runWebpack(testConfig, vol);
-    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: external*/ - transformed \"foo\" => \"BeWebpack-EXTERNAL:foo\"`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
+    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments with resolve converted and addExternalPrefix handler", async () => {
@@ -99,54 +94,53 @@ describe("RequireMagicCommentsPlugin", () => {
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "foo"`);
     expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8"));
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with copyfile comments and addCopyFileSuffix handler", async () => {
-    vol.fromJSON({
+    fsFromJson({
       "lib/test/assets/require-magic-comments-plugin-test/test.js": `require(/*webpack: copyfile*/"./bar.txt");`,
       "lib/test/assets/require-magic-comments-plugin-test/bar.txt": `This is bar.txt`,
     });
     const pluginsToTest = [new RequireMagicCommentsPlugin([{ test: /webpack: *copyfile/i, handler: addCopyFilesSuffix }])];
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest, undefined, [copyFilesRule]);
 
-    const result = await runWebpack(testConfig, ufs);
-    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: copyfile*/ - transformed \"./bar.txt\" => \"./bar.txt?BeWebpack-COPYFILE}\"`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8").split("/* 3 */", 1));
+    const result = await runWebpack(testConfig);
+    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.91b123.txt"), "utf8")).to.equal("This is bar.txt");
   });
 
   it("should work with copyfile comments, addCopyFileSuffix, and resolve converted", async () => {
-    vol.fromJSON({
+    fsFromJson({
       "lib/test/assets/require-magic-comments-plugin-test/test.js": `require.resolve(/*webpack: copyfile*/"./bar.txt");`,
       "lib/test/assets/require-magic-comments-plugin-test/bar.txt": `This is bar.txt`,
     });
     const pluginsToTest = [new RequireMagicCommentsPlugin([{ test: /webpack: *copyfile/i, handler: addCopyFilesSuffix, convertResolve: true }])];
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest, undefined, [copyFilesRule]);
 
-    const result = await runWebpack(testConfig, ufs);
-    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for \"./bar.txt\"`);
-    expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*webpack: copyfile*/ - transformed \"./bar.txt\" => \"./bar.txt?BeWebpack-COPYFILE}\"`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8").split("/* 3 */", 1));
+    const result = await runWebpack(testConfig);
+    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "./bar.txt"`);
+    expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.91b123.txt"), "utf8")).to.equal("This is bar.txt");
   });
 
   it("should work with copyfile comments, addCopyFileSuffix, and resolve not converted", async () => {
-    vol.fromJSON({
+    fsFromJson({
       "lib/test/assets/require-magic-comments-plugin-test/test.js": `require.resolve(/*webpack: copyfile*/"./bar.txt");`,
       "lib/test/assets/require-magic-comments-plugin-test/bar.txt": `This is bar.txt`,
     });
     const pluginsToTest = [new RequireMagicCommentsPlugin([{ test: /webpack: *copyfile/i, handler: addCopyFilesSuffix }])];
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest, undefined, [copyFilesRule]);
 
-    const result = await runWebpack(testConfig, ufs);
-    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: copyfile*/ - transformed \"./bar.txt\" => \"./bar.txt?BeWebpack-COPYFILE}\"`);
-    snapshot(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8").split("/* 3 */", 1));
+    const result = await runWebpack(testConfig);
+    expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.91b123.txt"), "utf8")).to.equal("This is bar.txt");
   });
 
   afterEach(() => {
-    resetPaths();
     vol.reset();
     clearFileSystem(__dirname);
     clearCache(__dirname);

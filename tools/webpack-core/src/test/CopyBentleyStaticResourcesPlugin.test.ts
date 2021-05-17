@@ -15,7 +15,7 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
   let testConfig: any;
   const vol = new Volume();
 
-  before(() => {
+  beforeEach(() => {
     testConfig = getTestConfig("assets/copy-bentley-static-resources-plugin-test/test.js", [new CopyBentleyStaticResourcesPlugin(["assets"])]);
     vol.fromJSON({
       "lib/test/assets/copy-bentley-static-resources-plugin-test/test.js": "",
@@ -26,14 +26,14 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
     });
   });
 
-  it("should be able to find directory path", async () => {
+  it("should find and copy assets directories from packages in node_modules/@bentley", async () => {
     setApplicationDir(path.join(__dirname, "assets/copy-bentley-static-resources-plugin-test"));
     const result = await runWebpack(testConfig, vol);
     expect(result.logging).to.not.have.property("CopyBentleyStaticResourcesPlugin");
     expect(fs.readFileSync(path.join(__dirname, "dist/assets/staticResourcePlugin.js"), "utf8")).to.equal(`console.log("Fake resource");`)
   });
 
-  it("should not be able to find directory path", async () => {
+  it("should log warning when unable to find node_modules/@bentley directory", async () => {
     setApplicationDir(__dirname);
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.CopyBentleyStaticResourcesPlugin.entries[0].message).to.include(`Can't locate`);

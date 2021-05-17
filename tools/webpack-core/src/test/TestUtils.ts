@@ -8,18 +8,19 @@ import * as webpack from "webpack";
 const MODULE = require("module");
 let { usedDeps } = require("../utils/resolve-recurse/resolve");
 
-function createTestCompiler(web: any, config: any, vol: any) {
+function createTestCompiler(web: any, config: any, vol?: any) {
   let compiler: any;
   try {
     compiler = web(config);
   } catch (err) {
     console.log(err);
   }
-  compiler.inputFileSystem = vol;
+  if (vol)
+    compiler.inputFileSystem = vol;
   return compiler;
 }
 
-export async function runWebpack(config: any, vol: any) {
+export async function runWebpack(config: any, vol?: any) {
   const compiler = createTestCompiler(webpack, config, vol);
   return new Promise<any>((resolve, reject) => {
     compiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats.toJson({ logging: true })));
