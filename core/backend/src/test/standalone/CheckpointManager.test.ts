@@ -111,7 +111,7 @@ describe("Checkpoint Manager", () => {
       contextId: "5678",
       iModelId: "910",
       changeSetId: "1234",
-      requestContext: new AuthorizedClientRequestContext(new AccessToken()),  // Why is this on CheckpointProps rather than DownloadRequest
+      requestContext: new AuthorizedClientRequestContext(new AccessToken()),
     };
     const request = {
       localFile: V1CheckpointManager.getFileName(checkpoint),

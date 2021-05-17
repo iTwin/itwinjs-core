@@ -577,23 +577,6 @@ export class ChangedElementsDb implements IDisposable {
     processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
-// @internal
-export class ChangeSetToken {
-    constructor(id: string, parentId: string, index: number, pathname: string, changeType: ChangesType, pushDate?: string | undefined);
-    // (undocumented)
-    changeType: ChangesType;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    index: number;
-    // (undocumented)
-    parentId: string;
-    // (undocumented)
-    pathname: string;
-    // (undocumented)
-    pushDate?: string | undefined;
-}
-
 // @beta
 export interface ChangeSummary {
     // (undocumented)
@@ -2554,7 +2537,7 @@ export abstract class IModelDb extends IModel {
     static openDgnDb(file: {
         path: string;
         key?: string;
-    }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: string): IModelJsNative.DgnDb;
+    }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions): IModelJsNative.DgnDb;
     get pathName(): string;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
@@ -4101,7 +4084,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     get isPrepared(): boolean;
     get isReadonly(): boolean;
     next(): IteratorResult<any>;
-    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb): void;
+    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb): void;
     reset(): void;
     // (undocumented)
     get sql(): string;

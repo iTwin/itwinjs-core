@@ -28,7 +28,6 @@ public;Category
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
 internal;ChangedElementsDb 
-internal;ChangeSetToken
 beta;ChangeSummary
 beta;ChangeSummaryExtractContext
 beta;ChangeSummaryExtractOptions

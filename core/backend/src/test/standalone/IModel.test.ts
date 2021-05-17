@@ -1631,7 +1631,7 @@ describe("iModel", () => {
   it("should be able to create a snapshot IModel", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test project" },
-      client: "ABC Manufacturing",
+      client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
       guid: Guid.createValue(),
@@ -1684,7 +1684,7 @@ describe("iModel", () => {
     const testValue = "this is a test";
     const nativeDb = iModel.nativeDb;
     assert.isUndefined(nativeDb.queryLocalValue(testLocal));
-    assert.equal(DbResult.BE_SQLITE_DONE, nativeDb.saveLocalValue(testLocal, testValue));
+    nativeDb.saveLocalValue(testLocal, testValue);
     assert.equal(nativeDb.queryLocalValue(testLocal), testValue);
 
     iModel.close();
