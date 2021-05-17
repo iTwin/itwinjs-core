@@ -2,6 +2,12 @@
   "name": "@bentley/config-loader",
   "entries": [
     {
+      "version": "2.15.3",
+      "tag": "@bentley/config-loader_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:37 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.15.2",
       "tag": "@bentley/config-loader_v2.15.2",
       "date": "Wed, 12 May 2021 18:08:13 GMT",
