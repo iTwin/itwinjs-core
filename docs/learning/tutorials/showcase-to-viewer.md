@@ -5,7 +5,7 @@
 This tutorial assumes that you already have:
 
 - Explored the [sample showcase](https://www.itwinjs.org/sample-showcase).
-- Your own [local source](https://github.com/imodeljs/itwin-viewer) for the iTwin Web Viewer based on the template @bentley/itwin-viewer
+- Created a local [iTwin Web Viewer](https://github.com/imodeljs/itwin-viewer) based on the template @bentley/itwin-viewer
 - Configured your local source to open the "House Model" sample iModel.
   - Instructions to use this sample iModel can be found [here]($docs/learning/tutorials/create-test-imodel-sample/).
 - Understand the concept of a [UI Provider]($docs/learning/ui/abstract/uiitemsprovider) and adding [widgets]($docs/reference/ui-abstract/uiitemsprovider/uiitemsprovider/).
@@ -13,11 +13,11 @@ This tutorial assumes that you already have:
 
 ### Goal
 
-This tutorial will take widgets from the sample showcase and add them into your iTwin Viewer using the ```uiProviders``` prop.
+This tutorial will take widgets from the sample showcase and add them in to your iTwin Viewer using the ```uiProviders``` prop.
 
 ### Understanding the Sample Showcase
 
-We hope you have given the [sample showcase](https://www.itwinjs.org/sample-showcase) a tour and enjoyed the many samples we provide. You may want to use some of these samples in your own iTwin Viewer, and to do so you'll first need to understand how the showcase works.
+We hope you have given the [sample showcase](https://www.itwinjs.org/sample-showcase) a tour and enjoyed the many samples provided. You may want to use some of these samples in your own iTwin Viewer, and to do so you'll first need to understand how the showcase works.
 
 If we take a closer look at the files involved in each sample, you'll notice they all follow the same pattern containing a few important files:
 
@@ -47,6 +47,7 @@ Starting with our entry file ```ViewAttributesApp.tsx```, the ```Viewer``` compo
 />
 ```
 
+The default iTwin Web Viewer only contains ```contextId```, ```iModelId``` and ```authConfig``` from the ```Viewer``` component. The only additional prop you'll need to add in your iTwin Viewer is prop ```uiProviders``` to use our widget, the other props are used to prepare the sample in our showcase.
 Prop ```uiProviders``` is passed in an array that contains the ```ViewAttributesWidgetProvider```, imported and defined at the top of the file:
 
 ``` jsx
@@ -76,7 +77,7 @@ For this tutorial, these files will be placed directly in our src directory so y
 
 ![ViewAttributesStructure]($docs/learning/tutorials/images/sample_viewer_port_to_itwin_viewer.png)
 
-Running our iTwin Viewer now, you'll notice the exact same fully functional widget from the sample showcase in your iTwin Viewer.
+Running our iTwin Viewer now, you'll notice the same fully functional widget from the sample showcase in your iTwin Viewer.
 
 ![ViewAttributesResults]($docs/learning/tutorials/images/view_attributes_ported_results.png)
 
