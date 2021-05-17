@@ -9,7 +9,7 @@
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 
 /** Describes timing statistics for a single rendered frame.
- * @beta
+ * @alpha
  */
 export interface FrameStats {
   /** A unique number identifying the frame to which these statistics belong. */
@@ -45,7 +45,7 @@ export interface FrameStats {
 
 /** A callback which will return a frame statistics object.
  * @see [[Viewport.enableFrameStatsCallback]]
- * @beta
+ * @alpha
  */
 export type FrameStatsCallback = (stats: FrameStats) => void;
 
@@ -98,6 +98,7 @@ export class FrameStatsCollector {
   }
 
   public set frameStatsCallback(cb: FrameStatsCallback | undefined) { this._frameStatsCallback = cb; }
+  public get frameStatsCallback(): FrameStatsCallback | undefined { return this._frameStatsCallback; }
   public get frameStats() { return this._frameStats; }
 
   private _begin(entry: keyof FrameStats) {

@@ -3371,6 +3371,40 @@ export interface FrameRenderData {
     needComposite: boolean;
 }
 
+// @alpha
+export interface FrameStats {
+    backgroundTime: number;
+    classifiersTime: number;
+    frameId: number;
+    opaqueTime: number;
+    overlaysTime: number;
+    sceneTime: number;
+    screenspaceEffectsTime: number;
+    shadowsTime: number;
+    totalFrameTime: number;
+    translucentTime: number;
+}
+
+// @alpha
+export type FrameStatsCallback = (stats: FrameStats) => void;
+
+// @internal (undocumented)
+export class FrameStatsCollector {
+    // (undocumented)
+    beginFrame(sceneMilSecElapsed?: number, readPixels?: boolean): void;
+    // (undocumented)
+    beginTime(entry: keyof FrameStats, readPixels?: boolean): void;
+    // (undocumented)
+    endFrame(readPixels?: boolean): void;
+    // (undocumented)
+    endTime(entry: keyof FrameStats, readPixels?: boolean): void;
+    // (undocumented)
+    get frameStats(): FrameStats;
+    set frameStatsCallback(cb: FrameStatsCallback | undefined);
+    // (undocumented)
+    get frameStatsCallback(): FrameStatsCallback | undefined;
+    }
+
 // @public
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
@@ -8243,6 +8277,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     abstract drawFrame(sceneMilSecElapsed?: number): void;
     // (undocumented)
+    enableFrameStatsCallback(_callback?: FrameStatsCallback): void;
+    // (undocumented)
     getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
     getTextureDrape(_id: Id64String): RenderTextureDrape | undefined;
@@ -9540,6 +9576,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     drawTextureDrapes(): void;
     // (undocumented)
+    enableFrameStatsCallback(callback?: FrameStatsCallback): void;
+    // (undocumented)
     protected abstract _endPaint(): void;
     // (undocumented)
     endPerfMetricFrame(readPixels?: boolean): void;
@@ -9551,6 +9589,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get flashedId(): Id64String;
     // (undocumented)
     get flashIntensity(): number;
+    // (undocumented)
+    get frameStatsCollector(): FrameStatsCollector;
     // (undocumented)
     freezeRealityTiles: boolean;
     // (undocumented)
@@ -12115,6 +12155,8 @@ export abstract class Viewport implements IDisposable {
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     get emphasisSettings(): Hilite.Settings;
     set emphasisSettings(settings: Hilite.Settings);
+    // @alpha
+    enableFrameStatsCallback(callback?: FrameStatsCallback): void;
     // @deprecated
     get featureOverrideProvider(): FeatureOverrideProvider | undefined;
     set featureOverrideProvider(provider: FeatureOverrideProvider | undefined);

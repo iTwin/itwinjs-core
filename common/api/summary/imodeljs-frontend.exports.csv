@@ -185,6 +185,9 @@ internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
 internal;FrameRenderData
+alpha;FrameStats
+alpha;FrameStatsCallback = (stats: FrameStats) => void
+internal;FrameStatsCollector
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions

@@ -1166,7 +1166,7 @@ export abstract class Viewport implements IDisposable {
    * @note The timing data collected using this method only collects the amount of time spent on the CPU. Due to performance considerations, time spent on the GPU is not collected. Therefore, these statistics are not a direct mapping to user experience.
    * @note In order to avoid interfering with the rendering loop, take care to avoid performing any intensive tasks in your callback.
    * @see [[FrameStats]]
-   * @beta
+   * @alpha
    */
   public enableFrameStatsCallback(callback?: FrameStatsCallback): void {
     this.target.enableFrameStatsCallback(callback);
