@@ -51,7 +51,6 @@ import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
-import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { EditingScopeNotifications } from '@bentley/imodeljs-common';
@@ -186,7 +185,6 @@ import { SubjectProps } from '@bentley/imodeljs-common';
 import { SynchronizationConfigLinkProps } from '@bentley/imodeljs-common';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { TelemetryManager } from '@bentley/telemetry-client';
-import { TextureFlags } from '@bentley/imodeljs-common';
 import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
@@ -436,7 +434,9 @@ export class BriefcaseDb extends IModelDb {
     static open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<string>;
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
+    // @deprecated
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+    // @deprecated
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     saveChanges(description?: string): void;
     // (undocumented)
@@ -460,14 +460,16 @@ export enum BriefcaseIdValue {
     Standalone = 0
 }
 
-// @beta
+// @public
 export class BriefcaseManager {
     static acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number>;
     static get cacheDir(): string;
+    // @beta
     static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
     // @internal (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
     static deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void>;
+    // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
     // @internal
@@ -492,21 +494,22 @@ export class BriefcaseManager {
     static getCompatibilityPath(iModelId: GuidString): string;
     static getFileName(briefcase: BriefcaseProps): string;
     static getIModelPath(iModelId: GuidString): string;
-    static initialize(cacheRootDir: string, compatibilityDir: string): void;
+    static initialize(cacheRootDir: string, compatibilityDir?: string): void;
+    // @deprecated
     static isStandaloneBriefcaseId(id: BriefcaseId): boolean;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps): void;
+    // @internal
     static processChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex?: number): Promise<void>;
     // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, mergeToVersion?: IModelVersion): Promise<void>;
     // @internal
     static pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType?: ChangesType, relinquishCodesLocks?: boolean): Promise<void>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     static reinstateChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reinstateToVersion?: IModelVersion): Promise<void>;
-    // (undocumented)
     static releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     static reverseChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reverseToVersion: IModelVersion): Promise<void>;
     }
 
@@ -670,7 +673,7 @@ export class CheckpointManager {
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean;
 }
 
-// @beta
+// @public
 export interface CheckpointProps {
     changeSetId: string;
     contextId: GuidString;
@@ -1303,8 +1306,6 @@ export interface DownloadJob {
     promise?: Promise<any>;
     // (undocumented)
     request: DownloadRequest;
-    // (undocumented)
-    status: DownloadBriefcaseStatus;
 }
 
 // @internal
@@ -3706,7 +3707,7 @@ export interface ProcessChangesetOptions {
     wantPropertyChecksums?: boolean;
 }
 
-// @beta
+// @public
 export type ProgressFunction = (loaded: number, total: number) => number;
 
 // @beta
@@ -3763,10 +3764,8 @@ export class RenderMaterialElement extends DefinitionElement implements RenderMa
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): RenderMaterialElement;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
-    // (undocumented)
     description?: string;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String;
-    // (undocumented)
     paletteName: string;
     // @internal (undocumented)
     toJSON(): RenderMaterialProps;
@@ -3836,7 +3835,7 @@ export class RepositoryModel extends DefinitionModel {
     static get className(): string;
 }
 
-// @beta
+// @public
 export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
     onProgress?: ProgressFunction;
 };
@@ -3860,6 +3859,8 @@ export class Schema {
     // @internal
     static get missingRequiredBehavior(): boolean;
     static get schemaName(): string;
+    // @beta
+    static toSemverString(paddedVersion: string): string;
 }
 
 // @internal (undocumented)
@@ -4313,22 +4314,26 @@ export class Texture extends DefinitionElement {
     constructor(props: TextureCreateProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Texture;
+    // @deprecated
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, _width: number, _height: number, description: string, _flags: 0): Texture;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
+    static createTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Texture;
     // (undocumented)
     data: Uint8Array;
     // (undocumented)
     description?: string;
-    // (undocumented)
-    flags: TextureFlags;
+    // @deprecated (undocumented)
+    flags: 0;
     // (undocumented)
     format: ImageSourceFormat;
-    // (undocumented)
+    // @deprecated (undocumented)
     height: number;
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Id64String;
+    // @deprecated
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, _width: number, _height: number, description: string, _flags: 0): Id64String;
+    static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
     // @internal (undocumented)
     toJSON(): TextureProps;
-    // (undocumented)
+    // @deprecated (undocumented)
     width: number;
 }
 
