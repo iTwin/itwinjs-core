@@ -86,7 +86,7 @@ export class FrameStatsCollector {
   }
 
   public set onFrameStatsReady(ev: OnFrameStatsReadyEvent | undefined) { this._onFrameStatsReady = ev; }
-  public get frameStatsListener(): OnFrameStatsReadyEvent | undefined { return this._onFrameStatsReady; }
+  public get onFrameStatsReady(): OnFrameStatsReadyEvent | undefined { return this._onFrameStatsReady; }
 
   private _begin(entry: keyof FrameStats) {
     let prevSpan = this._frameStatsMap.get(entry);

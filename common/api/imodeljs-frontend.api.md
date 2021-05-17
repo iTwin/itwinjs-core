@@ -3373,36 +3373,31 @@ export interface FrameRenderData {
 
 // @alpha
 export interface FrameStats {
-    backgroundTime: number;
-    classifiersTime: number;
-    frameId: number;
-    opaqueTime: number;
-    overlaysTime: number;
-    sceneTime: number;
-    screenspaceEffectsTime: number;
-    shadowsTime: number;
-    totalFrameTime: number;
-    translucentTime: number;
+    readonly backgroundTime: number;
+    readonly classifiersTime: number;
+    readonly frameId: number;
+    readonly opaqueTime: number;
+    readonly overlaysTime: number;
+    readonly sceneTime: number;
+    readonly screenspaceEffectsTime: number;
+    readonly shadowsTime: number;
+    readonly totalFrameTime: number;
+    readonly translucentTime: number;
 }
-
-// @alpha
-export type FrameStatsCallback = (stats: FrameStats) => void;
 
 // @internal (undocumented)
 export class FrameStatsCollector {
     // (undocumented)
-    beginFrame(sceneMilSecElapsed?: number, readPixels?: boolean): void;
+    beginFrame(sceneMilSecElapsed?: number): void;
     // (undocumented)
-    beginTime(entry: keyof FrameStats, readPixels?: boolean): void;
+    beginTime(entry: keyof FrameStats): void;
     // (undocumented)
-    endFrame(readPixels?: boolean): void;
+    endFrame(): void;
     // (undocumented)
-    endTime(entry: keyof FrameStats, readPixels?: boolean): void;
+    endTime(entry: keyof FrameStats): void;
+    set onFrameStatsReady(ev: OnFrameStatsReadyEvent | undefined);
     // (undocumented)
-    get frameStats(): FrameStats;
-    set frameStatsCallback(cb: FrameStatsCallback | undefined);
-    // (undocumented)
-    get frameStatsCallback(): FrameStatsCallback | undefined;
+    get onFrameStatsReady(): OnFrameStatsReadyEvent | undefined;
     }
 
 // @public
@@ -6824,6 +6819,9 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     signOut(requestContext?: ClientRequestContext): Promise<void>;
     }
 
+// @alpha
+export type OnFrameStatsReadyEvent = BeEvent<(frameStats: FrameStats) => void>;
+
 // @internal
 export class OnScreenTarget extends Target {
     constructor(canvas: HTMLCanvasElement);
@@ -8277,7 +8275,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     abstract drawFrame(sceneMilSecElapsed?: number): void;
     // (undocumented)
-    enableFrameStatsCallback(_callback?: FrameStatsCallback): void;
+    enableFrameStatsEvent(_event?: OnFrameStatsReadyEvent): void;
     // (undocumented)
     getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
@@ -9576,7 +9574,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     drawTextureDrapes(): void;
     // (undocumented)
-    enableFrameStatsCallback(callback?: FrameStatsCallback): void;
+    enableFrameStatsEvent(event?: OnFrameStatsReadyEvent): void;
     // (undocumented)
     protected abstract _endPaint(): void;
     // (undocumented)
@@ -12156,7 +12154,7 @@ export abstract class Viewport implements IDisposable {
     get emphasisSettings(): Hilite.Settings;
     set emphasisSettings(settings: Hilite.Settings);
     // @alpha
-    enableFrameStatsCallback(callback?: FrameStatsCallback): void;
+    enableFrameStatsEvent(event?: OnFrameStatsReadyEvent): void;
     // @deprecated
     get featureOverrideProvider(): FeatureOverrideProvider | undefined;
     set featureOverrideProvider(provider: FeatureOverrideProvider | undefined);
