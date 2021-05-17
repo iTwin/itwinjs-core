@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Logger } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
-  Category, ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions,
-  InformationPartitionElement, PhysicalModel, PhysicalPartition, Relationship, SubCategory,
+  Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
+  IModelDb, IModelTransformer, IModelTransformOptions, InformationPartitionElement, ModelSelector, PhysicalModel, PhysicalPartition, Relationship,
+  SpatialCategory, SpatialViewDefinition, SubCategory, ViewDefinition,
 } from "@bentley/imodeljs-backend";
 import { ElementProps, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -16,6 +17,7 @@ export const progressLoggerCategory = "Progress";
 export interface TransformerOptions extends IModelTransformOptions {
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
+  exportViewDefinition?: Id64String;
   deleteUnusedGeometryParts?: boolean;
   excludeSubCategories?: string[];
   excludeCategories?: string[];
@@ -78,6 +80,31 @@ export class Transformer extends IModelTransformer {
       this._targetPhysicalModelId = PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "CombinedPhysicalModel"); // WIP: Id should be passed in, not inserted here
       this.importer.doNotUpdateElementIds.add(this._targetPhysicalModelId);
     }
+    if (options?.exportViewDefinition) {
+      const spatialViewDefinition = this.sourceDb.elements.getElement<SpatialViewDefinition>(options.exportViewDefinition, SpatialViewDefinition);
+      const categorySelector = this.sourceDb.elements.getElement<CategorySelector>(spatialViewDefinition.categorySelectorId, CategorySelector);
+      const modelSelector = this.sourceDb.elements.getElement<ModelSelector>(spatialViewDefinition.modelSelectorId, ModelSelector);
+      const displayStyle = this.sourceDb.elements.getElement<DisplayStyle3d>(spatialViewDefinition.displayStyleId, DisplayStyle3d);
+      // Exclude all ViewDefinition-related classes because a new view will be generated in the target iModel
+      this.exporter.excludeElementClass(ViewDefinition.classFullName);
+      this.exporter.excludeElementClass(CategorySelector.classFullName);
+      this.exporter.excludeElementClass(ModelSelector.classFullName);
+      this.exporter.excludeElementClass(DisplayStyle.classFullName);
+      // Exclude categories not in the CategorySelector
+      this.excludeCategoriesExcept(Id64.toIdSet(categorySelector.categories));
+      // Exclude models not in the ModelSelector
+      this.excludeModelsExcept(Id64.toIdSet(modelSelector.models));
+      // Exclude elements excluded by the DisplayStyle
+      for (const excludedElementId of displayStyle.settings.excludedElementIds) {
+        this.exporter.excludeElement(excludedElementId);
+      }
+      // Exclude SubCategories that are not visible in the DisplayStyle
+      for (const [subCategoryId, subCategoryOverride] of displayStyle.settings.subCategoryOverrides) {
+        if (subCategoryOverride.invisible) {
+          this.excludeSubCategory(subCategoryId);
+        }
+      }
+    }
     if (options?.excludeSubCategories) {
       this.excludeSubCategories(options.excludeSubCategories);
     }
@@ -108,19 +135,27 @@ export class Transformer extends IModelTransformer {
       this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
         statement.bindString("subCategoryName", subCategoryName);
         while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const subCategoryId = statement.getValue(0).getId();
-          const subCategory = this.sourceDb.elements.getElement<SubCategory>(subCategoryId, SubCategory);
-          if (!subCategory.isDefaultSubCategory) { // cannot exclude a default SubCategory
-            this.context.filterSubCategory(subCategoryId); // filter out geometry entries in this SubCategory from the target iModel
-            this.exporter.excludeElement(subCategoryId); // exclude the SubCategory Element itself from the target iModel
-          }
+          this.excludeSubCategory(statement.getValue(0).getId());
         }
       });
     }
   }
 
+  /** Initialize IModelTransformer to exclude a specific SubCategory.
+   * @note The geometry entries in the specified SubCategory are always filtered out.
+   * @note The SubCategory element itself is only excluded if it is not the default SubCategory.
+   */
+  private excludeSubCategory(subCategoryId: Id64String): void {
+    const subCategory = this.sourceDb.elements.getElement<SubCategory>(subCategoryId, SubCategory);
+    this.context.filterSubCategory(subCategoryId); // filter out geometry entries in this SubCategory from the target iModel
+    if (!subCategory.isDefaultSubCategory) { // cannot exclude a default SubCategory
+      this.exporter.excludeElement(subCategoryId); // exclude the SubCategory Element itself from the target iModel
+    }
+  }
+
   /** Initialize IModelTransformer to exclude Category Elements and geometry entries in a Category from the target iModel.
    * @param CategoryNames Array of Category names to exclude
+   * @note This sample code assumes that you want to exclude all Categories of a given name regardless of the containing model (that scopes the CodeValue).
    */
   private excludeCategories(categoryNames: string[]): void {
     const sql = `SELECT ECInstanceId FROM ${Category.classFullName} WHERE CodeValue=:categoryName`;
@@ -129,11 +164,40 @@ export class Transformer extends IModelTransformer {
         statement.bindString("categoryName", categoryName);
         while (DbResult.BE_SQLITE_ROW === statement.step()) {
           const categoryId = statement.getValue(0).getId();
-          this.exporter.excludeElementCategory(categoryId);
-          this.exporter.excludeElement(categoryId);
+          this.exporter.excludeElementsInCategory(categoryId); // exclude elements in this category
+          this.exporter.excludeElement(categoryId); // exclude the category element itself
         }
       });
     }
+  }
+
+  /** Excludes categories not referenced by the specified Id64Set. */
+  private excludeCategoriesExcept(categoryIds: Id64Set): void {
+    const sql = `SELECT ECInstanceId FROM ${SpatialCategory.classFullName}`;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const categoryId = statement.getValue(0).getId();
+        if (!categoryIds.has(categoryId)) {
+          this.exporter.excludeElementsInCategory(categoryId); // exclude elements in this category
+          this.exporter.excludeElement(categoryId); // exclude the category element itself
+        }
+      }
+    });
+  }
+
+  /** Excludes models not referenced by the specified Id64Set.
+   * @note This really excludes the *modeled element* (which also excludes the model) since we don't want *modeled elements* without a sub-model.
+  */
+  private excludeModelsExcept(modelIds: Id64Set): void {
+    const sql = `SELECT ECInstanceId FROM ${GeometricModel3d.classFullName}`;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const modelId = statement.getValue(0).getId();
+        if (!modelIds.has(modelId)) {
+          this.exporter.excludeElement(modelId); // exclude the category element itself
+        }
+      }
+    });
   }
 
   /** Override that counts elements processed and optionally remaps PhysicalPartitions.
