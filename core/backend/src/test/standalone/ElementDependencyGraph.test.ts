@@ -147,17 +147,14 @@ describe("ElementDependencyGraph", () => {
   const requestContext = new BackendRequestContext();
   let dbInfo: DbInfo;
 
-  const performUpgrade = (pathname: string): DbResult => {
+  const performUpgrade = (pathname: string) => {
     const nativeDb = new IModelHost.platform.DgnDb();
     const upgradeOptions: UpgradeOptions = {
       domain: DomainOptions.Upgrade,
     };
-    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
-    if (DbResult.BE_SQLITE_OK === res) {
-      nativeDb.deleteAllTxns();
-      nativeDb.closeIModel();
-    }
-    return res;
+    nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
+    nativeDb.deleteAllTxns();
+    nativeDb.closeIModel();
   };
 
   before(async () => {
@@ -167,7 +164,7 @@ describe("ElementDependencyGraph", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
-    assert.equal(performUpgrade(testFileName), 0);
+    performUpgrade(testFileName);
     const imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
     const physicalModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "EDGTestModel");

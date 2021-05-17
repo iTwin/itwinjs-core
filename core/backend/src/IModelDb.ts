@@ -843,7 +843,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public static openDgnDb(file: { path: string, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: string): IModelJsNative.DgnDb {
+  public static openDgnDb(file: { path: string, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions): IModelJsNative.DgnDb {
     file.key = file.key ?? Guid.createValue();
     if (this.tryFindByKey(file.key))
       throw new IModelError(IModelStatus.AlreadyOpen, `key [${file.key}] for file [${file.path}] is already in use`, Logger.logError, loggerCategory);
@@ -852,12 +852,13 @@ export abstract class IModelDb extends IModel {
     if (isUpgradeRequested && openMode !== OpenMode.ReadWrite)
       throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db", Logger.logError, loggerCategory);
 
-    const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(file.path, openMode, upgradeOptions, props);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not open iModel ${file.path}`, Logger.logError, loggerCategory);
-
-    return nativeDb;
+    try {
+      const nativeDb = new IModelHost.platform.DgnDb();
+      nativeDb.openIModel(file.path, openMode, upgradeOptions, props);
+      return nativeDb;
+    } catch (err) {
+      throw new IModelError(err.errorNumber, `Could not open iModel [${err.message}], ${file.path}`);
+    }
   }
 
   /**
@@ -1070,31 +1071,49 @@ export abstract class IModelDb extends IModel {
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
-  public queryFilePropertyString(prop: FilePropertyProps): string | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), true) as string | undefined; }
+  public queryFilePropertyString(prop: FilePropertyProps): string | undefined {
+    return this.nativeDb.queryFileProperty(prop, true) as string | undefined;
+  }
 
   /** Query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
-  public queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as Uint8Array | undefined; }
+  public queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined {
+    return this.nativeDb.queryFileProperty(prop, false) as Uint8Array | undefined;
+  }
 
   /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @returns 0 if successful, status otherwise
    */
-  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), strValue, blobVal); }
+  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult {
+    try {
+      this.nativeDb.saveFileProperty(prop, strValue, blobVal);
+      return DbResult.BE_SQLITE_OK;
+    } catch (err) {
+      return err.errorNumber;
+    }
+  }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    * @returns 0 if successful, status otherwise
    */
-  public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined, undefined); }
+  public deleteFileProperty(prop: FilePropertyProps): DbResult {
+    try {
+      this.nativeDb.saveFileProperty(prop, undefined, undefined);
+      return DbResult.BE_SQLITE_OK;
+    } catch (err) {
+      return err.errorNumber;
+    }
+  }
 
   /** Query for the next available major id for a "file property" from this iModel.
    * @param prop the FilePropertyProps that describes the property
    * @returns the next available (that is, an unused) id for prop. If none are present, will return 0.
    */
-  public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
+  public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(prop); }
 
   public async requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     requestContext.enter();
@@ -1964,9 +1983,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return viewStateData;
     }
 
-    private getViewThumbnailArg(viewDefinitionId: Id64String): string {
-      const viewProps: FilePropertyProps = { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId };
-      return JSON.stringify(viewProps);
+    private getViewThumbnailArg(viewDefinitionId: Id64String): FilePropertyProps {
+      return { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId };
     }
 
     /** Get the thumbnail for a view.
@@ -1992,7 +2010,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
-      return this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
+      this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
+      return 0;
     }
 
     /** Set the default view property the iModel
@@ -2426,14 +2445,8 @@ export class SnapshotDb extends IModelDb {
    */
   public static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb {
     const nativeDb = new IModelHost.platform.DgnDb();
-    const optionsString = JSON.stringify(options);
-    let status = nativeDb.createIModel(filePath, optionsString);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not create snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
-
-    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not set briefcaseId for snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
+    nativeDb.createIModel(filePath, options);
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
     if (options.createClassViews)
@@ -2455,21 +2468,13 @@ export class SnapshotDb extends IModelDb {
       throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel", Logger.logError, loggerCategory);
 
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
-    const optionsString: string | undefined = options ? JSON.stringify(options) : undefined;
-    if (options?.password) {
-      const status = IModelHost.platform.DgnDb.encryptDb(snapshotFile, optionsString!);
-      if (DbResult.BE_SQLITE_OK !== status)
-        throw new IModelError(status, "Problem encrypting snapshot iModel", Logger.logError, loggerCategory);
-    } else {
-      const status = IModelHost.platform.DgnDb.vacuum(snapshotFile);
-      if (DbResult.BE_SQLITE_OK !== status) {
-        throw new IModelError(status, "Error initializing snapshot iModel", Logger.logError, loggerCategory);
-      }
-    }
+    IModelHost.platform.DgnDb.vacuum(snapshotFile);
+
+    if (options?.password)
+      IModelHost.platform.DgnDb.encryptDb(snapshotFile, options);
+
     const nativeDb = new IModelHost.platform.DgnDb();
-    const result = nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, optionsString);
-    if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, `Could not open iModel ${snapshotFile}`, Logger.logError, loggerCategory);
+    nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, options);
 
     // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))
@@ -2480,7 +2485,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
-    const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue()); // WIP: clean up copied file on error?
+    const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
     if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
 
@@ -2492,7 +2497,7 @@ export class SnapshotDb extends IModelDb {
    */
   public static openForApplyChangesets(path: string, props?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: props?.key };
-    const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props ? JSON.stringify(props) : undefined);
+    const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props);
     return new SnapshotDb(nativeDb, file.key!);
   }
 
@@ -2504,7 +2509,7 @@ export class SnapshotDb extends IModelDb {
    */
   public static openFile(path: string, opts?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: opts?.key };
-    const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts ? JSON.stringify(opts) : undefined);
+    const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
     return new SnapshotDb(nativeDb, file.key!);
   }
 
@@ -2617,20 +2622,10 @@ export class StandaloneDb extends IModelDb {
    */
   public static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
     const nativeDb = new IModelHost.platform.DgnDb();
-    const argsString = JSON.stringify(args);
-    let status = nativeDb.createIModel(filePath, argsString);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not create standalone iModel: ${filePath}`, Logger.logError, loggerCategory);
-
+    nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(IModelDb._edit, undefined === args.allowEdit ? "" : args.allowEdit);
     nativeDb.saveProjectGuid(Guid.empty);
-
-    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    if (DbResult.BE_SQLITE_OK !== status) {
-      nativeDb.closeIModel();
-      throw new IModelError(status, `Could not set briefcaseId for iModel:  ${filePath}`, Logger.logError, loggerCategory);
-    }
-
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     return new StandaloneDb(nativeDb, Guid.createValue());
   }

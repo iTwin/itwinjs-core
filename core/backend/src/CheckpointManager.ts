@@ -379,9 +379,11 @@ export class CheckpointManager {
       return false;
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(fileName, OpenMode.Readonly);
-    if (DbResult.BE_SQLITE_OK !== status)
+    try {
+      nativeDb.openIModel(fileName, OpenMode.Readonly);
+    } catch (error) {
       return false;
+    }
 
     const isValid = checkpoint.iModelId === nativeDb.getDbGuid() && checkpoint.changeSetId === nativeDb.getParentChangeSetId();
     nativeDb.closeIModel();

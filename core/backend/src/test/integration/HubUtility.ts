@@ -229,10 +229,7 @@ export class HubUtility {
     HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const result = nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, "Could not open iModel");
-
+    nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
     const changeSets = HubUtility.readChangeSets(iModelDir);
     const endNum: number = endCS ? endCS : changeSets.length;
     const filteredCS = changeSets.filter((obj) => obj.index! >= startCS && obj.index! <= endNum);
@@ -276,10 +273,7 @@ export class HubUtility {
     HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, false /* =overwrite */);
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const result = nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, "Could not open iModel");
-
+    nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
     const lastAppliedChangeSetId = nativeDb.getParentChangeSetId();
     assert(!nativeDb.getReversedChangeSetId());
 
@@ -309,10 +303,7 @@ export class HubUtility {
     HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const result = nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, "Could not open iModel");
-
+    nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
     const changeSets = HubUtility.readChangeSets(iModelDir);
 
     let status: ChangeSetStatus;
@@ -518,9 +509,7 @@ export class HubUtility {
     }
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(iModelPathname, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not open iModel");
+    nativeDb.openIModel(iModelPathname, OpenMode.ReadWrite);
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     if (nativeDb.queryLocalValue("StandaloneEdit"))

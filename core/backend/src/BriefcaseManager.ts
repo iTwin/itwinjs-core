@@ -248,9 +248,11 @@ export class BriefcaseManager {
 
     // now open the downloaded checkpoint and reset its BriefcaseId
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(fileName, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not open downloaded briefcase for write access: ${fileName}, err=${new BentleyError(status).name}`);
+    try {
+      nativeDb.openIModel(fileName, OpenMode.ReadWrite);
+    } catch (err) {
+      throw new IModelError(err.errorNumber, `Could not open downloaded briefcase for write access: ${fileName}, err=${err.message}`);
+    }
     try {
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getParentChangeSetId() !== args.checkpoint.changeSetId)

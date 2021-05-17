@@ -21,17 +21,14 @@ describe("TxnManager", () => {
   let testFileName: string;
   const requestContext = new BackendRequestContext();
 
-  const performUpgrade = (pathname: string): DbResult => {
+  const performUpgrade = (pathname: string) => {
     const nativeDb = new IModelHost.platform.DgnDb();
     const upgradeOptions: UpgradeOptions = {
       domain: DomainOptions.Upgrade,
     };
-    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
-    if (DbResult.BE_SQLITE_OK === res) {
-      nativeDb.deleteAllTxns();
-      nativeDb.closeIModel();
-    }
-    return res;
+    nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
+    nativeDb.deleteAllTxns();
+    nativeDb.closeIModel();
   };
 
   before(async () => {
@@ -41,7 +38,7 @@ describe("TxnManager", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
-    assert.equal(performUpgrade(testFileName), 0);
+    performUpgrade(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
 

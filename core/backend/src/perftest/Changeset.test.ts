@@ -627,9 +627,7 @@ describe("ImodelChangesetPerformance own data", () => {
       fs.copySync(pathName, localPath);
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(localPath, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not open iModel as Standalone");
+    nativeDb.openIModel(localPath, OpenMode.ReadWrite);
     nativeDb.saveLocalValue("StandaloneEdit", "");
     nativeDb.saveChanges();
     nativeDb.closeIModel();
