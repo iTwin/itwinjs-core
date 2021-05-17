@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import * as Yargs from "yargs";
-import { assert, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ChangeSet, Version } from "@bentley/imodelhub-client";
 import { BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
@@ -37,6 +37,7 @@ interface CommandLineArgs {
   validation: boolean;
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
+  exportViewDefinition?: Id64String;
   deleteUnusedGeometryParts?: boolean;
   noProvenance?: boolean;
   includeSourceProvenance?: boolean;
@@ -82,6 +83,7 @@ void (async () => {
     // transformation options
     Yargs.option("simplifyElementGeometry", { desc: "Simplify element geometry upon import into target iModel", type: "boolean", default: false });
     Yargs.option("combinePhysicalModels", { desc: "Combine all source PhysicalModels into a single PhysicalModel in the target iModel", type: "boolean", default: false });
+    Yargs.option("exportViewDefinition", { desc: "Only export elements that would be visible using the specified ViewDefinition Id", type: "string", default: undefined });
     Yargs.option("deleteUnusedGeometryParts", { desc: "Delete unused GeometryParts from the target iModel", type: "boolean", default: false });
     Yargs.option("excludeSubCategories", { desc: "Exclude geometry in the specified SubCategories (names with comma separators) from the target iModel", type: "string" });
     Yargs.option("excludeCategories", { desc: "Exclude a categories (names with comma separators) and their elements from the target iModel", type: "string" });
@@ -244,6 +246,7 @@ void (async () => {
     const transformerOptions: TransformerOptions = {
       simplifyElementGeometry: args.simplifyElementGeometry,
       combinePhysicalModels: args.combinePhysicalModels,
+      exportViewDefinition: args.exportViewDefinition,
       deleteUnusedGeometryParts: args.deleteUnusedGeometryParts,
       excludeSubCategories,
       excludeCategories,
@@ -257,6 +260,10 @@ void (async () => {
       await Transformer.transformChanges(requestContext, sourceDb, targetDb, args.sourceStartChangeSetId, transformerOptions);
     } else {
       await Transformer.transformAll(requestContext, sourceDb, targetDb, transformerOptions);
+    }
+
+    if (args.exportViewDefinition) {
+      ElementUtils.insertViewDefinition(targetDb, "Default", true);
     }
 
     if (args.validation) {
