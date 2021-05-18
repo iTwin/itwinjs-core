@@ -214,14 +214,18 @@ export class SchemaKey {
     }
   }
 
-  public static async fromJson(props: SchemaKeyProps): Promise<SchemaKey> {
+  /**
+   * Deserializes a SchemaKeyProps JSON object into a SchemaKey object.
+   * @param props SchemaKeyProps
+   * @returns A SchemaKey object.
+   */
+  public static fromJson(props: SchemaKeyProps): SchemaKey {
     return new SchemaKey(props.name, props.read, props.write, props.minor);
   }
 
-  public static fromJsonSync(props: SchemaKeyProps): SchemaKey {
-    return new SchemaKey(props.name, props.read, props.write, props.minor);
-  }
-
+  /**
+   * Save this SchemaKey's properties to an object for serializing to JSON.
+   */
   public toJson(): SchemaKeyProps {
     return {
       name: this.name,

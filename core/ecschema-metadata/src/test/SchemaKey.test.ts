@@ -141,11 +141,6 @@ describe("SchemaKey", () => {
 
   describe("fromJson", () => {
     let testKey2: SchemaKey;
-    it("should return a SchemaKey given a SchemaKeyProp using fromJsonSync", () => {
-      testKey2 = SchemaKey.fromJsonSync({name: "testKey2", read: 1, write: 0, minor: 12});
-      expect(testKey2).to.not.eql(undefined);
-      expect(testKey2.name).to.eql("testKey2");
-    });
 
     it("should return a SchemaKey given a SchemaKeyProp using fromJson", async () => {
       testKey2 = await SchemaKey.fromJson({name: "testKey2", read: 1, write: 0, minor: 12});
