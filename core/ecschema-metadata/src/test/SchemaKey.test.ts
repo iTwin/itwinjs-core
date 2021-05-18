@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { SchemaKeyProps } from "../Deserialization/JsonProps";
 import { SchemaMatchType } from "../ECObjects";
 import { ECObjectsError } from "../Exception";
 import { ECVersion, SchemaKey } from "../SchemaKey";
@@ -136,5 +137,40 @@ describe("SchemaKey", () => {
       });
     });
 
+  });
+
+  describe("fromJson", () => {
+    let testKey2: SchemaKey;
+    it("should return a SchemaKey given a SchemaKeyProp using fromJsonSync", () => {
+      testKey2 = SchemaKey.fromJsonSync({name: "testKey2", read: 1, write: 0, minor: 12});
+      expect(testKey2).to.not.eql(undefined);
+      expect(testKey2.name).to.eql("testKey2");
+    });
+
+    it("should return a SchemaKey given a SchemaKeyProp using fromJson", async () => {
+      testKey2 = await SchemaKey.fromJson({name: "testKey2", read: 1, write: 0, minor: 12});
+      expect(testKey2).to.not.eql(undefined);
+      expect(testKey2.name).to.eql("testKey2");
+    });
+  });
+
+  describe("toJson", () => {
+    let schemaKeyProps: SchemaKeyProps;
+    it("should return a schemaKeyProps given testKey", () => {
+      schemaKeyProps = testKey.toJson();
+      expect(schemaKeyProps.name).to.eql("testKey");
+      expect(schemaKeyProps.read).to.eql(1);
+      expect(schemaKeyProps.write).to.eql(0);
+      expect(schemaKeyProps.minor).to.eql(12);
+    });
+
+    it("should return a schemaKeyProps given a different test key", () => {
+      const testKey2 = new SchemaKey("testKey2", new ECVersion(4,16,25));
+      schemaKeyProps = testKey2.toJson();
+      expect(schemaKeyProps.name).to.eql("testKey2");
+      expect(schemaKeyProps.read).to.eql(4);
+      expect(schemaKeyProps.write).to.eql(16);
+      expect(schemaKeyProps.minor).to.eql(25);
+    });
   });
 });

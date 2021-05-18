@@ -222,6 +222,14 @@ export class SchemaKey {
     return new SchemaKey(props.name, props.read, props.write, props.minor);
   }
 
+  public toJson(): SchemaKeyProps {
+    return {
+      name: this.name,
+      read: this.readVersion,
+      write: this.writeVersion,
+      minor: this.minorVersion,
+    };
+  }
 }
 
 /**
