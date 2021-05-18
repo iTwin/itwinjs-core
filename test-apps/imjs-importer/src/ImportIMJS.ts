@@ -10,7 +10,7 @@ import {
   SpatialCategory, SpatialModel,
 } from "@bentley/imodeljs-backend";
 import { AxisAlignedBox3d, Code, ColorDef, PhysicalElementProps, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
-
+/* eslint-disable no-console */
 function collectRange(g: any, rangeToExtend: Range3d) {
   if (g instanceof GeometryQuery) {
     g.extendRange(rangeToExtend);
