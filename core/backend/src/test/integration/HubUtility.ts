@@ -2,15 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, BeDuration, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, Briefcase as HubBriefcase, HubIModel, IModelBaseHandler, IModelHubClient, IModelQuery, InitializationState, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
+
 import * as os from "os";
 import * as path from "path";
-import { ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import {
+  assert, BeDuration, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger,
+} from "@bentley/bentleyjs-core";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import {
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, HubIModel, IModelBaseHandler, IModelHubClient,
+  IModelQuery, InitializationState, Version, VersionQuery,
+} from "@bentley/imodelhub-client";
+import { BriefcaseIdValue } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
+import { IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 
 /** DTO to work with iModelHub DeleteChangeSet API */
 @ECJsonTypeMap.classToJson("wsg", "iModelActions.DeleteChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
