@@ -12,7 +12,6 @@ import { assert, expect } from "chai";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import * as sinon from "sinon";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost,
@@ -91,10 +90,6 @@ describe("BriefcaseManager (#integration)", () => {
     managerRequestContext.enter();
   });
 
-  afterEach(() => {
-    sinon.restore();
-  });
-
   it("should open and close an iModel from the Hub", async () => {
     const iModel = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON() });
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
@@ -146,14 +141,6 @@ describe("BriefcaseManager (#integration)", () => {
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel5);
     assert.isFalse(IModelJsFs.existsSync(pathname3));
-  });
-
-  it("should log usage when reusing checkpoints", async () => {
-    const spy = sinon.stub(BriefcaseManager, "logUsage");
-    await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
-    await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
-    await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
-    assert.equal(spy.callCount, 3, "BriefcaseManager.logUsage was not called enough times");
   });
 
   it("should open iModels of specific versions from the Hub", async () => {
