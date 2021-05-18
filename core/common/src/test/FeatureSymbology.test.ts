@@ -278,6 +278,36 @@ describe("FeatureOverrides", () => {
     expect(ovrs.isSubCategoryVisible(3, 0)).to.be.false;
     expect(ovrs.isSubCategoryVisible(4, 0)).to.be.false;
   });
+
+  it("hides animation nodes", () => {
+    const feature = new Feature("0x123");
+    const modelId = "0x456";
+    const ovrs = new Overrides();
+
+    ovrs.neverDrawnAnimationNodes.add(1);
+    ovrs.neverDrawnAnimationNodes.add(0);
+    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 1)).to.be.undefined;
+    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 2)).not.to.be.undefined;
+    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 0)).to.be.undefined;
+  });
+
+  it("overrides animation nodes", () => {
+    const ovrs = new Overrides();
+
+    const expectAppearance = (nodeId: number, expected: FeatureAppearance) => {
+      const actual = ovrs.getFeatureAppearance(new Feature("0x123"), "0x456", undefined, nodeId)!;
+      expect(actual).not.to.be.undefined;
+      expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
+    };
+
+    const green = FeatureAppearance.fromRgb(ColorDef.green);
+    const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+    ovrs.animationNodeOverrides.set(0, green);
+    ovrs.animationNodeOverrides.set(1, blue);
+    expectAppearance(1, blue);
+    expectAppearance(2, FeatureAppearance.defaults);
+    expectAppearance(0, green);
+  });
 });
 
 describe("FeatureAppearanceProvider", () => {

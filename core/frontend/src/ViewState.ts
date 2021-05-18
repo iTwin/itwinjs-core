@@ -273,7 +273,10 @@ export abstract class ViewState extends ElementState {
     await Promise.all(promises);
   }
 
-  /** Returns true if all [[TileTree]]s required by this view have been loaded. */
+  /** Returns true if all [[TileTree]]s required by this view have been loaded.
+   * Note that the map tile trees associated to the viewport rather than the view, to check the
+   * map tiles as well call [[Viewport.areAreAllTileTreesLoaded]].
+   */
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeRef((ref) => {
@@ -428,6 +431,7 @@ export abstract class ViewState extends ElementState {
   /** @internal */
   public createScene(context: SceneContext): void {
     this.forEachTileTreeRef((ref: TileTreeReference) => ref.addToScene(context));
+    context.viewport.forEachMapTreeRef((ref: TileTreeReference) => ref.addToScene(context));
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
@@ -1913,7 +1917,6 @@ export abstract class ViewState3d extends ViewState {
     const mapParams = new TextureMapping.Params();
     const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
     mapParams.textureMatrix = transform;
-    mapParams.textureMatrix.setTransform();
     matParams.textureMapping = new TextureMapping(texture, mapParams);
     const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
     if (!material)

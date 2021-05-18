@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus, Config, GuidString, IModelStatus, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { ChangeSetQuery, ChangesType } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { UserCancelledError } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
 import * as os from "os";
@@ -28,6 +28,8 @@ import { TestChangeSetUtility } from "./TestChangeSetUtility";
 //    imjs_test_manager_user_password
 //    imjs_test_super_manager_user_name
 //    imjs_test_super_manager_password
+//    imjs_test_imodelhub_user_name
+//    imjs_test_imodelhub_user_password
 //    imjs_oidc_browser_test_client_id
 //      - Required to be a SPA
 //    imjs_oidc_browser_test_redirect_uri
@@ -343,18 +345,18 @@ describe("BriefcaseManager (#integration)", () => {
       if (changeSets[0].changesType === ChangesType.Schema)
         break;
 
-      await iModelPullAndPush.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));
+      await iModelPullAndPush.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));// eslint-disable-line deprecation/deprecation
       assert.equal(readOnlyTestElementCounts[revIndex], getElementCount(iModelPullAndPush));
 
-      await iModelPullOnly.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));
+      await iModelPullOnly.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));// eslint-disable-line deprecation/deprecation
       assert.equal(readOnlyTestElementCounts[revIndex], getElementCount(iModelPullOnly));
     }
 
     for (let fwdIndex = 0; fwdIndex < revIndex; fwdIndex++) {
-      await iModelPullAndPush.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[fwdIndex]));
+      await iModelPullAndPush.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[fwdIndex]));// eslint-disable-line deprecation/deprecation
       assert.equal(readOnlyTestElementCounts[fwdIndex], getElementCount(iModelPullAndPush));
 
-      await iModelPullOnly.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[fwdIndex]));
+      await iModelPullOnly.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[fwdIndex]));// eslint-disable-line deprecation/deprecation
       assert.equal(readOnlyTestElementCounts[fwdIndex], getElementCount(iModelPullOnly));
     }
 
@@ -603,6 +605,8 @@ describe("BriefcaseManager (#integration)", () => {
 
     readline.clearLine(process.stdout, 0);
     readline.moveCursor(process.stdout, -20, 0);
+    let done = 0;
+    let complete = 0;
     const downloadProgress = (loaded: number, total: number) => {
       if (total > 0) {
         const message = `${HubUtility.testIModelNames.stadium} Download Progress ... ${(loaded * 100 / total).toFixed(2)}%`;
@@ -611,6 +615,8 @@ describe("BriefcaseManager (#integration)", () => {
         if (loaded >= total)
           process.stdout.write(os.EOL);
         numProgressCalls++;
+        done = loaded;
+        complete = total;
       }
       return 0;
     };
@@ -623,10 +629,15 @@ describe("BriefcaseManager (#integration)", () => {
     };
     const fileName = BriefcaseManager.getFileName(args);
     await BriefcaseManager.deleteBriefcaseFiles(fileName);
+    const watch = new StopWatch("download", true);
     const props = await BriefcaseManager.downloadBriefcase(requestContext, args);
+    // eslint-disable-next-line no-console
+    console.log(`download took ${watch.elapsedSeconds} seconds`);
     const iModel = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-    assert.isTrue(numProgressCalls > 10);
+    assert.isAbove(numProgressCalls, 0, "download progress called");
+    assert.isAbove(done, 0, "done set");
+    assert.isAbove(complete, 0, "complete set");
   });
 
   it("Should be able to cancel an in progress download (#integration)", async () => {
@@ -645,4 +656,77 @@ describe("BriefcaseManager (#integration)", () => {
     await expect(downloadPromise).to.be.rejectedWith(UserCancelledError).to.eventually.have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
   });
 
+  it("Should be able to recover after changeSet deletion (#integration)", async () => {
+    const testUser = {
+      email: Config.App.getString("imjs_test_imodelhub_user_name"),
+      password: Config.App.getString("imjs_test_imodelhub_user_password"),
+    };
+    const userContext = await TestUtility.getAuthorizedClientRequestContext(testUser);
+    const testIModelName = "Delete changeSet test";
+    const testUtility = new TestChangeSetUtility(userContext, testIModelName);
+
+    // Acquire briefcase and push 1 changeSet
+    const iModel = await testUtility.createTestIModel();
+
+    // Push 2 valid changeSets
+    await testUtility.pushTestChangeSet();
+    await testUtility.pushTestChangeSet();
+
+    // Push an invalid changeSet
+    const fileHandler = IModelHost.iModelClient.fileHandler!;
+    const oldUploadFunc = fileHandler.uploadFile.bind(fileHandler);
+    try {
+      const newUploadFunc =
+        async (requestCtx: AuthorizedClientRequestContext, uploadUrl: string, filePath: string, progress?: ProgressCallback): Promise<void> => {
+          // Replace changeSet file contents with a string and upload the now invalid file
+          const changeSetFileContentsLength = IModelJsFs.readFileSync(filePath).length;
+          const invalidChangeSetFileContents = "x".repeat(changeSetFileContentsLength);
+          IModelJsFs.writeFileSync(filePath, invalidChangeSetFileContents);
+
+          return oldUploadFunc(requestCtx, uploadUrl, filePath, progress);
+        };
+      fileHandler.uploadFile = newUploadFunc;
+      await testUtility.pushTestChangeSet();
+    } finally {
+      fileHandler.uploadFile = oldUploadFunc;
+    }
+
+    // Push 2 more valid changeSets
+    await testUtility.pushTestChangeSet();
+    await testUtility.pushTestChangeSet();
+
+    // Ensure that DoNotScheduleRenderThumbnailJob option is disabled
+    assert.isFalse(IModelHost.iModelClient.requestOptions.isSet);
+    // Create version to trigger checkpoint generation
+    const lastChangeSetId = iModel.nativeDb.getParentChangeSetId();
+    await IModelHost.iModelClient.versions.create(userContext, iModel.iModelId, lastChangeSetId, "Version 1");
+
+    // Wait until the scheduled checkpoint job fails
+    await HubUtility.waitforCheckpointGenerationFailure(userContext, iModel.iModelId, lastChangeSetId);
+
+    // Delete changeSet
+    const deleteChangeSetActionId = (await HubUtility.deleteChangeSet(userContext, iModel.iModelId, 4)).id!;
+    await HubUtility.waitForChangeSetDeletion(userContext, iModel.iModelId, deleteChangeSetActionId);
+
+    // Assert that changeSet push fails
+    let error: IModelError;
+    try {
+      await testUtility.pushTestChangeSet();
+    } catch (err) {
+      error = err;
+    }
+    assert.equal(BriefcaseStatus.ContainsDeletedChangeSets, error!.errorNumber);
+
+    // Redownload briefcase
+    await testUtility.redownloadBriefcase();
+
+    // Push a new changeSet to ensure that the new briefcase is valid
+    await testUtility.pushTestChangeSet();
+
+    // Assert the final number of changeSets
+    assert.equal(4, (await IModelHost.iModelClient.changeSets.get(userContext, iModel.iModelId)).length);
+
+    // Delete the test iModel
+    await testUtility.deleteTestIModel();
+  });
 });

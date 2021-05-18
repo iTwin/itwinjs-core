@@ -146,13 +146,20 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     }
   }
 
+  private getWindow() {
+    const el = this._subMenuElement;
+    const parentDocument = el!.ownerDocument;
+    return parentDocument.defaultView;
+  }
+
   private checkRenderDirection() {
     const { autoflip } = this.props;
+    const parentWindow = this.getWindow();
     let renderDirection = this.state.direction;
     // istanbul ignore else
-    if (autoflip && this._menuElement) {
+    if (parentWindow && autoflip && this._menuElement) {
       const menuRect = this._menuElement.getRect();
-      renderDirection = ContextMenu.autoFlip(renderDirection, menuRect, window.innerWidth, window.innerHeight);
+      renderDirection = ContextMenu.autoFlip(renderDirection, menuRect, parentWindow.innerWidth, parentWindow.innerHeight);
       // istanbul ignore next
       if (renderDirection !== this.state.direction)
         this.setState({ direction: renderDirection });

@@ -232,7 +232,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
   const startTime = new Date().getTime();
-  await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));
+  await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));// eslint-disable-line deprecation/deprecation
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
 
@@ -277,12 +277,12 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
   const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
-  await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));
+  await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));// eslint-disable-line deprecation/deprecation
   const reverseCount = getElementCount(rwIModel);
   assert.equal(reverseCount, firstCount);
 
   const startTime = new Date().getTime();
-  await rwIModel.reinstateChanges(requestContext, IModelVersion.latest());
+  await rwIModel.reinstateChanges(requestContext, IModelVersion.latest());// eslint-disable-line deprecation/deprecation
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   const reinstateCount = getElementCount(rwIModel);

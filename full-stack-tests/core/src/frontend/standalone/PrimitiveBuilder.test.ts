@@ -39,7 +39,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   it("should produce proper arc strokes for specific tolerances", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -94,7 +94,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   it("should not produce any strokes for Polyface", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     // const pointA = new Point3d(-100, 0, 0);
     // const pointB = new Point3d(0, 100, 0);
@@ -125,7 +125,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   it("should not produce any strokes for Shape", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -146,7 +146,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   it("should not produce any strokes for Shape2d", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point2d(-100, 0);
     const pointB = new Point2d(0, 100);
@@ -167,7 +167,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   it("should produce proper LineString strokes; different tolerances should have no effect", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -221,7 +221,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   it("should produce proper PointString strokes; different tolerances should have no effect", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -275,7 +275,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   it("should produce proper PointString2d strokes; different tolerances should have no effect", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point2d(-100, 0);
     const pointB = new Point2d(0, 100);
@@ -329,7 +329,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   it("should be able to finish graphics", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
     const accum = new GeometryAccumulator(imodel, IModelApp.renderSystem);
 
     const gfParams: GraphicParams = new GraphicParams();

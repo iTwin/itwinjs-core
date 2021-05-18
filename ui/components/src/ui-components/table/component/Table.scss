@@ -130,6 +130,8 @@
   }
 
   .react-grid-Cell__value {
+    // Enable the possibility to overflow the cell, so that merging of the cells would be possible
+    overflow: visible !important;
     // Remove transformations that center the content vertically in order to make cell borders fit
     > div {
       top: 0 !important;

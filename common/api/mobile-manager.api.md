@@ -38,12 +38,12 @@ export class AndroidApp {
 }
 
 // @beta (undocumented)
-export abstract class AndroidDevice extends MobileDevice {
+export class AndroidHost extends MobileHost {
+    static startup(opt?: AndroidHostOpts): Promise<void>;
 }
 
 // @beta (undocumented)
-export class AndroidHost extends MobileHost {
-}
+export type AndroidHostOpts = MobileHostOpts;
 
 // @beta (undocumented)
 export interface DownloadTask {
@@ -121,7 +121,7 @@ export abstract class MobileDevice {
     // (undocumented)
     abstract authGetAccessToken(ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void): void;
     // (undocumented)
-    abstract authInit(ctx: ClientRequestContext, config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
+    authInit(_ctx: ClientRequestContext, _config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
     // (undocumented)
     abstract authSignIn(ctx: ClientRequestContext, callback: (err?: string) => void): void;
     // (undocumented)

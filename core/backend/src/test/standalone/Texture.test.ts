@@ -33,7 +33,7 @@ describe("Texture", () => {
     function test(name: string, base64Encode: boolean) {
       const png = new Uint8Array(pngData);
       const data = base64Encode ? Base64EncodedString.fromUint8Array(png) : png;
-      const textureId = Texture.insert(imodel, IModel.dictionaryId, name, ImageSourceFormat.Png, data, 100, 50, `A texture named ${name}`, 0);
+      const textureId = Texture.insertTexture(imodel, IModel.dictionaryId, name, ImageSourceFormat.Png, data, `A texture named ${name}`);
       expect(Id64.isValidId64(textureId)).to.be.true;
 
       const texture = imodel.elements.getElement<Texture>(textureId);
@@ -43,11 +43,8 @@ describe("Texture", () => {
       expect(texture.format).to.equal(ImageSourceFormat.Png);
       expect(texture.data.length).to.equal(pngData.length);
       expect(Array.from(texture.data)).to.deep.equal(pngData);
-      expect(texture.width).to.equal(100);
-      expect(texture.height).to.equal(50);
       expect(texture.code.value).to.equal(name);
       expect(texture.description).to.equal(`A texture named ${name}`);
-      expect(texture.flags).to.equal(0);
     }
 
     test("bytes", false);
@@ -55,13 +52,13 @@ describe("Texture", () => {
   });
 
   it("base-64 encodes image data in JSON", () => {
-    const props = Texture.create(imodel, IModel.dictionaryId, "update", ImageSourceFormat.Png, new Uint8Array([1, 2, 3]), 10, 20, "", 0).toJSON();
+    const props = Texture.createTexture(imodel, IModel.dictionaryId, "update", ImageSourceFormat.Png, new Uint8Array([1, 2, 3]), "").toJSON();
     expect(typeof props.data).to.equal("string");
     expect(Array.from(Base64EncodedString.toUint8Array(props.data))).to.deep.equal([1, 2, 3]);
   });
 
   it("should update image", () => {
-    const textureId = Texture.insert(imodel, IModel.dictionaryId, "update", ImageSourceFormat.Jpeg, new Uint8Array([1, 2, 3]), 10, 20, "", 0);
+    const textureId = Texture.insertTexture(imodel, IModel.dictionaryId, "update", ImageSourceFormat.Jpeg, new Uint8Array([1, 2, 3]), "");
     const texture = imodel.elements.getElement<Texture>(textureId);
     texture.data = new Uint8Array([4, 5, 6, 7]);
     texture.update();
