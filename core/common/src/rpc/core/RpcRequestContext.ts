@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { AsyncMutex, ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { SerializedRpcRequest } from "./RpcProtocol";
 import { RpcRequest } from "./RpcRequest";
 
@@ -21,6 +21,4 @@ export interface RpcRequestContext {
 
   /** Used at backend to deserialize client specified context */
   deserialize: (request: SerializedRpcRequest) => Promise<ClientRequestContext>;
-
-  requestMutex: AsyncMutex;
 }

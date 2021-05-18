@@ -118,7 +118,6 @@ export class RpcInvocation {
   }
 
   private async resolve(): Promise<any> {
-    const unlock = await RpcConfiguration.requestContext.requestMutex.lock();
     try {
       const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
       clientRequestContext.enter();
@@ -134,8 +133,6 @@ export class RpcInvocation {
       return await op.call(impl, ...parameters);
     } catch (error) {
       return this.reject(error);
-    } finally {
-      unlock();
     }
   }
 

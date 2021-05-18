@@ -104,7 +104,6 @@ export abstract class RpcConfiguration {
       userId: "",
     }),
     deserialize: async (_request: SerializedRpcRequest): Promise<ClientRequestContext> => new ClientRequestContext(""),
-    requestMutex: new AsyncMutex(),
   };
 
   /** @internal */
