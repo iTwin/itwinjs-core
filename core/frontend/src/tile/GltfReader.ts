@@ -194,12 +194,33 @@ export abstract class GltfReader {
     return nodes;
   }
 
-  public readGltfAndCreateGeometry(_transformToRoot?: Transform, needNormals = false, needParams = false): RealityTileGeometry {
+  public readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals = false, needParams = false): RealityTileGeometry {
+    const tileTransform = this.getTileTransform(transformToRoot);
     const polyfaces =  new Array<Polyface>();
     for (const node of this._getNodes())
-      this.readNodeAndCreatePolyfaces(polyfaces, node, undefined, needNormals, needParams);
+      this.readNodeAndCreatePolyfaces(polyfaces, node, tileTransform, needNormals, needParams);
 
     return { polyfaces };
+  }
+
+  private getTileTransform(transformToRoot?: Transform, pseudoRtcBias?: Vector3d) {
+    let transform;
+
+    if (undefined !== this._returnToCenter || undefined !== pseudoRtcBias || this._yAxisUp || undefined !== transformToRoot) {
+      if (undefined !== this._returnToCenter)
+        transform = Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
+      else if (undefined !== pseudoRtcBias)
+        transform = Transform.createTranslationXYZ(pseudoRtcBias.x, pseudoRtcBias.y, pseudoRtcBias.z);
+      else
+        transform = Transform.createIdentity();
+
+      if (this._yAxisUp)
+        transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
+      if (undefined !== transformToRoot)
+        transform = transformToRoot.multiplyTransformTransform(transform);
+
+    }
+    return transform;
   }
 
   protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
@@ -224,23 +245,11 @@ export abstract class GltfReader {
     else
       renderGraphic = this._system.createGraphicList(renderGraphicList);
 
-    let transform;
+    const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
     let range = contentRange;
-    if (undefined !== this._returnToCenter || undefined !== pseudoRtcBias || this._yAxisUp || undefined !== transformToRoot) {
-      if (undefined !== this._returnToCenter)
-        transform = Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
-      else if (undefined !== pseudoRtcBias)
-        transform = Transform.createTranslationXYZ(pseudoRtcBias.x, pseudoRtcBias.y, pseudoRtcBias.z);
-      else
-        transform = Transform.createIdentity();
+    if (transform)
+      range = transform.inverse()!.multiplyRange(range);
 
-      if (this._yAxisUp)
-        transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
-      if (undefined !== transformToRoot)
-        transform = transformToRoot.multiplyTransformTransform(transform);
-
-      range = transform.inverse()!.multiplyRange(contentRange);
-    }
     renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
     if (transform) {
       const branch = new GraphicBranch(true);

@@ -144,7 +144,7 @@ class RealityTileByRangeCollector extends RealityTileCollector {
     if (tile.maximumSize === 0.0 || !tile.isDisplayable)
       return TileCollectionSelectionStatus.Continue;
 
-    const tileTolerance = tile.range.diagonal.length / tile.maximumSize;
+    const tileTolerance = tile.radius/ tile.maximumSize;
     return tileTolerance < this._tolerance ? TileCollectionSelectionStatus.Accept : TileCollectionSelectionStatus.Continue;
   }
 }
@@ -384,11 +384,12 @@ export class RealityTileTree extends TileTree {
     if (debugContext) {
       const builder =  debugContext.createGraphicBuilder(GraphicType.WorldDecoration);
       for (const tile of rangeSelector.accepted) {
-        if (tile.geometry?.polyfaces) {
-          tile.geometry.polyfaces.forEach((polyface) => builder.addPolyface(polyface, false));
+        builder.setSymbology(ColorDef.red, ColorDef.red, 1);
+        const corners = tile.range.corners();
+        this.iModelTransform.multiplyPoint3dArrayInPlace(corners);
+        builder.addRangeBoxFromCorners(corners);
 
-          debugContext.addDecorationFromBuilder(builder);
-        }
+        debugContext.addDecorationFromBuilder(builder);
       }
     }
 
