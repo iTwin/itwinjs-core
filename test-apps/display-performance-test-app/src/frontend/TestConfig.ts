@@ -214,7 +214,7 @@ export class TestConfig {
     this.renderOptions = prevConfig?.renderOptions ? { ...prevConfig.renderOptions } : { useWebGL2: true, dpiAwareLOD: true };
     this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
-    this.hyperModeling = props.hyperModeling ?? prevConfig.hyperModeling;
+    this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {

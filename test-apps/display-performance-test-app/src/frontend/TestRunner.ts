@@ -13,6 +13,7 @@ import {
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
+import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
@@ -356,9 +357,11 @@ export class TestRunner {
     if (hyperModeling) {
       try {
         const decorator = await HyperModeling.start(viewport);
-        const marker = decorator.markers.findMarkerById(hyperModeling.sectionDrawingLocationId);
-        if (undefined === marker) {
-          await this.logError(`SectionDrawingLocation ${hyperModeling.sectionDrawingLoationId} not found.`);
+        const marker = decorator?.markers.findMarkerById(hyperModeling.sectionDrawingLocationId);
+        if (!decorator) {
+          await this.logError("Failed to start hypermodeling.");
+        } else if (!marker) {
+          await this.logError(`SectionDrawingLocation ${hyperModeling.sectionDrawingLocationId} not found.`);
         } else {
           if (hyperModeling.applySpatialView) {
             await decorator.toggleSection(marker, true);
