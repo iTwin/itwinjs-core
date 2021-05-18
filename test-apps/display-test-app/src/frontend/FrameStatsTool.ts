@@ -5,7 +5,7 @@
 
 import { FrameStats, IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
-/** Enable or disable frame statistics reporting on a viewport. */
+/** Enable or disable (toggle) frame statistics reporting for all viewports. */
 export class FrameStatsTool extends Tool {
   public static toolId = "FrameStats";
   public static get minArgs() { return 0; }
