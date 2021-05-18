@@ -107,7 +107,7 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.91b123.txt"), "utf8")).to.equal("This is bar.txt");
   });
 
@@ -122,7 +122,7 @@ describe("RequireMagicCommentsPlugin", () => {
     const result = await runWebpack(testConfig);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "./bar.txt"`);
     expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.91b123.txt"), "utf8")).to.equal("This is bar.txt");
   });
 
@@ -136,7 +136,7 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.91b123.txt"), "utf8")).to.equal("This is bar.txt");
   });
 

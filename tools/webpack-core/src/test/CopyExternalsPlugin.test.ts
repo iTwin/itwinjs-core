@@ -51,7 +51,7 @@ describe("CopyExternalsPlugin", () => {
     expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/c/index.js"), "utf8")).to.equal(`console.log("This is c");`);
   });
 
-  it.only("should copy @bentley/imodeljs-native", async () => {
+  it("should copy @bentley/imodeljs-native", async () => {
     vol.fromJSON({
       "lib/test/assets/copy-externals-plugin-test/test.js": `import * as imodeljsnative from "@bentley/imodeljs-native";`,
     });
