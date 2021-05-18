@@ -6,6 +6,7 @@
  * @module Metadata
  */
 
+import { SchemaKeyProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
@@ -212,6 +213,15 @@ export class SchemaKey {
         return false;
     }
   }
+
+  public static async fromJson(props: SchemaKeyProps): Promise<SchemaKey> {
+    return new SchemaKey(props.name, props.read, props.write, props.minor);
+  }
+
+  public static fromJsonSync(props: SchemaKeyProps): SchemaKey {
+    return new SchemaKey(props.name, props.read, props.write, props.minor);
+  }
+
 }
 
 /**

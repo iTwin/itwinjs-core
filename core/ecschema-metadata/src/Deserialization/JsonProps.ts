@@ -37,6 +37,16 @@ export interface SchemaProps {
 /**
  * @beta
  */
+export interface SchemaKeyProps {
+  readonly name: string;
+  readonly read: number;
+  readonly write: number;
+  readonly minor: number;
+}
+
+/**
+ * @beta
+ */
 export interface SchemaReferenceProps {
   readonly name: string;
   readonly version: string;
