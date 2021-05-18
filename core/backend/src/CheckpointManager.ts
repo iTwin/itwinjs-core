@@ -115,39 +115,36 @@ export class V2CheckpointManager {
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
     const { requestContext, iModelId, changeSetId } = checkpoint;
 
-    requestContext.enter();
-    const bcvDaemonCachePath = process.env.BLOCKCACHE_DIR;
-    if (!bcvDaemonCachePath) {
-      if (checkpoint.expectV2)
-        Logger.logError(loggerCategory, "Invalid config: BLOCKCACHE_DIR is not set");
+    try {
+      requestContext.enter();
+      const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
+      const checkpoints = await IModelHost.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
+      requestContext.enter();
+      if (checkpoints.length < 1)
+        throw new Error("no checkpoint");
 
-      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
+      const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
+      if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
+        throw new Error("Invalid checkpoint in iModelHub");
+
+      return {
+        container: containerAccessKeyContainer,
+        auth: containerAccessKeySAS,
+        daemonDir: process.env.BLOCKCACHE_DIR,
+        storageType: "azure?sas=1",
+        user: containerAccessKeyAccount,
+        dbAlias: containerAccessKeyDbName,
+        writeable: false,
+      };
+    } catch (err) {
+      throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
-
-    const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
-    const checkpoints = await IModelHost.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
-    requestContext.enter();
-
-    if (checkpoints.length < 1)
-      throw new IModelError(IModelStatus.NotFound, "Checkpoint not found");
-
-    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
-    if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid checkpoint in iModelHub");
-
-    return {
-      container: containerAccessKeyContainer,
-      auth: containerAccessKeySAS,
-      daemonDir: bcvDaemonCachePath,
-      storageType: "azure?sas=1",
-      user: containerAccessKeyAccount,
-      dbAlias: containerAccessKeyDbName,
-      writeable: false,
-    };
   }
 
   public static async attach(checkpoint: CheckpointProps): Promise<string> {
     const args = await this.getCommandArgs(checkpoint);
+    if (undefined === args.daemonDir || args.daemonDir === "")
+      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
 
     // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
     const attachResult = await BlobDaemon.command("attach", args);
@@ -161,10 +158,27 @@ export class V2CheckpointManager {
     return BlobDaemon.getDbFileName(args);
   }
 
-  private static async performDownload(job: DownloadJob) {
+  private static async performDownload(job: DownloadJob): Promise<void> {
     CheckpointManager.onDownload.raiseEvent(job);
     const request = job.request;
-    return BlobDaemon.command("download", { ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile, onProgress: request.onProgress });
+    const downloader = new IModelHost.platform.DownloadV2Checkpoint({ ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile });
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      const onProgress = request.onProgress;
+      if (onProgress) {
+        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
+          const progress = downloader.getProgress();
+          if (onProgress(progress.loaded, progress.total))
+            downloader.cancelDownload();
+        }, 250);
+      }
+      await downloader.downloadPromise;
+    } catch (err) {
+      throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
+    } finally {
+      if (timer)
+        clearInterval(timer);
+    }
   }
 
   /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
@@ -320,12 +334,14 @@ export class CheckpointManager {
 
     try {
       // first see if there's a V2 checkpoint available.
-      return await V2CheckpointManager.downloadCheckpoint(request);
+      await V2CheckpointManager.downloadCheckpoint(request);
+      Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeSetId}`);
     } catch (error) {
-      // TODO: check to see if the error is "not available" and keep going. Otherwise rethrow error
-    }
+      if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
+        return V1CheckpointManager.downloadCheckpoint(request);
 
-    return V1CheckpointManager.downloadCheckpoint(request);
+      throw (error); // most likely, was aborted
+    }
   }
 
   /** checks a file's dbGuid & contextId for consistency, and updates the dbGuid when possible */
@@ -355,9 +371,11 @@ export class CheckpointManager {
       return false;
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(fileName, OpenMode.Readonly);
-    if (DbResult.BE_SQLITE_OK !== status)
+    try {
+      nativeDb.openIModel(fileName, OpenMode.Readonly);
+    } catch (error) {
       return false;
+    }
 
     const isValid = checkpoint.iModelId === nativeDb.getDbGuid() && checkpoint.changeSetId === nativeDb.getParentChangeSetId();
     nativeDb.closeIModel();
