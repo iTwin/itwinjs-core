@@ -999,7 +999,7 @@ export abstract class Viewport implements IDisposable {
    * @see [[FrameStats]]
    * @alpha
    */
-  public onFrameStats = new BeEvent<(frameStats: Readonly<FrameStats>) => void>();
+  public readonly onFrameStats = new BeEvent<(frameStats: Readonly<FrameStats>) => void>();
 
   /** @internal */
   protected constructor(target: RenderTarget) {

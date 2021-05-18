@@ -12262,7 +12262,7 @@ export abstract class Viewport implements IDisposable {
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
     // @alpha
-    onFrameStats: BeEvent<(frameStats: Readonly<FrameStats>) => void>;
+    readonly onFrameStats: BeEvent<(frameStats: Readonly<FrameStats>) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
     readonly onResized: BeEvent<(vp: Viewport) => void>;
