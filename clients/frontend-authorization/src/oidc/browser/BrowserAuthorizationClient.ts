@@ -43,7 +43,7 @@ export interface BrowserAuthorizationClientConfiguration {
 }
 
 /**
- * Utility used for authorization for Single Page Applications running in the browser
+ * Utility used for authorization for Single Page Applications running in a browser
  * @public
  */
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
