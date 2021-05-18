@@ -12,11 +12,19 @@
 @mixin light-theme {
   --buic-button-gradient1:            rgba(var(--buic-foreground-body-reverse-rgb), 0.65);
   --buic-button-gradient2:            rgba(var(--buic-foreground-body-reverse-rgb), 0.00);
+
+  --buic-background-editable:         rgb(184, 221, 245);
+  --buic-row-selection:               rgb(204, 232, 249); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.2 opacity
+  --buic-row-hover:                   rgb(229, 243, 252); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.1 opacity}
 }
 
 @mixin dark-theme {
   --buic-button-gradient1:            rgba(var(--buic-foreground-body-reverse-rgb), 0.00);
   --buic-button-gradient2:            rgba(var(--buic-foreground-body-reverse-rgb), 0.25);
+
+  --buic-background-editable:         rgb(112, 138, 155);
+  --buic-row-selection:               rgb(105, 127, 141); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.2 opacity
+  --buic-row-hover:                   rgb(098, 116, 128); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.1 opacity}
 }
 
 html,

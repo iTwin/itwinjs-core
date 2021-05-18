@@ -72,15 +72,8 @@
   --buic-background-active-overlay:           rgba(var(--iui-color-foreground-primary-rgb), var(--iui-opacity-5));
   --buic-background-pressed-overlay:          rgba(var(--iui-color-foreground-primary-rgb), 0.3);
 
-  --buic-background-editable:                 rgba(var(--iui-color-foreground-primary-rgb), 0.3);
-  --buic-row-selection:                       rgba(var(--iui-color-foreground-primary-rgb), var(--iui-opacity-5));
-  --buic-row-hover:                           rgba(var(--iui-color-foreground-primary-rgb), var(--iui-opacity-6));
-
   --buic-background-card:                     var(--buic-background-tooltip);
-  --buic-background-striped_row:              rgba(var(--iui-color-foreground-body-rgb), 0.05);
-
-  --buic-button-gradient1:                    rgba(var(--buic-foreground-body-reverse-rgb), 0.65);
-  --buic-button-gradient2:                    rgba(var(--buic-foreground-body-reverse-rgb), 0.00);
+  --buic-background-striped_row:              rgba(var(--iui-color-foreground-body-rgb), 0.03);
 
   /** background.5 */
   --buic-background-titlebar:                 var(--buic-background-5);
