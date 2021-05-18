@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Transform } from "@bentley/geometry-core";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Polyface, Transform } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { RealityTileCollector, TileCollectionSelectionStatus } from "../imodeljs-frontend";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -25,6 +25,15 @@ export interface RealityTileParams extends TileParams {
   readonly noContentButTerminateOnSelection?: boolean;
   readonly rangeCorners?: Point3d[];
 }
+/** @internal */
+export interface RealityTileGeometry {
+  polyfaces?: Polyface[];
+}
+
+/** @internal */
+export interface RealityTileContent extends TileContent {
+  geometry?: RealityTileGeometry;
+}
 
 const scratchLoadedChildren = new Array<RealityTile>();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
@@ -37,6 +46,7 @@ export class RealityTile extends Tile {
   public readonly additiveRefinement?: boolean;
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
+  private _geometry?: RealityTileGeometry;
   private _everDisplayed = false;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
@@ -59,6 +69,10 @@ export class RealityTile extends Tile {
     if (undefined !== this._contentRange)
       this.transformToRoot.multiplyRange(this._contentRange, this._contentRange);
   }
+  public setContent(content: RealityTileContent): void {
+    super.setContent(content);
+    this._geometry = content.geometry;
+  }
 
   public get realityChildren(): RealityTile[] | undefined { return this.children as RealityTile[] | undefined; }
   public get realityParent(): RealityTile { return this.parent as RealityTile; }
@@ -67,6 +81,7 @@ export class RealityTile extends Tile {
   public get maxDepth(): number { return this.realityRoot.loader.maxDepth; }
   public get isPointCloud() { return this.realityRoot.loader.containsPointClouds; }
   public get isLoaded() { return this.loadStatus === TileLoadStatus.Ready; }      // Reality tiles may depend on secondary tiles (maps) so can ge loaded but not ready.
+  public get geometry(): RealityTileGeometry | undefined { return this._geometry;  }
   public get isDisplayable(): boolean {
     if (this.noContentButTerminateOnSelection)
       return false;
@@ -284,21 +299,24 @@ export class RealityTile extends Tile {
         return;
 
       case TileCollectionSelectionStatus.Continue:
-        const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
-        if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-          collector.markChildrenLoading();
-          return;
+        if (!this.isLeaf) {
+          const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
+          if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
+            collector.markChildrenLoading();
+            return;
+          }
+          if (undefined !== this.realityChildren)
+            for (const child of this.realityChildren)
+              child.collectRealityTiles(collector);
+          break;
         }
-        if (undefined !== this.realityChildren)
-          for (const child of this.realityChildren)
-            child.collectRealityTiles(collector);
-        break;
 
+      // eslint-disable-next-line no-fallthrough
       case TileCollectionSelectionStatus.Accept:
         if (this.isLoaded)
           collector.accepted.push(this);
         else
-          collector.missing.push(this);
+          collector.missing.add(this);
 
         break;
     }

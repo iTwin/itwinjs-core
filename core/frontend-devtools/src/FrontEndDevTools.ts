@@ -88,6 +88,7 @@ export class FrontendDevTools {
 
     const i18n = IModelApp.i18n.registerNamespace("FrontendDevTools");
     const tools = [
+      TerrainDrapeTool,
       AttachMapLayerTool,
       AttachMapOverlayTool,
       AttachArcGISMapLayerByUrlTool,
@@ -218,7 +219,6 @@ export class FrontendDevTools {
       MaskBackgroundMapByElementTool,
       MaskBackgroundMapByExcludedElementTool,
       UnmaskMapTool,
-      TerrainDrapeTool,
     ];
 
     for (const tool of tools)

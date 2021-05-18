@@ -3,50 +3,55 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { BeButtonEvent, DecorateContext, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, RealityTileDrapeStatus, RealityTileTree, Viewport } from "@bentley/imodeljs-frontend";
+import { GrowableXYZArray, LineString3d, Range3d } from "@bentley/geometry-core";
+import { ColorDef } from "@bentley/imodeljs-common";
+import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, RealityTileTree, RealityTreeReference, TileTreeReference, Viewport } from "@bentley/imodeljs-frontend";
 
 /** @packageDocumentation
  * @module Tools
  */
 
 export class TerrainDrapeTool extends PrimitiveTool {
-  private _drapePoints = new Array<Point3d>();
-  private _drapeTargetModelId?: Id64String;
+  private _drapePoints = new GrowableXYZArray();
   private _drapeViewport?: Viewport;
-
-  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  private _drapeTreeRef?: TileTreeReference;
+  public static toolId = "TerrainDrape";
+  public requireWriteableTarget(): boolean { return false; }
+  public onPostInstall() {
+    super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
 
   public onUnsuspend(): void { this.showPrompt(); }
-  public decorate(_context: DecorateContext): void {
-    if (this._drapeTargetModelId && this._drapeViewport && this._drapePoints.length > 1) {
-      let drapeTree: RealityTileTree | undefined;
+  public decorate(context: DecorateContext): void {
+    if (this._drapeTreeRef && this._drapeViewport && this._drapePoints.length > 1) {
+      const drapeTree = this._drapeTreeRef.treeOwner.load();
 
-      this._drapeViewport.forEachTileTreeRef((treeRef) => {
-        const tree = treeRef.treeOwner.load();
-        if (tree && tree.modelId === this._drapeTargetModelId)
-          drapeTree = tree as RealityTileTree;
-      });
-      if (drapeTree) {
-        if (RealityTileDrapeStatus.Success === drapeTree.drapeLinestring(this._drapePoints, .1)) {
-
-        }
+      if (drapeTree instanceof RealityTileTree) {
+        const lineStrings = new Array<LineString3d>();
+        const builder =  context.createGraphicBuilder(GraphicType.WorldDecoration);
+        builder.setSymbology(ColorDef.white, ColorDef.white, 5);
+        const drapeRange = Range3d.createNull();
+        drapeRange.extendArray(this._drapePoints);
+        const tolerance = drapeRange.diagonal().magnitude() / 1000.0;
+        drapeTree.drapeLinestring(lineStrings, this._drapePoints, tolerance, this._drapeViewport);
+        lineStrings.forEach((lineString) => builder.addLineString(lineString.points));
+        context.addDecorationFromBuilder(builder);
       }
     }
   }
 
   private setupAndPromptForNextAction(): void {
-    this.initLocateElements(undefined === this._drapeTargetModelId);
+    this.initLocateElements(undefined === this._drapeTreeRef);
     IModelApp.locateManager.options.allowDecorations = true;    // So we can select "contextual" reality models.
     this.showPrompt();
   }
 
   private showPrompt(): void {
-    IModelApp.notifications.outputPromptByKey(`FrontendDevTools:tools.TerrainDrape.Prompts.${undefined === this._drapeTargetModelId ? "EnterDrapePoint" : "SelectDrapeRealityModel"}`);
+    IModelApp.notifications.outputPromptByKey(`FrontendDevTools:tools.TerrainDrape.Prompts.${undefined === this._drapeTreeRef ? "SelectDrapeRealityModel" : "EnterDrapePoint"}`);
   }
   public async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
-    if (undefined !== this._drapeTargetModelId)
+    if (undefined !== this._drapeTreeRef)
       return LocateFilterStatus.Accept;
 
     if (!hit.modelId)
@@ -62,12 +67,23 @@ export class TerrainDrapeTool extends PrimitiveTool {
     return model?.isRealityModel ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
+  public async onResetButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
+    this._drapePoints.pop();
+    return EventHandled.No;
+  }
+
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    if (undefined === this._drapeTargetModelId) {
+    if (undefined === this._drapeTreeRef) {
       const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
       if (hit?.modelId) {
-        this._drapeTargetModelId = hit.modelId;
         this._drapeViewport = hit.viewport;
+        this._drapeViewport.forEachTileTreeRef((treeRef) => {
+          if (treeRef instanceof RealityTreeReference) {
+            const tree = treeRef.treeOwner.load();
+            if (tree && tree.modelId === hit.modelId)
+              this._drapeTreeRef = treeRef.createGeometryTreeRef();
+          }
+        });
       }
     } else {
       this._drapePoints.push(ev.point);
@@ -81,13 +97,9 @@ export class TerrainDrapeTool extends PrimitiveTool {
     if (!tool.run())
       this.exitTool();
   }
-  public run(..._args: any[]): boolean {
-    return true;
-  }
 
   public parseAndRun(..._args: string[]): boolean {
     this.run();
     return true;
   }
-
 }

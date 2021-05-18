@@ -23,7 +23,7 @@ import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives"
 import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { TileContent } from "./internal";
+import { RealityTileGeometry, TileContent } from "./internal";
 
 // eslint-disable-next-line prefer-const
 let forceLUT = false;
@@ -194,12 +194,12 @@ export abstract class GltfReader {
     return nodes;
   }
 
-  public readGltfAndCreatePolyfaces(_transformToRoot?: Transform, needNormals = false, needParams = false): Polyface[] {
+  public readGltfAndCreateGeometry(_transformToRoot?: Transform, needNormals = false, needParams = false): RealityTileGeometry {
     const polyfaces =  new Array<Polyface>();
     for (const node of this._getNodes())
       this.readNodeAndCreatePolyfaces(polyfaces, node, undefined, needNormals, needParams);
 
-    return polyfaces;
+    return { polyfaces };
   }
 
   protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
@@ -310,10 +310,6 @@ export abstract class GltfReader {
     return meshes;
   }
   private polyfaceFromGltfMesh(gltfMesh: GltfMeshData, transform: Transform | undefined, needNormals: boolean, needParams: boolean): Polyface | undefined {
-    if (gltfMesh.primitive) {
-      assert(false, "polyface from general mesh not implemented");
-      return undefined;
-    }
     if (!gltfMesh.pointQParams || !gltfMesh.points || !gltfMesh.indices) {
       assert (false, "missing mesh points");
       return undefined;
@@ -331,21 +327,25 @@ export abstract class GltfReader {
       polyface.addPoint(point);
     }
 
-    indices.forEach((index: number) => polyface.addPointIndex(index));
-
-    if (includeNormals) {
-      indices.forEach((index: number) => polyface.addNormalIndex(index));
+    if (includeNormals)
       for (let i = 0; i < normals!.length; )
         polyface.addNormal(OctEncodedNormal.decodeValue(normals![i++]));
-    }
 
-    if (includeParams) {
-      indices.forEach((index: number) => polyface.addParamIndex(index));
+    if (includeParams)
       for (let i = 0; i < uvs!.length; )
         polyface.addParam(uvQParams!.unquantize(uvs![i++], uvs![i++]));
-    }
 
-    return undefined;
+    let j = 0;
+    indices.forEach((index: number) => {
+      polyface.addPointIndex(index);
+      if (includeNormals)
+        polyface.addNormalIndex(index);
+      if (includeParams)
+        polyface.addParamIndex(index);
+      if (0 === (++j % 3))
+        polyface.terminateFacet();
+    });
+    return polyface;
   }
 
   private readNodeAndCreatePolyfaces(polyfaces: Polyface[], node: any, parentTransform: Transform | undefined, needNormals: boolean, needParams: boolean) {

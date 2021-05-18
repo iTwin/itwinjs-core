@@ -7,12 +7,13 @@
  */
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { GrowableXYZArray, LineString3d, PolyfaceQuery, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { SceneContext } from "../ViewContext";
+import { GraphicBuilder, GraphicType } from "../render/GraphicBuilder";
+import { DecorateContext, SceneContext } from "../ViewContext";
+import { Viewport } from "../Viewport";
 import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
 /** @internal */
@@ -116,16 +117,19 @@ export enum TileCollectionSelectionStatus { Continue, Reject, Accept }
 export enum TileCollectionStatus { Loading, Success }
 export enum RealityTileDrapeStatus { Loading, Success, Error }
 export abstract class RealityTileCollector {
-  public missing = new Array<RealityTile>();
+  public missing = new Set<RealityTile>();
   public accepted = new Array<RealityTile>();
   private _childrenLoading = false;
 
   public markChildrenLoading() {
     this._childrenLoading = true;
   }
-  public abstract selectTile(tile: Tile): TileCollectionSelectionStatus;
+  public abstract selectTile(tile: RealityTile): TileCollectionSelectionStatus;
   public get loadingComplete() {
-    return !this._childrenLoading && 0 === this.missing.length;
+    return !this._childrenLoading && 0 === this.missing.size;
+  }
+  public requestMissingTiles(viewport: Viewport) {
+    IModelApp.tileAdmin.requestTiles(viewport, this.missing);
   }
 }
 
@@ -133,9 +137,12 @@ class RealityTileByRangeCollector extends RealityTileCollector {
   constructor(private _range: Range3d, private _tolerance: number) {
     super();
   }
-  public selectTile(tile: Tile): TileCollectionSelectionStatus {
+  public selectTile(tile: RealityTile): TileCollectionSelectionStatus {
     if (!tile.range.intersect(this._range))
       return TileCollectionSelectionStatus.Reject;
+
+    if (tile.maximumSize === 0.0 || !tile.isDisplayable)
+      return TileCollectionSelectionStatus.Continue;
 
     const tileTolerance = tile.range.diagonal.length / tile.maximumSize;
     return tileTolerance < this._tolerance ? TileCollectionSelectionStatus.Accept : TileCollectionSelectionStatus.Continue;
@@ -355,11 +362,35 @@ export class RealityTileTree extends TileTree {
     console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // eslint-disable-line
   }
 
-  public drapeLinestring(points: Point3d[], tolerance: number): RealityTileDrapeStatus {
-    const rangeSelector = new RealityTileByRangeCollector(Range3d.createArray(points), tolerance);
+  public drapeLinestring(outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, viewport: Viewport, debugContext?: DecorateContext): RealityTileDrapeStatus {
+    const range = Range3d.createNull();
+    range.extendArray(inPoints);
+    const rangeSelector = new RealityTileByRangeCollector(range, tolerance);
 
-    if (this.collectRealityTiles(rangeSelector) === TileCollectionStatus.Loading)
+    if (this.collectRealityTiles(rangeSelector) === TileCollectionStatus.Loading) {
+      rangeSelector.requestMissingTiles(viewport);
       return RealityTileDrapeStatus.Loading;
+    }
+
+    for (const tile of rangeSelector.accepted) {
+      if (tile.geometry?.polyfaces) {
+        tile.geometry.polyfaces.forEach((polyface) => {
+          const sweepStrings = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(inPoints, polyface);
+          sweepStrings.forEach((sweepString) => outStrings.push(sweepString));
+        });
+      }
+    }
+
+    if (debugContext) {
+      const builder =  debugContext.createGraphicBuilder(GraphicType.WorldDecoration);
+      for (const tile of rangeSelector.accepted) {
+        if (tile.geometry?.polyfaces) {
+          tile.geometry.polyfaces.forEach((polyface) => builder.addPolyface(polyface, false));
+
+          debugContext.addDecorationFromBuilder(builder);
+        }
+      }
+    }
 
     return RealityTileDrapeStatus.Success;
   }

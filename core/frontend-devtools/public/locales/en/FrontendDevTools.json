@@ -439,11 +439,11 @@
         "IdentifyMaskSubCategory": "Identify mask subCategory"
       }
     },
-    "TerrainDrapeTool": {
+    "TerrainDrape": {
       "keyin": "fdt drape terrain",
       "Prompts": {
         "EnterDrapePoint": "Enter drape terrain point",
-        "SelectDrapeRealityModel": "Select reality modl to drape"
+        "SelectDrapeRealityModel": "Select reality model to drape"
       }
     }
   }
