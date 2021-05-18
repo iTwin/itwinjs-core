@@ -26,7 +26,7 @@ describe("Schema RPC Interface", () => {
   it("should get schema keys", async () => {
     const schemaKeys: SchemaKey[] = [];
     const props: SchemaKeyProps[] = await ECSchemaRpcInterface.getClient().getSchemaKeys(iModel.getRpcProps());
-    props.forEach((prop: SchemaKeyProps) => schemaKeys.push(SchemaKey.fromJsonSync(prop)));
+    props.forEach((prop: SchemaKeyProps) => schemaKeys.push(SchemaKey.fromJson(prop)));
     expect(schemaKeys).to.not.be.undefined;
   });
 
