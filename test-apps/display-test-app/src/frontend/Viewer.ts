@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@bentley/geometry-core";
 import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
 import {
@@ -25,7 +25,6 @@ import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
 import { openStandaloneIModel } from "./openStandaloneIModel";
-import { FrameStats } from "@bentley/imodeljs-frontend/lib/render/FrameStats";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
