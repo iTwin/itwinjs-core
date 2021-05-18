@@ -3464,6 +3464,10 @@ export class SchemaKey {
     compareByName(rhs: SchemaKey | string | undefined): boolean;
     compareByVersion(rhs: SchemaKey): number;
     // (undocumented)
+    static fromJson(props: SchemaKeyProps): Promise<SchemaKey>;
+    // (undocumented)
+    static fromJsonSync(props: SchemaKeyProps): SchemaKey;
+    // (undocumented)
     matches(rhs: SchemaKey, matchType?: SchemaMatchType): boolean;
     // (undocumented)
     get minorVersion(): number;
@@ -3473,6 +3477,8 @@ export class SchemaKey {
     static parseString(fullName: string): SchemaKey;
     // (undocumented)
     get readVersion(): number;
+    // (undocumented)
+    toJson(): SchemaKeyProps;
     toString(padZeroes?: boolean): string;
     // (undocumented)
     get version(): ECVersion;
@@ -3480,6 +3486,18 @@ export class SchemaKey {
     protected _version: ECVersion;
     // (undocumented)
     get writeVersion(): number;
+}
+
+// @beta (undocumented)
+export interface SchemaKeyProps {
+    // (undocumented)
+    readonly minor: number;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly read: number;
+    // (undocumented)
+    readonly write: number;
 }
 
 // @beta (undocumented)
