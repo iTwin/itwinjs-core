@@ -185,6 +185,8 @@ internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
 internal;FrameRenderData
+alpha;FrameStats
+internal;FrameStatsCollector
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
@@ -376,6 +378,7 @@ internal;OffScreenTarget
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
 deprecated;OidcBrowserClient 
+alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
