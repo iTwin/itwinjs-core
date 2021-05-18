@@ -73,7 +73,7 @@ export class SchemaReadHelper<T = unknown> {
     this._schema = schema;
 
     // Need to add this schema to the context to be able to locate schemaItems within the context.
-    await this._context.addSchema(schema);
+    const schemaIndex = await this._context.addSchema(schema);
 
     // Load schema references first
     // Need to figure out if other schemas are present.
@@ -102,6 +102,7 @@ export class SchemaReadHelper<T = unknown> {
     if (this._visitorHelper)
       await this._visitorHelper.visitSchema(schema);
 
+    await this._context.setSchemaLoaded(schemaIndex);
     return schema;
   }
 
@@ -119,7 +120,7 @@ export class SchemaReadHelper<T = unknown> {
     this._schema = schema;
 
     // Need to add this schema to the context to be able to locate schemaItems within the context.
-    this._context.addSchemaSync(schema);
+    const schemaIndex = this._context.addSchemaSync(schema);
 
     // Load schema references first
     // Need to figure out if other schemas are present.
@@ -148,6 +149,7 @@ export class SchemaReadHelper<T = unknown> {
     if (this._visitorHelper)
       this._visitorHelper.visitSchemaSync(schema);
 
+    this._context.setSchemaLoadedSync(schemaIndex);
     return schema;
   }
 

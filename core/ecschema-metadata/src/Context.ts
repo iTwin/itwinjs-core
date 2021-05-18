@@ -9,10 +9,15 @@ import { MutableSchema, Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
+interface SchemaInfo {
+  schema: Schema,
+  loaded: boolean,
+}
+
 /**
  * @beta
  */
-export class SchemaMap extends Array<Schema> { }
+export class SchemaMap extends Array<SchemaInfo> { }
 
 /**
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
@@ -62,22 +67,33 @@ export class SchemaCache implements ISchemaLocater {
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
    * @param schema The schema to add to the cache.
    */
-  public async addSchema<T extends Schema>(schema: T) {
+  public async addSchema<T extends Schema>(schema: T): Promise<number> {
     if (await this.getSchema<T>(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
-    this._schema.push(schema);
+    this._schema.push( { schema, loaded: false } );
+    return this._schema.length - 1;
   }
 
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
    * @param schema The schema to add to the cache.
    */
-  public addSchemaSync<T extends Schema>(schema: T) {
+  public addSchemaSync<T extends Schema>(schema: T): number {
     if (this.getSchemaSync<T>(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
-    this._schema.push(schema);
+    this._schema.push({ schema, loaded: false });
+
+    return this._schema.length - 1;
+  }
+
+  public async setSchemaLoaded(index: number) {
+    this._schema[index].loaded = true;
+  }
+
+  public setSchemaLoadedSync(index: number) {
+    this._schema[index].loaded = true;
   }
 
   /**
@@ -89,8 +105,8 @@ export class SchemaCache implements ISchemaLocater {
     if (this.count === 0)
       return undefined;
 
-    const findFunc = (schema: Schema) => {
-      return schema.schemaKey.matches(schemaKey, matchType);
+    const findFunc = (schemaInfo: SchemaInfo) => {
+      return schemaInfo.schema.schemaKey.matches(schemaKey, matchType) && schemaInfo.loaded;
     };
 
     const foundSchema = this._schema.find(findFunc);
@@ -98,7 +114,7 @@ export class SchemaCache implements ISchemaLocater {
     if (!foundSchema)
       return undefined;
 
-    return foundSchema as T;
+    return foundSchema.schema as T;
   }
 
   /**
@@ -110,8 +126,8 @@ export class SchemaCache implements ISchemaLocater {
     if (this.count === 0)
       return undefined;
 
-    const findFunc = (schema: Schema) => {
-      return schema.schemaKey.matches(schemaKey, matchType);
+    const findFunc = (schemaInfo: SchemaInfo) => {
+      return schemaInfo.schema.schemaKey.matches(schemaKey, matchType) && schemaInfo.loaded;
     };
 
     const foundSchema = this._schema.find(findFunc);
@@ -119,7 +135,7 @@ export class SchemaCache implements ISchemaLocater {
     if (!foundSchema)
       return foundSchema;
 
-    return foundSchema as T;
+    return foundSchema.schema as T;
   }
 }
 
@@ -151,16 +167,24 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * Adds the schema to this context
    * @param schema The schema to add to this context
    */
-  public async addSchema(schema: Schema) {
-    this.addSchemaSync(schema);
+  public async addSchema(schema: Schema): Promise<number> {
+    return this.addSchemaSync(schema);
   }
 
   /**
    * Adds the schema to this context
    * @param schema The schema to add to this context
    */
-  public addSchemaSync(schema: Schema) {
-    this._knownSchemas.addSchemaSync(schema);
+  public addSchemaSync(schema: Schema): number {
+    return this._knownSchemas.addSchemaSync(schema);
+  }
+
+  public async setSchemaLoaded(index: number) {
+    await this._knownSchemas.setSchemaLoaded(index);
+  }
+
+  public setSchemaLoadedSync(index: number) {
+    this._knownSchemas.setSchemaLoadedSync(index);
   }
 
   /**
@@ -227,10 +251,13 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   }
 
   public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined> {
+    console.log(schemaItemKey.fullName);
     const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
     if (undefined === schema)
       return undefined;
-    return await schema.getItem<T>(schemaItemKey.name);
+
+    const schemaItem = await schema.getItem<T>(schemaItemKey.name);
+    return schemaItem;
   }
 
   public getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined {
