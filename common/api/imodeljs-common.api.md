@@ -832,7 +832,7 @@ export interface ChangedElements {
     opcodes: number[];
     parentClassIds?: Id64String[];
     parentIds?: Id64String[];
-    properties?: Id64String[][];
+    properties?: string[][];
     type: number[];
 }
 
