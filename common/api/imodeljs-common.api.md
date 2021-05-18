@@ -822,27 +822,17 @@ export interface ChangeData {
     changedModels: ChangedModels;
 }
 
-// @internal (undocumented)
+// @public
 export interface ChangedElements {
-    // (undocumented)
     classIds: Id64String[];
-    // (undocumented)
     elements: Id64String[];
-    // (undocumented)
     modelIds?: Id64String[];
-    // (undocumented)
     newChecksums?: number[][];
-    // (undocumented)
     oldChecksums?: number[][];
-    // (undocumented)
     opcodes: number[];
-    // (undocumented)
     parentClassIds?: Id64String[];
-    // (undocumented)
     parentIds?: Id64String[];
-    // (undocumented)
     properties?: Id64String[][];
-    // (undocumented)
     type: number[];
 }
 
@@ -8296,17 +8286,12 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
     recipe?: RelatedElementProps;
 }
 
-// @internal (undocumented)
+// @public
 export enum TypeOfChange {
-    // (undocumented)
     Geometry = 2,
-    // (undocumented)
     Hidden = 16,
-    // (undocumented)
     Indirect = 8,
-    // (undocumented)
     Placement = 4,
-    // (undocumented)
     Property = 1
 }
 
