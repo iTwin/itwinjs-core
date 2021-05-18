@@ -31,7 +31,7 @@ describe("ChangedElements (#integration)", () => {
   });
 
   it("Create ChangedElements Cache and process changesets", async () => {
-    const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(testIModelId);
+    const cacheFilePath = BriefcaseManager.getChangeCachePathName(testIModelId);
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
@@ -43,7 +43,7 @@ describe("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(filePath))
       IModelJsFs.removeSync(filePath);
 
-    let cache: ChangedElementsDb | undefined = ChangedElementsDb.createDb(iModel, filePath);
+    let cache = ChangedElementsDb.createDb(iModel, filePath);
     assert.isDefined(cache);
     const startChangesetId = changeSets[0].id!;
     const endChangesetId = changeSets[changeSets.length - 1].id!;
@@ -52,7 +52,7 @@ describe("ChangedElements (#integration)", () => {
     assert.isFalse(cache.isProcessed(endChangesetId));
 
     // Try getting changed elements, should fail because we haven't processed the changesets
-    assert.throws(() => cache!.getChangedElements(startChangesetId, endChangesetId), IModelError);
+    assert.throws(() => cache.getChangedElements(startChangesetId, endChangesetId), IModelError);
 
     // Process changesets with "Items" presentation rules
     const options: ProcessChangesetOptions = {
@@ -63,6 +63,7 @@ describe("ChangedElements (#integration)", () => {
       wantPropertyChecksums: true,
     };
     const result = await cache.processChangesets(requestContext, iModel, options);
+
     assert.equal(result, DbResult.BE_SQLITE_OK);
     // Check that the changesets should have been processed now
     assert.isTrue(cache.isProcessed(startChangesetId));
@@ -90,8 +91,6 @@ describe("ChangedElements (#integration)", () => {
     cache.closeDb();
     cache.cleanCaches();
     // Destroy the cache
-    cache = undefined;
-    changes = undefined;
     // Open the db using the manager and try to get changed elements again to test the cached processed elements
     cache = ChangedElementsDb.openDb(filePath);
     assert.isTrue(cache !== undefined);
@@ -126,8 +125,6 @@ describe("ChangedElements (#integration)", () => {
     cache.cleanCaches();
 
     // Test the ChangedElementsManager
-    cache = undefined;
-    changes = undefined;
     // Check that the changesets should still be in the cache
     assert.isTrue(ChangedElementsManager.isProcessed(iModel.iModelId, startChangesetId));
     assert.isTrue(ChangedElementsManager.isProcessed(iModel.iModelId, endChangesetId));
@@ -181,7 +178,7 @@ describe("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(filePath))
       IModelJsFs.removeSync(filePath);
 
-    let cache: ChangedElementsDb | undefined = ChangedElementsDb.createDb(iModel, filePath);
+    const cache = ChangedElementsDb.createDb(iModel, filePath);
     assert.isDefined(cache);
     // Process single
     const changesetId = changeSets[0].id!;
@@ -189,7 +186,7 @@ describe("ChangedElements (#integration)", () => {
     assert.isFalse(cache.isProcessed(changesetId));
 
     // Try getting changed elements, should fail because we haven't processed the changesets
-    assert.throws(() => cache!.getChangedElements(changesetId, changesetId), IModelError);
+    assert.throws(() => cache.getChangedElements(changesetId, changesetId), IModelError);
 
     // Process changesets with "Items" presentation rules
     const options: ProcessChangesetOptions = {
@@ -209,7 +206,7 @@ describe("ChangedElements (#integration)", () => {
     // Check that the changesets should have been processed now
     assert.isTrue(cache.isProcessed(changesetId));
     // Try getting changed elements, it should work this time
-    let changes = cache.getChangedElements(changesetId, changesetId);
+    const changes = cache.getChangedElements(changesetId, changesetId);
     assert.isTrue(changes !== undefined);
     assert.isTrue(changes!.elements.length !== 0);
     assert.isTrue(changes!.modelIds !== undefined);
@@ -230,8 +227,6 @@ describe("ChangedElements (#integration)", () => {
     // Destroy the cache
     cache.closeDb();
     cache.cleanCaches();
-    cache = undefined;
-    changes = undefined;
 
     ChangedElementsManager.cleanUp();
   });
