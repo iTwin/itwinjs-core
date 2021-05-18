@@ -85,6 +85,7 @@ export * from "./properties/LengthDescription";
 export * from "./render/CanvasDecoration";
 export * from "./render/Decorations";
 export * from "./render/FeatureSymbology";
+export * from "./render/FrameStats";
 export * from "./render/GraphicBranch";
 export * from "./render/GraphicBuilder";
 export * from "./render/GraphicPrimitive";
