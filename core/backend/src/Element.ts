@@ -33,12 +33,14 @@ export interface OnElementArg {
   iModel: IModelDb;
 }
 
-/** Argument for the `Element.onXxx` static methods that supply the properties of an Element to be inserted or updated.
+/** Argument for `Element.onInsert` and `Element.onUpdate` static methods.
  * @beta
  */
 export interface OnElementPropsArg extends OnElementArg {
-  /** The new properties of the Element affected by this method. */
-  props: Readonly<ElementProps>;
+  /** The properties of the Element affected by this method.
+   * @note the properties may be modified. If so the modified values will be inserted/updated.
+   */
+  props: ElementProps;
 }
 
 /** Argument for the `Element.onXxx` static methods that only supply the Id of the affected Element.
