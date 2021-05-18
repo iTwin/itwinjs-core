@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 import { Guid, Id64 } from "@bentley/bentleyjs-core";
-import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@bentley/imodeljs-common";
 import { ClassRegistry } from "../../ClassRegistry";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
 import {
@@ -19,6 +19,8 @@ import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartition
 import { IModelTestUtils } from "../IModelTestUtils";
 
 let iModelDb: StandaloneDb;
+const insertedLabel = "inserted label";
+const updatedLabel = "updated label";
 
 /** test schema for supplying element/model/aspect classes */
 class TestSchema extends FunctionalSchema {
@@ -114,6 +116,7 @@ class Breakdown extends FunctionalBreakdownElement {
   public static dontDeleteChild = "";
 
   public static onInsert(arg: OnElementPropsArg): void {
+    arg.props.userLabel = insertedLabel;
     super.onInsert(arg);
     assert.equal(arg.iModel, iModelDb);
     assert.equal(arg.props.classFullName, this.classFullName);
@@ -123,6 +126,7 @@ class Breakdown extends FunctionalBreakdownElement {
     assert.equal(arg.iModel, iModelDb);
   }
   public static onUpdate(arg: OnElementPropsArg): void {
+    arg.props.userLabel = updatedLabel;
     super.onUpdate(arg);
     assert.equal(arg.iModel, iModelDb);
     assert.equal(arg.props.classFullName, this.classFullName);
@@ -377,11 +381,12 @@ describe("Functional Domain", () => {
     assert.equal(spy.breakdown.onInserted.getCall(0).args[0].id, breakdownId);
     assert.equal(spy.breakdown.onInsert.getCall(0).args[0].props, breakdownProps);
 
-    const breakdown2Props = { classFullName: Breakdown.classFullName, model: modelId, code: { spec: codeSpec.id, scope: modelId, value: "badval" } };
+    const breakdown2Props: ElementProps = { classFullName: Breakdown.classFullName, model: modelId, code: { spec: codeSpec.id, scope: modelId, value: "badval" } };
     // TestFuncModel.onInsertElement throws for this code.value
     expect(() => elements.insertElement(breakdown2Props)).to.throw("bad element");
 
     breakdown2Props.code.value = "Breakdown2";
+    breakdown2Props.userLabel = "start label"; // gets overwritten in `onInsert`
     const bd2 = elements.insertElement(breakdown2Props);
 
     const aspect = { classFullName: TestFuncAspect.classFullName, element: new ElementOwnsUniqueAspect(bd2), strProp: "prop 1" };
@@ -410,10 +415,15 @@ describe("Functional Domain", () => {
     assert.equal(spy.aspect.onDelete.getCall(0).args[0].aspectId, aspects[0].id);
     assert.equal(spy.aspect.onDeleted.getCall(0).args[0].aspectId, aspects[0].id);
 
-    const bd2el = elements.getElement(bd2);
+    let bd2el = elements.getElement(bd2);
+    assert.equal(bd2el.userLabel, insertedLabel, "label was modified by onInsert");
+
     spy.breakdown.onUpdate.resetHistory();
     spy.breakdown.onUpdated.resetHistory();
+    bd2el.userLabel = "nothing";
     bd2el.update();
+    bd2el = elements.getElement(bd2);
+    assert.equal(bd2el.userLabel, updatedLabel, "label was modified in onUpdate");
     assert.equal(spy.breakdown.onUpdate.callCount, 1);
     assert.equal(spy.breakdown.onUpdated.callCount, 1);
     assert.equal(spy.breakdown.onUpdate.getCall(0).args[0].props.id, bd2);
