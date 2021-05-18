@@ -45,6 +45,7 @@ export interface TableCellProps extends CommonProps {
 export class TableCell extends React.PureComponent<TableCellProps> {
   /** @internal */
   public render() {
+
     if (this.props.cellEditingProps) {
       return (
         <div

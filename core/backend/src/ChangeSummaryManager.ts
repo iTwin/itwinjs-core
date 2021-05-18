@@ -212,7 +212,7 @@ export class ChangeSummaryManager {
         // iModel is at end changeset, so no need to reverse for it.
         if (i !== endChangeSetIx) {
           perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
-          await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(currentChangeSetId));
+          await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(currentChangeSetId)); // eslint-disable-line deprecation/deprecation
           requestContext.enter();
           perfLogger.dispose();
           Logger.logTrace(loggerCategory, `Moved iModel to changeset #${i + 1} to extract summary from.`, () => ({ iModelId: ctx.iModelId, changeSetId: currentChangeSetId }));
@@ -251,7 +251,7 @@ export class ChangeSummaryManager {
 
       perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
       if (iModel.changeSetId !== endChangeSetId)
-        await iModel.reinstateChanges(requestContext, IModelVersion.asOfChangeSet(endChangeSetId));
+        await iModel.reinstateChanges(requestContext, IModelVersion.asOfChangeSet(endChangeSetId));// eslint-disable-line deprecation/deprecation
       requestContext.enter();
       perfLogger.dispose();
       Logger.logTrace(loggerCategory, "Moved iModel to initial changeset (the end changeset).", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId }));
