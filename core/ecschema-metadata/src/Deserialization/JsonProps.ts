@@ -35,9 +35,8 @@ export interface SchemaProps {
 }
 
 /**
+ * JSON Object interface used to deserialize into a [[SchemaKey]].
  * @beta
- * JSON Object interface used to deserialize into a SchemaKey.
- * See [[SchemaKey]].
  */
 export interface SchemaKeyProps {
   readonly name: string;
