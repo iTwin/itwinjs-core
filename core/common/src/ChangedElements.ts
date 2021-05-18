@@ -36,9 +36,11 @@ export enum TypeOfChange {
 export interface ChangedElements {
   /** Ids of elements that changed */
   elements: Id64String[];
-  /** ECClassIds of elements that changed */
+  /** ECClass Ids of elements that changed */
   classIds: Id64String[];
-  /** Operation codes, see [[DbOpcode]] */
+  /** Operation that occurred on the element. Whether the element was inserted, updated or deleted.
+   * See [DbOpcode]($bentleyjs-core)
+   */
   opcodes: number[];
   /** Type of change bitflags, see [[TypeOfChange]] */
   type: number[];
@@ -69,7 +71,7 @@ export interface ChangedElements {
    */
   parentIds?: Id64String[];
   /**
-   * Parent [[ECClass]] ids of the changed elements
+   * Parent ECClass Ids of the changed elements
    * Will be "0" if the element has no parent
    * This may be undefined if the agent that did the processing job did not export parent information
    */
