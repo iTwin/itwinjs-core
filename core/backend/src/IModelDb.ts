@@ -9,7 +9,7 @@
 // cspell:ignore ulas postrc pollrc CANTOPEN
 
 import {
-  assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  assert, AsyncMutex, BeEvent, BeEventList, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
@@ -22,6 +22,7 @@ import {
   GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps,
   IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
+  RpcConfiguration,
   SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -2524,7 +2525,7 @@ export class SnapshotDb extends IModelDb {
    * @internal
    */
   public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
-    const filePath = await V2CheckpointManager.attach(checkpoint);
+    const { filePath, sasTokenExpiry } = await V2CheckpointManager.attach(checkpoint);
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
     try {
@@ -2533,6 +2534,20 @@ export class SnapshotDb extends IModelDb {
       snapshot.close();
       throw err;
     }
+
+    if (sasTokenExpiry) {
+      const expiresIn = Date.parse(sasTokenExpiry) - Date.now();
+
+      setTimeout(async () => {
+        const unlock = await RpcConfiguration.requestContext.requestMutex.lock();
+        try {
+          await snapshot.reattachDaemon(checkpoint.requestContext);
+        } finally {
+          unlock();
+        }
+      }, expiresIn / 2);
+    }
+
     return snapshot;
   }
 

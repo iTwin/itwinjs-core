@@ -146,7 +146,7 @@ export class V2CheckpointManager {
     };
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<string> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: string, sasTokenExpiry: string | null }> {
     const args = await this.getCommandArgs(checkpoint);
 
     // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
@@ -158,7 +158,10 @@ export class V2CheckpointManager {
 
       throw new IModelError(attachResult.result, error);
     }
-    return BlobDaemon.getDbFileName(args);
+    return {
+      filePath: BlobDaemon.getDbFileName(args),
+      sasTokenExpiry: new URLSearchParams(args.auth).get("se"),
+    };
   }
 
   private static async performDownload(job: DownloadJob) {

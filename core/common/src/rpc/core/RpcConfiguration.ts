@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { AsyncMutex, ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
@@ -104,6 +104,7 @@ export abstract class RpcConfiguration {
       userId: "",
     }),
     deserialize: async (_request: SerializedRpcRequest): Promise<ClientRequestContext> => new ClientRequestContext(""),
+    requestMutex: new AsyncMutex(),
   };
 
   /** @internal */
