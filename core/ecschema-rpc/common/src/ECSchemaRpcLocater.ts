@@ -22,7 +22,7 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
   */
   public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    const schemaJson = JSON.parse(await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name)) as SchemaProps;
+    const schemaJson = await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name);
     const schema = await Schema.fromJson(schemaJson, context || new SchemaContext());
     if (schema !== undefined && schema.schemaKey.matches(schemaKey, matchType)) {
       return schema as T;
@@ -37,8 +37,8 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
   */
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-    const schemaJson = ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name).then((jsonString: string) => {
-      return JSON.parse(jsonString) as SchemaProps;
+    const schemaJson = ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name).then((props: SchemaProps) => {
+      return props;
     });
     const schema = Schema.fromJsonSync(schemaJson, context || new SchemaContext());
     if (schema !== undefined && schema.schemaKey.matches(schemaKey, matchType)) {
