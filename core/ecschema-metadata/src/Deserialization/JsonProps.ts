@@ -39,9 +39,13 @@ export interface SchemaProps {
  * @beta
  */
 export interface SchemaKeyProps {
+  /** The schema name */
   readonly name: string;
+  /** Read version of the schema */
   readonly read: number;
+  /** Write version of the schema */
   readonly write: number;
+  /** Minor version of the schema */
   readonly minor: number;
 }
 

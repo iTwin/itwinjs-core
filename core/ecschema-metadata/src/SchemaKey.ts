@@ -219,14 +219,14 @@ export class SchemaKey {
    * @param props SchemaKeyProps
    * @returns A SchemaKey object.
    */
-  public static fromJson(props: SchemaKeyProps): SchemaKey {
+  public static fromJSON(props: SchemaKeyProps): SchemaKey {
     return new SchemaKey(props.name, props.read, props.write, props.minor);
   }
 
   /**
    * Save this SchemaKey's properties to an object for serializing to JSON.
    */
-  public toJson(): SchemaKeyProps {
+  public toJSON(): SchemaKeyProps {
     return {
       name: this.name,
       read: this.readVersion,
