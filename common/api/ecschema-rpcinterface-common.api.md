@@ -18,7 +18,7 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
     getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<string>;
     getSchemaKeys(_tokenProps: IModelRpcProps): Promise<SchemaKey[]>;
     // (undocumented)
-    static readonly interfaceName = "SchemaRpcInterface";
+    static readonly interfaceName = "ECSchemaRpcInterface";
     // (undocumented)
     static interfaceVersion: string;
     static version: string;

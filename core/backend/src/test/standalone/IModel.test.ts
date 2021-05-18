@@ -18,7 +18,7 @@ import {
   DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
-  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -485,12 +485,9 @@ describe("iModel", () => {
     const testTextureName = "fake texture name";
     const testTextureFormat = ImageSourceFormat.Png;
     const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
-    const testTextureWidth = 3;
-    const testTextureHeight = 3;
     const testTextureDescription = "empty description";
-    const testTextureFlags = TextureFlags.None;
 
-    const texId = Texture.insert(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
+    const texId = Texture.insertTexture(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureDescription);
 
     /* eslint-disable @typescript-eslint/naming-convention */
     const matId = RenderMaterialElement.insert(imodel5, IModel.dictionaryId, "test material name",

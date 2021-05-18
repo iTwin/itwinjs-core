@@ -26,6 +26,11 @@ describe("EntityClass", () => {
       schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     });
 
+    it("should get fullName", () => {
+      const entityClass = new EntityClass(schema, "TestClass");
+      expect(entityClass.fullName).eq("TestSchema.TestClass");
+    });
+
     it("from mixins", async () => {
       const baseClass = new EntityClass(schema, "TestBase");
       const basePrimProp = await (baseClass as ECClass as MutableClass).createPrimitiveProperty("BasePrimProp");

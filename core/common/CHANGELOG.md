@@ -1,6 +1,43 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Thu, 22 Apr 2021 21:07:33 GMT and should not be manually modified.
+This log was last generated on Mon, 17 May 2021 13:31:38 GMT and should not be manually modified.
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+### Updates
+
+- FeatureOverrides can hide or override the symbology of unanimated nodes.
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Add documentation and links for each BisCodeSpec name.
+- Properly declare changeSetId variables as string.
+- Promote display-related APIs.
+- An ElementGraphicsRequest can supply a non-persistent geometry stream.
+- Add TypeScript wrappers for ExternalSource and related classes and relationships.
+- Fixes to desktop and iOS apps.
+- ClipStyle supports recolorization. Promote ModelClipGroups to public.
+- Promote thematic display API to public.
+- Optimize reality model processing.
+- Remove deprecated ElementEditor that was replaced by EditCommands.
+- rename (deprecate) BriefcaseIdValue.Standalone to BriefcaseIdValue.Unassigned to reduce confusion
+- Update release tags.
+- Add support for forwarding txn events from backend to frontend.
+- Update api tags
 
 ## 2.14.4
 Thu, 22 Apr 2021 21:07:33 GMT

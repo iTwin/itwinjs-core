@@ -1,6 +1,30 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Thu, 22 Apr 2021 21:07:34 GMT and should not be manually modified.
+This log was last generated on Mon, 17 May 2021 13:31:38 GMT and should not be manually modified.
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+### Updates
+
+- Wrap resizeObserver in a windows animation frame to prevent loop limit exceeded error.
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Add more descriptive UiSettingsStorage, LocalSettingsStorage, and SessionSettingsStorage and deprecate badly name beta classes.
 
 ## 2.14.4
 Thu, 22 Apr 2021 21:07:34 GMT

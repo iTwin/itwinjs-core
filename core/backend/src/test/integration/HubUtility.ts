@@ -5,15 +5,36 @@
 
 import * as os from "os";
 import * as path from "path";
-import { assert, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
+import {
+  assert, BeDuration, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger,
+} from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, HubIModel, IModelBaseHandler, IModelHubClient,
+  IModelQuery, InitializationState, Version, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
 import { IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
+
+/** DTO to work with iModelHub DeleteChangeSet API */
+@ECJsonTypeMap.classToJson("wsg", "iModelActions.DeleteChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+class DeleteChangeSetAction extends WsgInstance {
+  @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
+  public id?: GuidString;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
+  public changeSetId?: GuidString;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.State")
+  public state?: number;
+}
+
+/** Enum to work with iModelHub Actions API */
+enum ActionState {
+  Completed = 2
+}
 
 /** Utility to work with test iModels in the iModelHub */
 export class HubUtility {
@@ -607,6 +628,48 @@ export class HubUtility {
     if (!iModel)
       iModel = await IModelHost.iModelClient.iModels.create(requestContext, contextId, iModelName, { description: `Description for iModel` });
     return iModel.wsgId;
+  }
+
+  /** Delete a changeSet with a specific index */
+  public static async deleteChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetIndex: number): Promise<DeleteChangeSetAction> {
+    const invalidChangeSet = (await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().filter(`Index+eq+${changeSetIndex}`)))[0];
+    const deleteChangeSetActionInstance = new DeleteChangeSetAction();
+    deleteChangeSetActionInstance.changeSetId = invalidChangeSet.id;
+
+    const iModelBaseHandler = new IModelBaseHandler();
+    const relativePostActionUrl = `/Repositories/iModel--${iModelId}/iModelActions/DeleteChangeSet`;
+    return iModelBaseHandler.postInstance(requestContext, DeleteChangeSetAction, relativePostActionUrl, deleteChangeSetActionInstance);
+  }
+
+  /** Wait until the specified delete changeSet action completes successfully */
+  public static async waitForChangeSetDeletion(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, deleteChangeSetActionId: GuidString): Promise<void> {
+    const iModelBaseHandler = new IModelBaseHandler();
+    const relativeGetActionUrl = `/Repositories/iModel--${iModelId}/iModelActions/DeleteChangeSet/${deleteChangeSetActionId}`;
+    return HubUtility.waitForEntityToReachState(
+      async () => (await iModelBaseHandler.getInstances(requestContext, DeleteChangeSetAction, relativeGetActionUrl))[0],
+      (action: DeleteChangeSetAction) => action.state === ActionState.Completed);
+  }
+
+  /** Wait until the checkpoint for the specified changeSet fails to generate */
+  public static async waitforCheckpointGenerationFailure(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString): Promise<void> {
+    return HubUtility.waitForEntityToReachState(
+      async () => (await IModelHost.iModelClient.checkpoints.get(requestContext, iModelId, new CheckpointQuery().byChangeSetId(changeSetId)))[0],
+      (checkpoint: Checkpoint) => checkpoint.state === InitializationState.Failed);
+  }
+
+  private static async waitForEntityToReachState<T>(entityQuery: () => Promise<T>, conditionToSatisfy: (entity: T) => Boolean): Promise<void> {
+    for (let i = 0; i < 60; i++) {
+      const currentEntity = await entityQuery();
+      if (!currentEntity)
+        throw new Error("Queried entity is undefined.");
+
+      if (conditionToSatisfy(currentEntity))
+        return;
+
+      await BeDuration.wait(10000);
+    }
+
+    throw new Error("Entity did not reach the expected state in 10 minutes.");
   }
 }
 

@@ -135,6 +135,8 @@ export enum BriefcaseStatus {
     // (undocumented)
     CannotUpload = 131074,
     // (undocumented)
+    ContainsDeletedChangeSets = 131080,
+    // (undocumented)
     DownloadCancelled = 131079,
     // (undocumented)
     VersionNotFound = 131077
@@ -621,6 +623,7 @@ export namespace Id64 {
     export function fromLocalAndBriefcaseIds(localId: number, briefcaseId: number): Id64String;
     export function fromString(val: string): Id64String;
     export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String;
+    export function fromUint32PairObject(pair: Uint32Pair): Id64String;
     export function getBriefcaseId(id: Id64String): number;
     export function getFirst(arg: Id64Arg): Id64String;
     export function getLocalId(id: Id64String): number;

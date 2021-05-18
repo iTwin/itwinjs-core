@@ -213,8 +213,15 @@ export class IModelExporter {
     this._excludedElementIds.add(elementId);
   }
 
-  /** Add a rule to exclude all Elements of a specified Category. */
+  /** Add a rule to exclude all Elements in a specified Category.
+   * @deprecated Use [[excludeElementsInCategory]] instead.
+  */
   public excludeElementCategory(categoryId: Id64String): void {
+    this.excludeElementsInCategory(categoryId);
+  }
+
+  /** Add a rule to exclude all Elements in a specified Category. */
+  public excludeElementsInCategory(categoryId: Id64String): void {
     this._excludedElementCategoryIds.add(categoryId);
   }
 
@@ -248,7 +255,7 @@ export class IModelExporter {
    * @param requestContext The request context
    * @param startChangeSetId Include changes from this changeset up through and including the current changeset.
    * If this parameter is not provided, then just the current changeset will be exported.
-   * @note To form a range of versions to export, set `startChangeSetId` for the start of the desired range and open the source iModel as of the end of the desired range.
+   * @note To form a range of versions to export, set `startChangeSetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
    */
   public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
     requestContext.enter();

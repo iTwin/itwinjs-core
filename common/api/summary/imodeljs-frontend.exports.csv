@@ -74,6 +74,7 @@ public;BlankConnectionProps
 public;BriefcaseConnection 
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
+internal;BuilderOptions = GraphicBuilderOptions &
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -184,6 +185,8 @@ internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
 internal;FrameRenderData
+alpha;FrameStats
+internal;FrameStatsCollector
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
@@ -220,13 +223,27 @@ internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
 public;GpuMemoryLimits
 public;GraphicalEditingScope 
+public;GraphicArc
+public;GraphicArc2d
 public;GraphicBranch 
 internal;GraphicBranchFrustum
 public;GraphicBranchOptions
 public;class GraphicBuilder
+public;GraphicBuilderOptions
+public;GraphicLineString
+public;GraphicLineString2d 
 public;GraphicList = RenderGraphic[]
+public;GraphicLoop
+public;GraphicPath
+public;GraphicPointString
+public;GraphicPointString2d 
+public;GraphicPolyface
+public;GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface
+public;GraphicPrimitive2d
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
+public;GraphicShape
+public;GraphicShape2d 
 public;GraphicType
 alpha;GroupMark
 internal;Hilites
@@ -361,6 +378,7 @@ internal;OffScreenTarget
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
 deprecated;OidcBrowserClient 
+alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
@@ -385,6 +403,7 @@ beta;PendingExtension
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
 public;PhysicalModelState 
+public;PickableGraphicOptions 
 internal;PingTestResult
 public;Pixel
 internal;PlanarClassifierMap = Map
@@ -405,7 +424,12 @@ beta;QuantityTypeArg = QuantityType | string
 beta;QuantityTypeDefinition
 beta;QuantityTypeKey = string
 public;queryRealityData(criteria: RealityDataQueryCriteria): Promise
+beta;QueryScreenFeaturesOptions
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
+beta;QueryTileFeaturesOptions
+internal;queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void
+beta;QueryVisibleFeaturesCallback = (features: Iterable
+beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
@@ -629,6 +653,7 @@ public;ViewToggleCameraTool
 public;class ViewTool 
 public;ViewUndoEvent
 public;ViewUndoTool 
+beta;VisibleFeature
 public;WalkViewTool 
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
