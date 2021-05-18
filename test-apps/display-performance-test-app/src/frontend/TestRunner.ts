@@ -351,6 +351,27 @@ export class TestRunner {
 
     const viewport = this.openViewport(view.view);
 
+    // Apply hypermodeling
+    const hyperModeling = this.curConfig.hyperModeling;
+    if (hyperModeling) {
+      try {
+        const decorator = await HyperModeling.start(viewport);
+        const marker = decorator.markers.findMarkerById(hyperModeling.sectionDrawingLocationId);
+        if (undefined === marker) {
+          await this.logError(`SectionDrawingLocation ${hyperModeling.sectionDrawingLoationId} not found.`);
+        } else {
+          if (hyperModeling.applySpatialView) {
+            await decorator.toggleSection(marker, true);
+          } else {
+            await decorator.toggleClipVolume(marker, true);
+            await decorator.toggleAttachment(marker, true);
+          }
+        }
+      } catch (err) {
+        await this.logError(err.toString());
+      }
+    }
+
     // Apply emphasis and hilite settings.
     const config = this.curConfig;
     if (config.hilite)
