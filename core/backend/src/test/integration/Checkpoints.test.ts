@@ -14,7 +14,8 @@ import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } f
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
-describe("Checkpoints (#integration)", () => {
+// FIXME: Disabled because V2 checkpoints are not in QA yet...
+describe.skip("Checkpoints (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
   let testContextId: GuidString;
