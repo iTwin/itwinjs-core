@@ -829,11 +829,11 @@ export interface ChangedElements {
     modelIds?: Id64String[];
     newChecksums?: number[][];
     oldChecksums?: number[][];
-    opcodes: number[];
+    opcodes: DbOpcode[];
     parentClassIds?: Id64String[];
     parentIds?: Id64String[];
     properties?: string[][];
-    type: number[];
+    type: TypeOfChange[];
 }
 
 // @beta
