@@ -10,7 +10,7 @@
 
 import {
   assert, BeDuration, BentleyError, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus,
-  IModelStatus, Logger, OpenMode, PerfLogger,
+  IModelStatus, Logger, OpenMode, PerfLogger, WSStatus,
 } from "@bentley/bentleyjs-core";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, IModelHubError,
@@ -20,7 +20,7 @@ import {
   BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import * as os from "os";
 import * as path from "path";
@@ -696,8 +696,19 @@ export class BriefcaseManager {
     requestContext.enter();
 
     const { changeSetId: targetChangeSetId, changeSetIndex: targetChangeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, mergeToVersion, db.iModelId);
-    const currentChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, db.changeSetId);
-    requestContext.enter();
+
+    let currentChangeSetIndex: number;
+    try {
+      currentChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, db.changeSetId);
+      requestContext.enter();
+    } catch (error) {
+      requestContext.enter();
+      if (error instanceof WsgError && error.errorNumber === WSStatus.InstanceNotFound)
+        throw new IModelError(BriefcaseStatus.ContainsDeletedChangeSets, "Briefcase contains changeSets that were deleted", Logger.logError, loggerCategory, () => db.changeSetId);
+
+      throw error;
+    }
+
     if (targetChangeSetIndex < currentChangeSetIndex)
       throw new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge");
 
@@ -922,7 +933,9 @@ export class BriefcaseManager {
    */
   public static async pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesType = ChangesType.Regular, relinquishCodesLocks: boolean = true): Promise<void> {
     requestContext.enter();
-    for (let i = 0; i < 5; ++i) {
+
+    const retryCount = 5;
+    for (let currentIteration = 0; currentIteration < retryCount; ++currentIteration) {
       let pushed = false;
       let error: any;
       try {
@@ -936,7 +949,7 @@ export class BriefcaseManager {
       if (pushed)
         return;
 
-      if (!BriefcaseManager.shouldRetryPush(error)) {
+      if (!BriefcaseManager.shouldRetryPush(error) || currentIteration === retryCount - 1) {
         throw error;
       }
       const delay = Math.floor(Math.random() * 4800) + 200;
