@@ -9,7 +9,7 @@ import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 
 /**
- * @beta
+ * @public
  */
 export interface FrontendAuthorizationClient extends AuthorizationClient {
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
@@ -26,7 +26,7 @@ export interface FrontendAuthorizationClient extends AuthorizationClient {
 }
 
 /** FrontendAuthorization type guard.
- * @beta
+ * @public
  */
 export const isFrontendAuthorizationClient = (client: AuthorizationClient | undefined): client is FrontendAuthorizationClient => {
   return client !== undefined && (client as FrontendAuthorizationClient).signIn !== undefined && (client as FrontendAuthorizationClient).signOut !== undefined;

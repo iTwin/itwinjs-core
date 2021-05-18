@@ -1,9 +1,8 @@
 sep=;
 Release Tag;API Item
-beta;BrowserAuthorizationCallbackHandler 
-beta;BrowserAuthorizationCallbackHandlerConfiguration
-beta;BrowserAuthorizationClient 
-beta;BrowserAuthorizationClientConfiguration
-beta;FrontendAuthorizationClient 
-beta;isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient
-beta;OidcCallbackResponseMode
+public;BrowserAuthorizationCallbackHandler 
+public;BrowserAuthorizationCallbackHandlerConfiguration
+public;BrowserAuthorizationClient 
+public;BrowserAuthorizationClientConfiguration
+public;FrontendAuthorizationClient 
+public;isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient
