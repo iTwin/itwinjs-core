@@ -111,6 +111,7 @@ export class FrameStatsCollector {
         this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to any listeners
       this._frameStats.frameId++; // increment frame counter for next pending frame
       this._clearStats();
+      this._shouldRecordFrame = false;
     }
   }
 
