@@ -108,7 +108,7 @@ export class FrameStatsCollector {
     if (this._shouldRecordFrame) {
       this._end("totalFrameTime");
       if (this._onFrameStatsReady !== undefined)
-        this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to the callback
+        this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to any listeners
       this._frameStats.frameId++; // increment frame counter for next pending frame
       this._clearStats();
     }
