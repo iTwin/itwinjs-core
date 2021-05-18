@@ -38,7 +38,7 @@ export function ToastMessage(props: ToastMessageProps) {
       onAnimatedOut={() => closeMessage(id)}
       timeout={messageDetails.displayTime.milliseconds}
       content={
-        <Alert type={alertType as any}>
+        <Alert type={alertType}>
           <MessageLayout>
             <MessageLabel message={messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
             {messageDetails.detailedMessage &&

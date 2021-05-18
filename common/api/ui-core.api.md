@@ -713,13 +713,13 @@ export interface ElementSeparatorProps extends CommonProps {
 // @public
 export type ExecuteHandler = (this: void) => void;
 
-// @public
+// @public @deprecated
 export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface ExpandableBlockProps extends CommonProps {
     caption?: string;
     isExpanded: boolean;

@@ -18,7 +18,7 @@ import {
 } from "@bentley/ui-components";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
-  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalAlignment, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
+  DisabledText, ExpandableList, FeaturedTile, Headline, HorizontalAlignment, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
   MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
   SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
@@ -33,6 +33,7 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
+import { ExpandableBlock } from "@itwin/itwinui-react";
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -594,27 +595,39 @@ export class ComponentExamplesProvider {
               Hello World!
             </SampleExpandableBlock>
           </ExpandableList>),
+        createComponentExample("ExpandableList", "ExpandableList with 3 ExpandableBlocks",
+          <ExpandableList className="uicore-full-width">
+            <SampleExpandableBlock title="Test1" isExpanded={false} onClick={() => { }}>
+              Hello World 1
+            </SampleExpandableBlock>
+            <SampleExpandableBlock title="Test2" isExpanded={false} onClick={() => { }}>
+              Hello World 2
+            </SampleExpandableBlock>
+            <SampleExpandableBlock title="Test3" isExpanded={false} onClick={() => { }}>
+              Hello World 3
+            </SampleExpandableBlock>
+          </ExpandableList>),
         createComponentExample("ExpandableList w/ singleExpandOnly", "ExpandableList with singleExpandOnly prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test1" isExpanded={false} >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test2" isExpanded={false} >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test3" isExpanded={false} >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
         createComponentExample("ExpandableList w/ singleIsCollapsible", "ExpandableList with singleIsCollapsible prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test1" isExpanded={false} >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test2" isExpanded={false} >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test3" isExpanded={false} >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),

@@ -29,7 +29,7 @@ describe("StatusMessageRenderer", () => {
     MessageManager.activeMessageManager.initialize();
   });
 
-  it("Renderer should render a Toast  message", () => {
+  it("Renderer should render a Toast message", () => {
     const wrapper = mount(<StatusMessageRenderer />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Message", "Details", OutputMessageType.Toast);

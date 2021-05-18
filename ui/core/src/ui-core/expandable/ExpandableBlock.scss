@@ -56,8 +56,6 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      -webkit-transition: $iui-speed-fast ease-in-out;
-      -o-transition: $iui-speed-fast ease-in-out;
       transition: $iui-speed-fast ease-in-out;
     }
 
@@ -104,8 +102,6 @@
     border-top: 1px solid $buic-foreground-primary;
 
     > .header {
-      -webkit-transition: $iui-speed-fast ease-in-out;
-      -o-transition: $iui-speed-fast ease-in-out;
       transition: $iui-speed-fast ease-in-out;
 
       > .icon-container,
@@ -120,8 +116,6 @@
       }
 
       > .title {
-        -webkit-transition: $iui-speed-fast ease-in-out;
-        -o-transition: $iui-speed-fast ease-in-out;
         transition: $iui-speed-fast ease-in-out;
       }
     }

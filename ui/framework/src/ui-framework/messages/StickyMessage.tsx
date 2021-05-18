@@ -46,7 +46,7 @@ export function StickyMessage(props: StickyMessageProps) {
 
   return (
     <div className={classNames}>
-      <Alert type={alertType as any} onClose={handleClose}>
+      <Alert type={alertType} onClose={handleClose}>
         <MessageLayout>
           <MessageLabel message={messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
           {messageDetails.detailedMessage &&

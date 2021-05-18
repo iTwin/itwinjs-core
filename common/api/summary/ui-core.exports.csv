@@ -76,7 +76,9 @@ public;ElementSeparator: (props: ElementSeparatorProps) => JSX.Element
 public;ElementSeparatorProps 
 public;ExecuteHandler = (this: void) => void
 public;ExpandableBlock 
+deprecated;ExpandableBlock 
 public;ExpandableBlockProps 
+deprecated;ExpandableBlockProps 
 public;ExpandableList 
 public;ExpandableListProps 
 public;ExpansionToggle 

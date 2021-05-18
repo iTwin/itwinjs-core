@@ -286,7 +286,7 @@ describe("StatusBar", () => {
     const messages = [
       { id: "one", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message1", "Detailed message1", OutputMessageType.Toast), severity: MessageSeverity.Information },
       { id: "two", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message2", "Detailed message3", OutputMessageType.Toast), severity: MessageSeverity.Information },
-      { id: "three", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message3", "Detailed message3", OutputMessageType.Sticky), severity: MessageSeverity.Information },
+      { id: "three", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message3", "Detailed message3", OutputMessageType.Sticky), severity: MessageSeverity.Question },
     ];
 
     afterEach(() => {

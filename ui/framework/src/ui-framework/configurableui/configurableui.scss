@@ -3,9 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/base/base";
+@import "~@bentley/ui-core/lib/ui-core/icons/variables";
 @import "~@bentley/ui-core/lib/ui-core/inputs/variables";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/z-index";
 @import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/variables";
+@import "~@itwin/itwinui-css/scss/style/space";
 @import "~@itwin/itwinui-css/scss/style/typography";
 @import "../variables";
 
@@ -39,6 +42,30 @@
   .iui-toggle-switch {
     padding: 1px 0;
   }
+
+  .iui-expandable-block {
+    > .iui-header {
+      padding: $iui-xs $iui-xs;
+
+      > .iui-icon {
+        width: $uicore-icons-x-small;
+        height: $uicore-icons-x-small;
+        margin-top: $iui-xs;
+      }
+    }
+
+    &.iui-expanded {
+      border-top: 1px solid $buic-background-primary;
+
+      > .iui-header {
+        border-top-color: $buic-background-primary;
+      }
+
+      > .iui-content {
+        padding: 0;
+      }
+    }
+  }
 }
 
 #uifw-frontstage-composer {
@@ -47,10 +74,6 @@
 }
 
 .uifw-unselectable {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -khtml-user-select: none;
   user-select: none;
 }
 

@@ -171,7 +171,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       let categoryChild = container.querySelector(".virtualized-grid-node span[title=\"CADID1\"]");
       expect(categoryChild, "Category child is not rendered").to.not.be.null;
 
-      const categoryBlocks = container.querySelectorAll(".virtualized-grid-node-category .header");
+      const categoryBlocks = container.querySelectorAll(".virtualized-grid-node-category .iui-header");
       expect(categoryBlocks.length, "Wrong amount of categories").to.be.equal(2);
       const categoryBlock = categoryBlocks[0];
 
@@ -467,17 +467,17 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         sinon.stub(HTMLElement.prototype, "getBoundingClientRect").get(() => () => ({ height: 500 }));
         dataProvider = setupDataProvider("test_category", { expandCustomCategory: false });
 
-        const { baseElement, findByText, queryByText } = render(
+        const { baseElement, findByText } = render(
           <VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />,
         );
 
         const category = await findByText("test_category");
-        expect(queryByText("Custom renderer")).to.be.null;
+        expect(baseElement.querySelector(".iui-expanded")).to.not.exist;
         const node = baseElement.querySelector(".virtualized-grid-node") as HTMLElement;
         expect(node.style.height).to.be.equal("39px");
 
         fireEvent.click(category);
-        await findByText("Custom renderer");
+        expect(baseElement.querySelector(".iui-expanded")).to.exist;
         expect(node.style.height).to.be.equal("536px");
       });
 

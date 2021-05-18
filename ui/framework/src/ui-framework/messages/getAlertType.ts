@@ -9,25 +9,18 @@
 import { MessageSeverity } from "@bentley/ui-core";
 
 /** @internal */
-export function getAlertType(severity: MessageSeverity): string {
-  let alertType = "";
-
+export function getAlertType(severity: MessageSeverity) {
   switch (severity) {
     case MessageSeverity.Information:
-      alertType = "informational";
-      break;
+      return "informational";
     case MessageSeverity.Warning:
-      alertType = "warning";
-      break;
+      return "warning";
     case MessageSeverity.Error:
     case MessageSeverity.Fatal:
-      alertType = "negative";
-      break;
+      return "negative";
     case MessageSeverity.None:
+      return "positive";
     default:
-      alertType = "positive";
-      break;
+      return undefined;
   }
-
-  return alertType;
 }
