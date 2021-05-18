@@ -818,25 +818,25 @@ export class SchemaReadHelper<T = unknown> {
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
         await loadTypeName(primPropertyProps.typeName);
         const primProp = await (classObj as MutableClass).createPrimitiveProperty(propName, primPropertyProps.typeName);
-        return this.loadProperty(primProp, primPropertyProps, rawProperty);
+        return await this.loadProperty(primProp, primPropertyProps, rawProperty);
 
       case "structproperty":
         const structPropertyProps = this._parser.parseStructProperty(rawProperty);
         await loadTypeName(structPropertyProps.typeName);
         const structProp = await (classObj as MutableClass).createStructProperty(propName, structPropertyProps.typeName);
-        return this.loadProperty(structProp, structPropertyProps, rawProperty);
+        return await this.loadProperty(structProp, structPropertyProps, rawProperty);
 
       case "primitivearrayproperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
         await loadTypeName(primArrPropertyProps.typeName);
         const primArrProp = await (classObj as MutableClass).createPrimitiveArrayProperty(propName, primArrPropertyProps.typeName);
-        return this.loadProperty(primArrProp, primArrPropertyProps, rawProperty);
+        return await this.loadProperty(primArrProp, primArrPropertyProps, rawProperty);
 
       case "structarrayproperty":
         const structArrPropertyProps = this._parser.parseStructArrayProperty(rawProperty);
         await loadTypeName(structArrPropertyProps.typeName);
         const structArrProp = await (classObj as MutableClass).createStructArrayProperty(propName, structArrPropertyProps.typeName);
-        return this.loadProperty(structArrProp, structArrPropertyProps, rawProperty);
+        return await this.loadProperty(structArrProp, structArrPropertyProps, rawProperty);
 
       case "navigationproperty":
         if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
@@ -845,7 +845,7 @@ export class SchemaReadHelper<T = unknown> {
         const navPropertyProps = this._parser.parseNavigationProperty(rawProperty);
         await this.findSchemaItem(navPropertyProps.relationshipName);
         const navProp = await (classObj as MutableEntityClass).createNavigationProperty(propName, navPropertyProps.relationshipName, navPropertyProps.direction);
-        return this.loadProperty(navProp, navPropertyProps, rawProperty);
+        return await this.loadProperty(navProp, navPropertyProps, rawProperty);
     }
   }
 
