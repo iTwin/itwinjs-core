@@ -14,7 +14,7 @@ See the CONTRIBUTING.md file in the root of the imodeljs repository for addition
 
 ### Questions and Advice
 
-Programming questions and requests for programming advice are best asked on [Stack Overflow](https://stackoverflow.com/tags/imodeljs).
+Programming questions and requests for programming advice are best asked on [Stack Overflow](https://stackoverflow.com/tags/bentley-itwin).
 
 ### Guidance
 
