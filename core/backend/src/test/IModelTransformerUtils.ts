@@ -1299,18 +1299,18 @@ export class FilterByViewTransformer extends IModelTransformer {
     this._exportModelSelectorId = exportViewDefinition.modelSelectorId;
     this._exportDisplayStyleId = exportViewDefinition.displayStyleId;
     const exportCategorySelector = sourceDb.elements.getElement<CategorySelector>(exportViewDefinition.categorySelectorId, CategorySelector);
-    this.excludeCategories(Id64.toIdSet(exportCategorySelector.categories));
+    this.excludeCategoriesExcept(Id64.toIdSet(exportCategorySelector.categories));
     const exportModelSelector = sourceDb.elements.getElement<ModelSelector>(exportViewDefinition.modelSelectorId, ModelSelector);
     this._exportModelIds = Id64.toIdSet(exportModelSelector.models);
   }
   /** Excludes categories not referenced by the export view's CategorySelector */
-  private excludeCategories(exportCategoryIds: Id64Set): void {
+  private excludeCategoriesExcept(exportCategoryIds: Id64Set): void {
     const sql = `SELECT ECInstanceId FROM ${SpatialCategory.classFullName}`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const categoryId = statement.getValue(0).getId();
         if (!exportCategoryIds.has(categoryId)) {
-          this.exporter.excludeElementCategory(categoryId);
+          this.exporter.excludeElementsInCategory(categoryId);
         }
       }
     });
