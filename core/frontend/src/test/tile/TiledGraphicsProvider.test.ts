@@ -57,6 +57,11 @@ class TestTree extends TileTree {
     this._rootTile = new TestTile(this);
   }
 
+  public async setReady(): Promise<void> {
+    this.onReady.raiseEvent();
+    return BeDuration.wait(1);
+  }
+
   public get rootTile(): TestTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return undefined; }
@@ -165,8 +170,7 @@ describe("TiledGraphicsProvider", () => {
     expect(viewport.areAllTileTreesLoaded).to.be.false;
 
     expect(ref.treeOwner.tileTree).to.be.undefined;
-    tree.onReady.raiseEvent();
-    await BeDuration.wait(1);
+    await tree.setReady();
     expect(ref.treeOwner.tileTree).not.to.be.undefined;
     expect(viewport.areAllTileTreesLoaded).to.be.false;
 
@@ -180,8 +184,8 @@ describe("TiledGraphicsProvider", () => {
     expect(viewport.areAllTileTreesLoaded).to.be.true;
 
     const tree2 = new TestTree(imodel);
-    tree2.onReady.raiseEvent();
     const ref2 = new TestRef(tree2);
+    await tree2.setReady();
     const provider2 = new TestProvider(ref2);
     viewport.addTiledGraphicsProvider(provider2);
     expect(viewport.areAllTileTreesLoaded).to.be.false;

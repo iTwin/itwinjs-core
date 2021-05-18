@@ -1400,18 +1400,15 @@ export abstract class Viewport implements IDisposable {
     if (!this.view.areAllTileTreesLoaded)
       return false;
 
+    if (this._mapTiledGraphicsProvider && !TiledGraphicsProvider.isLoadingComplete(this._mapTiledGraphicsProvider, this))
+      return false;
+
     let allLoaded = true;
-    this.forEachMapTreeRef((ref) => {
-      allLoaded &&= ref.isLoadingComplete;
-    });
+    for (const provider of this._tiledGraphicsProviders)
+      if (!TiledGraphicsProvider.isLoadingComplete(provider, this))
+        return false;
 
-    if (allLoaded) {
-      this.forEachTiledGraphicsProviderTree((ref) => {
-        allLoaded &&= ref.isLoadingComplete;
-      });
-    }
-
-    return allLoaded;
+    return true;
   }
 
   /** Disclose *all* TileTrees currently in use by this Viewport. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
@@ -2238,12 +2235,8 @@ export abstract class Viewport implements IDisposable {
         const context = this.createSceneContext();
         view.createScene(context);
 
-        for (const provider of this._tiledGraphicsProviders) {
-          if (undefined !== provider.addToScene)
-            provider.addToScene(context);
-          else
-            provider.forEachTileTreeRef(this, (ref) => ref.addToScene(context));
-        }
+        for (const provider of this._tiledGraphicsProviders)
+          TiledGraphicsProvider.addToScene(provider, context);
 
         context.requestMissingTiles();
         target.changeScene(context.scene);

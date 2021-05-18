@@ -32,3 +32,27 @@ export interface TiledGraphicsProvider {
    */
   isLoadingComplete?: (viewport: Viewport) => boolean;
 }
+
+/** @public */
+export namespace TiledGraphicsProvider {
+  /** @internal because TypeDoc can't disambiguate with the interface method by same name. */
+  export function addToScene(provider: TiledGraphicsProvider, context: SceneContext): void {
+    if (provider.addToScene)
+      provider.addToScene(context);
+    else
+      provider.forEachTileTreeRef(context.viewport, (ref) => ref.addToScene(context));
+  }
+
+  /** @internal because TypeDoc can't disambiguate with the interface method by same name. */
+  export function isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean {
+    if (provider.isLoadingComplete && !provider.isLoadingComplete(viewport))
+      return false;
+
+    let allLoaded = true;
+    provider.forEachTileTreeRef(viewport, (ref) => {
+      allLoaded &&= ref.isLoadingComplete;
+    });
+
+    return allLoaded;
+  }
+}
