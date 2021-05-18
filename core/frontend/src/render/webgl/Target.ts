@@ -55,11 +55,7 @@ import { TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
-<<<<<<< HEAD
-=======
-import { VisibleTileFeatures } from "./VisibleTileFeatures";
 import { FrameStatsCollector, OnFrameStatsReadyEvent } from "../FrameStats";
->>>>>>> 5de7b38ce9... Implement FrameStats API (#1411)
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];

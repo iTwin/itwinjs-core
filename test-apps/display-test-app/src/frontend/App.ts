@@ -40,11 +40,7 @@ import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
-<<<<<<< HEAD
-=======
-import { SyncViewportsTool } from "./SyncViewportsTool";
 import { FrameStatsTool } from "./FrameStatsTool";
->>>>>>> 5de7b38ce9... Implement FrameStats API (#1411)
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
