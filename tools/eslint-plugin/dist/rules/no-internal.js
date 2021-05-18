@@ -15,6 +15,15 @@ const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.EnumDeclaration]: "enum",
   [ts.SyntaxKind.InterfaceDeclaration]: "interface",
   [ts.SyntaxKind.ModuleDeclaration]: "module",
+  [ts.SyntaxKind.MethodDeclaration]: "method",
+  [ts.SyntaxKind.MethodSignature]: "method",
+  [ts.SyntaxKind.FunctionDeclaration]: "function",
+  [ts.SyntaxKind.GetAccessor]: "getter",
+  [ts.SyntaxKind.SetAccessor]: "setter",
+  [ts.SyntaxKind.PropertyDeclaration]: "property",
+  [ts.SyntaxKind.PropertySignature]: "property",
+  [ts.SyntaxKind.Constructor]: "constructor",
+  [ts.SyntaxKind.EnumMember]: "enum member",
 }
 
 /**
@@ -53,7 +62,7 @@ module.exports = {
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
-    function checkJsDoc(declaration, node, name) {
+    function checkJsDoc(declaration, node) {
       if (!declaration || !declaration.jsDoc)
         return undefined;
 
@@ -61,12 +70,18 @@ module.exports = {
         if (jsDoc.tags)
           for (const tag of jsDoc.tags)
             if (bannedTags.includes(tag.tagName.escapedText)) {
+              let name;
+              if (declaration.kind === ts.SyntaxKind.Constructor)
+                name = declaration.parent.symbol.escapedName;
+              else
+                name = declaration.symbol.escapedName;
+
               context.report({
                 node,
                 messageId: "forbidden",
                 data: {
-                  kind: syntaxKindFriendlyNames.has(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object",
-                  name: name || declaration.symbol.escapedName,
+                  kind: syntaxKindFriendlyNames.hasOwnProperty(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object type " + declaration.kind,
+                  name,
                   tag: tag.tagName.escapedText,
                 }
               });
@@ -113,7 +128,7 @@ module.exports = {
 
         const resolvedConstructor = typeChecker.getResolvedSignature(tsCall);
         if (resolvedConstructor)
-          checkJsDoc(resolvedConstructor.declaration, node, `${resolvedClass.symbol.escapedName} constructor`);
+          checkJsDoc(resolvedConstructor.declaration, node);
       },
 
       MemberExpression(node) {
