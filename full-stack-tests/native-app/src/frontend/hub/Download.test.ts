@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BeDuration, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, NativeApp } from "@bentley/imodeljs-frontend";
@@ -32,8 +32,8 @@ describe("NativeApp Download (#integration)", () => {
     let events = 0;
     let loaded = 0;
     let total = 0;
-    const locTestIModelId = await NativeAppTest.getTestIModelId(testProjectId, "CodesPushTest");
-    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
+    const iModelId = await NativeAppTest.getTestIModelId(testProjectId, "CodesPushTest");
+    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
       (progress: ProgressInfo) => {
         assert.isNumber(progress.loaded);
         assert.isNumber(progress.total);
@@ -49,7 +49,7 @@ describe("NativeApp Download (#integration)", () => {
     assert.notEqual(events, 0);
 
     await usingOfflineScope(async () => {
-      const rs = await NativeApp.getCachedBriefcases(locTestIModelId);
+      const rs = await NativeApp.getCachedBriefcases(iModelId);
       assert(rs.length > 0);
       const connection = await BriefcaseConnection.openFile({ fileName: downloader.fileName });
       const rowCount = await connection.queryRowCount("SELECT ECInstanceId FROM bis.Element LIMIT 1");
@@ -60,20 +60,28 @@ describe("NativeApp Download (#integration)", () => {
   });
 
   it("Should be able to cancel download (#integration)", async () => {
-    const locTestIModelId = await NativeAppTest.getTestIModelId(testProjectId, "Stadium Dataset 1");
-    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly });
+    const iModelId = await NativeAppTest.getTestIModelId(testProjectId, "Stadium Dataset 1");
+    let downloadAborted = false;
+    const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: 0 });
+    await NativeApp.deleteBriefcase(fileName);
 
-    let cancelled1 = false;
-    let cancelled2 = false;
-    void BeDuration.fromSeconds(.5).executeAfter(async () => { cancelled1 = await downloader.requestCancel(); });
+    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, iModelId, { fileName, syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
+      (progress: ProgressInfo) => {
+        assert.isNumber(progress.loaded);
+        assert.isNumber(progress.total);
+        assert.isTrue(progress.total! >= progress.loaded);
+        if (progress.total! > 0 && progress.loaded > (progress.total! / 8))
+          void downloader.requestCancel(); // cancel after 1/8 of the file is downloaded
+      });
+
     try {
       await downloader.downloadPromise;
     } catch (err) {
-      cancelled2 = true;
+      assert.isTrue(err.message.includes("cancelled"));
+      downloadAborted = true;
     }
     await NativeApp.deleteBriefcase(downloader.fileName);
-    assert.isTrue(cancelled1);
-    assert.isTrue(cancelled2);
+    assert.isTrue(downloadAborted, "download should abort");
   });
 
 });
