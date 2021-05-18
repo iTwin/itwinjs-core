@@ -2685,8 +2685,10 @@ export class IModelExporter {
     excludeCodeSpec(codeSpecName: string): void;
     excludeElement(elementId: Id64String): void;
     excludeElementAspectClass(classFullName: string): void;
+    // @deprecated
     excludeElementCategory(categoryId: Id64String): void;
     excludeElementClass(classFullName: string): void;
+    excludeElementsInCategory(categoryId: Id64String): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
     exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void>;
