@@ -10,9 +10,10 @@ import { AccessToken } from "@bentley/itwin-client";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
 } from "@bentley/oidc-signin-tool/lib/frontend";
-import { Settings } from "../../common/Settings";
+import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
@@ -33,6 +34,13 @@ export class TestContext {
       await this._instance.initialize();
     }
     return this._instance;
+  }
+
+  /** Initialize configuration for the rpc interfaces used by the application. */
+  private initializeRpcInterfaces(info: OpenAPIInfo) {
+    // Url without trailing slash
+    const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
+    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces());
   }
 
   private async initialize() {
@@ -58,6 +66,13 @@ export class TestContext {
         scope: this.settings.oidcScopes,
       } as TestBrowserAuthorizationClientConfiguration);
     }
+
+    const iModelData = this.settings.iModel;
+
+    this.contextId = iModelData.projectId;
+    this.iModelWithChangesets = new IModelSession(iModelData.id, this.contextId);
+
+    this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
     await NoRenderApp.startup({
       applicationId: this.settings.gprid,
