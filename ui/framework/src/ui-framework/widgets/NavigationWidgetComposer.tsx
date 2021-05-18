@@ -34,7 +34,7 @@ function createNavigationAidControl(activeContentControl: ContentControl | undef
 }
 
 /** Properties for the [[NavigationAidHost]] React component
- * @beta
+ * @public
  */
 export interface NavigationAidHostProps {
   // defaults to "64px"
@@ -45,7 +45,7 @@ export interface NavigationAidHostProps {
 
 /**
  * NavigationAidHost is a component that hosts a NavigationAid that is specific to the active content control.
- * @beta
+ * @public
  */
 export function NavigationAidHost(props: NavigationAidHostProps) {
   const [activeContentControl, setActiveContentControl] = React.useState(() => ContentViewManager.getActiveContentControl());
@@ -119,7 +119,7 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
 }
 
 /** Properties for the [[NavigationWidgetComposer]] React components
- * @beta
+ * @public
  */
 export interface NavigationWidgetComposerProps extends CommonProps {
   /** Optional Horizontal Toolbar */
@@ -133,7 +133,7 @@ export interface NavigationWidgetComposerProps extends CommonProps {
 /**
  * Component that Composes a NavigationWidget typically using toolbars generated via [[ToolbarComposer]] class. The Navigation widget is shown in the top right of the content area
  * and typically holds tools to visually navigate, orient, and zoom to specific content.
- * @beta
+ * @public
  */
 export function NavigationWidgetComposer(props: NavigationWidgetComposerProps) {
   const { navigationAidHost, horizontalToolbar, verticalToolbar, ...otherProps } = props;

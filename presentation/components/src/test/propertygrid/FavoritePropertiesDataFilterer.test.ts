@@ -10,77 +10,10 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field } from "@bentley/presentation-common";
 import { createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import {
-  ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames, StructValue,
-} from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { IPresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { FavoritePropertiesDataFilterer } from "../../presentation-components/propertygrid/FavoritePropertiesDataFilterer";
-
-function createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString(), editorInfo?: PropertyEditorInfo, autoExpand?: boolean) {
-  const value: PrimitiveValue = {
-    displayValue,
-    value: rawValue,
-    valueFormat: PropertyValueFormat.Primitive,
-  };
-
-  const description: PropertyDescription = {
-    displayLabel: name,
-    name,
-    typename: StandardTypeNames.String,
-  };
-
-  if (editorInfo)
-    description.editor = editorInfo;
-
-  const property = new PropertyRecord(value, description);
-  property.isReadonly = false;
-  property.autoExpand = autoExpand;
-  if (property.autoExpand === undefined)
-    delete property.autoExpand;
-
-  return property;
-}
-
-function createArrayProperty(name: string, items?: PropertyRecord[], autoExpand?: boolean) {
-  if (!items)
-    items = [];
-
-  const value: ArrayValue = {
-    items,
-    valueFormat: PropertyValueFormat.Array,
-    itemsTypeName: items.length !== 0 ? items[0].property.typename : "string",
-  };
-
-  const description: PropertyDescription = {
-    displayLabel: name,
-    name,
-    typename: StandardTypeNames.Array,
-  };
-  const property = new PropertyRecord(value, description);
-  property.isReadonly = false;
-  property.autoExpand = autoExpand;
-  return property;
-}
-
-function createStructProperty(name: string, members?: { [name: string]: PropertyRecord }, autoExpand?: boolean) {
-  if (!members)
-    members = {};
-
-  const value: StructValue = {
-    members,
-    valueFormat: PropertyValueFormat.Struct,
-  };
-
-  const description: PropertyDescription = {
-    displayLabel: name,
-    name,
-    typename: StandardTypeNames.Struct,
-  };
-  const property = new PropertyRecord(value, description);
-  property.isReadonly = false;
-  property.autoExpand = autoExpand;
-  return property;
-}
+import { createArrayProperty, createPrimitiveStringProperty, createStructProperty } from "../_helpers/Properties";
 
 describe("FavoritePropertiesDataFilterer", () => {
   let mockDataProvider: moq.IMock<IPresentationPropertyDataProvider>;

@@ -17,46 +17,61 @@ import { ConfigurableUiManager } from "../../ui-framework/configurableui/Configu
 import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
 import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
 import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
-import TestUtils from "../TestUtils";
+import TestUtils, { storageMock } from "../TestUtils";
 import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
 
-describe("NavigationWidget", () => {
+describe("NavigationWidget localStorage Wrapper", () => {
+
+  const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
+  const localStorageMock = storageMock();
 
   before(async () => {
-    await TestUtils.initializeUiFramework();
+    Object.defineProperty(window, "localStorage", {
+      get: () => localStorageMock,
+    });
   });
 
   after(() => {
-    TestUtils.terminateUiFramework();
+    Object.defineProperty(window, "localStorage", localStorageToRestore);
   });
 
-  const widgetProps: AnyWidgetProps = {
-    id: "navigationWidget",
-    classId: "NavigationWidget",
-    defaultState: WidgetState.Open,
-    isFreeform: true,
-    iconSpec: "icon-home",
-    labelKey: "SampleApp:Test.my-label",
-    navigationAidId: "StandardRotationNavigationAid",
-    horizontalDirection: Direction.Top,
-    verticalDirection: Direction.Left,
-  };
+  describe("NavigationWidget", () => {
 
-  it("NavigationWidgetDef from WidgetProps", () => {
+    before(async () => {
+      await TestUtils.initializeUiFramework();
+    });
 
-    const widgetDef = new NavigationWidgetDef(widgetProps); // eslint-disable-line deprecation/deprecation
-    expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // eslint-disable-line deprecation/deprecation
+    after(() => {
+      TestUtils.terminateUiFramework();
+    });
 
-    const navigationWidgetDef = widgetDef;
+    const widgetProps: AnyWidgetProps = {
+      id: "navigationWidget",
+      classId: "NavigationWidget",
+      defaultState: WidgetState.Open,
+      isFreeform: true,
+      iconSpec: "icon-home",
+      labelKey: "SampleApp:Test.my-label",
+      navigationAidId: "StandardRotationNavigationAid",
+      horizontalDirection: Direction.Top,
+      verticalDirection: Direction.Left,
+    };
 
-    const reactNode = navigationWidgetDef.reactNode;
-    expect(reactNode).to.not.be.undefined;
+    it("NavigationWidgetDef from WidgetProps", () => {
 
-    const cornerNode = navigationWidgetDef.renderCornerItem();
-    expect(cornerNode).to.not.be.undefined;
-  });
+      const widgetDef = new NavigationWidgetDef(widgetProps); // eslint-disable-line deprecation/deprecation
+      expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // eslint-disable-line deprecation/deprecation
 
-  const horizontalToolbar =
+      const navigationWidgetDef = widgetDef;
+
+      const reactNode = navigationWidgetDef.reactNode;
+      expect(reactNode).to.not.be.undefined;
+
+      const cornerNode = navigationWidgetDef.renderCornerItem();
+      expect(cornerNode).to.not.be.undefined;
+    });
+
+    const horizontalToolbar =
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
@@ -67,7 +82,7 @@ describe("NavigationWidget", () => {
       }
     />;
 
-  const verticalToolbar =
+    const verticalToolbar =
     <Toolbar
       expandsTo={Direction.Left}
       items={
@@ -78,109 +93,109 @@ describe("NavigationWidget", () => {
       }
     />;
 
-  it("NavigationWidget should render", () => {
-    mount(
-      <NavigationWidget // eslint-disable-line deprecation/deprecation
-        horizontalToolbar={horizontalToolbar}
-        verticalToolbar={verticalToolbar}
-      />,
-    );
-  });
-
-  it("NavigationWidget should render correctly", () => {
-    shallow(
-      <NavigationWidget // eslint-disable-line deprecation/deprecation
-        id="navigationWidget"
-        horizontalToolbar={horizontalToolbar}
-        verticalToolbar={verticalToolbar}
-      />,
-    ).should.matchSnapshot();
-  });
-
-  it("NavigationWidget should render with an item list", () => {
-    const hItemList = new ItemList([CoreTools.selectElementCommand]);
-    const vItemList = new ItemList([CoreTools.fitViewCommand]);
-
-    mount(
-      <NavigationWidget // eslint-disable-line deprecation/deprecation
-        horizontalItems={hItemList}
-        verticalItems={vItemList}
-      />,
-    );
-  });
-
-  it("NavigationWidget should support update", () => {
-    const wrapper = mount(
-      <NavigationWidget // eslint-disable-line deprecation/deprecation
-        horizontalToolbar={horizontalToolbar}
-        verticalToolbar={verticalToolbar}
-      />,
-    );
-    expect(wrapper.find(ToolButton).length).to.eq(4);
-
-    wrapper.setProps({ verticalToolbar: undefined });
-    wrapper.update();
-    expect(wrapper.find(ToolButton).length).to.eq(2);
-  });
-
-  class TestContentControl extends ContentControl {
-    constructor(info: ConfigurableCreateInfo, options: any) {
-      super(info, options);
-
-      this.reactNode = <div />;
-    }
-  }
-
-  class TestNavigationAidControl extends NavigationAidControl {
-    constructor(info: ConfigurableCreateInfo, options: any) {
-      super(info, options);
-
-      this.reactNode = <div>Test Navigation Aid</div>;
-    }
-  }
-
-  it("NavigationWidgetDef with invalid navigation aid should throw Error", () => {
-    const def = new NavigationWidgetDef({ // eslint-disable-line deprecation/deprecation
-      navigationAidId: "Aid1",
+    it("NavigationWidget should render", () => {
+      mount(
+        <NavigationWidget // eslint-disable-line deprecation/deprecation
+          horizontalToolbar={horizontalToolbar}
+          verticalToolbar={verticalToolbar}
+        />,
+      );
     });
-    ConfigurableUiManager.registerControl("Aid1", TestContentControl);
-    expect(() => def.renderCornerItem()).to.throw(Error);
-    ConfigurableUiManager.unregisterControl("Aid1");
-  });
 
-  it("NavigationWidgetDef should handle updateNavigationAid", () => {
-    const def = new NavigationWidgetDef({ // eslint-disable-line deprecation/deprecation
-      navigationAidId: "Aid1",
+    it("NavigationWidget should render correctly", () => {
+      shallow(
+        <NavigationWidget // eslint-disable-line deprecation/deprecation
+          id="navigationWidget"
+          horizontalToolbar={horizontalToolbar}
+          verticalToolbar={verticalToolbar}
+        />,
+      ).should.matchSnapshot();
     });
-    ConfigurableUiManager.registerControl("Aid1", TestNavigationAidControl);
 
-    const element = def.reactNode;
-    expect(def.reactNode).to.eq(element);
-    const wrapper = mount(element as React.ReactElement<any>);
+    it("NavigationWidget should render with an item list", () => {
+      const hItemList = new ItemList([CoreTools.selectElementCommand]);
+      const vItemList = new ItemList([CoreTools.fitViewCommand]);
 
-    const connection = moq.Mock.ofType<IModelConnection>();
-    FrontstageManager.setActiveNavigationAid("Aid1", connection.object);
-    wrapper.update();
+      mount(
+        <NavigationWidget // eslint-disable-line deprecation/deprecation
+          horizontalItems={hItemList}
+          verticalItems={vItemList}
+        />,
+      );
+    });
 
-    FrontstageManager.setActiveToolId(CoreTools.selectElementCommand.toolId);
+    it("NavigationWidget should support update", () => {
+      const wrapper = mount(
+        <NavigationWidget // eslint-disable-line deprecation/deprecation
+          horizontalToolbar={horizontalToolbar}
+          verticalToolbar={verticalToolbar}
+        />,
+      );
+      expect(wrapper.find(ToolButton).length).to.eq(4);
 
-    ConfigurableUiManager.unregisterControl("Aid1");
+      wrapper.setProps({ verticalToolbar: undefined });
+      wrapper.update();
+      expect(wrapper.find(ToolButton).length).to.eq(2);
+    });
+
+    class TestContentControl extends ContentControl {
+      constructor(info: ConfigurableCreateInfo, options: any) {
+        super(info, options);
+
+        this.reactNode = <div />;
+      }
+    }
+
+    class TestNavigationAidControl extends NavigationAidControl {
+      constructor(info: ConfigurableCreateInfo, options: any) {
+        super(info, options);
+
+        this.reactNode = <div>Test Navigation Aid</div>;
+      }
+    }
+
+    it("NavigationWidgetDef with invalid navigation aid should throw Error", () => {
+      const def = new NavigationWidgetDef({ // eslint-disable-line deprecation/deprecation
+        navigationAidId: "Aid1",
+      });
+      ConfigurableUiManager.registerControl("Aid1", TestContentControl);
+      expect(() => def.renderCornerItem()).to.throw(Error);
+      ConfigurableUiManager.unregisterControl("Aid1");
+    });
+
+    it("NavigationWidgetDef should handle updateNavigationAid", () => {
+      const def = new NavigationWidgetDef({ // eslint-disable-line deprecation/deprecation
+        navigationAidId: "Aid1",
+      });
+      ConfigurableUiManager.registerControl("Aid1", TestNavigationAidControl);
+
+      const element = def.reactNode;
+      expect(def.reactNode).to.eq(element);
+      const wrapper = mount(element as React.ReactElement<any>);
+
+      const connection = moq.Mock.ofType<IModelConnection>();
+      FrontstageManager.setActiveNavigationAid("Aid1", connection.object);
+      wrapper.update();
+
+      FrontstageManager.setActiveToolId(CoreTools.selectElementCommand.toolId);
+
+      ConfigurableUiManager.unregisterControl("Aid1");
+    });
+
+    it("NavigationAidHost should render in 2.0 mode", () => {
+      mount(
+        <FrameworkVersion version="2">
+          <NavigationAidHost />
+        </FrameworkVersion>);
+    });
+
+    it("NavigationAidHost should render in 2.0 mode with snapWidgetOpacity", () => {
+      UiShowHideManager.snapWidgetOpacity = true;
+      mount(
+        <FrameworkVersion version="2">
+          <NavigationAidHost />
+        </FrameworkVersion>);
+      UiShowHideManager.snapWidgetOpacity = false;
+    });
   });
-
-  it("NavigationAidHost should render in 2.0 mode", () => {
-    mount(
-      <FrameworkVersion version="2">
-        <NavigationAidHost />
-      </FrameworkVersion>);
-  });
-
-  it("NavigationAidHost should render in 2.0 mode with snapWidgetOpacity", () => {
-    UiShowHideManager.snapWidgetOpacity = true;
-    mount(
-      <FrameworkVersion version="2">
-        <NavigationAidHost />
-      </FrameworkVersion>);
-    UiShowHideManager.snapWidgetOpacity = false;
-  });
-
 });

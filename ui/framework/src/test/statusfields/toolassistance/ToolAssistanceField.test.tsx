@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
-import { LocalUiSettings, Toggle } from "@bentley/ui-core";
+import { LocalSettingsStorage, Toggle } from "@bentley/ui-core";
 import { FooterPopup, TitleBarButton } from "@bentley/ui-ninezone";
 import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl,
@@ -18,11 +18,11 @@ import {
 import TestUtils, { mount, storageMock } from "../../TestUtils";
 
 describe("ToolAssistanceField", () => {
-  const uiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+  const uiSettingsStorage = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
 
   before(async () => {
-    await uiSettings.saveSetting("ToolAssistance", "showPromptAtCursor", true);
-    await uiSettings.saveSetting("ToolAssistance", "mouseTouchTabIndex", 0);
+    await uiSettingsStorage.saveSetting("ToolAssistance", "showPromptAtCursor", true);
+    await uiSettingsStorage.saveSetting("ToolAssistance", "mouseTouchTabIndex", 0);
   });
 
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {
@@ -35,7 +35,7 @@ describe("ToolAssistanceField", () => {
         <>
           <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget}
             includePromptAtCursor={true}
-            uiSettings={uiSettings} />
+            uiSettings={uiSettingsStorage} />
         </>
       );
     }

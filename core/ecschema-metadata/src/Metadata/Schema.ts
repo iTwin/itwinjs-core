@@ -428,7 +428,7 @@ export class Schema implements CustomAttributeContainerProps {
 
   public *getClasses(): IterableIterator<ECClass> {
     for (const [, value] of this._items) {
-      if (value instanceof ECClass)
+      if (ECClass.isECClass(value))
         yield value;
     }
   }
@@ -578,6 +578,15 @@ export class Schema implements CustomAttributeContainerProps {
     schema = reader.readSchemaSync(schema, rawSchema);
 
     return schema;
+  }
+
+  /**
+   * @internal
+   */
+  public static isSchema(object: any): object is Schema {
+    const schema = object as Schema;
+
+    return schema !== undefined && schema.schemaKey !== undefined && schema.context !== undefined;
   }
 
 }

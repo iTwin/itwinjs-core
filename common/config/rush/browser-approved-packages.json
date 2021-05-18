@@ -8,7 +8,7 @@
     },
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@babel/core",
@@ -21,6 +21,10 @@
     {
       "name": "@bentley/backend-itwin-client",
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@bentley/backend-webpack-tools",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/bentleyjs-core",
@@ -48,7 +52,11 @@
     },
     {
       "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
+    },
+    {
+      "name": "@bentley/ecschema-rpcinterface-common",
+      "allowedCategories": [ "backend", "integration-testing" ]
     },
     {
       "name": "@bentley/electron-manager",
@@ -239,6 +247,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@bentley/units-schema",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "@bentley/usage-logging-client",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -291,6 +303,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "almost-equal",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "applicationinsights",
       "allowedCategories": [ "backend" ]
     },
@@ -313,6 +329,10 @@
     {
       "name": "babel-preset-react-app",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "benchmark",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "body-parser",
@@ -511,8 +531,16 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "fast-deep-equal",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "fast-sha256",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "fast-sort",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "file-loader",
@@ -571,6 +599,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "i18next-node-fs-backend",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "i18next-xhr-backend",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -627,10 +659,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "ldclient-js",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "linkify-it",
       "allowedCategories": [ "frontend" ]
     },
@@ -657,6 +685,10 @@
     {
       "name": "mini-css-extract-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "mkdirp",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "mobx",
@@ -696,7 +728,7 @@
     },
     {
       "name": "nyc",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "object-hash",
@@ -805,10 +837,6 @@
     {
       "name": "react-redux",
       "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "react-resize-detector",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-router-dom",
@@ -980,7 +1008,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tsconfig-paths",

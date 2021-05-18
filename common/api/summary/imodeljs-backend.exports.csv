@@ -21,22 +21,20 @@ public;BisCoreSchema
 public;BriefcaseDb 
 public;BriefcaseId = number
 public;BriefcaseIdValue
-beta;BriefcaseManager
-public;CachedECSqlStatement
-internal;CachedSqliteStatement
+deprecated;BriefcaseIdValue
+public;BriefcaseManager
 public;class Callout 
 public;Category 
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
 internal;ChangedElementsDb 
-internal;ChangeSetToken
 beta;ChangeSummary
 beta;ChangeSummaryExtractContext
 beta;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
 internal;CheckpointManager
-beta;CheckpointProps
+public;CheckpointProps
 public;ClassRegistry
 beta;class CloudStorageService
 beta;CloudStorageServiceCredentials
@@ -76,10 +74,11 @@ public;DisplayStyle3d
 public;DisplayStyleCreationOptions 
 public;class Document 
 internal;class DocumentCarrier 
+deprecated;class DocumentCarrier 
 public;DocumentListModel 
 public;DocumentPartition 
 internal;DownloadJob
-beta;DownloadRequest
+internal;DownloadRequest
 internal;Downloads
 public;Drawing 
 public;DrawingCategory 
@@ -97,7 +96,6 @@ public;ECSqlBinder
 public;ECSqlColumnInfo
 public;ECSqlInsertResult
 public;ECSqlStatement 
-public;ECSqlStatementCache
 public;ECSqlValue
 public;ECSqlValueIterator 
 public;Element 
@@ -134,9 +132,18 @@ public;ExportPartInfo
 public;ExportPartInstanceInfo
 public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
 public;ExportPartLinesInfo
+beta;ExternalSource 
 public;ExternalSourceAspect 
 public;ExternalSourceAspect
+beta;ExternalSourceAttachment 
+beta;ExternalSourceAttachmentAttachesSource 
+beta;ExternalSourceGroup 
+beta;ExternalSourceGroupGroupsSources 
+beta;ExternalSourceIsInRepository 
+beta;ExternalSourceOwnsAttachments 
 public;class FileNameResolver
+beta;FolderContainsRepositories 
+alpha;FolderLink 
 public;class FunctionalBreakdownElement 
 public;class FunctionalComponentElement 
 public;FunctionalComposite 
@@ -146,6 +153,7 @@ public;FunctionalModel
 public;FunctionalPartition 
 public;FunctionalSchema 
 public;class FunctionalType 
+internal;generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise
 public;GenericDocument 
 public;GenericGraphicalModel3d 
 public;GenericGraphicalType2d 
@@ -193,6 +201,7 @@ alpha;IModelSchemaLoader
 beta;IModelTransformer 
 beta;IModelTransformOptions
 internal;class InformationCarrierElement 
+deprecated;class InformationCarrierElement 
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -216,8 +225,25 @@ internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;class NativeAppAuthorizationBackend 
+beta;NativeAppStorage
 beta;NativeHost
-beta;NativeHostOpts = IpcHostOpts
+beta;NativeHostOpts 
+beta;OnAspectArg
+beta;OnAspectIdArg 
+beta;OnAspectPropsArg 
+beta;OnChildElementArg 
+beta;OnChildElementIdArg 
+beta;OnChildElementPropsArg 
+beta;OnElementArg
+beta;OnElementIdArg 
+beta;OnElementInModelIdArg 
+beta;OnElementInModelPropsArg 
+beta;OnElementPropsArg 
+beta;OnModelArg
+beta;OnModelIdArg 
+beta;OnModelPropsArg 
+beta;OnSubModelIdArg 
+beta;OnSubModelPropsArg 
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -233,16 +259,17 @@ public;PhysicalTypeIsOfPhysicalMaterial
 public;PlanCallout 
 public;Platform
 internal;ProcessChangesetOptions
-beta;ProgressFunction = (loaded: number, total: number) => number
+public;ProgressFunction = (loaded: number, total: number) => number
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
 public;RenderMaterialElement 
 public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
+beta;RenderTimeline 
 public;RepositoryLink 
 public;RepositoryModel 
-beta;RequestNewBriefcaseArg = RequestNewBriefcaseProps &
+public;RequestNewBriefcaseArg = RequestNewBriefcaseProps &
 public;class RoleElement 
 public;RoleModel 
 public;Schema
@@ -253,7 +280,7 @@ public;SectionCallout
 public;SectionDrawing 
 beta;SectionDrawingLocation 
 public;SectionDrawingModel 
-alpha;SectionLocation 
+internal;setMaxEntitiesPerEvent(max: number): number
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -270,16 +297,19 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
-internal;SqliteStatement 
-internal;SqliteStatementCache
-internal;SqliteValue
-internal;SqliteValueType
-internal;StandaloneDb 
+public;SqliteStatement 
+public;SqliteValue
+public;SqliteValueType
+public;StandaloneDb 
+internal;StatementCache
 internal;StringParam
 public;SubCategory 
 public;Subject 
 public;SubjectOwnsPartitionElements 
 public;SubjectOwnsSubjects 
+beta;SynchronizationConfigLink 
+beta;SynchronizationConfigProcessesSources 
+beta;SynchronizationConfigSpecifiesRootSources 
 beta;TemplateModelCloner 
 beta;TemplateRecipe2d 
 beta;TemplateRecipe3d 
@@ -291,7 +321,8 @@ public;Texture
 internal;TextureCreateProps 
 public;TitleText 
 public;TxnAction
-beta;TxnElementsChanged
+deprecated;TxnAction
+beta;TxnChangedEntities
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 

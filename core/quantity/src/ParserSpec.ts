@@ -2,12 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
+
 import { Format } from "./Formatter/Format";
 import { UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { Parser, QuantityParseResult } from "./Parser";
 
 /** A ParserSpec holds information needed to parse a string into a quantity synchronously.
- * @alpha
+ * @beta
  */
 export class ParserSpec {
   private _outUnit: UnitProps;

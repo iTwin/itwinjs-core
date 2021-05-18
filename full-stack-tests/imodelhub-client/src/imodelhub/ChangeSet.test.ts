@@ -70,7 +70,7 @@ describe("iModelHub ChangeSetHandler", () => {
   const followingChangesetBackwardChangesetId = "FollowingChangeSet-backward-ChangeSet.Id";
 
   before(async function () {
-    this.enableTimeouts(false);
+    this.timeout(0);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
     (requestContext as any).activityId = "iModelHub ChangeSetHandler";
@@ -388,7 +388,6 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should fail downloading ChangeSets with no file handler", async () => {
-    utils.IModelHubUrlMock.mockGetUrl();
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, `?$select=FileSize&$orderby=Index+desc&$top=1`, mockChangeSets[2]);
     utils.mockGetChangeSet(imodelId, true, "&$orderby=Index+desc&$top=1", mockChangeSets[2]);

@@ -104,7 +104,7 @@ internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
 public;DirectSpiral3d 
-public;DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesterAustralian" | "Czech"
+public;DirectSpiralTypeName = "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesternAustralian" | "Czech" | "MXCubicAlongArc" | "Polish" | "Italian"
 public;DuplicateFacetClusterSelector
 public;Ellipsoid 
 public;EllipsoidPatch 
@@ -131,6 +131,7 @@ internal;HalfEdgeMask
 internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
 public;HasZ = Readonly
 public;IModelJson
+internal;ImplicitLineXY
 public;IndexedCollectionInterval
 public;IndexedPolyface 
 public;IndexedPolyfaceSubsetVisitor 
@@ -270,9 +271,6 @@ public;VariantCurveExtendParameter = boolean | CurveExtendMode | CurveExtendMode
 public;Vector2d 
 public;Vector3d 
 public;Vector3dArray
-internal;ViewGraphicsOps
-internal;ViewportGraphicsGridLineIdentifier
-internal;ViewportGraphicsGridSpacingOptions
 public;WeightStyle
 public;WritableLowAndHighXY
 public;WritableLowAndHighXYZ

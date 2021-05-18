@@ -10,6 +10,7 @@
 * Run the command "npm run test:chrome" to run the backend and automatically bring up a Google Chrome browser window to start the test. This will also automatically kill **ALL** Google Chrome browser windows once the test has completed.
 * Run the command "npm run test:edge" to run the backend and automatically bring up an Edge browser window to start the test. This will also automatically kill **ALL** Edge browser windows once the test has completed.
 * Run the command "npm run test:firefox" to run the backend and automatically bring up a FireFox browser window to start the test. This will also automatically kill **ALL** FireFox browser windows once the test has completed.
+* Run the command "npm run test:safari" to run the backend and automatically bring up a Safari browser window to start the test. This will also automatically kill **ALL** Safari browser windows once the test has completed.
 
 ## Options available for a performance test run:
 

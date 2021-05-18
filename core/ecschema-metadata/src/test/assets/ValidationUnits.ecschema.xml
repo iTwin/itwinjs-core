@@ -1,0 +1,43 @@
+AlteredUnits.ecschema.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="ValidationUnits" alias="VU" version="01.00.05" description="Test schema where inches are defined in inches instead of MM and there's no DECI." displayLabel="Units Testing" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <UnitSystem typeName="SI" />
+    <UnitSystem typeName="METRIC" />
+    <UnitSystem typeName="INTERNATIONAL" />
+    <UnitSystem typeName="USCUSTOM" />
+
+    <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
+    <Phenomenon typeName="TIME" definition="TIME" displayLabel="Time" />
+    <Phenomenon typeName="VELOCITY" definition="LENGTH*TIME(-1)" displayLabel="Velocity" />
+    <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" />
+
+    <Constant typeName="CENTI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-2" displayLabel="centi"/>
+    <Constant typeName="MILLI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-3" displayLabel="milli"/>
+    <Constant typeName="KILO" phenomenon="NUMBER" definition="ONE" numerator="1.0e3" displayLabel="kilo"/>
+
+    <Unit typeName="M" phenomenon="LENGTH" unitSystem="SI" definition="M" displayLabel="m" />
+    <Unit typeName="MM" phenomenon="LENGTH" unitSystem="METRIC" definition="[MILLI]*M" displayLabel="mm" />
+    <Unit typeName="CM" phenomenon="LENGTH" unitSystem="METRIC" definition="[CENTI]*M" displayLabel="cm" />
+    <Unit typeName="KM" phenomenon="LENGTH" unitSystem="METRIC" definition="[KILO]*M" displayLabel="km" />
+    <Unit typeName="DM" phenomenon="LENGTH" unitSystem="METRIC" definition="[DECI]*M" displayLabel="dm" />
+
+    <Unit typeName="IN" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="IN" displayLabel="in" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix B. Section 3.1, Page B-10" />
+    <Unit typeName="FT" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="IN" numerator="12.0" displayLabel="ft" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+    <Unit typeName="YRD" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="FT" numerator="3.0" displayLabel="yd" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+
+    <Unit typeName="MM_PER_SEC" phenomenon="VELOCITY" unitSystem="METRIC" definition="MM*S(-1)" displayLabel="mm/sec" />
+    <Unit typeName="MM_PER_MIN" phenomenon="VELOCITY" unitSystem="METRIC" definition="MM*MIN(-1)" displayLabel="mm/min" />
+    <Unit typeName="MM_PER_HR" phenomenon="VELOCITY" unitSystem="METRIC" definition="MM*HR(-1)" displayLabel="mm/h" />
+    <Unit typeName="MM_PER_DAY" phenomenon="VELOCITY" unitSystem="METRIC" definition="MM*DAY(-1)" displayLabel="mm/day" />
+    <Unit typeName="FT_PER_SEC" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="FT*S(-1)" displayLabel="ft/s" />
+    <Unit typeName="FT_PER_MIN" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="FT*MIN(-1)" displayLabel="ft/min" />
+    <Unit typeName="FT_PER_HR" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="FT*HR(-1)" displayLabel="ft/h" />
+    <Unit typeName="FT_PER_DAY" phenomenon="VELOCITY" unitSystem="USCUSTOM" definition="FT*DAY(-1)" displayLabel="ft/day" />
+
+    <Unit typeName="MIN" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="S" numerator="60.0" displayLabel="min" />
+    <Unit typeName="HR" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="MIN" numerator="60.0" displayLabel="h" />
+    <Unit typeName="DAY" phenomenon="TIME" unitSystem="INTERNATIONAL" definition="HR" numerator="24.0" displayLabel="days" />
+    <Unit typeName="S" phenomenon="TIME" unitSystem="SI" definition="S" displayLabel="s" />
+    <Unit typeName="ONE" phenomenon="NUMBER" unitSystem="INTERNATIONAL" definition="ONE" displayLabel="one" />
+</ECSchema>

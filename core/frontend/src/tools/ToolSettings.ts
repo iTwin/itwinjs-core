@@ -19,6 +19,8 @@ export class ToolSettings {
   public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
   /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
   public static doubleClickToleranceInches = 0.05;
+  /** @beta Use virtual cursor to help with locating elements using touch input. By default it's only enabled for snapping. */
+  public static enableVirtualCursorForLocate = false;
   /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
   public static preserveWorldUp = true;
   /** Delay with a touch on the surface before a move operation begins. */

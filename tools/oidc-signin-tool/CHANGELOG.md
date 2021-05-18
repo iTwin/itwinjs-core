@@ -1,6 +1,53 @@
 # Change Log - @bentley/oidc-signin-tool
 
-This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+This log was last generated on Mon, 17 May 2021 13:31:38 GMT and should not be manually modified.
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+_Version update only_
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:33 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+_Version update only_
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- Basic proxy support for web backends and electron applications (WIP)
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT
@@ -27,6 +74,8 @@ _Version update only_
 
 ## 2.12.0
 Thu, 18 Feb 2021 22:10:13 GMT
+
+_Version update only_
 
 ## 2.11.2
 Thu, 18 Feb 2021 02:50:59 GMT
@@ -281,20 +330,20 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
 - Add retry logic for navigation context destroyed error.
 - Option to refresh token before expiry
-- Fixes to integration tests.
+- Fixes to integration tests. 
 - Update error handling for Ping login page.
 - Fix federated workflow with slow network speed
 - react to changes in imodeljs-clients
 - update TestOidcClient to implement FrontendAuthorizationClient; add universal TestFrontendAuthorizationClient
-- Temporarily commented out failing tests.
+- Temporarily commented out failing tests. 
 - This come from another branch.
 - react to new clients packages from imodeljs-clients
 - Update documentation for the TestUsers
 - Upgrade to Rush 5.23.2
-- Update to support new Bentley sign-in and consent pages
+- Update to support new Bentley sign-in and consent pages 
 - Renamed TestOidcClient and related constructs for consistency
 - Add certa helper functions to support initializing a SideChannel to get an AccessToken.
 
@@ -308,7 +357,7 @@ Tue, 31 Mar 2020 15:44:19 GMT
 
 ### Updates
 
-- Moved changes from master to fix integration tests.
+- Moved changes from master to fix integration tests. 
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -316,7 +365,7 @@ Wed, 04 Mar 2020 16:16:31 GMT
 ### Updates
 
 - Fix federated workflow with slow network speed
-- Update to support new Bentley sign-in and consent pages
+- Update to support new Bentley sign-in and consent pages 
 
 ## 1.12.0
 Wed, 12 Feb 2020 17:45:50 GMT

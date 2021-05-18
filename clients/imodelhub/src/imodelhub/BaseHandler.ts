@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, HttpRequestOptions, RequestGlobalOptions, RequestOptions,
   RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions,
@@ -70,12 +70,14 @@ export function addCsrfHeader(headerName: string = "X-XSRF-TOKEN", cookieName: s
 export class IModelBaseHandler extends WsgClient {
   protected _url?: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
-  public static readonly searchKey: string = "iModelHubApi";
   public static readonly configRelyingPartyUri = "imjs_imodelhub_relying_party_uri";
   protected _agent: any;
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
   private _httpRequestOptionsTransformers: HttpRequestOptionsTransformer[] = [];
+
+  /** @internal */
+  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   /**
    * Create an instance of IModelBaseHandler.
@@ -83,6 +85,7 @@ export class IModelBaseHandler extends WsgClient {
    */
   public constructor(keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super("sv1.1");
+    this.baseUrl = "https://api.bentley.com/imodelhub";
     this._fileHandler = fileHandler;
     const agentOptions = { keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" };
     if (RequestGlobalOptions.httpsProxy) {
@@ -139,15 +142,6 @@ export class IModelBaseHandler extends WsgClient {
    */
   public use(func: HttpRequestOptionsTransformer) {
     this._httpRequestOptionsTransformers.push(func);
-  }
-
-  /**
-   * Get name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   * @internal
-   */
-  protected getUrlSearchKey(): string {
-    return IModelBaseHandler.searchKey;
   }
 
   /**

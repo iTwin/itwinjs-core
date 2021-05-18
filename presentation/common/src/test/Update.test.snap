@@ -1,5 +1,41 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ExpandedNodeUpdateRecord fromJSON deserializes partial \`ExpandedNodeUpdateRecord\` from JSON 1`] = `
+Object {
+  "node": Object {
+    "key": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
+    },
+    "label": Object {
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
+      "typeName": "string",
+    },
+  },
+  "position": 1,
+}
+`;
+
+exports[`ExpandedNodeUpdateRecord toJSON serializes partial \`ExpandedNodeUpdateRecord\` to JSON 1`] = `
+Object {
+  "node": Object {
+    "key": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
+    },
+    "labelDefinition": Object {
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
+      "typeName": "string",
+    },
+  },
+  "position": 1,
+}
+`;
+
 exports[`HierarchyCompareInfo fromJSON deserializes \`HierarchyCompareInfo\` from JSON 1`] = `
 Object {
   "changes": Array [
@@ -97,12 +133,9 @@ Object {
 exports[`HierarchyUpdateInfo fromJSON deserializes partial \`HierarchyUpdateInfo\` from JSON 1`] = `
 Array [
   Object {
-    "target": Object {
-      "instanceKeys": Array [],
-      "pathFromRoot": Array [],
-      "type": "ECInstancesNode",
-    },
-    "type": "Delete",
+    "expandedNodes": undefined,
+    "nodesCount": 1,
+    "parent": undefined,
   },
 ]
 `;
@@ -110,14 +143,67 @@ Array [
 exports[`HierarchyUpdateInfo toJSON serializes partial \`HierarchyUpdateInfo\` to JSON 1`] = `
 Array [
   Object {
-    "target": Object {
-      "instanceKeys": Array [],
-      "pathFromRoot": Array [],
-      "type": "ECInstancesNode",
-    },
-    "type": "Delete",
+    "expandedNodes": undefined,
+    "nodesCount": 1,
+    "parent": undefined,
   },
 ]
+`;
+
+exports[`HierarchyUpdateRecord fromJSON deserializes partial \`HierarchyUpdateRecord\` from JSON 1`] = `
+Object {
+  "expandedNodes": Array [
+    Object {
+      "node": Object {
+        "key": Object {
+          "instanceKeys": Array [],
+          "pathFromRoot": Array [],
+          "type": "ECInstancesNode",
+        },
+        "label": Object {
+          "displayValue": "TestNode",
+          "rawValue": "test_node",
+          "typeName": "string",
+        },
+      },
+      "position": 0,
+    },
+  ],
+  "nodesCount": 2,
+  "parent": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+  },
+}
+`;
+
+exports[`HierarchyUpdateRecord toJSON serializes partial \`HierarchyUpdateRecord\` to JSON 1`] = `
+Object {
+  "expandedNodes": Array [
+    Object {
+      "node": Object {
+        "key": Object {
+          "instanceKeys": Array [],
+          "pathFromRoot": Array [],
+          "type": "ECInstancesNode",
+        },
+        "labelDefinition": Object {
+          "displayValue": "TestNode",
+          "rawValue": "test_node",
+          "typeName": "string",
+        },
+      },
+      "position": 0,
+    },
+  ],
+  "nodesCount": 2,
+  "parent": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+  },
+}
 `;
 
 exports[`PartialHierarchyModification fromJSON deserializes \`NodeDeletionInfo\` from JSON 1`] = `
@@ -275,12 +361,9 @@ Object {
       "content": undefined,
       "hierarchy": Array [
         Object {
-          "target": Object {
-            "instanceKeys": Array [],
-            "pathFromRoot": Array [],
-            "type": "ECInstancesNode",
-          },
-          "type": "Delete",
+          "expandedNodes": undefined,
+          "nodesCount": 1,
+          "parent": undefined,
         },
       ],
     },
@@ -305,12 +388,9 @@ Object {
       "content": undefined,
       "hierarchy": Array [
         Object {
-          "target": Object {
-            "instanceKeys": Array [],
-            "pathFromRoot": Array [],
-            "type": "ECInstancesNode",
-          },
-          "type": "Delete",
+          "expandedNodes": undefined,
+          "nodesCount": 1,
+          "parent": undefined,
         },
       ],
     },

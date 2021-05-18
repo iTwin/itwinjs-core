@@ -202,11 +202,11 @@ export abstract class IdPicker extends ToolBarDropDown {
   protected toggleIds(ids: Id64Arg, enabled: boolean): void {
     const boxById = new Map<string, HTMLInputElement>();
     this._checkboxes.map((box) => boxById.set(box.id, box));
-    Id64.forEach(ids, (id) => {
+    for (const id of Id64.iterable(ids)) {
       this.changeDisplay(id, enabled);
       if (boxById.get(id))
         boxById.get(id)!.checked = enabled;
-    });
+    }
   }
 
   protected abstract hiliteEnabled(hiliteOn: boolean): void;

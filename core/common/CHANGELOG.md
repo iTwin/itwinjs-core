@@ -1,6 +1,77 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+This log was last generated on Mon, 17 May 2021 13:31:38 GMT and should not be manually modified.
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+### Updates
+
+- FeatureOverrides can hide or override the symbology of unanimated nodes.
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Add documentation and links for each BisCodeSpec name.
+- Properly declare changeSetId variables as string.
+- Promote display-related APIs.
+- An ElementGraphicsRequest can supply a non-persistent geometry stream.
+- Add TypeScript wrappers for ExternalSource and related classes and relationships.
+- Fixes to desktop and iOS apps.
+- ClipStyle supports recolorization. Promote ModelClipGroups to public.
+- Promote thematic display API to public.
+- Optimize reality model processing.
+- Remove deprecated ElementEditor that was replaced by EditCommands.
+- rename (deprecate) BriefcaseIdValue.Standalone to BriefcaseIdValue.Unassigned to reduce confusion
+- Update release tags.
+- Add support for forwarding txn events from backend to frontend.
+- Update api tags
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:33 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+_Version update only_
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- added BriefcaseIdValue
+- rework Authentication to use IpcHost
+- add `bindings` member to EntityQueryParams
+- Support working in world coords with ElementGeometry.Builder/Iterator. Place line string using ipc command.
+- Add IpcAppFunctions.queryConcurrency.
+- Memory leak fix
+- Decouple requesting tile content from cloud storage and from backend.
+- Support for transient errors
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT
@@ -64,7 +135,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 ### Updates
 
 - Fix brep DataProps to/from flatbuffer to account for base64 string header.
-- Element geometry creation by brep operations.
+- Element geometry creation by brep operations. 
 - add EditCommand
 - Improve ElementGeometry documentation.
 - Remove assertion in supplyPathForOperation when defaulting changeSetId.
@@ -220,8 +291,8 @@ Fri, 02 Oct 2020 18:03:32 GMT
 
 - Add documentation for ContextRealityModelProps.
 - Fix calculation of cartographic range.
-- Fixes to front end methods to pull, merge and push.
-- Fixed desktop authorization after recent changes.
+- Fixes to front end methods to pull, merge and push. 
+- Fixed desktop authorization after recent changes. 
 - Update Tile version due to changes to indexes for tesselated polylines
 - On iOS download in background
 - Introduce NoContentError (transmitted via 204)
@@ -353,7 +424,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 - Add ability to create selective overrides from display style settings, and apply the overrides to another settings.
 - Fix orientation of Ecef.createFromCartographicOrigin
 - Add non-locatable flag to TerrainSettings.
-- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades.
+- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades. 
 - Support for multiple RPC interface clients and attaching interfaces after startup.
 - Add function to convert solar angles to solar direction.
 - enforce max texture size for stepped gradients.
@@ -387,7 +458,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Improved log message written on rpc error
-- Change default origin mode for terrain to Geodetic.
+- Change default origin mode for terrain to Geodetic. 
 - Fix transforms for creating and querying part instance geometry in world coordinate.
 - channel rules
 - Optimize thematic sensor display by culling sensors based on a distanceCutoff property on ThematicDisplaySensorSettings.
@@ -402,7 +473,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Show min/max window error for mouse wheel zoom.
 - Make animation state of a display style persistent.
 - Send a default pending message since Azure strips content-type header if no data is present
-- Monitor progress of downloading briefcases, ability to cancel download of briefcases.
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
 - Added to DisplayStyle3dSettings: MonochromeMode, LightSettings.
 - Simplify GeometryStreamIteratorEntry (breaking API change).
 - constructor of ColorDef wasn't setting transparency properly for rgba() strings
@@ -425,11 +496,11 @@ Wed, 06 May 2020 13:17:49 GMT
 - Added file size.
 - Supply RPC routing props for SnapshotIModelRpcInterface open methods"
 - MobileRpcConfiguration throws exception
-- Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline.
-- Refactored NativeApp API and RPC interfaces. This continues to be WIP.
-- Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase.
+- Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. 
+- Refactored NativeApp API and RPC interfaces. This continues to be WIP. 
+- Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase. 
 - Added new interface for native app
-- VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP).
+- VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). 
 - Handle null JSON in ViewDetails.
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - OrbitGT point cloud interface.
@@ -479,7 +550,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 - iModel write API development
 - Fix issue with constructing the tile cache URL() on Safari.
 - Prevent reuse of cached tiles after project extents change.
-- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests.
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
 - Define ViewDetails for manipulating optional detail settings of ViewDefinition and ViewState.
 - Add support for plan projection models with 3d display priority.
 - Add settings to control display of plan projection models.
@@ -641,7 +712,7 @@ Mon, 13 May 2019 15:52:05 GMT
 
 ### Updates
 
-- Support spatial classification of context reality models.
+- Support spatial classification of context reality models. 
 - Added OpenAPIInfo to the barrel file
 - Adds parameter for api-extractor to validate missing release tags
 - Adds ignoreMissingTags flag
@@ -654,14 +725,14 @@ Mon, 13 May 2019 15:52:05 GMT
 - LoggerCategory -> CommonLoggerCategory
 - Fix default line pattern for hidden edges.
 - Introduce LoggerCategory enum to advertise logger categories used by this package.
-- Logging fixes.
+- Logging fixes. 
 - Put sourcemap in npm package.
 - Add SVG to ImageSourceFormat
 - Add imodeljs-markup
 - New tile cache naming scheme.
 - queryPage use memoization/pending pattern
 - Remove StandaloneIModelRpcInterface
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Prefer the IModelToken values in the url (if different from values in JSON body -- should never happen except in a malicious request).
 - Exports interface MarshalingBinaryMarker to prevent errors in api-extractor V7
 - Add SnapshotIModelRpcInterface

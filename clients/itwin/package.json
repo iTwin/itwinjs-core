@@ -1,6 +1,6 @@
 {
   "name": "@bentley/itwin-client",
-  "version": "2.14.0-dev.20",
+  "version": "2.17.0-dev.8",
   "description": "Base client package for iTwin applications",
   "main": "lib/itwin-client.js",
   "typings": "lib/itwin-client",
@@ -30,35 +30,33 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.14.0-dev.20"
+    "@bentley/bentleyjs-core": "^2.17.0-dev.8"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.14.0-dev.20",
-    "@bentley/build-tools": "2.14.0-dev.20",
-    "@bentley/certa": "2.14.0-dev.20",
-    "@bentley/config-loader": "2.14.0-dev.20",
-    "@bentley/eslint-plugin": "2.14.0-dev.20",
+    "@bentley/bentleyjs-core": "2.17.0-dev.8",
+    "@bentley/build-tools": "2.17.0-dev.8",
+    "@bentley/certa": "2.17.0-dev.8",
+    "@bentley/config-loader": "2.17.0-dev.8",
+    "@bentley/eslint-plugin": "2.17.0-dev.8",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
-    "@types/mocha": "^5.2.5",
-    "@types/nock": "^11.1.0",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/qs": "^6.5.0",
     "@types/superagent": "^4.1.7",
-    "@types/xmldom": "^0.1.29",
+    "@types/xmldom": "^0.1.30",
     "chai": "^4.1.2",
     "eslint": "^6.8.0",
-    "mocha": "^5.2.0",
+    "mocha": "^8.3.2",
     "nock": "^12.0.3",
-    "nyc": "^14.0.0",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "ts-node": "^7.0.1",
     "typescript": "~4.1.0",
     "webpack": "4.42.0"
   },
@@ -67,11 +65,11 @@
     "js-base64": "^2.4.5",
     "qs": "^6.5.1",
     "superagent": "^5.2.2",
-    "xmldom": "^0.1.27",
+    "xmldom": "^0.5.0",
     "xpath": "0.0.27"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

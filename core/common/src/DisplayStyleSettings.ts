@@ -140,14 +140,21 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   analysisFraction?: number;
-  /** Schedule script
+  /** A schedule script embedded into the display style settings. This is how schedule scripts were stored prior to the introduction of
+   * [RenderTimeline]($backend) elements. It should no longer be used - instead, set [[renderTimeline]] to the Id of the RenderTimeline element
+   * that hosts the script.
    * @note For a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend), the element Ids will be omitted from all
-   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory - they are not needed for display on the frontend.
-   * @beta
+   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory, because they are not needed for display on the frontend.
+   * @deprecated Use DisplayStyleSettingsProps.renderTimeline.
+   * @internal
    */
   scheduleScript?: RenderSchedule.ModelTimelineProps[];
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view.
+   * @beta
+   */
+  renderTimeline?: Id64String;
   /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
+   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    * @beta
    */
   timePoint?: number;
@@ -168,9 +175,7 @@ export interface DisplayStyleSettingsProps {
    * @beta
    */
   modelOvr?: DisplayStyleModelAppearanceProps[];
-  /** Style applied by the view's [ClipVector]($geometry-core).
-   * @beta
-   */
+  /** Style applied by the view's [ClipVector]($geometry-core). */
   clipStyle?: ClipStyleProps;
   /** Overrides to the planar clip masks.  Currently only supported for reality models
    * @beta
@@ -186,9 +191,7 @@ export interface DisplayStyleSettingsProps {
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   /** Settings controlling display of skybox and ground plane. */
   environment?: EnvironmentProps;
-  /** Settings controlling thematic display.
-   * @beta
-   */
+  /** Settings controlling thematic display. */
   thematic?: ThematicDisplayProps;
   /** Settings controlling display of visible and hidden edges. */
   hline?: HiddenLine.SettingsProps;
@@ -198,9 +201,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   solarShadows?: SolarShadowSettingsProps;
   /** Settings controlling how the scene is lit. */
   lights?: LightSettingsProps;
-  /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply.
-   * @beta
-   */
+  /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
   /** Old lighting settings - only `sunDir` was ever used; it is now part of `lights`.
    * @deprecated
@@ -233,7 +234,7 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
  * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given project, like the set of displayed context reality models. Such settings can be useful
  * when creating display style overrides intended for use with a specific iModel or project, but should be omitted when creating general-purpose display style overrides intended
  * for use with any iModel or project. This is the default behavior if no more specific options are provided.
- * @beta
+ * @public
  */
 export interface DisplayStyleOverridesOptions {
   /** Serialize all settings. Applying the resultant [[DisplayStyleSettingsProps]] will produce a [[DisplayStyleSettings]] identical to the original settings. */
@@ -388,13 +389,9 @@ export class DisplayStyleSettings {
     return false;
   }
 
-  /** Event raised by [[applyOverrides]] just before the overrides are applied.
-   * @beta
-   */
+  /** Event raised by [[applyOverrides]] just before the overrides are applied. */
   public readonly onApplyOverrides = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
-  /** Event raised by [[applyOverrides]] after the overrides are applied.
-   * @beta
-   */
+  /** Event raised by [[applyOverrides]] after the overrides are applied. */
   public readonly onOverridesApplied = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
   /** Event raised just prior to assignment to the [[viewFlags]] property. */
   public readonly onViewFlagsChanged = new BeEvent<(newFlags: Readonly<ViewFlags>) => void>();
@@ -411,9 +408,15 @@ export class DisplayStyleSettings {
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
+   * @deprecated Use onRenderTimelineChanged
    * @internal
    */
   public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>();
+
+  /** Event raised just prior to assignment to the [[renderTimeline]] property.
+   * @beta
+   */
+  public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
   /** Event raised just prior to assignment to the [[timePoint]] property.
    * @beta
    */
@@ -428,17 +431,13 @@ export class DisplayStyleSettings {
   public readonly onAnalysisFractionChanged = new BeEvent<(newFraction: number) => void>();
   /** Event raised when the contents of [[excludedElementIds]] changes. */
   public readonly onExcludedElementsChanged = new BeEvent<() => void>();
-  /** Event raised just prior to assignment to the [[clipStyle]] property.
-   * @beta
-   */
+  /** Event raised just prior to assignment to the [[clipStyle]] property. */
   public readonly onClipStyleChanged = new BeEvent<(newStyle: ClipStyle) => void>();
   /** Event raised when the [[SubCategoryOverride]]s change. */
   public readonly onSubCategoryOverridesChanged = new BeEvent<() => void>();
   /** Event raised just before changing the appearance override for a model. */
   public readonly onModelAppearanceOverrideChanged = new BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>();
-  /** Event raised just prior to assignment to the [[thematic]] property.
-   * @beta
-   */
+  /** Event raised just prior to assignment to the [[thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
   /** Event raised just prior to assignment to the [[hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
@@ -450,9 +449,7 @@ export class DisplayStyleSettings {
   public readonly onEnvironmentChanged = new BeEvent<(newProps: Readonly<EnvironmentProps>) => void>();
   /** Event raised just prior to assignment to the [[lights]] property. */
   public readonly onLightsChanged = new BeEvent<(newLights: LightSettings) => void>();
-  /** Event raised just before changing the plan projection settings for a model.
-   * @beta
-   */
+  /** Event raised just before changing the plan projection settings for a model. */
   public readonly onPlanProjectionSettingsChanged = new BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>();
   /** Event raised just before changing the planar clip mask overrides for an attached reality  model.
    * @beta
@@ -534,8 +531,12 @@ export class DisplayStyleSettings {
       }
     }
   }
-  /** The ViewFlags associated with the display style.
-   * @note Do not modify the ViewFlags in place. Clone them and pass the clone to the setter.
+  /** Flags controlling various aspects of the display style. To change the style's view flags, do something like:
+   * ```ts
+   *  const flags = settings.viewFlags.clone();
+   *  flags.renderMode = RenderMode.SmoothShade; // or any other alterations.
+   *  settings.viewFlags = flags;
+   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
    */
   public get viewFlags(): ViewFlags { return this._viewFlags; }
   public set viewFlags(flags: ViewFlags) {
@@ -619,17 +620,31 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** @internal */
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view.
+   * @beta
+   */
+  public get renderTimeline(): Id64String | undefined {
+    return this._json.renderTimeline;
+  }
+  public set renderTimeline(id: Id64String | undefined) {
+    this.onRenderTimelineChanged.raiseEvent(id);
+    this._json.renderTimeline = id;
+  }
+
+  /** @internal @deprecated */
   public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
+    // eslint-disable-next-line deprecation/deprecation
     return this._json.scheduleScript;
   }
   public set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined) {
+    // eslint-disable-next-line deprecation/deprecation
     this.onScheduleScriptPropsChanged.raiseEvent(props);
+    // eslint-disable-next-line deprecation/deprecation
     this._json.scheduleScript = props;
   }
 
   /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
+   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    * @beta
    */
   public get timePoint(): number | undefined {
@@ -820,9 +835,7 @@ export class DisplayStyleSettings {
     this.onExcludedElementsChanged.raiseEvent();
   }
 
-  /** The style applied to the view's [ClipVector]($geometry-core).
-   * @beta
-   */
+  /** The style applied to the view's [ClipVector]($geometry-core). */
   public get clipStyle(): ClipStyle {
     return this._clipStyle;
   }
@@ -845,7 +858,6 @@ export class DisplayStyleSettings {
    * are omitted, as are drawing aids (e.g., ACS triad and grid).
    * @returns a JSON representation of the selected settings suitable for passing to [[applyOverrides]].
    * @see [[applyOverrides]] to apply the overrides to another DisplayStyleSettings..
-   * @beta
    */
   public toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps {
     if (options?.includeAll) {
@@ -889,8 +901,14 @@ export class DisplayStyleSettings {
         props.analysisFraction = this.analysisFraction;
       }
 
-      if (this.scheduleScriptProps)
+      // eslint-disable-next-line deprecation/deprecation
+      if (this.scheduleScriptProps) {
+        // eslint-disable-next-line deprecation/deprecation
         props.scheduleScript = [...this.scheduleScriptProps];
+      }
+
+      if (this.renderTimeline)
+        props.renderTimeline = this.renderTimeline;
 
       props.subCategoryOvr = this._json.subCategoryOvr ? [...this._json.subCategoryOvr] : [];
       props.modelOvr = this._json.modelOvr ? [...this._json.modelOvr] : [];
@@ -913,7 +931,6 @@ export class DisplayStyleSettings {
    *  }
    * ```
    * @see [[toOverrides]] to produce overrides from an existing DisplayStyleSettings.
-   * @beta
    */
   public applyOverrides(overrides: DisplayStyleSettingsProps): void {
     this._applyOverrides(overrides);
@@ -955,8 +972,14 @@ export class DisplayStyleSettings {
     if (undefined !== overrides.analysisFraction)
       this.analysisFraction = overrides.analysisFraction;
 
-    if (overrides.scheduleScript)
+    // eslint-disable-next-line deprecation/deprecation
+    if (overrides.scheduleScript) {
+      // eslint-disable-next-line deprecation/deprecation
       this.scheduleScriptProps = [...overrides.scheduleScript];
+    }
+
+    if (overrides.renderTimeline)
+      this.renderTimeline = overrides.renderTimeline;
 
     if (overrides.subCategoryOvr) {
       this._json.subCategoryOvr = [...overrides.subCategoryOvr];
@@ -1213,13 +1236,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     return this._json3d;
   }
 
-  /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
-   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
-   * are omitted, as are drawing aids (e.g., ACS triad and grid).
-   * @returns a JSON representation of the selected settings suitable for passing to [[applyOverrides]].
-   * @see [[applyOverrides]] to apply the overrides to another DisplayStyleSettings..
-   * @beta
-   */
+  /** @internal override */
   public toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps {
     const props = super.toOverrides(options) as DisplayStyle3dSettingsProps;
     if (options?.includeAll)
@@ -1265,7 +1282,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
    *  }
    * ```
    * @see [[toOverrides]] to produce overrides from an existing DisplayStyleSettings.
-   * @beta
+   * @internal override
    */
   public applyOverrides(overrides: DisplayStyle3dSettingsProps): void {
     super._applyOverrides(overrides);
@@ -1296,9 +1313,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this.onOverridesApplied.raiseEvent(overrides);
   }
 
-  /** The settings that control thematic display.
-   * @beta
-   */
+  /** The settings that control thematic display. */
   public get thematic(): ThematicDisplay { return this._thematic; }
   public set thematic(thematic: ThematicDisplay) {
     if (thematic.equals(this.thematic))
@@ -1413,16 +1428,12 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     return this.lights.solar.timePoint;
   }
 
-  /** Get the plan projection settings associated with the specified model, if defined.
-   * @beta
-   */
+  /** Get the plan projection settings associated with the specified model, if defined. */
   public getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined {
     return undefined !== this._planProjections ? this._planProjections.get(modelId) : undefined;
   }
 
-  /** Set or clear the plan projection settings associated with the specified model.
-   * @beta
-   */
+  /** Set or clear the plan projection settings associated with the specified model. */
   public setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void {
     this.onPlanProjectionSettingsChanged.raiseEvent(modelId, settings);
 
@@ -1451,9 +1462,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._json3d.planProjections![modelId] = settings.toJSON();
   }
 
-  /** An iterator over all of the defined plan projection settings. The iterator includes the Id of the model associated with each settings object.
-   * @beta
-   */
+  /** An iterator over all of the defined plan projection settings. The iterator includes the Id of the model associated with each settings object. */
   public get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined {
     return undefined !== this._planProjections ? this._planProjections.entries() : undefined;
   }

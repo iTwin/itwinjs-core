@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore iconpicker lineweight hocs datepicker
+// cSpell:ignore iconpicker lineweight hocs datepicker quantityformat
 
 export { UiComponents } from "./ui-components/UiComponents";
 
@@ -128,6 +128,7 @@ export * from "./ui-components/properties/renderers/value/table/StructValueRende
 export * from "./ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
 export * from "./ui-components/properties/ItemStyle";
 
+export * from "./ui-components/propertygrid/PropertyCategoryRendererManager";
 export * from "./ui-components/propertygrid/PropertyDataProvider";
 export * from "./ui-components/propertygrid/SimplePropertyDataProvider";
 export * from "./ui-components/propertygrid/component/PropertyGrid";
@@ -163,6 +164,7 @@ export * from "./ui-components/color/ColorPickerButton";
 export * from "./ui-components/color/ColorPickerDialog";
 export * from "./ui-components/color/ColorPickerPanel";
 export * from "./ui-components/color/ColorPickerPopup";
+export * from "./ui-components/color/getCSSColorFromDef";
 
 export * from "./ui-components/iconpicker/IconPickerButton";
 

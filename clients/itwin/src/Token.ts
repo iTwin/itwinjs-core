@@ -105,7 +105,6 @@ export class AccessToken {
    * Convert this AccessToken to a string that can be passed across the wire
    * Users should overwrite this method in a subclass of AccessToken if their token is not converted to a string in this way.
    * @param includePrefix Include the token prefix to identify the type of token - "Bearer" for JSON Web Tokens (JWTs)
-   * @beta
    */
   public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
     const jwt = this._tokenString;
@@ -131,7 +130,6 @@ export class AccessToken {
    * - The token is NOT validated in any way other than the basic prefix check described above
    * @param tokenStr String representation of the token
    * @throws [[BentleyError]] If the token does not have the required prefix
-   * @beta
    */
   public static fromTokenString(tokenStr: string): AccessToken {
     const accessToken: AccessToken = AccessToken.generateProperTokenType(tokenStr);
@@ -152,7 +150,6 @@ export class AccessToken {
    * Creates a strongly typed AccessToken object from an untyped JSON with the same properties as [[AccessToken]]
    * @param jsonObj
    * @throws [BentleyError]($bentley) if the supplied tokenResponse is undefined, or does not contain an "access_token" field
-   * @beta
    */
   public static fromJson(jsonObj: AccessTokenProps): AccessToken {
     const jwt = jsonObj.tokenString;
@@ -172,7 +169,7 @@ export class AccessToken {
   }
 
   /**
-   * Creates AccessToken from the typical token responses obtained from Authorization servers
+   * Creates an AccessToken from the typical token responses obtained from Authorization servers
    * - The fields from the token response to different names in AccessToken to keep with naming guidelines
    * - Only basic validation is done - the input tokenResponse must be defined, and have an "access_token" field in it
    * @param tokenResponse Response containing the token string as obtained from the authorization server

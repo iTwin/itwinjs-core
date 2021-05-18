@@ -129,7 +129,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ renderSys: { doIdleWork: false } });
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -171,7 +171,7 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ renderSys: { doIdleWork: false } });
 
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
@@ -419,7 +419,7 @@ describe("Disposal of WebGL Resources", () => {
     // Create a graphic and a texture
     const textureParams = new RenderTexture.Params("-192837465");
     let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
-    const graphicBuilder = target.createGraphicBuilder(GraphicType.Scene, viewport);
+    const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
     const graphic = graphicBuilder.finish();
 

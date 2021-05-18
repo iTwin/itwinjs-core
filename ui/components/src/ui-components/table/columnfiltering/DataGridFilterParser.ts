@@ -14,8 +14,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { Timer } from "@bentley/ui-core";
 import { UiComponents } from "../../UiComponents";
 import { TableColumn } from "../component/TableColumn";
-import { ColumnDescription, FilterRenderer, TableDistinctValue } from "../TableDataProvider";
-import { ColumnFilterDescriptor, FilterCompositionLogicalOperator, FilterOperator } from "./ColumnFiltering";
+import { ColumnDescription, FilterRenderer } from "../TableDataProvider";
+import { ColumnFilterDescriptor, FilterCompositionLogicalOperator, FilterOperator, TableDistinctValue } from "./ColumnFiltering";
 
 /** @internal */
 export interface ReactDataGridFilter extends ReactDataGrid.Filter {
@@ -76,6 +76,20 @@ export interface NumericLessThanData {
 export type NumericFilterRule = NumericExactMatchData | NumericRangeData | NumericGreaterThanData | NumericLessThanData;
 
 /** @internal */
+export interface FieldFilterData {
+  fieldValue: any;
+  operator: FilterOperator;
+  isCaseSensitive?: boolean;
+}
+
+/** @internal */
+export interface MultiValueFilterData {
+  distinctValues: TableDistinctValue[];
+  fieldValues: FieldFilterData[];
+  fieldLogicalOperator: FilterCompositionLogicalOperator;
+}
+
+/** @internal */
 export const FILTER_PARSER_TIMER_TIMEOUT = 250;
 
 /** ReactDataGrid Filter Parser
@@ -102,6 +116,9 @@ export class DataGridFilterParser {
       switch (columnDescription.filterRenderer) {
         case FilterRenderer.MultiSelect:
           await DataGridFilterParser.parseMultiSelect(filter, filterDescriptor, onApplyFilter);
+          break;
+        case FilterRenderer.MultiValue:
+          await DataGridFilterParser.parseMultiValue(filter, filterDescriptor, onApplyFilter);
           break;
         case FilterRenderer.SingleSelect:
           await DataGridFilterParser.parseSingleSelect(filter, filterDescriptor, onApplyFilter);
@@ -133,6 +150,37 @@ export class DataGridFilterParser {
         filterData.forEach((distinctValue: TableDistinctValue) => {
           filterDescriptor.distinctFilter.addDistinctValue(distinctValue.value);
         });
+      }
+    }
+    await onApplyFilter();
+  }
+
+  private static async parseMultiValue(filter: ReactDataGridFilter, filterDescriptor: ColumnFilterDescriptor, onApplyFilter: () => Promise<void>): Promise<void> {
+    /*
+    MultiValue filters
+      distinctValues
+        length: 3
+        0: {value: "Title 1", label: "Title 1"}
+        1: {value: "Title 100", label: "Title 100"}
+        2: {value: "Title 10000", label: "Title 10000"}
+      fieldValues
+        length: 1
+        0: {value: any, operator: FilterOperator, isCaseSensitive?: boolean}
+      logicalOperator: FilterCompositionLogicalOperator
+    */
+    // istanbul ignore else
+    if (filter.filterTerm) {
+      const filterData = filter.filterTerm as unknown as MultiValueFilterData;
+      if (filterData.distinctValues.length) {
+        filterData.distinctValues.forEach((distinctValue: TableDistinctValue) => {
+          filterDescriptor.distinctFilter.addDistinctValue(distinctValue.value);
+        });
+      }
+      if (filterData.fieldValues.length) {
+        filterData.fieldValues.forEach((fieldData: FieldFilterData) => {
+          filterDescriptor.fieldFilter.addFieldValue(fieldData.fieldValue, fieldData.operator, fieldData.isCaseSensitive);
+        });
+        filterDescriptor.fieldFilter.logicalOperator = filterData.fieldLogicalOperator;
       }
     }
     await onApplyFilter();

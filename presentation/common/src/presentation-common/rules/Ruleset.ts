@@ -7,7 +7,7 @@
  */
 
 import { Rule } from "./Rule";
-import { SchemasSpecification } from "./SchemasSpecification";
+import { RequiredSchemaSpecification, SchemasSpecification } from "./SchemasSpecification";
 import { VariablesGroup } from "./Variables";
 
 /**
@@ -34,8 +34,16 @@ export interface Ruleset {
   /**
    * Names of schemas which the rules should be applied for. Rules are applied to all
    * schemas if this property is not set.
+   *
+   * @deprecated Use [[requiredSchemas]] instead.
    */
   supportedSchemas?: SchemasSpecification;
+
+  /**
+   * Schema requirements for this ruleset. The ruleset is not used if the requirements are not met.
+   * @beta
+   */
+  requiredSchemas?: RequiredSchemaSpecification[];
 
   /** Supplementation-related information for this ruleset */
   supplementationInfo?: SupplementationInfo;

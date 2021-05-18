@@ -358,6 +358,7 @@ export class Viewer extends Window {
     });
 
     this.updateTitle();
+    this.updateActiveSettings();
   }
 
   private updateTitle(): void {
@@ -368,6 +369,27 @@ export class Viewer extends Window {
     const id = !this._isSavedView ? this.viewport.view.id : "Saved View";
     const dim = this.viewport.view.is2d() ? "2d" : "3d";
     this.title = `[ ${this.viewport.viewportId} ] ${viewName} <${id}> (${dim})`;
+  }
+
+  private updateActiveSettings(): void {
+    // NOTE: First category/model is fine for testing purposes...
+    const view = this.viewport.view;
+
+    IModelApp.toolAdmin.activeSettings.category = undefined;
+    for (const catId of view.categorySelector.categories) {
+      IModelApp.toolAdmin.activeSettings.category = catId;
+      break;
+    }
+
+    if (view.is2d()) {
+      IModelApp.toolAdmin.activeSettings.model = view.baseModelId;
+    } else if (view.isSpatialView()) {
+      IModelApp.toolAdmin.activeSettings.model = undefined;
+      for (const modId of view.modelSelector.models) {
+        IModelApp.toolAdmin.activeSettings.model = modId;
+        break;
+      }
+    }
   }
 
   private async changeView(id: Id64String): Promise<void> {
@@ -382,6 +404,7 @@ export class Viewer extends Window {
     this.viewport.changeView(view);
     this._maybeDisableEdges();
     this.updateTitle();
+    this.updateActiveSettings();
     await this.toolBar.onViewChanged(this.viewport);
   }
 
@@ -428,8 +451,6 @@ export class Viewer extends Window {
     await this.buildViewList();
     const view = await this.views.getDefaultView(this._imodel);
     await this.openView(view);
-
-    this.updateTitle();
   }
 
   public async openFile(filename?: string): Promise<void> {

@@ -6,10 +6,10 @@
  * @module NativeApp
  */
 
-import * as path from "path";
-import { BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { join } from "path";
+import { AuthStatus, BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
+  BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
@@ -22,33 +22,44 @@ import { NativeAppStorage } from "./NativeAppStorage";
 /** @internal */
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
   protected _accessToken?: AccessToken;
-  protected _expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
-  protected _config?: NativeAppAuthorizationConfiguration;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  public get config(): NativeAppAuthorizationConfiguration { return this._config!; }
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
   protected abstract refreshToken(): Promise<AccessToken>;
+  public config?: NativeAppAuthorizationConfiguration;
+  public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
+  public issuerUrl?: string;
+
+  protected constructor(config?: NativeAppAuthorizationConfiguration) {
+    super();
+    this.config = config;
+  }
+
   public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety);
+    return undefined !== this._accessToken && !this._accessToken.isExpired(this.expireSafety);
   }
+
   public setAccessToken(token?: AccessToken) {
+    if (token === this._accessToken)
+      return;
     this._accessToken = token;
-    NativeHost.onUserStateChanged.raiseEvent(this._accessToken);
+    NativeHost.onUserStateChanged.raiseEvent(token);
   }
+
   public async getAccessToken(): Promise<AccessToken> {
     if (!this.isAuthorized)
       this.setAccessToken(await this.refreshToken());
     return this._accessToken!;
   }
+
   public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
-  public async initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
-    this._config = config;
-    if (config.expiryBuffer)
-      this._expireSafety = config.expiryBuffer;
-    IModelHost.session.applicationId = props.applicationId;
-    IModelHost.applicationVersion = props.applicationVersion;
-    IModelHost.sessionId = props.sessionId;
+
+  public async initialize(config?: NativeAppAuthorizationConfiguration) {
+    this.config = config ?? this.config;
+    if (!this.config)
+      throw new IModelError(AuthStatus.Error, "Must specify a valid configuration when initializing authorization");
+    if (this.config.expiryBuffer)
+      this.expireSafety = this.config.expiryBuffer;
+    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl(this.getClientRequestContext());
   }
 }
 
@@ -58,11 +69,16 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
-  public async silentLogin(token: AccessTokenProps) {
+  public async setAccessTokenProps(token: AccessTokenProps) {
     NativeHost.authorization.setAccessToken(AccessToken.fromJson(token));
   }
-  public async initializeAuth(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
-    return NativeHost.authorization.initialize(props, config);
+  public async initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number> {
+    IModelHost.session.applicationId = props.applicationId;
+    IModelHost.applicationVersion = props.applicationVersion;
+    IModelHost.sessionId = props.sessionId;
+
+    await NativeHost.authorization.initialize(config);
+    return NativeHost.authorization.expireSafety;
   }
   public async signIn(): Promise<void> {
     return NativeHost.authorization.signIn();
@@ -95,7 +111,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     };
 
     if (reportProgress) {
-      const interval = progressInterval ?? 500; // by default, only send progress events every 500 milliseconds
+      const interval = progressInterval ?? 250; // by default, only send progress events every 250 milliseconds
       let nextTime = Date.now() + interval;
       args.onProgress = (loaded, total) => {
         const now = Date.now();
@@ -135,7 +151,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async storageMgrClose(storageId: string, deleteIt: boolean): Promise<void> {
-    NativeAppStorage.find(storageId)?.close(deleteIt);
+    NativeAppStorage.find(storageId).close(deleteIt);
   }
 
   public async storageMgrNames(): Promise<string[]> {
@@ -143,30 +159,33 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async storageGet(storageId: string, key: string): Promise<StorageValue | undefined> {
-    return NativeAppStorage.find(storageId)?.getData(key);
+    return NativeAppStorage.find(storageId).getData(key);
   }
 
   public async storageSet(storageId: string, key: string, value: StorageValue): Promise<void> {
-    NativeAppStorage.find(storageId)?.setData(key, value);
+    NativeAppStorage.find(storageId).setData(key, value);
   }
 
   public async storageRemove(storageId: string, key: string): Promise<void> {
-    NativeAppStorage.find(storageId)?.removeData(key);
+    NativeAppStorage.find(storageId).removeData(key);
   }
 
   public async storageKeys(storageId: string): Promise<string[]> {
-    const storage = NativeAppStorage.find(storageId)!;
-    return storage.getKeys();
+    return NativeAppStorage.find(storageId).getKeys();
   }
 
   public async storageRemoveAll(storageId: string): Promise<void> {
-    const storage = NativeAppStorage.find(storageId)!;
-    storage.removeAll();
+    NativeAppStorage.find(storageId).removeAll();
   }
 }
 
 /** @beta */
-export type NativeHostOpts = IpcHostOpts;
+export interface NativeHostOpts extends IpcHostOpts {
+  nativeHost?: {
+    /** Application named. Used to name settings file */
+    applicationName?: string;
+  };
+}
 
 /**
  * Used by desktop/mobile native applications
@@ -174,7 +193,8 @@ export type NativeHostOpts = IpcHostOpts;
  */
 export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
-  private constructor() { }
+  private static _applicationName: string;
+  private constructor() { } // no instances - static methods only
 
   /** @internal */
   public static get authorization() { return IModelHost.authorizationClient as NativeAppAuthorizationBackend; }
@@ -188,9 +208,8 @@ export class NativeHost {
 
   /** Get the local cache folder for application settings */
   public static get appSettingsCacheDir(): string {
-    if (this._appSettingsCacheDir === undefined) {
-      this._appSettingsCacheDir = path.join(IModelHost.cacheDir, "appSettings");
-    }
+    if (this._appSettingsCacheDir === undefined)
+      this._appSettingsCacheDir = join(IModelHost.cacheDir, "appSettings");
     return this._appSettingsCacheDir;
   }
 
@@ -200,11 +219,15 @@ export class NativeHost {
 
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
+  public static get applicationName() { return this._applicationName; }
+  public static get settingsStore() {
+    return NativeAppStorage.open(this.applicationName);
+  }
 
   /**
    * Start the backend of a native app.
-   * @param configuration
-   * @note this method calls [[IModelHost.startup]] internally.
+   * @param opt
+   * @note this method calls [[IpcHost.startup]] internally.
    */
   public static async startup(opt?: NativeHostOpts): Promise<void> {
     if (!this.isValid) {
@@ -213,13 +236,15 @@ export class NativeHost {
         NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
       this.onUserStateChanged.addListener((token?: AccessToken) =>
         NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
+      this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }
+
     await IpcHost.startup(opt);
     if (IpcHost.isValid)  // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();
   }
 
-  /** Shutdown native app backend. Also calls IpcHost.shutdown() */
+  /** Shutdown native app backend. Also calls [[IpcHost.shutdown]] */
   public static async shutdown(): Promise<void> {
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();

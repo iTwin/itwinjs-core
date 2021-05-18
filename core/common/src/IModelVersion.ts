@@ -17,7 +17,7 @@ import { IModelError } from "./IModelError";
 export type IModelVersionProps =
   { first: true, latest?: never, afterChangeSetId?: never, versionName?: never } |
   { latest: true, first?: never, afterChangeSetId?: never, versionName?: never } |
-  { afterChangeSetId: GuidString, first?: never, latest?: never, versionName?: never } |
+  { afterChangeSetId: string, first?: never, latest?: never, versionName?: never } |
   { versionName: string, first?: never, latest?: never, afterChangeSetId?: never };
 
 /** Option to specify the version of the iModel to be acquired and used
@@ -26,7 +26,7 @@ export type IModelVersionProps =
 export class IModelVersion {
   private _first?: boolean;
   private _latest?: boolean;
-  private _afterChangeSetId?: GuidString;
+  private _afterChangeSetId?: string;
   private _versionName?: string;
 
   private constructor() { }
@@ -52,7 +52,7 @@ export class IModelVersion {
    * If the changeSetId is an empty string, it is assumed to be the first version
    * before any change sets have been applied.
    */
-  public static asOfChangeSet(changeSetId: GuidString): IModelVersion {
+  public static asOfChangeSet(changeSetId: string): IModelVersion {
     const version = new IModelVersion();
 
     if (changeSetId === "") {

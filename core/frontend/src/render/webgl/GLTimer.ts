@@ -54,9 +54,11 @@ class DisjointTimerExtensionWebGL2 extends DisjointTimerExtension {
 
   public constructor(system: System) {
     super();
-    if (system.capabilities.isWebGL2)
+    if (system.capabilities.isWebGL2) {
       this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2");
-    else
+      if (this._e === undefined) // If webgl2 timer doesn't work, attempt to use the older disjoint timer
+        this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
+    } else
       this._e = undefined;
     this._context = system.context as WebGL2RenderingContext;
   }

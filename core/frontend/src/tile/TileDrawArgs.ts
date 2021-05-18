@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipVector, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -27,27 +27,38 @@ const scratchXRange = Range1d.createNull();
 const scratchYRange = Range1d.createNull();
 const scratchMatrix4d = Matrix4d.createIdentity();
 
-/** Parameters used to construct [[TileDrawArgs]]
- * @beta
+/** Parameters used to construct [[TileDrawArgs]].
+ * @public
  */
 export interface TileDrawArgParams {
+  /** Context for the scene into which the tiles are to be rendered. */
   context: SceneContext;
+  /** Transform to be applied when drawing the tiles. */
   location: Transform;
+  /** The tile tree from which to obtain tiles. */
   tree: TileTree;
+  /** The time at which these args were created. */
   now: BeTimePoint;
+  /** Overrides to apply to the view's [ViewFlags]($common) when drawing the tiles. */
   viewFlagOverrides: ViewFlagOverrides;
+  /** Clip volume used to clip the tiles. */
   clipVolume?: RenderClipVolume;
+  /** @internal */
   parentsAndChildrenExclusive: boolean;
+  /** Symbology overrides to apply to the tiles. */
   symbologyOverrides: FeatureSymbology.Overrides | undefined;
+  /** Optionally customizes the view's symbology overrides for the tiles. */
   appearanceProvider?: FeatureAppearanceProvider;
+  /** Optionally overrides the view's hidden line settings. */
   hiddenLineSettings?: HiddenLine.Settings;
+  /** If defined, tiles should be culled if they do not intersect this clip. */
   intersectionClip?: ClipVector;
 }
 /**
- * Arguments used when selecting and drawing [[Tile]]s.
+ * Provides context used when selecting and drawing [[Tile]]s.
  * @see [[TileTree.selectTiles]]
  * @see [[TileTree.draw]]
- * @beta
+ * @public
  */
 export class TileDrawArgs {
   /** Transform to the location in iModel coordinates at which the tiles are to be drawn. */
@@ -76,18 +87,20 @@ export class TileDrawArgs {
   public parentsAndChildrenExclusive: boolean;
   /** @internal */
   private _appearanceProvider?: FeatureAppearanceProvider;
-  /** internal */
+  /** Optional overrides for the view's hidden line settings. */
   public hiddenLineSettings?: HiddenLine.Settings;
   /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
   public readonly readyTiles = new Set<Tile>();
   /** For perspective views, the view-Z of the near plane. */
   private readonly _nearFrontCenter?: Point3d;
-  /** View Flag overrides */
+  /** Overrides applied to the view's [ViewFlags]($common) when drawing the tiles. */
   public get viewFlagOverrides(): ViewFlagOverrides { return this.graphics.viewFlagOverrides; }
-  /**  Symbology overrides */
+  /** If defined, replaces the view's own symbology overrides when drawing the tiles. */
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
-  /** If defined, tiles will be culled if they do not intersect the clip vector. */
+  /** If defined, tiles will be culled if they do not intersect this clip. */
   public intersectionClip?: ClipVector;
+  /** @internal */
+  public readonly pixelSizeScaleFactor;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -187,9 +200,37 @@ export class TileDrawArgs {
     return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
   }
 
-  /** @internal */
+  /** Provides conversions between [[CoordSystem.World]] and [[CoordSystem.View]]. */
   public get worldToViewMap(): Map4d {
     return this.viewingSpace.worldToViewMap;
+  }
+
+  private computePixelSizeScaleFactor(): number {
+    // Check to see if a model display transform with non-uniform scaling is being used.
+    const tf = this.context.viewport.view.getModelDisplayTransform(this.tree.modelId, Transform.createIdentity());
+    const scale = [];
+    scale[0] = tf.matrix.getColumn(0).magnitude();
+    scale[1] = tf.matrix.getColumn(1).magnitude();
+    scale[2] = tf.matrix.getColumn(2).magnitude();
+    if (Math.abs(scale[0] - scale[1]) <= Geometry.smallMetricDistance && Math.abs(scale[0] - scale[2]) <= Geometry.smallMetricDistance)
+      return 1;
+    // If the component with the largest scale is not the same as the component with the largest tile range use it to adjust the pixel size.
+    const rangeDiag = this.tree.range.diagonal();
+    let maxS = 0;
+    let maxR = 0;
+    if (scale[0] > scale[1]) {
+      maxS = (scale[0] > scale[2] ? 0 : 2);
+    } else {
+      maxS = (scale[1] > scale[2] ? 1 : 2);
+    }
+    if (rangeDiag.x > rangeDiag.y) {
+      maxR = (rangeDiag.x > rangeDiag.z ? 0 : 2);
+    } else {
+      maxR = (rangeDiag.y > rangeDiag.z ? 1 : 2);
+    }
+    if (maxS !== maxR)
+      return scale[maxS];
+    return 1;
   }
 
   /** Constructor */
@@ -202,7 +243,8 @@ export class TileDrawArgs {
     this._appearanceProvider = params.appearanceProvider;
     this.hiddenLineSettings = params.hiddenLineSettings;
 
-    if (undefined !== clipVolume && !clipVolume.hasOutsideClipColor)
+    // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
+    if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
       this.clipVolume = clipVolume;
 
     this.graphics.setViewFlagOverrides(viewFlagOverrides);
@@ -216,17 +258,21 @@ export class TileDrawArgs {
     this.drape = context.getTextureDrapeForModel(tree.modelId);
 
     // NB: If the tile tree has its own clip, do not also apply the view's clip.
-    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolumeOverride && undefined === clipVolume)
-      this.viewClip = undefined === context.viewport.outsideClipColor ? context.viewport.view.getViewClip() : undefined;
+    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolumeOverride && undefined === clipVolume) {
+      const outsideClipColor = context.viewport.displayStyle.settings.clipStyle.outsideColor;
+      this.viewClip = undefined === outsideClipColor ? context.viewport.view.getViewClip() : undefined;
+    }
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
     if (context.viewport.view.isCameraEnabled())
       this._nearFrontCenter = context.viewport.getFrustum(CoordSystem.World).frontCenter;
+
+    this.pixelSizeScaleFactor = this.computePixelSizeScaleFactor();
   }
 
   /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.
    * @see [[Viewport.tileSizeModifier]].
-   * @alpha
+   * @public
    */
   public get tileSizeModifier(): number { return this.context.viewport.tileSizeModifier; }
 
@@ -253,13 +299,13 @@ export class TileDrawArgs {
   /** Add a provider to supplement or override the symbology overrides for the view.
    * @note If a provider already exists, the new provider will be chained such that it sees the base overrides
    * after they have potentially been modified by the existing provider.
-   * @beta
+   * @public
    */
   public addAppearanceProvider(provider: FeatureAppearanceProvider): void {
     this._appearanceProvider = this._appearanceProvider ? FeatureAppearanceProvider.chain(this._appearanceProvider, provider) : provider;
   }
 
-  /** @internal */
+  /** Optionally customizes aspects of the view's [[FeatureSymbology.Overrides]]. */
   public get appearanceProvider(): FeatureAppearanceProvider | undefined {
     return this._appearanceProvider;
   }
@@ -285,14 +331,14 @@ export class TileDrawArgs {
     return this.context.createGraphicBranch(graphics, this.location, opts);
   }
 
-  /** @internal */
+  /** Output graphics for all accumulated tiles. */
   public drawGraphics(): void {
     const graphics = this.produceGraphics();
     if (undefined !== graphics)
       this.context.outputGraphic(graphics);
   }
 
-  /** @internal */
+  /** Output graphics of the specified type for all accumulated tiles. */
   public drawGraphicsWithType(graphicType: TileGraphicType, graphics: GraphicBranch): void {
     const branch = this._produceGraphicBranch(graphics);
     if (undefined !== branch)
@@ -304,7 +350,7 @@ export class TileDrawArgs {
     this.context.insertMissingTile(tile);
   }
 
-  /** @internal */
+  /** Indicate that some requested child tiles are not yet loaded. */
   public markChildrenLoading(): void {
     this.context.markChildrenLoading();
   }

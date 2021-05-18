@@ -7,12 +7,12 @@
  */
 
 import * as path from "path";
-import { DbResult, GuidString, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseManager, ChangeSetToken } from "./BriefcaseManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
@@ -52,11 +52,11 @@ export class ChangedElementsDb implements IDisposable {
     this._nativeDb = undefined;
   }
 
-  private static buildChangeSetTokens(changeSets: ChangeSet[], changeSetsPath: string): ChangeSetToken[] {
-    const changeSetTokens = new Array<ChangeSetToken>();
+  private static buildChangeSetTokens(changeSets: ChangeSet[], changeSetsPath: string): IModelJsNative.ChangeSetProps[] {
+    const changeSetTokens: IModelJsNative.ChangeSetProps[] = [];
     changeSets.forEach((changeSet: ChangeSet) => {
-      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!, changeSet.pushDate));
+      const pathname = path.join(changeSetsPath, changeSet.fileName!);
+      changeSetTokens.push({ id: changeSet.wsgId, parentId: changeSet.parentId!, pathname, changesType: changeSet.changesType, pushDate: changeSet.pushDate });
     });
     return changeSetTokens;
   }
@@ -109,11 +109,7 @@ export class ChangedElementsDb implements IDisposable {
   /** Processes a range of changesets and adds it to the changed elements cache
    * @param requestContext The client request context
    * @param briefcase iModel briefcase to use
-   * @param startChangesetId Start Changeset Id
-   * @param endChangesetId End Changeset Id
-   * @param filterSpatial [optional] Whether to do processing filtering out spatial elements, defaults to false
-   * @param rulesetDir [optional] Directories string for ruleset directory locater
-   * @param tempDir [optional] Directory to use to store temporary Db used to do processing. This Db is cleaned up automatically unless the process crashes.
+   * @param options Options for processing
    */
   public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     requestContext.enter();
@@ -125,13 +121,48 @@ export class ChangedElementsDb implements IDisposable {
     tokens.reverse();
     const status: DbResult = this.nativeDb.processChangesets(
       briefcase.nativeDb,
-      JSON.stringify(tokens),
+      tokens,
       options.rulesetId,
       options.filterSpatial,
       options.wantParents,
       options.wantPropertyChecksums,
       options.rulesetDir,
-      options.tempDir
+      options.tempDir,
+    );
+    if (status !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(status, "Failed to process changesets");
+    return status;
+  }
+
+  /** Processes a range of changesets and adds it to the changed elements cache
+   * This call will close the IModelDb object as it is required for processing and applying changesets
+   * @param requestContext The client request context
+   * @param briefcase iModel briefcase to use
+   * @param options options for processing
+   */
+  public async processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
+    requestContext.enter();
+    const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
+    const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
+    requestContext.enter();
+    const tokens = ChangedElementsDb.buildChangeSetTokens(changesets, BriefcaseManager.getChangeSetsPath(briefcase.iModelId));
+    // ChangeSets need to be processed from newest to oldest
+    tokens.reverse();
+    // Close briefcase before doing processing and rolling briefcase
+    const dbFilename = briefcase.pathName;
+    const dbGuid = briefcase.getGuid();
+    briefcase.close();
+    // Process changesets
+    const status: DbResult = this.nativeDb.processChangesetsAndRoll(
+      dbFilename,
+      dbGuid,
+      tokens,
+      options.rulesetId,
+      options.filterSpatial,
+      options.wantParents,
+      options.wantPropertyChecksums,
+      options.rulesetDir,
+      options.tempDir,
     );
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to process changesets");
@@ -144,7 +175,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed elements between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangedElements(startChangesetId: GuidString, endChangesetId: GuidString): ChangedElements | undefined {
+  public getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined {
     const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error || !result.result)
       throw new IModelError(result.error ? result.error.status : -1, result.error ? result.error.message : "Problem getting changed elements");
@@ -157,7 +188,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed models between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangedModels(startChangesetId: GuidString, endChangesetId: GuidString): ChangedModels | undefined {
+  public getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined {
     const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error || !result.result)
       throw new IModelError(result.error ? result.error.status : -1, result.error ? result.error.message : "Problem getting changed models");
@@ -170,7 +201,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns Returns the changed models between the changesets provided
    * @throws [IModelError]($common) if the operation failed.
    */
-  public getChangeData(startChangesetId: GuidString, endChangesetId: GuidString): ChangeData | undefined {
+  public getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined {
     const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error)
       throw new IModelError(result.error.status, result.error.message);
@@ -181,7 +212,7 @@ export class ChangedElementsDb implements IDisposable {
   public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Returns true if the cache already contains this changeset Id */
-  public isProcessed(changesetId: GuidString): boolean { return this.nativeDb.isProcessed(changesetId); }
+  public isProcessed(changesetId: string): boolean { return this.nativeDb.isProcessed(changesetId); }
 
   /** Close the Db after saving any uncommitted changes.
    * @throws [IModelError]($common) if the database is not open.

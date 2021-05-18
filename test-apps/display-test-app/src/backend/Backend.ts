@@ -11,10 +11,10 @@ import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
 import {
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
+  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
-import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/lib/MobileBackend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
@@ -90,7 +90,6 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
   const rpcs: RpcInterfaceDefinition[] = [
     DtaRpcInterface,
-    Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
     IModelReadRpcInterface,
     IModelTileRpcInterface,
     IModelWriteRpcInterface,
@@ -225,7 +224,7 @@ const setupStandaloneConfiguration = () => {
   return configuration;
 };
 
-export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) => {
+export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
   const dtaConfig = setupStandaloneConfiguration();
 
   const iModelHost = new IModelHostConfiguration();
@@ -247,17 +246,26 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
       logLevel = Logger.parseLogLevel(logLevelEnv);
   }
 
+  const opts = {
+    iModelHost,
+    electronHost: hostOpts,
+    nativeHost: {
+      applicationName: "display-test-app",
+    },
+    mobileHost: hostOpts?.mobileHost,
+  };
+
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
-    await ElectronHost.startup({ electronHost, iModelHost });
+    await ElectronHost.startup(opts);
     EditCommandAdmin.register(BasicManipulationCommand);
   } else if (ProcessDetector.isIOSAppBackend) {
-    await IOSHost.startup({ iModelHost });
+    await IOSHost.startup(opts);
   } else if (ProcessDetector.isAndroidAppBackend) {
-    await AndroidHost.startup({ iModelHost });
+    await AndroidHost.startup(opts);
   } else {
-    await LocalhostIpcHost.startup({ iModelHost });
+    await LocalhostIpcHost.startup(opts);
   }
 
   // Set up logging (by default, no logging is enabled)

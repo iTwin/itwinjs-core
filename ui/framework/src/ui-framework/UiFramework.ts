@@ -6,6 +6,8 @@
  * @module Utilities
  */
 
+// cSpell:ignore configurableui clientservices
+
 import { Store } from "redux";
 import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
@@ -16,7 +18,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiComponents } from "@bentley/ui-components";
-import { LocalUiSettings, SettingsManager, UiEvent, UiSettings } from "@bentley/ui-core";
+import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@bentley/ui-core";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
@@ -34,10 +36,21 @@ import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
-import { UiShowHideManager } from "./utils/UiShowHideManager";
+import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
+import { ChildWindowManager } from "./childwindow/ChildWindowManager";
 
 // cSpell:ignore Mobi
+
+/** Interface to be implemented but any classes that wants to load their user settings when the UiSetting storage class is set.
+ * @beta
+ */
+export interface UserSettingsProvider {
+  /** Unique provider Id */
+  providerId: string;
+  /** Function to load settings from settings storage */
+  loadUserSettings(storage: UiSettingsStorage): Promise<void>;
+}
 
 /** UiVisibility Event Args interface.
  * @public
@@ -70,8 +83,8 @@ export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChange
 export interface TrackingTime {
   startTime: Date;
   endTime: Date;
-
 }
+
 /**
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
  * @public
@@ -86,11 +99,30 @@ export class UiFramework {
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
-  private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
-  private static _uiSettings: UiSettings;
+  private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage(); // this provides a default storage location for settings
   private static _settingsManager?: SettingsManager;
+  private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
+  private static _PopupWindowManager = new ChildWindowManager();
+
+  /** @alpha */
+  public static get ChildWindowManager(): ChildWindowManager {
+    return UiFramework._PopupWindowManager;
+  }
+
+  /** Registers class that will be informed when the UserSettingsStorage location has been set or changed. This allows
+   * classes to load any previously saved settings from the new storage location. Common storage locations are the browser's
+   * local storage, or the iTwin Product Settings cloud storage available via the SettingsAdmin see `IModelApp.settingsAdmin`.
+   * @alpha
+   */
+  public static registerUserSettingsProvider(entry: UserSettingsProvider) {
+    if (this._uiSettingsProviderRegistry.has(entry.providerId))
+      return false;
+
+    this._uiSettingsProviderRegistry.set(entry.providerId, entry);
+    return true;
+  }
 
   /** Get Show Ui event.
    * @public
@@ -135,7 +167,7 @@ export class UiFramework {
     if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
-    // set up namespace and register akk tools from package
+    // set up namespace and register all tools from package
     const frameworkNamespace = UiFramework._i18n.registerNamespace(UiFramework.i18nNamespace);
     [
       restoreLayoutTools,
@@ -174,10 +206,13 @@ export class UiFramework {
 
     UiFramework._initialized = true;
 
+    // initialize any standalone settings providers that don't need to have defaults set by iModelApp
+    UiShowHideSettingsProvider.initialize();
+
     return readFinishedPromise;
   }
 
-  /** Unregisters the UiFramework internationalization service namespace */
+  /** Un-registers the UiFramework internationalization service namespace */
   public static terminate() {
     UiFramework._store = undefined;
     UiFramework._frameworkStateKeyInStore = "frameworkState";
@@ -218,8 +253,12 @@ export class UiFramework {
    * @beta
    */
   public static get frameworkState(): FrameworkState | undefined {
-    // eslint-disable-next-line dot-notation
-    return UiFramework.store.getState()[UiFramework.frameworkStateKey];
+    try {
+      // eslint-disable-next-line dot-notation
+      return UiFramework.store.getState()[UiFramework.frameworkStateKey];
+    } catch (_e) {
+      return undefined;
+    }
   }
 
   /** The Redux store */
@@ -322,7 +361,7 @@ export class UiFramework {
   }
 
   public static setAccudrawSnapMode(snapMode: SnapMode) {
-    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetSnapMode, payload: snapMode });
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetSnapMode, snapMode, true);
   }
 
   public static getAccudrawSnapMode(): SnapMode {
@@ -377,8 +416,18 @@ export class UiFramework {
   }
 
   /** @beta */
-  public static setUiSettings(uiSettings: UiSettings, immediateSync = false) {
-    UiFramework._uiSettings = uiSettings;
+  public static async setUiSettingsStorage(storage: UiSettingsStorage, immediateSync = false) {
+    if (UiFramework._uiSettingsStorage === storage)
+      return;
+
+    UiFramework._uiSettingsStorage = storage;
+
+    // let any registered providers to load values from the new storage location
+    const providerKeys = [...this._uiSettingsProviderRegistry.keys()];
+    for await (const key of providerKeys) {
+      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(storage);
+    }
+
     // istanbul ignore next
     if (immediateSync)
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.UiSettingsChanged);
@@ -387,10 +436,8 @@ export class UiFramework {
   }
 
   /** @beta */
-  public static getUiSettings(): UiSettings {
-    if (undefined === UiFramework._uiSettings)
-      UiFramework._uiSettings = new LocalUiSettings();
-    return UiFramework._uiSettings;
+  public static getUiSettingsStorage(): UiSettingsStorage {
+    return UiFramework._uiSettingsStorage;
   }
 
   /** @beta */
@@ -446,7 +493,10 @@ export class UiFramework {
   }
 
   public static setColorTheme(theme: string) {
-    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetTheme, payload: theme });
+    if (UiFramework.getColorTheme() === theme)
+      return;
+
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetTheme, theme, true);
   }
 
   public static getColorTheme(): string {
@@ -454,7 +504,10 @@ export class UiFramework {
   }
 
   public static setWidgetOpacity(opacity: number) {
-    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetWidgetOpacity, payload: opacity });
+    if (UiFramework.getWidgetOpacity() === opacity)
+      return;
+
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetWidgetOpacity, opacity, true);
   }
 
   public static getWidgetOpacity(): number {
@@ -468,16 +521,30 @@ export class UiFramework {
   /** Returns the Ui Version.
    * @beta
    */
-  // istanbul ignore next
   public static get uiVersion(): string {
-    return UiFramework._uiVersion;
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion;
+  }
+
+  public static setUiVersion(version: string) {
+    if (UiFramework.uiVersion === version)
+      return;
+
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1" ? "1" : "2", true);
+  }
+
+  public static get useDragInteraction(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.useDragInteraction : false;
+  }
+
+  public static setUseDragInteraction(useDragInteraction: boolean) {
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetDragInteraction, useDragInteraction, true);
   }
 
   /** Send logging message to the telemetry system
    * @internal
    */
   // istanbul ignore next
-  public static async postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: GuidString, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
+  public static async postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
     if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
       return;
     const requestContext = await AuthorizedFrontendRequestContext.create();
@@ -490,15 +557,6 @@ export class UiFramework {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     UiFramework.postTelemetry(`Ui Version changed to ${args.version} `, "F2772C81-962D-4755-807C-2D675A5FF399");
     UiFramework._uiVersion = args.version;
-
-    // If Ui Version 1, save widget opacity
-    // istanbul ignore if
-    if (args.oldVersion === "1")
-      UiFramework._version1WidgetOpacity = UiFramework.getWidgetOpacity();
-
-    // If Ui Version 1, restore widget opacity; otherwise, set widget opacity to 1.0 to basically turn the feature off.
-    // This fixes use of "backdrop-filter: blur(10px)"" CSS.
-    UiFramework.setWidgetOpacity(args.version === "1" ? UiFramework._version1WidgetOpacity : 1.0);
   };
 
   // istanbul ignore next

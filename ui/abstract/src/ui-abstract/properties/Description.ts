@@ -6,7 +6,9 @@
  * @module Properties
  */
 
-import { BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes } from "./EditorParams";
+import {
+  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams,
+} from "./EditorParams";
 
 // cSpell:ignore Picklist
 
@@ -85,6 +87,11 @@ export interface PropertyDescription {
   quantityType?: string;
   /** Get the custom DataController by this name and register it with the property editor */
   dataController?: string;
+  /**
+   * Should property label for composite (struct & array) properties be rendered.
+   * @alpha
+   */
+  hideCompositePropertyLabel?: boolean;
 }
 
 /** Helper class that builds property descriptions for specific PropertyEditors and processes descriptions.
@@ -103,6 +110,30 @@ export class PropertyDescriptionHelper {
         name: "weight-picker",
         params: additionalParams,
       },
+    };
+  }
+
+  /** Builds an editor that uses [NumberInput]($ui-core) control
+   * @alpha
+   */
+  public static buildNumberEditorDescription(name: string, label: string, overrideParams?: RangeEditorParams, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
+    const editorParams = [{
+      type: PropertyEditorParamTypes.Range,
+      step: 1,
+      precision: 0,
+      ...overrideParams,
+    } as RangeEditorParams, ...additionalParams];
+
+    const editor = {
+      name: "numeric-input",
+      params: editorParams,
+    };
+
+    return {
+      name,
+      displayLabel: label,
+      typename: "number",
+      editor,
     };
   }
 

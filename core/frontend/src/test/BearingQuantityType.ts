@@ -7,7 +7,7 @@ import {
   CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition,
-  TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec, UnitSystemKey } from "../QuantityFormatter";
+  TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec, UnitSystemKey } from "../quantity-formatting/QuantityFormatter";
 
 interface BearingFormatProps extends CustomFormatProps {
   readonly custom: {

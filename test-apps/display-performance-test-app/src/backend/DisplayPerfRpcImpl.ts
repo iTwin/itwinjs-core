@@ -30,7 +30,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     }
     let argOutputPath: string | undefined;
     process.argv.forEach((arg, index) => {
-      if (index >= 2 && arg !== "chrome" && arg !== "edge" && arg !== "firefox" && arg !== "headless" && arg.split(".").pop() !== "json") {
+      if (index >= 2 && arg !== "chrome" && arg !== "edge" && arg !== "firefox" && arg !== "safari" && arg !== "headless" && arg.split(".").pop() !== "json") {
         while (arg.endsWith("\\") || arg.endsWith("\/"))
           arg = arg.slice(0, -1);
         argOutputPath = `"argOutputPath": "${arg}",`;
@@ -214,7 +214,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   private _matchRuleRegex(rule: string) {
     rule = rule.toLowerCase();
     const escapeRegex = (str: string) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-    return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`);
+    return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`, "i");
   }
 
   public async getMatchingFiles(rootDir: string, pattern: string): Promise<string> {

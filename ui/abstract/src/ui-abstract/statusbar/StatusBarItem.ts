@@ -12,7 +12,7 @@ import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ProvidedItem } from "../items/ProvidedItem";
 
 /** Status bar Groups/Sections from Left to Right
- * @beta
+ * @public
  */
 export enum StatusBarSection {
   /** area for tool assistance and messages */
@@ -34,7 +34,7 @@ export enum StatusBarSection {
 }
 
 /** Defines which side of Icon where label is placed
- * @beta
+ * @public
  */
 export enum StatusBarLabelSide {
   /** Label is placed left side of icon. This is the default if not specified */
@@ -44,12 +44,12 @@ export enum StatusBarLabelSide {
 }
 
 /** Type for StatusBar Item Id
- * @beta
+ * @public
  */
 export type StatusBarItemId = CommonStatusBarItem["id"];
 
 /** Describes the data needed to insert a button into the status bar.
- * @beta
+ * @public
  */
 export interface AbstractStatusBarItem extends ProvidedItem {
   /** can be used by application to store miscellaneous data. */
@@ -71,7 +71,7 @@ export interface AbstractStatusBarItem extends ProvidedItem {
 }
 
 /** Describes the data needed to insert an action item into the status bar.
- * @beta
+ * @public
  */
 export interface AbstractStatusBarActionItem extends AbstractStatusBarItem {
   /** method to execute when icon is pressed */
@@ -85,7 +85,7 @@ export interface AbstractStatusBarActionItem extends AbstractStatusBarItem {
 }
 
 /** Describes the data needed to insert a label item with an optional icon into the status bar.
- * @beta
+ * @public
  */
 export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem {
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
@@ -98,40 +98,40 @@ export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem {
 
 /** Describes the data needed to insert a custom item into the status bar. This is used to allow extension
  *  implementer to create a framework specific component.
- * @beta
+ * @public
  */
 export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem {
   readonly isCustom: true;
 }
 
 /** Describes the data needed to insert a button into the status bar.
- * @beta
+ * @public
  */
 export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem;
 
 /** AbstractStatusBarActionItem type guard.
- * @beta
+ * @public
  */
 export const isAbstractStatusBarActionItem = (item: CommonStatusBarItem): item is AbstractStatusBarActionItem => {
   return (item as AbstractStatusBarActionItem).execute !== undefined;
 };
 
 /** AbstractStatusBarLabelItem type guard.
- * @beta
+ * @public
  */
 export const isAbstractStatusBarLabelItem = (item: CommonStatusBarItem): item is AbstractStatusBarLabelItem => {
   return (item as AbstractStatusBarLabelItem).label !== undefined && (item as AbstractStatusBarActionItem).execute === undefined;
 };
 
 /** AbstractStatusBarCustomItem type guard.
- * @beta
+ * @public
  */
 export const isAbstractStatusBarCustomItem = (item: CommonStatusBarItem): item is AbstractStatusBarCustomItem => {
   return !!(item as AbstractStatusBarCustomItem).isCustom;
 };
 
 /** Helper class to create Abstract StatusBar Item definitions.
- * @beta
+ * @public
  */
 export class AbstractStatusBarItemUtilities {
   /** Creates a StatusBar item to perform an action */

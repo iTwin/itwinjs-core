@@ -6,8 +6,10 @@
  * @module IModelApp
  */
 
-import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
+import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcRoutingToken } from "@bentley/imodeljs-common";
+import { loggerCategory } from "./extension/Extension";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /**
@@ -41,8 +43,30 @@ export class WebViewerApp {
       BentleyCloudRpcManager.initializeClient(params.rpcParams, opts.iModelApp?.rpcInterfaces ?? [], params.routing);
     }
     await IModelApp.startup(opts.iModelApp);
-    if (opts.webViewerApp.authConfig)
-      IModelApp.authorizationClient = new BrowserAuthorizationClient(opts.webViewerApp.authConfig);
+
+    if (opts.webViewerApp.authConfig) {
+      /** Handle any redirects as part of the signIn process
+       * Note: As part of the standard redirected signIn process when authorizing Single Page Applications, the authorization provider instructs the
+       * browser to reload the page with the redirect URL -- when that happens, the code below intervenes to create and save the access token, and then
+       * finishes the authorization process by making a final redirection */
+      const redirectUrl = opts.webViewerApp.authConfig.redirectUri;
+      const urlObj = new URL(redirectUrl);
+      if (urlObj.pathname === window.location.pathname) {
+        await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUrl);
+        return;
+      }
+
+      const auth = new BrowserAuthorizationClient(opts.webViewerApp.authConfig);
+      IModelApp.authorizationClient = auth;
+
+      if (!opts.webViewerApp.authConfig.noSilentSignInOnAppStartup) {
+        try {
+          await auth.signInSilent(new ClientRequestContext());
+        } catch (err) {
+          Logger.logWarning(loggerCategory, "Failed to silently sign in", () => ({ message: err.toString() }));
+        }
+      }
+    }
   }
 
   public static async shutdown() {

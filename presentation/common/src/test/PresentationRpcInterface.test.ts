@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -9,8 +10,8 @@ import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions,
-  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, KeySet,
-  LabelRpcRequestOptions, Paged, PresentationDataCompareRpcOptions, PresentationRpcInterface, SelectionScopeRpcRequestOptions,
+  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyCompareRpcOptions,
+  HierarchyRpcRequestOptions, KeySet, LabelRpcRequestOptions, Paged, PresentationRpcInterface, SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
@@ -143,14 +144,6 @@ describe("PresentationRpcInterface", () => {
       const keys = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
       await rpcInterface.getNodePaths(token, options, keys, 1);
       expect(spy).to.be.calledOnceWith(toArguments(token, options, keys, 1));
-    });
-
-    it("forwards loadHierarchy call", async () => {
-      const options: HierarchyRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
-      };
-      await rpcInterface.loadHierarchy(token, options);
-      expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
     it("[deprecated] forwards getContentDescriptor call", async () => {
@@ -307,7 +300,7 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("[deprecated] forwards compareHierarchies call", async () => {
-      const options: PresentationDataCompareRpcOptions = {
+      const options: HierarchyCompareRpcOptions = {
         prev: {
           rulesetOrId: "test1",
         },
@@ -319,7 +312,7 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards compareHierarchiesPaged call", async () => {
-      const options: PresentationDataCompareRpcOptions = {
+      const options: HierarchyCompareRpcOptions = {
         prev: {
           rulesetOrId: "test1",
         },

@@ -9,7 +9,7 @@ import { Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { PropertyListProps } from "./PropertyList";
 
 /** @internal */
-export type ColumnResizeRelatedPropertyListProps = Pick<PropertyListProps, "onColumnChanged" | "columnRatio" | "isResizeHandleHovered" | "onResizeHandleHoverChanged" | "isResizeHandleBeingDragged" | "onResizeHandleDragChanged" | "columnInfo" | "onListWidthChanged" | "orientation">;
+export type ColumnResizeRelatedPropertyListProps = Required<Pick<PropertyListProps, "onColumnChanged" | "columnRatio" | "isResizeHandleHovered" | "onResizeHandleHoverChanged" | "isResizeHandleBeingDragged" | "onResizeHandleDragChanged" | "columnInfo" | "onListWidthChanged" | "orientation">>;
 
 /** @internal */
 export interface ColumnResizingPropertyListPropsSupplierProps {

@@ -86,7 +86,7 @@ export class ContentBuilder {
 
     for (const field of sortedFields) {
       for (const set of content.contentSet) {
-        const record = PresentationContentBuilder.createPropertyRecord(field, set)!;
+        const record = PresentationContentBuilder.createPropertyRecord({ field }, set).record;
         records.push(record);
       }
     }

@@ -151,10 +151,10 @@ export class ChangeSummaryManager {
 
     const ctx = new ChangeSummaryExtractContext(iModel);
 
-    const endChangeSetId: GuidString = iModel.changeSetId;
+    const endChangeSetId = iModel.changeSetId;
     assert(endChangeSetId.length !== 0);
 
-    let startChangeSetId: GuidString = "";
+    let startChangeSetId = "";
     if (options) {
       if (options.startVersion) {
         startChangeSetId = await options.startVersion.evaluateChangeSet(requestContext, ctx.iModelId, IModelHost.iModelClient);
@@ -199,7 +199,7 @@ export class ChangeSummaryManager {
       const summaries: Id64String[] = [];
       for (let i = endChangeSetIx; i >= 0; i--) {
         const currentChangeSetInfo: ChangeSet = changeSetInfos[i];
-        const currentChangeSetId: GuidString = currentChangeSetInfo.wsgId;
+        const currentChangeSetId: string = currentChangeSetInfo.wsgId;
         Logger.logInfo(loggerCategory, `Started Change Summary extraction for changeset #${i + 1}...`, () => ({ iModelId: ctx.iModelId, changeSetId: currentChangeSetId }));
 
         const existingSummaryId: Id64String | undefined = ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId);
@@ -212,7 +212,7 @@ export class ChangeSummaryManager {
         // iModel is at end changeset, so no need to reverse for it.
         if (i !== endChangeSetIx) {
           perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
-          await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(currentChangeSetId));
+          await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(currentChangeSetId)); // eslint-disable-line deprecation/deprecation
           requestContext.enter();
           perfLogger.dispose();
           Logger.logTrace(loggerCategory, `Moved iModel to changeset #${i + 1} to extract summary from.`, () => ({ iModelId: ctx.iModelId, changeSetId: currentChangeSetId }));
@@ -251,7 +251,7 @@ export class ChangeSummaryManager {
 
       perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
       if (iModel.changeSetId !== endChangeSetId)
-        await iModel.reinstateChanges(requestContext, IModelVersion.asOfChangeSet(endChangeSetId));
+        await iModel.reinstateChanges(requestContext, IModelVersion.asOfChangeSet(endChangeSetId));// eslint-disable-line deprecation/deprecation
       requestContext.enter();
       perfLogger.dispose();
       Logger.logTrace(loggerCategory, "Moved iModel to initial changeset (the end changeset).", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId }));
@@ -264,7 +264,7 @@ export class ChangeSummaryManager {
   public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]> {
     requestContext.enter();
     // Get the change set before the startChangeSet so that startChangeSet is included in the download and processing
-    let beforeStartChangeSetId: GuidString;
+    let beforeStartChangeSetId: string;
     if (startChangeSetId.length === 0)
       beforeStartChangeSetId = "";
     else {

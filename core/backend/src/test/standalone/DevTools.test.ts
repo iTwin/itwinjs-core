@@ -6,16 +6,12 @@ import { assert } from "chai";
 import * as os from "os";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { DevTools, DevToolsStatsFormatter } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 
 interface StringIndexedObject<T> {
   [index: string]: T;
 }
 
 describe("DevTools", () => {
-  before(() => {
-    IModelTestUtils.setupLogging();
-  });
   // we like to skip this test fixture for ios
   it("can fetch stats from backend", () => {
     const stats = DevTools.stats();

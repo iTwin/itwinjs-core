@@ -50,7 +50,7 @@ export interface SpatialContainmentTreeProps {
  * @public
  */
 export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
-  const nodeLoader = usePresentationTreeNodeLoader({
+  const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
     ruleset: (!props.enableElementsClassGrouping) ? RULESET_SPATIAL_BREAKDOWN : /* istanbul ignore next */ RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS,

@@ -79,11 +79,11 @@ function mockGetIModel(contextId: string, imodelId: GuidString, secured: boolean
 describe("iModelHub PermissionsManager", () => {
   let projectId: string;
   let imodelId: GuidString;
-  const imodelClient: IModelClient = utils.getIModelHubClient();
+  let imodelClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
-    this.enableTimeouts(false);
+    this.timeout(0);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
@@ -92,15 +92,11 @@ describe("iModelHub PermissionsManager", () => {
 
     await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, projectId);
+    imodelClient = utils.getIModelHubClient();
 
     if (!fs.existsSync(workDir)) {
       fs.mkdirSync(workDir);
     }
-  });
-
-  beforeEach(() => {
-    utils.RbacUrlMock.mockGetUrl();
-    utils.IModelHubUrlMock.mockGetUrl();
   });
 
   afterEach(async () => {

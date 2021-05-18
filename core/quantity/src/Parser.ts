@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
+
 import { QuantityConstants } from "./Constants";
 import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
@@ -10,7 +14,7 @@ import { ParserSpec } from "./ParserSpec";
 import { Quantity } from "./Quantity";
 
 /** Possible parser errors
- * @alpha
+ * @beta
  */
 export enum ParseError {
   UnableToGenerateParseTokens = 1,
@@ -22,7 +26,7 @@ export enum ParseError {
 }
 
 /** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
- * @alpha
+ * @beta
  */
 export interface ParseQuantityError {
   /** Union discriminator for [[QuantityParseResult]]. */
@@ -32,7 +36,7 @@ export interface ParseQuantityError {
 }
 
 /** Successful result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
- * @alpha
+ * @beta
  */
 export interface ParsedQuantity {
   /** Union discriminator for [[QuantityParseResult]]. */
@@ -43,12 +47,12 @@ export interface ParsedQuantity {
 
 /**
  * Defines Results of parsing a string input by a user into its desired value type
- * @alpha
+ * @beta
  */
 export type QuantityParseResult = ParsedQuantity | ParseQuantityError;
 
 /** A ParseToken holds either a numeric or string token extracted from a string that represents a quantity value.
- * @alpha
+ * @beta
  */
 class ParseToken {
   public value: number | string;
@@ -63,7 +67,7 @@ class ParseToken {
 }
 
 /** A ScientificToken holds an index and string representing the exponent.
- * @alpha
+ * @beta
  */
 class ScientificToken {
   public index: number;
@@ -76,7 +80,7 @@ class ScientificToken {
 }
 
 /** A FractionToken holds an index and the fraction value of numerator / denominator.
- * @alpha
+ * @beta
  */
 class FractionToken {
   public index: number;
@@ -90,7 +94,7 @@ class FractionToken {
 }
 
 /** A Parser class that is used to break a string that represents a quantity value into tokens.
- * @alpha
+ * @beta
  */
 export class Parser {
   private static _log = false;
@@ -325,11 +329,11 @@ export class Parser {
     }
 
     // now try to find a unit from the same family and system
-    let foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.unitFamily : undefined, defaultUnit ? defaultUnit.system : undefined);
+    let foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.phenomenon : undefined, defaultUnit ? defaultUnit.system : undefined);
 
     // if nothing found yet just limit to family
     if (!foundUnit.isValid && defaultUnit)
-      foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.unitFamily : undefined);
+      foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.phenomenon : undefined);
     return foundUnit;
   }
 
@@ -581,7 +585,7 @@ export class Parser {
   public static async createUnitConversionSpecsForUnit(unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<UnitConversionSpec[]> {
     const unitConversionSpecs: UnitConversionSpec[] = [];
 
-    const familyUnits = await unitsProvider.getUnitsByFamily(outUnit.unitFamily);
+    const familyUnits = await unitsProvider.getUnitsByFamily(outUnit.phenomenon);
     for (const unit of familyUnits) {
       const conversion = await unitsProvider.getConversion(unit, outUnit);
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];

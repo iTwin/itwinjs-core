@@ -6,49 +6,44 @@
 import "./GridWidget.css";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
+import { DiagnosticsProps, PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
 import { Table } from "@bentley/ui-components";
+import { useDisposable } from "@bentley/ui-core";
+import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleTable = tableWithUnifiedSelection(Table);
 
-export interface Props {
+export interface GridWidgetProps {
+  imodel: IModelConnection;
+  rulesetId?: string;
+}
+export function GridWidget(props: GridWidgetProps) {
+  const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
+  return (
+    <div className="gridwidget">
+      <h3>{IModelApp.i18n.translate("Sample:controls.grid")}</h3>
+      <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
+      <div className="gridwidget-content">
+        {props.rulesetId
+          ? <Grid imodel={props.imodel} rulesetId={props.rulesetId} diagnostics={diagnosticsOptions} />
+          : null
+        }
+      </div>
+    </div>
+  );
+}
+
+interface GridProps {
   imodel: IModelConnection;
   rulesetId: string;
+  diagnostics: DiagnosticsProps;
 }
-
-export interface State {
-  dataProvider: PresentationTableDataProvider;
+function Grid(props: GridProps) {
+  const { imodel, rulesetId, diagnostics } = props;
+  const dataProvider = useDisposable(React.useCallback(
+    () => new PresentationTableDataProvider({ imodel, ruleset: rulesetId, ...diagnostics }),
+    [imodel, rulesetId, diagnostics],
+  ));
+  return (<SampleTable dataProvider={dataProvider} />);
 }
-
-export default class GridWidget extends React.PureComponent<Props, State> {
-  constructor(props: Props, context?: any) {
-    super(props, context);
-    this.state = { dataProvider: createDataProviderFromProps(props) };
-  }
-  public static getDerivedStateFromProps(props: Props, state: State): State | null {
-    const needsDataProviderRecreated = (props.imodel !== state.dataProvider.imodel || props.rulesetId !== state.dataProvider.rulesetId);
-    if (needsDataProviderRecreated)
-      state.dataProvider = createDataProviderFromProps(props);
-    return state;
-  }
-  public componentWillUnmount() {
-    this.state.dataProvider.dispose();
-  }
-  public componentDidUpdate(_prevProps: Props, prevState: State) {
-    if (this.state.dataProvider !== prevState.dataProvider)
-      prevState.dataProvider.dispose();
-  }
-  public render() {
-    return (
-      <div className="gridwidget">
-        <h3>{IModelApp.i18n.translate("Sample:controls.grid")}</h3>
-        <div className="gridwidget-content">
-          <SampleTable dataProvider={this.state.dataProvider} />
-        </div>
-      </div>
-    );
-  }
-}
-
-const createDataProviderFromProps = (props: Props) => new PresentationTableDataProvider({ imodel: props.imodel, ruleset: props.rulesetId });

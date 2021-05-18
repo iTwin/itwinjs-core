@@ -21,15 +21,17 @@ import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
-import { BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
+import { BadgeType, FunctionKey, StagePanelLocation, StageUsage, WidgetState } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
   AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
+  AccuDrawUiSettings,
   CommandItemDef,
   ConfigurableUiManager,
   ContentGroupProps,
   ContentLayoutProps,
+  FrameworkAccuDraw,
   FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
@@ -38,7 +40,6 @@ import {
   UiFramework,
   WidgetDef,
   WidgetProvider,
-  WidgetState,
   WorkflowProps,
   WorkflowPropsList,
   ZoneLocation,
@@ -56,6 +57,7 @@ import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 
 // cSpell:ignore uitestapp
 
@@ -73,6 +75,8 @@ export class AppUi {
     AppUi.defineKeyboardShortcuts();
 
     AppUi.defineDynamicWidgets();
+
+    // AppUi.setAccuDrawUiSettings();
   }
 
   /** Define Frontstages
@@ -466,5 +470,23 @@ export class AppUi {
       },
     };
     UiFramework.widgetManager.addWidgetProvider(provider);
+  }
+
+  private static setAccuDrawUiSettings() {
+    const iconTest = "icon-placeholder";
+
+    const appSettings: AccuDrawUiSettings = {
+      xBackgroundColor: "var(--buic-background-control)",
+      xForegroundColor: "var(--buic-foreground-body)",
+      xLabel: "-X-",
+      xIcon: iconTest,
+    };
+
+    const userSettings: AccuDrawUiSettings = {
+      yBackgroundColor: ColorDef.create(ColorByName.darkBrown),
+      yLabel: "-Y-",
+    };
+
+    FrameworkAccuDraw.uiSettings = { ...appSettings, ...userSettings };
   }
 }

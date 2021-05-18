@@ -14,7 +14,7 @@ import { SectionMarkerHandler } from "./SectionMarkerHandler";
  * @see [[HyperModeling.initialize]] to set the default configuration for all decorators at package initialization.
  * @see [[HyperModeling.updateConfiguration]] or [[HyperModeling.replaceConfiguration]] to change the default configuration for all subsequently created decorators.
  * @see [[HyperModelingConfig]].
- * @beta
+ * @public
  */
 export interface SectionMarkerConfig {
   /** Whether to hide markers belonging to models that are not present in the view's [ModelSelector]($backend). If true, markers are displayed regardless of their models. */
@@ -30,7 +30,7 @@ export interface SectionMarkerConfig {
  * @see [[HyperModeling.initialize]] to set this configuration at package initialization.
  * @see [[HyperModeling.updateConfiguration]] or [[HyperModeling.replaceConfiguration]] to change this configuration after package initialization.
  * @see [[HyperModelingConfig]].
- * @beta
+ * @public
  */
 export interface SectionGraphicsConfig {
   /** If true, 2d graphics will not be clipped. */
@@ -50,7 +50,7 @@ export interface SectionGraphicsConfig {
 /** Configuration options for the hyper-modeling package.
  * @see [[HyperModeling.initialize]] to set the configuration at package initialization.
  * @see [[HyperModeling.updateConfiguration]] or [[HyperModeling.replaceConfiguration]] to modify the configuration after package initialization.
- * @beta
+ * @public
  */
 export interface HyperModelingConfig {
   /** Specifies how the user interacts with [[SectionMarker]]s. If omitted, the default interactions will be used. */

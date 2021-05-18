@@ -1,4 +1,3 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -8,13 +7,12 @@ import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-commo
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { BriefcaseDb, IModelHost } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, IModelHost } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {
-  private readonly _projectName: string = "iModelJsIntegrationTest";
   private readonly _iModelName: string;
 
   public projectId!: GuidString;
@@ -28,12 +26,6 @@ export class TestChangeSetUtility {
   constructor(requestContext: AuthorizedClientRequestContext, iModelName: string) {
     this._requestContext = requestContext;
     this._iModelName = HubUtility.generateUniqueName(iModelName); // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
-  }
-
-  private async initialize(): Promise<void> {
-    if (this.projectId)
-      return;
-    this.projectId = await HubUtility.queryProjectIdByName(this._requestContext, this._projectName);
   }
 
   private async addTestModel(): Promise<void> {
@@ -51,25 +43,38 @@ export class TestChangeSetUtility {
   }
 
   private async addTestElements(): Promise<void> {
+    this._requestContext.enter();
+
     this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId));
     this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId));
+
     await this._iModel.concurrencyControl.request(this._requestContext);
+    this._requestContext.enter();
+
     this._iModel.saveChanges("Added test elements");
   }
 
   public async createTestIModel(): Promise<BriefcaseDb> {
-    await this.initialize();
+    this._requestContext.enter();
+
+    this.projectId = await HubUtility.getTestContextId(this._requestContext);
+    this._requestContext.enter();
 
     // Re-create iModel on iModelHub
     this.iModelId = await HubUtility.recreateIModel(this._requestContext, this.projectId, this._iModelName);
+    this._requestContext.enter();
 
     // Populate sample data
     await this.addTestModel();
+    this._requestContext.enter();
     await this.addTestCategory();
+    this._requestContext.enter();
     await this.addTestElements();
+    this._requestContext.enter();
 
     // Push changes to the hub
     await this._iModel.pushChanges(this._requestContext, "Setup test model");
+    this._requestContext.enter();
 
     return this._iModel;
   }
@@ -79,6 +84,26 @@ export class TestChangeSetUtility {
       throw new Error("Must first call createTestIModel");
     await this.addTestElements();
     await this._iModel.pushChanges(this._requestContext, "Added test elements");
+  }
+
+  public async redownloadBriefcase(): Promise<void> {
+    if (!this._iModel)
+      throw new Error("Must first call createTestIModel");
+
+    const briefcasePath = this._iModel.pathName;
+    this._iModel.nativeDb.deleteAllTxns();
+    await this._iModel.concurrencyControl.abandonResources(this._requestContext);
+    this._iModel.close();
+    await BriefcaseManager.deleteBriefcaseFiles(briefcasePath);
+
+    const briefcaseProps = {
+      requestContext: this._requestContext,
+      contextId: this.projectId,
+      iModelId: this._iModel.iModelId,
+      briefcaseId: this._iModel.briefcaseId,
+    };
+    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase(briefcaseProps);
+    this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
   }
 
   public async deleteTestIModel(): Promise<void> {

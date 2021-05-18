@@ -1,6 +1,60 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+This log was last generated on Mon, 17 May 2021 13:31:38 GMT and should not be manually modified.
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+### Updates
+
+- Update unit tests for resizeObserver fix.
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Specify grid-column in the scss for the Navigation and Tools widgets.
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:34 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+### Updates
+
+- Cleanup statusbar styling to ensure items are centered and do not overflow area.
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- Add api to float and dock widgets in UI2.0.
+- Replace custom assert definition with one from bentleyjs-core.
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT
@@ -28,6 +82,8 @@ _Version update only_
 
 ## 2.12.0
 Thu, 18 Feb 2021 22:10:13 GMT
+
+_Version update only_
 
 ## 2.11.2
 Thu, 18 Feb 2021 02:50:59 GMT
@@ -258,7 +314,7 @@ Thu, 20 Aug 2020 20:57:10 GMT
 - lock down @types/react version at 16.9.43 to prevent build error from csstype dependency
 - Added Table component keyboard row selection. Miscellaneous a11y fixes.
 - Switch to ESLint
-- Add drop shadow to toolsettings overflow popup.
+- Add drop shadow to toolsettings overflow popup.  
 - Close widget overflow popup when tab is clicked.
 - Add corner resize handles to floating widgets.
 - Add preferredPanelWidgetSize to TabState.
@@ -365,7 +421,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Ability to drag docked tool settings to widget mode.
 - Support for floating widget targets.
-- Fix safe area insets for bottom zones w/o footer.
+- Fix safe area insets for bottom zones w/o footer. 
 - Keep active tab visible.
 - Reparent widget content when dragging widget around.
 - Floating widget stacking order.

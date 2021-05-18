@@ -21,7 +21,7 @@ describe("RbacClient (#integration)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
-    this.enableTimeouts(false);
+    this.timeout(0);
     requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
   });
 
@@ -37,7 +37,7 @@ describe("RbacClient (#integration)", () => {
 
     const iModelHubServiceGPRId = 2485;
     const permissions: Permission[] = await rbacClient.getPermissions(requestContext, project.wsgId, iModelHubServiceGPRId);
-    expect(permissions.length).equals(6);
+    expect(permissions.length).equals(9);
   });
 
   it("should get the permissions relevant to iModelHub for the specified project (#integration)", async () => {

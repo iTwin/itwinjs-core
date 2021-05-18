@@ -15,7 +15,6 @@ import { LocateOptions } from "../ElementLocateManager";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { IpcApp } from "../IpcApp";
 import { linePlaneIntersect } from "../LinePlaneIntersect";
 import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
@@ -36,7 +35,7 @@ import { ViewTool } from "./ViewTool";
 /** @public */
 export enum StartOrResume { Start = 1, Resume = 2 }
 
-/** @alpha */
+/** @public */
 export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 } // eslint-disable-line no-restricted-syntax
@@ -456,6 +455,7 @@ export class ToolAdmin {
 
   /** @internal */
   public onShutDown() {
+    this.clearMotionPromises();
     this._idleTool = undefined;
     IconSprites.emptyAll(); // clear cache of icon sprites
     ToolAdmin._removals.forEach((remove) => remove());
@@ -469,6 +469,9 @@ export class ToolAdmin {
    * @internal
    */
   public forgetViewport(vp: ScreenViewport): void {
+    // Ignore pending motion promises on fulfillment.
+    this.clearMotionPromises();
+
     // make sure tools don't think the cursor is still in this viewport.
     this.onMouseLeave(vp);
 
@@ -779,6 +782,7 @@ export class ToolAdmin {
 
   /** The idleTool handles events that are not otherwise processed. */
   public get idleTool(): IdleTool { return this._idleTool!; }
+  public set idleTool(idleTool: IdleTool) { this._idleTool = idleTool; }
 
   /** Return true to filter (ignore) events to the given viewport */
   protected filterViewport(vp: ScreenViewport) {
@@ -817,7 +821,6 @@ export class ToolAdmin {
   /**
    * Event raised by tools that support edit manipulators like the SelectTool.
    * @param tool The current tool
-   * @alpha
    */
   public readonly manipulatorToolEvent = new BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>();
 
@@ -907,6 +910,34 @@ export class ToolAdmin {
     return decoration;
   }
 
+  /** Current request for locate/snap */
+  private _snapMotionPromise?: Promise<boolean>;
+  /** Current request for active tool motion event */
+  private _toolMotionPromise?: Promise<void>;
+
+  private clearMotionPromises(): void {
+    this._snapMotionPromise = this._toolMotionPromise = undefined;
+  }
+
+  private async onMotionSnap(ev: BeButtonEvent): Promise<boolean> {
+    try {
+      await IModelApp.accuSnap.onMotion(ev);
+      return true;
+    } catch (error) {
+      if (error instanceof AbandonedError)
+        return false; // expected, not a problem. Just ignore this motion and return.
+      throw error; // unknown error
+    }
+  }
+
+  private async onStartDrag(ev: BeButtonEvent, tool?: InteractiveTool): Promise<EventHandled> {
+    if (undefined !== tool && EventHandled.Yes === await tool.onMouseStartDrag(ev))
+      return EventHandled.Yes;
+
+    // Pass start drag event to idle tool if active tool doesn't explicitly handle it
+    return this.idleTool.onMouseStartDrag(ev);
+  }
+
   private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false, movement?: XAndY): Promise<any> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
@@ -924,44 +955,52 @@ export class ToolAdmin {
     if (undefined !== overlayHit) {
       if (overlayHit.onMouseMove)
         overlayHit.onMouseMove(ev);
-      return;   // we're inside a pickable decoration, don't send event to tool
+      return; // we're inside a pickable decoration, don't send event to tool
     }
 
-    try {
-      await IModelApp.accuSnap.onMotion(ev); // wait for AccuSnap before calling fromButton
-    } catch (error) {
-      if (error instanceof AbandonedError) return; // expected, not a problem. Just ignore this motion and return.
-      throw error; // unknown error
-    }
+    const snapPromise = this._snapMotionPromise = this.onMotionSnap(ev);
 
-    current.fromButton(vp, pt2d, inputSource, true);
-    current.toEvent(ev, true);
-    ev.movement = movement;
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    snapPromise.then((snapOk) => {
+      if (!snapOk || snapPromise !== this._snapMotionPromise)
+        return;
 
-    IModelApp.accuDraw.onMotion(ev);
+      // Update event to account for AccuSnap adjustments...
+      current.fromButton(vp, pt2d, inputSource, true);
+      current.toEvent(ev, true);
+      ev.movement = movement;
 
-    const tool = this.activeTool;
-    const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
-    this.setIncompatibleViewportCursor(isValidLocation);
+      IModelApp.accuDraw.onMotion(ev);
 
-    if (forceStartDrag || current.isStartDrag(ev.button)) {
-      current.onStartDrag(ev.button);
-      current.changeButtonToDownPoint(ev);
-      ev.isDragging = true;
+      const tool = this.activeTool;
+      const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
+      this.setIncompatibleViewportCursor(isValidLocation);
 
-      if (undefined !== tool && isValidLocation)
-        tool.receivedDownEvent = true;
+      if (forceStartDrag || current.isStartDrag(ev.button)) {
+        current.onStartDrag(ev.button);
+        current.changeButtonToDownPoint(ev);
+        ev.isDragging = true;
 
-      // Pass start drag event to idle tool if active tool doesn't explicitly handle it
-      if (undefined === tool || !isValidLocation || EventHandled.Yes !== await tool.onMouseStartDrag(ev))
-        return this.idleTool.onMouseStartDrag(ev);
+        if (undefined !== tool && isValidLocation)
+          tool.receivedDownEvent = true;
+
+        return this.onStartDrag(ev, isValidLocation ? tool : undefined);
+      }
+
+      if (tool) {
+        const toolPromise = this._toolMotionPromise = tool.onMouseMotion(ev);
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        toolPromise.then(() => {
+          if (toolPromise !== this._toolMotionPromise)
+            return;
+          // Update dynamics only after motion...
+          this.updateDynamics(ev);
+        });
+      }
+
       return;
-    }
-
-    if (tool) {
-      tool.onMouseMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
-      this.updateDynamics(ev);
-    }
+    });
 
     if (this.isLocateCircleOn)
       vp.invalidateDecorations();
@@ -1268,14 +1307,18 @@ export class ToolAdmin {
       if (await activeTool.undoPreviousStep())
         return true;
     }
+
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
-    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
-    if (IModelStatus.Success !== await IpcApp.callIpcHost("reverseSingleTxn", imodel.key))
+
+    if (IModelStatus.Success !== await imodel.txns.reverseSingleTxn())
       return false;
+
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== this._primitiveTool)
       this._primitiveTool.onRestartTool();
+
     return true;
   }
 
@@ -1287,23 +1330,33 @@ export class ToolAdmin {
       if (await activeTool.redoPreviousStep())
         return true;
     }
+
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
-    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
-    if (IModelStatus.Success !== await IpcApp.callIpcHost("reinstateTxn", imodel.key))
+
+    if (IModelStatus.Success !== await imodel.txns.reinstateTxn())
       return false;
+
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== this._primitiveTool)
       this._primitiveTool.onRestartTool();
+
     return true;
+  }
+
+  private onActiveToolChanged(tool: Tool, start: StartOrResume): void {
+    this.clearMotionPromises();
+    this.activeToolChanged.raiseEvent(tool, start);
   }
 
   private onUnsuspendTool() {
     const tool = this.activeTool;
     if (tool === undefined)
       return;
+
     tool.onUnsuspend();
-    this.activeToolChanged.raiseEvent(tool, StartOrResume.Resume);
+    this.onActiveToolChanged(tool, StartOrResume.Resume);
   }
 
   /** @internal */
@@ -1354,7 +1407,7 @@ export class ToolAdmin {
 
     this.setInputCollector(newTool);
     // it is important to raise event after setInputCollector is called
-    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
+    this.onActiveToolChanged(newTool, StartOrResume.Start);
   }
 
   /** @internal */
@@ -1412,7 +1465,7 @@ export class ToolAdmin {
     this.setCursor(IModelApp.viewManager.crossHairCursor);
     this.setViewTool(newTool);
     // it is important to raise event after setViewTool is called
-    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
+    this.onActiveToolChanged(newTool, StartOrResume.Start);
   }
 
   /** @internal */
@@ -1450,7 +1503,7 @@ export class ToolAdmin {
       this.setPrimitiveTool(newTool);
     }
     // it is important to raise event after setPrimitiveTool is called
-    this.activeToolChanged.raiseEvent(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
+    this.onActiveToolChanged(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
   }
 
   /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.
@@ -1565,7 +1618,15 @@ export class ToolAdmin {
     viewport.drawLocateCursor(context, ev.viewPoint, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
   }
 
-  public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse && this._canvasDecoration === undefined; }
+  public get isLocateCircleOn(): boolean {
+    if (!this.toolState.locateCircleOn || undefined !== this._canvasDecoration)
+      return false;
+
+    if (InputSource.Mouse === this.currentInputState.inputSource)
+      return true;
+
+    return (InputSource.Touch === this.currentInputState.inputSource && undefined !== IModelApp.accuSnap.touchCursor);
+  }
 
   /** @internal */
   public beginDynamics(): void {

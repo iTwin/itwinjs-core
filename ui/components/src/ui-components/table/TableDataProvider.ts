@@ -7,19 +7,22 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { Primitives, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
 import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
 import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
 
+// cSpell:ignore columnfiltering
+
 /** Filter Renderer for a Table column
- * @beta
+ * @public
  */
 export enum FilterRenderer {
   Numeric = 1,
   MultiSelect,
   SingleSelect,
   Text,
+  MultiValue,
 }
 
 /**
@@ -54,13 +57,15 @@ export interface ColumnDescription {
 
   /** Indicates whether the column is filterable. Defaults to false. */
   filterable?: boolean;
-  /** Specifies the filter renderer for the column. @beta */
+  /** Specifies the filter renderer for the column. */
   filterRenderer?: FilterRenderer;
 
-  // For filtering dialog - not implemented yet
-  showFieldFilters?: boolean;            /* Defaults to true */
-  showDistinctValueFilters?: boolean;    /* Defaults to true */
-  filterCaseSensitive?: boolean;         /* Defaults to false */
+  /** Show field filters in Multi-Value column filtering popup. Defaults to true. */
+  showFieldFilters?: boolean;
+  /** Show distinct value checkboxes in Multi-Value column filtering popup. Defaults to true. */
+  showDistinctValueFilters?: boolean;
+  /** Filtering is case-sensitive in Multi-Value column filtering popup. Defaults to false. */
+  filterCaseSensitive?: boolean;
 }
 
 /**
@@ -80,6 +85,13 @@ export interface CellItem {
 
   /** Style properties for the contents of the cell */
   style?: ItemStyle;
+
+  /**
+   * Property to specify how many cells were merged to create this cell.
+   * Default value is 1.
+   * @alpha
+   */
+  mergedCellsCount?: number;
 }
 
 /**
@@ -119,14 +131,6 @@ export declare type TableDataChangesListener = () => void;
  */
 export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> { }
 
-/** Distinct Value for Table filtering purposes
- * @beta
- */
-export interface TableDistinctValue {
-  value: Primitives.Value;
-  label: string;
-}
-
 /**
  * TableDataProvider provides data to the Table.
  * It also provides support for data Sorting & Filtering.
@@ -151,12 +155,10 @@ export interface TableDataProvider {
   // Column Filtering methods
 
   /** Apply a filter descriptor collection
-   * @beta
    */
   applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
 
   /** Gets distinct values in a column
-   * @beta
    */
   getDistinctValues?: (columnKey: string, maximumValueCount?: number) => Promise<DistinctValueCollection>;
 

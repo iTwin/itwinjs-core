@@ -18,8 +18,8 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
     // (undocumented)
     protected getUserManager(): Promise<UserManager>;
     protected getUserManagerSettings(basicSettings: BrowserAuthorizationCallbackHandlerConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
-    static handleSigninCallback(redirectUrl?: string): Promise<void>;
-}
+    static handleSigninCallback(redirectUrl: string): Promise<void>;
+    }
 
 // @beta (undocumented)
 export interface BrowserAuthorizationCallbackHandlerConfiguration {
@@ -73,6 +73,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 export interface BrowserAuthorizationClientConfiguration {
     readonly authority?: string;
     readonly clientId: string;
+    readonly noSilentSignInOnAppStartup?: boolean;
     readonly postSignoutRedirectUri?: string;
     readonly redirectUri: string;
     readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
@@ -89,12 +90,6 @@ export interface FrontendAuthorizationClient extends AuthorizationClient {
 
 // @beta
 export const isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient;
-
-// @internal
-export class Ntlm {
-    static authenticate(url: string): Promise<void>;
-    static setCredentials(domain: string, username: string, password: string): void;
-    }
 
 // @beta (undocumented)
 export enum OidcCallbackResponseMode {

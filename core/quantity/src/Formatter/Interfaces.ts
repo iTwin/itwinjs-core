@@ -2,9 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
 
-/** This interface defines the persistence format for defining the format of quantity values.
- * @alpha
+/** This interface defines the persistence format for describing the formatting of quantity values.
+ * @beta
  */
 export interface FormatProps {
   readonly type: string;
@@ -30,14 +33,14 @@ export interface FormatProps {
 }
 
 /** This interface is used when supporting Custom Formatters that need more than the standard set of properties.
- * @alpha
+ * @beta
  */
 export interface CustomFormatProps extends FormatProps{
   readonly custom: any;
 }
 
 /** CustomFormatProps type guard.
- * @alpha
+ * @beta
  */
 export const isCustomFormatProps = (item: FormatProps): item is CustomFormatProps => {
   return (item as CustomFormatProps).custom !== undefined;

@@ -2,6 +2,141 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.15.3",
+      "tag": "@bentley/ui-framework_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clean up styling in StatusBar.css"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@bentley/ui-framework_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@bentley/ui-framework_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/ui-framework_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add UiSettingsPage, AppUiSettings, and ability to register UserSettingsProvider to provide default settings from UsSettingsStorage."
+          },
+          {
+            "comment": "Properly declare changeSetId variables as string."
+          },
+          {
+            "comment": "Adding ability to open Message Center on demand"
+          },
+          {
+            "comment": "Cache element ids when determining visbility in ModelsTree"
+          },
+          {
+            "comment": "Fix compatibility issue when multiple versions of `rxjs` are in use."
+          },
+          {
+            "comment": "Publish APIs used bu iTwinViewer."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@bentley/ui-framework_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to get activeViewPort by monitoring ContentViewManager.onActiveContentChangedEvent this elimates issue where ViewManager active viewport changes occur before all UI components are mounted and listening."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@bentley/ui-framework_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Cleanup statusbar styling to ensure items are centered and do not overflow area."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/ui-framework_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Avoid getting into infinite render loop in CategoriesTree"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/ui-framework_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/ui-framework_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Standard Modal Settings Stage for displaying App Settings."
+          },
+          {
+            "comment": "Add api to float and dock widgets in UI2.0."
+          },
+          {
+            "comment": "Filter out history key-in that are no longer available in key-in palette."
+          },
+          {
+            "comment": "Move Quantity Formatting settings page from ui-test-app to ui-framework and add ability to set Presentation Unit System."
+          },
+          {
+            "comment": "Adding sectionToolGroupWithPanel definition in CoreTools"
+          },
+          {
+            "comment": "Support for AccuDraw Ui Settings"
+          },
+          {
+            "comment": "Support for Bump Tool Settings"
+          },
+          {
+            "comment": "Better support for Escape key to Home position"
+          },
+          {
+            "comment": "Support for Focus into Tool Settings"
+          },
+          {
+            "comment": "Initialize tool settings React components from the record in UiLayoutDataProvider to prevent reinitializing the value when the items move into the overflow popup."
+          },
+          {
+            "comment": "Fix ViewSelector so it reloads list of views when iModel prop is updated."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.13.0",
       "tag": "@bentley/ui-framework_v2.13.0",
       "date": "Tue, 09 Mar 2021 20:28:13 GMT",

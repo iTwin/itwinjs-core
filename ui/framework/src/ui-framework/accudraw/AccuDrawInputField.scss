@@ -5,56 +5,54 @@
 @import "~@bentley/ui-core/lib/ui-core/base/base";
 @import "~@bentley/ui-core/lib/ui-core/text/mixins";
 
-.uifw-accudraw-input-container {
+.uifw-accudraw-input-label {
+  min-width: 16px;
+  margin-right: 4px;
 
-  display: inline-flex;
-  flex-direction: row;
+  display: flex;
+  align-items: center;
+
+  @include uicore-text( leading-2 );
+
+  &.uifw-label-centered {
+    justify-content: center;
+  }
+
+  .icon {
+    width:  16px;
+    height: 16px;
+
+    margin-top: 2px;
+    @include uicore-centered;
+  }
+}
+
+.uifw-accudraw-input-field {
   flex: 1;
+}
 
-  .uifw-accudraw-input-label {
-    width: 16px;
-    margin-right: 4px;
+.uifw-accudraw-lock {
+  width: 22px;
+  @include uicore-centered;
+}
 
-    @include uicore-text( leading-2 );
-    @include uicore-centered;
+.uifw-accudraw-x-value {
+  background-color: $buic-accessory-alert;
+  color: $buic-accessory-hollow;
+}
 
-    .icon {
-      width:  16px;
-      height: 16px;
+.uifw-accudraw-y-value {
+  background-color: $buic-accessory-success;
+  color: $buic-accessory-hollow;
+}
 
-      margin-top: 2px;
-      @include uicore-centered;
-    }
-  }
+.uifw-accudraw-z-value {
+  background-color: $buic-accessory-primary;
+  color: $buic-accessory-hollow;
+}
 
-  .uifw-accudraw-input-field {
-    flex: 1;
-  }
+.uifw-accudraw-angle-value {
+}
 
-  .uifw-accudraw-lock {
-    width: 22px;
-    @include uicore-centered;
-  }
-
-  .uifw-accudraw-x-value {
-    background-color: $buic-accessory-alert;
-    color: $buic-accessory-hollow;
-  }
-
-  .uifw-accudraw-y-value {
-    background-color: $buic-accessory-success;
-    color: $buic-accessory-hollow;
-  }
-
-  .uifw-accudraw-z-value {
-    background-color: $buic-accessory-primary;
-    color: $buic-accessory-hollow;
-  }
-
-  .uifw-accudraw-angle-value {
-  }
-
-  .uifw-accudraw-distance-value {
-  }
-
+.uifw-accudraw-distance-value {
 }

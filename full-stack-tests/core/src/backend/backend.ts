@@ -13,7 +13,7 @@ import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
@@ -36,6 +36,7 @@ async function init() {
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
     EditCommandAdmin.registerModule(testCommands);
+    EditCommandAdmin.register(BasicManipulationCommand);
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
