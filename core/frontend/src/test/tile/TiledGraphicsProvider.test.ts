@@ -24,21 +24,21 @@ class TestTile extends Tile {
     }, tree);
   }
 
-    protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
-      resolve(undefined);
-    }
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
+    resolve(undefined);
+  }
 
-    public get channel() {
-      return IModelApp.tileAdmin.channels.getForHttp("test-tile");
-    }
+  public get channel() {
+    return IModelApp.tileAdmin.channels.getForHttp("test-tile");
+  }
 
-    public async requestContent(): Promise<TileRequest.Response> {
-      return Promise.resolve("content");
-    }
+  public async requestContent(): Promise<TileRequest.Response> {
+    return Promise.resolve("content");
+  }
 
-    public async readContent(): Promise<TileContent> {
-      return { };
-    }
+  public async readContent(): Promise<TileContent> {
+    return { };
+  }
 }
 
 class TestTree extends TileTree {
@@ -139,7 +139,7 @@ describe("TiledGraphicsProvider", () => {
     document.body.appendChild(viewDiv);
 
     await IModelApp.startup();
-    imodel = await createBlankConnection();
+    imodel = createBlankConnection();
   });
 
   beforeEach(() => {

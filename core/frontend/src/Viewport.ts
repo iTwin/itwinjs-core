@@ -1403,7 +1403,6 @@ export abstract class Viewport implements IDisposable {
     if (this._mapTiledGraphicsProvider && !TiledGraphicsProvider.isLoadingComplete(this._mapTiledGraphicsProvider, this))
       return false;
 
-    let allLoaded = true;
     for (const provider of this._tiledGraphicsProviders)
       if (!TiledGraphicsProvider.isLoadingComplete(provider, this))
         return false;
