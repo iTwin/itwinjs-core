@@ -24,7 +24,7 @@ describe("FrameStats", () => {
     await IModelApp.shutdown();
   });
 
-  function testViewport(width: number, height: number, devicePixelRatio: number | undefined, callback: (vp: ScreenViewport) => void): void {
+  function testViewport(width: number, height: number, callback: (vp: ScreenViewport) => void): void {
     const div = document.createElement("div");
     div.style.width = `${width}px`;
     div.style.height = `${height}px`;
@@ -37,8 +37,6 @@ describe("FrameStats", () => {
 
     const vp = ScreenViewport.create(div, view);
     IModelApp.viewManager.addViewport(vp);
-    expect(vp.target.debugControl).not.to.be.undefined;
-    vp.target.debugControl!.devicePixelRatioOverride = devicePixelRatio ?? 1;
 
     try {
       callback(vp);
@@ -49,7 +47,7 @@ describe("FrameStats", () => {
   }
 
   it("should receive frame statistics from render loop when enabled", async () => {
-    testViewport(20, 20, 1, (vp) => {
+    testViewport(20, 20, (vp) => {
       const numFramesToDraw = 9;
       let numFrameStats = 0;
 
