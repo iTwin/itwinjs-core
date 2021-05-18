@@ -102,9 +102,7 @@ function changePageSize(iModelPath: string, pageSizeInKb: number) {
     });
   });
 
-  const r = IModelHost.platform.DgnDb.vacuum(iModelPath, pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024);
-  if (r !== DbResult.BE_SQLITE_OK)
-    throw new Error("fail to vacuum or changesize of the page");
+  IModelHost.platform.DgnDb.vacuum(iModelPath, pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024);
   sp.stop();
   process.stdout.write(`Change vacuum with page size to ${pageSizeInKb}K took ${sp.elapsedSeconds} sec\n`);
 
