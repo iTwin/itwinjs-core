@@ -31,7 +31,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
         if (drapeTree instanceof RealityTileTree) {
           const builder =  context.createGraphicBuilder(GraphicType.WorldDecoration);
           const lineStrings = new Array<LineString3d>();
-          builder.setSymbology(ColorDef.white, ColorDef.white, 5);
+          builder.setSymbology(ColorDef.white, ColorDef.white, 2);
           const drapeRange = Range3d.createNull();
           drapeRange.extendArray(this._drapePoints);
           const tolerance = drapeRange.diagonal().magnitude() / 5000.0;
@@ -42,7 +42,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
       }
       if (this._motionPoint) {
         const builder =  context.createGraphicBuilder(GraphicType.WorldOverlay);
-        builder.setSymbology(ColorDef.white, ColorDef.white, 1, LinePixels.Code1);
+        builder.setSymbology(ColorDef.white, ColorDef.white, 1, LinePixels.Code0);
         builder.addLineString([this._drapePoints.getPoint3dAtUncheckedPointIndex(this._drapePoints.length - 1), this._motionPoint]);
         context.addDecorationFromBuilder(builder);
       }

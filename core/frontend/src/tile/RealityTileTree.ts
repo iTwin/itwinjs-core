@@ -7,7 +7,7 @@
  */
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { GrowableXYZArray, LineString3d, PolyfaceQuery, Range3d, Transform } from "@bentley/geometry-core";
+import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, PolyfaceQuery, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -119,26 +119,24 @@ export enum RealityTileDrapeStatus { Loading, Success, Error }
 export abstract class RealityTileCollector {
   public missing = new Set<RealityTile>();
   public accepted = new Array<RealityTile>();
+
+  protected constructor(private _tolerance: number, private _range: Range3d, protected _iModelTransform: Transform) {
+  }
+
   private _childrenLoading = false;
 
   public markChildrenLoading() {
     this._childrenLoading = true;
   }
-  public abstract selectTile(tile: RealityTile): TileCollectionSelectionStatus;
   public get loadingComplete() {
     return !this._childrenLoading && 0 === this.missing.size;
   }
   public requestMissingTiles(viewport: Viewport) {
     IModelApp.tileAdmin.requestTiles(viewport, this.missing);
   }
-}
-
-class RealityTileByRangeCollector extends RealityTileCollector {
-  constructor(private _range: Range3d, private _tolerance: number) {
-    super();
-  }
   public selectTile(tile: RealityTile): TileCollectionSelectionStatus {
-    if (!tile.range.intersect(this._range))
+    const tileRange = this._iModelTransform.multiplyRange(tile.range);
+    if (!tileRange.intersectsRangeXY(this._range))
       return TileCollectionSelectionStatus.Reject;
 
     if (tile.maximumSize === 0.0 || !tile.isDisplayable)
@@ -146,6 +144,30 @@ class RealityTileByRangeCollector extends RealityTileCollector {
 
     const tileTolerance = tile.radius/ tile.maximumSize;
     return tileTolerance < this._tolerance ? TileCollectionSelectionStatus.Accept : TileCollectionSelectionStatus.Continue;
+  }
+}
+
+class RealityTileByDrapeLineStringCollector extends RealityTileCollector {
+  constructor(tolerance: number, range: Range3d, iModelTransform: Transform, private _points: GrowableXYZArray) {
+    super(tolerance, range, iModelTransform);
+  }
+  public selectTile(tile: RealityTile): TileCollectionSelectionStatus {
+    let status = super.selectTile(tile);
+
+    if (TileCollectionSelectionStatus.Reject !== status && !this.rangeOverlapsLineString(tile.range))
+      status = TileCollectionSelectionStatus.Reject;
+
+    return status;
+  }
+
+  private rangeOverlapsLineString(range: Range3d) {
+    let inside = false;
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes (range, true, true, true, true, false, false);
+    clipper.transformInPlace(this._iModelTransform);
+    for (let i = 0; i < this._points.length - 1 && !inside; i++)
+      inside = clipper.announceClippedSegmentIntervals (0, 1, this._points.getPoint3dAtUncheckedPointIndex(i), this._points.getPoint3dAtUncheckedPointIndex(i+1));
+
+    return inside;
   }
 }
 
@@ -365,7 +387,7 @@ export class RealityTileTree extends TileTree {
   public drapeLinestring(outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, viewport: Viewport, debugContext?: DecorateContext): RealityTileDrapeStatus {
     const range = Range3d.createNull();
     range.extendArray(inPoints);
-    const rangeSelector = new RealityTileByRangeCollector(range, tolerance);
+    const rangeSelector = new RealityTileByDrapeLineStringCollector(tolerance, range, this.iModelTransform, inPoints);
 
     if (this.collectRealityTiles(rangeSelector) === TileCollectionStatus.Loading) {
       rangeSelector.requestMissingTiles(viewport);
