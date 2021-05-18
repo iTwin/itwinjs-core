@@ -80,16 +80,13 @@ export interface BrowserAuthorizationClientConfiguration {
     readonly scope: string;
 }
 
-// @public (undocumented)
+// @public
 export interface FrontendAuthorizationClient extends AuthorizationClient {
     readonly hasSignedIn: boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
     signIn(requestContext?: ClientRequestContext): Promise<void>;
     signOut(requestContext?: ClientRequestContext): Promise<void>;
 }
-
-// @public
-export const isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient;
 
 
 // (No @packageDocumentation comment for this package)

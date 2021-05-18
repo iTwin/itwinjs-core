@@ -5,4 +5,3 @@ public;BrowserAuthorizationCallbackHandlerConfiguration
 public;BrowserAuthorizationClient 
 public;BrowserAuthorizationClientConfiguration
 public;FrontendAuthorizationClient 
-public;isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient
