@@ -3355,6 +3355,35 @@ export interface FrameRenderData {
     needComposite: boolean;
 }
 
+// @alpha
+export interface FrameStats {
+    backgroundTime: number;
+    classifiersTime: number;
+    frameId: number;
+    opaqueTime: number;
+    overlaysTime: number;
+    sceneTime: number;
+    screenspaceEffectsTime: number;
+    shadowsTime: number;
+    totalFrameTime: number;
+    translucentTime: number;
+}
+
+// @internal (undocumented)
+export class FrameStatsCollector {
+    // (undocumented)
+    beginFrame(sceneMilSecElapsed?: number): void;
+    // (undocumented)
+    beginTime(entry: keyof FrameStats): void;
+    // (undocumented)
+    endFrame(): void;
+    // (undocumented)
+    endTime(entry: keyof FrameStats): void;
+    set onFrameStatsReady(ev: OnFrameStatsReadyEvent | undefined);
+    // (undocumented)
+    get onFrameStatsReady(): OnFrameStatsReadyEvent | undefined;
+    }
+
 // @public
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
@@ -6662,6 +6691,9 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     signOut(requestContext?: ClientRequestContext): Promise<void>;
     }
 
+// @alpha
+export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
+
 // @internal
 export class OnScreenTarget extends Target {
     constructor(canvas: HTMLCanvasElement);
@@ -8235,6 +8267,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
     setHiliteSet(_hilited: HiliteSet): void;
+    // (undocumented)
+    setOnFrameStats(_event: OnFrameStatsReadyEvent): void;
     setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
@@ -9518,6 +9552,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get flashIntensity(): number;
     // (undocumented)
+    get frameStatsCollector(): FrameStatsCollector;
+    // (undocumented)
     freezeRealityTiles: boolean;
     // (undocumented)
     getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
@@ -9603,6 +9639,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
     setHiliteSet(hilite: HiliteSet): void;
+    // (undocumented)
+    setOnFrameStats(event: OnFrameStatsReadyEvent): void;
     // (undocumented)
     get shadowFrustum(): Frustum | undefined;
     // (undocumented)
@@ -12169,6 +12207,8 @@ export abstract class Viewport implements IDisposable {
     readonly onDisposed: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
+    // @alpha
+    readonly onFrameStats: BeEvent<(frameStats: Readonly<FrameStats>) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
     readonly onResized: BeEvent<(vp: Viewport) => void>;

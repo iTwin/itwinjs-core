@@ -73,6 +73,9 @@
     "ToggleShadowMapTiles": {
       "keyin": "dta shadow tiles"
     },
+    "FrameStats": {
+      "keyin": "dta framestats"
+    },
     "PurgeTileTrees": {
       "keyin": "dta purge tiletrees"
     },
