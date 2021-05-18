@@ -545,6 +545,7 @@ internal;TileAvailability
 public;TileBoundingBoxes
 public;TileContent
 public;TiledGraphicsProvider
+internal;TiledGraphicsProvider
 public;TileDrawArgParams
 public;TileDrawArgs
 public;TileGraphicType

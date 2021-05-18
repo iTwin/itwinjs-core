@@ -10135,10 +10135,19 @@ export interface TileContent {
     isLeaf?: boolean;
 }
 
+// Warning: (ae-internal-mixed-release-tag) Mixed release tags are not allowed for "TiledGraphicsProvider" because one of its declarations is marked as @internal
+//
 // @public
 export interface TiledGraphicsProvider {
     addToScene?: (context: SceneContext) => void;
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
+    isLoadingComplete?: (viewport: Viewport) => boolean;
+}
+
+// @internal
+export namespace TiledGraphicsProvider {
+    export function addToScene(provider: TiledGraphicsProvider, context: SceneContext): void;
+    export function isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean;
 }
 
 // @public
