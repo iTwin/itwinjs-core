@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseStatus, Config, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus, Config, GuidString, IModelStatus, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { ChangeSetQuery, ChangesType } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
@@ -605,6 +605,8 @@ describe("BriefcaseManager (#integration)", () => {
 
     readline.clearLine(process.stdout, 0);
     readline.moveCursor(process.stdout, -20, 0);
+    let done = 0;
+    let complete = 0;
     const downloadProgress = (loaded: number, total: number) => {
       if (total > 0) {
         const message = `${HubUtility.testIModelNames.stadium} Download Progress ... ${(loaded * 100 / total).toFixed(2)}%`;
@@ -613,6 +615,8 @@ describe("BriefcaseManager (#integration)", () => {
         if (loaded >= total)
           process.stdout.write(os.EOL);
         numProgressCalls++;
+        done = loaded;
+        complete = total;
       }
       return 0;
     };
@@ -625,10 +629,15 @@ describe("BriefcaseManager (#integration)", () => {
     };
     const fileName = BriefcaseManager.getFileName(args);
     await BriefcaseManager.deleteBriefcaseFiles(fileName);
+    const watch = new StopWatch("download", true);
     const props = await BriefcaseManager.downloadBriefcase(requestContext, args);
+    // eslint-disable-next-line no-console
+    console.log(`download took ${watch.elapsedSeconds} seconds`);
     const iModel = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-    assert.isTrue(numProgressCalls > 10);
+    assert.isAbove(numProgressCalls, 0, "download progress called");
+    assert.isAbove(done, 0, "done set");
+    assert.isAbove(complete, 0, "complete set");
   });
 
   it("Should be able to cancel an in progress download (#integration)", async () => {

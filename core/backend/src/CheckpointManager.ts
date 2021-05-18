@@ -164,15 +164,18 @@ export class V2CheckpointManager {
     const downloader = new IModelHost.platform.DownloadV2Checkpoint({ ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile });
     let timer: NodeJS.Timeout | undefined;
     try {
+      let total = 0;
       const onProgress = request.onProgress;
       if (onProgress) {
         timer = setInterval(async () => { // set an interval timer to show progress every 250ms
           const progress = downloader.getProgress();
+          total = progress.total;
           if (onProgress(progress.loaded, progress.total))
             downloader.cancelDownload();
         }, 250);
       }
       await downloader.downloadPromise;
+      onProgress?.(total, total); // make sure we call progress func one last time when download completes
     } catch (err) {
       throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
     } finally {
