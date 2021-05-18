@@ -2525,7 +2525,7 @@ export class SnapshotDb extends IModelDb {
    * @internal
    */
   public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
-    const { filePath, sasTokenExpiry } = await V2CheckpointManager.attach(checkpoint);
+    const filePath = await V2CheckpointManager.attach(checkpoint);
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
     try {
@@ -2533,19 +2533,6 @@ export class SnapshotDb extends IModelDb {
     } catch (err) {
       snapshot.close();
       throw err;
-    }
-
-    if (sasTokenExpiry) {
-      const expiresIn = Date.parse(sasTokenExpiry) - Date.now();
-
-      setTimeout(async () => {
-        const unlock = await RpcConfiguration.requestContext.requestMutex.lock();
-        try {
-          await snapshot.reattachDaemon(checkpoint.requestContext);
-        } finally {
-          unlock();
-        }
-      }, expiresIn / 2);
     }
 
     return snapshot;
@@ -2565,6 +2552,11 @@ export class SnapshotDb extends IModelDb {
   /** @internal */
   public beforeClose(): void {
     super.beforeClose();
+    if (this._changeSetId) {
+      const checkpointKey = CheckpointManager.getKey({ contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId } as CheckpointProps);
+      V2CheckpointManager.detach(checkpointKey);
+    }
+
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views", Logger.logError, loggerCategory);

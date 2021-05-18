@@ -112,6 +112,8 @@ export class Downloads {
  * @internal
 */
 export class V2CheckpointManager {
+  private static reattachTimeouts: { [key: string]: NodeJS.Timeout } = {};
+
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
     const { requestContext, iModelId, changeSetId } = checkpoint;
 
@@ -146,7 +148,7 @@ export class V2CheckpointManager {
     };
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: string, sasTokenExpiry: string | null }> {
+  public static async attach(checkpoint: CheckpointProps): Promise<string> {
     const args = await this.getCommandArgs(checkpoint);
 
     // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
@@ -158,10 +160,21 @@ export class V2CheckpointManager {
 
       throw new IModelError(attachResult.result, error);
     }
-    return {
-      filePath: BlobDaemon.getDbFileName(args),
-      sasTokenExpiry: new URLSearchParams(args.auth).get("se"),
-    };
+    const sasTokenExpiry = new URLSearchParams(args.auth).get("se");
+    if (sasTokenExpiry) {
+      const expiresIn = Date.parse(sasTokenExpiry) - Date.now();
+
+      this.reattachTimeouts[CheckpointManager.getKey(checkpoint)] = setTimeout(async () => {
+        await this.attach(checkpoint);
+      }, expiresIn / 2);
+    }
+
+    return BlobDaemon.getDbFileName(args);
+  }
+
+  public static detach(checkpointKey: string) {
+    if (this.reattachTimeouts.hasOwnProperty(checkpointKey))
+      clearTimeout(this.reattachTimeouts[checkpointKey]);
   }
 
   private static async performDownload(job: DownloadJob) {
