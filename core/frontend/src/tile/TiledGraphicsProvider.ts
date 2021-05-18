@@ -20,6 +20,15 @@ export interface TiledGraphicsProvider {
   /** For each [[TileTreeReference]] belonging to this provider that should be drawn in the specified [[Viewport]], apply the provided function. */
   forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
 
-  /** If defined, overrides the logic for adding this provider's graphics into the scene. Otherwise, [[TileTreeReference.addToScene]] is invoked for each reference. */
+  /** If defined, overrides the logic for adding this provider's graphics into the scene.
+   * Otherwise, [[TileTreeReference.addToScene]] is invoked for each reference.
+   */
   addToScene?: (context: SceneContext) => void;
+
+  /** If defined, returns true if the [[TileTree]]s required for displaying this provider's graphics in the specified [[Viewport]] are loaded and ready to draw.
+   * Otherwise, [[TileTreeReference.isLoadingComplete]] is invoked for each reference.
+   * A provider might supply this function if it needs to perform some asynchronous work before it can supply its [[TileTreeReference]]s and/or after its
+   * [[TileTree]]s are loaded.
+   */
+  isLoadingComplete?: (viewport: Viewport) => boolean;
 }
