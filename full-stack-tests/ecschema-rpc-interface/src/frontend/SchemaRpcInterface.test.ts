@@ -33,8 +33,7 @@ describe("Schema RPC Interface", () => {
   it("should get schema JSON", async () => {
     let schemaKeys: SchemaKey[] = [];
     schemaKeys = await ECSchemaRpcInterface.getClient().getSchemaKeys(iModel.getRpcProps());
-    const result = await ECSchemaRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), schemaKeys[0].name);
-    const schemaJSON: SchemaProps = JSON.parse(result);
+    const schemaJSON: SchemaProps = await ECSchemaRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), schemaKeys[0].name);
     expect(schemaJSON).to.not.be.undefined;
   });
 });

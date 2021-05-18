@@ -5,7 +5,7 @@
 import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
 import * as backend from "@bentley/imodeljs-backend";
-import { SchemaKey } from "@bentley/ecschema-metadata";
+import { SchemaKey, SchemaProps } from "@bentley/ecschema-metadata";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 /**
@@ -72,7 +72,7 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
    * @param schemaName        The name of the schema that shall be returned.
    * @returns                 The SchemaProps as a string.
    */
-  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<string> {
+  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps> {
     ClientRequestContext.current.enter();
 
     if (schemaName === undefined || schemaName.length < 1) {
@@ -90,6 +90,6 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
       throw new Error("Schema does not exists");
     }
 
-    return schemaResult.result;
+    return JSON.parse(schemaResult.result);
   }
 }
