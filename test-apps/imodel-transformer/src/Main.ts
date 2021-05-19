@@ -13,7 +13,7 @@ import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";
-import { Transformer, TransformerOptions } from "./Transformer";
+import { SchemaEditOperation, Transformer, TransformerOptions } from "./Transformer";
 
 const loggerCategory = "imodel-transformer";
 
@@ -43,6 +43,7 @@ interface CommandLineArgs {
   includeSourceProvenance?: boolean;
   excludeSubCategories?: string;
   excludeCategories?: string;
+  schemaOp?: string | string[];
 }
 
 void (async () => {
@@ -89,6 +90,8 @@ void (async () => {
     Yargs.option("excludeCategories", { desc: "Exclude a categories (names with comma separators) and their elements from the target iModel", type: "string" });
     Yargs.option("noProvenance", { desc: "If true, IModelTransformer should not record its provenance.", type: "boolean", default: false });
     Yargs.option("includeSourceProvenance", { desc: "Include existing provenance from the source iModel in the target iModel", type: "boolean", default: false });
+
+    Yargs.option("schemaOp", { desc: "Add an operation to a schema with the syntax: '--schemaOp MySchema/MyRegex/My$1ubstitution/', you can use this option multiple times. The backreferences are javascript style, '$1'" });
 
     const args = Yargs.parse() as Yargs.Arguments<CommandLineArgs>;
 
@@ -240,18 +243,33 @@ void (async () => {
       }
     }
 
-    const excludeSubCategories = args.excludeSubCategories?.split(",");
-    const excludeCategories = args.excludeCategories?.split(",");
+    const ensureArray = <T extends any>(x: T | T[]): T[] => Array.isArray(x) ? x : [x];
+
+    const schemaEditOperations: SchemaEditOperation[] =
+      args.schemaOp !== undefined
+        ? ensureArray(args.schemaOp).map((op) => {
+          // read the groups from
+          const notAnEscapedSlash = "(?:[^/]|(?<=\\)\/)";
+          const format = RegExp(`(?<schemaName>\w+)\/(?<pattern>${notAnEscapedSlash}+)\/(?<substitution>${notAnEscapedSlash}*)\/`);
+          const {schemaName, pattern, substitution} = format.exec(op)?.groups ?? {};
+          const [schemaName, pattern, substitution] = op.split(/(?<!\\)\//).map((s) => s.replace("\\/", "/")) as (string|undefined)[];
+          assert(
+            schemaName !== undefined &&
+            pattern !== undefined &&
+            substitution !== undefined &&
+            schemaName !== "" &&
+            pattern !== "",
+            "incorrect format, should be schemaName/pattern/substitution/ with non-empty schemaName and pattern"
+          );
+          return { schemaName, pattern: RegExp(pattern), substitution };
+        })
+        : [];
 
     const transformerOptions: TransformerOptions = {
-      simplifyElementGeometry: args.simplifyElementGeometry,
-      combinePhysicalModels: args.combinePhysicalModels,
-      exportViewDefinition: args.exportViewDefinition,
-      deleteUnusedGeometryParts: args.deleteUnusedGeometryParts,
-      excludeSubCategories,
-      excludeCategories,
-      noProvenance: args.noProvenance,
-      includeSourceProvenance: args.includeSourceProvenance,
+      ...args,
+      excludeSubCategories: args.excludeSubCategories?.split(","),
+      excludeCategories: args.excludeCategories?.split(","),
+      schemaEditOperations,
     };
 
     if (processChanges) {
