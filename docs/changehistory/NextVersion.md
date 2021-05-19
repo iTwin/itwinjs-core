@@ -20,6 +20,12 @@ The following previously `alpha` or `beta` APIs have been promoted to `public`. 
 
 ### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
 
+* [LookAndMoveTool]($frontend) for using videogame-like mouse and keyboard controls to navigate a 3d view.
+* [SetupCameraTool]($frontend) for defining the camera for a [SpatialViewState]($frontend).
+* [IModelApp.queryRenderCompatibility]($frontend) for determining the set of WebGL features supported by your browser and device.
+* [ToolAdmin.exceptionHandler]($frontend) and [ToolAdmin.exceptionOptions]($frontend) for customizing how your app reacts to unhandled exceptions.
+* [Viewport.antialiasSamples]($frontend) and [ViewManager.setAntialiasingAllViews]($frontend) for applying [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) to make viewport images appear smoother.
+
 ### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
 
 * [TxnManager]($backend) for managing local changes to a [BriefcaseDb]($backend).

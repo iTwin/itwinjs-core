@@ -1373,7 +1373,14 @@ export abstract class Viewport implements IDisposable {
     this.maybeInvalidateScene();
   }
 
-  /** @alpha */
+  /** The [[TiledGraphicsProviders]] currently registered with this viewport.
+   * @see [[addTiledGraphicsProvider]].
+   */
+  public get tiledGraphicsProviders(): Iterable<TiledGraphicsProvider> {
+    return this._tiledGraphicsProviders;
+  }
+
+  /** @internal */
   public forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void {
     for (const provider of this._tiledGraphicsProviders)
       func(provider);

@@ -43,9 +43,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _scheduleState?: RenderScheduleState;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
-  /** Event raised just before the [[scheduleScriptReference]] property is changed.
-   * @beta
-   */
+  /** Event raised just before the [[scheduleScriptReference]] property is changed. */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
 
   /** The container for this display style's settings. */
@@ -78,9 +76,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
-  /** Ensures all of the data required by the display style is loaded.
-   * @note This method is invoked by [[ViewState.load]].
-   * @beta
+  /** Ensures all of the data required by the display style is loaded. This method is invoked for you by [[ViewState.load]], but if
+   * you obtain a display style by some other means you should `await` this method before using the display style.
    */
   public async load(): Promise<void> {
     // If we were cloned, we may already have a valid schedule state, and our display style Id may be invalid / different.
@@ -204,7 +201,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Change the Id of the [RenderTimeline]($backend) element that hosts the [RenderSchedule.Script]($common) to be applied by this display style for
    * animating the contents of the view.
-   * @beta
    */
   public async changeRenderTimeline(timelineId: Id64String | undefined): Promise<void> {
     if (timelineId === this.settings.renderTimeline)
@@ -217,7 +213,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
    * @see [[changeRenderTimeline]] to change the script.
-   * @beta
    */
   public get scheduleScript(): RenderSchedule.Script | undefined {
     return this._scheduleState?.script;
@@ -226,7 +221,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
    * @see [[changeRenderTimeline]] to change the script.
-   * @beta
    */
   public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
     return this._scheduleState;

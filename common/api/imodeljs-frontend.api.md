@@ -2374,7 +2374,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean): void;
     // (undocumented)
     changeMapSubLayerProps(props: MapSubLayerProps, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
-    // @beta
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
@@ -2442,7 +2441,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
-    // @beta
     load(): Promise<void>;
     // @internal (undocumented)
     mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined;
@@ -2457,7 +2455,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal
     moveMapLayerToTop(index: number, isOverlay: boolean): void;
     get name(): string;
-    // @beta
     readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
     // @internal (undocumented)
     get overlayMapLayers(): MapLayerSettings[];
@@ -2472,9 +2469,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
-    // @beta
     get scheduleScript(): RenderSchedule.Script | undefined;
-    // @beta
     get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     // @internal (undocumented)
     get scheduleState(): RenderScheduleState | undefined;
@@ -12149,7 +12144,7 @@ export abstract class Viewport implements IDisposable {
     flashUpdateTime?: BeTimePoint;
     // @internal (undocumented)
     forEachMapTreeRef(func: (ref: TileTreeReference) => void): void;
-    // @alpha (undocumented)
+    // @internal (undocumented)
     forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
     // @internal (undocumented)
     protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void;
@@ -12328,6 +12323,7 @@ export abstract class Viewport implements IDisposable {
     synchWithView(_options?: ViewChangeOptions | boolean): void;
     // @internal (undocumented)
     get target(): RenderTarget;
+    get tiledGraphicsProviders(): Iterable<TiledGraphicsProvider>;
     // @alpha
     get tileSizeModifier(): number;
     get timePoint(): number | undefined;
