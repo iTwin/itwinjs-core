@@ -1373,7 +1373,7 @@ export abstract class Viewport implements IDisposable {
     this.maybeInvalidateScene();
   }
 
-  /** The [[TiledGraphicsProviders]] currently registered with this viewport.
+  /** The [[TiledGraphicsProvider]]s currently registered with this viewport.
    * @see [[addTiledGraphicsProvider]].
    */
   public get tiledGraphicsProviders(): Iterable<TiledGraphicsProvider> {
