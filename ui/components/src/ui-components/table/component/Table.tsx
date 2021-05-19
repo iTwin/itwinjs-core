@@ -43,7 +43,7 @@ import { ReactDataGridColumn, TableColumn } from "./TableColumn";
 // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
 import ReactDataGrid = require("react-data-grid");
 
-// cspell:ignore Overscan columnfiltering
+// cspell:ignore Overscan columnfiltering Dedupe popout
 
 const TABLE_ROW_HEIGHT = 27;
 const TABLE_FILTER_ROW_HEIGHT = 32;

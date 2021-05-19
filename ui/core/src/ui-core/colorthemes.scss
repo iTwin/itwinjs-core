@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/theme";
 
 // cspell:ignore colorvariables
 
@@ -13,18 +14,18 @@
   --buic-button-gradient1:            rgba(var(--buic-foreground-body-reverse-rgb), 0.65);
   --buic-button-gradient2:            rgba(var(--buic-foreground-body-reverse-rgb), 0.00);
 
-  --buic-background-editable:         rgb(184, 221, 245);
-  --buic-row-selection:               rgb(204, 232, 249); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.2 opacity
-  --buic-row-hover:                   rgb(229, 243, 252); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.1 opacity}
+  --buic-background-editable:         #{mix($iui-color-background-1--light, $iui-color-background-primary--light, 70%)};
+  --buic-row-selection:               #{mix($iui-color-background-1--light, $iui-color-background-primary--light, 80%)};
+  --buic-row-hover:                   #{mix($iui-color-background-1--light, $iui-color-background-primary--light, 90%)};
 }
 
 @mixin dark-theme {
   --buic-button-gradient1:            rgba(var(--buic-foreground-body-reverse-rgb), 0.00);
   --buic-button-gradient2:            rgba(var(--buic-foreground-body-reverse-rgb), 0.25);
 
-  --buic-background-editable:         rgb(112, 138, 155);
-  --buic-row-selection:               rgb(105, 127, 141); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.2 opacity
-  --buic-row-hover:                   rgb(098, 116, 128); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.1 opacity}
+  --buic-background-editable:         #{mix($iui-color-background-1--dark, $iui-color-background-primary--dark, 70%)};
+  --buic-row-selection:               #{mix($iui-color-background-1--dark, $iui-color-background-primary--dark, 80%)};
+  --buic-row-hover:                   #{mix($iui-color-background-1--dark, $iui-color-background-primary--dark, 90%)};
 }
 
 html,

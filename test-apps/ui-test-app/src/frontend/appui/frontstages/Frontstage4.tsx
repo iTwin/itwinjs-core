@@ -8,6 +8,7 @@ import {
   PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames, WidgetState,
 } from "@bentley/ui-abstract";
 import {
+  ActionItemButton,
   CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps,
   FrontstageProvider, GroupButton, ModalDialogManager, ModelessDialogManager,
   NavigationWidget, StagePanel, StagePanelState, ToolButton,
@@ -269,7 +270,7 @@ export class Frontstage4 extends FrontstageProvider {
               ]}
               direction={Direction.Right}
             />
-            <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+            <ActionItemButton actionItem={AppTools.activityMessageItem} />
             <ToolButton toolId={AppTools.addMessageCommand.commandId} iconSpec={AppTools.addMessageCommand.iconSpec} labelKey={AppTools.addMessageCommand.label}
               execute={AppTools.addMessageCommand.execute} />
           </>
