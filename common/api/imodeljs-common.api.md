@@ -2160,9 +2160,14 @@ export namespace ElementGeometry {
     export function fromImageGraphic(image: ImageGraphicProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
     export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
     export function fromTextString(text: TextStringProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
+    export function getBRepEntityType(entry: ElementGeometryDataEntry): BRepEntity.Type | undefined;
     export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
+    export function isCurve(entry: ElementGeometryDataEntry): boolean;
+    export function isDisplayableEntry(entry: ElementGeometryDataEntry): boolean;
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
+    export function isSolid(entry: ElementGeometryDataEntry): boolean;
+    export function isSurface(entry: ElementGeometryDataEntry): boolean;
     export class Iterator implements IterableIterator<IteratorEntry> {
         // (undocumented)
         [Symbol.iterator](): IterableIterator<IteratorEntry>;

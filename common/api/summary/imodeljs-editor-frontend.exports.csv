@@ -4,6 +4,7 @@ alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number)
 alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
 alpha;class CreateElementTool 
 alpha;CreateLineStringTool 
+alpha;class CreateOrContinuePathTool 
 alpha;DeleteElementsTool 
 alpha;DynamicGraphicsProvider
 alpha;EditorOptions
