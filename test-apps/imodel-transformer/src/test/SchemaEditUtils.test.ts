@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { isSchemaEditOperation, SchemaEditOperation, tryParseSchemaEditOperation } from "../SchemaEditUtils";
+import { ensureArray, isSchemaEditOperation, keyPairsToMultimap, SchemaEditOperation, tryParseSchemaEditOperation } from "../SchemaEditUtils";
 
 describe("parsing SchemaEditOperations", () => {
 
@@ -65,5 +65,20 @@ describe("parsing SchemaEditOperations", () => {
     // check escaped slashes at the end don't count
     assert.isUndefined(tryParseSchemaEditOperation("schemaName/hello/world\\/"));
     assert.isFalse(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/hello/world\\/")));
+  });
+
+  it("keyPairsToMultiMap should preserve iteration order", () => {
+    // the map itself may not be in order...
+    const actual = keyPairsToMultimap([["x", 5], ["x", 6], ["y", 10], ["x",2]]);
+    assert.deepEqual(actual.get("x"), [5, 6, 2]);
+    assert.deepEqual(actual.get("y"), [10]);
+  });
+
+  it("ensureArray", () => {
+    assert.deepEqual(ensureArray(5), [5]);
+    assert.deepEqual(ensureArray([5]), [5]);
+    assert.deepEqual(ensureArray(undefined), [undefined]);
+    assert.deepEqual(ensureArray([]), []);
+    assert.deepEqual(ensureArray({}), [{}]);
   });
 });

@@ -40,10 +40,11 @@ export function isSchemaEditOperation(a: any): a is SchemaEditOperation {
 export function tryParseSchemaEditOperation(
   src: string
 ): SchemaEditOperation | undefined {
+  const schemaNamePattern = /\w+/.source;
   const unescapedSlash = /(?<!\\)\//.source;
   const escapedText = /(?:[^/]|(?<=\\)\/)/.source;
   const format = RegExp(
-    `(?<schemaName>\\w+)${unescapedSlash}(?<pattern>${escapedText}+)${unescapedSlash}(?<substitution>${escapedText}*)${unescapedSlash}`,
+    `(?<schemaName>${schemaNamePattern})${unescapedSlash}(?<pattern>${escapedText}+)${unescapedSlash}(?<substitution>${escapedText}*)${unescapedSlash}`,
     "g" // in the future, may allow flags to be specified after the substitution
   );
   const parseResult =
