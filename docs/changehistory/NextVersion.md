@@ -9,6 +9,8 @@ The following formerly `alpha` or `beta` APIs have been promoted to `public`. Pu
 
 ### [@bentley/bentleyjs-core](https://www.itwinjs.org/reference/bentleyjs-core/)
 
+* [ReadonlySortedArray.findEquivalent]($bentleyjs-core) and [ReadonlySortedArray.indexOfEquivalent]($bentleyjs-core) for locating an element based on a custom criterion.
+
 ### [@bentley/imodeljs-common](https://www.itwinjs.org/reference/imodeljs-common/)
 
 * [RenderSchedule]($common) for defining scripts to visualize changes in an iModel over time.
