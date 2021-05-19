@@ -24,6 +24,7 @@ function interpolateRgb(start: RgbColor, end: RgbColor, fraction: number): RgbCo
 /** Namespace containing types that collectively define a script that animates the contents of a view by adjusting the visibility, position,
  * and/or symbology of groups of elements over time. A [[RenderSchedule.Script]] is hosted by a [RenderTimeline]($backend) element. The script
  * can be associated with a [DisplayStyleState]($frontend) by way of its [[DisplayStyleSettings.renderTimeline]] property.
+ * @public
  */
 export namespace RenderSchedule {
   /** Defines how two interpolate between two entries in a [[RenderSchedule.Timeline]].
