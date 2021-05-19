@@ -11,7 +11,7 @@ import {
   IModelJson, LineString3d, Loop, Path, Plane3dByOriginAndUnitNormal, Point3d, RegionOps, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  Code, ColorDef, ElementGeometry, ElementGeometryOpcode, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, PlacementProps,
+  Code, ColorDef, ElementGeometry, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, PlacementProps,
 } from "@bentley/imodeljs-common";
 import {
   AccuDrawHintBuilder, BeButtonEvent, BeModifierKeys, CoreTools, DecorateContext, DynamicsContext,
