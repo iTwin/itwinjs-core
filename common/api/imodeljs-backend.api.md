@@ -441,7 +441,6 @@ export class BriefcaseDb extends IModelDb {
     saveChanges(description?: string): void;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
-    // @beta (undocumented)
     readonly txns: TxnManager;
     static upgradeSchemas(requestContext: AuthorizedClientRequestContext, briefcaseProps: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void>;
 }
@@ -746,14 +745,14 @@ export class CodeSpecs {
     queryId(name: string): Id64String;
 }
 
-// @beta
+// @public
 export interface ComputedProjectExtents {
     extents: Range3d;
     extentsWithOutliers?: Range3d;
     outliers?: Id64Array;
 }
 
-// @beta
+// @public
 export interface ComputeProjectExtentsOptions {
     reportExtentsWithOutliers?: boolean;
     reportOutliers?: boolean;
@@ -2456,7 +2455,6 @@ export abstract class IModelDb extends IModel {
     clearStatementCache(): void;
     close(): void;
     get codeSpecs(): CodeSpecs;
-    // @beta
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
     // (undocumented)
     protected _concurrentQueryStats: {
@@ -2491,16 +2489,13 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
-    // @beta
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
-    // @beta
     getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGuid(): GuidString;
     getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps>;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
-    // @beta
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
     // @alpha
@@ -2627,7 +2622,6 @@ export namespace IModelDb {
         tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
         tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined;
         tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined;
-        // @beta
         updateGeometryGuid(modelId: Id64String): void;
         updateModel(props: UpdateModelOptions): void;
     }
@@ -3781,7 +3775,7 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
     static classFullName: string;
 }
 
-// @beta
+// @public
 export class RenderTimeline extends InformationRecordElement {
     // @internal
     protected constructor(props: RenderTimelineProps, iModel: IModelDb);
@@ -3881,7 +3875,7 @@ export class SectionDrawing extends Drawing {
     toJSON(): SectionDrawingProps;
 }
 
-// @beta
+// @public
 export class SectionDrawingLocation extends SpatialLocationElement {
     constructor(props: SectionDrawingLocationProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4138,7 +4132,6 @@ export class StandaloneDb extends IModelDb {
     static openFile(filePath: string, openMode?: OpenMode, options?: StandaloneOpenOptions): StandaloneDb;
     // (undocumented)
     static tryFindByKey(key: string): StandaloneDb | undefined;
-    // @beta (undocumented)
     readonly txns: TxnManager;
     static upgradeSchemas(filePath: string): void;
 }
@@ -4351,20 +4344,17 @@ export enum TxnAction {
     Reverse = 3
 }
 
-// @beta (undocumented)
+// @public
 export interface TxnChangedEntities {
-    // (undocumented)
     deleted: OrderedId64Array;
-    // (undocumented)
     inserted: OrderedId64Array;
-    // (undocumented)
     updated: OrderedId64Array;
 }
 
 // @public
 export type TxnIdString = string;
 
-// @beta
+// @public
 export class TxnManager {
     // @internal
     constructor(_iModel: BriefcaseDb | StandaloneDb);
@@ -4513,7 +4503,7 @@ export class V2CheckpointManager {
     static downloadCheckpoint(request: DownloadRequest): Promise<void>;
     }
 
-// @beta
+// @public
 export interface ValidationError {
     errorType: string;
     fatal: boolean;
