@@ -67,9 +67,7 @@ export abstract class IModelConnection extends IModel {
   public readonly hilited: HiliteSet;
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
-  /** The set of Tiles for this IModelConnection.
-   * @beta
-   */
+  /** The set of Tiles for this IModelConnection. */
   public readonly tiles: Tiles;
   /** A cache of information about SubCategories chiefly used for rendering.
    * @internal

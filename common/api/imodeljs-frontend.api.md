@@ -4146,12 +4146,10 @@ export class HitDetail {
     readonly hitPoint: Point3d;
     // (undocumented)
     readonly hitSource: HitSource;
-    // @alpha
     get iModel(): IModelConnection;
     // @alpha (undocumented)
     readonly isClassifier: boolean;
     get isElementHit(): boolean;
-    // @alpha
     get isExternalIModelHit(): boolean;
     // (undocumented)
     get isMapHit(): boolean;
@@ -4168,7 +4166,7 @@ export class HitDetail {
     readonly subCategoryId?: string | undefined;
     // (undocumented)
     readonly testPoint: Point3d;
-    // @alpha (undocumented)
+    // @internal
     readonly tileId?: string;
     // (undocumented)
     readonly viewport: ScreenViewport;
@@ -4511,7 +4509,6 @@ export class IModelApp {
     static get notifications(): NotificationManager;
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
-    // @beta
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
@@ -4533,7 +4530,6 @@ export class IModelApp {
     static readonly telemetry: TelemetryManager;
     // @internal (undocumented)
     static get tentativePoint(): TentativePoint;
-    // @alpha
     static get tileAdmin(): TileAdmin;
     static get toolAdmin(): ToolAdmin;
     static readonly tools: ToolRegistry;
@@ -4572,7 +4568,6 @@ export interface IModelAppOptions {
     settings?: SettingsAdmin;
     // @internal (undocumented)
     tentativePoint?: TentativePoint;
-    // @beta
     tileAdmin?: TileAdmin.Props;
     toolAdmin?: ToolAdmin;
     uiAdmin?: UiAdmin;
@@ -4651,7 +4646,6 @@ export abstract class IModelConnection extends IModel {
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
     readonly subcategories: SubCategoriesCache;
-    // @beta
     readonly tiles: Tiles;
     readonly transientIds: TransientIdSequence;
     readonly views: IModelConnection.Views;
@@ -5097,7 +5091,6 @@ export enum LocateFilterStatus {
 // @public
 export class LocateOptions {
     allowDecorations: boolean;
-    // @alpha
     allowExternalIModels: boolean;
     allowNonLocatable: boolean;
     clone(): LocateOptions;
@@ -5144,14 +5137,14 @@ export enum LockedStates {
 // @internal (undocumented)
 export const loggerCategory = "imodeljs-frontend.Extension";
 
-// @beta
+// @public
 export class LookAndMoveTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
     onReinitialize(): void;
-    // (undocumented)
+    // @beta (undocumented)
     provideToolAssistance(mainInstrKey: string): void;
     // (undocumented)
     static toolId: string;
@@ -8104,7 +8097,6 @@ export abstract class RenderSystem implements IDisposable {
     antialiasSamples?: number;
     // @internal (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
-    // @beta
     static contextLossHandler(): Promise<any>;
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
@@ -8143,7 +8135,6 @@ export abstract class RenderSystem implements IDisposable {
     createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined;
     // @internal (undocumented)
     createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
-    // @beta
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -8548,7 +8539,6 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     drawLocateCursor(context: DecorateContext, viewPt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void;
     getClientRect(): ClientRect;
-    // @beta
     invalidateCachedDecorations(decorator: ViewportDecorator): void;
     // @internal (undocumented)
     invalidateScene(): void;
@@ -8818,7 +8808,7 @@ export interface SelectReplaceEvent {
     type: SelectionSetEventType.Replace;
 }
 
-// @alpha
+// @public
 export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
@@ -10660,9 +10650,7 @@ export class ToolAdmin {
     doUndoOperation(): Promise<boolean>;
     // @internal (undocumented)
     endDynamics(): void;
-    // @beta
     static exceptionHandler(exception: any): Promise<any>;
-    // @beta
     static exceptionOptions: {
         log: boolean;
         alertBox: boolean;
@@ -11926,7 +11914,6 @@ export class ViewManager implements Iterable<ScreenViewport> {
     // @internal (undocumented)
     get sceneInvalidated(): boolean;
     get selectedView(): ScreenViewport | undefined;
-    // @beta
     setAntialiasingAllViews(numSamples: number): void;
     setSelectedView(vp: ScreenViewport | undefined): BentleyStatus;
     setViewCursor(cursor?: string): void;
@@ -12072,7 +12059,6 @@ export abstract class Viewport implements IDisposable {
     // @internal
     addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
     addScreenSpaceEffect(effectName: string): void;
-    // @beta
     addTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     addViewedModels(models: Id64Arg): Promise<void>;
     get alwaysDrawn(): Id64Set | undefined;
@@ -12083,7 +12069,6 @@ export abstract class Viewport implements IDisposable {
     get analysisFractionValid(): boolean;
     // @internal (undocumented)
     get analysisStyle(): AnalysisStyle | undefined;
-    // @beta
     get antialiasSamples(): number;
     set antialiasSamples(numSamples: number);
     // @internal
@@ -12114,7 +12099,6 @@ export abstract class Viewport implements IDisposable {
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
     clearNeverDrawn(): void;
-    // @beta
     get clipStyle(): ClipStyle;
     set clipStyle(style: ClipStyle);
     // @internal (undocumented)
@@ -12149,7 +12133,6 @@ export abstract class Viewport implements IDisposable {
     // @beta
     dropRealityModelAppearanceOverride(index: number): void;
     dropSubCategoryOverride(id: Id64String): void;
-    // @beta
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     get emphasisSettings(): Hilite.Settings;
     set emphasisSettings(settings: Hilite.Settings);
@@ -12274,7 +12257,6 @@ export abstract class Viewport implements IDisposable {
     readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
     // @internal (undocumented)
     get overlayMap(): MapTileTreeReference | undefined;
-    // @beta
     overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;
     overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void;
     // @beta
@@ -12292,7 +12274,6 @@ export abstract class Viewport implements IDisposable {
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
     // @internal
     readImageToCanvas(): HTMLCanvasElement;
-    // @beta
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
@@ -12349,7 +12330,6 @@ export abstract class Viewport implements IDisposable {
     get target(): RenderTarget;
     // @alpha
     get tileSizeModifier(): number;
-    // @beta
     get timePoint(): number | undefined;
     set timePoint(time: number | undefined);
     // @internal (undocumented)

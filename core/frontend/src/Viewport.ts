@@ -461,9 +461,7 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.settings.analysisFraction = fraction;
   }
 
-  /** @see [DisplayStyleSettings.timePoint]($common)
-   * @beta
-   */
+  /** @see [DisplayStyleSettings.timePoint]($common) */
   public get timePoint(): number | undefined {
     return this.displayStyle.settings.timePoint;
   }
@@ -531,23 +529,20 @@ export abstract class Viewport implements IDisposable {
 
   /** Selectively override aspects of this viewport's display style.
    * @see [DisplayStyleSettings.applyOverrides]($common)
-   * @beta
    */
   public overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void {
     this.displayStyle.settings.applyOverrides(overrides);
   }
 
-  /** @see [DisplayStyleSettings.clipStyle]($common)
-   * @beta
-   */
+  /** @see [DisplayStyleSettings.clipStyle]($common) */
   public get clipStyle(): ClipStyle { return this.displayStyle.settings.clipStyle; }
   public set clipStyle(style: ClipStyle) {
     this.displayStyle.settings.clipStyle = style;
   }
 
-  /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.
-   * Setting numSamples to 1 turns it off, setting numSamples > 1 turns it on with that many samples.
-   * @beta
+  /** The number of [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) samples to be used when rendering the contents of the viewport.
+   * Must be an integer greater than zero. A value of 1 means antialiasing is disabled. A higher number of samples correlates generally to a higher quality image but
+   * is also more demanding on the graphics hardware.
    */
   public get antialiasSamples(): number {
     return undefined !== this._target ? this._target.antialiasSamples : 1;
@@ -1435,7 +1430,6 @@ export abstract class Viewport implements IDisposable {
 
   /** Register a provider of tile graphics to be drawn in this viewport.
    * @see [[dropTiledGraphicsProvider]]
-   * @beta
    */
   public addTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this._tiledGraphicsProviders.add(provider);
@@ -1444,7 +1438,6 @@ export abstract class Viewport implements IDisposable {
 
   /** Remove a previously-registered provider of tile graphics.
    * @see [[addTiledGraphicsProvider]]
-   * @beta
    */
   public dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this._tiledGraphicsProviders.delete(provider);
@@ -2339,7 +2332,6 @@ export abstract class Viewport implements IDisposable {
    * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error. The pixels received will be device pixels, not CSS pixels. See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
-   * @beta
    */
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable = false): void {
     const viewRect = this.viewRect;
@@ -2659,7 +2651,6 @@ export class ScreenViewport extends Viewport {
   /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.
    * This will force those decorations to be regenerated.
    * @see [[ViewportDecorator.useCachedDecorations]].
-   * @beta
    */
   public invalidateCachedDecorations(decorator: ViewportDecorator) {
     this._decorationCache.delete(decorator);
