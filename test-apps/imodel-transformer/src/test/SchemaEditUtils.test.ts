@@ -21,9 +21,8 @@ describe("parsing SchemaEditOperations", () => {
     assert.isFalse(isSchemaEditOperation({schemaName: "hello"}));
     assert.isFalse(isSchemaEditOperation({pattern: "hello"}));
     assert.isFalse(isSchemaEditOperation({schemaName: "hello", pattern: "test"}));
-    assert.isFalse(isSchemaEditOperation({schemaName: "hello", pattern: "test", substitution: "double-test"}));
     assert.isFalse(isSchemaEditOperation({schemaName: /test/, pattern: /test/, substitution: "double-test"}));
-    assert.isTrue (isSchemaEditOperation({schemaName: "hello", pattern: "test", substitution: "double-test"}));
+    assert.isTrue(isSchemaEditOperation({schemaName: "hello", pattern: "test", substitution: "double-test"}));
     assert.isTrue (isSchemaEditOperation({schemaName: "hello", pattern: /test/, substitution: "double-test"}));
   });
 
