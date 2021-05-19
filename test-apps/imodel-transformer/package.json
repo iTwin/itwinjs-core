@@ -25,7 +25,8 @@
     "@bentley/itwin-client": "workspace:*",
     "fs-extra": "^8.1.0",
     "request-promise-native": "^1.0.5",
-    "yargs": "^16.0.0"
+    "yargs": "^16.0.0",
+    "semver": "^5.5.0"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",

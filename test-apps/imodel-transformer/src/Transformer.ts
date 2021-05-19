@@ -4,25 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
+import * as Semver from "semver";
 import { assert, ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
-  IModelDb, IModelJsFs, IModelTransformer, IModelTransformOptions, InformationPartitionElement, KnownLocations, ModelSelector, PhysicalModel, PhysicalPartition, Relationship,
-  SpatialCategory, SpatialViewDefinition, SubCategory, ViewDefinition,
+  IModelDb, IModelJsFs, IModelTransformer, IModelTransformOptions, InformationPartitionElement, KnownLocations, ModelSelector, PhysicalModel, PhysicalPartition,
+  Relationship, Schema, SpatialCategory, SpatialViewDefinition, SubCategory, ViewDefinition,
 } from "@bentley/imodeljs-backend";
 import { ElementProps, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { SchemaEditOperation } from "./SchemaEditUtils";
 
+export const loggerCategory = "imodel-transformer-Transformer";
 export const progressLoggerCategory = "Progress";
-
-// an operation for changing a schema during transformation
-export interface SchemaEditOperation {
-  schemaName: string;
-  // regex is not powerful enough for non-trivial XML so a later update could include
-  // XPATH or Jq-style query support, but regex should be enough for current usage
-  pattern: RegExp;
-  substitution: string; // current javascript style backreferences (e.g. "hello $1")
-}
 
 export interface TransformerOptions extends IModelTransformOptions {
   simplifyElementGeometry?: boolean;
@@ -139,13 +133,41 @@ export class Transformer extends IModelTransformer {
     Logger.logInfo(progressLoggerCategory, `numSourceRelationships=${this._numSourceRelationships}`);
   }
 
+  // this is a modified copy of IModelTransformer.processSchemas, since we do not expect anyone else to need to alter the behavior like this.
+  // make sure to check that changes to the original are reflected here, the changes are surrounded by comments
   public async processSchemas(...[requestContext]: Parameters<IModelTransformer["processSchemas"]>): Promise<void> {
-    await super.processSchemas(requestContext);
     requestContext.enter();
     const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
     IModelJsFs.mkdirSync(schemasDir);
     try {
       this.sourceDb.nativeDb.exportSchemas(schemasDir);
+      const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
+      // some schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
+      const importSchemasFullPaths = schemaFiles.map((schema) => path.join(schemasDir, schema));
+      const filteredSchemaPaths = importSchemasFullPaths.filter((schemaPath) => {
+        let schemaSource: string;
+        try {
+          schemaSource = IModelJsFs.readFileSync(schemaPath).toString("utf8");
+        } catch (err) {
+          Logger.logError(loggerCategory, `error reading xml schema file ${schemaPath}`);
+          return true;
+        }
+        const schemaVersionMatch = /<ECSchema .*?version="([0-9.]+)"/.exec(schemaSource);
+        const schemaNameMatch = /<ECSchema .*?schemaName="([^"]+)"/.exec(schemaSource);
+        if (schemaVersionMatch == null || schemaNameMatch == null) {
+          Logger.logError(loggerCategory, `failed to parse schema name or version, first 200 chars: '${schemaSource.slice(0, 200)}'`);
+          return true;
+        }
+        const [_fullVersionMatch, versionString] = schemaVersionMatch;
+        const [_fullNameMatch, schemaName] = schemaNameMatch;
+        const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
+        const versionToImport = Schema.toSemverString(versionString);
+        if (versionInTarget && Semver.lte(versionToImport, versionInTarget))
+          return false;
+        return true;
+      });
+      if (filteredSchemaPaths.length > 0)
+        await this.targetDb.importSchemas(requestContext, filteredSchemaPaths);
     } finally {
       requestContext.enter();
       IModelJsFs.removeSync(schemasDir);
