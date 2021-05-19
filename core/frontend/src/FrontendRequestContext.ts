@@ -6,12 +6,9 @@
  * @module Utils
  */
 
-import { AuthStatus, BentleyError, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
-
-const loggerCategory: string = FrontendLoggerCategory.FrontendRequestContext;
 
 /**
  * Provides some generic context for downstream server applications to get details of a request that
@@ -25,7 +22,7 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
    * Create a new context for frontend operations to pass to various services
    * @see [[AuthorizedFrontendRequestContext.create]] to create the request based on the authorization information supplied to IModelHost.
    */
-  public constructor(accessToken: AccessToken, activityId: string = Guid.createValue()) {
+  public constructor(accessToken: AccessToken, activityId?: string) {
     super(accessToken, activityId, IModelApp.applicationId, IModelApp.applicationVersion, IModelApp.sessionId);
   }
 
@@ -35,16 +32,13 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
    * @throws [[BentleyError]] if the application cannot be authorized.
    * @see [[IModelApp.authorizationClient]] to setup authorization for the frontend application.
    */
-  public static async create(activityId: string = Guid.createValue()): Promise<AuthorizedFrontendRequestContext> {
+  public static async create(activityId?: string): Promise<AuthorizedFrontendRequestContext> {
     if (!IModelApp.authorizationClient)
-      throw new BentleyError(AuthStatus.Error, "IModelApp.authorizationClient not initialized", Logger.logError, loggerCategory);
-    if (!IModelApp.authorizationClient.hasSignedIn)
-      throw new BentleyError(AuthStatus.Error, "Not signed in", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "authorizationClient not initialized");
 
-    const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
+    const accessToken = await IModelApp.authorizationClient.getAccessToken();
     return new AuthorizedFrontendRequestContext(accessToken, activityId);
   }
-
 }
 
 /**
@@ -55,7 +49,7 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
  */
 export class FrontendRequestContext extends ClientRequestContext {
   /** Create a new context for agent applications or long running frontend operations to pass to various services */
-  public constructor(activityId: string = Guid.createValue()) {
+  public constructor(activityId?: string) {
     super(activityId, IModelApp.applicationId, IModelApp.applicationVersion, IModelApp.sessionId);
   }
 }

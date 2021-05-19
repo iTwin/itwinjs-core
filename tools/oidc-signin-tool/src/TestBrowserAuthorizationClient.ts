@@ -56,15 +56,16 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);
 
     const oidcUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSOpenID", this._deploymentRegion);
-    this._issuer = await Issuer.discover(url.resolve(oidcUrl, "/.well-known/openid-configuration"));
 
-    this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests
     custom.setHttpOptionsDefaults({
       timeout: 10000,
       retry: 3,
     });
+
+    this._issuer = await Issuer.discover(url.resolve(oidcUrl, "/.well-known/openid-configuration"));
+    this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
   }
 
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
