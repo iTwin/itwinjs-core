@@ -5,7 +5,7 @@ publish: false
 
 ## Promoted APIs
 
-The following formerly `alpha` or `beta` APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of the package.
+The following previously `alpha` or `beta` APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of the package.
 
 ### [@bentley/bentleyjs-core](https://www.itwinjs.org/reference/bentleyjs-core/)
 
@@ -22,3 +22,10 @@ The following formerly `alpha` or `beta` APIs have been promoted to `public`. Pu
 
 ### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
 
+* [TxnManager]($backend) for managing local changes to a [BriefcaseDb]($backend).
+* [IModelDb.computeProjectExtents]($backend) for computing default project extents based on the ranges of spatial elements.
+* [IModelDb.generateElementGraphics]($backend) for generating [RenderGraphic]($frontend)s from [GeometricElement]($backend)s or arbitrary geometry streams.
+* [IModelDb.getGeometryContainment]($backend) for computing the containment of a set of [GeometricElement]($backend)s within a [ClipVector]($geometry-core).
+* [IModelDb.getMassProperties]($backend) for computing [GeometricElement]($backend) properties like area and volume.
+* [RenderTimeline]($backend) element for persisting a [RenderSchedule.Script]($common).
+* [SectionDrawingLocation]($backend) element identifying the location of a [SectionDrawing]($backend) in the context of a [SpatialModel]($backend).

@@ -20,7 +20,8 @@ import { SqliteStatement } from "./SqliteStatement";
 export type TxnIdString = string;
 
 /** An error generated during dependency validation.
- * @beta
+ * @see [[TxnManager.validationErrors]].
+ * @public
  */
 export interface ValidationError {
   /** If true, txn is aborted. */
@@ -31,8 +32,9 @@ export interface ValidationError {
   message?: string;
 }
 
-/**
- * @beta
+/** Describes a set of [[Element]]s or [[Model]]s that changed as part of a transaction.
+ * @see [[TxnManager.onElementsChanged]] and [[TxnManager.onModelsChanged]].
+ * @public
  */
 export interface TxnChangedEntities {
   inserted: OrderedId64Array;
@@ -118,9 +120,8 @@ class ChangedEntitiesProc implements TxnChangedEntities {
   }
 }
 
-/**
- * Manages local changes to an iModel via [Txns]($docs/learning/InteractiveEditing.md)
- * @beta
+/** Manages local changes to a [[BriefcaseDb]] or [[StandaloneDb]] via [Txns]($docs/learning/InteractiveEditing.md)
+ * @public
  */
 export class TxnManager {
   /** @internal */
