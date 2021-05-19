@@ -131,6 +131,7 @@ export class RpcBriefcaseUtility {
     db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(checkpoint));
     if (db) {
       Logger.logTrace(loggerCategory, "Checkpoint was already open", () => ({ ...tokenProps }));
+      BriefcaseManager.logUsage(requestContext, tokenProps);
       return db;
     }
 
