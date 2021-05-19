@@ -3373,31 +3373,41 @@ export interface FrameRenderData {
 
 // @alpha
 export interface FrameStats {
+    animationTime: number;
     backgroundTime: number;
     classifiersTime: number;
+    createChangeSceneTime: number;
+    decorationsTime: number;
+    featureSymbologyTime: number;
+    flashTime: number;
     frameId: number;
+    hiliteTime: number;
     opaqueTime: number;
     overlaysTime: number;
-    sceneTime: number;
     screenspaceEffectsTime: number;
+    setupViewTime: number;
     shadowsTime: number;
     totalFrameTime: number;
+    totalSceneTime: number;
     translucentTime: number;
+    validateRenderPlanTime: number;
 }
 
 // @internal (undocumented)
 export class FrameStatsCollector {
+    constructor(onFrameStatsReady: OnFrameStatsReadyEvent);
     // (undocumented)
-    beginFrame(sceneMilSecElapsed?: number): void;
+    beginFrame(): void;
     // (undocumented)
     beginTime(entry: keyof FrameStats): void;
     // (undocumented)
-    endFrame(): void;
+    static beginTime(collector: FrameStatsCollector | undefined, entry: keyof FrameStats): void;
+    // (undocumented)
+    endFrame(wasFrameDrawn?: boolean): void;
     // (undocumented)
     endTime(entry: keyof FrameStats): void;
-    set onFrameStatsReady(ev: OnFrameStatsReadyEvent | undefined);
     // (undocumented)
-    get onFrameStatsReady(): OnFrameStatsReadyEvent | undefined;
+    static endTime(collector: FrameStatsCollector | undefined, entry: keyof FrameStats): void;
     }
 
 // @public
@@ -8251,6 +8261,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     get antialiasSamples(): number;
     set antialiasSamples(_numSamples: number);
     // (undocumented)
+    assignFrameStatsCollector(_collector: FrameStatsCollector): void;
+    // (undocumented)
     abstract changeDecorations(decorations: Decorations): void;
     // (undocumented)
     abstract changeDynamics(dynamics?: GraphicList): void;
@@ -8301,8 +8313,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
     setHiliteSet(_hilited: HiliteSet): void;
-    // (undocumented)
-    setOnFrameStats(_event: OnFrameStatsReadyEvent): void;
     setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
@@ -9486,6 +9496,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected abstract _assignDC(): boolean;
     // (undocumented)
+    assignFrameStatsCollector(collector: FrameStatsCollector): void;
+    // (undocumented)
     protected abstract _beginPaint(fbo: FrameBuffer): void;
     // (undocumented)
     beginPerfMetricFrame(sceneMilSecElapsed?: number, readPixels?: boolean): void;
@@ -9586,7 +9598,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get flashIntensity(): number;
     // (undocumented)
-    get frameStatsCollector(): FrameStatsCollector;
+    get frameStatsCollector(): FrameStatsCollector | undefined;
     // (undocumented)
     freezeRealityTiles: boolean;
     // (undocumented)
@@ -9675,8 +9687,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
     setHiliteSet(hilite: HiliteSet): void;
-    // (undocumented)
-    setOnFrameStats(event: OnFrameStatsReadyEvent): void;
     // (undocumented)
     get shadowFrustum(): Frustum | undefined;
     // (undocumented)
