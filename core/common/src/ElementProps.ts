@@ -318,8 +318,7 @@ export interface DisplayStyleLoadProps {
 }
 
 /** Options controlling which properties are included or excluded when querying [[RenderTimelineProps]].
- * @see [[ElementLoadOptions]].
- * @beta
+ * @see [[ElementLoadOptions.renderTimeline]].
  */
 export interface RenderTimelineLoadProps {
   /** If true, the lists of element Ids in the schedule script will be empty.
@@ -344,9 +343,7 @@ export interface ElementLoadOptions {
   wantBRepData?: boolean;
   /** Options controlling which properties of [[DisplayStyleProps]] to include or exclude. */
   displayStyle?: DisplayStyleLoadProps;
-  /** Options controlling which properties of [[RenderTimelineProps]] to include or exclude.
-   * @beta
-   */
+  /** Options controlling which properties of [[RenderTimelineProps]] to include or exclude. */
   renderTimeline?: RenderTimelineLoadProps;
 }
 
@@ -498,9 +495,7 @@ export interface SynchronizationConfigLinkProps extends UrlLinkProps {
   lastSuccessfulRun?: string;
 }
 
-/** Wire format describing a [RenderTimeline]($backend).
- * @beta
- */
+/** Wire format describing a [RenderTimeline]($backend). */
 export interface RenderTimelineProps extends ElementProps {
   /** An optional human-readable description of the timeline. */
   description?: string;

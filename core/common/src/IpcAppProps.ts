@@ -22,7 +22,6 @@ export interface TileTreeContentIds {
 
 /** Specifies a [GeometricModel]($backend)'s Id and a Guid identifying the current state of the geometry contained within the model.
  * @see [TxnManager.onModelGeometryChanged]($backend) and [BriefcaseTxns.onModelGeometryChanged]($frontend).
- * @beta
  */
 export interface ModelIdAndGeometryGuid {
   /** The model's Id. */
@@ -38,7 +37,6 @@ export interface ModelIdAndGeometryGuid {
  * cause its element to appear in these lists.
  * @see [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend).
  * @see [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend).
- * @beta
  */
 export interface ChangedEntities {
   /** The ids of entities that were inserted during this Txn */
