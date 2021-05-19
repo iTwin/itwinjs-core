@@ -21,7 +21,7 @@ export interface FrameStats {
   animationTime: number;
   /** The CPU time in milliseconds spent setting up the view while setting up the scene. This is included in `totalSceneTime`. */
   setupViewTime: number;
-  /** The CPU time in milliseconds spent when creating or changing the scene if in invalid. This is included in `totalSceneTime`. */
+  /** The CPU time in milliseconds spent when creating or changing the scene if invalid. This is included in `totalSceneTime`. */
   createChangeSceneTime: number;
   /** The CPU time in milliseconds spent validating the render plan while setting up the scene. This is included in `totalSceneTime`. */
   validateRenderPlanTime: number;
