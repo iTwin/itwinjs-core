@@ -14,11 +14,9 @@ describe("PromiseMemoizer", () => {
   };
 
   const testFunction = async (param: string, waitTime: number): Promise<string> => {
-    // console.log("hmm1\n");
     await BeDuration.wait(waitTime);
     if (param === "TestError")
       throw new Error("TestError");
-    // console.log("hmm2\n");
     return testFunctionResult(param, waitTime);
   };
 
