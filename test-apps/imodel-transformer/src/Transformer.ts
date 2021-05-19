@@ -25,7 +25,7 @@ export interface TransformerOptions extends IModelTransformOptions {
   deleteUnusedGeometryParts?: boolean;
   excludeSubCategories?: string[];
   excludeCategories?: string[];
-  schemaEditOperations?: SchemaEditOperation[];
+  schemaEditOperations?: Map<string, SchemaEditOperation[]>;
 }
 
 export class Transformer extends IModelTransformer {
@@ -35,7 +35,7 @@ export class Transformer extends IModelTransformer {
   private _numSourceRelationshipsProcessed = 0;
   private _startTime = new Date();
   private _targetPhysicalModelId = Id64.invalid; // will be valid when PhysicalModels are being combined
-  private _schemaEditOperations: SchemaEditOperation[] = [];
+  private _schemaEditOperations = new Map<string, SchemaEditOperation[]>();
 
   public static async transformAll(requestContext: AuthorizedClientRequestContext | ClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
     const transformer = new Transformer(sourceDb, targetDb, options);
@@ -118,7 +118,7 @@ export class Transformer extends IModelTransformer {
       this.excludeCategories(options.excludeCategories);
     }
 
-    this._schemaEditOperations = options?.schemaEditOperations ?? [];
+    this._schemaEditOperations = options?.schemaEditOperations ?? new Map();
 
     // query for and log the number of source Elements that will be processed
     this._numSourceElements = this.sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
@@ -162,6 +162,11 @@ export class Transformer extends IModelTransformer {
         const [_fullNameMatch, schemaName] = schemaNameMatch;
         const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
         const versionToImport = Schema.toSemverString(versionString);
+        /* START CHANGE FROM SUPER */
+        if (this._schemaEditOperations.has(schemaName)) {
+          this.applySchemaOperations(requestContext, schemaPath, this._schemaEditOperations.get(schemaName)!, schemaSource);
+        }
+        /* END CHANGE FROM SUPER */
         if (versionInTarget && Semver.lte(versionToImport, versionInTarget))
           return false;
         return true;
@@ -315,5 +320,14 @@ export class Transformer extends IModelTransformer {
       }
     });
     this.targetDb.elements.deleteDefinitionElements(geometryPartIds); // will delete only if unused
+  }
+
+  // for now source is required but can be made optional and the function reads it itself
+  public applySchemaOperations(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaPath: string, editOps: SchemaEditOperation[], source: string): void {
+    for (const editOp of editOps) {
+      source.replace(editOp.pattern, editOp.substitution);
+    }
+    requestContext.enter();
+    IModelJsFs.writeFileSync(schemaPath, source);
   }
 }

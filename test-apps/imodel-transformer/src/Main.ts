@@ -13,7 +13,8 @@ import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";
-import { SchemaEditOperation, Transformer, TransformerOptions } from "./Transformer";
+import { Transformer, TransformerOptions } from "./Transformer";
+import { ensureArray, keyPairsToMultimap, SchemaEditOperation, tryParseSchemaEditOperation } from "./SchemaEditUtils";
 
 const loggerCategory = "imodel-transformer";
 
@@ -91,7 +92,7 @@ void (async () => {
     Yargs.option("noProvenance", { desc: "If true, IModelTransformer should not record its provenance.", type: "boolean", default: false });
     Yargs.option("includeSourceProvenance", { desc: "Include existing provenance from the source iModel in the target iModel", type: "boolean", default: false });
 
-    Yargs.option("schemaOp", { desc: "Add an operation to a schema with the syntax: '--schemaOp MySchema/MyRegex/My$1ubstitution/', you can use this option multiple times. The backreferences are javascript style, '$1'" });
+    Yargs.option("schemaOp", { desc: "Add an operation to a schema with the syntax: '--schemaOp MySchema/MyRegex/My$1ubstitution/', you can use this option multiple times. The backreferences are javascript replace style ($1)" });
 
     const args = Yargs.parse() as Yargs.Arguments<CommandLineArgs>;
 
@@ -243,27 +244,14 @@ void (async () => {
       }
     }
 
-    const ensureArray = <T extends any>(x: T | T[]): T[] => Array.isArray(x) ? x : [x];
-
-    const schemaEditOperations: SchemaEditOperation[] =
+    const schemaEditOperations: Map<string, SchemaEditOperation[]> | undefined =
       args.schemaOp !== undefined
-        ? ensureArray(args.schemaOp).map((op) => {
-          // read the groups from
-          const unescapedSlash = /(?<!\\)\//.source;
-          const escapedText = /(?:[^/]|(?<=\\)\/)/.source;
-          const format = RegExp(`(?<schemaName>\\w+)${unescapedSlash}(?<pattern>${escapedText}+)${unescapedSlash}(?<substitution>${escapedText}*)${unescapedSlash}`, "g");
-          const { schemaName, pattern, substitution } = format.exec(op)?.groups ?? {} as Partial<Record<string, string>>;
-          assert(
-            schemaName !== undefined &&
-            pattern !== undefined &&
-            substitution !== undefined &&
-            schemaName !== "" &&
-            pattern !== "",
-            "incorrect format, should be schemaName/pattern/substitution/ with non-empty schemaName and pattern"
-          );
-          return { schemaName, pattern: RegExp(pattern), substitution };
-        })
-        : [];
+        ? keyPairsToMultimap(ensureArray(args.schemaOp).map((op) => {
+          const parseResult = tryParseSchemaEditOperation(op);
+          assert(parseResult !== undefined, "schema edit parse failed, see logged error");
+          return [parseResult.schemaName, parseResult];
+        }))
+        : undefined;
 
     const transformerOptions: TransformerOptions = {
       ...args,
