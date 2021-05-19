@@ -25,7 +25,7 @@ import { PointString3d } from "../../curve/PointString3d";
 import { AuxChannelDataType } from "../../polyface/AuxData";
 import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
-import { TaggedGeometryData } from "../../polyface/TaggedGeometryData";
+import { TaggedNumericData } from "../../polyface/TaggedGeometryData";
 // cSpell:word flatbuffers
 // cSpell:word fbjs
 /* eslint-disable no-console, comma-dangle, quote-props */
@@ -97,11 +97,10 @@ it("HelloSubdivisionSurface", () => {
   const ck = new Checker();
   const mesh = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0),
     Vector3d.unitX(), Vector3d.unitY(), 3, 3);
-  mesh.data.taggedGeometryData = [];
-  mesh.data.taggedGeometryData.push(new TaggedGeometryData(-1000, 0));
+  mesh.data.taggedNumericData = new TaggedNumericData(-1000, 0);
   testGeometryQueryRoundTrip(ck, mesh);
-  const tg1 = new TaggedGeometryData(-1000, 1);
-  mesh.data.taggedGeometryData.push(tg1);
+  const tg1 = new TaggedNumericData(-1000, 1);
+  mesh.data.taggedNumericData = tg1;
 
   tg1.intData = [1, 2];
   testGeometryQueryRoundTrip(ck, mesh);
@@ -109,17 +108,7 @@ it("HelloSubdivisionSurface", () => {
   tg1.doubleData = [0.5];
   testGeometryQueryRoundTrip(ck, mesh);
 
-  tg1.pointData = [Point3d.create (1,2,3)];
-  testGeometryQueryRoundTrip(ck, mesh);
-
-  tg1.vectorData = [Vector3d.create (1,2,3)];
-  testGeometryQueryRoundTrip(ck, mesh);
-
-  tg1.geometry = [LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6)];
-  testGeometryQueryRoundTrip(ck, mesh);
-  tg1.geometry.push (LineString3d.create([5,4,3,7,6,4,2,3,5]));
-
-  expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).equals(0);
 });
 it("HelloSpirals", () => {
   const ck = new Checker();

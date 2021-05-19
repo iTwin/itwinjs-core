@@ -15,12 +15,12 @@ import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
  * TaggedGeometryConstants defines enums with constant values for use in tags of TaggedGeometryData
  * @public
  */
-export namespace TaggedGeometryConstants {
+export namespace TaggedNumericConstants {
   /**  Reserved values for the "tagA" member of TaggedGeometryData
   * @public
    *
   */
-export  enum TaggedGeometryDataTagType {
+export  enum TaggedNumericTagType {
     /** `tagA` value identifying a subdivision surface*/
     SubdivisionSurface = -1000
   }
@@ -52,36 +52,26 @@ export  enum SubdivisionControlCode {
  * * In typescript/javascript, all integer numbers that can be non-integer.  Please do not insert non-integers in the integer array.
  * @public
  */
-export class TaggedGeometryData {
-  /** Application specific primary tag.   See reserved values in  `TaggedGeometryConstants` */
+export class TaggedNumericData {
+  /** Application specific primary tag.   See reserved values in  `TaggedNumericConstants` */
   public tagA: number;
-  /** Application specific secondary tag.   See reserved values in  `TaggedGeometryConstants` */
+  /** Application specific secondary tag.   See reserved values in  `TaggedNumericConstants` */
   public tagB: number;
 
   public constructor(tagA: number = 0, tagB: number = 0,
-    intData?: number[], doubleData?: number[],
-    pointData?: Point3d[], vectorData?: Vector3d[],
-    geometryData?: GeometryQuery[]
+    intData?: number[], doubleData?: number[]
   ) {
     this.tagA = tagA;
     this.tagB = tagB;
     if (intData) this.intData = intData;
     if (doubleData) this.doubleData = doubleData;
-    if (pointData) this.pointData = pointData;
-    if (vectorData) this.vectorData = vectorData;
-    if (geometryData) this.geometry = geometryData;
   }
 /** Integer data with application-specific meaning */
   public intData?: number[];
 /** Double data with application-specific meaning */
 public doubleData?: number[];
-/** Point data with application-specific meaning */
-public pointData?: Point3d[];
-/** Vector data with application-specific meaning */
-public vectorData?: Vector3d[];
-/** geometry data with application-specific meaning */
-public geometry?: GeometryQuery[];
-  /**
+
+/**
    * push a pair of int values on the intData array.
    * @param intA
    * @param intB
@@ -148,44 +138,32 @@ public geometry?: GeometryQuery[];
     return defaultValue;
   }
   /** Apply isAlmostEqual to all members. */
-public isAlmostEqual(other: TaggedGeometryData): boolean{
+  public isAlmostEqual(other: TaggedNumericData): boolean{
     if (other === undefined)
       return false;
     if (this.tagA !== other.tagA)
       return false;
     if (this.tagB !== other.tagB)
     return false;
-  return Geometry.exactEqualNumberArrays(this.intData, other.intData)
-    && Geometry.almostEqualArrays<number>(this.doubleData, other.doubleData, Geometry.isAlmostEqualNumber)
-    && Geometry.almostEqualArrays<XYZ>(this.pointData, other.pointData, Geometry.isSameXYZ)
-    && Geometry.almostEqualArrays<XYZ>(this.vectorData, other.vectorData, Geometry.isSameXYZ)
-    && Geometry.almostEqualArrays<GeometryQuery>(this.geometry, other.geometry, GeometryQuery.areAlmostEqual);
+    return Geometry.exactEqualNumberArrays(this.intData, other.intData)
+      && Geometry.almostEqualArrays<number>(this.doubleData, other.doubleData, Geometry.isAlmostEqualNumber);
   }
-  public static areAlmostEqualArrays(dataA: TaggedGeometryData[] | undefined, dataB: TaggedGeometryData[] | undefined): boolean{
-    const lengthA = dataA === undefined ? 0 : dataA.length;
-    const lengthB = dataB === undefined ? 0 : dataB.length;
-    if (lengthA !== lengthB)
-      return false;
-    for (let i = 0; i < lengthA; i++){
-      if (!dataA![i].isAlmostEqual(dataB![i]))
-        return false;
-    }
-    return true;
+
+  public static areAlmostEqual(dataA: TaggedNumericData | undefined, dataB: TaggedNumericData | undefined): boolean{
+    if (dataA === undefined && dataB === undefined)
+      return true;
+    if (dataA !== undefined && dataB !== undefined)
+      return dataA.isAlmostEqual(dataB);
+    return false;
   }
 /** Return a deep clone.  */
-  public clone(result?: TaggedGeometryData): TaggedGeometryData {
+  public clone(result?: TaggedNumericData): TaggedNumericData {
     if (!result)
-      result = new TaggedGeometryData(this.tagA, this.tagB);
+      result = new TaggedNumericData(this.tagA, this.tagB);
     if (this.intData)
       result.intData = this.intData.slice();
     if (this.doubleData)
       result.doubleData = this.doubleData.slice();
-    if (this.pointData)
-      result.pointData = Geometry.cloneMembers(this.pointData);
-    if (this.vectorData)
-      result.vectorData = Geometry.cloneMembers(this.vectorData);
-    if (this.geometry)
-      result.geometry = Geometry.cloneMembers<GeometryQuery>(this.geometry);
     return result;
   }
 }

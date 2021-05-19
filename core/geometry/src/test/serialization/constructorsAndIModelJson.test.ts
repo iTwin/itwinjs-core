@@ -21,7 +21,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { TaggedGeometryData } from "../../polyface/TaggedGeometryData";
+import { TaggedNumericData } from "../../polyface/TaggedGeometryData";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
@@ -174,9 +174,8 @@ describe("constructorsAndImodelJson", () => {
   });
   it("taggedGeometryData.methods", () => {
     const ck = new Checker();
-    const objA = new TaggedGeometryData(1, 2);
-    const objB = new TaggedGeometryData(1, 2, [1, 2], [2.3, 1.5], [Point3d.create(1, 2, 3)], [Vector3d.create(5, 2, 3)],
-      [LineSegment3d.createXYZXYZ(0, 1, 2, 3, 4, 5)]);
+    const objA = new TaggedNumericData(1, 2);
+    const objB = new TaggedNumericData(1, 2, [1, 2], [2.3, 1.5]);
     ck.testTrue(objA.isAlmostEqual(objA));
     ck.testTrue(objB.isAlmostEqual(objB));
     ck.testFalse(objA.isAlmostEqual(objB));
@@ -205,49 +204,17 @@ describe("constructorsAndImodelJson", () => {
         obj2.doubleData = undefined;
         ck.testTrue(obj1.isAlmostEqual(obj2));
       }
-      if (obj1.pointData) {
-        obj1.pointData.push(Point3d.create (1,2,3));
-        ck.testFalse(obj1.isAlmostEqual(obj2));
-        obj2.pointData!.push(Point3d.create (9,2,4));
-        ck.testFalse(obj1.isAlmostEqual(obj2));
-        obj1.pointData = undefined;
-        ck.testFalse(obj1.isAlmostEqual(obj2));
-        obj2.pointData = undefined;
-        ck.testTrue(obj1.isAlmostEqual(obj2));
-      }
-      if (obj1.vectorData) {
-        obj1.vectorData.push(Vector3d.create (1,2,3));
-        ck.testFalse(obj1.isAlmostEqual(obj2));
-        obj2.vectorData!.push(Vector3d.create (9,2,4));
-        ck.testFalse(obj1.isAlmostEqual(obj2));
-        obj1.vectorData = undefined;
-        ck.testFalse(obj1.isAlmostEqual(obj2));
-        obj2.vectorData = undefined;
-        ck.testTrue(obj1.isAlmostEqual(obj2));
-      }
-      if (obj1.geometry) {
-        obj1.geometry.push(CoordinateXYZ.create (Point3d.create (1,2,3)));
-        ck.testFalse(obj1.isAlmostEqual(obj2));
-        obj2.geometry!.push(CoordinateXYZ.create (Point3d.create (9,2,4)));
-        ck.testFalse(obj1.isAlmostEqual(obj2));
-        obj1.geometry = undefined;
-        ck.testFalse(obj1.isAlmostEqual(obj2));
-        obj2.geometry = undefined;
-        ck.testTrue(obj1.isAlmostEqual(obj2));
-      }
-
     }
     expect(ck.getNumErrors()).equals(0);
     });
     it("taggedGeometryData.json", () => {
       const ck = new Checker();
-      const objA = new TaggedGeometryData(1, 2);
-      const objB = new TaggedGeometryData(1, 2, [1, 2], [2.3, 1.5], [Point3d.create(1, 2, 3)], [Vector3d.create(5, 2, 3)],
-        [LineSegment3d.createXYZXYZ(0, 1, 2, 3, 4, 5)]);
+      const objA = new TaggedNumericData(1, 2);
+      const objB = new TaggedNumericData(1, 2, [1, 2], [2.3, 1.5]);
       for (const obj of [objA, objB]) {
         const json = IModelJson.Writer.toIModelJson(obj);
         if (ck.testDefined(json, "to json")) {
-          const obj1 = IModelJson.Reader.parseTaggedGeometryProps(json);
+          const obj1 = IModelJson.Reader.parseTaggedNumericProps(json);
           if (ck.testDefined (obj1) && obj1)
             ck.testTrue(obj.isAlmostEqual(obj1), "json round trip");
           }
@@ -257,7 +224,7 @@ describe("constructorsAndImodelJson", () => {
       it("MeshWithTag", () => {
         const ck = new Checker();
         const allGeometry: GeometryQuery [] = [];
-        const tagA = new TaggedGeometryData(-1000, 0);
+        const tagA = new TaggedNumericData(-1000, 0);
         const surface = TorusPipe.createDgnTorusPipe(Point3d.create(0, 0, 0), Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), 4, 1, Angle.createDegrees(90), true)!;
         const options = StrokeOptions.createForFacets();
         options.angleTol = Angle.createDegrees(90);
@@ -267,16 +234,16 @@ describe("constructorsAndImodelJson", () => {
         let y0 = 0;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, 0, y0, 0);
         y0 += 5.0;
-        mesh.data.taggedGeometryData = [tagA];
+        mesh.data.taggedNumericData = tagA;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, 0, y0, 0);
         GeometryCoreTestIO.saveGeometry(allGeometry, "TaggedGeometryData", "TorusPipe");
         expect(ck.getNumErrors()).equals(0);
         });
         it("TagLookup", () => {
           const ck = new Checker();
-          const data = new TaggedGeometryData(-1000, 0);
+          const data = new TaggedNumericData(-1000, 0);
 
-          const dataZ = new TaggedGeometryData(-1000, 0, [], [], [], [], []);
+          const dataZ = new TaggedNumericData(-1000, 0, [], []);
           ck.testTrue(dataZ.isAlmostEqual(data), "isAlmostEqual with empty arrays?");
           const dataB = data.clone();
           const intTags = [4, 2, 9, -30];
@@ -304,13 +271,13 @@ describe("constructorsAndImodelJson", () => {
           ck.testExactNumber(20, dataB.getDoubleData(1, 20));
           const dataC = data.clone();
           ck.testTrue(data.isAlmostEqual(dataC));
-          ck.testFalse(data.isAlmostEqual((undefined as unknown) as TaggedGeometryData));
-          const data21 = new TaggedGeometryData(2, 1);
-          const data12 = new TaggedGeometryData(1, 2);
-          const data13 = new TaggedGeometryData(1, 3);
+          ck.testFalse(data.isAlmostEqual((undefined as unknown) as TaggedNumericData));
+          const data21 = new TaggedNumericData(2, 1);
+          const data12 = new TaggedNumericData(1, 2);
+          const data13 = new TaggedNumericData(1, 3);
           ck.testFalse(data12.isAlmostEqual(data13));
           ck.testFalse(data12.isAlmostEqual(data21));
-          ck.testExactNumber(new TaggedGeometryData().tagA, 0);
-          ck.testExactNumber(new TaggedGeometryData().tagB, 0);
+          ck.testExactNumber(new TaggedNumericData().tagA, 0);
+          ck.testExactNumber(new TaggedNumericData().tagB, 0);
         });
       });

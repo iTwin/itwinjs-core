@@ -49,7 +49,7 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
-import { TaggedGeometryData } from "../polyface/TaggedGeometryData";
+import { TaggedNumericData } from "../polyface/TaggedGeometryData";
 // cspell:word bagof
 /* eslint-disable no-console*/
 /**
@@ -485,10 +485,10 @@ export namespace IModelJson {
   }
   /**
    * Interface for extra data attached to an indexed mesh.
-   * See `TaggedGeometryData` for further information (e.g. value `tagA` and `tagB` values)
+   * See `TaggedNumericData` for further information (e.g. value `tagA` and `tagB` values)
    * @public
    */
-  export interface TaggedGeometryDataProps {
+  export interface TaggedNumericDataProps {
     /** integer tag identifying the meaning of this tag.  */
     tagA: number;
     /** Second integer tag.  */
@@ -497,12 +497,6 @@ export namespace IModelJson {
     intData?: number[];
     /** application specific doubles */
     doubleData?: number[];
-    /** application specific points */
-    pointData?: XYZProps[];
-    /** application specific vectors */
-    vectorData?: XYZProps[];
-    /** application specific geometry */
-    geometry?: GeometryQuery[];
   }
   /**
    * Interface for an indexed mesh.
@@ -533,7 +527,7 @@ export namespace IModelJson {
     /** ONE BASED ZERO TERMINATED array of color indices. ZERO is terminator for single facet. */
     colorIndex?: [number];
     /** optional array of tagged geometry (such as to request subdivision surface) */
-    taggedGeometry?: [TaggedGeometryDataProps];
+    taggedNumericData?: TaggedNumericDataProps;
   }
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
@@ -587,33 +581,16 @@ export namespace IModelJson {
     /**
      * @internal
      */
-    public static parseTaggedGeometryProps(json: any): TaggedGeometryData | undefined {
+    public static parseTaggedNumericProps(json: any): TaggedNumericData | undefined {
       const tagA = this.parseNumberProperty(json, "tagA");
       const tagB = this.parseNumberProperty(json, "tagB", 0);
       if (tagA !== undefined) {
-        const result = new TaggedGeometryData(tagA, tagB);
+        const result = new TaggedNumericData(tagA, tagB);
         if (json.hasOwnProperty("intData"))
           result.intData = this.parseNumberArrayProperty (json, "intData", 0,undefined);
         if (json.hasOwnProperty("doubleData"))
           result.doubleData = this.parseNumberArrayProperty (json, "doubleData", 0,undefined);
-        if (json.hasOwnProperty("pointData")) {
-          result.pointData = [];
-          for (const p of json.pointData) result.pointData.push(Point3d.fromJSON (p));
-        }
-        if (json.hasOwnProperty("vectorData")) {
-          result.vectorData = [];
-          for (const p of json.vectorData) result.vectorData.push(Vector3d.fromJSON (p));
-        }
-        if (json.hasOwnProperty("geometry")) {
-          result.geometry = [];
-          for (const p of json.geometry) {
-            const q = this.parse(p);
-            if (q !== undefined && q instanceof GeometryQuery)
-              result.geometry.push(q);
-          }
-        }
         return result;
-
       }
       return undefined;
     }
@@ -1017,13 +994,8 @@ export namespace IModelJson {
         if (data.hasOwnProperty("auxData"))
           polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData);
 
-        if (data.hasOwnProperty("taggedGeometry") && Array.isArray (data.taggedGeometry)){
-          polyface.data.taggedGeometryData = [];
-          for (const t of data.taggedGeometry) {
-            const q = Reader.parseTaggedGeometryProps(t);
-            if (q instanceof TaggedGeometryData)
-              polyface.data.taggedGeometryData.push(q);
-          }
+        if (data.hasOwnProperty("taggedGeometry")){
+          polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(polyface.data.taggedNumericData);
         }
 
         return polyface;
@@ -1321,25 +1293,12 @@ export namespace IModelJson {
    */
   export class Writer extends GeometryHandler {
 
-    public handleTaggedGeometryData(data: TaggedGeometryData): TaggedGeometryDataProps {
-      const result: TaggedGeometryDataProps = { tagA: data.tagA, tagB: data.tagB};
+    public handleTaggedNumericData(data: TaggedNumericData): TaggedNumericDataProps {
+      const result: TaggedNumericDataProps = { tagA: data.tagA, tagB: data.tagB};
       if (data.intData !== undefined && data.intData.length > 0)
         result.intData = data.intData.slice();
       if (data.doubleData !== undefined && data.doubleData.length > 0)
         result.doubleData = data.doubleData.slice();
-      if (data.pointData !== undefined && data.pointData.length > 0) {
-        result.pointData = [];
-        for (const p of data.pointData) result.pointData.push(p.toJSON());
-      }
-      if (data.vectorData !== undefined && data.vectorData.length > 0) {
-        result.vectorData = [];
-        for (const p of data.vectorData) result.vectorData.push(p.toJSON());
-      }
-      if (data.geometry !== undefined && data.geometry.length > 0) {
-        result.geometry = [];
-        for (const g of data.geometry)
-          result.geometry.push(this.emit(g));
-      }
       return result;
     }
     /** Convert strongly typed instance to tagged json */
@@ -1803,11 +1762,9 @@ export namespace IModelJson {
           colorIndex.push(0);
         }
       }
-      let taggedGeometry;
-      if (pf.data.taggedGeometryData) {
-        taggedGeometry = [];
-        for (const t of pf.data.taggedGeometryData)
-          taggedGeometry.push(this.handleTaggedGeometryData(t));
+      let taggedNumericData;
+      if (pf.data.taggedNumericData) {
+        taggedNumericData = this.handleTaggedNumericData(pf.data.taggedNumericData);
       }
       // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
@@ -1830,8 +1787,8 @@ export namespace IModelJson {
       contents.point = points;
       contents.pointIndex = pointIndex;
 
-      if (taggedGeometry)
-        contents.taggedGeometry = taggedGeometry;
+      if (taggedNumericData)
+        contents.taggedNumericGeometry = taggedNumericData;
       return { indexedMesh: contents };
     }
 
@@ -2040,8 +1997,8 @@ export namespace IModelJson {
 
       if (data instanceof GeometryQuery) {
         return data.dispatchToGeometryHandler(this);
-      } else if (data instanceof TaggedGeometryData) {
-        return this.handleTaggedGeometryData(data);
+      } else if (data instanceof TaggedNumericData) {
+        return this.handleTaggedNumericData(data);
       }
       return undefined;
     }

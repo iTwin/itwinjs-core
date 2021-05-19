@@ -18,7 +18,7 @@ import { Transform } from "../geometry3d/Transform";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { PolyfaceAuxData } from "./AuxData";
 import { FacetFaceData } from "./FacetFaceData";
-import { TaggedGeometryData } from "./TaggedGeometryData";
+import { TaggedNumericData } from "./TaggedGeometryData";
 
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
@@ -67,17 +67,15 @@ export class PolyfaceData {
   /** Auxiliary data */
   public auxData: PolyfaceAuxData | undefined;
   /** Tagged geometry data */
-  public taggedGeometryData: TaggedGeometryData[] | undefined;
+  public taggedNumericData: TaggedNumericData | undefined;
   private _twoSided: boolean;
   /** boolean tag indicating if the facets are viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
   public set twoSided(value: boolean) { this._twoSided = value; }
 
   /** push a TaggedGeometryData.  (Create array if needed) */
-  public pushTaggedGeometryData(data: TaggedGeometryData) {
-    if (!this.taggedGeometryData)
-      this.taggedGeometryData = [];
-    this.taggedGeometryData.push(data);
+  public setTaggedNumericData(data: TaggedNumericData) {
+    this.taggedNumericData = data;
   }
   private _expectedClosure: number;
   /** boolean tag indicating if the facets are viewable from the back */
@@ -122,11 +120,8 @@ export class PolyfaceData {
       result.colorIndex = this.colorIndex.slice();
     if (this.auxData)
       result.auxData = this.auxData.clone();
-    if (this.taggedGeometryData){
-      result.taggedGeometryData = [];
-      for (const d of this.taggedGeometryData) {
-        result.taggedGeometryData.push(d.clone());
-      }
+    if (this.taggedNumericData){
+      result.taggedNumericData = this.taggedNumericData.clone();
     }
     return result;
   }
@@ -154,7 +149,7 @@ export class PolyfaceData {
 
     if (this.expectedClosure !== other.expectedClosure)
       return false;
-    if (!TaggedGeometryData.areAlmostEqualArrays(this.taggedGeometryData, other.taggedGeometryData))
+    if (!TaggedNumericData.areAlmostEqual(this.taggedNumericData, other.taggedNumericData))
       return false;
     return true;
   }

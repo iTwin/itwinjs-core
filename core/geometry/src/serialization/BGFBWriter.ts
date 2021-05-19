@@ -37,7 +37,7 @@ import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DgnSpiralTypeQueries } from "./BGFBReader";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
-import { TaggedGeometryData } from "../polyface/TaggedGeometryData";
+import { TaggedNumericData } from "../polyface/TaggedGeometryData";
 
 /**
  * Context to write to a flatbuffer blob.
@@ -428,20 +428,12 @@ export class BGFBWriter {
     }
     return undefined;
   }
-  public writeTaggedGeometryDataArray(data: TaggedGeometryData[] | undefined): number {
-    if (Array.isArray(data)) {
-      const offsetArray = [];
-      for (const d of data) {
-        const intDataOffset = this.writeIntArray(d.intData);
-        const doubleDataOffset = this.writeDoubleArray(d.doubleData);
-        const pointDataOffset = this.writePackedYZArray(d.pointData);
-        const vectorDataOffset = this.writePackedYZArray(d.vectorData);
-        const geometryDataOffset = this.writeGeometryQueryArrayAsFBVariantGeometry(d.geometry);
-        offsetArray.push(BGFBAccessors.TaggedGeometryData.createTaggedGeometryData(this.builder,
-          d.tagA, d.tagB, intDataOffset, doubleDataOffset, pointDataOffset, vectorDataOffset,
-            geometryDataOffset === undefined ? 0 : geometryDataOffset));
-      }
-      return BGFBAccessors.Polyface.createTaggedGeometryDataVector(this.builder, offsetArray);
+  public writeTaggedGeometryDataArray(data: TaggedNumericData | undefined): number {
+    if (data){
+        const intDataOffset = this.writeIntArray(data.intData);
+        const doubleDataOffset = this.writeDoubleArray(data.doubleData);
+        return BGFBAccessors.TaggedNumericData.createTaggedNumericData(this.builder,
+          data.tagA, data.tagB, intDataOffset, doubleDataOffset);
     }
     return 0;
   }
@@ -507,8 +499,8 @@ export class BGFBWriter {
         auxDataOffset = this.writePolyfaceAuxDataAsFBVariantGeometry(mesh.data.auxData)!;
       }
 
-      if (mesh.data.taggedGeometryData)
-        taggedGeometryDataOffset = this.writeTaggedGeometryDataArray(mesh.data.taggedGeometryData);
+      if (mesh.data.taggedNumericData)
+        taggedGeometryDataOffset = this.writeTaggedGeometryDataArray(mesh.data.taggedNumericData);
       const expectedClosure = mesh.expectedClosure;
       const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset,
         pointIndexOffset, paramIndexOffset, normalIndexOffset, colorIndexOffset, 0,
