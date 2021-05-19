@@ -27,7 +27,7 @@ export function keyPairsToMultimap<K, V>(pairs: [K,V][]): Map<K,V[]> {
 export interface SchemaEditOperation {
   schemaName: string;
   // regex is not powerful enough for non-trivial XML so a later update could include
-  // XPATH or Jq or some other query support, but regex should be enough for current usage
+  // XPATH or Jq or jsonpath or some other query support, but regex should be enough for current usage
   pattern: string | RegExp;
   substitution: string; // current javascript style backreferences (e.g. "hello $1")
 }
