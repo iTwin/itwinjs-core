@@ -5,16 +5,20 @@
 import { assert } from "chai";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
+import * as sinon from "sinon";
 
 describe("PromiseMemoizer", () => {
+  let clock: sinon.SinonFakeTimers | undefined;
   const generateTestFunctionKey = (param: string, waitTime: number): string => {
     return `key ${param}:${waitTime}`;
   };
 
   const testFunction = async (param: string, waitTime: number): Promise<string> => {
+    // console.log("hmm1\n");
     await BeDuration.wait(waitTime);
     if (param === "TestError")
       throw new Error("TestError");
+    // console.log("hmm2\n");
     return testFunctionResult(param, waitTime);
   };
 
@@ -27,6 +31,10 @@ describe("PromiseMemoizer", () => {
   const testMemoizer = new PromiseMemoizer<string>(testFunction, generateTestFunctionKey, maxCacheSize, cacheTimeout);
 
   afterEach(() => {
+    if (clock !== undefined) {
+      clock.restore();
+      clock = undefined;
+    }
     testMemoizer.clearCache();
   });
 
@@ -39,6 +47,7 @@ describe("PromiseMemoizer", () => {
   });
 
   it("should be able to memoize and deleteMemoized function calls", async () => {
+    clock = sinon.useFakeTimers();
     const qps = new Array<QueryablePromise<string>>(4);
     const expectedResults = new Array<string>(4);
 
@@ -64,7 +73,13 @@ describe("PromiseMemoizer", () => {
     }
     assert.isTrue(qpRej.isPending, "qpRej.isPending check fails");
 
-    await BeDuration.wait(1000);
+    clock.tick(1000);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
 
     for (let ii = 0; ii < 4; ii++) {
       assert.isTrue(qps[ii].isFulfilled, "qp.isFulfilled check fails");
@@ -78,9 +93,9 @@ describe("PromiseMemoizer", () => {
     assert.isTrue(qp0.isPending);
   });
 
-  it("should not increase the cache size when repeating the same call", async () => {
+  it("should not increase the cache size when repeating the same call", () => {
     for (let ii = 0; ii < 5; ii++) {
-      const qp = testMemoizer.memoize("test", 1000); // same call everytime
+      const qp = testMemoizer.memoize("test", 1000); // same call every time
       assert.isTrue(qp.isPending); // Ensure the testFn doesn't resolve
     }
 
@@ -88,16 +103,16 @@ describe("PromiseMemoizer", () => {
     assert.equal(actualCacheSize, 1);
   });
 
-  it("should increase the cache size as expected", async () => {
+  it("should increase the cache size as expected", () => {
     for (let ii = 0; ii < 5; ii++) {
-      const qp = testMemoizer.memoize(ii.toString(), 1000); // different call everytime
+      const qp = testMemoizer.memoize(ii.toString(), 1000); // different call every time
       assert.isTrue(qp.isPending);
     }
     const actualCacheSize = (testMemoizer as any)._cachedPromises.size;
     assert.equal(actualCacheSize, 5);
   });
 
-  it("should clear the cache if there is an overflow", async () => {
+  it("should clear the cache if there is an overflow", () => {
     for (let ii = 0; ii < maxCacheSize; ii++) {
       testMemoizer.memoize(ii.toString(), 1000);
     }
@@ -110,17 +125,29 @@ describe("PromiseMemoizer", () => {
   });
 
   it("should clear old promises", async () => {
+    clock = sinon.useFakeTimers();
     testMemoizer.memoize("test", 1000);
     testMemoizer.memoize("test", 100);
 
     let actualCacheSize = (testMemoizer as any)._cachedPromises.size;
     assert.equal(actualCacheSize, 2);
 
-    await BeDuration.wait(cacheTimeout + 500);
+    clock.tick(100);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    clock.tick(900);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    clock.tick(cacheTimeout - 900);
     actualCacheSize = (testMemoizer as any)._cachedPromises.size;
     assert.equal(actualCacheSize, 1);
 
-    await BeDuration.wait(1000);
+    clock.tick(900);
     actualCacheSize = (testMemoizer as any)._cachedPromises.size;
     assert.equal(actualCacheSize, 0);
   });
