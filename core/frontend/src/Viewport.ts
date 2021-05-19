@@ -1410,18 +1410,14 @@ export abstract class Viewport implements IDisposable {
     if (!this.view.areAllTileTreesLoaded)
       return false;
 
-    let allLoaded = true;
-    this.forEachMapTreeRef((ref) => {
-      allLoaded &&= ref.isLoadingComplete;
-    });
+    if (this._mapTiledGraphicsProvider && !TiledGraphicsProvider.isLoadingComplete(this._mapTiledGraphicsProvider, this))
+      return false;
 
-    if (allLoaded) {
-      this.forEachTiledGraphicsProviderTree((ref) => {
-        allLoaded &&= ref.isLoadingComplete;
-      });
-    }
+    for (const provider of this._tiledGraphicsProviders)
+      if (!TiledGraphicsProvider.isLoadingComplete(provider, this))
+        return false;
 
-    return allLoaded;
+    return true;
   }
 
   /** Disclose *all* TileTrees currently in use by this Viewport. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
@@ -2169,6 +2165,16 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public createSceneContext(): SceneContext { return new SceneContext(this); }
 
+  /** @internal */
+  public createScene(context: SceneContext): void {
+    this.view.createScene(context);
+    if (this._mapTiledGraphicsProvider)
+      TiledGraphicsProvider.addToScene(this._mapTiledGraphicsProvider, context);
+
+    for (const provider of this._tiledGraphicsProviders)
+      TiledGraphicsProvider.addToScene(provider, context);
+  }
+
   /** Called when the visible contents of the viewport are redrawn.
    * @note Due to the frequency of this event, avoid performing expensive work inside event listeners.
    */
@@ -2245,15 +2251,9 @@ export abstract class Viewport implements IDisposable {
       if (!this._freezeScene) {
         IModelApp.tileAdmin.clearTilesForViewport(this);
         IModelApp.tileAdmin.clearUsageForViewport(this);
-        const context = this.createSceneContext();
-        view.createScene(context);
 
-        for (const provider of this._tiledGraphicsProviders) {
-          if (undefined !== provider.addToScene)
-            provider.addToScene(context);
-          else
-            provider.forEachTileTreeRef(this, (ref) => ref.addToScene(context));
-        }
+        const context = this.createSceneContext();
+        this.createScene(context);
 
         context.requestMissingTiles();
         target.changeScene(context.scene);
