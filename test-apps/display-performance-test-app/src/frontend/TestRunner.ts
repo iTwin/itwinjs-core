@@ -16,7 +16,7 @@ import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
-  defaultEmphasis, defaultHilite, ElementOverrideProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
+  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 
@@ -711,6 +711,10 @@ export class TestRunner {
     if (map)
       testName += `_${map}`;
 
+    const hyper = getHyperModelingProps(configs.hyperModeling);
+    if (hyper)
+      testName += `_${hyper}`;
+
     const other = getOtherProps(test.viewport);
     if (other)
       testName += `_${other}`;
@@ -756,6 +760,7 @@ export class TestRunner {
     const tileProps = configs.tileProps ? getTileProps(configs.tileProps) : "";
     rowData.set("Tile Props", "" !== tileProps ? ` ${tileProps}` : "");
     rowData.set("Bkg Map Props", getBackgroundMapProps(test.viewport) !== "" ? ` ${getBackgroundMapProps(test.viewport)}` : "");
+    rowData.set("HyperModeling", getHyperModelingProps(configs.hyperModeling) ?? "");
 
     const other = getOtherProps(test.viewport);
     if ("" !== other)
@@ -1119,6 +1124,14 @@ function hiliteSettingsStr(settings: Hilite.Settings): string {
   let hsStr = (settings.color.colors.r * 256 * 256 + settings.color.colors.g * 256 + settings.color.colors.b).toString(36).padStart(5, "0");
   hsStr += (settings.silhouette * 256 * 256 + Math.round(settings.visibleRatio * 255) * 256 + Math.round(settings.hiddenRatio * 255)).toString(36).padStart(4, "0");
   return hsStr.toUpperCase();
+}
+
+function getHyperModelingProps(props: HyperModelingProps | undefined): string | undefined {
+  if (!props)
+    return undefined;
+
+  const hm = `+hm${props.sectionDrawingLocationId}`;
+  return props.applySpatialView ? `${hm}+a` : hm;
 }
 
 function getOtherProps(vp: ScreenViewport): string {
