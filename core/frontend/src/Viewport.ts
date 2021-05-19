@@ -2165,6 +2165,16 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public createSceneContext(): SceneContext { return new SceneContext(this); }
 
+  /** @internal */
+  public createScene(context: SceneContext): void {
+    this.view.createScene(context);
+    if (this._mapTiledGraphicsProvider)
+      TiledGraphicsProvider.addToScene(this._mapTiledGraphicsProvider, context);
+
+    for (const provider of this._tiledGraphicsProviders)
+      TiledGraphicsProvider.addToScene(provider, context);
+  }
+
   /** Called when the visible contents of the viewport are redrawn.
    * @note Due to the frequency of this event, avoid performing expensive work inside event listeners.
    */
@@ -2241,11 +2251,9 @@ export abstract class Viewport implements IDisposable {
       if (!this._freezeScene) {
         IModelApp.tileAdmin.clearTilesForViewport(this);
         IModelApp.tileAdmin.clearUsageForViewport(this);
-        const context = this.createSceneContext();
-        view.createScene(context);
 
-        for (const provider of this._tiledGraphicsProviders)
-          TiledGraphicsProvider.addToScene(provider, context);
+        const context = this.createSceneContext();
+        this.createScene(context);
 
         context.requestMissingTiles();
         target.changeScene(context.scene);

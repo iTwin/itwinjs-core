@@ -446,7 +446,7 @@ export class TestRunner {
 
       // The scene is ready when (1) all required TileTrees have been created and (2) all required tiles have finished loading.
       const context = viewport.createSceneContext();
-      viewport.view.createScene(context);
+      viewport.createScene(context);
       context.requestMissingTiles();
 
       haveNewTiles = !viewport.areAllTileTreesLoaded || context.hasMissingTiles || 0 < context.missingTiles.size;
