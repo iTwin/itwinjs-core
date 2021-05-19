@@ -63,7 +63,7 @@ public;CartographicRange
 public;CategoryProps 
 public;CategorySelectorProps 
 internal;ChangeData
-internal;ChangedElements
+public;ChangedElements
 beta;ChangedEntities
 internal;ChangedModels
 public;ChangedValueState
@@ -625,7 +625,7 @@ public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
-internal;TypeOfChange
+public;TypeOfChange
 public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void
 beta;UpgradeOptions

@@ -2,6 +2,12 @@
   "name": "@bentley/extension-client",
   "entries": [
     {
+      "version": "2.15.4",
+      "tag": "@bentley/extension-client_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.15.3",
       "tag": "@bentley/extension-client_v2.15.3",
       "date": "Mon, 17 May 2021 13:31:37 GMT",
