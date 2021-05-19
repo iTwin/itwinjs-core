@@ -11,12 +11,12 @@ import {
 import { FrontendRequestContext, IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
-import { HyperModeling, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
+import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
 class MarkerHandler extends SectionMarkerHandler {
-  public isMarkerVisible() {
+  public isMarkerVisible(_marker: SectionMarker) {
     return false;
   }
 }

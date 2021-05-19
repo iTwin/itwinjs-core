@@ -366,7 +366,7 @@ export class TestRunner {
           if (hyperModeling.applySpatialView) {
             await decorator.toggleSection(marker, true);
           } else {
-            await decorator.toggleClipVolume(marker, true);
+            decorator.toggleClipVolume(marker, true);
             await decorator.toggleAttachment(marker, true);
           }
         }

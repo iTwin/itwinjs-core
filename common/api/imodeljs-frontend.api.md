@@ -12137,6 +12137,8 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     protected _controllerValid: boolean;
     // @internal (undocumented)
+    createScene(context: SceneContext): void;
+    // @internal (undocumented)
     createSceneContext(): SceneContext;
     cssPixelsToDevicePixels(cssPixels: number): number;
     get debugBoundingBoxes(): TileBoundingBoxes;
