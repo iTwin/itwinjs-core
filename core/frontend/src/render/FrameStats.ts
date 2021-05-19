@@ -8,39 +8,46 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 
-/** Describes timing statistics for a single rendered frame. Aside from `frameId`, `totalFrameTime`, and `sceneTime`, the other entries may represent operations that are not performed every frame and may contain an expected value of zero.
+/** Describes timing statistics for a single rendered frame. Aside from `frameId`, `totalFrameTime`, and `totalSceneTime`, the other entries may represent operations that are not performed every frame and may contain an expected value of zero.
  * @note By default, the display system does not render frames continuously. The display system will render a new frame only when the view changes. Therefore, the data contained within this interface cannot directly be used to compute a representative framerate.
  * @alpha
  */
 export interface FrameStats {
   /** A unique number identifying the frame to which these statistics belong. */
   frameId: number;
-  /** The CPU time in milliseconds spent rendering the frame. This does not include the time described by `sceneTime`. */
+  /** The CPU time in milliseconds spent setting up the scene. This does not include the time described by `totalFrameTime`. */
+  totalSceneTime: number;
+  /** The CPU time in milliseconds spent performing animations while setting up the scene. This is included in `totalSceneTime`. */
+  animationTime: number;
+  /** The CPU time in milliseconds spent setting up the view while setting up the scene. This is included in `totalSceneTime`. */
+  setupViewTime: number;
+  /** The CPU time in milliseconds spent setting the hilite set while setting up the scene. This is included in `totalSceneTime`. */
+  hiliteTime: number;
+  /** The CPU time in milliseconds spent overriding feature symbology while setting up the scene. This is included in `totalSceneTime`. */
+  featureSymbologyTime: number;
+  /** The CPU time in milliseconds spent when creating or changing the scene if in invalid. This is included in `totalSceneTime`. */
+  createChangeSceneTime: number;
+  /** The CPU time in milliseconds spent validating the render plan while setting up the scene. This is included in `totalSceneTime`. */
+  validateRenderPlanTime: number;
+  /** The CPU time in milliseconds spent adding or changing decorations while setting up the scene. This is included in `totalSceneTime`. */
+  decorationsTime: number;
+  /** The CPU time in milliseconds spent processing flash while setting up the scene. This is included in `totalSceneTime`. */
+  flashTime: number;
+  /** The CPU time in milliseconds spent rendering the frame. This does not include the time described by `totalSceneTime`. */
   totalFrameTime: number;
-  /** The CPU time in milliseconds spent setting up the scene. The includes the following:
-   * - performing animations
-   * - setting up from view
-   * - setting the hilite set
-   * - overriding feature symbology
-   * - creating and changing the scene if invalid
-   * - validating render plan
-   * - adding decorations
-   * - processing flash
-   */
-  sceneTime: number;
-  /** The CPU time in milliseconds spent rendering opaque geometry. */
+  /** The CPU time in milliseconds spent rendering opaque geometry. This is included in `totalFrameTime`. */
   opaqueTime: number;
-  /** The CPU time in milliseconds spent rendering translucent geometry. */
+  /** The CPU time in milliseconds spent rendering translucent geometry. This is included in `totalFrameTime`. */
   translucentTime: number;
-  /** The CPU time in milliseconds spent rendering overlays. */
+  /** The CPU time in milliseconds spent rendering overlays. This is included in `totalFrameTime`. */
   overlaysTime: number;
-  /** The CPU time in milliseconds spent rendering the solar shadow map. */
+  /** The CPU time in milliseconds spent rendering the solar shadow map. This is included in `totalFrameTime`. */
   shadowsTime: number;
-  /** The CPU time in milliseconds spent rendering both planar and volume classifiers. */
+  /** The CPU time in milliseconds spent rendering both planar and volume classifiers. This is included in `totalFrameTime`. */
   classifiersTime: number;
-  /** The CPU time in milliseconds spent applying screenspace effects. */
+  /** The CPU time in milliseconds spent applying screenspace effects. This is included in `totalFrameTime`. */
   screenspaceEffectsTime: number;
-  /** The CPU time in milliseconds spent rendering background geometry including backgrounds, skyboxes, and background maps. */
+  /** The CPU time in milliseconds spent rendering background geometry including backgrounds, skyboxes, and background maps. This is included in `totalFrameTime`. */
   backgroundTime: number;
 }
 
@@ -52,15 +59,23 @@ export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) 
 
 /** @internal */
 export class FrameStatsCollector {
-  private _onFrameStatsReady?: OnFrameStatsReadyEvent;
+  private _onFrameStatsReady: OnFrameStatsReadyEvent;
   private _frameStats = FrameStatsCollector._createStats();
   private _shouldRecordFrame = false;
 
   private static _createStats(): FrameStats {
     return {
       frameId: 0,
+      totalSceneTime: 0,
+      animationTime: 0,
+      setupViewTime: 0,
+      hiliteTime: 0,
+      featureSymbologyTime: 0,
+      createChangeSceneTime: 0,
+      validateRenderPlanTime: 0,
+      decorationsTime: 0,
+      flashTime: 0,
       totalFrameTime: 0,
-      sceneTime: 0,
       opaqueTime: 0,
       translucentTime: 0,
       overlaysTime: 0,
@@ -72,8 +87,16 @@ export class FrameStatsCollector {
   }
 
   private _clearStats() {
+    this._frameStats.totalSceneTime = 0;
+    this._frameStats.animationTime = 0;
+    this._frameStats.setupViewTime = 0;
+    this._frameStats.hiliteTime = 0;
+    this._frameStats.featureSymbologyTime = 0;
+    this._frameStats.createChangeSceneTime = 0;
+    this._frameStats.validateRenderPlanTime = 0;
+    this._frameStats.decorationsTime = 0;
+    this._frameStats.flashTime = 0;
     this._frameStats.totalFrameTime = 0;
-    this._frameStats.sceneTime = 0;
     this._frameStats.opaqueTime = 0;
     this._frameStats.translucentTime = 0;
     this._frameStats.overlaysTime = 0;
@@ -83,8 +106,7 @@ export class FrameStatsCollector {
     this._frameStats.backgroundTime = 0;
   }
 
-  public set onFrameStatsReady(ev: OnFrameStatsReadyEvent | undefined) { this._onFrameStatsReady = ev; }
-  public get onFrameStatsReady(): OnFrameStatsReadyEvent | undefined { return this._onFrameStatsReady; }
+  public constructor(onFrameStatsReady: OnFrameStatsReadyEvent) { this._onFrameStatsReady = onFrameStatsReady; }
 
   private _begin(entry: keyof FrameStats) {
     const prevSpan = this._frameStats[entry];
@@ -96,20 +118,16 @@ export class FrameStatsCollector {
     this._frameStats[entry] = Date.now() - beginTime;
   }
 
-  public beginFrame(sceneMilSecElapsed = 0) {
-    this._shouldRecordFrame = this._onFrameStatsReady !== undefined && this._onFrameStatsReady.numberOfListeners > 0;
-    if (this._shouldRecordFrame) {
-      this._begin("totalFrameTime");
-      this._frameStats.sceneTime = sceneMilSecElapsed;
-    }
+  public beginFrame() {
+    this._shouldRecordFrame = this._onFrameStatsReady.numberOfListeners > 0;
   }
 
-  public endFrame() {
+  public endFrame(wasFrameDrawn = false) {
     if (this._shouldRecordFrame) {
-      this._end("totalFrameTime");
-      if (this._onFrameStatsReady !== undefined)
+      if (wasFrameDrawn) {
         this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to any listeners
-      this._frameStats.frameId++; // increment frame counter for next pending frame
+        this._frameStats.frameId++; // increment frame counter for next pending frame
+      }
       this._clearStats();
       this._shouldRecordFrame = false;
     }
@@ -123,5 +141,15 @@ export class FrameStatsCollector {
   public endTime(entry: keyof FrameStats) {
     if (this._shouldRecordFrame)
       this._end(entry);
+  }
+
+  public static beginTime(collector: FrameStatsCollector | undefined, entry: keyof FrameStats) {
+    if (undefined !== collector)
+      collector.beginTime(entry);
+  }
+
+  public static endTime(collector: FrameStatsCollector | undefined, entry: keyof FrameStats) {
+    if (undefined !== collector)
+      collector.endTime(entry);
   }
 }
