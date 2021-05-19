@@ -71,13 +71,7 @@ describe("PromiseMemoizer", () => {
     }
     assert.isTrue(qpRej.isPending, "qpRej.isPending check fails");
 
-    clock.tick(1000);
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
+    await clock.tickAsync(501);
 
     for (let ii = 0; ii < 4; ii++) {
       assert.isTrue(qps[ii].isFulfilled, "qp.isFulfilled check fails");
@@ -130,22 +124,12 @@ describe("PromiseMemoizer", () => {
     let actualCacheSize = (testMemoizer as any)._cachedPromises.size;
     assert.equal(actualCacheSize, 2);
 
-    clock.tick(100);
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
+    await clock.tickAsync(cacheTimeout + 100);
 
-    clock.tick(900);
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-
-    clock.tick(cacheTimeout - 900);
     actualCacheSize = (testMemoizer as any)._cachedPromises.size;
     assert.equal(actualCacheSize, 1);
 
-    clock.tick(900);
+    await clock.tickAsync(900);
     actualCacheSize = (testMemoizer as any)._cachedPromises.size;
     assert.equal(actualCacheSize, 0);
   });
