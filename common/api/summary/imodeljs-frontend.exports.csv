@@ -548,6 +548,9 @@ internal;TileAvailability
 public;TileBoundingBoxes
 public;TileContent
 public;TiledGraphicsProvider
+public;TiledGraphicsProvider
+internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): void
+internal;isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean
 public;TileDrawArgParams
 public;TileDrawArgs
 public;TileGraphicType

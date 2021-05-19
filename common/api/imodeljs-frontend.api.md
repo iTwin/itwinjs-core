@@ -10162,6 +10162,15 @@ export interface TileContent {
 export interface TiledGraphicsProvider {
     addToScene?: (context: SceneContext) => void;
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
+    isLoadingComplete?: (viewport: Viewport) => boolean;
+}
+
+// @public (undocumented)
+export namespace TiledGraphicsProvider {
+    // @internal
+    export function addToScene(provider: TiledGraphicsProvider, context: SceneContext): void;
+    // @internal
+    export function isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean;
 }
 
 // @public
@@ -12106,6 +12115,8 @@ export abstract class Viewport implements IDisposable {
     get controllerValid(): boolean;
     // @internal (undocumented)
     protected _controllerValid: boolean;
+    // @internal (undocumented)
+    createScene(context: SceneContext): void;
     // @internal (undocumented)
     createSceneContext(): SceneContext;
     cssPixelsToDevicePixels(cssPixels: number): number;
