@@ -7,8 +7,8 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ImsAuthorizationClient, IncludePrefix } from "@bentley/itwin-client";
-import { ClientMetadata, Issuer, Client as OpenIdClient } from "openid-client";
+import { AuthorizedClientRequestContext, ImsAuthorizationClient, IncludePrefix, RequestGlobalOptions } from "@bentley/itwin-client";
+import { ClientMetadata, custom, Issuer, Client as OpenIdClient } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../../BackendITwinClientLoggerCategory";
 import { IntrospectionResponse } from "./IntrospectionResponse";
 import { IntrospectionResponseCache, MemoryIntrospectionResponseCache } from "./IntrospectionResponseCache";
@@ -35,6 +35,12 @@ export class IntrospectionClient {
     if (this._client) {
       return this._client;
     }
+
+    custom.setHttpOptionsDefaults({
+      timeout: RequestGlobalOptions.timeout.response,
+      retry: RequestGlobalOptions.maxRetries,
+      agent: RequestGlobalOptions.httpsProxy,
+    });
 
     const issuerUrl = await this.getIssuerUrl(requestContext);
     const issuer = await Issuer.discover(issuerUrl);
