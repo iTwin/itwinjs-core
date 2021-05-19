@@ -642,8 +642,6 @@ export class FrontstageDef {
    * @beta
    */
   public popoutWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
-    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
-      return;
     // istanbul ignore else
     if (this.nineZoneState) {
       let location = findTab(this.nineZoneState, widgetId);
