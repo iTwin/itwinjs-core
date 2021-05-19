@@ -37,8 +37,11 @@ export interface ValidationError {
  * @public
  */
 export interface TxnChangedEntities {
+  /** Ids of entities that were inserted by the transaction. */
   inserted: OrderedId64Array;
+  /** Ids of entities that were deleted by the transaction. */
   deleted: OrderedId64Array;
+  /** Ids of elements that were modified by the transaction. */
   updated: OrderedId64Array;
 }
 

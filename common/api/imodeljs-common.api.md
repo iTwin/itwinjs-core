@@ -1931,17 +1931,13 @@ export enum DomainOptions {
 
 // @public
 export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
-    // (undocumented)
     readonly placement: Omit<Placement2dProps, "bbox">;
-    // (undocumented)
     readonly type: "2d";
 }
 
 // @public
 export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
-    // (undocumented)
     readonly placement: Omit<Placement3dProps, "bbox">;
-    // (undocumented)
     readonly type: "3d";
 }
 
@@ -2717,9 +2713,7 @@ export enum FillFlags {
 
 // @public
 export interface FlatBufferGeometryStream {
-    // @alpha (undocumented)
     data: ElementGeometryDataEntry[];
-    // (undocumented)
     format: "flatbuffer";
 }
 
@@ -4501,9 +4495,7 @@ export const iTwinChannel: (channel: string) => string;
 
 // @public
 export interface JsonGeometryStream {
-    // (undocumented)
     data: GeometryStreamProps;
-    // (undocumented)
     format: "json";
 }
 

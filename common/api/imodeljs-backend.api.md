@@ -4346,11 +4346,8 @@ export enum TxnAction {
 
 // @public
 export interface TxnChangedEntities {
-    // (undocumented)
     deleted: OrderedId64Array;
-    // (undocumented)
     inserted: OrderedId64Array;
-    // (undocumented)
     updated: OrderedId64Array;
 }
 

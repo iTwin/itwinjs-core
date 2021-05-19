@@ -52,7 +52,9 @@ export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
  * @public
  */
 export interface JsonGeometryStream {
+  /** Discriminator for [[DynamicGraphicsRequestProps.geometry]]. */
   format: "json";
+  /** The geometry stream in JSON format. */
   data: GeometryStreamProps;
 }
 
@@ -60,8 +62,9 @@ export interface JsonGeometryStream {
  * @public
  */
 export interface FlatBufferGeometryStream {
+  /** Discriminator for [[DynamicGraphicsRequestProps.geometry]]. */
   format: "flatbuffer";
-  /** @alpha */
+  /** The geometry stream in flatbuffer format. */
   data: ElementGeometryDataEntry[];
 }
 
@@ -91,7 +94,9 @@ export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
  * @public
  */
 export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
+  /** Specifies the geometry is 2d. */
   readonly type: "2d";
+  /** The origin and rotation of the geometry. */
   readonly placement: Omit<Placement2dProps, "bbox">;
 }
 
@@ -100,7 +105,9 @@ export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestPro
  * @public
  */
 export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
+  /** Specifies the geometry is 3d. */
   readonly type: "3d";
+  /** The origin and rotation of the geometry. */
   readonly placement: Omit<Placement3dProps, "bbox">;
 }
 
