@@ -1312,7 +1312,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public queryLastModifiedTime(modelId: Id64String): string {
       const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
-      return this._iModel.withPreparedStatement<string>(sql, (statement) => {
+      return this._iModel.withPreparedStatement(sql, (statement) => {
         statement.bindId("modelId", modelId);
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
           return statement.getValue(0).getDateTime();
@@ -1373,7 +1373,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Read the properties for a Model as a json string.
      * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
      * @returns a json string with the properties of the model or `undefined` if the model is not found.
-     * @throws [[IModelError]] if the model exists, but cannot be loaded.
      * @see getModelJson
      */
     private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
