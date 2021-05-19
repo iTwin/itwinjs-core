@@ -655,6 +655,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "jsonpath",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "jsonwebtoken",
       "allowedCategories": [ "backend" ]
     },

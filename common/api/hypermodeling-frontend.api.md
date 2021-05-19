@@ -225,6 +225,7 @@ export class SectionMarkerHandler {
 // @public
 export class SectionMarkerSet extends MarkerSet<SectionMarker> {
     constructor(viewport: ScreenViewport, markers: SectionMarker[]);
+    findMarkerById(sectionDrawingLocationId: Id64String): SectionMarker | undefined;
     // @internal (undocumented)
     protected getClusterMarker(cluster: Cluster<SectionMarker>): Marker;
     // (undocumented)
