@@ -106,6 +106,7 @@ export class ChildWindowManager {
 
   /** Close all child/pop-out windows. This typically is called when the frontstage is changed. */
   public closeAllChildWindows() {
+    // istanbul ignore next
     this.openChildWindows.forEach((openChildWindow) => openChildWindow.window.close());
     this._openChildWindows = [];
   }
@@ -121,9 +122,7 @@ export class ChildWindowManager {
     } else {
       // call the following to convert popout to docked widget
       const frontStageDef = FrontstageManager.activeFrontstageDef;
-      if (frontStageDef) {
-        frontStageDef.dockPopoutWidgetContainer(childWindowId);
-      }
+      frontStageDef && frontStageDef.dockPopoutWidgetContainer(childWindowId);
     }
     return true;
   };

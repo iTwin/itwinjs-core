@@ -131,6 +131,7 @@ export class FrontstageDef {
     if (this._nineZoneState === state)
       return;
     this._nineZoneState = state;
+    // istanbul ignore else
     if (!(this._isStageClosing || this._isApplicationClosing)) {
       FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
         frontstageDef: this,
@@ -600,6 +601,7 @@ export class FrontstageDef {
           popoutWidgetContainerId = location.popoutWidgetId;
         }
         const state = floatWidget(this.nineZoneState, widgetId, point, size);
+        // istanbul ignore else
         if (state) {
           this.nineZoneState = state;
           setImmediate(() => {
@@ -610,15 +612,17 @@ export class FrontstageDef {
     }
   }
 
-  public popoutWidgetContainer(state: NineZoneState, widgetContainerId: string) {
+  /** Opens window for specified PopoutWidget container. Used to reopen popout when running in Electron.
+   * @internal */
+  public openPopoutWidgetContainer(state: NineZoneState, widgetContainerId: string) {
     const location = findWidget(state, widgetContainerId);
+    // istanbul ignore else
     if (location && isPopoutWidgetLocation(location) && 1 === state.widgets[widgetContainerId].tabs.length) {
       // NOTE: Popout Widget Container will only contain a single WidgetTab
       const widgetDef = this.findWidgetDef(state.widgets[widgetContainerId].tabs[0]);
+      // istanbul ignore else
       if (widgetDef) {
         const tab = state.tabs[widgetDef.id];
-
-        // TODO: only popout single widget?
         const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
         const position: ChildWindowLocationProps = {
           width: tab.preferredPopoutWidgetSize?.width ?? 600,
@@ -645,17 +649,21 @@ export class FrontstageDef {
     // istanbul ignore else
     if (this.nineZoneState) {
       let location = findTab(this.nineZoneState, widgetId);
+      // istanbul ignore else
       if (location) {
         if (isPopoutLocation(location))
           return;
 
         // get the state to apply that will pop-out the specified WidgetTab to child window.
         const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, point, size);
+        // istanbul ignore else
         if (state) {
           // now that the state is updated get the id of the container that houses the widgetTab/widgetId
           location = findTab(state, widgetId);
+          // istanbul ignore else
           if (location && isPopoutLocation(location)) {
             const widgetDef = this.findWidgetDef(widgetId);
+            // istanbul ignore else
             if (widgetDef) {
               const widgetContainerId = location.widgetId;
               const tab = state.tabs[widgetId];
@@ -663,10 +671,10 @@ export class FrontstageDef {
               setImmediate(() => {
                 const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
                 const position: ChildWindowLocationProps = {
-                  width: tab.preferredPopoutWidgetSize?.width ?? 600,
-                  height: tab.preferredPopoutWidgetSize?.height ?? 800,
-                  left: tab.preferredPopoutWidgetSize?.x ?? 0,
-                  top: tab.preferredPopoutWidgetSize?.y ?? 0,
+                  width: tab.preferredPopoutWidgetSize!.width,  // preferredPopoutWidgetSize set in popoutWidgetToChildWindow method above
+                  height: tab.preferredPopoutWidgetSize!.height,
+                  left: tab.preferredPopoutWidgetSize!.x,
+                  top: tab.preferredPopoutWidgetSize!.y,
                 };
                 UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position);
               });
@@ -687,8 +695,7 @@ export class FrontstageDef {
 
   /** @internal */
   public async saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window) {
-    // eslint-disable-next-line no-console
-    // console.log(`Closing window ${childWindowId} x=${childWindow.screenX} y=${childWindow.screenX} width=${childWindow.innerWidth} height=${childWindow.innerHeight}`);
+    // istanbul ignore else
     if (this.nineZoneState) {
       const newState = await saveFrontstagePopoutWidgetSizeAndPosition(this.nineZoneState, this.id, this.version, childWindowId, childWindow);
       this._nineZoneState = newState; // set without triggering new render as only preferred floating position set
@@ -704,10 +711,10 @@ export class FrontstageDef {
       const location = findWidget(this.nineZoneState, widgetContainerId);
       // Make sure the widgetContainerId is still in popout state. We don't want to set it to docked if the window is being closed because
       // an API call has moved the widget from a popout state to a floating state.
+      // istanbul ignore else
       if (location && isPopoutWidgetLocation(location)) {
         const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
-        if (state)
-          this.nineZoneState = state;
+        state && (this.nineZoneState = state);
       }
     }
   }
@@ -727,27 +734,9 @@ export class FrontstageDef {
       if (location) {
         const widgetContainerId = location.widgetId;
         const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
-        if (state)
-          this.nineZoneState = state;
+        state && (this.nineZoneState = state);
         if (isPopoutLocation(location)) {
           UiFramework.childWindowManager.closeChildWindow(location.widgetId, true);
-        }
-      }
-    }
-  }
-
-  public dockPopoutWidget(widgetId: string, processWindowClose?: boolean) {
-    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
-      return;
-    // istanbul ignore else
-    if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetId);
-      if (location && isPopoutLocation(location)) {
-        const widgetContainerId = location.widgetId;
-        const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
-        if (state) {
-          this.nineZoneState = state;
-          UiFramework.childWindowManager.closeChildWindow(widgetContainerId, processWindowClose);
         }
       }
     }

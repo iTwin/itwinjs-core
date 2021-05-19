@@ -170,12 +170,10 @@ export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage
 
   React.useEffect(() => {
     const triggerWidowCloseProcessing = () => {
-      if (frontstageDef)
-        frontstageDef.setIsApplicationClosing(true);
+      frontstageDef && frontstageDef.setIsApplicationClosing(true);
     };
 
-    if (frontstageDef)
-      frontstageDef.setIsApplicationClosing(false);
+    frontstageDef && frontstageDef.setIsApplicationClosing(false);
 
     window.addEventListener("beforeunload", triggerWidowCloseProcessing);
     return () => {
@@ -308,13 +306,15 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
 }
 
 function processPopoutWidgets(initialState: NineZoneState, frontstageDef: FrontstageDef): NineZoneState {
+  // istanbul ignore next
   if (!initialState.popoutWidgets)
     return initialState;
 
+  // istanbul ignore next - not unit testing electron case that reopens popout windows
   if (initialState.popoutWidgets && ProcessDetector.isElectronAppFrontend) {
     if (initialState.popoutWidgets.allIds.length && ProcessDetector.isElectronAppFrontend) {
       for (const widgetContainerId of initialState.popoutWidgets.allIds) {
-        frontstageDef.popoutWidgetContainer(initialState, widgetContainerId);
+        frontstageDef.openPopoutWidgetContainer(initialState, widgetContainerId);
       }
     }
     return initialState;
@@ -807,8 +807,7 @@ export const showWidget = produce((nineZone: Draft<NineZoneState>, id: TabState[
   }
   widget.activeTabId = id;
   widget.minimized = false;
-  if (isFloatingLocation(location))
-    floatingWidgetBringToFront(nineZone, location.floatingWidgetId);
+  isFloatingLocation(location) && floatingWidgetBringToFront(nineZone, location.floatingWidgetId);
 });
 
 /** @internal */
@@ -1059,31 +1058,31 @@ export function useSyncDefinitions(frontstageDef: FrontstageDef) {
 
 /** @internal */
 export async function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window) {
-  if (state) {
-    const location = findWidget(state, childWindowId);
-    if (location) {
-      const adjustmentWidth = ProcessDetector.isElectronAppFrontend ? 16 : 0;
-      const adjustmentHeight = ProcessDetector.isElectronAppFrontend ? 39 : 0;
-      const newState = produce(state, (draft) => {
-        const widget = draft.widgets[childWindowId];
-        const tab = draft.tabs[widget.activeTabId];
-        tab.preferredPopoutWidgetSize = {
-          x: childWindow.screenX,
-          y: childWindow.screenY,
-          width: childWindow.innerWidth + adjustmentWidth,
-          height: childWindow.innerHeight + adjustmentHeight,
-        };
-      });
-
-      const setting: WidgetPanelsFrontstageState = {
-        id: stageId,
-        nineZone: packNineZoneState(newState),
-        stateVersion,
-        version: stageVersion,
+  const location = findWidget(state, childWindowId);
+  // istanbul ignore else
+  if (location) {
+    const adjustmentWidth = ProcessDetector.isElectronAppFrontend ? 16 : 0;
+    const adjustmentHeight = ProcessDetector.isElectronAppFrontend ? 39 : 0;
+    const newState = produce(state, (draft) => {
+      const widget = draft.widgets[childWindowId];
+      const tab = draft.tabs[widget.activeTabId];
+      tab.preferredPopoutWidgetSize = {
+        x: childWindow.screenX,
+        y: childWindow.screenY,
+        width: childWindow.innerWidth + adjustmentWidth,
+        height: childWindow.innerHeight + adjustmentHeight,
       };
-      await UiFramework.getUiSettingsStorage().saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(stageId), setting);
-      return newState;
-    }
+    });
+
+    const setting: WidgetPanelsFrontstageState = {
+      id: stageId,
+      nineZone: packNineZoneState(newState),
+      stateVersion,
+      version: stageVersion,
+    };
+    await UiFramework.getUiSettingsStorage().saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(stageId), setting);
+    return newState;
   }
+  // istanbul ignore next
   return state;
 }
