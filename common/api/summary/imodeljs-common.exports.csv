@@ -63,8 +63,8 @@ public;CartographicRange
 public;CategoryProps 
 public;CategorySelectorProps 
 internal;ChangeData
-internal;ChangedElements
-beta;ChangedEntities
+public;ChangedElements
+public;ChangedEntities
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
@@ -126,9 +126,9 @@ public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
-beta;DynamicGraphicsRequest2dProps 
-beta;DynamicGraphicsRequest3dProps 
-beta;DynamicGraphicsRequestProps 
+public;DynamicGraphicsRequest2dProps 
+public;DynamicGraphicsRequest3dProps 
+public;DynamicGraphicsRequestProps 
 public;Easing:
 public;EasingFunction = (k: number) => number
 public;EcefLocation 
@@ -144,13 +144,13 @@ public;ElementAspectProps
 alpha;ElementGeometry
 public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 public;ElementGeometryChange
-alpha;ElementGeometryDataEntry
+public;ElementGeometryDataEntry
 alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
 alpha;ElementGeometryInfo
-alpha;ElementGeometryOpcode
+public;ElementGeometryOpcode
 alpha;ElementGeometryRequest
 alpha;ElementGeometryUpdate
-beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
+public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
 public;ElementLoadProps 
@@ -180,7 +180,7 @@ internal;FeatureTableHeader
 public;FilePropertyProps
 public;FillDisplay
 public;FillFlags
-beta;FlatBufferGeometryStream
+public;FlatBufferGeometryStream
 public;FontMap
 public;FontMapProps
 public;FontProps
@@ -243,7 +243,7 @@ internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
 public;GraphicParams
-beta;GraphicsRequestProps
+public;GraphicsRequestProps
 public;GridFileDefinition 
 public;GridFileDefinitionProps
 public;GridFileDirection = "Direct" | "Inverse"
@@ -326,7 +326,7 @@ public;isPlacement3dProps(props: PlacementProps): props is Placement3dProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 beta;iTwinChannel: (channel: string) => string
-beta;JsonGeometryStream
+public;JsonGeometryStream
 public;LatAndLong
 public;LatLongAndHeight 
 internal;LightLocationProps 
@@ -361,7 +361,7 @@ public;ModelClipGroups
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
-beta;ModelIdAndGeometryGuid
+public;ModelIdAndGeometryGuid
 public;ModelLoadProps
 public;ModelProps 
 public;ModelQueryParams 
@@ -405,7 +405,7 @@ beta;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PartReference
-beta;PersistentGraphicsRequestProps 
+public;PersistentGraphicsRequestProps 
 public;PhysicalElementProps 
 public;PhysicalTypeProps 
 public;Placement = Placement2d | Placement3d
@@ -467,12 +467,12 @@ public;RenderMaterial
 public;RenderMaterialAssetProps
 public;RenderMaterialProps 
 public;RenderMode
-beta;RenderSchedule
+public;RenderSchedule
 internal;Interval
 public;class RenderTexture 
 public;RenderTexture
-beta;RenderTimelineLoadProps
-beta;RenderTimelineProps 
+public;RenderTimelineLoadProps
+public;RenderTimelineProps 
 public;RepositoryLinkProps 
 public;RequestNewBriefcaseProps
 public;ResponseLike 
@@ -625,7 +625,7 @@ public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
-internal;TypeOfChange
+public;TypeOfChange
 public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void
 beta;UpgradeOptions

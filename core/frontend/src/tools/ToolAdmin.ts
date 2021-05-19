@@ -344,28 +344,26 @@ export class ToolAdmin {
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
 
-  /** Options for how uncaught exceptions should be handled.
-   * @beta
-   */
+  /** Options for how uncaught exceptions should be handled by [[ToolAdmin.exceptionHandler]]. */
   public static exceptionOptions = {
-    /** log exception to Logger */
+    /** Log exception to Logger. */
     log: true,
-    /** Show an alert box explaining that a problem happened */
+    /** Show an alert box explaining that a problem happened. */
     alertBox: true,
-    /** include the "gory details" (e.g. stack trace) */
+    /** Include the "gory details" (e.g. stack trace) in the alert box. */
     details: true,
     /** break into debugger (only works if debugger is already opened) */
     launchDebugger: true,
   };
 
-  /** A function that catches exceptions occurring inside ToolAdmin.eventLoop.
-   * @note If you wish to entirely replace this method, you can just assign to your own function, e.g.:
+  /** A function that catches otherwise-uncaught exceptions occurring inside ToolAdmin.eventLoop.
+   * To customize the behavior of this function, modify [[ToolAdmin.exceptionOptions]].
+   * To replace it within your own handler, simply assign to it, e.g.:
    * ```ts
    * ToolAdmin.exceptionHandler = (exception: any): Promise<any> => {
    *  ... your implementation here
    * }
    * ```
-   * @beta
    */
   public static async exceptionHandler(exception: any): Promise<any> {
     const opts = ToolAdmin.exceptionOptions;

@@ -312,7 +312,7 @@ public;LocateOptions
 public;LocateResponse
 internal;LockedStates
 internal;loggerCategory = "imodeljs-frontend.Extension"
-beta;LookAndMoveTool 
+public;LookAndMoveTool 
 public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode
@@ -493,7 +493,7 @@ public;SelectionTool
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
-alpha;SetupCameraTool 
+public;SetupCameraTool 
 public;SetupWalkCameraTool 
 public;SheetModelState 
 public;SheetViewState 
@@ -548,6 +548,9 @@ internal;TileAvailability
 public;TileBoundingBoxes
 public;TileContent
 public;TiledGraphicsProvider
+public;TiledGraphicsProvider
+internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): void
+internal;isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean
 public;TileDrawArgParams
 public;TileDrawArgs
 public;TileGraphicType

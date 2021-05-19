@@ -3016,8 +3016,13 @@ export class ZoomViewTool extends ViewManip {
   public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("Zoom.Prompts.FirstPoint"); }
 }
 
-/** A tool that performs the walk operation using mouse+keyboard or touch controls
- * @beta
+/** A tool that performs the walk operation using mouse+keyboard or touch controls.
+ * Keyboard and mouse controls are similar to those used by many video games:
+ *  - Mouse motion: look around.
+ *  - W, A, S, D (or arrow keys): move forward, left, right, or backward respectively.
+ *  - E, Q (or PgUp, PgDn): move up and down respectively.
+ *  - +, - (or scroll wheel): increase or decrease velocity.
+ * @public
  */
 export class LookAndMoveTool extends ViewManip {
   public static toolId = "View.LookAndMove";
@@ -3996,7 +4001,7 @@ export class ViewToggleCameraTool extends ViewTool {
 /** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool to allow the view to be panned, zoomed, and rotated while defining the points.
  * To show tool settings for specifying camera and target heights above the snap point, make sure formatting and parsing data are cached before the tool starts
  * by calling QuantityFormatter.onInitialized at app startup.
- * @alpha
+ * @public
  */
 export class SetupCameraTool extends PrimitiveTool {
   public static toolId = "View.SetupCamera";
