@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/orbitgt-core",
+      "comment": "Fix orbitgt pointcloud without color channel",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/orbitgt-core",
+  "email": "69574322+lerzeel2@users.noreply.github.com"
+}
