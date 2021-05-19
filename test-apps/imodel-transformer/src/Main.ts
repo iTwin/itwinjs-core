@@ -249,10 +249,10 @@ void (async () => {
       args.schemaOp !== undefined
         ? ensureArray(args.schemaOp).map((op) => {
           // read the groups from
-          const notAnEscapedSlash = "(?:[^/]|(?<=\\)\/)";
-          const format = RegExp(`(?<schemaName>\w+)\/(?<pattern>${notAnEscapedSlash}+)\/(?<substitution>${notAnEscapedSlash}*)\/`);
-          const {schemaName, pattern, substitution} = format.exec(op)?.groups ?? {};
-          const [schemaName, pattern, substitution] = op.split(/(?<!\\)\//).map((s) => s.replace("\\/", "/")) as (string|undefined)[];
+          const unescapedSlash = /(?<!\\)\//.source;
+          const escapedText = /(?:[^/]|(?<=\\)\/)/.source;
+          const format = RegExp(`(?<schemaName>\\w+)${unescapedSlash}(?<pattern>${escapedText}+)${unescapedSlash}(?<substitution>${escapedText}*)${unescapedSlash}`, "g");
+          const { schemaName, pattern, substitution } = format.exec(op)?.groups ?? {} as Partial<Record<string, string>>;
           assert(
             schemaName !== undefined &&
             pattern !== undefined &&
