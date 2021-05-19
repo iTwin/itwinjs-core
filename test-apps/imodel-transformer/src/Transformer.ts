@@ -325,7 +325,7 @@ export class Transformer extends IModelTransformer {
   // for now source is required but can be made optional and the function reads it itself
   public applySchemaOperations(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaPath: string, editOps: SchemaEditOperation[], source: string): void {
     for (const editOp of editOps) {
-      source.replace(editOp.pattern, editOp.substitution);
+      source = source.replace(editOp.pattern, editOp.substitution);
     }
     requestContext.enter();
     IModelJsFs.writeFileSync(schemaPath, source);

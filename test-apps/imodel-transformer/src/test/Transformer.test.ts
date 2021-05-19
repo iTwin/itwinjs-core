@@ -184,8 +184,8 @@ describe("imodel-transformer", () => {
 
     await Transformer.transformAll(requestContext, newSchemaSourceDb, targetDb, {
       schemaEditOperations: new Map([[
-        "SchemaName", [{
-          schemaName: "TestSchema",
+        "Test", [{
+          schemaName: "Test",
           pattern: /typeName="string"/,
           substitution: 'typeName="double"',
         }]],
