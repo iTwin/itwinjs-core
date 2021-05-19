@@ -57,7 +57,7 @@ export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) 
 
 /** @internal */
 export class FrameStatsCollector {
-  private _onFrameStatsReady: OnFrameStatsReadyEvent;
+  private _onFrameStatsReady?: OnFrameStatsReadyEvent;
   private _frameStats = FrameStatsCollector._createStats();
   private _shouldRecordFrame = false;
 
@@ -102,7 +102,7 @@ export class FrameStatsCollector {
     this._frameStats.backgroundTime = 0;
   }
 
-  public constructor(onFrameStatsReady: OnFrameStatsReadyEvent) { this._onFrameStatsReady = onFrameStatsReady; }
+  public constructor(onFrameStatsReady?: OnFrameStatsReadyEvent) { this._onFrameStatsReady = onFrameStatsReady; }
 
   private _begin(entry: keyof FrameStats) {
     const prevSpan = this._frameStats[entry];
@@ -115,13 +115,14 @@ export class FrameStatsCollector {
   }
 
   public beginFrame() {
-    this._shouldRecordFrame = this._onFrameStatsReady.numberOfListeners > 0;
+    this._shouldRecordFrame = undefined !== this._onFrameStatsReady && this._onFrameStatsReady.numberOfListeners > 0;
   }
 
   public endFrame(wasFrameDrawn = false) {
     if (this._shouldRecordFrame) {
       if (wasFrameDrawn) {
-        this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to any listeners
+        if (undefined !== this._onFrameStatsReady)
+          this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to any listeners
         this._frameStats.frameId++; // increment frame counter for next pending frame
       }
       this._clearStats();
@@ -137,15 +138,5 @@ export class FrameStatsCollector {
   public endTime(entry: keyof FrameStats) {
     if (this._shouldRecordFrame)
       this._end(entry);
-  }
-
-  public static beginTime(collector: FrameStatsCollector | undefined, entry: keyof FrameStats) {
-    if (undefined !== collector)
-      collector.beginTime(entry);
-  }
-
-  public static endTime(collector: FrameStatsCollector | undefined, entry: keyof FrameStats) {
-    if (undefined !== collector)
-      collector.endTime(entry);
   }
 }

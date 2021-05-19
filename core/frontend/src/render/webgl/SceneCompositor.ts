@@ -40,7 +40,6 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { TextureHandle } from "./Texture";
 import { RenderBufferMultiSample } from "./RenderBuffer";
-import { FrameStatsCollector } from "../FrameStats";
 
 function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -892,13 +891,13 @@ abstract class Compositor extends SceneCompositor {
     const needComposite = CompositeFlags.None !== compositeFlags;
 
     // Clear output targets
-    FrameStatsCollector.beginTime(this.target.frameStatsCollector, "opaqueTime");
+    this.target.frameStatsCollector.beginTime("opaqueTime");
     this.target.beginPerfMetricRecord("Clear Opaque");
     this.clearOpaque(needComposite);
     this.target.endPerfMetricRecord();
-    FrameStatsCollector.endTime(this.target.frameStatsCollector, "opaqueTime");
+    this.target.frameStatsCollector.endTime("opaqueTime");
 
-    FrameStatsCollector.beginTime(this.target.frameStatsCollector, "backgroundTime"); // includes skybox
+    this.target.frameStatsCollector.beginTime("backgroundTime"); // includes skybox
 
     // Render the background
     this.target.beginPerfMetricRecord("Render Background");
@@ -915,7 +914,7 @@ abstract class Compositor extends SceneCompositor {
     this.renderBackgroundMap(commands, needComposite);
     this.target.endPerfMetricRecord();
 
-    FrameStatsCollector.endTime(this.target.frameStatsCollector, "backgroundTime");
+    this.target.frameStatsCollector.endTime("backgroundTime");
 
     // Enable clipping
     this.target.beginPerfMetricRecord("Enable Clipping");
@@ -923,13 +922,13 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     // Render volume classification first so that we only classify the reality data
-    FrameStatsCollector.beginTime(this.target.frameStatsCollector, "classifiersTime");
+    this.target.frameStatsCollector.beginTime("classifiersTime");
     this.target.beginPerfMetricRecord("Render VolumeClassification");
     this.renderVolumeClassification(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
-    FrameStatsCollector.endTime(this.target.frameStatsCollector, "classifiersTime");
+    this.target.frameStatsCollector.endTime("classifiersTime");
 
-    FrameStatsCollector.beginTime(this.target.frameStatsCollector, "opaqueTime");
+    this.target.frameStatsCollector.beginTime("opaqueTime");
 
     // Render layers
     this.target.beginPerfMetricRecord("Render Opaque Layers");
@@ -937,7 +936,7 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     // Render opaque geometry
-    FrameStatsCollector.beginTime(this.target.frameStatsCollector, "onRenderOpaqueTime");
+    this.target.frameStatsCollector.beginTime("onRenderOpaqueTime");
     IModelFrameLifecycle.onRenderOpaque.raiseEvent({
       commands,
       needComposite,
@@ -945,16 +944,16 @@ abstract class Compositor extends SceneCompositor {
       fbo: this.getBackgroundFbo(needComposite),
       frameBufferStack: System.instance.frameBufferStack,
     });
-    FrameStatsCollector.endTime(this.target.frameStatsCollector, "onRenderOpaqueTime");
+    this.target.frameStatsCollector.endTime("onRenderOpaqueTime");
 
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
 
-    FrameStatsCollector.endTime(this.target.frameStatsCollector, "opaqueTime");
+    this.target.frameStatsCollector.endTime("opaqueTime");
 
-    FrameStatsCollector.beginTime(this.target.frameStatsCollector, "translucentTime");
+    this.target.frameStatsCollector.beginTime("translucentTime");
 
     // Render translucent layers
     this.target.beginPerfMetricRecord("Render Translucent Layers");
@@ -968,7 +967,7 @@ abstract class Compositor extends SceneCompositor {
       this.renderTranslucent(commands);
       this.target.endPerfMetricRecord();
 
-      FrameStatsCollector.endTime(this.target.frameStatsCollector, "translucentTime");
+      this.target.frameStatsCollector.endTime("translucentTime");
 
       this.target.beginPerfMetricRecord("Render Hilite");
       this.renderHilite(commands);
@@ -978,14 +977,14 @@ abstract class Compositor extends SceneCompositor {
       this.composite();
       this.target.endPerfMetricRecord();
     } else
-      FrameStatsCollector.endTime(this.target.frameStatsCollector, "translucentTime");
+      this.target.frameStatsCollector.endTime("translucentTime");
 
     // Render overlay Layers
-    FrameStatsCollector.beginTime(this.target.frameStatsCollector, "overlaysTime");
+    this.target.frameStatsCollector.beginTime("overlaysTime");
     this.target.beginPerfMetricRecord("Render Overlay Layers");
     this.renderLayers(commands, false, RenderPass.OverlayLayers);
     this.target.endPerfMetricRecord();
-    FrameStatsCollector.endTime(this.target.frameStatsCollector, "overlaysTime");
+    this.target.frameStatsCollector.endTime("overlaysTime");
 
     this.target.popViewClip();
   }

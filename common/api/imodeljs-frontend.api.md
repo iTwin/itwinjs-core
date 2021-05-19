@@ -3394,19 +3394,15 @@ export interface FrameStats {
 
 // @internal (undocumented)
 export class FrameStatsCollector {
-    constructor(onFrameStatsReady: OnFrameStatsReadyEvent);
+    constructor(onFrameStatsReady?: OnFrameStatsReadyEvent);
     // (undocumented)
     beginFrame(): void;
     // (undocumented)
     beginTime(entry: keyof FrameStats): void;
     // (undocumented)
-    static beginTime(collector: FrameStatsCollector | undefined, entry: keyof FrameStats): void;
-    // (undocumented)
     endFrame(wasFrameDrawn?: boolean): void;
     // (undocumented)
     endTime(entry: keyof FrameStats): void;
-    // (undocumented)
-    static endTime(collector: FrameStatsCollector | undefined, entry: keyof FrameStats): void;
     }
 
 // @public
@@ -9597,7 +9593,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get flashIntensity(): number;
     // (undocumented)
-    get frameStatsCollector(): FrameStatsCollector | undefined;
+    get frameStatsCollector(): FrameStatsCollector;
     // (undocumented)
     freezeRealityTiles: boolean;
     // (undocumented)

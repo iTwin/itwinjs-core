@@ -593,9 +593,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
   }
 
-  private _frameStatsCollector?: FrameStatsCollector;
+  private _frameStatsCollector = new FrameStatsCollector();
 
-  public get frameStatsCollector(): FrameStatsCollector | undefined { return this._frameStatsCollector; }
+  public get frameStatsCollector(): FrameStatsCollector { return this._frameStatsCollector; }
 
   public assignFrameStatsCollector(collector: FrameStatsCollector) { this._frameStatsCollector = collector; }
 
@@ -603,7 +603,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (!this._dcAssigned)
       return;
 
-    FrameStatsCollector.beginTime(this._frameStatsCollector, "totalFrameTime");
+    this._frameStatsCollector.beginTime("totalFrameTime");
     this.beginPerfMetricFrame(sceneMilSecElapsed, this.drawForReadPixels);
     this.beginPerfMetricRecord("Begin Paint", this.drawForReadPixels);
     assert(undefined !== this._fbo);
@@ -626,17 +626,17 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       // before then. So do it now.
       this.compositor.preDraw();
 
-      FrameStatsCollector.beginTime(this._frameStatsCollector, "classifiersTime");
+      this._frameStatsCollector.beginTime("classifiersTime");
       this.beginPerfMetricRecord("Planar Classifiers");
       this.drawPlanarClassifiers();
       this.endPerfMetricRecord();
-      FrameStatsCollector.endTime(this._frameStatsCollector, "classifiersTime");
+      this._frameStatsCollector.endTime("classifiersTime");
 
-      FrameStatsCollector.beginTime(this._frameStatsCollector, "shadowsTime");
+      this._frameStatsCollector.beginTime("shadowsTime");
       this.beginPerfMetricRecord("Shadow Maps");
       this.drawSolarShadowMap();
       this.endPerfMetricRecord();
-      FrameStatsCollector.endTime(this._frameStatsCollector, "shadowsTime");
+      this._frameStatsCollector.endTime("shadowsTime");
 
       this.beginPerfMetricRecord("Texture Drapes");
       this.drawTextureDrapes();
@@ -648,7 +648,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
-      FrameStatsCollector.beginTime(this._frameStatsCollector, "overlaysTime");
+      this._frameStatsCollector.beginTime("overlaysTime");
       this.beginPerfMetricRecord("Overlay Draws");
 
       this.beginPerfMetricRecord("World Overlays");
@@ -660,16 +660,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.endPerfMetricRecord();
 
       this.endPerfMetricRecord(); // End "Overlay Draws"
-      FrameStatsCollector.endTime(this._frameStatsCollector, "overlaysTime");
+      this._frameStatsCollector.endTime("overlaysTime");
     }
 
     // Apply screen-space effects. Note we do not reset this._isReadPixelsInProgress until *after* doing so, as screen-space effects only apply
     // during readPixels() if the effect shifts pixels from their original locations.
-    FrameStatsCollector.beginTime(this._frameStatsCollector, "screenspaceEffectsTime");
+    this._frameStatsCollector.beginTime("screenspaceEffectsTime");
     this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
     this.renderSystem.screenSpaceEffects.apply(this);
     this.endPerfMetricRecord(this.drawForReadPixels);
-    FrameStatsCollector.endTime(this._frameStatsCollector, "screenspaceEffectsTime");
+    this._frameStatsCollector.endTime("screenspaceEffectsTime");
 
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
@@ -679,7 +679,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.endPerfMetricRecord(this.drawForReadPixels);
 
     this.endPerfMetricFrame(this.drawForReadPixels);
-    FrameStatsCollector.endTime(this._frameStatsCollector, "totalFrameTime");
+    this._frameStatsCollector.endTime("totalFrameTime");
   }
 
   private drawPass(pass: RenderPass): void {
