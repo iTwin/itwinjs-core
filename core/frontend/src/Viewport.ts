@@ -39,6 +39,7 @@ import { ToolTipOptions } from "./NotificationManager";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
+import { FrameStats } from "./render/FrameStats";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
@@ -992,9 +993,18 @@ export abstract class Viewport implements IDisposable {
     return "";
   }
 
+  /** If this event has one or more listeners, collection of timing statistics related to rendering frames is enabled. Frame statistics will be received by the listeners whenever a frame is finished rendering.
+   * @note The timing data collected using this event only collects the amount of time spent on the CPU. Due to performance considerations, time spent on the GPU is not collected. Therefore, these statistics are not a direct mapping to user experience.
+   * @note In order to avoid interfering with the rendering loop, take care to avoid performing any intensive tasks in your event listeners.
+   * @see [[FrameStats]]
+   * @alpha
+   */
+  public readonly onFrameStats = new BeEvent<(frameStats: Readonly<FrameStats>) => void>();
+
   /** @internal */
   protected constructor(target: RenderTarget) {
     this._target = target;
+    target.setOnFrameStats(this.onFrameStats);
     this._viewportId = Viewport._nextViewportId++;
     this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
     IModelApp.tileAdmin.registerViewport(this);
@@ -1400,18 +1410,14 @@ export abstract class Viewport implements IDisposable {
     if (!this.view.areAllTileTreesLoaded)
       return false;
 
-    let allLoaded = true;
-    this.forEachMapTreeRef((ref) => {
-      allLoaded &&= ref.isLoadingComplete;
-    });
+    if (this._mapTiledGraphicsProvider && !TiledGraphicsProvider.isLoadingComplete(this._mapTiledGraphicsProvider, this))
+      return false;
 
-    if (allLoaded) {
-      this.forEachTiledGraphicsProviderTree((ref) => {
-        allLoaded &&= ref.isLoadingComplete;
-      });
-    }
+    for (const provider of this._tiledGraphicsProviders)
+      if (!TiledGraphicsProvider.isLoadingComplete(provider, this))
+        return false;
 
-    return allLoaded;
+    return true;
   }
 
   /** Disclose *all* TileTrees currently in use by this Viewport. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
@@ -2159,6 +2165,16 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public createSceneContext(): SceneContext { return new SceneContext(this); }
 
+  /** @internal */
+  public createScene(context: SceneContext): void {
+    this.view.createScene(context);
+    if (this._mapTiledGraphicsProvider)
+      TiledGraphicsProvider.addToScene(this._mapTiledGraphicsProvider, context);
+
+    for (const provider of this._tiledGraphicsProviders)
+      TiledGraphicsProvider.addToScene(provider, context);
+  }
+
   /** Called when the visible contents of the viewport are redrawn.
    * @note Due to the frequency of this event, avoid performing expensive work inside event listeners.
    */
@@ -2235,15 +2251,9 @@ export abstract class Viewport implements IDisposable {
       if (!this._freezeScene) {
         IModelApp.tileAdmin.clearTilesForViewport(this);
         IModelApp.tileAdmin.clearUsageForViewport(this);
-        const context = this.createSceneContext();
-        view.createScene(context);
 
-        for (const provider of this._tiledGraphicsProviders) {
-          if (undefined !== provider.addToScene)
-            provider.addToScene(context);
-          else
-            provider.forEachTileTreeRef(this, (ref) => ref.addToScene(context));
-        }
+        const context = this.createSceneContext();
+        this.createScene(context);
 
         context.requestMissingTiles();
         target.changeScene(context.scene);

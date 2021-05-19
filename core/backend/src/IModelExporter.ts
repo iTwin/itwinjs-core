@@ -213,8 +213,15 @@ export class IModelExporter {
     this._excludedElementIds.add(elementId);
   }
 
-  /** Add a rule to exclude all Elements of a specified Category. */
+  /** Add a rule to exclude all Elements in a specified Category.
+   * @deprecated Use [[excludeElementsInCategory]] instead.
+  */
   public excludeElementCategory(categoryId: Id64String): void {
+    this.excludeElementsInCategory(categoryId);
+  }
+
+  /** Add a rule to exclude all Elements in a specified Category. */
+  public excludeElementsInCategory(categoryId: Id64String): void {
     this._excludedElementCategoryIds.add(categoryId);
   }
 

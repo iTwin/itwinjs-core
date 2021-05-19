@@ -58,6 +58,7 @@ import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
 import { VisibleTileFeatures } from "./VisibleTileFeatures";
+import { FrameStatsCollector, OnFrameStatsReadyEvent } from "../FrameStats";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -592,10 +593,19 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
   }
 
+  private _frameStatsCollector = new FrameStatsCollector();
+
+  public setOnFrameStats(event: OnFrameStatsReadyEvent) {
+    this._frameStatsCollector.onFrameStatsReady = event;
+  }
+
+  public get frameStatsCollector(): FrameStatsCollector { return this._frameStatsCollector; }
+
   private paintScene(sceneMilSecElapsed?: number): void {
     if (!this._dcAssigned)
       return;
 
+    this.frameStatsCollector.beginFrame(sceneMilSecElapsed);
     this.beginPerfMetricFrame(sceneMilSecElapsed, this.drawForReadPixels);
     this.beginPerfMetricRecord("Begin Paint", this.drawForReadPixels);
     assert(undefined !== this._fbo);
@@ -618,13 +628,17 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       // before then. So do it now.
       this.compositor.preDraw();
 
+      this.frameStatsCollector.beginTime("classifiersTime");
       this.beginPerfMetricRecord("Planar Classifiers");
       this.drawPlanarClassifiers();
       this.endPerfMetricRecord();
+      this.frameStatsCollector.endTime("classifiersTime");
 
+      this.frameStatsCollector.beginTime("shadowsTime");
       this.beginPerfMetricRecord("Shadow Maps");
       this.drawSolarShadowMap();
       this.endPerfMetricRecord();
+      this.frameStatsCollector.endTime("shadowsTime");
 
       this.beginPerfMetricRecord("Texture Drapes");
       this.drawTextureDrapes();
@@ -636,6 +650,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
+      this.frameStatsCollector.beginTime("overlaysTime");
       this.beginPerfMetricRecord("Overlay Draws");
 
       this.beginPerfMetricRecord("World Overlays");
@@ -647,13 +662,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.endPerfMetricRecord();
 
       this.endPerfMetricRecord(); // End "Overlay Draws"
+      this.frameStatsCollector.endTime("overlaysTime");
     }
 
     // Apply screen-space effects. Note we do not reset this._isReadPixelsInProgress until *after* doing so, as screen-space effects only apply
     // during readPixels() if the effect shifts pixels from their original locations.
+    this.frameStatsCollector.beginTime("screenspaceEffectsTime");
     this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
     this.renderSystem.screenSpaceEffects.apply(this);
     this.endPerfMetricRecord(this.drawForReadPixels);
+    this.frameStatsCollector.endTime("screenspaceEffectsTime");
 
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
@@ -663,6 +681,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.endPerfMetricRecord(this.drawForReadPixels);
 
     this.endPerfMetricFrame(this.drawForReadPixels);
+    this.frameStatsCollector.endFrame();
   }
 
   private drawPass(pass: RenderPass): void {

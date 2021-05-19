@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseStatus, Config, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus, Config, GuidString, IModelStatus, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { ChangeSetQuery, ChangesType } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
@@ -50,7 +50,7 @@ describe("BriefcaseManager (#integration)", () => {
   let managerRequestContext: AuthorizedBackendRequestContext;
 
   const getElementCount = (iModel: IModelDb): number => {
-    const rows: any[] = IModelTestUtils.executeQuery(iModel, "SELECT COUNT(*) AS cnt FROM bis.Element");
+    const rows = IModelTestUtils.executeQuery(iModel, "SELECT COUNT(*) AS cnt FROM bis.Element");
     const count = +(rows[0].cnt);
     return count;
   };
@@ -600,67 +600,60 @@ describe("BriefcaseManager (#integration)", () => {
 
   it("should be able to show progress when downloading a briefcase (#integration)", async () => {
     const testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
-    requestContext.enter();
 
-    let numProgressCalls: number = 0;
+    let numProgressCalls = 0;
 
     readline.clearLine(process.stdout, 0);
     readline.moveCursor(process.stdout, -20, 0);
+    let done = 0;
+    let complete = 0;
     const downloadProgress = (loaded: number, total: number) => {
-      const message = `${HubUtility.testIModelNames.stadium} Download Progress ... ${(loaded * 100 / total).toFixed(2)}%`;
-      process.stdout.write(message);
-      readline.moveCursor(process.stdout, -1 * message.length, 0);
-      if (loaded >= total) {
-        process.stdout.write(os.EOL);
+      if (total > 0) {
+        const message = `${HubUtility.testIModelNames.stadium} Download Progress ... ${(loaded * 100 / total).toFixed(2)}%`;
+        process.stdout.write(message);
+        readline.moveCursor(process.stdout, -1 * message.length, 0);
+        if (loaded >= total)
+          process.stdout.write(os.EOL);
+        numProgressCalls++;
+        done = loaded;
+        complete = total;
       }
-      numProgressCalls++;
       return 0;
     };
 
     const args = {
       contextId: testContextId,
       iModelId: testIModelId,
-      briefcaseId: 0,
+      briefcaseId: BriefcaseIdValue.Unassigned,
       onProgress: downloadProgress,
     };
     const fileName = BriefcaseManager.getFileName(args);
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
-
+    await BriefcaseManager.deleteBriefcaseFiles(fileName);
+    const watch = new StopWatch("download", true);
     const props = await BriefcaseManager.downloadBriefcase(requestContext, args);
-    requestContext.enter();
-
+    // eslint-disable-next-line no-console
+    console.log(`download took ${watch.elapsedSeconds} seconds`);
     const iModel = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
-    requestContext.enter();
-
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-    assert.isTrue(numProgressCalls > 10);
+    assert.isAbove(numProgressCalls, 0, "download progress called");
+    assert.isAbove(done, 0, "done set");
+    assert.isAbove(complete, 0, "complete set");
   });
 
   it("Should be able to cancel an in progress download (#integration)", async () => {
     const testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
-    requestContext.enter();
-
     let aborted = 0;
     const args = {
       contextId: testContextId,
       iModelId: testIModelId,
-      briefcaseId: 0,
-      onProgress: (_loaded: number, _total: number) => {
-        return aborted;
-      },
+      briefcaseId: BriefcaseIdValue.Unassigned,
+      onProgress: () => aborted,
     };
     await BriefcaseManager.deleteBriefcaseFiles(BriefcaseManager.getFileName(args), requestContext);
 
     const downloadPromise = BriefcaseManager.downloadBriefcase(requestContext, args);
-    requestContext.enter();
-
-    setTimeout(async () => {
-      aborted = 1;
-      requestContext.enter();
-    }, 1000);
-
+    setTimeout(async () => aborted = 1, 1000);
     await expect(downloadPromise).to.be.rejectedWith(UserCancelledError).to.eventually.have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
-    requestContext.enter();
   });
 
   it("Should be able to recover after changeSet deletion (#integration)", async () => {
