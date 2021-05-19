@@ -822,28 +822,18 @@ export interface ChangeData {
     changedModels: ChangedModels;
 }
 
-// @internal (undocumented)
+// @public
 export interface ChangedElements {
-    // (undocumented)
     classIds: Id64String[];
-    // (undocumented)
     elements: Id64String[];
-    // (undocumented)
     modelIds?: Id64String[];
-    // (undocumented)
     newChecksums?: number[][];
-    // (undocumented)
     oldChecksums?: number[][];
-    // (undocumented)
-    opcodes: number[];
-    // (undocumented)
+    opcodes: DbOpcode[];
     parentClassIds?: Id64String[];
-    // (undocumented)
     parentIds?: Id64String[];
-    // (undocumented)
-    properties?: Id64String[][];
-    // (undocumented)
-    type: number[];
+    properties?: string[][];
+    type: TypeOfChange[];
 }
 
 // @beta
@@ -2178,9 +2168,14 @@ export namespace ElementGeometry {
     export function fromImageGraphic(image: ImageGraphicProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
     export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
     export function fromTextString(text: TextStringProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
+    export function getBRepEntityType(entry: ElementGeometryDataEntry): BRepEntity.Type | undefined;
     export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
+    export function isCurve(entry: ElementGeometryDataEntry): boolean;
+    export function isDisplayableEntry(entry: ElementGeometryDataEntry): boolean;
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
+    export function isSolid(entry: ElementGeometryDataEntry): boolean;
+    export function isSurface(entry: ElementGeometryDataEntry): boolean;
     export class Iterator implements IterableIterator<IteratorEntry> {
         // (undocumented)
         [Symbol.iterator](): IterableIterator<IteratorEntry>;
@@ -8296,17 +8291,12 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
     recipe?: RelatedElementProps;
 }
 
-// @internal (undocumented)
+// @public
 export enum TypeOfChange {
-    // (undocumented)
     Geometry = 2,
-    // (undocumented)
     Hidden = 16,
-    // (undocumented)
     Indirect = 8,
-    // (undocumented)
     Placement = 4,
-    // (undocumented)
     Property = 1
 }
 

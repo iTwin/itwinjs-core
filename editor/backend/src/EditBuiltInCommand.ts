@@ -9,8 +9,8 @@
 import { CompressedId64Set, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { Matrix3d, Matrix3dProps, Point3d, PointString3d, Transform, TransformProps } from "@bentley/geometry-core";
 import { GeometricElement, IModelDb } from "@bentley/imodeljs-backend";
-import { ElementGeometryUpdate, GeometricElementProps, GeometryPartProps, GeometryStreamBuilder, IModelError } from "@bentley/imodeljs-common";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds, InsertGeometricElementData, InsertGeometryPartData } from "@bentley/imodeljs-editor-common";
+import { BRepEntity, ElementGeometry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, GeometricElementProps, GeometryPartProps, GeometryStreamBuilder, IModelError } from "@bentley/imodeljs-common";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds, FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData } from "@bentley/imodeljs-editor-common";
 import { EditCommand } from "./EditCommand";
 
 /** @alpha */
@@ -61,7 +61,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     return IModelStatus.Success;
   }
 
-  public async insertGeometricElement(props: GeometricElementProps, data?: InsertGeometricElementData): Promise<Id64String> {
+  public async insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String> {
     const newElem = this.iModel.elements.createElement(props);
     const newId = this.iModel.elements.insertElement(newElem);
     if (undefined === data)
@@ -83,7 +83,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     return newId;
   }
 
-  public async insertGeometryPart(props: GeometryPartProps, data?: InsertGeometryPartData): Promise<Id64String> {
+  public async insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String> {
     if (undefined === props.geom && undefined !== data) {
       const builder = new GeometryStreamBuilder();
       builder.appendGeometry(PointString3d.create(Point3d.createZero()));
@@ -108,5 +108,108 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     }
 
     return newId;
+  }
+
+  public async updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void> {
+    let props: GeometricElementProps;
+    if (typeof propsOrId === "string") {
+      if (undefined === data)
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Flatbuffer data required for update by id");
+      props = this.iModel.elements.getElement<GeometricElement>(propsOrId);
+    } else {
+      props = propsOrId;
+    }
+
+    if (undefined === props.id)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Element id required for update");
+
+    this.iModel.elements.updateElement(props);
+    if (undefined === data)
+      return;
+
+    const updateProps: ElementGeometryUpdate = {
+      elementId: props.id,
+      entryArray: data.entryArray,
+      isWorld: data.isWorld,
+      viewIndependent: data.viewIndependent,
+    };
+
+    const status = this.iModel.elementGeometryUpdate(updateProps);
+    if (DbResult.BE_SQLITE_OK !== status) {
+      throw new IModelError(status, "Error updating element geometry");
+    }
+  }
+
+  public async requestElementGeometry(elementId: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined> {
+    let accepted;
+
+    const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
+      accepted = info;
+
+      if (undefined !== filter) {
+        let numDisplayable = 0;
+
+        for (const entry of info.entryArray) {
+          if (!ElementGeometry.isDisplayableEntry(entry))
+            continue;
+
+          numDisplayable++;
+          if (filter.maxDisplayable && numDisplayable > filter.maxDisplayable) {
+            accepted = undefined;
+            break;
+          }
+
+          if (filter.reject && filter.reject.some((opcode) => entry.opcode === opcode)) {
+            accepted = undefined;
+            break;
+          }
+
+          if (filter.accept && !filter.accept.some((opcode) => entry.opcode === opcode)) {
+            accepted = undefined;
+            break;
+          }
+
+          if (undefined === filter.geometry)
+            continue;
+
+          let entityType;
+          if (filter.geometry.curves && !(filter.geometry.surfaces || filter.geometry.solids))
+            entityType = ElementGeometry.isCurve(entry) ? BRepEntity.Type.Wire : undefined; // skip surface/solid opcodes...
+          else
+            entityType = ElementGeometry.getBRepEntityType(entry);
+
+          switch (entityType) {
+            case BRepEntity.Type.Wire:
+              if (!filter.geometry.curves)
+                accepted = undefined;
+              break;
+            case BRepEntity.Type.Sheet:
+              if (!filter.geometry.surfaces)
+                accepted = undefined;
+              break;
+            case BRepEntity.Type.Solid:
+              if (!filter.geometry.solids)
+                accepted = undefined;
+              break;
+            default:
+              accepted = undefined;
+              break;
+          }
+
+          if (undefined === accepted)
+            break;
+        }
+      }
+    };
+
+    const requestProps: ElementGeometryRequest = {
+      onGeometry,
+      elementId,
+    };
+
+    if (DbResult.BE_SQLITE_OK !== this.iModel.elementGeometryRequest(requestProps))
+      return undefined;
+
+    return accepted;
   }
 }
