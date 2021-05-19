@@ -44,8 +44,8 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
   }, [onDiagnosticsOptionsChanged, result]);
 
   return (
-    <React.Fragment>
-      <button onClick={(e) => setPosition({ x: e.clientX, y: e.clientY })}>Diagnostics</button>
+    <button onClick={(e) => setPosition({ x: e.clientX, y: e.clientY })}>
+      Diagnostics
       <GlobalContextMenu
         className="DiagnosticsSelector"
         opened={undefined !== position}
@@ -61,6 +61,6 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
         <LabeledSelect label="Dev severity" options={["error", "warning", "info", "debug", "trace"]} value={devSeverity} onChange={(e) => setDevSeverity(e.currentTarget.value)}></LabeledSelect>
         <LabeledToggle label="Measure performance" isOn={shouldMeasurePerformance} onChange={toggleMeasurePerformance} />
       </GlobalContextMenu>
-    </React.Fragment>
+    </button>
   );
 }
