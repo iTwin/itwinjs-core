@@ -3371,6 +3371,35 @@ export interface FrameRenderData {
     needComposite: boolean;
 }
 
+// @alpha
+export interface FrameStats {
+    backgroundTime: number;
+    classifiersTime: number;
+    frameId: number;
+    opaqueTime: number;
+    overlaysTime: number;
+    sceneTime: number;
+    screenspaceEffectsTime: number;
+    shadowsTime: number;
+    totalFrameTime: number;
+    translucentTime: number;
+}
+
+// @internal (undocumented)
+export class FrameStatsCollector {
+    // (undocumented)
+    beginFrame(sceneMilSecElapsed?: number): void;
+    // (undocumented)
+    beginTime(entry: keyof FrameStats): void;
+    // (undocumented)
+    endFrame(): void;
+    // (undocumented)
+    endTime(entry: keyof FrameStats): void;
+    set onFrameStatsReady(ev: OnFrameStatsReadyEvent | undefined);
+    // (undocumented)
+    get onFrameStatsReady(): OnFrameStatsReadyEvent | undefined;
+    }
+
 // @public
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
@@ -3817,6 +3846,32 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
 }
 
 // @public
+export interface GraphicArc {
+    // (undocumented)
+    arc: Arc3d;
+    // (undocumented)
+    filled?: boolean;
+    // (undocumented)
+    isEllipse?: boolean;
+    // (undocumented)
+    type: "arc";
+}
+
+// @public
+export interface GraphicArc2d {
+    // (undocumented)
+    arc: Arc3d;
+    // (undocumented)
+    filled?: boolean;
+    // (undocumented)
+    isEllipse?: boolean;
+    // (undocumented)
+    type: "arc2d";
+    // (undocumented)
+    zDepth: number;
+}
+
+// @public
 export class GraphicBranch implements IDisposable {
     constructor(ownsEntries?: boolean);
     add(graphic: RenderGraphic): void;
@@ -3880,6 +3935,7 @@ export abstract class GraphicBuilder {
     abstract addPointString(points: Point3d[]): void;
     abstract addPointString2d(points: Point2d[], zDepth: number): void;
     abstract addPolyface(meshData: Polyface, filled: boolean): void;
+    addPrimitive(primitive: GraphicPrimitive): void;
     addRangeBox(range: Range3d): void;
     addRangeBoxFromCorners(p: Point3d[]): void;
     abstract addShape(points: Point3d[]): void;
@@ -3921,7 +3977,73 @@ export interface GraphicBuilderOptions {
 }
 
 // @public
+export interface GraphicLineString {
+    // (undocumented)
+    points: Point3d[];
+    // (undocumented)
+    type: "linestring";
+}
+
+// @public
+export interface GraphicLineString2d extends GraphicPrimitive2d {
+    // (undocumented)
+    points: Point2d[];
+    // (undocumented)
+    type: "linestring2d";
+}
+
+// @public
 export type GraphicList = RenderGraphic[];
+
+// @public
+export interface GraphicLoop {
+    // (undocumented)
+    loop: Loop;
+    // (undocumented)
+    type: "loop";
+}
+
+// @public
+export interface GraphicPath {
+    // (undocumented)
+    path: Path;
+    // (undocumented)
+    type: "path";
+}
+
+// @public
+export interface GraphicPointString {
+    // (undocumented)
+    points: Point3d[];
+    // (undocumented)
+    type: "pointstring";
+}
+
+// @public
+export interface GraphicPointString2d extends GraphicPrimitive2d {
+    // (undocumented)
+    points: Point2d[];
+    // (undocumented)
+    type: "pointstring2d";
+}
+
+// @public
+export interface GraphicPolyface {
+    // (undocumented)
+    filled?: boolean;
+    // (undocumented)
+    polyface: Polyface;
+    // (undocumented)
+    type: "polyface";
+}
+
+// @public
+export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface;
+
+// @public
+export interface GraphicPrimitive2d {
+    zDepth: number;
+}
 
 // @internal (undocumented)
 export interface GraphicsCollector {
@@ -3942,6 +4064,22 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
     // (undocumented)
     get worldToViewMap(): Map4d;
     }
+
+// @public
+export interface GraphicShape {
+    // (undocumented)
+    points: Point3d[];
+    // (undocumented)
+    type: "shape";
+}
+
+// @public
+export interface GraphicShape2d extends GraphicPrimitive2d {
+    // (undocumented)
+    points: Point2d[];
+    // (undocumented)
+    type: "shape2d";
+}
 
 // @public
 export enum GraphicType {
@@ -6681,6 +6819,9 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     signOut(requestContext?: ClientRequestContext): Promise<void>;
     }
 
+// @alpha
+export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
+
 // @internal
 export class OnScreenTarget extends Target {
     constructor(canvas: HTMLCanvasElement);
@@ -8160,6 +8301,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
     setHiliteSet(_hilited: HiliteSet): void;
+    // (undocumented)
+    setOnFrameStats(_event: OnFrameStatsReadyEvent): void;
     setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
@@ -9443,6 +9586,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get flashIntensity(): number;
     // (undocumented)
+    get frameStatsCollector(): FrameStatsCollector;
+    // (undocumented)
     freezeRealityTiles: boolean;
     // (undocumented)
     getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
@@ -9530,6 +9675,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
     setHiliteSet(hilite: HiliteSet): void;
+    // (undocumented)
+    setOnFrameStats(event: OnFrameStatsReadyEvent): void;
     // (undocumented)
     get shadowFrustum(): Frustum | undefined;
     // (undocumented)
@@ -12114,6 +12261,8 @@ export abstract class Viewport implements IDisposable {
     readonly onDisposed: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
+    // @alpha
+    readonly onFrameStats: BeEvent<(frameStats: Readonly<FrameStats>) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
     readonly onResized: BeEvent<(vp: Viewport) => void>;

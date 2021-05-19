@@ -11,11 +11,8 @@ import { DefinitionElementProps } from "./ElementProps";
 import { ImageSourceFormat } from "./Image";
 import { Base64EncodedString } from "./Base64EncodedString";
 
-/** @beta */
-export enum TextureFlags { None }
-
-/** Properties that define a Texture
- * @beta
+/** Properties that define a [Texture]($backend) element.
+ * @public
  */
 export interface TextureProps extends DefinitionElementProps {
   /** Format of the image data. */
@@ -25,14 +22,6 @@ export interface TextureProps extends DefinitionElementProps {
    * @see [[Base64EncodedString.toUint8Array]] to decode the bytes.
    */
   data: Base64EncodedString;
-  /** The width of the image. */
-  width: number;
-  /** The height of the image. */
-  height: number;
-  /** Optional flags.  Currently unused; should always be TextureFlags.None.
-   * @beta
-   */
-  flags: TextureFlags;
   /** An optional description of the texture. */
   description?: string;
 }

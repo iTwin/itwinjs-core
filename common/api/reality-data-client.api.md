@@ -68,6 +68,7 @@ export class RealityData extends WsgInstance {
     footprint?: string;
     getBlobStringUrl(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<string>;
     getBlobUrl(requestContext: AuthorizedClientRequestContext, writeAccess?: boolean): Promise<URL>;
+    // @deprecated
     getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
     getRootDocumentJson(requestContext: AuthorizedClientRequestContext): Promise<any>;
     getTileContent(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
@@ -168,6 +169,20 @@ export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
     action?: string;
     polygon?: string;
     project?: string;
+}
+
+// @internal
+export enum RealityDataType {
+    // (undocumented)
+    CESIUM_3DTILE = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    REALITYMESH3DTILES = "RealityMesh3DTiles",
+    // (undocumented)
+    TERRAIN3DTILE = "Terrain3DTiles"
 }
 
 

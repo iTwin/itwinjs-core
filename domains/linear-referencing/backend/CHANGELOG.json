@@ -2,6 +2,24 @@
   "name": "@bentley/linear-referencing-backend",
   "entries": [
     {
+      "version": "2.15.4",
+      "tag": "@bentley/linear-referencing-backend_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@bentley/linear-referencing-backend_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@bentley/linear-referencing-backend_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.15.1",
       "tag": "@bentley/linear-referencing-backend_v2.15.1",
       "date": "Wed, 05 May 2021 13:18:31 GMT",
