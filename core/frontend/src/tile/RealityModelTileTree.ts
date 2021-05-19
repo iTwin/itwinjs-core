@@ -866,7 +866,8 @@ export class RealityModelTileClient {
   public async getTileContent(url: string): Promise<any> {
     assert(url !== undefined);
     const useRds = this.rdsProps !== undefined && this._token !== undefined;
-    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!) : new FrontendRequestContext("");
+    // Use an empty activityId to keep tile content as simple request
+    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!, "") : new FrontendRequestContext("");
     if (useRds) {
       await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
       requestContext.enter();
@@ -885,7 +886,8 @@ export class RealityModelTileClient {
   public async getTileJson(url: string): Promise<any> {
     assert(url !== undefined);
     const useRds = this.rdsProps !== undefined && this._token !== undefined;
-    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!) : new FrontendRequestContext("");
+    // Use an empty activityId to keep tile json as simple request
+    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!, "") : new FrontendRequestContext("");
     requestContext.enter();
 
     if (this.rdsProps && this._token) {

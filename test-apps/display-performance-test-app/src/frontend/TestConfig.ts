@@ -65,11 +65,9 @@ export interface HiliteProps {
   visibleRatio?: number;
   hiddenRatio?: number;
   silhouette?: Hilite.Silhouette;
-  colors?: {
-    red?: number;
-    green?: number;
-    blue?: number;
-  };
+  red?: number;
+  green?: number;
+  blue?: number;
 }
 
 /** Specifies how to apply hypermodeling in a TestConfig. */
@@ -316,7 +314,7 @@ export class TestConfigStack {
 /** Override properties of settings with those defined by props. */
 function hiliteSettings(settings: Hilite.Settings, props: HiliteProps): Hilite.Settings {
   const colors = settings.color.colors;
-  const color = ColorDef.from(props.colors?.red ?? colors.r, props.colors?.green ?? colors.g, props.colors?.blue ?? colors.b, 0);
+  const color = ColorDef.from(props?.red ?? colors.r, props?.green ?? colors.g, props?.blue ?? colors.b, 0);
   return new Hilite.Settings(color, props.visibleRatio ?? settings.visibleRatio, props.hiddenRatio ?? settings.hiddenRatio, props.silhouette ?? settings.silhouette);
 }
 
