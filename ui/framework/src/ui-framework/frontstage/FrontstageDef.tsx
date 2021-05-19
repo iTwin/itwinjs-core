@@ -590,8 +590,6 @@ export class FrontstageDef {
    * @beta
    */
   public floatWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
-    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
-      return;
     // istanbul ignore else
     if (this.nineZoneState) {
       const location = findTab(this.nineZoneState, widgetId);
@@ -726,8 +724,6 @@ export class FrontstageDef {
    * @beta
    */
   public dockWidgetContainer(widgetId: string) {
-    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
-      return;
     // istanbul ignore else
     if (this.nineZoneState) {
       const location = findTab(this.nineZoneState, widgetId);
