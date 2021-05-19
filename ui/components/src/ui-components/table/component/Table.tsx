@@ -528,6 +528,11 @@ export class Table extends React.Component<TableProps, TableState> {
       return tableColumn;
     });
 
+    for (const tableColumn of tableColumns) {
+      if (tableColumn.filterable)
+        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(this.props.maximumDistinctValues);
+    }
+
     this.setState({ columns: tableColumns, keyboardEditorCellKey });
 
     if (this._pendingUpdate !== TableUpdate.None) {
@@ -894,12 +899,8 @@ export class Table extends React.Component<TableProps, TableState> {
         this.props.onRowsLoaded(index, index + loadResult.rows.length - 1);
 
       const showFilter = this._isShowFilterRow();
-      if (showFilter !== this._filterRowShown) {
-        // istanbul ignore else
-        if (showFilter)
-          await this.loadDistinctValues();
+      if (showFilter !== this._filterRowShown)
         this.toggleFilterRow(showFilter);
-      }
     });
   });
 
@@ -1404,6 +1405,7 @@ export class Table extends React.Component<TableProps, TableState> {
     return property;
   }
 
+<<<<<<< HEAD
   private async loadDistinctValues(): Promise<void> {
     await Promise.all(this.state.columns.map(async (tableColumn: TableColumn) => {
       if (tableColumn.filterable)
@@ -1411,6 +1413,8 @@ export class Table extends React.Component<TableProps, TableState> {
     }));
   }
 
+=======
+>>>>>>> 9d471896d6 (Fixed getting distinct values when Table rows are updated (#1430))
   private _handleFilterChange = (filter: ReactDataGridFilter): void => {
     const columnKey = filter.column.key;
     const tableColumn = this.state.columns.find((column: TableColumn) => column.key === columnKey);
