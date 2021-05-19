@@ -194,28 +194,6 @@ describe("float and dock widget", () => {
     nineZoneStateSetter.calledOnce.should.true;
   });
 
-  it("should not float if v1", () => {
-    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
-    state = addTab(state, "t3");
-
-    const frontstageDef = new FrontstageDef();
-    const nineZoneStateSetter = sinon.spy();
-
-    sinon.stub(UiFramework, "uiVersion").get(() => "1");
-    sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
-    frontstageDef.floatWidget("t1", { x: 55, y: 105 });
-    nineZoneStateSetter.calledOnce.should.not.be.true;
-
-    sinon.stub(UiFramework, "uiVersion").get(() => "");
-    frontstageDef.floatWidget("t1");
-    nineZoneStateSetter.calledOnce.should.not.be.true;
-  });
-
   it("should dock", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addFloatingWidget(state, "fw1", ["t1"]);
@@ -238,28 +216,6 @@ describe("float and dock widget", () => {
 
     frontstageDef.dockWidgetContainer("ta");
     nineZoneStateSetter.calledOnce.should.true;
-  });
-
-  it("should not dock if V1", () => {
-    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addFloatingWidget(state, "fw1", ["t1"]);
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
-    state = addTab(state, "t3");
-
-    const frontstageDef = new FrontstageDef();
-    const nineZoneStateSetter = sinon.spy();
-
-    sinon.stub(UiFramework, "uiVersion").get(() => "1");
-    sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
-    frontstageDef.dockWidgetContainer("t1");
-    nineZoneStateSetter.calledOnce.should.not.be.true;
-
-    sinon.stub(UiFramework, "uiVersion").get(() => "");
-    frontstageDef.dockWidgetContainer("t1");
-    nineZoneStateSetter.calledOnce.should.not.be.true;
   });
 
 });
