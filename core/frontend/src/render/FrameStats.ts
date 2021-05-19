@@ -21,22 +21,20 @@ export interface FrameStats {
   animationTime: number;
   /** The CPU time in milliseconds spent setting up the view while setting up the scene. This is included in `totalSceneTime`. */
   setupViewTime: number;
-  /** The CPU time in milliseconds spent setting the hilite set while setting up the scene. This is included in `totalSceneTime`. */
-  hiliteTime: number;
-  /** The CPU time in milliseconds spent overriding feature symbology while setting up the scene. This is included in `totalSceneTime`. */
-  featureSymbologyTime: number;
   /** The CPU time in milliseconds spent when creating or changing the scene if in invalid. This is included in `totalSceneTime`. */
   createChangeSceneTime: number;
   /** The CPU time in milliseconds spent validating the render plan while setting up the scene. This is included in `totalSceneTime`. */
   validateRenderPlanTime: number;
   /** The CPU time in milliseconds spent adding or changing decorations while setting up the scene. This is included in `totalSceneTime`. */
   decorationsTime: number;
-  /** The CPU time in milliseconds spent processing flash while setting up the scene. This is included in `totalSceneTime`. */
-  flashTime: number;
+  /** The CPU time in milliseconds spent executing the target's `onBeforeRender` call while setting up the scene. This is included in `totalSceneTime`. */
+  onBeforeRenderTime: number;
   /** The CPU time in milliseconds spent rendering the frame. This does not include the time described by `totalSceneTime`. */
   totalFrameTime: number;
   /** The CPU time in milliseconds spent rendering opaque geometry. This is included in `totalFrameTime`. */
   opaqueTime: number;
+  /** The CPU time in milliseconds spent executing the `IModelFrameLifecycle.onRenderOpaque` call. This is included in `totalFrameTime`. */
+  onRenderOpaqueTime: number;
   /** The CPU time in milliseconds spent rendering translucent geometry. This is included in `totalFrameTime`. */
   translucentTime: number;
   /** The CPU time in milliseconds spent rendering overlays. This is included in `totalFrameTime`. */
@@ -69,14 +67,13 @@ export class FrameStatsCollector {
       totalSceneTime: 0,
       animationTime: 0,
       setupViewTime: 0,
-      hiliteTime: 0,
-      featureSymbologyTime: 0,
       createChangeSceneTime: 0,
       validateRenderPlanTime: 0,
       decorationsTime: 0,
-      flashTime: 0,
+      onBeforeRenderTime: 0,
       totalFrameTime: 0,
       opaqueTime: 0,
+      onRenderOpaqueTime: 0,
       translucentTime: 0,
       overlaysTime: 0,
       shadowsTime: 0,
@@ -90,14 +87,13 @@ export class FrameStatsCollector {
     this._frameStats.totalSceneTime = 0;
     this._frameStats.animationTime = 0;
     this._frameStats.setupViewTime = 0;
-    this._frameStats.hiliteTime = 0;
-    this._frameStats.featureSymbologyTime = 0;
     this._frameStats.createChangeSceneTime = 0;
     this._frameStats.validateRenderPlanTime = 0;
     this._frameStats.decorationsTime = 0;
-    this._frameStats.flashTime = 0;
+    this._frameStats.onBeforeRenderTime = 0;
     this._frameStats.totalFrameTime = 0;
     this._frameStats.opaqueTime = 0;
+    this._frameStats.onRenderOpaqueTime = 0;
     this._frameStats.translucentTime = 0;
     this._frameStats.overlaysTime = 0;
     this._frameStats.shadowsTime = 0;

@@ -3378,10 +3378,9 @@ export interface FrameStats {
     classifiersTime: number;
     createChangeSceneTime: number;
     decorationsTime: number;
-    featureSymbologyTime: number;
-    flashTime: number;
     frameId: number;
-    hiliteTime: number;
+    onBeforeRenderTime: number;
+    onRenderOpaqueTime: number;
     opaqueTime: number;
     overlaysTime: number;
     screenspaceEffectsTime: number;

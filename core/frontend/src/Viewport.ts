@@ -2216,9 +2216,7 @@ export abstract class Viewport implements IDisposable {
       this.setupFromView();
 
     if (this._selectionSetDirty) {
-      this._frameStatsCollector.beginTime("hiliteTime");
       target.setHiliteSet(view.iModel.hilited);
-      this._frameStatsCollector.endTime("hiliteTime");
       this._selectionSetDirty = false;
       isRedrawNeeded = true;
     }
@@ -2245,10 +2243,8 @@ export abstract class Viewport implements IDisposable {
     }
 
     if (overridesNeeded) {
-      this._frameStatsCollector.beginTime("featureSymbologyTime");
       const ovr = new FeatureSymbology.Overrides(this);
       target.overrideFeatureSymbology(ovr);
-      this._frameStatsCollector.endTime("featureSymbologyTime");
       isRedrawNeeded = true;
     }
 
@@ -2293,18 +2289,18 @@ export abstract class Viewport implements IDisposable {
       this._frameStatsCollector.endTime("decorationsTime");
     }
 
-    this._frameStatsCollector.beginTime("flashTime");
     let requestNextAnimation = false;
     if (this.processFlash()) {
       target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this.flashIntensity);
       isRedrawNeeded = true;
       requestNextAnimation = undefined !== this._flashedElem;
     }
-    this._frameStatsCollector.endTime("flashTime");
 
+    this._frameStatsCollector.beginTime("onBeforeRenderTime");
     target.onBeforeRender(this, (redraw: boolean) => {
       isRedrawNeeded = isRedrawNeeded || redraw;
     });
+    this._frameStatsCollector.endTime("onBeforeRenderTime");
 
     this._frameStatsCollector.endTime("totalSceneTime");
     timer.stop();
