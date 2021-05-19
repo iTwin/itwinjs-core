@@ -4,12 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ensureArray, isSchemaEditOperation, keyPairsToMultimap, SchemaEditOperation, tryParseSchemaEditOperation } from "../SchemaEditUtils";
+import { ensureArray, isSchemaEditOperation, keyPairsToMultimap, tryParseSchemaEditOperation } from "../SchemaEditUtils";
 
 describe("parsing SchemaEditOperations", () => {
-
-  const exampleSchemaEditOperationType: SchemaEditOperation = { pattern: "", schemaName: "", substitution: "" };
-  const expectedKeys = Object.keys(exampleSchemaEditOperationType);
 
   it("should identify bad parse results", async () => {
     assert.isFalse(isSchemaEditOperation(null));
@@ -27,20 +24,32 @@ describe("parsing SchemaEditOperations", () => {
   });
 
   it("should allow escaped slashes in the pattern", async () => {
-    assert.hasAllKeys(tryParseSchemaEditOperation("schemaName/<xml\\/>/test/"), expectedKeys);
+    assert.deepEqual(
+      tryParseSchemaEditOperation("schemaName/<xml\\/>/test/"),
+      { schemaName: "schemaName", pattern: "<xml/>", substitution: "test" }
+    );
     assert.isTrue(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/<xml\\/>/test/")));
   });
 
   it("should allow escaped slashes in the substitution", async () => {
-    assert.hasAllKeys(tryParseSchemaEditOperation("schemaName/<xml\\/>/<rip\\/>/"), expectedKeys);
+    assert.deepEqual(
+      tryParseSchemaEditOperation("schemaName/<xml\\/>/<rip\\/>/"),
+      { schemaName: "schemaName", pattern: "<xml/>", substitution: "<rip/>" }
+    );
     assert.isTrue(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/<xml\\/>/<rip\\/>/")));
   });
 
   it("should allow empty substitutions", async () => {
-    assert.hasAllKeys(tryParseSchemaEditOperation("schemaName/hello//"), expectedKeys);
+    assert.deepEqual(
+      tryParseSchemaEditOperation("schemaName/hello//"),
+      { schemaName: "schemaName", pattern: "hello", substitution: "" }
+    );
     assert.isTrue(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/hello//")));
 
-    assert.hasAllKeys(tryParseSchemaEditOperation("schemaName/he\\/llo//"), expectedKeys);
+    assert.deepEqual(
+      tryParseSchemaEditOperation("schemaName/he\\/llo//"),
+      { schemaName: "schemaName", pattern: "he/llo", substitution: "" }
+    );
     assert.isTrue(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/he\\/llo//")));
   });
 
@@ -55,7 +64,10 @@ describe("parsing SchemaEditOperations", () => {
   });
 
   it("should reject inputs that don't end in a slash", async () => {
-    assert.hasAllKeys(tryParseSchemaEditOperation("schemaName/hello/world/"), expectedKeys);
+    assert.deepEqual(
+      tryParseSchemaEditOperation("schemaName/hello/world/"),
+      { schemaName: "schemaName", pattern: "hello", substitution: "world" }
+    );
     assert.isTrue(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/hello/world/")));
 
     assert.isUndefined(tryParseSchemaEditOperation("schemaName/hello/world"));

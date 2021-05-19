@@ -56,5 +56,8 @@ export function tryParseSchemaEditOperation(
     );
     return undefined;
   }
+  // escaped slashes have been ignored to this point, the escaping backslashes used must actually be removed now
+  parseResult.pattern = (parseResult.pattern as string).replace("\\/", "/");
+  parseResult.substitution = parseResult.substitution.replace("\\/", "/");
   return parseResult;
 }
