@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { Geometry } from "../Geometry";
-
 /** @packageDocumentation
  * @module Polyface
  */
+
+import { Geometry } from "../Geometry";
 
 /**
  * `TaggedNumericConstants` defines enums with constant values for use in tags of `TaggedNumericData`
