@@ -59,6 +59,7 @@ interface SessionData {
   progress: BeEvent<(arg: ProgressData) => void>;
   ready?: Promise<void>;
   progressTimer?: NodeJS.Timeout;
+  lastReportedBytes: number;
 }
 export interface ProgressData {
   bytesTotal: number;
@@ -234,6 +235,7 @@ export class BlobDownloader {
       config: userConfig,
       resumeDataFile: `${downloadFile}-resume`,
       cancelled: false,
+      lastReportedBytes: -1,
       progress: new BeEvent<(arg: ProgressData) => void>(),
       resumeData: {
         lastMod: Date.now(),
@@ -244,7 +246,7 @@ export class BlobDownloader {
         blobSize,
         blockSize: userConfig.blockSize!,
         blobMD5,
-        blocks: Array(blockCount).fill(undefined).map( () => BlockState.Pending),
+        blocks: Array(blockCount).fill(undefined).map(() => BlockState.Pending),
       },
       speedData: {
         measurementWindowInSeconds: userConfig.downloadRateWindowSize!,
@@ -272,7 +274,7 @@ export class BlobDownloader {
           fileMD5 = await this.calculateFileMD5(sessionData.resumeData.fileName);
         }
         if (fileMD5 === blobMD5) {
-          sessionData.resumeData.blocks = Array(blockCount).fill(undefined).map( () => BlockState.Downloaded);
+          sessionData.resumeData.blocks = Array(blockCount).fill(undefined).map(() => BlockState.Downloaded);
         } else {
           fs.unlinkSync(downloadFile);
         }
@@ -426,17 +428,20 @@ export class BlobDownloader {
   private static startProgress(session: SessionData) {
     if (session.progressTimer)
       return;
-    let lastReportedBytes = 0;
+    session.lastReportedBytes = -1;
     session.progressTimer = setInterval(() => {
-      if (lastReportedBytes !== session.bytesDownloaded) {
+      if (session.lastReportedBytes !== session.bytesDownloaded) {
         session.progress.raiseEvent(this.getProgress(session));
-        lastReportedBytes = session.bytesDownloaded;
+        session.lastReportedBytes = session.bytesDownloaded;
       }
     }, 1000);
   }
   private static stopProgress(session: SessionData) {
-    if (session.progressTimer)
+    if (session.progressTimer) {
       clearInterval(session.progressTimer);
+      if (session.lastReportedBytes < 0)
+        session.progress.raiseEvent(this.getProgress(session));
+    }
   }
   private static checkDownloadCancelled(session: SessionData) {
     if (session.cancelled)
@@ -536,7 +541,7 @@ export class BlobDownloader {
           this.startProgress(session);
           const simTask = Math.min(session.config.simultaneousDownloads!, session.resumeData.blocks.length);
           const httpsAgent = this.getHttpsAgent(simTask);
-          const worker = Array(simTask).fill(undefined).map( async () => this.downloadBlocks(session, httpsAgent));
+          const worker = Array(simTask).fill(undefined).map(async () => this.downloadBlocks(session, httpsAgent));
           await Promise.all(worker);
           this.stopProgress(session);
         }
