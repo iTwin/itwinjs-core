@@ -23,6 +23,7 @@
     "Custom": "New",
     "LoadingMapSources": "Loading Map Sources",
     "EditCustomLayer": "Edit Layer",
+    "EditLayerDefButtonTitle": "Edit Layer Definition",
     "ErrorLoadingLayers": "Error retrieving map layers stored in the settings service",
     "ErrorRetrieveUserModel": "Could not get saved Map Layers for user by model: {{errorMessage}}",
     "ErrorRetrieveUserProject": "Could not get saved Map Layers for user by project: {{errorMessage}}",
