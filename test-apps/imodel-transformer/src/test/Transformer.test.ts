@@ -198,7 +198,7 @@ describe("imodel-transformer", () => {
     targetDb.close();
   });
 
-  it("should clone element struct array entries even when their class layout changes", async () => {
+  it("should clone element struct array entries including when their class layout changes", async () => {
     const testSchemaPath = initOutputFile("TestSchema-StructArrayClone.ecschema.xml");
     IModelJsFs.writeFileSync(testSchemaPath, `<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="Test" alias="test" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -208,7 +208,7 @@ describe("imodel-transformer", () => {
           </ECStructClass >
           <ECEntityClass typeName="TestElement">
             <BaseClass>bis:PhysicalElement</BaseClass>
-            <ECProperty propertyName="MyProp" typeName="integer"/>
+            <ECProperty propertyName="MyProp" typeName="string"/>
             <ECStructArrayProperty propertyName="MyArray" typeName="TestStruct" minOccurs="0" maxOccurs="unbounded" />
           </ECEntityClass>
       </ECSchema>`
@@ -227,16 +227,22 @@ describe("imodel-transformer", () => {
     const [firstSpatialCategId] = newSchemaSourceDb.queryEntityIds({ from: SpatialCategory.classFullName, limit: 1 });
     assert.isString(firstSpatialCategId);
 
-    const myArrayValueString = [{ someNumber: "1.5" }, { someNumber: "2" }];
-    const myArrayValueDouble = [{ someNumber: 1.5 }, { someNumber: 2 }];
+    const elementProps = {
+      myProp: "10",
+      myArray: [{ someNumber: "1" }, { someNumber: "2" }],
+    };
+
+    const transformedElemProps = {
+      myProp: 10,
+      myArray: [{ someNumber: 1 }, { someNumber: 2 }],
+    };
 
     const _newElemId = newSchemaSourceDb.elements.insertElement({
       classFullName: "Test:TestElement",
       model: firstModelId,
       code: Code.createEmpty(),
       category: firstSpatialCategId,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      MyArray: myArrayValueString,
+      ...elementProps,
     } as PhysicalElementProps);
 
     const targetDbFileName = initOutputFile("EditSchemas.bim");
@@ -253,20 +259,84 @@ describe("imodel-transformer", () => {
           substitution: 'propertyName="SomeNumber" typeName="integer"',
         }, {
           schemaName: "Test",
-          pattern: /propertyName="MyProp" typeName="integer"/,
+          pattern: /propertyName="MyProp" typeName="string"/,
           substitution: 'propertyName="MyProp" typeName="double"',
         }]],
       ]),
     });
 
-    async function getStructInstances(db: IModelDb): Promise<typeof myArrayValueString | typeof myArrayValueDouble | undefined> {
-      let result: any = undefined;
-      db.withPreparedStatement("SELECT MyArray FROM test.TestElement LIMIT 1", (stmt) => (result = [...stmt]?.[0]?.myArray));
-      return result;
+    async function getStructInstances(db: IModelDb): Promise<typeof elementProps | {}> {
+      let result: any = [{}];
+      db.withPreparedStatement("SELECT MyProp, MyArray FROM test.TestElement LIMIT 1", (stmtResult) => (result = stmtResult));
+      return [...result][0];
     }
 
-    assert.deepEqual(myArrayValueString, (await getStructInstances(newSchemaSourceDb))!);
-    assert.deepEqual(myArrayValueDouble, (await getStructInstances(targetDb))!);
+    assert.deepEqual(elementProps, (await getStructInstances(newSchemaSourceDb))!);
+    assert.deepEqual(transformedElemProps, (await getStructInstances(targetDb))!);
+
+    newSchemaSourceDb.close();
+    targetDb.close();
+  });
+
+  it("should clone element structs values", async () => {
+    const testSchemaPath = initOutputFile("TestSchema-Struct.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchemaPath, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="Test" alias="test" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECStructClass typeName="TestStruct">
+            <ECProperty propertyName="MyStructProp" typeName="string"/>
+          </ECStructClass >
+          <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECProperty propertyName="MyProp" typeName="string"/>
+            <ECStructProperty propertyName="MyStruct" typeName="TestStruct" readOnly="false"/>
+          </ECEntityClass>
+      </ECSchema>`
+    );
+
+    const newSchemaSourceDbPath = initOutputFile("sourceDb-Struct.bim");
+    IModelJsFs.copySync(sourceDbFileName, newSchemaSourceDbPath);
+    const newSchemaSourceDb = SnapshotDb.createFrom(sourceDb, newSchemaSourceDbPath);
+
+    const requestContext = new BackendRequestContext();
+
+    await newSchemaSourceDb.importSchemas(requestContext, [testSchemaPath]);
+
+    const [firstModelId] = newSchemaSourceDb.queryEntityIds({ from: PhysicalModel.classFullName, limit: 1 });
+    assert.isString(firstModelId);
+    const [firstSpatialCategId] = newSchemaSourceDb.queryEntityIds({ from: SpatialCategory.classFullName, limit: 1 });
+    assert.isString(firstSpatialCategId);
+
+
+    const elementProps = {
+      myStruct: { myStructProp: "5" },
+      myProp: "10"
+    };
+
+    const _newElemId = newSchemaSourceDb.elements.insertElement({
+      classFullName: "Test:TestElement",
+      model: firstModelId,
+      code: Code.createEmpty(),
+      category: firstSpatialCategId,
+      ...elementProps,
+    } as PhysicalElementProps);
+
+    const targetDbFileName = initOutputFile("EditSchemas.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFileName, {
+      rootSubject: { name: `${newSchemaSourceDb.rootSubject.name}-EditSchemas` },
+      ecefLocation: newSchemaSourceDb.ecefLocation,
+    });
+
+    await Transformer.transformAll(requestContext, newSchemaSourceDb, targetDb);
+
+    async function getStructValue(db: IModelDb): Promise<typeof elementProps | {}> {
+      let result: any = [{}];
+      db.withPreparedStatement("SELECT MyProp, MyStruct FROM test.TestElement LIMIT 1", (stmtResult) => (result = stmtResult));
+      return [...result][0];
+    }
+
+    assert.deepEqual(elementProps, (await getStructValue(newSchemaSourceDb))!);
+    assert.deepEqual(elementProps, (await getStructValue(targetDb))!);
 
     newSchemaSourceDb.close();
     targetDb.close();
