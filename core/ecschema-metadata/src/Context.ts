@@ -73,7 +73,6 @@ export class SchemaCache implements ISchemaLocater {
 
     this._schema.push( { schema, loadPromise } );
     if (loadPromise) {
-      console.log("Here");
       await loadPromise;
       console.log(`Finished deserializing ${schema.fullName}`);
     }
@@ -96,7 +95,6 @@ export class SchemaCache implements ISchemaLocater {
    * @param matchType The match type to use when locating the schema
    */
   public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
-    console.log(`Getting schema: ${schemaKey.name} in cache`);
     if (this.count === 0)
       return undefined;
 
@@ -110,7 +108,6 @@ export class SchemaCache implements ISchemaLocater {
       return undefined;
 
     if (foundSchemaInfo.loadPromise) {
-      console.log("Here 2");
       await foundSchemaInfo.loadPromise;
       console.log(`Finished deserializing ${schemaKey.name}`);
     }
@@ -169,7 +166,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param schema The schema to add to this context
    */
   public async addSchema(schema: Schema, loadPromise?: Promise<void>) {
-    this._knownSchemas.addSchema(schema, loadPromise);
+    await this._knownSchemas.addSchema(schema, loadPromise);
   }
 
   /**
