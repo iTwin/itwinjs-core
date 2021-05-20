@@ -153,6 +153,8 @@ export interface TableProps extends CommonProps {
 
   /** Called to show a context menu when a cell is right-clicked. @beta */
   onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
+  /** Maximum number of distinct values for filtering */
+  maximumDistinctValues?: number;
 }
 
 /** Properties for a Table cell
