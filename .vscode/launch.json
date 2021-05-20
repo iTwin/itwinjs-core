@@ -20,7 +20,7 @@
         "group": "0_CoreTests",
         "order": 1
       },
-      "cwd": "${workspaceFolder}/core/backend/",
+      "cwd": "${workspaceFolder}/core/backend/",s
       "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
@@ -33,7 +33,7 @@
       ]
     },
     {
-      "name": "Backend Tests (Offline)",
+      "name": "Backend Tests (Standalone)",
       "presentation": {
         "group": "0_CoreTests",
         "order": 1

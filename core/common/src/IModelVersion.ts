@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { BentleyStatus, GuidString } from "@bentley/bentleyjs-core";
+import { BentleyStatus, GuidString, IModelStatus } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery, IModelClient, VersionQuery } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelError } from "./IModelError";
@@ -136,18 +136,22 @@ export class IModelVersion {
     throw new IModelError(BentleyStatus.ERROR, "Invalid version");
   }
 
-  /** Gets the last change set that was applied to the imodel */
-  private static async getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString> {
+  /** Gets the last change set that was applied to the imodel
+   * @internal
+   */
+  public static async getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString> {
     const changeSets: ChangeSet[] = await imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
     return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
   }
 
-  /** Get the change set from the specified named version */
-  private static async getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<GuidString> {
+  /** Get the change set from the specified named version
+   * @internal
+   */
+  public static async getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<GuidString> {
     const versions = await imodelClient.versions.get(requestContext, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));
 
     if (!versions[0] || !versions[0].changeSetId)
-      throw new IModelError(BentleyStatus.ERROR, "Problem getting versions");
+      throw new IModelError(IModelStatus.NotFound, `Named version ${versionName} not found`);
 
     return versions[0].changeSetId;
   }
