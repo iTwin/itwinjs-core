@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
-import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 
 /** @packageDocumentation
  * @module Polyface

@@ -312,7 +312,7 @@ export class Matrix3d implements BeJSONFunctions {
       let column = Vector3d.createRotateVectorAroundVector(columnX, columnZ, angle)!;
       if (other.isAlmostEqualColumnXYZ(0, column.x, column.y, column.z, tol)){
         column = Vector3d.createRotateVectorAroundVector(columnY, columnZ, angle)!;
-      return other.isAlmostEqualColumnXYZ(1, column.x, column.y, column.z, tol)
+        return other.isAlmostEqualColumnXYZ(1, column.x, column.y, column.z, tol);
       }
     }
     return false;
