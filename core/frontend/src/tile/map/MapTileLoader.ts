@@ -100,7 +100,7 @@ export class MapTileLoader extends RealityTileLoader {
       contentRange: projection.transformFromLocal.multiplyRange(projection.localRange),
       terrain: {
         mesh: unavailableChild ? mesh : undefined, // If a child is unavilable retain mesh for upsampling.,
-        geometry: terrainGeometry,
+        renderGeometry: terrainGeometry,
       },
     };
   }

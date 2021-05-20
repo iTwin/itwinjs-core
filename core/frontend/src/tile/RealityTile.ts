@@ -46,7 +46,7 @@ export class RealityTile extends Tile {
   public readonly additiveRefinement?: boolean;
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
-  private _geometry?: RealityTileGeometry;
+  protected _geometry?: RealityTileGeometry;
   private _everDisplayed = false;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
@@ -313,10 +313,10 @@ export class RealityTile extends Tile {
 
       // eslint-disable-next-line no-fallthrough
       case TileCollectionSelectionStatus.Accept:
-        if (this.isLoaded)
+        if (this.isReady)
           collector.accepted.push(this);
         else
-          collector.missing.add(this);
+          collector.missing.add(this.loadableTile);
 
         break;
     }

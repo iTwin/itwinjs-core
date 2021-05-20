@@ -135,6 +135,7 @@ export interface RenderSystemDebugControl {
 /** @internal */
 export abstract class RenderTerrainGeometry implements IDisposable, RenderMemory.Consumer {
   public abstract dispose(): void;
+  public abstract get transform(): Transform | undefined;
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 /** @internal */

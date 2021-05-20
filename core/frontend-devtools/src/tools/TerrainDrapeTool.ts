@@ -5,7 +5,7 @@
 
 import { GrowableXYZArray, LineString3d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, RealityTileTree, RealityTreeReference, TileTreeReference, Viewport } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, RealityTileTree, TileTreeReference, Viewport } from "@bentley/imodeljs-frontend";
 
 /** @packageDocumentation
  * @module Tools
@@ -35,7 +35,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
           const drapeRange = Range3d.createNull();
           drapeRange.extendArray(this._drapePoints);
           const tolerance = drapeRange.diagonal().magnitude() / 5000.0;
-          drapeTree.drapeLinestring(lineStrings, this._drapePoints, tolerance, this._drapeViewport);
+          drapeTree.drapeLinestring(lineStrings, this._drapePoints, tolerance, this._drapeViewport, 1.0E5, context);
           lineStrings.forEach((lineString) => builder.addLineString(lineString.points));
           context.addDecorationFromBuilder(builder);
         }
@@ -71,15 +71,16 @@ export class TerrainDrapeTool extends PrimitiveTool {
     if (!hit.modelId)
       return LocateFilterStatus.Reject;
 
-    // Accept if context reality model
-    const realityIndex = hit.viewport.getRealityModelIndexFromTransientId(hit.modelId);
-    if (realityIndex >= 0)
-      return LocateFilterStatus.Accept;
+    let hitTreeRef: TileTreeReference | undefined;
+    hit.viewport.forEachTileTreeRef((treeRef) => {
+      const tree = treeRef.treeOwner.load();
+      if (tree?.modelId === hit.modelId)
+        hitTreeRef = treeRef;
+    });
 
-    // Accept model if it is a reality model.
-    const model = this.iModel.models.getLoaded(hit.modelId)?.asSpatialModel;
-    return model?.isRealityModel ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
+    return (hitTreeRef?.createGeometryTreeRef()) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
+
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
     this._motionPoint = ev.point;
     if (ev.viewport)
@@ -87,10 +88,16 @@ export class TerrainDrapeTool extends PrimitiveTool {
   }
 
   public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
-    this._drapePoints.pop();
+    if (this._drapePoints.length) {
+      this._drapePoints.pop();
+    } else {
+      this._drapeTreeRef = undefined;
+      this._drapeViewport = undefined;
+    }
     if (ev.viewport)
       ev.viewport.invalidateDecorations();
 
+    this.setupAndPromptForNextAction();
     return EventHandled.No;
   }
 
@@ -102,11 +109,9 @@ export class TerrainDrapeTool extends PrimitiveTool {
         this._drapePoints.push(hit.hitPoint);
         this._drapeViewport = hit.viewport;
         this._drapeViewport.forEachTileTreeRef((treeRef) => {
-          if (treeRef instanceof RealityTreeReference) {
-            const tree = treeRef.treeOwner.load();
-            if (tree && tree.modelId === hit.modelId)
-              this._drapeTreeRef = treeRef.createGeometryTreeRef();
-          }
+          const tree = treeRef.treeOwner.load();
+          if (tree && tree.modelId === hit.modelId)
+            this._drapeTreeRef = treeRef.createGeometryTreeRef();
         });
       }
     } else {

@@ -136,7 +136,7 @@ export abstract class RealityTileCollector {
   }
   public selectTile(tile: RealityTile): TileCollectionSelectionStatus {
     const tileRange = this._iModelTransform.multiplyRange(tile.range);
-    if (!tileRange.intersectsRangeXY(this._range))
+    if (!tileRange.intersectsRange(this._range))
       return TileCollectionSelectionStatus.Reject;
 
     if (tile.maximumSize === 0.0 || !tile.isDisplayable)
@@ -384,17 +384,19 @@ export class RealityTileTree extends TileTree {
     console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // eslint-disable-line
   }
 
-  public drapeLinestring(outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, viewport: Viewport, debugContext?: DecorateContext): RealityTileDrapeStatus {
+  public drapeLinestring(outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, viewport: Viewport, maxDistance = 1.0E5, debugContext?: DecorateContext): RealityTileDrapeStatus {
     const range = Range3d.createNull();
     range.extendArray(inPoints);
-    const rangeSelector = new RealityTileByDrapeLineStringCollector(tolerance, range, this.iModelTransform, inPoints);
+    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
+    range.extendZOnly(maxDistance);
+    const tileSelector = new RealityTileByDrapeLineStringCollector(tolerance, range, this.iModelTransform, inPoints);
 
-    if (this.collectRealityTiles(rangeSelector) === TileCollectionStatus.Loading) {
-      rangeSelector.requestMissingTiles(viewport);
+    if (this.collectRealityTiles(tileSelector) === TileCollectionStatus.Loading) {
+      tileSelector.requestMissingTiles(viewport);
       return RealityTileDrapeStatus.Loading;
     }
 
-    for (const tile of rangeSelector.accepted) {
+    for (const tile of tileSelector.accepted) {
       if (tile.geometry?.polyfaces) {
         tile.geometry.polyfaces.forEach((polyface) => {
           const sweepStrings = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(inPoints, polyface);
@@ -405,11 +407,15 @@ export class RealityTileTree extends TileTree {
 
     if (debugContext) {
       const builder =  debugContext.createGraphicBuilder(GraphicType.WorldDecoration);
-      for (const tile of rangeSelector.accepted) {
-        builder.setSymbology(ColorDef.red, ColorDef.red, 1);
-        const corners = tile.range.corners();
+      builder.setSymbology(ColorDef.green, ColorDef.green, 1);
+      builder.addLineString(inPoints.getPoint3dArray());
+      for (const tile of tileSelector.accepted) {
+        const corners = tile.contentRange.corners();
         this.iModelTransform.multiplyPoint3dArrayInPlace(corners);
+        builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
         builder.addRangeBoxFromCorners(corners);
+        builder.setSymbology(ColorDef.red, ColorDef.red, 1);
+        // tile.geometry?.polyfaces?.forEach((polyface) => builder.addPolyface(polyface, false));
 
         debugContext.addDecorationFromBuilder(builder);
       }
