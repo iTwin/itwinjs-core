@@ -28,8 +28,9 @@ import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 import * as Semver from "semver";
-import { Schema } from "./Schema";
+import { Schema } from "@bentley/ecschema-metadata";
 import { BackendRequestContext } from "./BackendRequestContext";
+import { DOMParser, XMLSerializer } from "xmldom";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
@@ -747,9 +748,23 @@ export class IModelTransformer extends IModelExportHandler {
     return targetElementAspectProps;
   }
 
-  public onExportSchema(schema: Schema): void {
-    const requestContext = new BackendRequestContext();
-    this.targetDb.importSchemas(requestContext);
+  protected _schemaExportDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
+
+  public async onExportSchema(schema: Schema): Promise<void> {
+    const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
+    const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
+    const filledDoc = await schema.toXml(xmlDoc);
+    const schemaText = new XMLSerializer().serializeToString(filledDoc);
+    IModelJsFs.writeFileSync(schemaPath, schemaText);
+    this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
+  }
+
+  public shouldExportSchema(schema: Schema): boolean {
+    const versionInTarget = this.targetDb.querySchemaVersion(schema.name);
+    if (versionInTarget === undefined)
+      return true;
+    const version = `${schema.readVersion}.${schema.writeVersion}.${schema.minorVersion}`;
+    return Semver.lte(version, versionInTarget);
   }
 
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
@@ -766,9 +781,9 @@ export class IModelTransformer extends IModelExportHandler {
                                       + "methods is deprecated, and the behavior will be removed. Instead, write your own onExportSchema routine. "
                                       + "You can see the imodel-transformer test-app for an example.");
       // eslint-disable-next-line @typescript-eslint/deprecated
-      this.oldProcessSchemas(requestContext);
+      await this.oldProcessSchemas(requestContext);
     } else {
-      this.exporter.exportSchemas();
+      await this.exporter.exportSchemas();
     }
   }
 
@@ -801,8 +816,6 @@ export class IModelTransformer extends IModelExportHandler {
         const [_fullVersionMatch, versionString] = schemaVersionMatch;
         const [_fullNameMatch, schemaName] = schemaNameMatch;
         const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
-        const versionToImport = Schema.toSemverString(versionString);
-        if (versionInTarget && Semver.lte(versionToImport, versionInTarget))
           return false;
         return true;
       });

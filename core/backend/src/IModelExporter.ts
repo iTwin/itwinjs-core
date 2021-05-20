@@ -117,7 +117,7 @@ export abstract class IModelExportHandler {
    * @param schema The schema to export
    * @note This should be overridden to actually do the export.
    */
-  protected onExportSchema(_schema: Schema): void { }
+  protected async onExportSchema(_schema: Schema): Promise<void> { }
 
   /** This method is called when IModelExporter has made incremental progress based on the [[IModelExporter.progressInterval]] setting.
    * This method is `async` to make it easier to integrate with asynchronous status and health reporting services.
@@ -301,6 +301,7 @@ export class IModelExporter {
     const schemaLoader = new IModelSchemaLoader(this.sourceDb);
     const sql = "SELECT Name FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
     let readyToExport: boolean = this.wantSystemSchemas ? true : false;
+    const schemasToExport: Schema[] = [];
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const schemaName: string = statement.getValue(0).getString();
@@ -309,11 +310,14 @@ export class IModelExporter {
           readyToExport = schema.fullName === BisCoreSchema.schemaName; // schemas prior to BisCore are considered *system* schemas
         }
         if (readyToExport && this.handler.callProtected.shouldExportSchema(schema)) {
-          Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
-          this.handler.callProtected.onExportSchema(schema);
+          schemasToExport.push(schema);
         }
       }
     });
+    await Promise.all(schemasToExport.map(async (schema) => {
+      Logger.logTrace(loggerCategory, `exportSchema(${schema.fullName})`);
+      return this.handler.callProtected.onExportSchema(schema);
+    }));
   }
 
   /** For logging, indicate the change type if known. */

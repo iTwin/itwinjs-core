@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import * as Semver from "semver";
 import { assert, ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
   BackendRequestContext,
@@ -38,8 +37,6 @@ export class Transformer extends IModelTransformer {
   private _numSourceRelationshipsProcessed = 0;
   private _startTime = new Date();
   private _targetPhysicalModelId = Id64.invalid; // will be valid when PhysicalModels are being combined
-  private _schemaExportPromise = Promise.resolve<any>(undefined);
-  private _schemaExportDir = path.join(KnownLocations.tmpdir, Guid.createValue());
   private _schemaEditOperations = new Map<string, SchemaEditOperation[]>();
 
   public static async transformAll(requestContext: AuthorizedClientRequestContext | ClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
@@ -47,8 +44,10 @@ export class Transformer extends IModelTransformer {
     // might need to inject RequestContext for schemaExport.
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
+    targetDb.saveChanges("processSchemas");
+    await transformer.processSchemas(requestContext);
+    targetDb.saveChanges("processAll");
     await transformer.processAll();
-    await transformer._schemaExportPromise; // await promises caused by exporting schemas
     requestContext.enter();
     targetDb.saveChanges("processAll");
     if (options?.deleteUnusedGeometryParts) {
@@ -290,22 +289,19 @@ export class Transformer extends IModelTransformer {
     for (const editOp of editOps) {
       source = source.replace(editOp.pattern, editOp.substitution);
     }
+    return source;
   }
 
-  public onExportSchema(schema: Schema): void {
-    const body = async () => {
-      if (!this._schemaEditOperations.has(schema.name))
-        return;
-      const editOps = this._schemaEditOperations.get(schema.name)!;
-      const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
-      const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);
-      const filledDoc = await schema.toXml(xmlDoc);
-      const schemaText = new XMLSerializer().serializeToString(filledDoc);
-      const textAfterEdits = this.applySchemaOperations(editOps, schemaText);
-      IModelJsFs.writeFileSync(schemaPath, textAfterEdits);
-      this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
-    };
-    // aggregate promises to be waited on
-    this._schemaExportPromise = Promise.all([this._schemaExportPromise, body()]);
+  public async onExportSchema(schema: Schema): Promise<void> {
+    if (!this._schemaEditOperations.has(schema.name))
+      return;
+    const editOps = this._schemaEditOperations.get(schema.name)!;
+    const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
+    const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);
+    const filledDoc = await schema.toXml(xmlDoc);
+    const schemaText = new XMLSerializer().serializeToString(filledDoc);
+    const textAfterEdits = this.applySchemaOperations(editOps, schemaText);
+    IModelJsFs.writeFileSync(schemaPath, textAfterEdits);
+    this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
   }
 }
