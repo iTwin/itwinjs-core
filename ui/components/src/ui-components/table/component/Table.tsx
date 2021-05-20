@@ -1405,16 +1405,6 @@ export class Table extends React.Component<TableProps, TableState> {
     return property;
   }
 
-<<<<<<< HEAD
-  private async loadDistinctValues(): Promise<void> {
-    await Promise.all(this.state.columns.map(async (tableColumn: TableColumn) => {
-      if (tableColumn.filterable)
-        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(1000);
-    }));
-  }
-
-=======
->>>>>>> 9d471896d6 (Fixed getting distinct values when Table rows are updated (#1430))
   private _handleFilterChange = (filter: ReactDataGridFilter): void => {
     const columnKey = filter.column.key;
     const tableColumn = this.state.columns.find((column: TableColumn) => column.key === columnKey);
