@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 /** @packageDocumentation
- * @module ChildWindow
+ * @module ChildWindowManager
  */
 
 import * as React from "react";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
- * @module ChildWindow
+ * @module ChildWindowManager
  */
 
 import "./ChildWindowManager.scss";
