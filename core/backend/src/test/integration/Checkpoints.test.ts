@@ -8,6 +8,7 @@ import { BlobDaemon } from "@bentley/imodeljs-native";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import { ChildProcess } from "child_process";
+import * as fs from "fs-extra";
 import * as path from "path";
 import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -58,7 +59,7 @@ describe.skip("Checkpoints (#integration)", () => {
       daemonProc.kill();
       await onDaemonExit;
     }
-    // BriefcaseManager.deleteFolderAndContents(blockcacheDir);
+    fs.removeSync(blockcacheDir);
   });
 
   it("should be able to open and read V2 checkpoint", async () => {

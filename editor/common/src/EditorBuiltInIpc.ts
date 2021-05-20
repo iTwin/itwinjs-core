@@ -8,7 +8,7 @@
 
 import { CompressedId64Set, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { Matrix3dProps, TransformProps } from "@bentley/geometry-core";
-import { ElementGeometryDataEntry, GeometricElementProps, GeometryPartProps } from "@bentley/imodeljs-common";
+import { ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@bentley/imodeljs-common";
 import { EditCommandIpc } from "./EditorIpc";
 
 /** @alpha */
@@ -17,7 +17,7 @@ export const editorBuiltInCmdIds = {
 };
 
 /** @alpha */
-export interface InsertGeometricElementData {
+export interface FlatBufferGeometricElementData {
   /** The geometry stream data */
   entryArray: ElementGeometryDataEntry[];
   /** Whether entries are supplied local to placement transform or in world coordinates */
@@ -27,11 +27,27 @@ export interface InsertGeometricElementData {
 }
 
 /** @alpha */
-export interface InsertGeometryPartData {
+export interface FlatBufferGeometryPartData {
   /** The geometry stream data */
   entryArray: ElementGeometryDataEntry[];
   /** If true, create geometry part with 2d geometry */
   is2dPart?: boolean;
+}
+
+/** @alpha */
+export interface FlatBufferGeometryFilter {
+  /** Optional limit on number of displayable entries to accept */
+  maxDisplayable?: number;
+  /** Optional array of displayable opCodes to accept */
+  accept?: ElementGeometryOpcode[];
+  /** Optional array of displayable opCodes to reject */
+  reject?: ElementGeometryOpcode[];
+  /** Optional geometry type filter
+   * curves - true to accept single curves and paths
+   * surfaces - true to accept loops, planar regions, open polyfaces, and sheet bodies
+   * solids - true to accept capped solids, closed polyfaces, and solid bodies
+   */
+  geometry?: { curves: boolean, surfaces: boolean, solids: boolean };
 }
 
 /** @alpha */
@@ -46,13 +62,31 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometricElement(props: GeometricElementProps, data?: InsertGeometricElementData): Promise<Id64String>;
+  insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String>;
 
   /** Create and insert a new geometry part element.
    * @param props Properties for the new [GeometryPart]($backend)
-   * @param data Optional binary format GeometryStream representation used in lieu of  [[GeometryPartProps.geom]].
+   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometryPartProps.geom]].
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometryPart(props: GeometryPartProps, data?: InsertGeometryPartData): Promise<Id64String>;
+  insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String>;
+
+  /** Update an existing geometric element.
+   * @param propsOrId Properties or element id to update for an existing [GeometricElement]($backend)
+   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]].
+   * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
+   * @throws [[IModelError]] if unable to update the element
+   */
+  updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void>;
+
+  /** Request geometry from an existing element. Because a GeometryStream can be large and may contain information
+   * that is not always useful to frontend code, filter options are provided to restrict what GeometryStreams are returned.
+   * For example, a tool may only be interested in a GeometryStream that stores a single CurveCollection.
+   * @param id Element id of an existing [GeometricElement]($backend) or [GeometryPart]($backend).
+   * @param filter Optional criteria for accepting a GeometryStream.
+   * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
+   * @throws [[IModelError]] if unable to query the element
+   */
+  requestElementGeometry(id: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
 }

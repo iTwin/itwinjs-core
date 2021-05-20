@@ -36,7 +36,7 @@ export namespace Gradient {
     Cylindrical = 3,
     Spherical = 4,
     Hemispherical = 5,
-    /** @beta */
+    /** For a gradient created based for [[ThematicDisplay]]. */
     Thematic = 6,
   }
 
@@ -79,9 +79,7 @@ export namespace Gradient {
     shift?: number;
     /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
     keys: KeyColorProps[];
-    /** Settings applicable to meshes and Gradient.Mode.Thematic only
-     * @beta
-     */
+    /** Settings applicable to [[ThematicDisplay]]. */
     thematicSettings?: ThematicGradientSettingsProps;
   }
 
@@ -95,7 +93,6 @@ export namespace Gradient {
     public angle?: Angle;
     public tint?: number;
     public shift: number = 0;
-    /** @beta */
     public thematicSettings?: ThematicGradientSettings;
     public keys: KeyColor[] = [];
 
@@ -125,7 +122,7 @@ export namespace Gradient {
     ];
     private static _fixedCustomKeys = [[0.0, 255, 0, 0], [1.0, 0, 255, 0]];
 
-    /** @beta */
+    /** Create for [[ThematicDisplay]]. */
     public static createThematic(settings: ThematicGradientSettings) {
       const result = new Symb();
       result.mode = Mode.Thematic;
@@ -339,9 +336,7 @@ export namespace Gradient {
       return imageBuffer;
     }
 
-    /** Applies this gradient's settings to produce a bitmap image.
-     * @beta
-     */
+    /** Applies this gradient's settings to produce a bitmap image. */
     public getImage(width: number, height: number): ImageBuffer {
       if (this.mode === Mode.Thematic) {
         // Allow caller to pass in height but not width. Thematic gradients are always one-dimensional.

@@ -65,11 +65,22 @@ export interface HiliteProps {
   visibleRatio?: number;
   hiddenRatio?: number;
   silhouette?: Hilite.Silhouette;
-  colors?: {
-    red?: number;
-    green?: number;
-    blue?: number;
-  };
+  red?: number;
+  green?: number;
+  blue?: number;
+}
+
+/** Specifies how to apply hypermodeling in a TestConfig. */
+export interface HyperModelingProps {
+  /** The Id of the [SectionDrawingLocation]($backend) element from which the section view and 2d section graphics are obtained. */
+  sectionDrawingLocationId: Id64String;
+  /** If true, the spatial view associated with the section drawing location will be applied before the test is executed.
+   * This essentially overrides the view defined by TestConfig's viewName, extViewName, and viewString properties. However,
+   * the spatial view is applied before other properties like viewFlags, backgroundMap, etc, so those can still override aspects of
+   * the view.
+   * If not true, only the clip and 2d section graphics from the section drawing location are applied to the viewport.
+   */
+  applySpatialView?: boolean;
 }
 
 /** JSON representation of a TestConfig. */
@@ -138,6 +149,8 @@ export interface TestConfigProps {
   savedViewType?: SavedViewType;
   /** An object (not a string) describing a non-persistent view. Supersedes viewName if defined. */
   viewString?: ViewStateSpecProps;
+  /** Specifies hypermodeling settings applied to the view. */
+  hyperModeling?: HyperModelingProps;
 }
 
 export const defaultHilite = new Hilite.Settings();
@@ -175,6 +188,7 @@ export class TestConfig {
   public readonly viewStateSpec?: ViewStateSpec;
   public readonly filenameOptsToIgnore?: string[] | string;
   public readonly backgroundMap?: BackgroundMapProps;
+  public readonly hyperModeling?: HyperModelingProps;
 
   /** Construct a new TestConfig with properties initialized by following priority:
    *  As defined by `props`; or
@@ -198,6 +212,7 @@ export class TestConfig {
     this.renderOptions = prevConfig?.renderOptions ? { ...prevConfig.renderOptions } : { useWebGL2: true, dpiAwareLOD: true };
     this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
+    this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
@@ -299,7 +314,7 @@ export class TestConfigStack {
 /** Override properties of settings with those defined by props. */
 function hiliteSettings(settings: Hilite.Settings, props: HiliteProps): Hilite.Settings {
   const colors = settings.color.colors;
-  const color = ColorDef.from(props.colors?.red ?? colors.r, props.colors?.green ?? colors.g, props.colors?.blue ?? colors.b, 0);
+  const color = ColorDef.from(props?.red ?? colors.r, props?.green ?? colors.g, props?.blue ?? colors.b, 0);
   return new Hilite.Settings(color, props.visibleRatio ?? settings.visibleRatio, props.hiddenRatio ?? settings.hiddenRatio, props.silhouette ?? settings.silhouette);
 }
 
