@@ -7,7 +7,7 @@
  * @module PropertyGrid
  */
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { FlatGridItemType, IMutableCategorizedPropertyItem, MutableCategorizedProperty } from "./MutableFlatGridItem";
+import { FlatGridItemType, IMutableCategorizedPropertyItem, IMutableFlatGridItem, MutableCategorizedProperty } from "./MutableFlatGridItem";
 import { IMutableGridItemFactory } from "./MutableGridItemFactory";
 
 /**
@@ -47,6 +47,16 @@ export class MutableCategorizedArrayProperty extends MutableCategorizedProperty 
 
   public getDescendantsAndSelf() {
     return this._renderLabel ? super.getDescendantsAndSelf() : this.getDescendants();
+  }
+
+  public getVisibleDescendants(): IMutableFlatGridItem[] {
+    const descendants: IMutableFlatGridItem[] = [];
+    if (this.isExpanded || !this._renderLabel) {
+      // always render children if not rendering the label, otherwise there's no way to expand
+      // this item to make children visible
+      this.getChildren().forEach((child) => descendants.push(...child.getVisibleDescendantsAndSelf()));
+    }
+    return descendants;
   }
 
   public getVisibleDescendantsAndSelf() {
