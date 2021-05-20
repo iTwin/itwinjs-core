@@ -78,7 +78,6 @@ export class Transformer extends IModelTransformer {
 
   private constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: IModelTransformOptions) {
     super(sourceDb, targetDb, options);
-    IModelJsFs.mkdirSync(this._schemaExportDir);
   }
 
   private initialize(options?: TransformerOptions): void {

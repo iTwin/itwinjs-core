@@ -773,58 +773,9 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public async processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
-
-    const exporterOverridesOnExportSchema = undefined !== Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this.exporter), "onExportSchema");
-    const exporterOverridesExportSchemas = undefined !== Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this.exporter), "exportSchemas");
-    if (!(exporterOverridesOnExportSchema || exporterOverridesExportSchemas)) {
-      Logger.logWarning(loggerCategory, "using processSchemas to export schemas without manually overriding the exportSchemas/onExportSchema "
-                                      + "methods is deprecated, and the behavior will be removed. Instead, write your own onExportSchema routine. "
-                                      + "You can see the imodel-transformer test-app for an example.");
-      // eslint-disable-next-line @typescript-eslint/deprecated
-      await this.oldProcessSchemas(requestContext);
-    } else {
-      await this.exporter.exportSchemas();
-    }
-  }
-
-  /** The previous behavior of processSchemas, which does not invoke the exporter's schema `exportSchemas/onExportSchema`
-   * @deprecated
-   * @see [IModelTransformer.processSchemas]
-   */
-  public async oldProcessSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
-    const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
-    IModelJsFs.mkdirSync(schemasDir);
-    try {
-      this.sourceDb.nativeDb.exportSchemas(schemasDir);
-      const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
-      // some schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
-      const importSchemasFullPaths = schemaFiles.map((schema) => path.join(schemasDir, schema));
-      const filteredSchemaPaths = importSchemasFullPaths.filter((schemaPath) => {
-        let schemaSource: string;
-        try {
-          schemaSource = IModelJsFs.readFileSync(schemaPath).toString("utf8");
-        } catch (err) {
-          Logger.logError(loggerCategory, `error reading xml schema file ${schemaPath}`);
-          return true;
-        }
-        const schemaVersionMatch = /<ECSchema .*?version="([0-9.]+)"/.exec(schemaSource);
-        const schemaNameMatch = /<ECSchema .*?schemaName="([^"]+)"/.exec(schemaSource);
-        if (schemaVersionMatch == null || schemaNameMatch == null) {
-          Logger.logError(loggerCategory, `failed to parse schema name or version, first 200 chars: '${schemaSource.slice(0, 200)}'`);
-          return true;
-        }
-        const [_fullVersionMatch, versionString] = schemaVersionMatch;
-        const [_fullNameMatch, schemaName] = schemaNameMatch;
-        const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
-          return false;
-        return true;
-      });
-      if (filteredSchemaPaths.length > 0)
-        await this.targetDb.importSchemas(requestContext, filteredSchemaPaths);
-    } finally {
-      requestContext.enter();
-      IModelJsFs.removeSync(schemasDir);
-    }
+    IModelJsFs.mkdirSync(this._schemaExportDir);
+    await this.exporter.exportSchemas();
+    IModelJsFs.removeSync(this._schemaExportDir);
   }
 
   /** Cause all fonts to be exported from the source iModel and imported into the target iModel.
