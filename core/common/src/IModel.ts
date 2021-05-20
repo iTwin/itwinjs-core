@@ -73,7 +73,7 @@ export interface IModelProps {
   /** The location of the iModel in Earth Centered Earth Fixed coordinates. iModel units are always meters */
   ecefLocation?: EcefLocationProps;
   /** The Geographic Coordinate Reference System indicating the projection and datum used. */
-  geographicCoordinateSystem?: GeographicCRS;
+  geographicCoordinateSystem?: GeographicCRSProps;
   /** The name of the iModel. */
   name?: string;
 }
