@@ -13,10 +13,9 @@ import { GenericUiEventArgs, RelativePosition, UiAdmin } from "@bentley/ui-abstr
 import { UiComponents } from "../UiComponents";
 import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import { InlineEdit } from "./InlineEdit";
-import { Milestone, PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
+import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
 import { PlayButton, PlayerButton } from "./PlayerButton";
 import { Scrubber } from "./Scrubber";
-import { Timeline } from "./Timeline";
 
 // cspell:ignore millisec
 
@@ -30,7 +29,6 @@ interface TimelineComponentProps {
   endDate?: Date;   // end date
   totalDuration: number;  // total duration in milliseconds
   initialDuration?: number;  // initial value for current duration in milliseconds
-  milestones?: Milestone[]; // optional milestones
   minimized?: boolean;  // show in minimized mode
   repeat?: boolean;  // repeat animation indefinitely
   showDuration?: boolean; // show the duration instead of time
@@ -378,7 +376,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   };
 
   public render() {
-    const { startDate, endDate, milestones, showDuration } = this.props;
+    const { startDate, endDate, showDuration } = this.props;
     const { currentDuration, totalDuration, minimized } = this.state;
     const currentDate = this._currentDate();
     const durationString = this._displayTime(currentDuration);
@@ -400,14 +398,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
           <span className="current-date">{currentDate.toLocaleDateString()}</span>
           {!miniMode && this._renderSettings()}
         </div>
-        {!miniMode && <Timeline
-          className="timeline-timeline"
-          startDate={startDate!}
-          endDate={endDate!}
-          selectedDate={currentDate}
-          milestones={milestones}
-          isPlaying={this.state.isPlaying}
-        />}
         <div className="scrubber">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <div className="start-time-container">

@@ -20,13 +20,19 @@ const formatDate = (value: number) => {
 // *******************************************************
 // NEEDLE
 // *******************************************************
+/** @internal
+ * @deprecated
+ */
 interface NeedleProps {
   startDate: Date;
   endDate: Date;
   selectedDate: Date;
 }
 
-function Needle({ startDate, endDate, selectedDate }: NeedleProps) {
+/** @internal
+ * @deprecated
+ */
+ function Needle({ startDate, endDate, selectedDate }: NeedleProps) {
   const percent = (selectedDate.getTime() - startDate.getTime()) / (endDate.getTime() - startDate.getTime()) * 100;
   return (
     <div className="needle" style={{ left: `${percent}%` }} />
@@ -36,7 +42,10 @@ function Needle({ startDate, endDate, selectedDate }: NeedleProps) {
 // *******************************************************
 // TOOLTIP RAIL
 // *******************************************************
-interface TooltipRailProps {
+/** @internal
+ * @deprecated
+ */
+ interface TooltipRailProps {
   activeHandleID: string;
   getRailProps: (props: object) => object;
   getEventData: (e: Event) => object;
@@ -47,6 +56,9 @@ interface TooltipRailState {
   percent: number | null;
 }
 
+/** @internal
+ * @deprecated
+ */
 class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 
   public static defaultProps = {
@@ -111,7 +123,10 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 // *******************************************************
 // HANDLE COMPONENT
 // *******************************************************
-interface HandleProps {
+/** @internal
+ * @deprecated
+ */
+ interface HandleProps {
   key: string;
   handle: SliderItem;
   isActive: boolean;
@@ -121,11 +136,17 @@ interface HandleProps {
   getHandleProps: (id: string, config: object) => object;
 }
 
-interface HandleState {
+/** @internal
+ * @deprecated
+ */
+ interface HandleState {
   mouseOver: boolean;
 }
 
-class Handle extends React.Component<HandleProps, HandleState> {
+/** @internal
+ * @deprecated
+ */
+ class Handle extends React.Component<HandleProps, HandleState> {
   public static defaultProps = {
     disabled: false,
   };
@@ -187,7 +208,10 @@ class Handle extends React.Component<HandleProps, HandleState> {
 // *******************************************************
 // TICK COMPONENT
 // *******************************************************
-interface TickProps {
+/** @internal
+ * @deprecated
+ */
+ interface TickProps {
   tick: SliderItem;
   count: number;
   index: number;
@@ -216,6 +240,7 @@ function Tick({ tick, count, index }: TickProps) {
 
 /** Properties used to show milestone timeline in timeline player control
  * @internal
+ * @deprecated
  */
 export interface TimelineProps extends CommonProps {
   startDate: Date;
@@ -234,6 +259,7 @@ interface TimelineState {
 
 /** Component used to show milestone timeline in timeline player control
  * @internal
+ * @deprecated
  */
 export class Timeline extends React.Component<TimelineProps, TimelineState> {
 

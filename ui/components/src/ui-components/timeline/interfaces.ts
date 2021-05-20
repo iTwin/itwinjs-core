@@ -21,7 +21,8 @@ export interface MilestoneRange {
 
 /**
  * A Milestone event that is to be noted in the timeline.
- * @public
+ * @internal
+ * @deprecated
  */
 export interface Milestone {
   /** uniqueId of milestone */
@@ -130,11 +131,6 @@ export interface TimelineDataProvider {
   end?: Date;
   /** Current animation fraction from 0.0 to 1.0 */
   animationFraction?: number;
-  /** Get count of milestones. If parent milestone is not defined then the number of root milestones will be returned. */
-  getMilestonesCount(parent?: Milestone): number;
-  /** Get array of milestones. If parent milestone is not defined then the root milestones will be returned. */
-  getMilestones(parent?: Milestone): Milestone[];
-  /** Called to get the playback settings. */
   getSettings(): PlaybackSettings;
   /** Called to get the initial scrubber location. This must be a value between 0 and the duration in PlaybackSettings. */
   initialDuration: number;
