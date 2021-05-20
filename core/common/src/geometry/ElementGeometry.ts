@@ -22,59 +22,61 @@ import { LineStyle } from "./LineStyle";
 import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
 import { isPlacement2dProps, PlacementProps } from "../ElementProps";
 
-/** Values for [[ElementGeometryDataEntry.opcode]]
- * @alpha
+/** Specifies the type of an entry in a geometry stream.
+ * @see [[ElementGeometryDataEntry.opcode]].
+ * @public
  */
 export enum ElementGeometryOpcode {
-  /** Local range of next geometric primitive */
+  /** Local range of the next geometric primitive in the geometry stream. */
   SubGraphicRange = 2,
-  /** Reference to a geometry part */
+  /** A reference to a [GeometryPart]($backend). */
   PartReference = 3,
-  /** Set symbology for subsequent geometry to override sub-category appearance */
+  /** Sets symbology for subsequent geometry to override [SubCategory]($backend) appearance */
   BasicSymbology = 4,
-  /** Line, line string, shape, or point string (automatic simplification of a CurvePrimitive/CurveCollection) */
+  /** A line, line string, shape, or point string (automatic simplification of a [CurvePrimitive]($geometry-core) or [CurveCollection]($geometry-core)) */
   PointPrimitive = 5,
-  /** 2d line, line string, shape, or point string (automatic simplification of a CurvePrimitive/CurveCollection) */
+  /** A 2d line, line string, shape, or point string (automatic simplification of a [CurvePrimitive]($geometry-core) or [CurveCollection]($geometry-core)) */
   PointPrimitive2d = 6,
-  /** Arc or ellipse (automatic simplification of a CurvePrimitive/CurveCollection) */
+  /** Arc or ellipse (automatic simplification of a [CurvePrimitive]($geometry-core) or [CurveCollection]($geometry-core)) */
   ArcPrimitive = 7,
-  /** [[CurveCollection]] */
+  /** [CurveCollection]($geometry-core) */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   CurveCollection = 8,
-  /** [[Polyface]] */
+  /** [Polyface]($geometry-core) */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   Polyface = 9,
-  /** [[CurvePrimitive]] */
+  /** [CurvePrimitive]($geometry-core) */
   CurvePrimitive = 10,
-  /** [[SolidPrimitive]] */
+  /** [SolidPrimitive]($geometry-core) */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   SolidPrimitive = 11,
-  /** [[BSplineSurface3d]] */
+  /** [BSplineSurface3d]($geometry-core) */
   BsplineSurface = 12,
-  /** Opaque and gradient fills [[Gradient]] */
+  /** Opaque and [[Gradient]] fills. */
   Fill = 19,
-  /** Hatch, cross-hatch, or area pattern [[AreaPattern]] */
+  /** Hatch, cross-hatch, or [[AreaPattern]]. */
   Pattern = 20,
-  /** Render material */
+  /** [[RenderMaterial]] */
   Material = 21,
   /** [[TextString]] */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   TextString = 22,
-  /** Specifies line style overrides [[LineStyle.Modifier]] */
+  /** Specifies line style overrides as a [[LineStyle.Modifier]] */
   LineStyleModifiers = 23,
-  /** Boundary represention solid, sheet, or wire body [[BRepEntity.DataProps]] */
+  /** Boundary represention solid, sheet, or wire body as a [[BRepEntity.DataProps]] */
   BRep = 25,
-  /** Small single-tile raster image [[ImageGraphic]] */
+  /** Small single-tile raster image as an [[ImageGraphic]] */
   Image = 28,
 }
 
-/** Geometry stream entry data plus opcode to describe what the data represents.
- * @alpha
+/** Describes an entry in a geometry stream as an op-code plus the binary flatbuffer representation of the associated data.
+ * @see [[FlatBufferGeometryStream]].
+ * @public
  */
 export interface ElementGeometryDataEntry {
-  /** The geometry stream entry type idenfiier [[ElementGeometryOpcode]] */
-  opcode: number;
-  /** Zero-based flatbuffers data */
+  /** The type of this entry. */
+  opcode: ElementGeometryOpcode;
+  /** Zero-based flatbuffer-encoded data. */
   data: Uint8Array;
 }
 
