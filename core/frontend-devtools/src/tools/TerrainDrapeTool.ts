@@ -5,7 +5,7 @@
 
 import { GrowableXYZArray, LineString3d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, RealityTileTree, TileTreeReference, Viewport } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, RealityTileDrapeStatus, RealityTileTree, TileTreeReference, Viewport } from "@bentley/imodeljs-frontend";
 
 /** @packageDocumentation
  * @module Tools
@@ -13,6 +13,7 @@ import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, I
 
 export class TerrainDrapeTool extends PrimitiveTool {
   private _drapePoints = new GrowableXYZArray();
+  private _drapedStrings?: LineString3d[];
   private _motionPoint?: Point3d;
   private _drapeViewport?: Viewport;
   private _drapeTreeRef?: TileTreeReference;
@@ -30,13 +31,18 @@ export class TerrainDrapeTool extends PrimitiveTool {
         const drapeTree = this._drapeTreeRef.treeOwner.load();
         if (drapeTree instanceof RealityTileTree) {
           const builder =  context.createGraphicBuilder(GraphicType.WorldDecoration);
-          const lineStrings = new Array<LineString3d>();
           builder.setSymbology(ColorDef.white, ColorDef.white, 2);
-          const drapeRange = Range3d.createNull();
-          drapeRange.extendArray(this._drapePoints);
-          const tolerance = drapeRange.diagonal().magnitude() / 5000.0;
-          drapeTree.drapeLinestring(lineStrings, this._drapePoints, tolerance, this._drapeViewport);
-          lineStrings.forEach((lineString) => builder.addLineString(lineString.points));
+          let loading = false;
+          if (!this._drapedStrings) {
+            this._drapedStrings = new Array<LineString3d>();
+            const drapeRange = Range3d.createNull();
+            drapeRange.extendArray(this._drapePoints);
+            const tolerance = drapeRange.diagonal().magnitude() / 5000.0;
+            loading = RealityTileDrapeStatus.Loading ===  drapeTree.drapeLinestring(this._drapedStrings, this._drapePoints, tolerance, this._drapeViewport);
+          }
+          this._drapedStrings.forEach((lineString) => builder.addLineString(lineString.points));
+          if (loading)
+            this._drapedStrings = undefined;
           context.addDecorationFromBuilder(builder);
         }
       }
@@ -117,6 +123,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
     } else {
       this._drapePoints.push(hit ? hit.hitPoint : ev.point);
     }
+    this._drapedStrings = undefined;
     this.setupAndPromptForNextAction();
     return EventHandled.No;
   }
