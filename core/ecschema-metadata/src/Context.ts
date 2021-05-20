@@ -11,7 +11,7 @@ import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 interface SchemaInfo {
   schema: Schema,
-  loaded: boolean,
+  loadPromise?: Promise<void>,
 }
 
 /**
@@ -67,33 +67,27 @@ export class SchemaCache implements ISchemaLocater {
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
    * @param schema The schema to add to the cache.
    */
-  public async addSchema<T extends Schema>(schema: T): Promise<number> {
+  public async addSchema<T extends Schema>(schema: T, loadPromise?: Promise<void>) {
     if (await this.getSchema<T>(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
-    this._schema.push( { schema, loaded: false } );
-    return this._schema.length - 1;
+    this._schema.push( { schema, loadPromise } );
+    if (loadPromise) {
+      console.log("Here");
+      await loadPromise;
+      console.log(`Finished deserializing ${schema.fullName}`);
+    }
   }
 
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
    * @param schema The schema to add to the cache.
    */
-  public addSchemaSync<T extends Schema>(schema: T): number {
+  public addSchemaSync<T extends Schema>(schema: T) {
     if (this.getSchemaSync<T>(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
-    this._schema.push({ schema, loaded: false });
-
-    return this._schema.length - 1;
-  }
-
-  public async setSchemaLoaded(index: number) {
-    this._schema[index].loaded = true;
-  }
-
-  public setSchemaLoadedSync(index: number) {
-    this._schema[index].loaded = true;
+    this._schema.push({ schema });
   }
 
   /**
@@ -102,19 +96,26 @@ export class SchemaCache implements ISchemaLocater {
    * @param matchType The match type to use when locating the schema
    */
   public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
+    console.log(`Getting schema: ${schemaKey.name} in cache`);
     if (this.count === 0)
       return undefined;
 
     const findFunc = (schemaInfo: SchemaInfo) => {
-      return schemaInfo.schema.schemaKey.matches(schemaKey, matchType) && schemaInfo.loaded;
+      return schemaInfo.schema.schemaKey.matches(schemaKey, matchType)
     };
 
-    const foundSchema = this._schema.find(findFunc);
+    const foundSchemaInfo = this._schema.find(findFunc);
 
-    if (!foundSchema)
+    if (!foundSchemaInfo)
       return undefined;
 
-    return foundSchema.schema as T;
+    if (foundSchemaInfo.loadPromise) {
+      console.log("Here 2");
+      await foundSchemaInfo.loadPromise;
+      console.log(`Finished deserializing ${schemaKey.name}`);
+    }
+
+    return foundSchemaInfo.schema as T;
   }
 
   /**
@@ -127,15 +128,15 @@ export class SchemaCache implements ISchemaLocater {
       return undefined;
 
     const findFunc = (schemaInfo: SchemaInfo) => {
-      return schemaInfo.schema.schemaKey.matches(schemaKey, matchType) && schemaInfo.loaded;
+      return schemaInfo.schema.schemaKey.matches(schemaKey, matchType)
     };
 
-    const foundSchema = this._schema.find(findFunc);
+    const foundSchemaInfo = this._schema.find(findFunc);
 
-    if (!foundSchema)
-      return foundSchema;
+    if (!foundSchemaInfo)
+      return undefined;
 
-    return foundSchema.schema as T;
+    return foundSchemaInfo.schema as T;
   }
 }
 
@@ -167,24 +168,16 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * Adds the schema to this context
    * @param schema The schema to add to this context
    */
-  public async addSchema(schema: Schema): Promise<number> {
-    return this.addSchemaSync(schema);
+  public async addSchema(schema: Schema, loadPromise?: Promise<void>) {
+    this._knownSchemas.addSchema(schema, loadPromise);
   }
 
   /**
    * Adds the schema to this context
    * @param schema The schema to add to this context
    */
-  public addSchemaSync(schema: Schema): number {
-    return this._knownSchemas.addSchemaSync(schema);
-  }
-
-  public async setSchemaLoaded(index: number) {
-    await this._knownSchemas.setSchemaLoaded(index);
-  }
-
-  public setSchemaLoadedSync(index: number) {
-    this._knownSchemas.setSchemaLoadedSync(index);
+  public addSchemaSync(schema: Schema) {
+    this._knownSchemas.addSchemaSync(schema);
   }
 
   /**

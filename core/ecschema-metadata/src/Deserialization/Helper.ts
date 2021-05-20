@@ -73,36 +73,39 @@ export class SchemaReadHelper<T = unknown> {
     this._schema = schema;
 
     // Need to add this schema to the context to be able to locate schemaItems within the context.
-    const schemaIndex = await this._context.addSchema(schema);
-
-    // Load schema references first
-    // Need to figure out if other schemas are present.
-    for (const reference of this._parser.getReferences()) {
-      await this.loadSchemaReference(reference);
-    }
-
-    if (this._visitorHelper)
-      await this._visitorHelper.visitSchema(schema, false);
-
-    // Load all schema items
-    for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
-      // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
-      // which would be found when adding to the context.
-      if (await schema.getItem(itemName) !== undefined)
-        continue;
-
-      const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
-      if (loadedItem && this._visitorHelper) {
-        await this._visitorHelper.visitSchemaPart(loadedItem);
+    await this._context.addSchema(schema, new Promise<void>(async (resolve) => {
+      // Load schema references first
+      // Need to figure out if other schemas are present.
+      for (const reference of this._parser.getReferences()) {
+        await this.loadSchemaReference(reference);
       }
-    }
 
-    await this.loadCustomAttributes(schema, this._parser.getSchemaCustomAttributeProviders());
+      if (this._visitorHelper)
+        await this._visitorHelper.visitSchema(schema, false);
 
-    if (this._visitorHelper)
-      await this._visitorHelper.visitSchema(schema);
+      // Load all schema items
+      for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
+        // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
+        // which would be found when adding to the context.
+        if (await schema.getItem(itemName) !== undefined)
+          continue;
 
-    await this._context.setSchemaLoaded(schemaIndex);
+        console.log("Running promise 3", itemName)
+        const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
+        console.log("Running promise 4")
+        if (loadedItem && this._visitorHelper) {
+          await this._visitorHelper.visitSchemaPart(loadedItem);
+        }
+      }
+
+      await this.loadCustomAttributes(schema, this._parser.getSchemaCustomAttributeProviders());
+
+      if (this._visitorHelper)
+        await this._visitorHelper.visitSchema(schema);
+
+      resolve();
+    }));
+
     return schema;
   }
 
@@ -120,7 +123,7 @@ export class SchemaReadHelper<T = unknown> {
     this._schema = schema;
 
     // Need to add this schema to the context to be able to locate schemaItems within the context.
-    const schemaIndex = this._context.addSchemaSync(schema);
+    this._context.addSchemaSync(schema);
 
     // Load schema references first
     // Need to figure out if other schemas are present.
@@ -149,7 +152,6 @@ export class SchemaReadHelper<T = unknown> {
     if (this._visitorHelper)
       this._visitorHelper.visitSchemaSync(schema);
 
-    this._context.setSchemaLoadedSync(schemaIndex);
     return schema;
   }
 
