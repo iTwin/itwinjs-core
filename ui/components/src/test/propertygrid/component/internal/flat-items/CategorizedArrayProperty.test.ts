@@ -233,6 +233,20 @@ describe("CategorizedArrayProperty", () => {
       });
     });
 
+    describe("getVisibleDescendants", () => {
+      it("Should return children even when not expanded when `PropertyRecord.property.hideCompositePropertyLabel` is set", () => {
+        const propertyRecord = TestUtils.createArrayProperty("Prop", arrayChildren);
+        propertyRecord.property.hideCompositePropertyLabel = true;
+
+        const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
+        const { expectedDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, []);
+
+        const property = new MutableCategorizedArrayProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
+        property.isExpanded = false;
+        expect(property.getVisibleDescendants()).to.deep.equal(expectedDescendants);
+      });
+    });
+
     describe("getVisibleDescendantsAndSelf", () => {
       it("Should return self when called on array property with no children", () => {
         const propertyRecord = TestUtils.createArrayProperty("Prop", []);
