@@ -4011,7 +4011,6 @@ export abstract class IModel implements IModelProps {
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     // @internal
     protected _fileKey: string;
-    // (undocumented)
     get geographicCoordinateSystem(): GeographicCRS | undefined;
     set geographicCoordinateSystem(geoCRS: GeographicCRS | undefined);
     // @internal (undocumented)
@@ -4038,7 +4037,6 @@ export abstract class IModel implements IModelProps {
     rootSubject: RootSubjectProps;
     static readonly rootSubjectId: Id64String;
     setEcefLocation(ecef: EcefLocationProps): void;
-    // (undocumented)
     setGeographicCoordinateSystem(geoCRS: GeographicCRSProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
