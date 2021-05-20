@@ -29,6 +29,7 @@ import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 import * as Semver from "semver";
 import { Schema } from "./Schema";
+import { BackendRequestContext } from "./BackendRequestContext";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
@@ -746,12 +747,36 @@ export class IModelTransformer extends IModelExportHandler {
     return targetElementAspectProps;
   }
 
+  public onExportSchema(schema: Schema): void {
+    const requestContext = new BackendRequestContext();
+    this.targetDb.importSchemas(requestContext);
+  }
+
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
    */
   public async processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
+
+    const exporterOverridesOnExportSchema = undefined !== Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this.exporter), "onExportSchema");
+    const exporterOverridesExportSchemas = undefined !== Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this.exporter), "exportSchemas");
+    if (!(exporterOverridesOnExportSchema || exporterOverridesExportSchemas)) {
+      Logger.logWarning(loggerCategory, "using processSchemas to export schemas without manually overriding the exportSchemas/onExportSchema "
+                                      + "methods is deprecated, and the behavior will be removed. Instead, write your own onExportSchema routine. "
+                                      + "You can see the imodel-transformer test-app for an example.");
+      // eslint-disable-next-line @typescript-eslint/deprecated
+      this.oldProcessSchemas(requestContext);
+    } else {
+      this.exporter.exportSchemas();
+    }
+  }
+
+  /** The previous behavior of processSchemas, which does not invoke the exporter's schema `exportSchemas/onExportSchema`
+   * @deprecated
+   * @see [IModelTransformer.processSchemas]
+   */
+  public async oldProcessSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
     const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
     IModelJsFs.mkdirSync(schemasDir);
     try {
