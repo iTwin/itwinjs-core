@@ -4084,7 +4084,7 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 // @public
 export interface IModelProps {
     ecefLocation?: EcefLocationProps;
-    geographicCoordinateSystem?: GeographicCRS;
+    geographicCoordinateSystem?: GeographicCRSProps;
     globalOrigin?: XYZProps;
     name?: string;
     projectExtents?: Range3dProps;
