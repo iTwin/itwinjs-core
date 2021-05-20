@@ -251,7 +251,8 @@ alpha;StringifiedClipVector
 public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour
-public;TaggedGeometryData
+public;TaggedNumericConstants
+public;TaggedNumericData
 internal;TorusImplicit
 public;TorusPipe 
 public;Transform 

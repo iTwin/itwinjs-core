@@ -1966,7 +1966,7 @@ export class Geometry {
     static isAlmostEqualNumber(a: number, b: number): boolean;
     static isAlmostEqualXAndY(a: XAndY, b: XAndY): boolean;
     static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries?: number): boolean;
-    static isDistanceWithinTol(distance: number, tol: number): boolean;
+    static isDistanceWithinTol(distance: number, tol?: number): boolean;
     static isHugeCoordinate(x: number): boolean;
     static isIn01(x: number, apply01?: boolean): boolean;
     static isIn01WithTolerance(x: number, tolerance: number): boolean;
@@ -2478,7 +2478,7 @@ export namespace IModelJson {
         paramIndex?: [number];
         point: [XYZProps];
         pointIndex: [number];
-        taggedGeometry?: [TaggedGeometryDataProps];
+        taggedNumericData?: TaggedNumericDataProps;
     }
     export interface LinearSweepProps {
         capped?: boolean;
@@ -2514,7 +2514,7 @@ export namespace IModelJson {
         static parseRuledSweep(json?: RuledSweepProps): RuledSweep | undefined;
         static parseSphere(json?: SphereProps): Sphere | undefined;
         // @internal (undocumented)
-        static parseTaggedGeometryProps(json: any): TaggedGeometryData | undefined;
+        static parseTaggedNumericProps(json: any): TaggedNumericData | undefined;
         static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined;
         // @alpha
         static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined;
@@ -2553,14 +2553,11 @@ export namespace IModelJson {
         radiusY?: number;
         radiusZ?: number;
     }
-    export interface TaggedGeometryDataProps {
+    export interface TaggedNumericDataProps {
         doubleData?: number[];
-        geometry?: GeometryQuery[];
         intData?: number[];
-        pointData?: XYZProps[];
         tagA: number;
         tagB: number;
-        vectorData?: XYZProps[];
     }
     export interface TorusPipeProps extends AxesProps {
         capped?: boolean;
@@ -2611,7 +2608,7 @@ export namespace IModelJson {
         handleRuledSweep(data: RuledSweep): any;
         handleSphere(data: Sphere): any;
         // (undocumented)
-        handleTaggedGeometryData(data: TaggedGeometryData): TaggedGeometryDataProps;
+        handleTaggedNumericData(data: TaggedNumericData): TaggedNumericDataProps;
         handleTorusPipe(data: TorusPipe): any;
         // @alpha
         handleTransitionSpiral(data: TransitionSpiral3d): any;
@@ -3213,6 +3210,11 @@ export class Matrix3d implements BeJSONFunctions {
     inverseCoffs: Float64Array | undefined;
     inverseState: InverseMatrixState;
     isAlmostEqual(other: Matrix3d, tol?: number): boolean;
+    isAlmostEqualAllowZRotation(other: Matrix3d, tol?: number): boolean;
+    // (undocumented)
+    isAlmostEqualColumn(columnIndex: AxisIndex, other: Matrix3d, tol?: number): boolean;
+    // (undocumented)
+    isAlmostEqualColumnXYZ(columnIndex: AxisIndex, ax: number, ay: number, az: number, tol?: number): boolean;
     get isDiagonal(): boolean;
     isExactEqual(other: Matrix3d): boolean;
     get isIdentity(): boolean;
@@ -4172,7 +4174,6 @@ export class PolyfaceData {
     point: GrowableXYZArray;
     get pointCount(): number;
     pointIndex: number[];
-    pushTaggedGeometryData(data: TaggedGeometryData): void;
     range(result?: Range3d, transform?: Transform): Range3d;
     get requireNormals(): boolean;
     resizeAllDataArrays(length: number): void;
@@ -4181,7 +4182,8 @@ export class PolyfaceData {
     reverseIndicesSingleFacet(facetId: number, facetStartIndex: number[]): void;
     static reverseIndicesSingleFacet<T>(facetId: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
     reverseNormals(): void;
-    taggedGeometryData: TaggedGeometryData[] | undefined;
+    setTaggedNumericData(data: TaggedNumericData | undefined): void;
+    taggedNumericData: TaggedNumericData | undefined;
     trimAllIndexArrays(length: number): void;
     tryTransformInPlace(transform: Transform): boolean;
     get twoSided(): boolean;
@@ -5167,24 +5169,43 @@ export class SweepContour {
     }
 
 // @public
-export class TaggedGeometryData {
-    constructor(tagA?: number, tagB?: number, intData?: number[], doubleData?: number[], pointData?: Point3d[], vectorData?: Vector3d[], geometryData?: GeometryQuery[]);
+export namespace TaggedNumericConstants {
+    export enum SubdivisionControlCode {
+        AbsoluteTolerance = -101,
+        FixedDepth = -100,
+        FractionOfRangeBoxTolerance = -102
+    }
+    export enum SubdivisionMethod {
+        // (undocumented)
+        CatmullClark = 1,
+        // (undocumented)
+        ChooseBasedOnFacets = 0,
+        // (undocumented)
+        DooSabin = 3,
+        // (undocumented)
+        Loop = 2
+    }
+    export enum TaggedNumericTagType {
+        SubdivisionSurface = -1000
+    }
+}
+
+// @public
+export class TaggedNumericData {
+    constructor(tagA?: number, tagB?: number, intData?: number[], doubleData?: number[]);
     // (undocumented)
-    static areAlmostEqualArrays(dataA: TaggedGeometryData[] | undefined, dataB: TaggedGeometryData[] | undefined): boolean;
-    clone(result?: TaggedGeometryData): TaggedGeometryData;
+    static areAlmostEqual(dataA: TaggedNumericData | undefined, dataB: TaggedNumericData | undefined): boolean;
+    clone(result?: TaggedNumericData): TaggedNumericData;
     doubleData?: number[];
-    geometry?: GeometryQuery[];
     getDoubleData(index: number, defaultValue: number): number;
     intData?: number[];
-    isAlmostEqual(other: TaggedGeometryData): boolean;
-    pointData?: Point3d[];
+    isAlmostEqual(other: TaggedNumericData): boolean;
     pushIndexedDouble(intA: number, valueB: number): void;
     pushIntPair(intA: number, intB: number): void;
     tagA: number;
     tagB: number;
     tagToIndexedDouble(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
     tagToInt(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
-    vectorData?: Vector3d[];
 }
 
 // @internal
@@ -5266,6 +5287,7 @@ export class Transform implements BeJSONFunctions {
     static initFromRange(min: Point3d, max: Point3d, npcToGlobal?: Transform, globalToNpc?: Transform): void;
     inverse(): Transform | undefined;
     isAlmostEqual(other: Transform): boolean;
+    isAlmostEqualAllowZRotation(other: Transform): boolean;
     get isIdentity(): boolean;
     static matchArrayLengths(source: any[], dest: any[], constructionFunction: () => any): number;
     get matrix(): Matrix3d;
