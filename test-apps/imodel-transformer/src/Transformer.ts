@@ -7,13 +7,16 @@ import * as path from "path";
 import * as Semver from "semver";
 import { assert, ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
+  BackendRequestContext,
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
   IModelDb, IModelJsFs, IModelTransformer, IModelTransformOptions, InformationPartitionElement, KnownLocations, ModelSelector, PhysicalModel, PhysicalPartition,
-  Relationship, Schema, SpatialCategory, SpatialViewDefinition, SubCategory, ViewDefinition,
+  Relationship, SpatialCategory, SpatialViewDefinition, SubCategory, ViewDefinition,
 } from "@bentley/imodeljs-backend";
 import { ElementProps, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SchemaEditOperation } from "./SchemaEditUtils";
+import { Schema } from "@bentley/ecschema-metadata";
+import { DOMParser, XMLSerializer } from "xmldom";
 
 export const loggerCategory = "imodel-transformer-Transformer";
 export const progressLoggerCategory = "Progress";
@@ -35,19 +38,24 @@ export class Transformer extends IModelTransformer {
   private _numSourceRelationshipsProcessed = 0;
   private _startTime = new Date();
   private _targetPhysicalModelId = Id64.invalid; // will be valid when PhysicalModels are being combined
+  private _schemaExportPromise = Promise.resolve<any>(undefined);
+  private _schemaExportDir = path.join(KnownLocations.tmpdir, Guid.createValue());
   private _schemaEditOperations = new Map<string, SchemaEditOperation[]>();
 
   public static async transformAll(requestContext: AuthorizedClientRequestContext | ClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
+    requestContext.enter();
+    // might need to inject RequestContext for schemaExport.
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
-    await transformer.processSchemas(requestContext);
-    targetDb.saveChanges("processSchemas");
     await transformer.processAll();
+    await transformer._schemaExportPromise; // await promises caused by exporting schemas
+    requestContext.enter();
     targetDb.saveChanges("processAll");
     if (options?.deleteUnusedGeometryParts) {
       transformer.deleteUnusedGeometryParts();
       targetDb.saveChanges("deleteUnusedGeometryParts");
     }
+    requestContext.enter();
     transformer.dispose();
     transformer.logElapsedTime();
   }
@@ -71,6 +79,7 @@ export class Transformer extends IModelTransformer {
 
   private constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: IModelTransformOptions) {
     super(sourceDb, targetDb, options);
+    IModelJsFs.mkdirSync(this._schemaExportDir);
   }
 
   private initialize(options?: TransformerOptions): void {
@@ -131,52 +140,6 @@ export class Transformer extends IModelTransformer {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
     Logger.logInfo(progressLoggerCategory, `numSourceRelationships=${this._numSourceRelationships}`);
-  }
-
-  // this is a modified copy of IModelTransformer.processSchemas, since we do not expect anyone else to need to alter the behavior like this.
-  // make sure to check that changes to the original are reflected here, the changes are surrounded by comments
-  public async processSchemas(...[requestContext]: Parameters<IModelTransformer["processSchemas"]>): Promise<void> {
-    requestContext.enter();
-    const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
-    IModelJsFs.mkdirSync(schemasDir);
-    try {
-      this.sourceDb.nativeDb.exportSchemas(schemasDir);
-      const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
-      // some schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
-      const importSchemasFullPaths = schemaFiles.map((schema) => path.join(schemasDir, schema));
-      const filteredSchemaPaths = importSchemasFullPaths.filter((schemaPath) => {
-        let schemaSource: string;
-        try {
-          schemaSource = IModelJsFs.readFileSync(schemaPath).toString("utf8");
-        } catch (err) {
-          Logger.logError(loggerCategory, `error reading xml schema file ${schemaPath}`);
-          return true;
-        }
-        const schemaVersionMatch = /<ECSchema .*?version="([0-9.]+)"/.exec(schemaSource);
-        const schemaNameMatch = /<ECSchema .*?schemaName="([^"]+)"/.exec(schemaSource);
-        if (schemaVersionMatch == null || schemaNameMatch == null) {
-          Logger.logError(loggerCategory, `failed to parse schema name or version, first 200 chars: '${schemaSource.slice(0, 200)}'`);
-          return true;
-        }
-        const [_fullVersionMatch, versionString] = schemaVersionMatch;
-        const [_fullNameMatch, schemaName] = schemaNameMatch;
-        const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
-        const versionToImport = Schema.toSemverString(versionString);
-        /* START CHANGE FROM SUPER */
-        if (this._schemaEditOperations.has(schemaName)) {
-          this.applySchemaOperations(requestContext, schemaPath, this._schemaEditOperations.get(schemaName)!, schemaSource);
-        }
-        /* END CHANGE FROM SUPER */
-        if (versionInTarget && Semver.lte(versionToImport, versionInTarget))
-          return false;
-        return true;
-      });
-      if (filteredSchemaPaths.length > 0)
-        await this.targetDb.importSchemas(requestContext, filteredSchemaPaths);
-    } finally {
-      requestContext.enter();
-      IModelJsFs.removeSync(schemasDir);
-    }
   }
 
   /** Initialize IModelTransformer to exclude SubCategory Elements and geometry entries in a SubCategory from the target iModel.
@@ -323,11 +286,26 @@ export class Transformer extends IModelTransformer {
   }
 
   // for now source is required but can be made optional and the function reads it itself
-  public applySchemaOperations(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaPath: string, editOps: SchemaEditOperation[], source: string): void {
+  public applySchemaOperations(editOps: SchemaEditOperation[], source: string): string {
     for (const editOp of editOps) {
       source = source.replace(editOp.pattern, editOp.substitution);
     }
-    requestContext.enter();
-    IModelJsFs.writeFileSync(schemaPath, source);
+  }
+
+  public onExportSchema(schema: Schema): void {
+    const body = async () => {
+      if (!this._schemaEditOperations.has(schema.name))
+        return;
+      const editOps = this._schemaEditOperations.get(schema.name)!;
+      const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
+      const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);
+      const filledDoc = await schema.toXml(xmlDoc);
+      const schemaText = new XMLSerializer().serializeToString(filledDoc);
+      const textAfterEdits = this.applySchemaOperations(editOps, schemaText);
+      IModelJsFs.writeFileSync(schemaPath, textAfterEdits);
+      this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
+    };
+    // aggregate promises to be waited on
+    this._schemaExportPromise = Promise.all([this._schemaExportPromise, body()]);
   }
 }
