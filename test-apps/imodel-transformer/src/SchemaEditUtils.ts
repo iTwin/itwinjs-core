@@ -43,10 +43,7 @@ export function tryParseSchemaEditOperation(
   const schemaNamePattern = /\w+/.source;
   const unescapedSlash = /(?<!\\)\//.source;
   const escapedText = /(?:[^/]|(?<=\\)\/)/.source;
-  const format = RegExp(
-    `(?<schemaName>${schemaNamePattern})${unescapedSlash}(?<pattern>${escapedText}+)${unescapedSlash}(?<substitution>${escapedText}*)${unescapedSlash}`,
-    "g" // in the future, may allow flags to be specified after the substitution
-  );
+  const format = RegExp(`(?<schemaName>${schemaNamePattern})${unescapedSlash}(?<pattern>${escapedText}+)${unescapedSlash}(?<substitution>${escapedText}*)${unescapedSlash}`);
   const parseResult =
     format.exec(src)?.groups ?? ({} as Partial<Record<string, string>>);
   if (!isSchemaEditOperation(parseResult)) {
@@ -59,5 +56,6 @@ export function tryParseSchemaEditOperation(
   // escaped slashes have been ignored to this point, the escaping backslashes used must actually be removed now
   parseResult.pattern = (parseResult.pattern as string).replace("\\/", "/");
   parseResult.substitution = parseResult.substitution.replace("\\/", "/");
+  parseResult.pattern = RegExp(parseResult.pattern), "g" // in the future, may allow flags to be specified after the substitution ending slash
   return parseResult;
 }
