@@ -39,7 +39,7 @@ import { ToolTipOptions } from "./NotificationManager";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { FrameStats } from "./render/FrameStats";
+import { FrameStats, FrameStatsCollector } from "./render/FrameStats";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
@@ -1001,10 +1001,12 @@ export abstract class Viewport implements IDisposable {
    */
   public readonly onFrameStats = new BeEvent<(frameStats: Readonly<FrameStats>) => void>();
 
+  private _frameStatsCollector = new FrameStatsCollector(this.onFrameStats);
+
   /** @internal */
   protected constructor(target: RenderTarget) {
     this._target = target;
-    target.setOnFrameStats(this.onFrameStats);
+    target.assignFrameStatsCollector(this._frameStatsCollector);
     this._viewportId = Viewport._nextViewportId++;
     this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
     IModelApp.tileAdmin.registerViewport(this);
@@ -2182,6 +2184,8 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public renderFrame(): void {
+    this._frameStatsCollector.beginFrame();
+
     const changeFlags = this._changeFlags;
     if (changeFlags.hasChanges)
       this._changeFlags = new MutableChangeFlags(ChangeFlag.None);
@@ -2191,10 +2195,13 @@ export abstract class Viewport implements IDisposable {
 
     // Start timer for tile loading time
     const timer = new StopWatch(undefined, true);
+    this._frameStatsCollector.beginTime("totalSceneTime");
 
+    this._frameStatsCollector.beginTime("animationTime");
     // if any animation is active, perform it now
     if (this._animator && this._animator.animate())
       this._animator = undefined; // animation completed
+    this._frameStatsCollector.endTime("animationTime");
 
     let isRedrawNeeded = this._redrawPending || this._doContinuousRendering;
     this._redrawPending = false;
@@ -2243,6 +2250,7 @@ export abstract class Viewport implements IDisposable {
 
     if (!this._sceneValid) {
       if (!this._freezeScene) {
+        this._frameStatsCollector.beginTime("createChangeSceneTime");
         IModelApp.tileAdmin.clearTilesForViewport(this);
         IModelApp.tileAdmin.clearUsageForViewport(this);
         const context = this.createSceneContext();
@@ -2258,22 +2266,27 @@ export abstract class Viewport implements IDisposable {
         context.requestMissingTiles();
         target.changeScene(context.scene);
         isRedrawNeeded = true;
+        this._frameStatsCollector.endTime("createChangeSceneTime");
       }
 
       this._sceneValid = true;
     }
 
     if (!this._renderPlanValid) {
+      this._frameStatsCollector.beginTime("validateRenderPlanTime");
       this.validateRenderPlan();
+      this._frameStatsCollector.endTime("validateRenderPlanTime");
       isRedrawNeeded = true;
     }
 
     if (!this._decorationsValid) {
+      this._frameStatsCollector.beginTime("decorationsTime");
       const decorations = new Decorations();
       this.addDecorations(decorations);
       target.changeDecorations(decorations);
       this._decorationsValid = true;
       isRedrawNeeded = true;
+      this._frameStatsCollector.endTime("decorationsTime");
     }
 
     let requestNextAnimation = false;
@@ -2283,15 +2296,19 @@ export abstract class Viewport implements IDisposable {
       requestNextAnimation = undefined !== this._flashedElem;
     }
 
+    this._frameStatsCollector.beginTime("onBeforeRenderTime");
     target.onBeforeRender(this, (redraw: boolean) => {
       isRedrawNeeded = isRedrawNeeded || redraw;
     });
+    this._frameStatsCollector.endTime("onBeforeRenderTime");
 
+    this._frameStatsCollector.endTime("totalSceneTime");
     timer.stop();
     if (isRedrawNeeded) {
       target.drawFrame(timer.elapsed.milliseconds);
       this.onRender.raiseEvent(this);
     }
+    this._frameStatsCollector.endFrame(isRedrawNeeded);
 
     // Dispatch change events after timer has stopped and update has finished.
     if (resized)
