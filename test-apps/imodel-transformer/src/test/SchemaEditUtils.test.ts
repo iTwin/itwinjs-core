@@ -26,7 +26,7 @@ describe("parsing SchemaEditOperations", () => {
   it("should allow escaped slashes in the pattern", async () => {
     assert.deepEqual(
       tryParseSchemaEditOperation("schemaName/<xml\\/>/test/"),
-      { schemaName: "schemaName", pattern: /<xml\/>/, substitution: "test" }
+      { schemaName: "schemaName", pattern: /<xml\/>/g, substitution: "test" }
     );
     assert.isTrue(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/<xml\\/>/test/")));
   });
@@ -34,7 +34,7 @@ describe("parsing SchemaEditOperations", () => {
   it("should allow escaped slashes in the substitution", async () => {
     assert.deepEqual(
       tryParseSchemaEditOperation("schemaName/<xml\\/>/<rip\\/>/"),
-      { schemaName: "schemaName", pattern: /<xml\/>/, substitution: "<rip/>" }
+      { schemaName: "schemaName", pattern: /<xml\/>/g, substitution: "<rip/>" }
     );
     assert.isTrue(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/<xml\\/>/<rip\\/>/")));
   });
@@ -42,13 +42,13 @@ describe("parsing SchemaEditOperations", () => {
   it("should allow empty substitutions", async () => {
     assert.deepEqual(
       tryParseSchemaEditOperation("schemaName/hello//"),
-      { schemaName: "schemaName", pattern: /hello/, substitution: "" }
+      { schemaName: "schemaName", pattern: /hello/g, substitution: "" }
     );
     assert.isTrue(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/hello//")));
 
     assert.deepEqual(
       tryParseSchemaEditOperation("schemaName/he\\/llo//"),
-      { schemaName: "schemaName", pattern: /he\/llo/, substitution: "" }
+      { schemaName: "schemaName", pattern: /he\/llo/g, substitution: "" }
     );
     assert.isTrue(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/he\\/llo//")));
   });
@@ -66,7 +66,7 @@ describe("parsing SchemaEditOperations", () => {
   it("should reject inputs that don't end in a slash", async () => {
     assert.deepEqual(
       tryParseSchemaEditOperation("schemaName/hello/world/"),
-      { schemaName: "schemaName", pattern: /hello/, substitution: "world" }
+      { schemaName: "schemaName", pattern: /hello/g, substitution: "world" }
     );
     assert.isTrue(isSchemaEditOperation(tryParseSchemaEditOperation("schemaName/hello/world/")));
 
