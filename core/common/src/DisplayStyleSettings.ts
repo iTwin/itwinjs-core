@@ -149,13 +149,10 @@ export interface DisplayStyleSettingsProps {
    * @internal
    */
   scheduleScript?: RenderSchedule.ModelTimelineProps[];
-  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view.
-   * @beta
-   */
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view. */
   renderTimeline?: Id64String;
   /** The point in time reflected by the view, in UNIX seconds.
    * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
-   * @beta
    */
   timePoint?: number;
   /** Overrides applied to the appearances of subcategories in the view. */
@@ -413,13 +410,9 @@ export class DisplayStyleSettings {
    */
   public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>();
 
-  /** Event raised just prior to assignment to the [[renderTimeline]] property.
-   * @beta
-   */
+  /** Event raised just prior to assignment to the [[renderTimeline]] property. */
   public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
-  /** Event raised just prior to assignment to the [[timePoint]] property.
-   * @beta
-   */
+  /** Event raised just prior to assignment to the [[timePoint]] property. */
   public readonly onTimePointChanged = new BeEvent<(newTimePoint: number | undefined) => void>();
   /** Event raised just prior to assignment to the [[analysisStyle]] property.
    * @alpha
@@ -620,9 +613,7 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view.
-   * @beta
-   */
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view. */
   public get renderTimeline(): Id64String | undefined {
     return this._json.renderTimeline;
   }
@@ -645,7 +636,6 @@ export class DisplayStyleSettings {
 
   /** The point in time reflected by the view, in UNIX seconds.
    * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
-   * @beta
    */
   public get timePoint(): number | undefined {
     return this._json.timePoint;
