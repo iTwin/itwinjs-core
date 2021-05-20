@@ -153,6 +153,8 @@ export interface TableProps extends CommonProps {
 
   /** Called to show a context menu when a cell is right-clicked. @beta */
   onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
+  /** Maximum number of distinct values for filtering */
+  maximumDistinctValues?: number;
 }
 
 /** Properties for a Table cell
@@ -528,6 +530,11 @@ export class Table extends React.Component<TableProps, TableState> {
       return tableColumn;
     });
 
+    for (const tableColumn of tableColumns) {
+      if (tableColumn.filterable)
+        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(this.props.maximumDistinctValues);
+    }
+
     this.setState({ columns: tableColumns, keyboardEditorCellKey });
 
     if (this._pendingUpdate !== TableUpdate.None) {
@@ -894,12 +901,8 @@ export class Table extends React.Component<TableProps, TableState> {
         this.props.onRowsLoaded(index, index + loadResult.rows.length - 1);
 
       const showFilter = this._isShowFilterRow();
-      if (showFilter !== this._filterRowShown) {
-        // istanbul ignore else
-        if (showFilter)
-          await this.loadDistinctValues();
+      if (showFilter !== this._filterRowShown)
         this.toggleFilterRow(showFilter);
-      }
     });
   });
 
@@ -1402,13 +1405,6 @@ export class Table extends React.Component<TableProps, TableState> {
     if (this.props.dataProvider.getPropertyDisplayValueExpression !== undefined)
       return this.props.dataProvider.getPropertyDisplayValueExpression(property);
     return property;
-  }
-
-  private async loadDistinctValues(): Promise<void> {
-    await Promise.all(this.state.columns.map(async (tableColumn: TableColumn) => {
-      if (tableColumn.filterable)
-        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(1000);
-    }));
   }
 
   private _handleFilterChange = (filter: ReactDataGridFilter): void => {
