@@ -34,7 +34,7 @@ class TimePointComparison {
     vp.displayStyle.settings.timePoint = this._timePoint;
 
     const context = vp.createSceneContext();
-    vp.view.createScene(context);
+    vp.createScene(context);
 
     const gfx = context.graphics;
     if (0 < gfx.length) {

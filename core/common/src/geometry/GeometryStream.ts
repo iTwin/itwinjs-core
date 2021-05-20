@@ -325,9 +325,7 @@ export class GeometryStreamBuilder {
     return true;
   }
 
-  /** Append an [[ImageGraphic]] supplied in either local or world coordinates.
-   * @beta
-   */
+  /** Append an [[ImageGraphic]] supplied in either local or world coordinates. */
   public appendImage(image: ImageGraphic): boolean {
     if (undefined !== this._worldToLocal)
       image = image.cloneTransformed(this._worldToLocal);
@@ -425,7 +423,6 @@ export interface TextStringPrimitive {
  */
 export interface ImagePrimitive {
   type: "image";
-  /** @beta */
   readonly image: ImageGraphic;
 }
 

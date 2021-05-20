@@ -28,7 +28,6 @@ public;Category
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
 internal;ChangedElementsDb 
-internal;ChangeSetToken
 beta;ChangeSummary
 beta;ChangeSummaryExtractContext
 beta;ChangeSummaryExtractOptions
@@ -42,8 +41,8 @@ beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
-beta;ComputedProjectExtents
-beta;ComputeProjectExtentsOptions
+public;ComputedProjectExtents
+public;ComputeProjectExtentsOptions
 beta;ConcurrencyControl
 beta;ConcurrencyControl
 alpha;Channel
@@ -267,7 +266,7 @@ public;Relationships
 public;RenderMaterialElement 
 public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
-beta;RenderTimeline 
+public;RenderTimeline 
 public;RepositoryLink 
 public;RepositoryModel 
 public;RequestNewBriefcaseArg = RequestNewBriefcaseProps &
@@ -279,7 +278,7 @@ internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas
 public;SectionCallout 
 public;SectionDrawing 
-beta;SectionDrawingLocation 
+public;SectionDrawingLocation 
 public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
 public;Sheet 
@@ -323,9 +322,9 @@ internal;TextureCreateProps
 public;TitleText 
 public;TxnAction
 deprecated;TxnAction
-beta;TxnChangedEntities
+public;TxnChangedEntities
 public;TxnIdString = string
-beta;TxnManager
+public;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
 public;UrlLink 
@@ -333,7 +332,7 @@ internal;UsageLoggingUtilities
 internal;UsageLoggingUtilitiesOptions
 internal;V1CheckpointManager
 internal;V2CheckpointManager
-beta;ValidationError
+public;ValidationError
 public;ViewAttachment 
 public;ViewAttachmentLabel 
 public;class ViewDefinition 

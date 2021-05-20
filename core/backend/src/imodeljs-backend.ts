@@ -118,6 +118,10 @@ export * from "./IModelDb"; // must be last
  * Classes for working with ECDb.
  */
 /**
+ * @docs-group-description SQLiteDb
+ * Classes for working with SQLiteDb.
+ */
+/**
  * @docs-group-description NativeApp
  * Classes for working with Mobile/Desktop Application.
  */

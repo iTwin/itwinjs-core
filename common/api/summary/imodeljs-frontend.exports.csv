@@ -185,6 +185,8 @@ internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
 internal;FrameRenderData
+alpha;FrameStats
+internal;FrameStatsCollector
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
@@ -310,7 +312,7 @@ public;LocateOptions
 public;LocateResponse
 internal;LockedStates
 internal;loggerCategory = "imodeljs-frontend.Extension"
-beta;LookAndMoveTool 
+public;LookAndMoveTool 
 public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode
@@ -376,6 +378,7 @@ internal;OffScreenTarget
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
 deprecated;OidcBrowserClient 
+alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
@@ -490,7 +493,7 @@ public;SelectionTool
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
-alpha;SetupCameraTool 
+public;SetupCameraTool 
 public;SetupWalkCameraTool 
 public;SheetModelState 
 public;SheetViewState 
@@ -545,6 +548,9 @@ internal;TileAvailability
 public;TileBoundingBoxes
 public;TileContent
 public;TiledGraphicsProvider
+public;TiledGraphicsProvider
+internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): void
+internal;isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean
 public;TileDrawArgParams
 public;TileDrawArgs
 public;TileGraphicType
