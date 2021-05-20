@@ -38,6 +38,7 @@ export interface ChildWindowLocationProps {
 
 /** Supports opening a child browser window from the main application window. The child window is managed by the main application
  * and is running in the same security context. The application must deliver the html file iTwinPopup.html along side its index.html.
+ * See also: [Child Window Manager]($docs/learning/ui/framework/ChildWindows.md)
  * @beta */
 export class ChildWindowManager {
   private _openChildWindows: OpenChildWindowInfo[] = [];

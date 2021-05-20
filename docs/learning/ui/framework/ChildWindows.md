@@ -15,7 +15,7 @@ There are two options when opening a child popup window, the first is to allow u
   UiFramework.childWindowManager.openChildWindow(childWindowId, title, content, location, false);
 ```
 
-The second option is to pass true for the useDefaultPopoutUrl argument above. This will result in the use of the URL "/iTwinPopup.html". It is the responsibility of the application to ensure this HTML file is available at that location on the server. The minimum contents for this file is shown below. The div with `id=root` the element that the UI component use to attach React components.
+The second option is to pass true for the useDefaultPopoutUrl argument above. This will result in the use of the URL "/iTwinPopup.html". It is the responsibility of the application to ensure this HTML file is available at that location on the server. The minimum contents for this file is shown below. The div with `id=root` is required as it is the element that is used to host React components.
 
 ```html
 <!DOCTYPE html>
@@ -53,3 +53,11 @@ The ChildWindowManager does not try to save and restore child windows. The one e
 ## Warning
 
 Careful consideration must be taken when building components for use in a child popup window. At minimum components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window. These requirements will limit what open source React components may be used.
+
+## Widgets
+
+A Widget can specify set its `canPopout` property to true if its supports being in a child window. This allows a Widget to be "popped-out" to its own window and then re-docked in the Widget Panel when the child window is closed. See [Popout Widget Support]($docs/learning/ui/framework/Widgets.md#popout-widget-support) for more details.
+
+## API Reference
+
+- [ChildWindowManager]($ui-framework:ChildWindowManager)
