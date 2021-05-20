@@ -222,7 +222,7 @@ export class OpenWidgetPopoutTool extends Tool {
     };
     const connection = UiFramework.getIModelConnection();
     if (connection)
-      UiFramework.childWindowManager.openChildWindow("VisibilityTreeWidget", "VisibilityTreeWidget", <ModelSelectorWidget iModelConnection={connection} />, location);
+      UiFramework.childWindowManager.openChildWindow("VisibilityTreeWidget", "VisibilityTreeWidget", <ModelSelectorWidget iModelConnection={connection} />, location, UiFramework.useDefaultPopoutUrl);
   }
 
   public static get flyover(): string {

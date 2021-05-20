@@ -628,14 +628,14 @@ export class FrontstageDef {
           left: tab.preferredPopoutWidgetSize?.x ?? 0,
           top: tab.preferredPopoutWidgetSize?.y ?? 0,
         };
-        UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position);
+        UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
       }
     }
   }
 
   /** Create a new popout/child window that contains the widget specified by its Id. Supported only when in
    *  UI 2.0 or higher.
-   * @param widgetId case sensitive Wigdet Id
+   * @param widgetId case sensitive Widget Id
    * @param point Position of top left corner of floating panel in pixels. If undefined {x:0, y:0} is used.
    * @param size defines the width and height of the floating panel. If undefined and widget has been floated before
    * the previous size is used, else {height:800, width:600} is used.
@@ -672,7 +672,7 @@ export class FrontstageDef {
                   left: tab.preferredPopoutWidgetSize!.x,
                   top: tab.preferredPopoutWidgetSize!.y,
                 };
-                UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position);
+                UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
               });
             }
           }

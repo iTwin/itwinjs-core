@@ -105,8 +105,9 @@ export class UiFramework {
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
   private static _PopupWindowManager = new ChildWindowManager();
+  public static useDefaultPopoutUrl = false;
 
-  /** @alpha */
+  /** @beta */
   public static get childWindowManager(): ChildWindowManager {
     return UiFramework._PopupWindowManager;
   }

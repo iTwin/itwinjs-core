@@ -920,7 +920,7 @@ export interface ChangeSetInfo {
     userCreated?: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface ChildWindowLocationProps {
     // (undocumented)
     height: number;
@@ -932,7 +932,7 @@ export interface ChildWindowLocationProps {
     width: number;
 }
 
-// @alpha
+// @beta
 export class ChildWindowManager {
     closeAllChildWindows(): void;
     // (undocumented)
@@ -942,7 +942,7 @@ export class ChildWindowManager {
     // (undocumented)
     findChildWindowId(contentWindow: Window | undefined | null): string | undefined;
     // (undocumented)
-    openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useBlankUrl?: boolean): boolean;
+    openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean): boolean;
     // (undocumented)
     get openChildWindows(): OpenChildWindowInfo[];
     }
@@ -4176,7 +4176,7 @@ export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessage
 // @public
 export type NotifyMessageType = MessageType;
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface OpenChildWindowInfo {
     // (undocumented)
     childWindowId: string;
@@ -6599,7 +6599,7 @@ export interface UiDataProvidedDialogProps {
 export class UiFramework {
     // @beta (undocumented)
     static get backstageManager(): BackstageManager;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     static get childWindowManager(): ChildWindowManager;
     // @beta (undocumented)
     static closeCursorMenu(): void;
@@ -6706,6 +6706,8 @@ export class UiFramework {
     static translate(key: string | string[]): string;
     // @beta
     static get uiVersion(): string;
+    // (undocumented)
+    static useDefaultPopoutUrl: boolean;
     // (undocumented)
     static get useDragInteraction(): boolean;
     // @alpha (undocumented)

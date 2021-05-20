@@ -21,14 +21,14 @@ import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
 import { CursorPopupMenu } from "../../ui-framework";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 
-/** @alpha */
+/** @beta */
 export interface OpenChildWindowInfo {
   childWindowId: string;
   window: Window;
   parentWindow: Window;
 }
 
-/** @alpha */
+/** @beta */
 export interface ChildWindowLocationProps {
   width: number;
   height: number;
@@ -38,7 +38,7 @@ export interface ChildWindowLocationProps {
 
 /** Supports opening a child browser window from the main application window. The child window is managed by the main application
  * and is running in the same security context. The application must deliver the html file iTwinPopup.html along side its index.html.
- * @alpha */
+ * @beta */
 export class ChildWindowManager {
   private _openChildWindows: OpenChildWindowInfo[] = [];
 
@@ -150,22 +150,34 @@ export class ChildWindowManager {
   }
 
   // istanbul ignore next
-  public openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useBlankUrl?: boolean) {
+  public openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean) {
     // first check to see if content is already open in child window
     if (this.openChildWindows.findIndex((openWindow) => openWindow.childWindowId === childWindowId) >= 0) {
       return false;
     }
 
     location = this.adjustWidowLocation(location);
-    const url = useBlankUrl ? "" : "/iTwinPopup.html";
+    const url = useDefaultPopoutUrl ? "/iTwinPopup.html" : "";
     const childWindow = window.open(url, "", `width=${location.width},height=${location.height},left=${location.left},top=${location.top},menubar=no,resizable=yes,scrollbars=no,status=no,location=no`);
     if (!childWindow)
       return false;
-
-    childWindow.addEventListener("load", () => {
+    if (0 === url.length) {
+      const rootDiv = childWindow.document.createElement("div");
+      rootDiv.id = "root";
+      rootDiv.style.height = "100%";
+      childWindow.document.body.style.height = "100%";
+      childWindow.document.body.style.width = "100%";
+      childWindow.document.body.style.margin = "0";
+      childWindow.document.body.style.overflow = "hidden";
+      childWindow.document.body.appendChild(rootDiv);
       childWindow.document.title = title;
       this.renderChildWindowContents(childWindow, childWindowId, content);
-    }, false);
+    } else {
+      childWindow.addEventListener("load", () => {
+        childWindow.document.title = title;
+        this.renderChildWindowContents(childWindow, childWindowId, content);
+      }, false);
+    }
 
     window.addEventListener("beforeunload", () => {
       const frontStageDef = FrontstageManager.activeFrontstageDef;

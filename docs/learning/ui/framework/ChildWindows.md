@@ -2,7 +2,51 @@
 
 The [ChildWindowManager]($ui-framework) class, available via property `UiFramework.childWindowManager`, provides methods to open child windows displaying React components in another browser window. This child browser window shares the same javascript context as the single page IModelApp running in the main browser window. This manager maintains a list of all child windows and closes them when the page containing the IModelApp is unloaded.
 
-The api will open the url `iTwinPopup.html` which must be located along side the application's index.html. A template `iTwinPopup.html` can be found in the ui\framework source in the imodeljs github repository. When the ChildWindowManager opens a child window it must immediately copy styles from the main application's document into the child window so the appearance of the child window matches that of the main window.
+## Popup URL
+
+There are two options when opening a child popup window, the first is to allow ui-framework to open a blank URL and seed the HTML document with a div that can be targeted by React. Below is an example of code that would open a popup window using a blank URL.
+
+```tsx
+  const childWindowId="popout-widget-1";
+  const title="Example Popout Widget";
+  const content=(<div>Example Popout Widget</div>);
+  const location={ height: 600, width: 400, left: 10, top: 50};
+  const useDefaultPopoutUrl=false; // this is default if not specified
+  UiFramework.childWindowManager.openChildWindow(childWindowId, title, content, location, false);
+```
+
+The second option is to pass true for the useDefaultPopoutUrl argument above. This will result in the use of the URL "/iTwinPopup.html". It is the responsibility of the application to ensure this HTML file is available at that location on the server. The minimum contents for this file is shown below. The div with `id=root` the element that the UI component use to attach React components.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #root {
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root"></div>
+</body>
+
+</html>
+```
+
+When the ChildWindowManager opens a child window it immediately copies styles from the main application's document into the child window so the appearance of the child window matches that of the main window.
 
 The ChildWindowManager does not try to save and restore child windows. The one exception is the child windows opened via the Widget "pop-out" icon. The widget system will maintain the state of the size and location of "popped-out" widgets and attempt to restore that position when the widget is subsequently popped out.
 
