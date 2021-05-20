@@ -41,7 +41,7 @@ import { Geometry } from "../Geometry";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
-import { TaggedNumericData } from "../polyface/TaggedGeometryData";
+import { TaggedNumericData } from "../polyface/TaggedNumericData";
 
 /** * Context to write to a flatbuffer blob.
  *  * This class is internal.
@@ -268,21 +268,21 @@ export class BGFBReader {
  */
   public readTaggedNumericData(accessor: BGFBAccessors.TaggedNumericData | undefined): TaggedNumericData | undefined {
     if (accessor) {
-      const taggedGeometry = new TaggedNumericData(accessor.tagA(), accessor.tagB());
+      const taggedNumericData = new TaggedNumericData(accessor.tagA(), accessor.tagB());
       const intDataArray = nullToUndefined<Int32Array>(accessor.intDataArray());
       const doubleDataArray = nullToUndefined<Float64Array>(accessor.doubleDataArray());
       if (intDataArray) {
-        taggedGeometry.intData = [];
+        taggedNumericData.intData = [];
         for (const c of intDataArray)
-          taggedGeometry.intData.push(c);
+          taggedNumericData.intData.push(c);
 
       }
       if (doubleDataArray) {
-        taggedGeometry.doubleData = [];
+        taggedNumericData.doubleData = [];
         for (const c of doubleDataArray)
-          taggedGeometry.doubleData.push(c);
+          taggedNumericData.doubleData.push(c);
       }
-      return taggedGeometry;
+      return taggedNumericData;
     }
     return undefined;
   }
@@ -308,7 +308,7 @@ export class BGFBReader {
         const paramIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.paramIndexArray());
         const normalIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.normalIndexArray());
         const colorIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.colorIndexArray());
-        const taggedGeometryDataOffset = polyfaceHeader.taggedNumericData();
+        const taggedNumericDataOffset = polyfaceHeader.taggedNumericData();
         // const colorIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.colorIndexArray());
         if (meshStyle === 1 && pointF64 && pointIndexI32) {
           const polyface = IndexedPolyface.create(normalF64 !== undefined, paramF64 !== undefined, intColorU32 !== undefined, twoSided);
@@ -353,9 +353,8 @@ export class BGFBReader {
             }
           }
           polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader.auxData());
-          if (taggedGeometryDataOffset) {
-              // const taggedNumericDataAccessor = nullToUndefined<BGFBAccessors.TaggedNumericData>(taggedGeometryDataOffset);
-              const taggedNumericDataAccessor = nullToUndefined<BGFBAccessors.TaggedNumericData>(taggedGeometryDataOffset);
+          if (taggedNumericDataOffset) {
+              const taggedNumericDataAccessor = nullToUndefined<BGFBAccessors.TaggedNumericData>(taggedNumericDataOffset);
               if (taggedNumericDataAccessor !== undefined) {
                 const taggedNumericData = this.readTaggedNumericData(taggedNumericDataAccessor);
                 if (taggedNumericData !== undefined)

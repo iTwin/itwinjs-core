@@ -21,7 +21,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { TaggedNumericData } from "../../polyface/TaggedGeometryData";
+import { TaggedNumericData } from "../../polyface/TaggedNumericData";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
@@ -172,7 +172,7 @@ describe("constructorsAndImodelJson", () => {
     emitCategoryHeader("CurveCollections");
     emitIModelJson("CoordinateXYZ.create", "isolated point", CoordinateXYZ.create(Point3d.create(2, 3, 4)));
   });
-  it("taggedGeometryData.methods", () => {
+  it("taggedNumericData.methods", () => {
     const ck = new Checker();
     const objA = new TaggedNumericData(1, 2);
     const objB = new TaggedNumericData(1, 2, [1, 2], [2.3, 1.5]);
@@ -207,7 +207,7 @@ describe("constructorsAndImodelJson", () => {
     }
     expect(ck.getNumErrors()).equals(0);
     });
-    it("taggedGeometryData.json", () => {
+    it("taggedNumericData.json", () => {
       const ck = new Checker();
       const objA = new TaggedNumericData(1, 2);
       const objB = new TaggedNumericData(1, 2, [1, 2], [2.3, 1.5]);
@@ -236,7 +236,7 @@ describe("constructorsAndImodelJson", () => {
         y0 += 5.0;
         mesh.data.taggedNumericData = tagA;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, 0, y0, 0);
-        GeometryCoreTestIO.saveGeometry(allGeometry, "TaggedGeometryData", "TorusPipe");
+        GeometryCoreTestIO.saveGeometry(allGeometry, "TaggedNumericData", "TorusPipe");
         expect(ck.getNumErrors()).equals(0);
         });
         it("TagLookup", () => {

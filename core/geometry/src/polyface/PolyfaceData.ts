@@ -18,7 +18,7 @@ import { Transform } from "../geometry3d/Transform";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { PolyfaceAuxData } from "./AuxData";
 import { FacetFaceData } from "./FacetFaceData";
-import { TaggedNumericData } from "./TaggedGeometryData";
+import { TaggedNumericData } from "./TaggedNumericData";
 
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
@@ -73,8 +73,8 @@ export class PolyfaceData {
   public get twoSided(): boolean { return this._twoSided; }
   public set twoSided(value: boolean) { this._twoSided = value; }
 
-  /** push a TaggedGeometryData.  (Create array if needed) */
-  public setTaggedNumericData(data: TaggedNumericData) {
+  /** set the `taggedNumericData` member */
+  public setTaggedNumericData(data: TaggedNumericData | undefined) {
     this.taggedNumericData = data;
   }
   private _expectedClosure: number;

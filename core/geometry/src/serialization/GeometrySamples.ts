@@ -2357,7 +2357,9 @@ export class Sample {
       channelDataArray.push(new AuxChannelData(input, values));
     }
     const channel = new AuxChannel(channelDataArray, dataType, name, inputName);
-    data.auxData.indices.push(channelIndex);
+    for (let i = 0; i < data.pointIndex.length; i++){
+      data.auxData.indices.push(channelIndex);
+    }
     data.auxData.channels.push(channel);
   }
 }

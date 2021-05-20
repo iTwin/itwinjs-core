@@ -49,7 +49,7 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
-import { TaggedNumericData } from "../polyface/TaggedGeometryData";
+import { TaggedNumericData } from "../polyface/TaggedNumericData";
 // cspell:word bagof
 /* eslint-disable no-console*/
 /**
@@ -994,8 +994,8 @@ export namespace IModelJson {
         if (data.hasOwnProperty("auxData"))
           polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData);
 
-        if (data.hasOwnProperty("taggedGeometry")){
-          polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(polyface.data.taggedNumericData);
+        if (data.hasOwnProperty("tags")){
+          polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
         }
 
         return polyface;
@@ -1788,7 +1788,7 @@ export namespace IModelJson {
       contents.pointIndex = pointIndex;
 
       if (taggedNumericData)
-        contents.taggedNumericGeometry = taggedNumericData;
+        contents.tags = taggedNumericData;
       return { indexedMesh: contents };
     }
 

@@ -37,7 +37,7 @@ import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DgnSpiralTypeQueries } from "./BGFBReader";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
-import { TaggedNumericData } from "../polyface/TaggedGeometryData";
+import { TaggedNumericData } from "../polyface/TaggedNumericData";
 
 /**
  * Context to write to a flatbuffer blob.
@@ -428,7 +428,7 @@ export class BGFBWriter {
     }
     return undefined;
   }
-  public writeTaggedGeometryDataArray(data: TaggedNumericData | undefined): number {
+  public writeTaggedNumericDataArray(data: TaggedNumericData | undefined): number {
     if (data){
         const intDataOffset = this.writeIntArray(data.intData);
         const doubleDataOffset = this.writeDoubleArray(data.doubleData);
@@ -453,7 +453,7 @@ export class BGFBWriter {
       let normalOffset = 0;
       let paramOffset = 0;
       let auxDataOffset = 0;
-      let taggedGeometryDataOffset = 0;
+      let taggedNumericDataOffset = 0;
       const meshStyle = 1;  // That is  . . . MESH_ELM_STYLE_INDEXED_FACE_LOOPS (and specifically, variable size with with 0 terminators)
       const numPerFace = 0;
       this.fillOneBasedIndexArray(mesh, mesh.data.pointIndex, mesh.data.edgeVisible, 0, indexArray);
@@ -500,12 +500,12 @@ export class BGFBWriter {
       }
 
       if (mesh.data.taggedNumericData)
-        taggedGeometryDataOffset = this.writeTaggedGeometryDataArray(mesh.data.taggedNumericData);
+        taggedNumericDataOffset = this.writeTaggedNumericDataArray(mesh.data.taggedNumericData);
       const expectedClosure = mesh.expectedClosure;
       const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset,
         pointIndexOffset, paramIndexOffset, normalIndexOffset, colorIndexOffset, 0,
         0, 0, meshStyle, twoSided,
-        numPerFace, 0, auxDataOffset, expectedClosure, taggedGeometryDataOffset);
+        numPerFace, 0, auxDataOffset, expectedClosure, taggedNumericDataOffset);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagPolyface, polyfaceOffset, 0);
 
     }

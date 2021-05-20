@@ -336,10 +336,14 @@ export class Geometry {
     return Math.abs(a.x - b.x) <= tolerance && Math.abs(a.y - b.y) <= tolerance;
   }
 
-  /** Toleranced equality test, using caller-supplied tolerance. */
-  public static isDistanceWithinTol(distance: number, tol: number): boolean {
-    return Math.abs(distance) <= Math.abs(tol);
-  }
+  /** Toleranced equality test, using caller-supplied tolerance.
+   * If no tolerance is given, use smallMetricDistance
+   */
+  public static isDistanceWithinTol(distance: number, tol?: number): boolean {
+    if (tol !== undefined)
+      return Math.abs(distance) <= Math.abs(tol);
+    return Math.abs(distance) <= Geometry.smallMetricDistance;
+    }
   /** Toleranced equality test, using `smallMetricDistance` tolerance. */
   public static isSmallMetricDistance(distance: number): boolean {
     return Math.abs(distance) <= Geometry.smallMetricDistance;

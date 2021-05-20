@@ -12,11 +12,11 @@ import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
  */
 
 /**
- * TaggedGeometryConstants defines enums with constant values for use in tags of TaggedGeometryData
+ * `TaggedNumericConstants` defines enums with constant values for use in tags of `TaggedNumericData`
  * @public
  */
 export namespace TaggedNumericConstants {
-  /**  Reserved values for the "tagA" member of TaggedGeometryData
+  /**  Reserved values for the "tagA" member of `TaggedNumericData`
   * @public
    *
   */
