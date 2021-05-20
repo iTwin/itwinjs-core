@@ -6,7 +6,7 @@
 import * as os from "os";
 import * as path from "path";
 import {
-  assert, BeDuration, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger,
+  assert, BeDuration, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import {
@@ -599,14 +599,7 @@ export class HubUtility {
 
   /** Generate a name (for an iModel) that's unique for the user + host */
   public static generateUniqueName(baseName: string) {
-    let username = "AnonymousUser";
-    let hostname = "AnonymousHost";
-    try {
-      hostname = os.hostname();
-      username = os.userInfo().username;
-    } catch (err) {
-    }
-    return `${baseName}_${username}_${hostname}`;
+    return `${baseName} - ${Guid.createValue()}`;
   }
 
   /** Deletes and re-creates an iModel with the provided name in the Context.
