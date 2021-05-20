@@ -147,7 +147,7 @@ export abstract class RealityTileCollector {
   }
 }
 
-class RealityTileByDrapeLineStringCollector extends RealityTileCollector {
+export class RealityTileByDrapeLineStringCollector extends RealityTileCollector {
   constructor(tolerance: number, range: Range3d, iModelTransform: Transform, private _points: GrowableXYZArray) {
     super(tolerance, range, iModelTransform);
   }
@@ -390,11 +390,10 @@ export class RealityTileTree extends TileTree {
     range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
     range.extendZOnly(maxDistance);
     const tileSelector = new RealityTileByDrapeLineStringCollector(tolerance, range, this.iModelTransform, inPoints);
+    const collectionStatus = this.collectRealityTiles(tileSelector);
 
-    if (this.collectRealityTiles(tileSelector) === TileCollectionStatus.Loading) {
+    if (collectionStatus === TileCollectionStatus.Loading)
       tileSelector.requestMissingTiles(viewport);
-      return RealityTileDrapeStatus.Loading;
-    }
 
     for (const tile of tileSelector.accepted) {
       if (tile.geometry?.polyfaces) {
@@ -421,7 +420,7 @@ export class RealityTileTree extends TileTree {
       }
     }
 
-    return RealityTileDrapeStatus.Success;
+    return collectionStatus === TileCollectionStatus.Loading ? RealityTileDrapeStatus.Loading : RealityTileDrapeStatus.Success;
   }
 }
 

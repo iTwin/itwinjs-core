@@ -35,7 +35,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
           const drapeRange = Range3d.createNull();
           drapeRange.extendArray(this._drapePoints);
           const tolerance = drapeRange.diagonal().magnitude() / 5000.0;
-          drapeTree.drapeLinestring(lineStrings, this._drapePoints, tolerance, this._drapeViewport, 1.0E5, context);
+          drapeTree.drapeLinestring(lineStrings, this._drapePoints, tolerance, this._drapeViewport);
           lineStrings.forEach((lineString) => builder.addLineString(lineString.points));
           context.addDecorationFromBuilder(builder);
         }

@@ -299,13 +299,13 @@ export class RealityTile extends Tile {
         return;
 
       case TileCollectionSelectionStatus.Continue:
-        if (!this.isLeaf) {
+        if (!this.isLeaf && !this._anyChildNotFound) {
           const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
           if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
             collector.markChildrenLoading();
             return;
           }
-          if (undefined !== this.realityChildren)
+          if (undefined !== this.realityChildren && !this._anyChildNotFound)
             for (const child of this.realityChildren)
               child.collectRealityTiles(collector);
           break;
