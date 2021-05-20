@@ -189,7 +189,7 @@ export function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | Geome
   }
 }
 
-it.only("HelloSolidPrimitive", () => {
+it("HelloSolidPrimitive", () => {
   const ck = new Checker();
   const solids = Sample.createClosedSolidSampler(true);
   const transform = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
@@ -299,7 +299,7 @@ function geometryTypes(g: GeometryQuery | GeometryQuery[] | undefined): any {
 function isGeometry(g: GeometryQuery | GeometryQuery[] | undefined): boolean {
   return g instanceof GeometryQuery || Array.isArray(g);
 }
-it.only("PolyfaceAuxData", () => {
+it("PolyfaceAuxData", () => {
   const ck = new Checker();
   const polyfaces = Sample.createSimpleIndexedPolyfaces(1.0);
   for (let i = 0; i < 1; i++) {
