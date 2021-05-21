@@ -78,7 +78,7 @@ export abstract class IModelConnection extends IModel {
   /** The map location.
    * @internal
    */
-  public backgroundMapLocation = new BackgroundMapLocation();
+  public readonly backgroundMapLocation = new BackgroundMapLocation();
   /** The Geographic location services available for this iModelConnection
    * @internal
    */
@@ -228,6 +228,10 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
+
+    this.onEcefLocationChanged.addListener(() => {
+      this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
+    });
   }
 
   /** Called prior to connection closing. Raises close events and calls tiles.dispose.
@@ -543,18 +547,6 @@ export abstract class IModelConnection extends IModel {
       if (vp.view.isSpatialView() && vp.iModel === this)
         vp.invalidateController();
     }
-  }
-
-  /** @internal */
-  public setEcefLocation(ecef: EcefLocationProps): void {
-    super.setEcefLocation(ecef);
-
-    // setEcefLocation is invoked from IModel constructor...
-    if (this.tiles)
-      this.tiles.onEcefChanged();
-
-    if (this.backgroundMapLocation && this.ecefLocation)
-      this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
   }
 }
 
