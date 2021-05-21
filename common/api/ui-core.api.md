@@ -2398,13 +2398,13 @@ export const TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35;
 // @internal
 export const TOOLBAR_OPACITY_DEFAULT = 0.5;
 
-// @beta
+// @beta @deprecated
 export function Tooltip(props: TooltipProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export type TooltipPlacement = "bottom" | "left" | "right" | "top";
 
-// @beta
+// @beta @deprecated
 export interface TooltipProps extends CommonProps {
     children?: React.ReactNode;
     placement?: TooltipPlacement;

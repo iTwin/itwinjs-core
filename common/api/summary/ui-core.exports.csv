@@ -335,8 +335,11 @@ internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10
 internal;TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35
 internal;TOOLBAR_OPACITY_DEFAULT = 0.5
 beta;Tooltip(props: TooltipProps): JSX.Element
+deprecated;Tooltip(props: TooltipProps): JSX.Element
 beta;TooltipPlacement = "bottom" | "left" | "right" | "top"
+deprecated;TooltipPlacement = "bottom" | "left" | "right" | "top"
 beta;TooltipProps 
+deprecated;TooltipProps 
 public;Tree 
 public;TreeBranch 
 public;TreeBranchProps 
