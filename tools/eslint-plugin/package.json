@@ -14,7 +14,10 @@
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/eslint-plugin"
   },
-  "scripts": {
+  "bin": {
+    "no-internal-report": "dist/bin/no-internal-report.js"
+  },
+"scripts": {
     "compile": "npm run build",
     "build": "",
     "clean": "",
