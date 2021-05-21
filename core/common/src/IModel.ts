@@ -352,19 +352,22 @@ export abstract class IModel implements IModelProps {
 
   /** The [EcefLocation]($docs/learning/glossary#ecefLocation) of the iModel in Earth Centered Earth Fixed coordinates. */
   public get ecefLocation(): EcefLocation | undefined {
-    assert(this._ecefLocation !== undefined);
     return this._ecefLocation;
+  }
+  public set ecefLocation(ecefLocation: EcefLocation | undefined) {
+    const old = this._ecefLocation;
+    if (!old && !ecefLocation)
+      return;
+    else if (old && ecefLocation && old.isAlmostEqual(ecefLocation))
+      return;
+
+    this._ecefLocation = ecefLocation;
+    this.onEcefLocationChanged.raiseEvent(old);
   }
 
   /** Set the [EcefLocation]($docs/learning/glossary#ecefLocation) for this iModel. */
   public setEcefLocation(ecef: EcefLocationProps): void {
-    const ecefLocation = new EcefLocation(ecef);
-    if (!this._ecefLocation || !this._ecefLocation.isAlmostEqual(ecefLocation)) {
-      const old = this._ecefLocation;
-      this._ecefLocation = ecefLocation;
-      this._ecefTrans = undefined;
-      this.onEcefLocationChanged.raiseEvent(old);
-    }
+    this.ecefLocation = new EcefLocation(ecef);
   }
 
   /** The geographic coordinate reference system of the iModel. */
@@ -379,8 +382,7 @@ export abstract class IModel implements IModelProps {
       return;
 
     this._geographicCoordinateSystem = geoCRS;
-    if (old)
-      this.onGeographicCoordinateSystemChanged.raiseEvent(old);
+    this.onGeographicCoordinateSystemChanged.raiseEvent(old);
   }
 
   /** Sets the geographic coordinate reference system from GeographicCRSProps. */
@@ -460,10 +462,8 @@ export abstract class IModel implements IModelProps {
     this.rootSubject = props.rootSubject;
     this.projectExtents = Range3d.fromJSON(props.projectExtents);
     this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
-    if (props.ecefLocation)
-      this.setEcefLocation(props.ecefLocation);
-    if (props.geographicCoordinateSystem)
-      this.setGeographicCoordinateSystem(props.geographicCoordinateSystem);
+    this.ecefLocation = props.ecefLocation ? new EcefLocation(props.ecefLocation) : undefined;
+    this.geographicCoordinateSystem = props.geographicCoordinateSystem ? new GeographicCRS(props.geographicCoordinateSystem) : undefined;
   }
 
   /** Get the default subCategoryId for the supplied categoryId */

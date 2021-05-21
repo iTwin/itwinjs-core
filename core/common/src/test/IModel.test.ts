@@ -19,11 +19,22 @@ class TestIModel extends IModel {
 
   public constructor(props: TestIModelProps) {
     super(props, OpenMode.Readonly);
-    this.initFromProps(props.name ?? props.rootSubject.name, props);
+    this.initFromProps(props);
   }
 
-  public initFromProps(name: string, props: IModelProps): void {
-    this.initialize(name, props);
+  public initFromProps(props: IModelProps): void {
+    this.initialize(props.name ?? props.rootSubject.name, props);
+  }
+
+  public getProps(): IModelProps {
+    return {
+      name: this.name,
+      rootSubject: { ...this.rootSubject },
+      projectExtents: this.projectExtents.toJSON(),
+      globalOrigin: this.globalOrigin.toJSON(),
+      ecefLocation: this.ecefLocation,
+      geographicCoordinateSystem: this.geographicCoordinateSystem,
+    };
   }
 }
 
@@ -97,6 +108,45 @@ describe("IModel", () => {
       const imodel = new TestIModel(props);
 
       expectChange(imodel, () => imodel.name = "new name", { name: { prev: "imodel", curr: "new name" } });
+
+      expectChange(imodel, () => imodel.rootSubject = { name: "subj" }, {
+        subject: {
+          prev: props.rootSubject,
+          curr: { name: "subj" },
+        },
+      });
+
+      const newRange = Range3d.fromJSON({ low: [0, 0, 0], high: [100, 100, 100] });
+      expectChange(imodel, () => imodel.projectExtents = newRange, { extents: { prev: imodel.projectExtents, curr: newRange } });
+
+      const newOrigin = new Point3d(101, 202, 303);
+      expectChange(imodel, () => imodel.globalOrigin = newOrigin, { globalOrigin: { prev: imodel.globalOrigin, curr: newOrigin } });
+
+      const ecef = new EcefLocation({
+        origin: [42, 21, 0],
+        orientation: { yaw: 1, pitch: 1, roll: -1 },
+      });
+      expectChange(imodel, () => imodel.setEcefLocation(ecef), { ecef: { prev: undefined, curr: ecef } });
+      const newEcef = new EcefLocation({
+        origin: [0, 10, 20],
+        orientation: { yaw: 5, pitch: 90, roll: -45 },
+      });
+      expectChange(imodel, () => imodel.setEcefLocation(newEcef), { ecef: { prev: ecef, curr: newEcef } });
+      expectChange(imodel, () => imodel.initFromProps({...imodel.getProps(), ecefLocation: undefined}), { ecef: { prev: newEcef, curr: undefined } });
+
+      const newProps: TestIModelProps = {
+        key: "",
+        name: "abc",
+        rootSubject: { name: "new subject" },
+        projectExtents: { low: [-100, 0, -50], high: [100, 20, 50] },
+        globalOrigin: [123, 456, 789],
+      };
+      expectChange(imodel, () => imodel.initFromProps(newProps), {
+        name: { prev: imodel.name, curr: "abc" },
+        subject: { prev: imodel.rootSubject, curr: { name: "new subject" } },
+        extents: { prev: imodel.projectExtents, curr: Range3d.fromJSON(newProps.projectExtents) },
+        globalOrigin: { prev: imodel.globalOrigin, curr: Point3d.fromJSON(newProps.globalOrigin) },
+      });
     });
 
     it("are not dispatched when no net property change", () => {
@@ -123,9 +173,8 @@ describe("IModel", () => {
       expectNoChange(imodel, () => imodel.geographicCoordinateSystem = undefined);
       expectNoChange(imodel, () => imodel.setEcefLocation({...ecefLocation}));
 
-      // ###TODO equivalent ECEF and GCS
-
-      expectNoChange(imodel, () => imodel.initFromProps(imodel.name, {...props}));
+      expectNoChange(imodel, () => imodel.initFromProps({...props}));
+      expectNoChange(imodel, () => imodel.initFromProps(imodel.getProps()));
     });
 
     it("are not dispatched when members of RootSubjectProps are directly modified", () => {
