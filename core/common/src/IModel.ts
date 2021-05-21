@@ -243,6 +243,18 @@ export class EcefLocation implements EcefLocationProps {
 
     return thisCarto.equalsEpsilon(otherCarto, Geometry.smallMetricDistance);
   }
+
+  public toJSON(): EcefLocationProps {
+    const props: EcefLocationProps = {
+      origin: this.origin.toJSON(),
+      orientation: this.orientation.toJSON(),
+    };
+
+    if (this.cartographicOrigin)
+      props.cartographicOrigin = this.cartographicOrigin.toJSON();
+
+    return props;
+  }
 }
 
 /** Represents an iModel in JavaScript.
