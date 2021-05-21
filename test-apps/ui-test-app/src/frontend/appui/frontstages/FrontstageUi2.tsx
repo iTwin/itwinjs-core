@@ -131,14 +131,14 @@ export class FrontstageUi2 extends FrontstageProvider {
             panelZones={{
               start: {
                 widgets: [
-                  <Widget id="LeftStart1" label="Start1" defaultState={WidgetState.Open} element={<h2>Left Start1 widget</h2>} />,
-                  <Widget id="LeftStart2" label="Start2" element={<h2>Left Start2 widget</h2>} />,
+                  <Widget id="LeftStart1" canPopout={true} label="Start1" defaultState={WidgetState.Open} element={<h2>Left Start1 widget</h2>} />,
+                  <Widget id="LeftStart2" canPopout={true} label="Start2" element={<h2>Left Start2 widget</h2>} />,
                 ],
               },
               middle: {
                 widgets: [
                   <Widget id="LeftMiddle1" label="Middle1" element={<h2>Left Middle1 widget</h2>} />,
-                  <Widget id="LeftMiddle2" label="Middle2" defaultState={WidgetState.Open} element={<h2>Left Middle2 widget</h2>} />,
+                  <Widget id="LeftMiddle2" canPopout={true} label="Middle2" defaultState={WidgetState.Open} element={<h2>Left Middle2 widget</h2>} />,
                 ],
               },
               end: {
@@ -164,7 +164,7 @@ export class FrontstageUi2 extends FrontstageProvider {
               },
               end: {
                 widgets: [
-                  <Widget id="TopEnd1" label="End1" element={<h2>Top End1 widget</h2>} />,
+                  <Widget id="TopEnd1" canPopout={true} label="End1" element={<h2>Top End1 widget</h2>} />,
                   <Widget id="TopEnd2" label="End2" defaultState={WidgetState.Open} element={<h2>Top End2 widget</h2>} />,
                 ],
               },
@@ -178,20 +178,20 @@ export class FrontstageUi2 extends FrontstageProvider {
             panelZones={{
               start: {
                 widgets: [
-                  <Widget id="RightStart1" label="Start1" element={<h2>Right Start1 widget</h2>} />,
-                  <Widget id="RightStart2" label="Start2" defaultState={WidgetState.Open} element={<h2>Right Start2 widget</h2>} />,
+                  <Widget id="RightStart1" canPopout={true} label="Start1" element={<h2>Right Start1 widget</h2>} />,
+                  <Widget id="RightStart2" canPopout={true} label="Start2" defaultState={WidgetState.Open} element={<h2>Right Start2 widget</h2>} />,
                 ],
               },
               middle: {
                 widgets: [
                   <Widget id="RightMiddle1" label="Middle1" defaultState={WidgetState.Open} element={<h2>Right Middle1 widget</h2>} />,
-                  <Widget id="RightMiddle2" label="Middle2" element={<h2>Right Middle2 widget</h2>} />,
+                  <Widget id="RightMiddle2" canPopout={true} label="Middle2" element={<h2>Right Middle2 widget</h2>} />,
                 ],
               },
               end: {
                 widgets: [
                   <Widget id="RightEnd1" label="End1" element={<h2>Right End1 widget</h2>} />,
-                  <Widget id="RightEnd2" label="End2" defaultState={WidgetState.Open} element={<h2>Right End2 widget</h2>} />,
+                  <Widget id="RightEnd2" canPopout={true} label="End2" defaultState={WidgetState.Open} element={<h2>Right End2 widget</h2>} />,
                 ],
               },
             }}
@@ -206,12 +206,12 @@ export class FrontstageUi2 extends FrontstageProvider {
               start: {
                 widgets: [
                   <Widget id="BottomStart1" label="Start1" element={<h2>Bottom Start1 widget</h2>} />,
-                  <Widget id="BottomStart2" label="Start2" defaultState={WidgetState.Open} element={<LayoutInfo />} />,
+                  <Widget id="BottomStart2" canPopout={true} label="Start2" defaultState={WidgetState.Open} element={<LayoutInfo />} />,
                 ],
               },
               end: {
                 widgets: [
-                  <Widget id="BottomEnd1" label="End1" element={<h2>Bottom End1 widget</h2>} />,
+                  <Widget id="BottomEnd1" canPopout={true} label="End1" element={<h2>Bottom End1 widget</h2>} />,
                   <Widget id="BottomEnd2" label="End2" defaultState={WidgetState.Open} element={<LayoutControls />} />,
                 ],
               },
