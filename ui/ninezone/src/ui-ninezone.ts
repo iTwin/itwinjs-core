@@ -109,6 +109,7 @@ export * from "./ui-ninezone/widget/NavigationArea";
 export * from "./ui-ninezone/widget/Overflow";
 export * from "./ui-ninezone/widget/PanelWidget";
 export * from "./ui-ninezone/widget/PinToggle";
+export * from "./ui-ninezone/widget/PopoutToggle";
 export * from "./ui-ninezone/widget/SendBack";
 export * from "./ui-ninezone/widget/Stacked";
 export * from "./ui-ninezone/widget/Tab";
