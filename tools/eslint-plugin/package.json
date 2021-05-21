@@ -17,7 +17,7 @@
   "bin": {
     "no-internal-report": "dist/bin/no-internal-report.js"
   },
-"scripts": {
+  "scripts": {
     "compile": "npm run build",
     "build": "",
     "clean": "",

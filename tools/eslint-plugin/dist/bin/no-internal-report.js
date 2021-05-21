@@ -30,8 +30,11 @@ if (!fs.existsSync(distDir))
 
 // Run eslint with the appropriate configuration and formatter to get a report of the no-internal rule
 let args = [
-  "-c", path.join(distDir, "configs/no-internal.js"),
+  "--no-eslintrc",
+  "-c", path.join(distDir, "configs/imodeljs-recommended.js"),
   "-f", path.join(distDir, "formatters/no-internal-summary.js"),
+  "--plugin", "@bentley",
+  "--rule", "@bentley/no-internal: 'error'",
   ...process.argv.slice(2)
 ];
 
