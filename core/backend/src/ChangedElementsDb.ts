@@ -6,13 +6,10 @@
  * @module ChangedElementsDb
  */
 
-import * as path from "path";
 import { DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { ChangeSet } from "@bentley/imodelhub-client";
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
@@ -50,15 +47,6 @@ export class ChangedElementsDb implements IDisposable {
     this.closeDb();
     this._nativeDb.dispose();
     this._nativeDb = undefined;
-  }
-
-  private static buildChangeSetTokens(changeSets: ChangeSet[], changeSetsPath: string): IModelJsNative.ChangeSetProps[] {
-    const changeSetTokens: IModelJsNative.ChangeSetProps[] = [];
-    changeSets.forEach((changeSet: ChangeSet) => {
-      const pathname = path.join(changeSetsPath, changeSet.fileName!);
-      changeSetTokens.push({ id: changeSet.wsgId, parentId: changeSet.parentId!, pathname, changesType: changeSet.changesType, pushDate: changeSet.pushDate });
-    });
-    return changeSetTokens;
   }
 
   /** Create a ChangedElementsDb
@@ -116,12 +104,11 @@ export class ChangedElementsDb implements IDisposable {
     const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
     const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
     requestContext.enter();
-    const tokens = ChangedElementsDb.buildChangeSetTokens(changesets, BriefcaseManager.getChangeSetsPath(briefcase.iModelId));
     // ChangeSets need to be processed from newest to oldest
-    tokens.reverse();
+    changesets.reverse();
     const status: DbResult = this.nativeDb.processChangesets(
       briefcase.nativeDb,
-      tokens,
+      changesets as IModelJsNative.ChangeSetProps[],
       options.rulesetId,
       options.filterSpatial,
       options.wantParents,
@@ -145,9 +132,8 @@ export class ChangedElementsDb implements IDisposable {
     const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
     const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
     requestContext.enter();
-    const tokens = ChangedElementsDb.buildChangeSetTokens(changesets, BriefcaseManager.getChangeSetsPath(briefcase.iModelId));
     // ChangeSets need to be processed from newest to oldest
-    tokens.reverse();
+    changesets.reverse();
     // Close briefcase before doing processing and rolling briefcase
     const dbFilename = briefcase.pathName;
     const dbGuid = briefcase.getGuid();
@@ -156,7 +142,7 @@ export class ChangedElementsDb implements IDisposable {
     const status: DbResult = this.nativeDb.processChangesetsAndRoll(
       dbFilename,
       dbGuid,
-      tokens,
+      changesets as IModelJsNative.ChangeSetProps[],
       options.rulesetId,
       options.filterSpatial,
       options.wantParents,

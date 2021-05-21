@@ -2,19 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module iModels
- */
-import * as path from "path";
+
 import { assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Schema } from "@bentley/ecschema-metadata";
-import { ChangeSet } from "@bentley/imodelhub-client";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
-import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, GeometricElement, RecipeDefinitionElement, RepositoryLink } from "./Element";
@@ -747,14 +742,14 @@ class ChangedInstanceIds {
     const changeSets = await ChangeSummaryManager.downloadChangeSets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
-    changeSets.forEach((changeSet: ChangeSet): void => {
-      const changeSetPath: string = path.join(BriefcaseManager.getChangeSetsPath(iModelDb.iModelId), changeSet.fileName!);
-      const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = iModelDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
+    changeSets.forEach((changeSet): void => {
+      const changeSetPath = changeSet.pathname;
+      const statusOrResult = iModelDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
       if (undefined !== statusOrResult.error) {
         throw new IModelError(statusOrResult.error.status, "Error processing changeSet", Logger.logError, loggerCategory);
       }
       if ("" !== statusOrResult.result) {
-        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
+        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result!);
         changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
         changedInstanceIds.model.addFromJson(result.model);
         changedInstanceIds.element.addFromJson(result.element);

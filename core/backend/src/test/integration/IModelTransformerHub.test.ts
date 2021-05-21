@@ -529,23 +529,13 @@ describe("IModelTransformerHub (#integration)", () => {
       const changeSetBranch1State4 = branchDb1.changeSetId;
       assert.notEqual(changeSetBranch1State4, changeSetBranch1State2);
 
-      // test for consistency between `IModelHost.iModelClient.changeSets.get` and `BriefcaseManager.downloadChangeSets` (a real app would only call one or the other)
-      let masterDbChangeSets = await IModelHost.iModelClient.changeSets.get(requestContext, masterIModelId); // returns changeSet info
-      assert.equal(masterDbChangeSets.length, 3);
-      for (const masterDbChangeSet of masterDbChangeSets) {
-        assert.isDefined(masterDbChangeSet.id);
-        assert.isFalse(Guid.isGuid(masterDbChangeSet.id!) || Id64.isValidId64(masterDbChangeSet.id!)); // a changeSetId is a hash value based on the contents and its parentId
-        assert.isDefined(masterDbChangeSet.description); // test code above always included a change description when pushChanges was called
-        assert.isAbove(masterDbChangeSet.fileSizeNumber, 0);
-      }
-      masterDbChangeSets = await BriefcaseManager.downloadChangeSets(requestContext, masterIModelId, "", masterDb.changeSetId); // downloads actual changeSets
+      const masterDbChangeSets = await BriefcaseManager.downloadChangeSets(requestContext, masterIModelId, "", masterDb.changeSetId); // downloads actual changeSets
       assert.equal(masterDbChangeSets.length, 3);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeSet of masterDbChangeSets) {
         assert.isDefined(masterDbChangeSet.id);
         assert.isDefined(masterDbChangeSet.description); // test code above always included a change description when pushChanges was called
-        assert.isAbove(masterDbChangeSet.fileSizeNumber, 0);
-        const changeSetPath = path.join(BriefcaseManager.getChangeSetsPath(masterIModelId), masterDbChangeSet.fileName!);
+        const changeSetPath = masterDbChangeSet.pathname;
         assert.isTrue(IModelJsFs.existsSync(changeSetPath));
         // below is one way of determining the set of elements that were deleted in a specific changeSet
         const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = masterDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
@@ -569,7 +559,7 @@ describe("IModelTransformerHub (#integration)", () => {
       await replayTransformer.processAll(); // process any elements that were part of the "seed"
       await saveAndPushChanges(requestContext, replayedDb, "changes from source seed");
       for (const masterDbChangeSet of masterDbChangeSets) {
-        await sourceDb.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(masterDbChangeSet.id!));
+        await sourceDb.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(masterDbChangeSet.id));
         await replayTransformer.processChanges(requestContext, sourceDb.changeSetId);
         await saveAndPushChanges(requestContext, replayedDb, masterDbChangeSet.description ?? "", masterDbChangeSet.changesType);
       }
@@ -583,9 +573,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const replayedDeletedElementIds = new Set<Id64String>();
       for (const replayedDbChangeSet of replayedDbChangeSets) {
         assert.isDefined(replayedDbChangeSet.id);
-        assert.isDefined(replayedDbChangeSet.description); // test code above always included a change description when pushChanges was called
-        assert.isAbove(replayedDbChangeSet.fileSizeNumber, 0);
-        const changeSetPath = path.join(BriefcaseManager.getChangeSetsPath(replayedIModelId), replayedDbChangeSet.fileName!);
+        const changeSetPath = replayedDbChangeSet.pathname;
         assert.isTrue(IModelJsFs.existsSync(changeSetPath));
         // below is one way of determining the set of elements that were deleted in a specific changeSet
         const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = replayedDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);

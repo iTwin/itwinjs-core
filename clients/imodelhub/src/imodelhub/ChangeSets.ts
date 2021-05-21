@@ -635,7 +635,7 @@ export class ChangeSetHandler {
     if (actualFileSize === expectedFileSize)
       return true;
 
-    Logger.logError(loggerCategory, `ChangeSet size ${actualFileSize} does not match the expected size ${expectedFileSize}. Deleting it so that it can be refetched`, () => (changeSet));
+    Logger.logError(loggerCategory, `ChangeSet size ${actualFileSize} does not match the expected size ${expectedFileSize}. Deleting it so that it can be re-fetched`, () => (changeSet));
     try {
       this._fileHandler.unlink(path);
     } catch (error) {

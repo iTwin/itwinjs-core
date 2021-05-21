@@ -8,23 +8,16 @@ import * as sinon from "sinon";
 import { DbResult, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseManager } from "../BriefcaseManager";
+import { BriefcaseManager, ChangesetFileProps, ChangesetProps } from "../BriefcaseManager";
+import { CheckpointManager, DownloadRequest } from "../CheckpointManager";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 
+// cspell:ignore rowid
+
 export type LocalFileName = string;
 export type LocalDirName = string;
-
-export interface MockChangesetProps {
-  id: string;
-  parentId?: string;
-  description: string;
-  changesType: number;
-  pushDate?: string;
-  size?: number;
-  index?: number;
-}
 
 export interface MockBriefcaseIdProps {
   id: number;
@@ -45,16 +38,48 @@ export class HubMock {
   public get checkpointDir() { return join(this.mockDir, "checkpoints"); }
   public get mockDbName() { return join(this.mockDir, "mock.db"); }
 
-  public static initialize(mockRoot: LocalDirName) {
+  public static startup(mockRoot: LocalDirName) {
     this.mockRoot = mockRoot;
     IModelJsFs.recursiveMkDirSync(mockRoot);
     IModelJsFs.purgeDirSync(mockRoot);
 
-    sinon.stub(BriefcaseManager, "acquireNewBriefcaseId").callsFake(async (req: AuthorizedClientRequestContext, iModelId: GuidString) => {
+    sinon.stub(BriefcaseManager, "acquireNewBriefcaseId").callsFake(async (req: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number> => {
       return this.findMock(iModelId).acquireNewBriefcaseId(req.accessToken.getUserInfo()!.id);
     });
     sinon.stub(BriefcaseManager, "releaseBriefcase").callsFake(async (_, briefcase: BriefcaseProps) => {
       return this.findMock(briefcase.iModelId).releaseBriefcaseId(briefcase.briefcaseId);
+    });
+
+    sinon.stub(BriefcaseManager, "getChangeSetIndexFromId").callsFake(async (_, iModelId: GuidString, changeSetId: string): Promise<number> => {
+      return this.findMock(iModelId).getChangeset(changeSetId).index!;
+    });
+
+    sinon.stub(BriefcaseManager, "downloadChangeSets").callsFake(async (_, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangesetFileProps[]> => {
+      const mock = this.findMock(iModelId);
+      const allChanges = mock.getChangesets();
+      let startIndex = mock.getChangeset(fromChangeSetId).index!;
+      const endIndex = mock.getChangeset(toChangeSetId).index!;
+      if (endIndex < startIndex || endIndex >= allChanges.length)
+        throw new Error("illegal changeset range");
+
+      const destDir = BriefcaseManager.getChangeSetsPath(iModelId);
+      const changesets: ChangesetFileProps[] = [];
+      while (startIndex <= endIndex) {
+        const cs = allChanges[startIndex++];
+        const csProps = { ...cs, parentId: cs.parentId!, pathname: join(destDir, cs.id) };
+        changesets.push(csProps);
+        mock.downloadChangeset({ id: csProps.id, targetFile: csProps.pathname });
+      }
+      return changesets;
+
+    });
+
+    sinon.stub(BriefcaseManager, "pushChangesetFile").callsFake(async (_, iModelId: GuidString, changesetProps: ChangesetFileProps) => {
+      return this.findMock(iModelId).addChangeset(changesetProps);
+    });
+
+    sinon.stub(CheckpointManager, "downloadCheckpoint").callsFake(async (request: DownloadRequest): Promise<void> => {
+      return this.findMock(request.checkpoint.iModelId).downloadCheckpoint({ id: request.checkpoint.changeSetId, targetFile: request.localFile });
     });
 
     sinon.stub(IModelVersion, "getLatestChangeSetId").callsFake(async (_1, _2, iModelId: GuidString): Promise<GuidString> => {
@@ -65,6 +90,14 @@ export class HubMock {
       return this.findMock(iModelId).findNamedVersion(versionName);
     });
 
+  }
+
+  public static shutdown() {
+    for (const mock of this.mocks)
+      mock[1].cleanup();
+
+    IModelJsFs.purgeDirSync(this.mockRoot);
+    sinon.restore();
   }
 
   public static findMock(iModelId: GuidString): HubMock {
@@ -151,11 +184,10 @@ export class HubMock {
     return briefcases;
   }
 
-  public addChangeset(arg: { changeset: MockChangesetProps, localFile: LocalFileName }) {
-    const changeset = arg.changeset;
-    const stats = IModelJsFs.lstatSync(arg.localFile);
+  public addChangeset(changeset: ChangesetFileProps) {
+    const stats = IModelJsFs.lstatSync(changeset.pathname);
     if (!stats)
-      throw new Error(`cannot read changeset file ${arg.localFile}`);
+      throw new Error(`cannot read changeset file ${changeset.pathname}`);
 
     const db = this.db;
     db.withSqliteStatement("INSERT INTO timeline(id,parentId,description,size,type,pushDate) VALUES (?,?,?,?,?,?)", (stmt) => {
@@ -170,11 +202,11 @@ export class HubMock {
         throw new IModelError(rc, "can't insert changeset into mock db");
     });
     db.saveChanges();
-    IModelJsFs.copySync(arg.localFile, join(this.changesetDir, changeset.id));
+    IModelJsFs.copySync(changeset.pathname, join(this.changesetDir, changeset.id));
   }
 
-  public getChangeset(id: string) {
-    this.db.withSqliteStatement("SELECT parentId,description,size,type,pushDate,rowid FROM timeline WHERE Id=?", (stmt) => {
+  public getChangeset(id: string): ChangesetProps {
+    return this.db.withSqliteStatement("SELECT parentId,description,size,type,pushDate,rowid FROM timeline WHERE Id=?", (stmt) => {
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         throw new IModelError(IModelStatus.NotFound, `changeset ${id} not found`);
 
@@ -190,8 +222,8 @@ export class HubMock {
     });
   }
 
-  public getChangesets(): MockChangesetProps[] {
-    const changesets: MockChangesetProps[] = [];
+  public getChangesets(): ChangesetProps[] {
+    const changesets: ChangesetProps[] = [];
     this.db.withSqliteStatement("SELECT id,parentId,description,size,type,pushDate,rowid FROM timeline", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         changesets.push({

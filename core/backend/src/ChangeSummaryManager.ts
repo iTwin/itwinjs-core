@@ -13,7 +13,7 @@ import { ChangedValueState, ChangeOpCode, IModelError, IModelVersion } from "@be
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseManager, ChangesetFileProps } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
@@ -191,15 +191,13 @@ export class ChangeSummaryManager {
     }
 
     try {
-      const changeSetsFolder: string = BriefcaseManager.getChangeSetsPath(ctx.iModelId);
-
       // extract summaries from end changeset through start changeset, so that we only have to go back in history
       const changeSetCount: number = changeSetInfos.length;
       const endChangeSetIx: number = changeSetCount - 1;
       const summaries: Id64String[] = [];
       for (let i = endChangeSetIx; i >= 0; i--) {
-        const currentChangeSetInfo: ChangeSet = changeSetInfos[i];
-        const currentChangeSetId: string = currentChangeSetInfo.wsgId;
+        const currentChangeSetInfo = changeSetInfos[i];
+        const currentChangeSetId = currentChangeSetInfo.id;
         Logger.logInfo(loggerCategory, `Started Change Summary extraction for changeset #${i + 1}...`, () => ({ iModelId: ctx.iModelId, changeSetId: currentChangeSetId }));
 
         const existingSummaryId: Id64String | undefined = ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId);
@@ -218,7 +216,7 @@ export class ChangeSummaryManager {
           Logger.logTrace(loggerCategory, `Moved iModel to changeset #${i + 1} to extract summary from.`, () => ({ iModelId: ctx.iModelId, changeSetId: currentChangeSetId }));
         }
 
-        const changeSetFilePath: string = path.join(changeSetsFolder, currentChangeSetInfo.fileName!);
+        const changeSetFilePath: string = currentChangeSetInfo.pathname;
         if (!IModelJsFs.existsSync(changeSetFilePath))
           throw new IModelError(IModelStatus.FileNotFound, `Failed to extract change summary: Changeset file "${changeSetFilePath}" does not exist.`);
 
@@ -261,7 +259,7 @@ export class ChangeSummaryManager {
     }
   }
 
-  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]> {
+  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangesetFileProps[]> {
     requestContext.enter();
     // Get the change set before the startChangeSet so that startChangeSet is included in the download and processing
     let beforeStartChangeSetId: string;
@@ -283,8 +281,8 @@ export class ChangeSummaryManager {
 
     const changeSetInfos = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, beforeStartChangeSetId, endChangeSetId);
     requestContext.enter();
-    assert(startChangeSetId.length === 0 || startChangeSetId === changeSetInfos[0].wsgId);
-    assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
+    assert(startChangeSetId.length === 0 || startChangeSetId === changeSetInfos[0].id);
+    assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].id);
     return changeSetInfos;
   }
 

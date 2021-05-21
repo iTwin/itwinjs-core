@@ -12,14 +12,17 @@ import { HubMock } from "../HubMock";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe("HubMock", () => {
-  it.only("should be able to create HubMock", async () => {
-    const mockRoot = join(KnownTestLocations.outputDir, "HubMockTest");
-    const tmpDir = join(mockRoot, "temp");
+describe.only("HubMock", () => {
+  const mockRoot = join(KnownTestLocations.outputDir, "HubMockTest");
+  const tmpDir = join(mockRoot, "temp");
+
+  before(() => HubMock.startup(mockRoot));
+  after(() => HubMock.shutdown());
+
+  it("should be able to create HubMock", async () => {
     const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
     const iModelId = Guid.createValue();
 
-    HubMock.initialize(mockRoot);
     HubMock.create({ contextId: Guid.createValue(), iModelId, iModelName: "test imodel", revision0 });
 
     const mock = HubMock.findMock(iModelId);
@@ -60,10 +63,8 @@ describe("HubMock", () => {
     assert.deepEqual(briefcases[0], { id: 3, user: "user2" });
     assert.deepEqual(briefcases[1], { id: 5, user: "user4" });
 
-    const changesetFile1 = IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml");
-    const changesetFile2 = IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml");
-    const cs1 = { id: "changeset0", description: "first changeset", changesType: ChangesType.Regular };
-    mock.addChangeset({ changeset: cs1, localFile: changesetFile1 });
+    const cs1 = { id: "changeset0", description: "first changeset", changesType: ChangesType.Regular, pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml") };
+    mock.addChangeset(cs1);
     const changesets1 = mock.getChangesets();
     assert.equal(changesets1.length, 1);
     assert.equal(changesets1[0].id, cs1.id);
@@ -75,8 +76,8 @@ describe("HubMock", () => {
     assert.isDefined(changesets1[0].pushDate);
     assert.equal(cs1.id, mock.getLatestChangesetId());
 
-    const cs2 = { id: "changeset1", parentId: "changeset0", description: "second changeset", changesType: ChangesType.Schema };
-    mock.addChangeset({ changeset: cs2, localFile: changesetFile2 });
+    const cs2 = { id: "changeset1", parentId: "changeset0", description: "second changeset", changesType: ChangesType.Schema, pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml") };
+    mock.addChangeset(cs2);
     const changesets2 = mock.getChangesets();
     assert.equal(changesets2.length, 2);
     assert.deepEqual(changesets1[0], changesets2[0]);
@@ -100,20 +101,20 @@ describe("HubMock", () => {
     expect(() => mock.findNamedVersion(version1)).throws("not found");
 
     // test for duplicate changeset id
-    const cs3 = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesType.Regular };
-    expect(() => mock.addChangeset({ changeset: cs3, localFile: changesetFile1 })).throws("can't insert");
+    const cs3 = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesType.Regular, pathname: cs1.pathname };
+    expect(() => mock.addChangeset(cs3)).throws("can't insert");
     // now test for valid changeset id, but bad parentId
-    const cs4 = { id: "changeset4", parentId: "bad", description: "fourth changeset", changesType: ChangesType.Regular };
-    expect(() => mock.addChangeset({ changeset: cs4, localFile: changesetFile1 })).throws("can't insert");
+    const cs4 = { id: "changeset4", parentId: "bad", description: "fourth changeset", changesType: ChangesType.Regular, pathname: cs1.pathname };
+    expect(() => mock.addChangeset(cs4)).throws("can't insert");
 
     const out1 = join(tmpDir, "cs1-out");
     mock.downloadChangeset({ id: cs1.id, targetFile: out1 });
-    const orig1 = IModelJsFs.readFileSync(changesetFile1);
+    const orig1 = IModelJsFs.readFileSync(cs1.pathname);
     const downloaded1 = IModelJsFs.readFileSync(out1);
     assert.deepEqual(orig1, downloaded1);
     const out2 = join(tmpDir, "cs2-out");
     mock.downloadChangeset({ id: cs2.id, targetFile: out2 });
-    const orig2 = IModelJsFs.readFileSync(changesetFile2);
+    const orig2 = IModelJsFs.readFileSync(cs2.pathname);
     const downloaded2 = IModelJsFs.readFileSync(out2);
     assert.deepEqual(orig2, downloaded2);
     assert.notDeepEqual(orig1, orig2);

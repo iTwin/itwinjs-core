@@ -33,6 +33,28 @@ import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
+/** Properties of a changeset
+ * @internal
+ */
+export interface ChangesetProps {
+  id: string;
+  parentId?: string;
+  changesType: number;
+  description: string;
+  briefcaseId?: number;
+  pushDate?: string;
+  userCreated?: string;
+  size?: number;
+  index?: number;
+}
+
+/** Properties of a changeset file
+ * @internal
+ */
+export interface ChangesetFileProps extends ChangesetProps {
+  pathname: string;
+}
+
 /** The Id assigned to a briefcase by iModelHub, or a [[BriefcaseIdValue]] that identify special kinds of iModels.
  * @public
  */
@@ -159,8 +181,10 @@ export class BriefcaseManager {
   /** Get the root directory for the briefcase cache */
   public static get cacheDir() { return this._cacheDir; }
 
-  /** Get the index of the change set from its id */
-  private static async getChangeSetIndexFromId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string): Promise<number> {
+  /** Get the index of the change set from its id
+   * @internal
+   */
+  public static async getChangeSetIndexFromId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string): Promise<number> {
     requestContext.enter();
     if (changeSetId === "")
       return 0; // the first version
@@ -304,7 +328,7 @@ export class BriefcaseManager {
 
   /**
    * Delete and clean up a briefcase and all of its associated files. First, this method opens the supplied filename to determine its briefcaseId.
-   * Then, if a requestContenxt is supplied, it releases a BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
+   * Then, if a requestContext is supplied, it releases a BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
    * associated files (that is, all files in the same directory that start with the briefcase name).
    * @param filePath the full file name of the Briefcase to delete
    * @param requestContext context to delete
@@ -349,13 +373,13 @@ export class BriefcaseManager {
     }
   }
 
-  private static async downloadChangeSetsInternal(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery): Promise<ChangeSet[]> {
+  private static async downloadChangeSetsInternal(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery): Promise<ChangesetFileProps[]> {
     requestContext.enter();
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
 
     Logger.logTrace(loggerCategory, "Started downloading change sets", () => ({ iModelId }));
     const perfLogger = new PerfLogger("Downloading change sets", () => ({ iModelId }));
-    let changeSets;
+    let changeSets: ChangeSet[];
     try {
       changeSets = await IModelHost.iModelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
       requestContext.enter();
@@ -366,7 +390,12 @@ export class BriefcaseManager {
     }
     perfLogger.dispose();
     Logger.logTrace(loggerCategory, "Finished downloading change sets", () => ({ iModelId }));
-    return changeSets;
+
+    const val: ChangesetFileProps[] = [];
+    for (const cs of changeSets)
+      val.push({ id: cs.wsgId, parentId: cs.parentId, pathname: path.join(changeSetsPath, cs.fileName!), description: cs.description ?? "", changesType: cs.changesType ?? ChangesType.Regular, userCreated: cs.userCreated });
+
+    return val;
   }
 
   /** Downloads change sets in the specified range.
@@ -374,11 +403,11 @@ export class BriefcaseManager {
    *  * If the ids are the same returns an empty array.
    * @internal
    */
-  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]> {
+  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangesetFileProps[]> {
     requestContext.enter();
 
     if (toChangeSetId === "" /* first version */ || fromChangeSetId === toChangeSetId)
-      return new Array<ChangeSet>();
+      return [];
 
     const query = new ChangeSetQuery();
     query.betweenChangeSets(toChangeSetId, fromChangeSetId);
@@ -538,8 +567,8 @@ export class BriefcaseManager {
     }
   }
 
-  private static async applySingleChangeSet(db: IModelDb, changeSet: IModelJsNative.ChangeSetProps, processOption: ChangeSetApplyOption) {
-    return db.nativeDb.applyChangeSet(changeSet, processOption);
+  private static async applySingleChangeSet(db: IModelDb, changeSet: ChangesetFileProps, processOption: ChangeSetApplyOption) {
+    return db.nativeDb.applyChangeSet(changeSet as IModelJsNative.ChangeSetProps, processOption);
   }
 
   private static async applyChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
@@ -558,16 +587,8 @@ export class BriefcaseManager {
     if (reverse)
       changeSets.reverse();
 
-    const changeSetsPath = BriefcaseManager.getChangeSetsPath(db.iModelId);
-
-    for (const changeSet of changeSets) {
-      await this.applySingleChangeSet(db, {
-        id: changeSet.wsgId,
-        parentId: changeSet.parentId!,
-        pathname: path.join(changeSetsPath, changeSet.fileName!),
-        changesType: changeSet.changesType,
-      }, processOption);
-    }
+    for (const changeSet of changeSets)
+      await this.applySingleChangeSet(db, changeSet, processOption);
 
     // notify listeners
     db.notifyChangesetApplied();
@@ -644,8 +665,8 @@ export class BriefcaseManager {
     return BriefcaseManager.processChangeSets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
   }
 
-  private static startCreateChangeSet(db: BriefcaseDb): IModelJsNative.ChangeSetProps {
-    return db.nativeDb.startCreateChangeSet();
+  private static startCreateChangeSet(db: BriefcaseDb): ChangesetFileProps {
+    return db.nativeDb.startCreateChangeSet() as ChangesetFileProps;
   }
 
   private static finishCreateChangeSet(db: BriefcaseDb) {
@@ -694,19 +715,15 @@ export class BriefcaseManager {
     const changeSets = await BriefcaseManager.downloadChangeSetsInternal(requestContext, db.iModelId, query);
     requestContext.enter();
 
-    const changeSetsPath = BriefcaseManager.getChangeSetsPath(db.iModelId);
-
     for (const changeSet of changeSets) {
-      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      const token = { id: changeSet.wsgId, parentId: changeSet.parentId!, pathname: changeSetPathname, changesType: changeSet.changesType };
       try {
-        const codes = BriefcaseManager.extractCodesFromFile(db, [token]);
+        const codes = BriefcaseManager.extractCodesFromFile(db, [changeSet]);
         await IModelHost.iModelClient.codes.update(requestContext, db.iModelId, codes, { deniedCodes: true, continueOnConflict: true });
         requestContext.enter();
-        BriefcaseManager.removePendingChangeSet(db, token.id);
+        BriefcaseManager.removePendingChangeSet(db, changeSet.id);
       } catch (error) {
         if (error instanceof ConflictingCodesError)
-          BriefcaseManager.removePendingChangeSet(db, token.id);
+          BriefcaseManager.removePendingChangeSet(db, changeSet.id);
       }
     }
   }
@@ -738,19 +755,19 @@ export class BriefcaseManager {
   }
 
   /** Extracts codes from ChangeSet file */
-  private static extractCodesFromFile(db: BriefcaseDb, changeSets: IModelJsNative.ChangeSetProps[]): HubCode[] {
-    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = db.nativeDb.extractCodesFromFile(changeSets);
+  private static extractCodesFromFile(db: BriefcaseDb, changeSets: ChangesetFileProps[]): HubCode[] {
+    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = db.nativeDb.extractCodesFromFile(changeSets as IModelJsNative.ChangeSetProps[]);
     if (res.error)
       throw new IModelError(res.error.status, "Error in extractCodesFromFile");
     return BriefcaseManager.parseCodesFromJson(db, res.result!);
   }
 
   /** Attempt to update codes without rejecting so pull wouldn't fail */
-  private static async tryUpdatingCodes(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, changeSet: ChangeSet, relinquishCodesLocks: boolean): Promise<void> {
+  private static async tryUpdatingCodes(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, changeSet: ChangesetFileProps, relinquishCodesLocks: boolean): Promise<void> {
     requestContext.enter();
 
     // Add ChangeSet id, in case updating failed due to something else than conflicts
-    BriefcaseManager.addPendingChangeSet(db, changeSet.id!);
+    BriefcaseManager.addPendingChangeSet(db, changeSet.id);
 
     let failedUpdating = false;
     try {
@@ -781,28 +798,39 @@ export class BriefcaseManager {
 
     // Remove ChangeSet id if it succeeded or failed with conflicts
     if (!failedUpdating)
-      BriefcaseManager.removePendingChangeSet(db, changeSet.id!);
+      BriefcaseManager.removePendingChangeSet(db, changeSet.id);
+  }
+
+  /** so iModelHub can be mocked
+   * @internal
+   */
+  public static async pushChangesetFile(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changesetProps: ChangesetFileProps) {
+    const changeset = new ChangeSet();
+    changeset.id = changesetProps.id;
+    changeset.parentId = changesetProps.parentId;
+    changeset.changesType = changesetProps.changesType;
+    changeset.fileSize = changesetProps.size!.toString();
+    changeset.description = changesetProps.description;
+    if (changeset.description.length >= 255) {
+      Logger.logWarning(loggerCategory, `pushChanges - Truncating description to 255 characters. ${changeset.description}`);
+      changeset.description = changeset.description.slice(0, 254);
+    }
+
+    await IModelHost.iModelClient.changeSets.create(requestContext, iModelId, changeset, changesetProps.pathname);
   }
 
   /** Attempt to push a ChangeSet to iModelHub */
   private static async pushChangeSet(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesType, relinquishCodesLocks: boolean): Promise<void> {
     requestContext.enter();
 
-    const changeSetProps = BriefcaseManager.startCreateChangeSet(db);
-    const changeSet = new ChangeSet();
+    const changeSet = BriefcaseManager.startCreateChangeSet(db);
     changeSet.briefcaseId = db.briefcaseId;
-    changeSet.id = changeSetProps.id;
-    changeSet.parentId = changeSetProps.parentId;
-    changeSet.changesType = changeSetProps.changesType === ChangesType.Schema ? ChangesType.Schema : changeType;
-    changeSet.fileSize = IModelJsFs.lstatSync(changeSetProps.pathname)!.size.toString();
+    changeSet.changesType = changeSet.changesType === ChangesType.Schema ? ChangesType.Schema : changeType;
     changeSet.description = description;
-    if (changeSet.description.length >= 255) {
-      Logger.logWarning(loggerCategory, `pushChanges - Truncating description to 255 characters. ${changeSet.description}`, () => db.getRpcProps());
-      changeSet.description = changeSet.description.slice(0, 254);
-    }
+    changeSet.size = IModelJsFs.lstatSync(changeSet.pathname)!.size;
 
     try {
-      await IModelHost.iModelClient.changeSets.create(requestContext, db.iModelId, changeSet, changeSetProps.pathname);
+      await this.pushChangesetFile(requestContext, db.iModelId, changeSet);
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
