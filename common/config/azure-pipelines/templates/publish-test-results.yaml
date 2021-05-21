@@ -215,67 +215,56 @@ steps:
   # Code Coverage Tests
   #-------
   ## TODO: Fix combining code coverage into a single xml file to publish
-  # - task: PythonScript@0
-  #   displayName: "Combine code coverage"
-  #   inputs:
-  #     workingDirectory: ${{ parameters.workingDir }}
-  #     scriptSource: inline
-  #     script: |
-  #       import os, argparse, shutil
-  #       from pathlib import Path  # Requires python 3.5+
+  - task: PythonScript@0
+    displayName: "Combine code coverage"
+    inputs:
+      workingDirectory: ${{ parameters.workingDir }}
+      pythonInterpreter: python3
+      scriptSource: inline
+      script: |
+        import os, argparse, shutil, glob
 
-  #       def readXML(compName, filePath):
-  #         covFile = open(filePath).read()
-  #         pattern = 'package name="'
-  #         component = 'package name="'+ compName
-  #         covFile = covFile.replace(pattern, component)
-  #         outfile = open(filePath, 'w')
-  #         outfile.write(covFile)
-  #         outfile.close()
+        parser = argparse.ArgumentParser()
+        parser.add_argument(
+          "--output", help="Output path where xml reports will be copied")
+        args = parser.parse_args()
+        workDir = os.getcwd()
 
-  #       parser = argparse.ArgumentParser()
-  #       parser.add_argument("--output", help="Output path where xml reports will be copied")
-  #       args = parser.parse_args()
-  #       workDir = os.getcwd()
-  #       testing = args.components.split(';')[1]
-  #       print ("Working directory" + (os.getcwd() + os.sep + testing))
+        listOfPaths = []
 
-  #       listOfFiles = []
-  #       for path in Path('.').rglob('cobertura-coverage.xml'):
-  #         listOfFiles.append(path.name)
+        for path in glob.iglob((workDir + "/*/*/.nyc_output"), recursive=True):
+          listOfPaths.append(path)
 
-  #       print (listOfFiles)
+        for path in glob.iglob((workDir + "/*/*/lib/**/.nyc_output"), recursive=True):
+          listOfPaths.append(path)
 
-  #       # Get the list of component folders that exist.  If a folder does not exist, it is skipped.
-  #       # components = list(filter(lambda x: '' != x and os.path.exists(os.path.normpath(os.path.join(workDir, x))), args.components.split(';')))
-  #       # print (components)
-  #       # output_Dir = os.path.join(args.output, "coverageXMLs")
+        for path in glob.iglob((workDir + "/*/*/*/lib/**/.nyc_output"), recursive=True):
+          listOfPaths.append(path)
 
-  #       # if not os.path.exists(output_Dir):
-  #       #  os.makedirs(output_Dir)
-  #       #  print ("*** Output directory created at: " + output_Dir)
+        outputDir = os.path.join(args.output, "coverageXMLs")
+        processInfoDir = os.path.join(args.output, "coverageXMLs/processinfo")
+        if not os.path.exists(processInfoDir):
+          os.makedirs(processInfoDir)
 
-  #       # Copy the reports to the respective dirs
-  #       # postfix = os.path.join("lib", "test", "coverage", "cobertura-coverage.xml")
-  #       # for comp in components:
-  #       #   print ("Processing component: " + comp)
-  #       #   src =  workDir + os.sep + comp + os.sep + postfix
-  #       #   if not os.path.exists(src):
-  #       #     print ("*** Source path for xml not exist: " + src)
-  #       #     continue
-  #       #   dstFileDir = output_Dir + os.sep + comp
-  #       #   if not os.path.exists(dstFileDir):
-  #       #     print ("*** Creating destination folder, '" + dstFileDir + "'...")
-  #       #     os.makedirs(dstFileDir)
-  #       #   shutil.copy(src, dstFileDir)
-  #       #   print ("Copied: " + src)
-  #       #   filePath = os.path.join(dstFileDir, "cobertura-coverage.xml")
-  #       #   readXML(comp, filePath)
-  #     arguments: --output '$(Build.BinariesDirectory)'
-  #   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
-  # - task: PublishCodeCoverageResults@1
-  #   displayName: "Publish code coverage"
-  #   inputs:
-  #     codeCoverageTool: Cobertura
-  #     summaryFileLocation: $(Build.SourcesDirectory)/**/**/lib/test/coverage/cobertura-coverage.xml
-  #   condition: succeededOrFailed()
+        for path in listOfPaths:
+          for file in glob.iglob((path + "/**"), recursive=True):
+            if os.path.isfile(file):
+              if "processinfo" in file:
+                shutil.copy(file, processInfoDir)
+              else:
+                shutil.copy(file, outputDir)
+
+      arguments: --output $(Build.ArtifactStagingDirectory)
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
+  - task: Cmdline@2
+    displayName: "Generate combined coverage report"
+    inputs:
+      script: npx nyc report --temp-dir="$(Build.ArtifactStagingDirectory)/coverageXMLs/" --report-dir="$(Build.ArtifactStagingDirectory)/coverageResults" --all --reporter=lcov --reporter=cobertura
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
+  - task: PublishCodeCoverageResults@1
+    displayName: "Publish code coverage"
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: "$(Build.ArtifactStagingDirectory)/coverageResults/cobertura-coverage.xml"
+      reportDirectory: "$(Build.ArtifactStagingDirectory)/coverageResults/lcov-report"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))

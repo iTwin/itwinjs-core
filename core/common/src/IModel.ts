@@ -73,7 +73,7 @@ export interface IModelProps {
   /** The location of the iModel in Earth Centered Earth Fixed coordinates. iModel units are always meters */
   ecefLocation?: EcefLocationProps;
   /** The Geographic Coordinate Reference System indicating the projection and datum used. */
-  geographicCoordinateSystem?: GeographicCRS;
+  geographicCoordinateSystem?: GeographicCRSProps;
   /** The name of the iModel. */
   name?: string;
 }
@@ -279,12 +279,13 @@ export abstract class IModel implements IModelProps {
     this._ecefTrans = undefined;
   }
 
-  /** The geographic coordinate reference system of the iModel.
-   * @alpha
-  */
+  /** The geographic coordinate reference system of the iModel. */
   private _geographicCoordinateSystem?: GeographicCRS;
+  /** The geographic coordinate reference system of the iModel. */
   public get geographicCoordinateSystem(): GeographicCRS | undefined { return this._geographicCoordinateSystem; }
   public set geographicCoordinateSystem(geoCRS: GeographicCRS | undefined) { this._geographicCoordinateSystem = geoCRS; }
+
+  /** Sets the geographic coordinate reference system from GeographicCRSProps. */
   public setGeographicCoordinateSystem(geoCRS: GeographicCRSProps) {
     this._geographicCoordinateSystem = new GeographicCRS(geoCRS);
   }
