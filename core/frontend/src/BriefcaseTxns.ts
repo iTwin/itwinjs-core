@@ -7,8 +7,10 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d, Range3dProps, XYZProps } from "@bentley/geometry-core";
 import {
-  ChangedEntities, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid, RemoveFunction, TxnNotifications,
+  ChangedEntities, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid,
+  RemoveFunction, RootSubjectProps, TxnNotifications,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
@@ -244,5 +246,35 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** @internal */
   public notifyPushedChanges(parentChangeSetId: string) {
     this.onChangesPushed.raiseEvent(parentChangeSetId);
+  }
+
+  /** @internal */
+  public notifyIModelNameChanged(name: string) {
+    this._iModel.name = name;
+  }
+
+  /** @internal */
+  public notifyRootSubjectChanged(subject: RootSubjectProps) {
+    this._iModel.rootSubject = subject;
+  }
+
+  /** @internal */
+  public notifyProjectExtentsChanged(range: Range3dProps) {
+    this._iModel.projectExtents = Range3d.fromJSON(range);
+  }
+
+  /** @internal */
+  public notifyGlobalOriginChanged(origin: XYZProps) {
+    this._iModel.globalOrigin = Point3d.fromJSON(origin);
+  }
+
+  /** @internal */
+  public notifyEcefLocationChanged(ecef: EcefLocationProps | undefined) {
+    this._iModel.ecefLocation = ecef ? new EcefLocation(ecef) : undefined;
+  }
+
+  /** @internal */
+  public notifyGeographicCoordinateSystemChanged(gcs: GeographicCRSProps | undefined) {
+    this._iModel.geographicCoordinateSystem = gcs ? new GeographicCRS(gcs) : undefined;
   }
 }
