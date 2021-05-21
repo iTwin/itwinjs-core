@@ -6,9 +6,16 @@ import { expect, should } from "chai";
 import { castDraft, produce } from "immer";
 import { Point, Rectangle } from "@bentley/ui-core";
 import {
-  addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createFloatingWidgetState, createHorizontalPanelState, createNineZoneState,
-  createTabState, createVerticalPanelState, createWidgetState, dockWidgetContainer, findTab, floatWidget, isHorizontalPanelState, NineZoneStateReducer, removeTab, toolSettingsTabId,
+  addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createDraggedTabState, createFloatingWidgetState,
+  createHorizontalPanelState, createNineZoneState, createPanelsState, createTabsState,
+  createTabState, createVerticalPanelState, createWidgetState, dockWidgetContainer, findTab, floatWidget,
+  initSizeAndPositionProps, isHorizontalPanelState, NineZoneStateReducer, popoutWidgetToChildWindow,
+  removeTab, toolSettingsTabId,
 } from "../../ui-ninezone";
+import {
+  convertAllPopupWidgetContainersToFloating, convertFloatingWidgetContainerToPopout, convertPopoutWidgetContainerToFloating,
+  NineZoneState,
+} from "../../ui-ninezone/base/NineZoneState";
 
 describe("isHorizontalPanelState", () => {
   it("returns true based on side property", () => {
@@ -549,6 +556,50 @@ describe("NineZoneStateReducer", () => {
       newState.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
     });
 
+    it("should send back to specified `left` panel widget via function call", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1", ["t1"], {
+        tabs: ["t0"],
+      });
+      state = addFloatingWidget(state, "fw1", ["fwt1"], {
+        home: {
+          side: "left",
+          widgetId: "w1",
+          widgetIndex: 0,
+        },
+      }, {
+        tabs: ["t1", "t2"],
+      });
+
+      const newState = dockWidgetContainer(state, "fw1", true);
+      newState!.widgets.w1.tabs.should.eql(["t0", "t1", "t2"]);
+      should().not.exist(newState!.widgets.fw1);
+      should().not.exist(newState!.floatingWidgets.byId.fw1);
+      newState!.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
+    });
+
+    it("should send back to specified `left` panel widget via tabId and function call", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1", ["t1"], {
+        tabs: ["t0"],
+      });
+      state = addFloatingWidget(state, "fw1", ["fwt1"], {
+        home: {
+          side: "left",
+          widgetId: "w1",
+          widgetIndex: 0,
+        },
+      }, {
+        tabs: ["t1", "t2"],
+      });
+
+      const newState = dockWidgetContainer(state, "t1", false);
+      newState!.widgets.w1.tabs.should.eql(["t0", "t1", "t2"]);
+      should().not.exist(newState!.widgets.fw1);
+      should().not.exist(newState!.floatingWidgets.byId.fw1);
+      newState!.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
+    });
+
     it("should send back to specified `right` panel widget", () => {
       let state = createNineZoneState();
       state = addPanelWidget(state, "right", "w1", ["t0"]);
@@ -1083,44 +1134,44 @@ describe("removeTab", () => {
   });
 });
 
-describe ("float widget tab", () => {
+describe("float widget tab", () => {
   it("should apply position and size", () => {
-    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    const newState = floatWidget(state, "badname", {x:55, y:105}, {height:200, width:200});
-    expect (newState).to.be.undefined;
+    const newState = floatWidget(state, "badname", { x: 55, y: 105 }, { height: 200, width: 200 });
+    expect(newState).to.be.undefined;
     const newDockedState = dockWidgetContainer(state, "badname");
-    expect (newDockedState).to.be.undefined;
+    expect(newDockedState).to.be.undefined;
   });
 
   it("should apply position and size", () => {
-    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    expect (Object.entries(state.floatingWidgets.byId).length).to.be.eql(0);
+    expect(Object.entries(state.floatingWidgets.byId).length).to.be.eql(0);
     state.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
 
-    const newState = floatWidget(state, "t1", {x:55, y:105}, {height:200, width:200});
-    expect (newState).to.not.be.undefined;
+    const newState = floatWidget(state, "t1", { x: 55, y: 105 }, { height: 200, width: 200 });
+    expect(newState).to.not.be.undefined;
     // exercise code that return if already floating
-    floatWidget(newState!, "t1", {x:55, y:105}, {height:200, width:200});
+    floatWidget(newState!, "t1", { x: 55, y: 105 }, { height: 200, width: 200 });
 
-    expect (Object.entries(newState!.floatingWidgets.byId).length).to.be.eql(1);
+    expect(Object.entries(newState!.floatingWidgets.byId).length).to.be.eql(1);
     const floatingWidgetContainerId = Object.keys(newState!.floatingWidgets.byId)[0];
     newState!.floatingWidgets.byId[floatingWidgetContainerId].bounds.should.eql({
       left: 55,
       top: 105,
-      bottom: 105+200,
-      right: 55+200,
+      bottom: 105 + 200,
+      right: 55 + 200,
     });
     newState!.floatingWidgets.byId[floatingWidgetContainerId].home.should.eql({
       side: "right",
@@ -1132,32 +1183,32 @@ describe ("float widget tab", () => {
     const dockedState = dockWidgetContainer(newState!, "t1");
     // exercise code that return if already docked
     dockWidgetContainer(newState!, "t1");
-    expect (dockedState).to.not.be.undefined;
+    expect(dockedState).to.not.be.undefined;
     // console.log (JSON.stringify(dockedState)); // eslint-disable-line no-console
     dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
-    expect (Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
+    expect(Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
   });
 
   it("should apply position and preferred size", () => {
-    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
-    state = addTab(state, "t1", {preferredFloatingWidgetSize: {height: 222, width: 222}});
+    state = addTab(state, "t1", { preferredFloatingWidgetSize: { height: 222, width: 222 } });
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    expect (Object.entries(state.floatingWidgets.byId).length).to.be.eql(0);
+    expect(Object.entries(state.floatingWidgets.byId).length).to.be.eql(0);
     state.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
 
-    const newState = floatWidget(state, "t1", {x:55, y:105});
-    expect (newState).to.not.be.undefined;
-    expect (Object.entries(newState!.floatingWidgets.byId).length).to.be.eql(1);
+    const newState = floatWidget(state, "t1", { x: 55, y: 105 });
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.floatingWidgets.byId).length).to.be.eql(1);
     const floatingWidgetContainerId = Object.keys(newState!.floatingWidgets.byId)[0];
     newState!.floatingWidgets.byId[floatingWidgetContainerId].bounds.should.eql({
       left: 55,
       top: 105,
-      bottom: 105+222,
-      right: 55+222,
+      bottom: 105 + 222,
+      right: 55 + 222,
     });
     newState!.floatingWidgets.byId[floatingWidgetContainerId].home.should.eql({
       side: "right",
@@ -1167,32 +1218,32 @@ describe ("float widget tab", () => {
 
     // restore widget tab "t1" back to original "rightStart" location
     const dockedState = dockWidgetContainer(newState!, "t1");
-    expect (dockedState).to.not.be.undefined;
+    expect(dockedState).to.not.be.undefined;
     dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
-    expect (Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
+    expect(Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
   });
 
   it("should apply default position {x:50, y:100} and size {height:400, width:400}", () => {
-    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    expect (Object.entries(state.floatingWidgets.byId).length).to.be.eql(0);
+    expect(Object.entries(state.floatingWidgets.byId).length).to.be.eql(0);
     state.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
 
     const newState = floatWidget(state, "t1");
-    expect (newState).to.not.be.undefined;
+    expect(newState).to.not.be.undefined;
 
-    expect (Object.entries(newState!.floatingWidgets.byId).length).to.be.eql(1);
+    expect(Object.entries(newState!.floatingWidgets.byId).length).to.be.eql(1);
     const floatingWidgetContainerId = Object.keys(newState!.floatingWidgets.byId)[0];
     newState!.floatingWidgets.byId[floatingWidgetContainerId].bounds.should.eql({
       left: 50,
       top: 100,
-      bottom: 100+400,
-      right: 50+400,
+      bottom: 100 + 400,
+      right: 50 + 400,
     });
     newState!.floatingWidgets.byId[floatingWidgetContainerId].home.should.eql({
       side: "right",
@@ -1204,32 +1255,32 @@ describe ("float widget tab", () => {
     const dockedState = dockWidgetContainer(newState!, "t1");
     // exercise code that return if already docked
     dockWidgetContainer(newState!, "t1");
-    expect (dockedState).to.not.be.undefined;
+    expect(dockedState).to.not.be.undefined;
     // console.log (JSON.stringify(dockedState)); // eslint-disable-line no-console
     dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
-    expect (Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
+    expect(Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
   });
 
   it("should apply position and default size of (400,400)", () => {
-    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    expect (Object.entries(state.floatingWidgets.byId).length).to.be.eql(0);
+    expect(Object.entries(state.floatingWidgets.byId).length).to.be.eql(0);
     state.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
 
-    const newState = floatWidget(state, "t1", {x:55, y:105});
-    expect (newState).to.not.be.undefined;
-    expect (Object.entries(newState!.floatingWidgets.byId).length).to.be.eql(1);
+    const newState = floatWidget(state, "t1", { x: 55, y: 105 });
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.floatingWidgets.byId).length).to.be.eql(1);
     const floatingWidgetContainerId = Object.keys(newState!.floatingWidgets.byId)[0];
     newState!.floatingWidgets.byId[floatingWidgetContainerId].bounds.should.eql({
       left: 55,
       top: 105,
-      bottom: 105+400,
-      right: 55+400,
+      bottom: 105 + 400,
+      right: 55 + 400,
     });
     newState!.floatingWidgets.byId[floatingWidgetContainerId].home.should.eql({
       side: "right",
@@ -1239,13 +1290,13 @@ describe ("float widget tab", () => {
 
     // restore widget tab "t1" back to original "rightStart" location
     const dockedState = dockWidgetContainer(newState!, "t1");
-    expect (dockedState).to.not.be.undefined;
+    expect(dockedState).to.not.be.undefined;
     dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
-    expect (Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
+    expect(Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
   });
 
   it("should properly handle multiple widget tabs", () => {
-    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
@@ -1254,18 +1305,18 @@ describe ("float widget tab", () => {
     state = addTab(state, "tb");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    expect (Object.entries(state.floatingWidgets.byId).length).to.be.eql(0);
+    expect(Object.entries(state.floatingWidgets.byId).length).to.be.eql(0);
     state.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
 
-    const newState = floatWidget(state, "t1", {x:55, y:105});
-    expect (newState).to.not.be.undefined;
-    expect (Object.entries(newState!.floatingWidgets.byId).length).to.be.eql(1);
+    const newState = floatWidget(state, "t1", { x: 55, y: 105 });
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.floatingWidgets.byId).length).to.be.eql(1);
     const floatingWidgetContainerId = Object.keys(newState!.floatingWidgets.byId)[0];
     newState!.floatingWidgets.byId[floatingWidgetContainerId].bounds.should.eql({
       left: 55,
       top: 105,
-      bottom: 105+400,
-      right: 55+400,
+      bottom: 105 + 400,
+      right: 55 + 400,
     });
     newState!.floatingWidgets.byId[floatingWidgetContainerId].home.should.eql({
       side: "right",
@@ -1275,11 +1326,272 @@ describe ("float widget tab", () => {
 
     // restore widget tab "t1" back to original "rightStart" location
     const dockedState = dockWidgetContainer(newState!, "t1");
-    expect (dockedState).to.not.be.undefined;
+    expect(dockedState).to.not.be.undefined;
     // console.log (JSON.stringify(dockedState)); // eslint-disable-line no-console
     dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
-    expect (Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
+    expect(Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
   });
 
-});
+  it("should create popout entries with default size and location", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
+    state = addTab(state, "t1");
+    state = addTab(state, "ta");
+    state = addTab(state, "tb");
+    const newState = popoutWidgetToChildWindow(state, "t1");
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(1);
+    const popoutWidgetContainerId = Object.keys(newState!.popoutWidgets.byId)[0];
 
+    newState!.popoutWidgets.byId[popoutWidgetContainerId].bounds.should.eql({
+      left: 0,
+      top: 0,
+      bottom: 800,
+      right: 600,
+    });
+  });
+
+  it("should create popout entries with specified size and location", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
+    state = addTab(state, "t1");
+    state = addTab(state, "ta");
+    state = addTab(state, "tb");
+    const newState = popoutWidgetToChildWindow(state, "t1", { x: 5, y: 10 }, { width: 100, height: 200 });
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(1);
+    const popoutWidgetContainerId = Object.keys(newState!.popoutWidgets.byId)[0];
+
+    newState!.popoutWidgets.byId[popoutWidgetContainerId].bounds.should.eql({
+      left: 5,
+      top: 10,
+      bottom: 10 + 200,
+      right: 5 + 100,
+    });
+
+    // return undefined because it is already in popout state.
+    const state2 = popoutWidgetToChildWindow(newState!, "t1");
+    expect(state2).to.be.undefined;
+  });
+
+  it("should create popout entries with specified size and location (given initial state with no popout data)", () => {
+    let state = {
+      draggedTab: undefined,
+      floatingWidgets: {
+        byId: {},
+        allIds: [],
+      },
+      panels: createPanelsState(),
+      widgets: {},
+      tabs: createTabsState(),
+      toolSettings: {
+        type: "docked",
+      },
+      size: {
+        height: 1000,
+        width: 1600,
+      },
+    } as unknown;
+
+    state = addPanelWidget(state as NineZoneState, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
+    state = addTab(state as NineZoneState, "t1");
+    state = addTab(state as NineZoneState, "ta");
+    state = addTab(state as NineZoneState, "tb");
+    const newState = popoutWidgetToChildWindow(state as NineZoneState, "t1", { x: 5, y: 10 }, { width: 100, height: 200 });
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(1);
+    const popoutWidgetContainerId = Object.keys(newState!.popoutWidgets.byId)[0];
+
+    newState!.popoutWidgets.byId[popoutWidgetContainerId].bounds.should.eql({
+      left: 5,
+      top: 10,
+      bottom: 10 + 200,
+      right: 5 + 100,
+    });
+
+    // return undefined because it is already in popout state.
+    expect(popoutWidgetToChildWindow(newState!, "t1")).to.be.undefined;
+
+    // return undefined because no tab "zz" is defined.
+    expect(popoutWidgetToChildWindow(newState!, "zz")).to.be.undefined;
+  });
+
+  it("should create multiple popout entries and then remove the last one (via reducer)", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
+    state = addTab(state, "t1");
+    state = addTab(state, "ta");
+    state = addTab(state, "tb");
+    let newState = popoutWidgetToChildWindow(state, "t1");
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(1);
+    const popoutWidgetContainerId1 = Object.keys(newState!.popoutWidgets.byId)[0];
+
+    newState = popoutWidgetToChildWindow(newState!, "ta");
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(2);
+    const popoutWidgetContainerId2 = Object.keys(newState!.popoutWidgets.byId)[1];
+    const latestState = NineZoneStateReducer(newState!, {
+      type: "POPOUT_WIDGET_SEND_BACK",
+      id: popoutWidgetContainerId2,
+    });
+    expect(Object.entries(latestState.popoutWidgets.byId).length).to.be.eql(1);
+    expect(Object.keys(latestState.popoutWidgets.byId)[0]).to.be.eql(popoutWidgetContainerId1);
+  });
+
+  it("should send back to widget container named same as floating widget when widgetId is undefined", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = addPopoutWidget(state, "fw1", ["t2", "t3"], {
+      home: {
+        side: "left",
+        widgetId: undefined,
+        widgetIndex: 0,
+      },
+    });
+    const newState = NineZoneStateReducer(state, {
+      type: "POPOUT_WIDGET_SEND_BACK",
+      id: "fw1",
+    });
+
+    newState.panels.left.widgets.should.eql(["fw1", "w1"]);
+    newState.widgets.w1.tabs.should.eql(["t1"]);
+    newState.widgets.fw1.tabs.should.eql(["t2", "t3"]);
+    should().not.exist(newState.popoutWidgets.byId.fw1);
+    newState.popoutWidgets.allIds.indexOf("fw1").should.eq(-1);
+  });
+
+  it("should send back to a newly created widget container if the container no longer exists because all widget tabs were popped out", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w2", ["t2"]);
+    state = addPopoutWidget(state, "fw1", ["t1", "t2"], {
+      home: {
+        side: "left",
+        widgetId: "w1",
+        widgetIndex: 0,
+      },
+    });
+
+    state.widgets.fw1.tabs.should.eql(["t1", "t2"]);
+
+    const newState = NineZoneStateReducer(state, {
+      type: "POPOUT_WIDGET_SEND_BACK",
+      id: "fw1",
+    });
+
+    newState.panels.left.widgets.should.eql(["w1", "w2"]);
+    newState.widgets.w1.tabs.should.eql(["t1", "t2"]);
+    should().not.exist(newState.popoutWidgets.byId.fw1);
+    newState.popoutWidgets.allIds.indexOf("fw1").should.eq(-1);
+  });
+
+  it("should insert to provided widgetIndex when maxWidgetCount is reached", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w2", ["t2"]);
+    state = addTab(state, "t2");
+    state = addPanelWidget(state, "left", "w3", ["t3"]);
+    state = addTab(state, "t3");
+    state = addPopoutWidget(state, "fw1", ["ft1", "ft2"], {
+      home: {
+        side: "left",
+        widgetId: undefined,
+        widgetIndex: 1,
+      },
+    });
+    const newState = NineZoneStateReducer(state, {
+      type: "POPOUT_WIDGET_SEND_BACK",
+      id: "fw1",
+    });
+
+    newState.panels.left.widgets.should.eql(["w1", "w2", "w3"]);
+    newState.widgets.w1.tabs.should.eql(["t1"]);
+    newState.widgets.w2.tabs.should.eql(["t2", "ft1", "ft2"]);
+    newState.widgets.w3.tabs.should.eql(["t3"]);
+    should().not.exist(newState.popoutWidgets.byId.fw1);
+    newState.popoutWidgets.allIds.indexOf("fw1").should.eq(-1);
+    should().not.exist(newState.widgets.fw1);
+  });
+
+  it("should create multiple popout entries and then remove the last one (via function)", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
+    state = addTab(state, "t1");
+    state = addTab(state, "ta");
+    state = addTab(state, "tb");
+    let newState = popoutWidgetToChildWindow(state, "t1");
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(1);
+    const popoutWidgetContainerId1 = Object.keys(newState!.popoutWidgets.byId)[0];
+
+    expect(dockWidgetContainer(newState!, "zz", true)).to.be.undefined;
+
+    newState = popoutWidgetToChildWindow(newState!, "ta");
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(2);
+    const popoutWidgetContainerId2 = Object.keys(newState!.popoutWidgets.byId)[1];
+    let latestState = dockWidgetContainer(newState!, popoutWidgetContainerId2, true);
+    expect(Object.entries(latestState!.popoutWidgets.byId).length).to.be.eql(1);
+    expect(Object.keys(latestState!.popoutWidgets.byId)[0]).to.be.eql(popoutWidgetContainerId1);
+
+    latestState = dockWidgetContainer(latestState!, "t1", false);
+    expect(Object.entries(latestState!.popoutWidgets.byId).length).to.be.eql(0);
+  });
+
+  it("should create multiple popout entries and then convert them to floating", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
+    state = addTab(state, "t1");
+    state = addTab(state, "ta");
+    state = addTab(state, "tb");
+    let newState = popoutWidgetToChildWindow(state, "t1");
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(1);
+    newState = popoutWidgetToChildWindow(newState!, "ta");
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(2);
+    newState = convertAllPopupWidgetContainersToFloating(newState!);
+    expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(0);
+  });
+
+  it("should create multiple popout entries and then convert one of them to floating", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
+    state = addTab(state, "t1");
+    state = addTab(state, "ta");
+    state = addTab(state, "tb");
+    let newState = popoutWidgetToChildWindow(state, "t1");
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(1);
+    const popoutWidgetContainerId1 = Object.keys(newState!.popoutWidgets.byId)[0];
+    newState = popoutWidgetToChildWindow(newState!, "ta");
+    expect(newState).to.not.be.undefined;
+    expect(Object.entries(newState!.popoutWidgets.byId).length).to.be.eql(2);
+    newState = convertPopoutWidgetContainerToFloating(newState!, popoutWidgetContainerId1);
+    expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(1);
+
+    newState = convertFloatingWidgetContainerToPopout(newState, popoutWidgetContainerId1);
+    expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(2);
+  });
+
+  it("should process initSizeAndPositionProps", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
+    state = addTab(state, "t1");
+
+    const preferredSizeAndPosition = { height: 800, width: 600, x: 55, y: 55 };
+    state = produce(state, (draft) => {
+      initSizeAndPositionProps(draft.tabs.t1, "preferredPopoutWidgetSize", preferredSizeAndPosition);
+    });
+    expect(state.tabs.t1.preferredPopoutWidgetSize?.height).to.be.eql(preferredSizeAndPosition.height);
+    expect(state.tabs.t1.preferredPopoutWidgetSize?.width).to.be.eql(preferredSizeAndPosition.width);
+
+    const preferredSizeAndPosition2 = { height: 800, width: 600, x: 75, y: 75 };
+    state = produce(state, (draft) => {
+      initSizeAndPositionProps(draft.tabs.t1, "preferredPopoutWidgetSize", preferredSizeAndPosition2);
+    });
+    expect(state.tabs.t1.preferredPopoutWidgetSize?.height).to.be.eql(preferredSizeAndPosition2.height);
+    expect(state.tabs.t1.preferredPopoutWidgetSize?.width).to.be.eql(preferredSizeAndPosition2.width);
+  });
+});

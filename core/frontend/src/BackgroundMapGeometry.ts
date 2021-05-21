@@ -435,8 +435,8 @@ export class BackgroundMapLocation {
   private _geodeticToSeaLevel?: number;
   private _projectCenterAltitude?: number;
 
-  public onEcefChanged(ecefLocation: EcefLocation) {
-    this._ecefToDb = ecefLocation.getTransform().inverse()!;
+  public onEcefChanged(ecefLocation: EcefLocation| undefined) {
+    this._ecefToDb = ecefLocation?.getTransform().inverse();
     this._ecefValidated = false;
   }
 

@@ -44,6 +44,7 @@ export interface NineZoneLabels {
   sendWidgetHomeTitle?: string;
   toolSettingsHandleTitle?: string;
   unpinPanelTitle?: string;
+  popoutActiveTab?: string;
 }
 
 /** @internal future */
