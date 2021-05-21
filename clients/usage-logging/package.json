@@ -1,6 +1,6 @@
 {
   "name": "@bentley/usage-logging-client",
-  "version": "2.16.0-dev.34",
+  "version": "2.16.0-dev.35",
   "description": "iModel.js Usage Logging Client",
   "main": "lib/usage-logging-client.js",
   "typings": "lib/usage-logging-client",
@@ -36,20 +36,20 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.34"
+    "@bentley/bentleyjs-core": "2.16.0-dev.35"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.16.0-dev.34",
-    "@bentley/telemetry-client": "^2.16.0-dev.34"
+    "@bentley/itwin-client": "^2.16.0-dev.35",
+    "@bentley/telemetry-client": "^2.16.0-dev.35"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.34",
-    "@bentley/certa": "2.16.0-dev.34",
-    "@bentley/config-loader": "2.16.0-dev.34",
-    "@bentley/eslint-plugin": "2.16.0-dev.34",
-    "@bentley/itwin-client": "2.16.0-dev.34",
-    "@bentley/oidc-signin-tool": "2.16.0-dev.34",
-    "@bentley/telemetry-client": "2.16.0-dev.34",
+    "@bentley/build-tools": "2.16.0-dev.35",
+    "@bentley/certa": "2.16.0-dev.35",
+    "@bentley/config-loader": "2.16.0-dev.35",
+    "@bentley/eslint-plugin": "2.16.0-dev.35",
+    "@bentley/itwin-client": "2.16.0-dev.35",
+    "@bentley/oidc-signin-tool": "2.16.0-dev.35",
+    "@bentley/telemetry-client": "2.16.0-dev.35",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",

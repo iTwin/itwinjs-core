@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "2.16.0-dev.34",
+  "version": "2.16.0-dev.35",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/backend-itwin-client.js",
   "browser": {
@@ -38,33 +38,33 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.34",
-    "@bentley/frontend-authorization-client": "^2.16.0-dev.34",
-    "@bentley/geometry-core": "^2.16.0-dev.34",
-    "@bentley/imodelhub-client": "^2.16.0-dev.34",
-    "@bentley/imodeljs-common": "^2.16.0-dev.34",
-    "@bentley/itwin-client": "^2.16.0-dev.34",
-    "@bentley/rbac-client": "^2.16.0-dev.34",
-    "@bentley/telemetry-client": "^2.16.0-dev.34"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.35",
+    "@bentley/frontend-authorization-client": "^2.16.0-dev.35",
+    "@bentley/geometry-core": "^2.16.0-dev.35",
+    "@bentley/imodelhub-client": "^2.16.0-dev.35",
+    "@bentley/imodeljs-common": "^2.16.0-dev.35",
+    "@bentley/itwin-client": "^2.16.0-dev.35",
+    "@bentley/rbac-client": "^2.16.0-dev.35",
+    "@bentley/telemetry-client": "^2.16.0-dev.35"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.34",
-    "@bentley/build-tools": "2.16.0-dev.34",
-    "@bentley/config-loader": "2.16.0-dev.34",
-    "@bentley/context-registry-client": "2.16.0-dev.34",
-    "@bentley/eslint-plugin": "2.16.0-dev.34",
-    "@bentley/frontend-authorization-client": "2.16.0-dev.34",
-    "@bentley/geometry-core": "2.16.0-dev.34",
-    "@bentley/imodelhub-client": "2.16.0-dev.34",
-    "@bentley/imodeljs-common": "2.16.0-dev.34",
-    "@bentley/itwin-client": "2.16.0-dev.34",
-    "@bentley/oidc-signin-tool": "2.16.0-dev.34",
-    "@bentley/rbac-client": "2.16.0-dev.34",
-    "@bentley/telemetry-client": "2.16.0-dev.34",
+    "@bentley/bentleyjs-core": "2.16.0-dev.35",
+    "@bentley/build-tools": "2.16.0-dev.35",
+    "@bentley/config-loader": "2.16.0-dev.35",
+    "@bentley/context-registry-client": "2.16.0-dev.35",
+    "@bentley/eslint-plugin": "2.16.0-dev.35",
+    "@bentley/frontend-authorization-client": "2.16.0-dev.35",
+    "@bentley/geometry-core": "2.16.0-dev.35",
+    "@bentley/imodelhub-client": "2.16.0-dev.35",
+    "@bentley/imodeljs-common": "2.16.0-dev.35",
+    "@bentley/itwin-client": "2.16.0-dev.35",
+    "@bentley/oidc-signin-tool": "2.16.0-dev.35",
+    "@bentley/rbac-client": "2.16.0-dev.35",
+    "@bentley/telemetry-client": "2.16.0-dev.35",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
@@ -89,7 +89,7 @@
     "typescript": "~4.1.0"
   },
   "dependencies": {
-    "@bentley/usage-logging-client": "2.16.0-dev.34",
+    "@bentley/usage-logging-client": "2.16.0-dev.35",
     "applicationinsights": "^1.7.5",
     "deep-assign": "^2.0.0",
     "fs-extra": "^8.1.0",
