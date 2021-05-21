@@ -68,7 +68,7 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
   private _handleRefSet = (popupDiv: HTMLElement | null) => {
     const parentWindow = popupDiv?.ownerDocument.defaultView ?? undefined;
     // if the window is not a pop out set to undefined
-    this._hostChildWindowId = UiFramework.ChildWindowManager.findChildWindowId(parentWindow);
+    this._hostChildWindowId = UiFramework.childWindowManager.findChildWindowId(parentWindow);
     Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Cursor Menu for ${this._hostChildWindowId ?? "main"} window`);
   };
 

@@ -46,6 +46,31 @@ module.exports = {
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
+    function getFileName(parent) {
+      let currentParent = parent;
+      while (currentParent) {
+        if (currentParent.fileName !== undefined)
+          return currentParent.fileName;
+        currentParent = currentParent.parent;
+      }
+      return undefined;
+    }
+
+    function isLocalFile(declaration) {
+      if (declaration) {
+        const fileName = getFileName(declaration.parent);
+        if (fileName && typeof fileName === "string" && !fileName.includes("node_modules"))
+          return true;
+      }
+      return false;
+    }
+
+    function getParentSymbolName(declaration) {
+      if (declaration.parent && declaration.parent.symbol && !declaration.parent.symbol.escapedName.startsWith('"'))
+        return declaration.parent.symbol.escapedName;
+      return undefined;
+    }
+
     function checkJsDoc(declaration, node, name) {
       if (!declaration || !declaration.jsDoc)
         return undefined;
@@ -53,12 +78,17 @@ module.exports = {
       for (const jsDoc of declaration.jsDoc)
         if (jsDoc.tags)
           for (const tag of jsDoc.tags)
-            if (bannedTags.includes(tag.tagName.escapedText)) {
+            if (bannedTags.includes(tag.tagName.escapedText) && !isLocalFile(declaration)) {
+              let dataName = "";
+              const parentSymbol = getParentSymbolName(declaration);
+              if (parentSymbol)
+                dataName += parentSymbol + ".";
+              dataName += name || declaration.symbol.escapedName;
               context.report({
                 node,
                 messageId: "forbidden",
                 data: {
-                  name: name || declaration.symbol.escapedName,
+                  name: dataName,
                   tag: tag.tagName.escapedText,
                 }
               });

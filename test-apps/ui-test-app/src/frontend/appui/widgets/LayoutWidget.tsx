@@ -192,14 +192,19 @@ function WidgetInfo({
 }) {
   const state = useWidgetState(id);
   const frontstageDef = useActiveFrontstageDef();
-  const [isFloating, setIsFloating] = React.useState(frontstageDef ? frontstageDef.isFloatingWidget(id) : false);
+  const widgetDef = useWidgetDef(id);
 
+  const [isFloating, setIsFloating] = React.useState(frontstageDef ? frontstageDef.isFloatingWidget(id) : false);
+  const [isPopout, setIsPopout] = React.useState(frontstageDef ? frontstageDef.isPopoutWidget(id) : false);
   React.useEffect(() => {
     setIsFloating(frontstageDef ? frontstageDef.isFloatingWidget(id) : false);
+    setIsPopout(frontstageDef ? frontstageDef.isPopoutWidget(id) : false);
 
     return FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener((e) => {
-      if (e.frontstageDef === frontstageDef)
+      if (e.frontstageDef === frontstageDef) {
         setIsFloating(frontstageDef ? frontstageDef.isFloatingWidget(id) : false);
+        setIsPopout(frontstageDef ? frontstageDef.isPopoutWidget(id) : false);
+      }
     });
   }, [frontstageDef, id]);
 
@@ -212,6 +217,10 @@ function WidgetInfo({
 
   const handleFloatClick = React.useCallback(() => {
     frontstageDef!.floatWidget(id, { x: xPos, y: yPos });
+  }, [frontstageDef, id, xPos, yPos]);
+
+  const handlePopoutClick = React.useCallback(() => {
+    frontstageDef!.popoutWidget(id, { x: xPos, y: yPos });
   }, [frontstageDef, id, xPos, yPos]);
 
   const handleXChanged = React.useCallback((value: number | undefined) => {
@@ -227,7 +236,7 @@ function WidgetInfo({
   return (
     <>
       {state !== undefined && <div>state={WidgetState[state]}</div>}
-      {<div>Location={isFloating ? "Floating" : "Panel"}</div>}
+      {<div>Location={isFloating ? "Floating" : isPopout ? "Pop-out" : "Panel"}</div>}
       <div style={{ display: "flex", alignItems: "center" }}>
         <div style={{ display: "flex" }}>
           <span>X:</span>
@@ -238,8 +247,9 @@ function WidgetInfo({
           <NumberInput style={{ width: "60px" }} disabled={isFloating} value={yPos} step={5} onChange={handleYChanged} />
         </div>
         <Button disabled={isFloating} onClick={handleFloatClick} >Float</Button>
+        <Button disabled={isPopout || !widgetDef?.canPopout} onClick={handlePopoutClick} >Pop Out</Button>
       </div>
-      <Button disabled={!isFloating} onClick={handleDockClick} >Dock</Button>
+      <Button disabled={!(isFloating || isPopout)} onClick={handleDockClick} >Dock</Button>
     </>
   );
 }
