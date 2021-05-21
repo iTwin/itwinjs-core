@@ -387,10 +387,9 @@ export class GeographicCRS implements GeographicCRSProps {
     return data;
   }
 
-  /** Compares two Geographic CRS. It is a strict compare operation not an equivalence test.
-   * It takes into account descriptive properties not only mathematical definition properties.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two Geographic CRS for exact equality, comparing both mathematical and descriptive properties.
+   * @public
+   */
   public equals(other: GeographicCRS): boolean {
     if ((this.horizontalCRS === undefined) !== (other.horizontalCRS === undefined))
       return false;
