@@ -7,10 +7,14 @@
  */
 
 import { CompressedId64Set, GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { Range3dProps, XYZProps } from "@bentley/geometry-core";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
-import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
+import {
+  EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions,
+} from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
+import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -81,6 +85,13 @@ export interface TxnNotifications {
   notifyAfterUndoRedo: (isUndo: boolean) => void;
   notifyPulledChanges: (parentChangeSetId: string) => void;
   notifyPushedChanges: (parentChangeSetId: string) => void;
+
+  notifyIModelNameChanged: (name: string) => void;
+  notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
+  notifyProjectExtentsChanged: (extents: Range3dProps) => void;
+  notifyGlobalOriginChanged: (origin: XYZProps) => void;
+  notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
+  notifyGeographicCoordinateSystemChanged: (gcs: GeographicCRSProps | undefined) => void;
 }
 
 /**
@@ -96,7 +107,6 @@ export interface EditingScopeNotifications {
  * @internal
  */
 export interface IpcAppFunctions {
-
   /** Send frontend log to backend.
    * @param _level Specify log level.
    * @param _category Specify log category.

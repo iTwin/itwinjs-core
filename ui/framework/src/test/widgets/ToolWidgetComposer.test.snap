@@ -34,38 +34,3 @@ exports[`FrameworkAccuDraw localStorage Wrapper ToolWidgetComposer ToolWidgetCom
   />
 </ContextProvider>
 `;
-
-exports[`ToolWidgetComposer ToolWidgetComposer should render correctly 1`] = `
-<ContextProvider
-  value={
-    Object {
-      "onElementRef": [Function],
-      "proximityScale": 1,
-    }
-  }
->
-  <ToolsArea
-    onMouseEnter={[Function]}
-  />
-</ContextProvider>
-`;
-
-exports[`ToolWidgetComposer ToolWidgetComposer with should render 1`] = `
-<ContextProvider
-  value={
-    Object {
-      "onElementRef": [Function],
-      "proximityScale": 1,
-    }
-  }
->
-  <ToolsArea
-    button={
-      <BackstageAppButton
-        icon="icon-test"
-      />
-    }
-    onMouseEnter={[Function]}
-  />
-</ContextProvider>
-`;

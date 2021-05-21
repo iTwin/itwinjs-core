@@ -11,6 +11,7 @@ There are numerous React components and TypeScript classes in the `@bentley/ui-f
   - [Modal FrontStage](./ModalFrontstage.md)
 - [Content Views and Layouts](./ContentViews.md)
 - [Widgets](./Widgets.md)
+- [Child Windows](./ChildWindows.md)
 - [Status Bar and Fields](./StatusBar.md)
 - [Navigation Aids]($ui-framework:NavigationAids) - A user interface control that moves the user's perspective around within a specific Content View.
 - [Tool Settings](./ToolSettings.md)
