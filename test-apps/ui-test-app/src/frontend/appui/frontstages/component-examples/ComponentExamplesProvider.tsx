@@ -358,7 +358,7 @@ export function WeightPickerHost(props: { activeWeight: number, onLineWeightPick
   }, [onLineWeightPick]);
 
   return (
-    <WeightPickerButton style={{ width: "max-content" }} activeWeight={currentWeight} onLineWeightPick={handleWeightPick} />
+    <WeightPickerButton activeWeight={currentWeight} onLineWeightPick={handleWeightPick} />
   );
 }
 

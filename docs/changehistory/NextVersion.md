@@ -35,7 +35,3 @@ The following previously `alpha` or `beta` APIs have been promoted to `public`. 
 * [IModelDb.getMassProperties]($backend) for computing [GeometricElement]($backend) properties like area and volume.
 * [RenderTimeline]($backend) element for persisting a [RenderSchedule.Script]($common).
 * [SectionDrawingLocation]($backend) element identifying the location of a [SectionDrawing]($backend) in the context of a [SpatialModel]($backend).
-
-## Popout Widgets
-
-IModelApps, that use AppUi version "2", can now specify if a Widget can support being "popped-out" to a child popup window. The child window runs in the same javascript context as the parent application window. See [Child Window Manager]($docs/learning/ui/framework/ChildWindows.md) for more details.

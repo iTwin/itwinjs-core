@@ -412,7 +412,6 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
     ToolWidgetDef {
       "_appButton": undefined,
       "_backstageLabel": "buttons.openBackstageMenu",
-      "_canPopout": undefined,
       "_classId": undefined,
       "_defaultState": 4,
       "_fillZone": false,

@@ -920,7 +920,7 @@ export interface ChangeSetInfo {
     userCreated?: string;
 }
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export interface ChildWindowLocationProps {
     // (undocumented)
     height: number;
@@ -932,9 +932,8 @@ export interface ChildWindowLocationProps {
     width: number;
 }
 
-// @beta
+// @alpha
 export class ChildWindowManager {
-    closeAllChildWindows(): void;
     // (undocumented)
     closeChildWindow: (childWindowId: string, processWindowClose?: boolean) => boolean;
     // (undocumented)
@@ -942,7 +941,7 @@ export class ChildWindowManager {
     // (undocumented)
     findChildWindowId(contentWindow: Window | undefined | null): string | undefined;
     // (undocumented)
-    openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean): boolean;
+    openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useBlankUrl?: boolean): boolean;
     // (undocumented)
     get openChildWindows(): OpenChildWindowInfo[];
     }
@@ -1964,25 +1963,6 @@ export const expandWidget: (base: {
         };
         readonly allIds: readonly string[];
     };
-    readonly popoutWidgets: {
-        readonly byId: {
-            readonly [x: string]: {
-                readonly bounds: {
-                    readonly left: number;
-                    readonly top: number;
-                    readonly right: number;
-                    readonly bottom: number;
-                };
-                readonly id: string;
-                readonly home: {
-                    readonly widgetIndex: number;
-                    readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
-                };
-            };
-        };
-        readonly allIds: readonly string[];
-    };
     readonly panels: {
         readonly bottom: {
             readonly span: boolean;
@@ -2043,15 +2023,8 @@ export const expandWidget: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
-            readonly preferredPopoutWidgetSize?: {
-                readonly width: number;
-                readonly height: number;
-                readonly x: number;
-                readonly y: number;
-            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
-            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -2363,9 +2336,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     render(): React.ReactNode;
     }
 
-// @internal (undocumented)
-export const FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings";
-
 // @public
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> {
 }
@@ -2474,8 +2444,6 @@ export class FrontstageDef {
     get defaultLayoutId(): string;
     // (undocumented)
     get defaultTool(): ToolItemDef | undefined;
-    // @internal
-    dockPopoutWidgetContainer(widgetContainerId: string): void;
     // @beta
     dockWidgetContainer(widgetId: string): void;
     findWidgetDef(id: string): WidgetDef | undefined;
@@ -2492,15 +2460,9 @@ export class FrontstageDef {
     initializeFromProps(props: FrontstageProps): void;
     initializeFromProvider(frontstageProvider: FrontstageProvider): void;
     // (undocumented)
-    get isApplicationClosing(): boolean;
-    // (undocumented)
     isFloatingWidget(widgetId: string): boolean;
     // (undocumented)
     get isInFooterMode(): boolean;
-    // (undocumented)
-    isPopoutWidget(widgetId: string): boolean;
-    // (undocumented)
-    get isStageClosing(): boolean;
     // @beta (undocumented)
     get leftPanel(): StagePanelDef | undefined;
     // @internal (undocumented)
@@ -2515,24 +2477,16 @@ export class FrontstageDef {
     protected _onDeactivated(): void;
     onFrontstageReady(): void;
     protected _onFrontstageReady(): void;
-    // @internal
-    openPopoutWidgetContainer(state: NineZoneState, widgetContainerId: string): void;
     // @beta
     get panelDefs(): StagePanelDef[];
-    // @beta
-    popoutWidget(widgetId: string, point?: PointProps, size?: SizeProps): void;
     // @beta (undocumented)
     restoreLayout(): void;
     // @beta (undocumented)
     get rightPanel(): StagePanelDef | undefined;
-    // @internal (undocumented)
-    saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window): Promise<void>;
     setActiveContent(): boolean;
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
     setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
-    // @internal (undocumented)
-    setIsApplicationClosing(value: boolean): void;
     startDefaultTool(): void;
     // @internal (undocumented)
     get timeTracker(): TimeTracker;
@@ -2810,9 +2764,6 @@ export const getFloatingZoneStyle: (props: ZoneManagerProps) => {
     zIndex: number;
     position: "relative";
 } | undefined;
-
-// @internal (undocumented)
-export function getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]): string;
 
 // @beta
 export function getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue;
@@ -4176,7 +4127,7 @@ export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessage
 // @public
 export type NotifyMessageType = MessageType;
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export interface OpenChildWindowInfo {
     // (undocumented)
     childWindowId: string;
@@ -4637,9 +4588,6 @@ export interface SavedViewProps extends ViewStateProps {
     emphasizeElementsProps?: EmphasizeElementsProps;
 }
 
-// @internal (undocumented)
-export function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window): Promise<NineZoneState>;
-
 // @alpha
 export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
@@ -4839,25 +4787,6 @@ export const setPanelSize: (base: {
         };
         readonly allIds: readonly string[];
     };
-    readonly popoutWidgets: {
-        readonly byId: {
-            readonly [x: string]: {
-                readonly bounds: {
-                    readonly left: number;
-                    readonly top: number;
-                    readonly right: number;
-                    readonly bottom: number;
-                };
-                readonly id: string;
-                readonly home: {
-                    readonly widgetIndex: number;
-                    readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
-                };
-            };
-        };
-        readonly allIds: readonly string[];
-    };
     readonly panels: {
         readonly bottom: {
             readonly span: boolean;
@@ -4918,15 +4847,8 @@ export const setPanelSize: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
-            readonly preferredPopoutWidgetSize?: {
-                readonly width: number;
-                readonly height: number;
-                readonly x: number;
-                readonly y: number;
-            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
-            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5003,25 +4925,6 @@ export const setWidgetLabel: (base: {
         };
         readonly allIds: readonly string[];
     };
-    readonly popoutWidgets: {
-        readonly byId: {
-            readonly [x: string]: {
-                readonly bounds: {
-                    readonly left: number;
-                    readonly top: number;
-                    readonly right: number;
-                    readonly bottom: number;
-                };
-                readonly id: string;
-                readonly home: {
-                    readonly widgetIndex: number;
-                    readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
-                };
-            };
-        };
-        readonly allIds: readonly string[];
-    };
     readonly panels: {
         readonly bottom: {
             readonly span: boolean;
@@ -5082,15 +4985,8 @@ export const setWidgetLabel: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
-            readonly preferredPopoutWidgetSize?: {
-                readonly width: number;
-                readonly height: number;
-                readonly x: number;
-                readonly y: number;
-            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
-            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5145,25 +5041,6 @@ export const setWidgetState: (base: {
         };
         readonly allIds: readonly string[];
     };
-    readonly popoutWidgets: {
-        readonly byId: {
-            readonly [x: string]: {
-                readonly bounds: {
-                    readonly left: number;
-                    readonly top: number;
-                    readonly right: number;
-                    readonly bottom: number;
-                };
-                readonly id: string;
-                readonly home: {
-                    readonly widgetIndex: number;
-                    readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
-                };
-            };
-        };
-        readonly allIds: readonly string[];
-    };
     readonly panels: {
         readonly bottom: {
             readonly span: boolean;
@@ -5224,15 +5101,8 @@ export const setWidgetState: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
-            readonly preferredPopoutWidgetSize?: {
-                readonly width: number;
-                readonly height: number;
-                readonly x: number;
-                readonly y: number;
-            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
-            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5351,25 +5221,6 @@ export const showWidget: (base: {
         };
         readonly allIds: readonly string[];
     };
-    readonly popoutWidgets: {
-        readonly byId: {
-            readonly [x: string]: {
-                readonly bounds: {
-                    readonly left: number;
-                    readonly top: number;
-                    readonly right: number;
-                    readonly bottom: number;
-                };
-                readonly id: string;
-                readonly home: {
-                    readonly widgetIndex: number;
-                    readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
-                };
-            };
-        };
-        readonly allIds: readonly string[];
-    };
     readonly panels: {
         readonly bottom: {
             readonly span: boolean;
@@ -5430,15 +5281,8 @@ export const showWidget: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
-            readonly preferredPopoutWidgetSize?: {
-                readonly width: number;
-                readonly height: number;
-                readonly x: number;
-                readonly y: number;
-            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
-            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -6599,8 +6443,8 @@ export interface UiDataProvidedDialogProps {
 export class UiFramework {
     // @beta (undocumented)
     static get backstageManager(): BackstageManager;
-    // @beta (undocumented)
-    static get childWindowManager(): ChildWindowManager;
+    // @alpha (undocumented)
+    static get ChildWindowManager(): ChildWindowManager;
     // @beta (undocumented)
     static closeCursorMenu(): void;
     // (undocumented)
@@ -6706,8 +6550,6 @@ export class UiFramework {
     static translate(key: string | string[]): string;
     // @beta
     static get uiVersion(): string;
-    // (undocumented)
-    static useDefaultPopoutUrl: boolean;
     // (undocumented)
     static get useDragInteraction(): boolean;
     // @alpha (undocumented)
@@ -7239,8 +7081,6 @@ export class WidgetDef {
     // (undocumented)
     canOpen(): boolean;
     // (undocumented)
-    get canPopout(): boolean | undefined;
-    // (undocumented)
     get classId(): string | ConfigurableUiControlConstructor | undefined;
     // (undocumented)
     static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps;
@@ -7289,8 +7129,6 @@ export class WidgetDef {
     set reactNode(node: React.ReactNode);
     restoreTransientState(): boolean;
     saveTransientState(): void;
-    // (undocumented)
-    setCanPopout(value: boolean | undefined): void;
     setLabel(v: string | ConditionalStringValue | StringGetter): void;
     setTooltip(v: string | ConditionalStringValue | StringGetter): void;
     // (undocumented)

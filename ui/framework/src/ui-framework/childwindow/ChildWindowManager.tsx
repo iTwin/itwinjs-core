@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
- * @module ChildWindowManager
+ * @module ChildWindow
  */
 
 import "./ChildWindowManager.scss";
@@ -19,16 +19,15 @@ import { PopupRenderer } from "../popup/PopupManager";
 import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
 import { CursorPopupMenu } from "../../ui-framework";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 
-/** @beta */
+/** @alpha */
 export interface OpenChildWindowInfo {
   childWindowId: string;
   window: Window;
   parentWindow: Window;
 }
 
-/** @beta */
+/** @alpha */
 export interface ChildWindowLocationProps {
   width: number;
   height: number;
@@ -38,8 +37,7 @@ export interface ChildWindowLocationProps {
 
 /** Supports opening a child browser window from the main application window. The child window is managed by the main application
  * and is running in the same security context. The application must deliver the html file iTwinPopup.html along side its index.html.
- * See also: [Child Window Manager]($docs/learning/ui/framework/ChildWindows.md)
- * @beta */
+ * @alpha */
 export class ChildWindowManager {
   private _openChildWindows: OpenChildWindowInfo[] = [];
 
@@ -95,21 +93,9 @@ export class ChildWindowManager {
       });
 
       childWindow.onbeforeunload = () => {
-        const frontStageDef = FrontstageManager.activeFrontstageDef;
-        if (frontStageDef) {
-          void frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow).then(() => {
-            this.closeChildWindow(childWindowId, false);
-          });
-        }
+        this.closeChildWindow(childWindowId, false);
       };
     }
-  }
-
-  /** Close all child/pop-out windows. This typically is called when the frontstage is changed. */
-  public closeAllChildWindows() {
-    // istanbul ignore next
-    this.openChildWindows.forEach((openChildWindow) => openChildWindow.window.close());
-    this._openChildWindows = [];
   }
 
   public closeChildWindow = (childWindowId: string, processWindowClose = true) => {
@@ -120,10 +106,6 @@ export class ChildWindowManager {
     this.openChildWindows.splice(windowIndex, 1);
     if (processWindowClose) {
       childWindow.window.close();
-    } else {
-      // call the following to convert popout to docked widget
-      const frontStageDef = FrontstageManager.activeFrontstageDef;
-      frontStageDef && frontStageDef.dockPopoutWidgetContainer(childWindowId);
     }
     return true;
   };
@@ -131,60 +113,45 @@ export class ChildWindowManager {
   // istanbul ignore next
   private adjustWidowLocation(location: ChildWindowLocationProps, center?: boolean): ChildWindowLocationProps {
     const outLocation = { ...location };
-    if (0 === location.top && 0 === location.left) {
-      center = center ?? true;
 
-      // Prepare position of the new window to be centered against the 'parent' window.
-      if (center) {
-        outLocation.left =
-          window.top.outerWidth / 2 + window.top.screenX - location.width / 2;
-        outLocation.top =
-          window.top.outerHeight / 2 + window.top.screenY - location.height / 2;
-      } else {
-        if (undefined !== window.screenLeft && undefined !== window.screenTop) {
-          outLocation.top = window.screenTop + location.top;
-          outLocation.left = window.screenLeft + location.left;
-        }
+    if (undefined === center && 0 === location.top && 0 === location.left)
+      center = true;
+
+    // Prepare position of the new window to be centered against the 'parent' window.
+    if (center) {
+      outLocation.left =
+        window.top.outerWidth / 2 + window.top.screenX - location.width / 2;
+      outLocation.top =
+        window.top.outerHeight / 2 + window.top.screenY - location.height / 2;
+    } else {
+      if (undefined !== window.screenLeft && undefined !== window.screenTop) {
+        outLocation.top = window.screenTop + location.top;
+        outLocation.left = window.screenLeft + location.left;
       }
     }
     return outLocation;
   }
 
   // istanbul ignore next
-  public openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean) {
+  public openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useBlankUrl?: boolean) {
     // first check to see if content is already open in child window
     if (this.openChildWindows.findIndex((openWindow) => openWindow.childWindowId === childWindowId) >= 0) {
       return false;
     }
 
     location = this.adjustWidowLocation(location);
-    const url = useDefaultPopoutUrl ? "/iTwinPopup.html" : "";
-    const childWindow = window.open(url, "", `width=${location.width},height=${location.height},left=${location.left},top=${location.top},menubar=no,resizable=yes,scrollbars=no,status=no,location=no`);
+    const url = useBlankUrl ? "" : "/iTwinPopup.html";
+    const childWindow = window.open(url, "", `width=${location.width},height=${location.height},left=${location.left},top=${location.top},menubar=no,resizable=no,scrollbars=no,status=no,location=no`);
     if (!childWindow)
       return false;
-    if (0 === url.length) {
-      const rootDiv = childWindow.document.createElement("div");
-      rootDiv.id = "root";
-      rootDiv.style.height = "100%";
-      childWindow.document.body.style.height = "100%";
-      childWindow.document.body.style.width = "100%";
-      childWindow.document.body.style.margin = "0";
-      childWindow.document.body.style.overflow = "hidden";
-      childWindow.document.body.appendChild(rootDiv);
+
+    childWindow.addEventListener("load", () => {
       childWindow.document.title = title;
       this.renderChildWindowContents(childWindow, childWindowId, content);
-    } else {
-      childWindow.addEventListener("load", () => {
-        childWindow.document.title = title;
-        this.renderChildWindowContents(childWindow, childWindowId, content);
-      }, false);
-    }
+    }, false);
 
     window.addEventListener("beforeunload", () => {
-      const frontStageDef = FrontstageManager.activeFrontstageDef;
-      if (frontStageDef) {
-        this.closeChildWindow(childWindowId, true);
-      }
+      this.closeChildWindow(childWindowId);
     }, false);
 
     return true;

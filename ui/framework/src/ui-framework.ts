@@ -344,8 +344,9 @@ export * from "./ui-framework/zones/ZoneDef";
  * @docs-group-description OIDC
  * Classes for working with the OpenID Connect (OIDC) protocol
  */
+
 /**
- * @docs-group-description ChildWindowManager
+ * @docs-group-description ChildWindow
  * Classes for working with child windows.
  */
 /**

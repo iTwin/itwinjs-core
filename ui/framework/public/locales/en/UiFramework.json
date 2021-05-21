@@ -318,8 +318,7 @@
       "sendHome": "Send to panel",
       "resizeGrip": "Resize widget panel",
       "toolSettingsHandle": "Undock tool settings",
-      "unpinPanel": "Unpin widget panel",
-      "popoutActiveTab": "Pop out active widget tab"
+      "unpinPanel": "Unpin widget panel"
     }
   },
   "statusBar": {

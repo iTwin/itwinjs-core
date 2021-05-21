@@ -74,8 +74,6 @@ export interface AbstractToolbarProps {
 export interface AbstractWidgetProps extends ProvidedItem {
     readonly applicationData?: any;
     readonly badgeType?: BadgeType;
-    // @beta
-    readonly canPopout?: boolean;
     readonly defaultState?: WidgetState;
     readonly fillZone?: boolean;
     readonly getWidgetContent: () => any;

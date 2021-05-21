@@ -42,15 +42,11 @@ exports[`FloatingWidgets should render 1`] = `
         </div>
       </div>
     </div>
-    <div
-      class="nz-widget-tabBarButtons"
+    <button
+      class="nz-widget-sendBack nz-left"
     >
-      <button
-        class="nz-widget-sendBack nz-left"
-      >
-        <i />
-      </button>
-    </div>
+      <i />
+    </button>
   </div>
   <div
     class="nz-widget-content-container"

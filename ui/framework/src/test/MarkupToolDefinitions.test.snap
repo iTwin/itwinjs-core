@@ -324,7 +324,6 @@ exports[`MarkupToolDefinitions ToolWidget should render correctly with Markup To
     ToolWidgetDef {
       "_appButton": undefined,
       "_backstageLabel": "buttons.openBackstageMenu",
-      "_canPopout": undefined,
       "_classId": undefined,
       "_defaultState": 4,
       "_fillZone": false,

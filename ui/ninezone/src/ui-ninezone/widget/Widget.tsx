@@ -172,8 +172,7 @@ export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): S
   };
 }
 
-/** @internal */
-export function useActiveTab(): TabState | undefined {
+function useActiveTab(): TabState | undefined {
   const widget = React.useContext(WidgetStateContext);
   const tabs = React.useContext(TabsStateContext);
   assert(!!widget);
