@@ -12,15 +12,17 @@ import { SchemaJsonFileLocater } from "../src/SchemaJsonFileLocater";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("Schema References", () => {
-  const context = new SchemaContext();
+describe("Concurrent schema accesses", () => {
+  const asyncContext = new SchemaContext();
+  const syncContext = new SchemaContext();
   const schemaKeys: SchemaKey[] = [];
 
   before(() => {
     const schemaFolder = path.join(__dirname, "assets", "JSON");
     const locater = new SchemaJsonFileLocater();
     locater.addSchemaSearchPath(schemaFolder);
-    context.addLocater(locater as unknown as ISchemaLocater);
+    asyncContext.addLocater(locater as unknown as ISchemaLocater);
+    syncContext.addLocater(locater as unknown as ISchemaLocater);
 
     const schemaFiles = fs.readdirSync(schemaFolder);
     schemaFiles.forEach((fileName) => {
@@ -34,54 +36,59 @@ describe("Schema References", () => {
     });
   });
 
-  it.only("should load schema references correctly", async () => {
-    let schemasList: Schema[] = [];
-
+  it.only("should correctly deserialize schemas concurrently", async () => {
     // Asynchronous
+    const asyncSchemas: Schema[] = [];
     await Promise.all(schemaKeys.map( async (key) => {
       if (!key)
         return;
       console.log(`Starting retrieval of ${key.name}`);
-      const schema = await context.getSchema(key, SchemaMatchType.Latest);
+      const schema = await asyncContext.getSchema(key, SchemaMatchType.Latest);
       if (!schema)
         return;
       console.log(`Retrieval of ${key.name} complete`);
-      schemasList.push(schema);
+      asyncSchemas.push(schema);
       return;
     }));
-    expect(schemasList.length).to.equal(schemaKeys.length);
+    expect(asyncSchemas.length).to.equal(schemaKeys.length);
 
     // Synchronous
-    // schemaKeys.forEach((key) => {
-    //   if (!key)
-    //     return;
-    //   console.log(`Starting retrieval of ${key.name}`);
-    //   const schema = context.getSchemaSync(key, SchemaMatchType.Latest);
-    //   if (!schema)
-    //     return;
-    //   console.log(`Retrieval of ${key.name} complete`);
-    //   schemasList.push(schema);
-    //   return;
-    // });
-    // expect(schemasList.length).to.equal(35);
+    const syncSchemas: Schema[] =  [];
+    schemaKeys.forEach((key) => {
+      if (!key)
+        return;
+      console.log(`Starting retrieval of ${key.name}`);
+      const schema = syncContext.getSchemaSync(key, SchemaMatchType.Latest);
+      if (!schema)
+        return;
+      console.log(`Retrieval of ${key.name} complete`);
+      syncSchemas.push(schema);
+      return;
+    });
+    expect(syncSchemas.length).to.equal(schemaKeys.length);
 
     // Serialized async
-    // schemasList = [];
+    // const asyncSchemas: Schema[] = [];
     // const getSchema = async (key: SchemaKey) => {
     //   if (!key)
     //     return;
     //   console.log(`Starting retrieval of ${key.name}`);
-    //   const schema = await context.getSchema(key, SchemaMatchType.Latest);
+    //   const schema = await asyncContext.getSchema(key, SchemaMatchType.Latest);
     //   if (!schema)
     //     return;
     //   console.log(`Retrieval of ${key.name} complete`);
-    //   schemasList.push(schema);
+    //   asyncSchemas.push(schema);
     //   return;
     // }
     // for (let i = 0; i < schemaKeys.length; i++) {
     //   await getSchema(schemaKeys[i]);
     // }
-    // expect(schemasList.length).to.equal(schemaKeys.length);
+    // expect(asyncSchemas.length).to.equal(schemaKeys.length);
 
+    for (let i = 0; i < schemaKeys.length; i++) {
+      const asyncSerialized = asyncSchemas[i].toJSON();
+      const syncSerialized = syncSchemas[i].toJSON();
+      expect(asyncSerialized).to.deep.equal(syncSerialized);
+    }
   });
 });
