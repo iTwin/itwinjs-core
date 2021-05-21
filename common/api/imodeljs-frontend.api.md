@@ -98,6 +98,7 @@ import { Frustum } from '@bentley/imodeljs-common';
 import { FrustumPlanes } from '@bentley/imodeljs-common';
 import * as Fuse from 'fuse.js';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
+import { GeographicCRSProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
 import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
@@ -234,6 +235,7 @@ import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { Response } from '@bentley/itwin-client';
 import { RgbColor } from '@bentley/imodeljs-common';
+import { RootSubjectProps } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
 import { SectionDrawingViewProps } from '@bentley/imodeljs-common';
@@ -1374,7 +1376,7 @@ export class BackgroundMapLocation {
     // (undocumented)
     initialize(iModel: IModelConnection): Promise<void>;
     // (undocumented)
-    onEcefChanged(ecefLocation: EcefLocation): void;
+    onEcefChanged(ecefLocation: EcefLocation | undefined): void;
     // (undocumented)
     get projectCenterAltitude(): number;
     }
@@ -1681,15 +1683,27 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyCommitted(hasPendingTxns: boolean, time: number): void;
     // @internal (undocumented)
+    notifyEcefLocationChanged(ecef: EcefLocationProps | undefined): void;
+    // @internal (undocumented)
     notifyElementsChanged(changed: ChangedEntities): void;
+    // @internal (undocumented)
+    notifyGeographicCoordinateSystemChanged(gcs: GeographicCRSProps | undefined): void;
     // @internal (undocumented)
     notifyGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     // @internal (undocumented)
+    notifyGlobalOriginChanged(origin: XYZProps): void;
+    // @internal (undocumented)
+    notifyIModelNameChanged(name: string): void;
+    // @internal (undocumented)
     notifyModelsChanged(changed: ChangedEntities): void;
+    // @internal (undocumented)
+    notifyProjectExtentsChanged(range: Range3dProps): void;
     // @internal (undocumented)
     notifyPulledChanges(parentChangeSetId: string): void;
     // @internal (undocumented)
     notifyPushedChanges(parentChangeSetId: string): void;
+    // @internal (undocumented)
+    notifyRootSubjectChanged(subject: RootSubjectProps): void;
     readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onChangesApplied: BeEvent<() => void>;
@@ -4579,7 +4593,7 @@ export abstract class IModelConnection extends IModel {
     // @internal
     protected constructor(iModelProps: IModelConnectionProps);
     // @internal
-    backgroundMapLocation: BackgroundMapLocation;
+    readonly backgroundMapLocation: BackgroundMapLocation;
     // @internal
     protected beforeClose(): void;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
@@ -4640,8 +4654,6 @@ export abstract class IModelConnection extends IModel {
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     routingContext: IModelRoutingContext;
     readonly selectionSet: SelectionSet;
-    // @internal (undocumented)
-    setEcefLocation(ecef: EcefLocationProps): void;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
@@ -10431,8 +10443,6 @@ export class Tiles {
     }>;
     // @internal (undocumented)
     get isDisposed(): boolean;
-    // @internal (undocumented)
-    onEcefChanged(): void;
     // @internal
     purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void;
     // @internal (undocumented)

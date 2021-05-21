@@ -787,6 +787,8 @@ export class Cartographic implements LatLongAndHeight {
     static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined;
     toEcef(result?: Point3d): Point3d;
+    // (undocumented)
+    toJSON(): LatLongAndHeight;
     toString(): string;
     }
 
@@ -2019,6 +2021,8 @@ export class EcefLocation implements EcefLocationProps {
     isAlmostEqual(other: EcefLocation): boolean;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
+    // (undocumented)
+    toJSON(): EcefLocationProps;
 }
 
 // @public
@@ -8254,15 +8258,27 @@ export interface TxnNotifications {
     // (undocumented)
     notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
     // (undocumented)
+    notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
+    // (undocumented)
     notifyElementsChanged: (changes: ChangedEntities) => void;
+    // (undocumented)
+    notifyGeographicCoordinateSystemChanged: (gcs: GeographicCRSProps | undefined) => void;
     // (undocumented)
     notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
     // (undocumented)
+    notifyGlobalOriginChanged: (origin: XYZProps) => void;
+    // (undocumented)
+    notifyIModelNameChanged: (name: string) => void;
+    // (undocumented)
     notifyModelsChanged: (changes: ChangedEntities) => void;
+    // (undocumented)
+    notifyProjectExtentsChanged: (extents: Range3dProps) => void;
     // (undocumented)
     notifyPulledChanges: (parentChangeSetId: string) => void;
     // (undocumented)
     notifyPushedChanges: (parentChangeSetId: string) => void;
+    // (undocumented)
+    notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }
 
 // @public

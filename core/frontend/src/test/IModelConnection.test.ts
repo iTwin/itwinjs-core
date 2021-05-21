@@ -13,10 +13,10 @@ describe("IModelConnection", () => {
     const defaultExtents = new Range3d(0, 0, 0, 1, 1, 1);
     let imodel: IModelConnection;
 
-    before(async () => await IModelApp.startup());
+    before(async () => IModelApp.startup());
     beforeEach(() => imodel = createBlankConnection(undefined, undefined, defaultExtents));
-    afterEach(async () => await imodel.close());
-    after(async () => await IModelApp.shutdown());
+    afterEach(async () => imodel.close());
+    after(async () => IModelApp.shutdown());
 
     it("is initialized to project extents", () => {
       expect(imodel.displayedExtents.isAlmostEqual(imodel.projectExtents)).to.be.true;
