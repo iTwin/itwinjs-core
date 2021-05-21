@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/button/blue";
 @import "~@bentley/ui-core/lib/ui-core/style/colors";
 @import "~@itwin/itwinui-css/scss/style/space";
 @import "~@itwin/itwinui-css/scss/style/typography";
@@ -43,7 +42,6 @@ $border-color: #eeeeee;
     overflow-y: auto;
 
     .showtree-button {
-      @include uicore-buttons-blue;
       padding-top: $iui-xs;
       padding-bottom: $iui-xs;
       margin: $iui-s;
@@ -104,7 +102,6 @@ $border-color: #eeeeee;
   /* enter iModel button */
   .open-button {
     margin: $iui-l $iui-m 0 auto !important;
-    @include uicore-buttons-blue;
   }
 
   /* toast displayed for 3d Models */

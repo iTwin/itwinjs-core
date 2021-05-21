@@ -236,8 +236,8 @@ export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitS
                 <QuantityFormatPanel onFormatChange={handleOnFormatChanged} quantityType={activeQuantityType} />
               </div>
               <div className="components-button-panel">
-                <Button size="small" styleType="cta" onClick={handleOnFormatSave} disabled={!saveEnabled}>{setButtonLabel.current}</Button>
-                <Button size="small" styleType="default" onClick={handleOnFormatReset} disabled={!clearEnabled}>{clearButtonLabel.current}</Button>
+                <Button styleType="cta" onClick={handleOnFormatSave} disabled={!saveEnabled}>{setButtonLabel.current}</Button>
+                <Button styleType="default" onClick={handleOnFormatReset} disabled={!clearEnabled}>{clearButtonLabel.current}</Button>
               </div>
             </>
           }

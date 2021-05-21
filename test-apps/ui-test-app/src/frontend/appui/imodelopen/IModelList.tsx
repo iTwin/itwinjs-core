@@ -7,7 +7,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { SearchBox } from "@bentley/ui-core";
 import { IModelInfo } from "@bentley/ui-framework";
-import { ToggleSwitch } from "@itwin/itwinui-react";
+import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { IModelCard } from "./IModelCard";
 import { ProjectDialog } from "./ProjectDialog";
 
@@ -138,7 +138,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
         <div className="cards-empty">
           <div className="fade-in-fast">
             There are no iModels associated to this project.
-            <button onClick={this._onShowProjectsSelector}>Search for active projects in your Organization?</button>
+            <Button styleType="cta" onClick={this._onShowProjectsSelector}>Search for active projects in your Organization?</Button>
           </div>
           {this.state.showProjectDialog && <ProjectDialog onClose={this._onProjectsSelectorClose} />}
         </div>

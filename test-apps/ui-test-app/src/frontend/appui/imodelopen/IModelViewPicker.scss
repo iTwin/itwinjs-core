@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/button/blue";
 @import "~@bentley/ui-core/lib/ui-core/scrollbar";
 @import "~@bentley/ui-core/lib/ui-core/style/colors";
 @import "~@itwin/itwinui-css/scss/style/typography";
@@ -118,7 +117,6 @@
   }
 */
   > button {
-    @include uicore-buttons-blue;
     margin-left: auto;
     padding-left: 3em;
     padding-right: 5em;

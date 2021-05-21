@@ -15,11 +15,13 @@ import { RelativePosition } from "@bentley/ui-abstract";
 
 /** Available tooltip placements.
  * @beta
+ * @deprecated Use Placement in iTwinUI-react instead
  */
 export type TooltipPlacement = "bottom" | "left" | "right" | "top";
 
 /** Properties for the [[Tooltip]] component
  * @beta
+ * @deprecated Use TooltipProps in iTwinUI-react instead
  */
 export interface TooltipProps extends CommonProps {
   /** Tooltip content. */
@@ -29,13 +31,14 @@ export interface TooltipProps extends CommonProps {
   /** Allows to control tooltip visibility state. */
   visible?: boolean;
   /** Preferred tooltip placement. Defaults to `top`. */
-  placement?: TooltipPlacement;
+  placement?: TooltipPlacement;   // eslint-disable-line deprecation/deprecation
 }
 
 /** Component that displays tooltip for a specified target element.
  * @beta
+ * @deprecated Use Tooltip in iTwinUI-react instead
  */
-export function Tooltip(props: TooltipProps) {
+export function Tooltip(props: TooltipProps) {  // eslint-disable-line deprecation/deprecation
   const { visible, target, placement } = props;
   const [open, setOpen] = React.useState(false);
   React.useEffect(() => {
@@ -70,7 +73,7 @@ export function Tooltip(props: TooltipProps) {
 }
 
 /** @internal */
-export function placementToPosition(placement: TooltipPlacement | undefined): RelativePosition {
+export function placementToPosition(placement: TooltipPlacement | undefined): RelativePosition {  // eslint-disable-line deprecation/deprecation
   switch (placement) {
     case "bottom":
       return RelativePosition.Bottom;

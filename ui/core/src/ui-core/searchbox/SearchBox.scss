@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "../style/themecolors";
-@import "../inputs/input";
+@import "~@itwin/itwinui-css/scss/inputs/input";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 .core-searchbox {
@@ -18,7 +18,7 @@
   color: $buic-text-color;
 
   input {
-    @include uicore-inputs-input;
+    @include iui-input;
     padding: 0 2em 0 12px; //12px from design guide
     height: 100%;
     margin: 0;

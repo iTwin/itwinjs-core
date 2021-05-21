@@ -1087,13 +1087,34 @@ export class ComponentExamplesProvider {
     return {
       title: "Tabs",
       examples: [
-        createComponentExample("Horizontal Tabs", undefined,
+        createComponentExample("Horizontal Tabs", "full width",
           <div className="uicore-full-width">
-            <HorizontalTabs className="component-examples-horizontal-tabs" labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} />
+            <HorizontalTabs className="component-examples-horizontal-tabs"
+              labels={[
+                { label: "Tab 1", tabId: "tab1", icon: "icon-placeholder", subLabel: "Sub-label 1" },
+                { label: "Tab 2", tabId: "tab2", icon: "icon-placeholder", subLabel: "Sub-label 2" },
+                { label: "Tab 3", tabId: "tab3", icon: "icon-placeholder", subLabel: "Sub-label 3" },
+              ]}
+              activeIndex={0} />
           </div>
         ),
         createComponentExample("Green Horizontal Tabs", "with green prop", <HorizontalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} green />),
-        createComponentExample("Vertical Tabs", undefined, <VerticalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} />),
+        createComponentExample("Horizontal Tabs", undefined,
+          <HorizontalTabs className="component-examples-horizontal-tabs"
+            labels={[
+              { label: "Tab 1", tabId: "tab1", icon: "icon-placeholder", subLabel: "Sub-label 1" },
+              { label: "Tab 2", tabId: "tab2", icon: "icon-placeholder", subLabel: "Sub-label 2" },
+              { label: "Tab 3", tabId: "tab3", icon: "icon-placeholder", subLabel: "Sub-label 3", disabled: true },
+            ]}
+            activeIndex={0} />
+        ),
+        createComponentExample("Vertical Tabs", undefined, <VerticalTabs
+          labels={[
+            { label: "Tab 1", tabId: "tab1", icon: "icon-placeholder", subLabel: "Sub-label 1" },
+            { label: "Tab 2", tabId: "tab2", icon: "icon-placeholder", subLabel: "Sub-label 2" },
+            { label: "Tab 3", tabId: "tab3", icon: "icon-placeholder", subLabel: "Sub-label 3", disabled: true },
+          ]}
+          activeIndex={0} />),
         createComponentExample("Green Vertical Tabs", "with green prop", <VerticalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} green />),
       ],
     };

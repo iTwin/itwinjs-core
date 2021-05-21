@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/icons/variables";
 @import "~@bentley/ui-core/lib/ui-core/inputs/variables";
-@import "~@bentley/ui-core/lib/ui-core/inputs/input";
+@import "~@itwin/itwinui-css/scss/inputs/input";
 @import "~@itwin/itwinui-css/scss/style/variables";
 @import "~@itwin/itwinui-css/scss/text/block";
 
@@ -18,7 +18,7 @@ $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
     position: relative;
     .components-breadcrumb-input-root {
       > .components-breadcrumb-input {
-        @include uicore-inputs-input;
+        @include iui-input;
 
         width: calc(100% - #{$breadcrumb-edge});
         height: $uicore-line-height;
@@ -60,7 +60,7 @@ $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
       }
     }
     .components-breadcrumb-dropdown {
-      @include uicore-inputs-input;
+      @include iui-input;
 
       display: flex;
       width: calc(100% - #{$breadcrumb-edge});

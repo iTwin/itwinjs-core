@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/button/primary-large";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 $signin-height: 315px; // 250px;
@@ -59,7 +59,6 @@ $signin-hyperlink-hover-color: $buic-foreground-primary-tone;
 
   /* sign in button */
   .components-signin-button {
-    @include uicore-buttons-primary-large;
   }
 
   /* "Register" container */

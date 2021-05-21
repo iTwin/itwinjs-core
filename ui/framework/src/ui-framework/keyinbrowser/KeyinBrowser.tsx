@@ -318,7 +318,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
         <LabeledInput label={this._argsLabel} title={this._argsTip} value={this.state.currentArgs}
           data-testid="uif-keyin-arguments" id="uif-keyin-arguments"
           onKeyDown={this._onKeyDown} onChange={this._onArgumentsChange} onFocus={this._onInputFocus} />
-        <Button size="small" styleType="cta" data-testid="uif-keyin-browser-execute" onClick={this._onClick}>{this._executeLabel}</Button>
+        <Button styleType="cta" data-testid="uif-keyin-browser-execute" onClick={this._onClick}>{this._executeLabel}</Button>
       </div>
     );
   }

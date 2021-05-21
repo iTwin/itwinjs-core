@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/button/primary-large";
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
@@ -78,7 +77,6 @@ $user-profile-circle-size: 60px;
     }
 
     > button {
-      @include uicore-buttons-primary-large;
       width: 75%;
       margin: auto 0 0 0;
      }

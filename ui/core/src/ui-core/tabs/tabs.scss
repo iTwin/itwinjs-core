@@ -42,6 +42,10 @@
 
         &.core-tab-item-disabled {
           color: $buic-foreground-disabled;
+
+          .uicore-tabs-subLabel {
+            color: $buic-foreground-disabled;
+          }
         }
 
         .uicore-tabs-icon {

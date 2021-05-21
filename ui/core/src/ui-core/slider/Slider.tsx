@@ -12,9 +12,8 @@ import * as React from "react";
 import {
   Slider as CompoundSlider, GetRailProps, GetTrackProps, Handles, Rail, SliderItem, SliderModeFunction, Ticks, Tracks,
 } from "react-compound-slider";
+import { Tooltip } from "@itwin/itwinui-react";
 import { CommonProps } from "../utils/Props";
-import { useRefState } from "../utils/hooks/useRefState";
-import { Tooltip } from "../tooltip/Tooltip";
 import { BodyText } from "../text/BodyText";
 
 // cspell:ignore pushable
@@ -293,7 +292,6 @@ function TooltipTrack(props: TooltipTrackProps) {
   } = props;
 
   const [percent, setPercent] = React.useState(null as number | null);
-  const [tooltipTargetRef, tooltipTarget] = useRefState<HTMLDivElement>();
   // istanbul ignore next
   const onPointerMove = (e: React.PointerEvent) => {
     if (activeHandleID) {
@@ -322,24 +320,22 @@ function TooltipTrack(props: TooltipTrackProps) {
       <div
         className="core-slider_track-tooltip-container"
         style={{ left: `${percent}%` }}
-        ref={tooltipTargetRef}
       />
       <Tooltip
-        target={tooltipTarget}
         placement={tooltipBelow ? "bottom" : "top"}
         visible={!activeHandleID && percent !== null && showTooltip && multipleValues}
+        content={tooltipText}
       >
-        {tooltipText}
+        <div
+          className="core-slider-track"
+          data-testid="core-slider-track"
+          style={{ left: `${source.percent}%`, width: `${target.percent - source.percent}%` }}
+          onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}
+          {...getTrackProps()}
+        >
+          <div className="core-slider-track-inner" />
+        </div>
       </Tooltip>
-      <div
-        className="core-slider-track"
-        data-testid="core-slider-track"
-        style={{ left: `${source.percent}%`, width: `${target.percent - source.percent}%` }}
-        onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}
-        {...getTrackProps()}
-      >
-        <div className="core-slider-track-inner" />
-      </div>
     </>
   );
 }
@@ -396,7 +392,6 @@ function Handle(props: HandleProps) {
 
   const [mouseOver, setMouseOver] = React.useState(false);
   const [focused, setFocused] = React.useState(false);
-  const [tooltipTargetRef, tooltipTarget] = useRefState<HTMLDivElement>();
 
   // istanbul ignore next
   const onMouseEnter = () => {
@@ -430,29 +425,27 @@ function Handle(props: HandleProps) {
     <>
       <Tooltip
         placement={tooltipBelow ? "bottom" : "top"}
-        target={tooltipTarget}
         visible={(mouseOver || isActive || focused) && !disabled && showTooltip}
+        content={tooltip}
       >
-        {tooltip}
+        <div
+          aria-valuemin={min}
+          aria-valuemax={max}
+          aria-valuenow={value}
+          aria-disabled={disabled}
+          aria-label={tooltip}
+          className={classNames}
+          data-testid="core-slider-handle"
+          role="slider"
+          tabIndex={disabled ? -1 : 0}
+          style={{ left: `${percent}%` }}
+          {...getHandleProps(id, {
+            onMouseEnter,
+            onMouseLeave,
+            onFocus,
+            onBlur,
+          })} />
       </Tooltip>
-      <div
-        aria-valuemin={min}
-        aria-valuemax={max}
-        aria-valuenow={value}
-        aria-disabled={disabled}
-        aria-label={tooltip}
-        className={classNames}
-        data-testid="core-slider-handle"
-        ref={tooltipTargetRef}
-        role="slider"
-        tabIndex={disabled ? -1 : 0}
-        style={{ left: `${percent}%` }}
-        {...getHandleProps(id, {
-          onMouseEnter,
-          onMouseLeave,
-          onFocus,
-          onBlur,
-        })} />
     </>
   );
 }

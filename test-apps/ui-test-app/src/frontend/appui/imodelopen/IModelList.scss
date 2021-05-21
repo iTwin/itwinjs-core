@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/button/primary";
 @import "~@bentley/ui-core/lib/ui-core/icons/variables";
 @import "~@bentley/ui-core/lib/ui-core/scrollbar";
 @import "~@itwin/itwinui-css/scss/style/typography";
@@ -96,7 +95,6 @@
 		flex-direction: column;
 
 		> button {
-			@include uicore-buttons-primary;
 			margin-top: 1em;
 		}
 	}

@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/button/blue";
 @import "~@bentley/ui-core/lib/ui-core/icons/variables";
 @import "~@bentley/ui-core/lib/ui-core/style/colors";
 @import "~@itwin/itwinui-css/scss/style/space";
@@ -58,7 +57,6 @@
   /* enter iModel button */
   .open-button {
     margin: $iui-l $iui-m 0 auto !important;
-    @include uicore-buttons-blue;
   }
 }
 

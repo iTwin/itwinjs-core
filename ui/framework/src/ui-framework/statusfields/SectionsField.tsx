@@ -93,7 +93,7 @@ export function SectionsStatusField(props: SectionsStatusFieldProps) {
             <TitleBar title={toolTip} />
           }>
           <div className="uifw-sections-footer-contents">
-            <Button size="small" onClick={handleClear}>{clearLabel}</Button>
+            <Button onClick={handleClear}>{clearLabel}</Button>
             <div className="uifw-uifw-sections-toggle-container">
               <div className={classnames("uifw-sections-label")}>{showHandlesLabel}</div>
               <ToggleSwitch className="uifw-sections-toggle" onChange={toggleManipulators} checked={hasManipulatorsShown} />

@@ -399,7 +399,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         if (button.label)
           buttonText = button.label;
 
-        buttons.push(<Button size="small" className={buttonClass} disabled={button.disabled} key={index.toString()} onClick={button.onClick}>{buttonText}</Button>);
+        buttons.push(<Button className={buttonClass} disabled={button.disabled} key={index.toString()} onClick={button.onClick}>{buttonText}</Button>);
       });
     }
     return buttons;

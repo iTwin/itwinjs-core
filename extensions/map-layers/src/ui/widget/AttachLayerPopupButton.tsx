@@ -372,19 +372,19 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
         </button>
       );
     } else {
-      let typeClassName: string;
-      switch (props.buttonType) {
-        case AttachLayerButtonType.Blue:
-          typeClassName = "uicore-buttons-blue";
-          break;
-        case AttachLayerButtonType.Primary:
-        default:
-          typeClassName = "uicore-buttons-primary";
-          break;
-      }
+      const determineStyleType = () => {
+        switch (props.buttonType) {
+          case AttachLayerButtonType.Blue:
+            return "high-visibility";
+          case AttachLayerButtonType.Primary:
+          default:
+            return "cta";
+        }
+      };
+      const styleType = determineStyleType();
       button = (
-        <button ref={buttonRef} className={typeClassName} title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
-          onClick={togglePopup}>{addCustomLayerButtonLabel}</button>
+        <Button ref={buttonRef} styleType={styleType} title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
+          onClick={togglePopup}>{addCustomLayerButtonLabel}</Button>
       );
     }
 

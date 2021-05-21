@@ -206,10 +206,10 @@ export function MultiValueFilter(props: MultiValueFilterProps) {
             </div>
           }
           <div className="components-multi-value-buttons">
-            <Button size="small" onClick={handleClear} data-testid="components-multi-value-button-clear">{clearLabel}</Button>
+            <Button onClick={handleClear} data-testid="components-multi-value-button-clear">{clearLabel}</Button>
             <Gap />
-            <Button size="small" styleType="cta" onClick={handleApplyFilter} data-testid="components-multi-value-button-filter">{filterLabel}</Button>
-            <Button size="small" onClick={handleCancel} data-testid="components-multi-value-button-cancel">{cancelLabel}</Button>
+            <Button styleType="cta" onClick={handleApplyFilter} data-testid="components-multi-value-button-filter">{filterLabel}</Button>
+            <Button onClick={handleCancel} data-testid="components-multi-value-button-cancel">{cancelLabel}</Button>
           </div>
         </PopupContent>
       </PopupButton>
