@@ -9,11 +9,11 @@
 import { Geometry } from "../Geometry";
 
 /**
- * `TaggedNumericConstants` defines enums with constant values for use in tags of `TaggedNumericData`
+ * `TaggedNumericConstants` defines enums with constant values for use in tags of [[TaggedNumericData]]
  * @public
  */
 export namespace TaggedNumericConstants {
-  /**  Reserved values for the "tagA" member of `TaggedNumericData`
+  /**  Reserved values for the "tagA" member of [[TaggedNumericData]]
   * @public
    *
   */
@@ -50,9 +50,9 @@ export  enum SubdivisionControlCode {
  * @public
  */
 export class TaggedNumericData {
-  /** Application specific primary tag.   See reserved values in  `TaggedNumericConstants` */
+  /** Application specific primary tag.   See reserved values in  [[TaggedNumericConstants]] */
   public tagA: number;
-  /** Application specific secondary tag.   See reserved values in  `TaggedNumericConstants` */
+  /** Application specific secondary tag.   See reserved values in  [[TaggedNumericConstants]] */
   public tagB: number;
 
   public constructor(tagA: number = 0, tagB: number = 0,

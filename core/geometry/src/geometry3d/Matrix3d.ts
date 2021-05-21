@@ -296,7 +296,7 @@ export class Matrix3d implements BeJSONFunctions {
   public isAlmostEqual(other: Matrix3d, tol?: number): boolean {
       return Geometry.isDistanceWithinTol(this.maxDiff(other), tol);
   }
-  /** Test if this Matrix3d and have almost equal Z column and have X and Y columns differing only by a rotation around that Z.
+  /** Test if `this` and `other` have almost equal Z column and have X and Y columns differing only by a rotation around that Z.
    * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
    */
   public isAlmostEqualAllowZRotation(other: Matrix3d, tol?: number): boolean {
