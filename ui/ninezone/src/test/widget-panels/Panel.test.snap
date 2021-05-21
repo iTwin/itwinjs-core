@@ -50,13 +50,17 @@ exports[`WidgetPanelProvider should render captured 1`] = `
             </div>
           </div>
         </div>
-        <button
-          class="nz-widget-pinToggle"
+        <div
+          class="nz-widget-tabBarButtons"
         >
-          <i
-            class="icon icon-chevron-left"
-          />
-        </button>
+          <button
+            class="nz-widget-pinToggle"
+          >
+            <i
+              class="icon icon-chevron-left"
+            />
+          </button>
+        </div>
       </div>
       <div
         class="nz-widget-content-container"
@@ -143,13 +147,17 @@ exports[`WidgetPanelProvider should render collapsed 1`] = `
             </div>
           </div>
         </div>
-        <button
-          class="nz-widget-pinToggle"
+        <div
+          class="nz-widget-tabBarButtons"
         >
-          <i
-            class="icon icon-chevron-left"
-          />
-        </button>
+          <button
+            class="nz-widget-pinToggle"
+          >
+            <i
+              class="icon icon-chevron-left"
+            />
+          </button>
+        </div>
       </div>
       <div
         class="nz-widget-content-container"
@@ -236,13 +244,17 @@ exports[`WidgetPanelProvider should render horizontal 1`] = `
             </div>
           </div>
         </div>
-        <button
-          class="nz-widget-pinToggle"
+        <div
+          class="nz-widget-tabBarButtons"
         >
-          <i
-            class="icon icon-chevron-up"
-          />
-        </button>
+          <button
+            class="nz-widget-pinToggle"
+          >
+            <i
+              class="icon icon-chevron-up"
+            />
+          </button>
+        </div>
       </div>
       <div
         class="nz-widget-content-container"
@@ -328,13 +340,17 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
             </div>
           </div>
         </div>
-        <button
-          class="nz-widget-pinToggle"
+        <div
+          class="nz-widget-tabBarButtons"
         >
-          <i
-            class="icon icon-chevron-left"
-          />
-        </button>
+          <button
+            class="nz-widget-pinToggle"
+          >
+            <i
+              class="icon icon-chevron-left"
+            />
+          </button>
+        </div>
       </div>
       <div
         class="nz-widget-content-container"
@@ -383,6 +399,9 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
             </div>
           </div>
         </div>
+        <div
+          class="nz-widget-tabBarButtons"
+        />
       </div>
       <div
         class="nz-widget-content-container"
@@ -468,13 +487,17 @@ exports[`WidgetPanelProvider should render spanned 1`] = `
             </div>
           </div>
         </div>
-        <button
-          class="nz-widget-pinToggle"
+        <div
+          class="nz-widget-tabBarButtons"
         >
-          <i
-            class="icon icon-chevron-up"
-          />
-        </button>
+          <button
+            class="nz-widget-pinToggle"
+          >
+            <i
+              class="icon icon-chevron-up"
+            />
+          </button>
+        </div>
       </div>
       <div
         class="nz-widget-content-container"
@@ -561,13 +584,17 @@ exports[`WidgetPanelProvider should render vertical 1`] = `
             </div>
           </div>
         </div>
-        <button
-          class="nz-widget-pinToggle"
+        <div
+          class="nz-widget-tabBarButtons"
         >
-          <i
-            class="icon icon-chevron-left"
-          />
-        </button>
+          <button
+            class="nz-widget-pinToggle"
+          >
+            <i
+              class="icon icon-chevron-left"
+            />
+          </button>
+        </div>
       </div>
       <div
         class="nz-widget-content-container"
@@ -653,13 +680,17 @@ exports[`WidgetPanelProvider should render with span bottom 1`] = `
             </div>
           </div>
         </div>
-        <button
-          class="nz-widget-pinToggle"
+        <div
+          class="nz-widget-tabBarButtons"
         >
-          <i
-            class="icon icon-chevron-left"
-          />
-        </button>
+          <button
+            class="nz-widget-pinToggle"
+          >
+            <i
+              class="icon icon-chevron-left"
+            />
+          </button>
+        </div>
       </div>
       <div
         class="nz-widget-content-container"
@@ -745,13 +776,17 @@ exports[`WidgetPanelProvider should render with top spanned 1`] = `
             </div>
           </div>
         </div>
-        <button
-          class="nz-widget-pinToggle"
+        <div
+          class="nz-widget-tabBarButtons"
         >
-          <i
-            class="icon icon-chevron-left"
-          />
-        </button>
+          <button
+            class="nz-widget-pinToggle"
+          >
+            <i
+              class="icon icon-chevron-left"
+            />
+          </button>
+        </div>
       </div>
       <div
         class="nz-widget-content-container"

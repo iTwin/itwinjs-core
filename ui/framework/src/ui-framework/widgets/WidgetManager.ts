@@ -50,7 +50,7 @@ export class WidgetsChangedEvent extends BeUiEvent<WidgetsChangedEventArgs> { }
 
 /** Widget Provider interface.
  * @beta
- */
+ */
 export interface WidgetProvider {
   /** Id of provider */
   readonly id: string;
@@ -86,7 +86,7 @@ function getAddonStableWidgetId(stageUsage: string, location: StagePanelLocation
 
 /** Widget Manager class.
  * @beta
- */
+ */
 export class WidgetManager {
   private _widgets: ReadonlyArray<WidgetInfo> = [];
   private _providers: ReadonlyArray<WidgetProvider> = [];

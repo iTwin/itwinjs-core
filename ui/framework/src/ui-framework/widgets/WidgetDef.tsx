@@ -140,6 +140,8 @@ export class WidgetDef {
   private _saveTransientState?: () => void;
   private _restoreTransientState?: () => boolean;
   private _preferredPanelSize: "fit-content" | undefined;
+  private _canPopout?: boolean;
+
   private _tabLocation: TabLocation = {
     side: "left",
     tabIndex: 0,
@@ -191,6 +193,8 @@ export class WidgetDef {
       me.setLabel(widgetProps.label);
     else if (widgetProps.labelKey)
       me._label = UiFramework.i18n.translate(widgetProps.labelKey);
+
+    me.setCanPopout(widgetProps.canPopout);
 
     if (widgetProps.priority !== undefined)
       me._priority = widgetProps.priority;
@@ -372,6 +376,14 @@ export class WidgetDef {
     this._stateChanged = true;
     FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });
     this.onWidgetStateChanged();
+  }
+
+  public setCanPopout(value: boolean | undefined) {
+    this._canPopout = value;
+  }
+
+  public get canPopout(): boolean | undefined {
+    return (this._canPopout);
   }
 
   public canOpen(): boolean {
