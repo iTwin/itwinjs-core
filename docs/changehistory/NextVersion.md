@@ -3,6 +3,18 @@ publish: false
 ---
 # NextVersion
 
+## New IModel events
+
+[IModel]($common)s now emit events when their properties change.
+* [IModel.onProjectExtentsChanged]($common)
+* [IModel.onGlobalOriginChanged]($common)
+* [IModel.onEcefLocationChanged]($common)
+* [IModel.onGeographicCoordinateSystemChanged]($common)
+* [IModel.onRootSubjectChanged]($common)
+* [IModel.onNameChanged]($common)
+
+Within [IpcApp]($frontend)-based applications, [BriefcaseConnection]($frontend)s now automatically synchronize their properties in response to such events produced by changes on the backend. For example, if [BriefcaseDb.projectExtents]($backend) is modified, [BriefcaseConnection.projectExtents]($frontend) will be updated to match and both the BriefcaseDb and BriefcaseConnection will emit an `onProjectExtentsChanged` event.
+
 ## Promoted APIs
 
 The following previously `alpha` or `beta` APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of the package.
