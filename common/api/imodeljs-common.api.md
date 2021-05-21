@@ -2016,6 +2016,7 @@ export class EcefLocation implements EcefLocationProps {
     static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle): EcefLocation;
     get earthCenter(): Point3d;
     getTransform(): Transform;
+    isAlmostEqual(other: EcefLocation): boolean;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
 }
@@ -2978,7 +2979,6 @@ export interface GeodeticTransformProps {
 export class GeographicCRS implements GeographicCRSProps {
     constructor(data?: GeographicCRSProps);
     readonly additionalTransform?: AdditionalTransform;
-    // @internal
     equals(other: GeographicCRS): boolean;
     static fromJSON(data: GeographicCRSProps): GeographicCRS;
     readonly horizontalCRS?: HorizontalCRS;
@@ -4008,6 +4008,7 @@ export abstract class IModel implements IModelProps {
     protected _contextId?: GuidString;
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
+    set ecefLocation(ecefLocation: EcefLocation | undefined);
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     // @internal
     protected _fileKey: string;
@@ -4029,12 +4030,20 @@ export abstract class IModel implements IModelProps {
     abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
     get key(): string;
-    name: string;
+    get name(): string;
+    set name(name: string);
+    readonly onEcefLocationChanged: BeEvent<(previousLocation: EcefLocation | undefined) => void>;
+    readonly onGeographicCoordinateSystemChanged: BeEvent<(previousGCS: GeographicCRS | undefined) => void>;
+    readonly onGlobalOriginChanged: BeEvent<(previousOrigin: Point3d) => void>;
+    readonly onNameChanged: BeEvent<(previousName: string) => void>;
+    readonly onProjectExtentsChanged: BeEvent<(previousExtents: AxisAlignedBox3d) => void>;
+    readonly onRootSubjectChanged: BeEvent<(previousSubject: RootSubjectProps) => void>;
     readonly openMode: OpenMode;
     get projectExtents(): AxisAlignedBox3d;
     set projectExtents(extents: AxisAlignedBox3d);
     static readonly repositoryModelId: Id64String;
-    rootSubject: RootSubjectProps;
+    get rootSubject(): RootSubjectProps;
+    set rootSubject(subject: RootSubjectProps);
     static readonly rootSubjectId: Id64String;
     setEcefLocation(ecef: EcefLocationProps): void;
     setGeographicCoordinateSystem(geoCRS: GeographicCRSProps): void;
