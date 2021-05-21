@@ -892,8 +892,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/test-apps/imjs-importer/lib/byDirectory.js",
       "args": [
-        "--input=d:/hubA/imodeljs/core/geometry/src/test/output/TaggedGeometryData/",
-        "--output=d:/bfiles/TaggedGeometryData"
+        "--input=d:/tmp/shaunSpaces/",
+        "--output=d:/tmp/shaun.bim"
       ],
       "outputCapture": "std"
     },
