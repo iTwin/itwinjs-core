@@ -93,6 +93,7 @@ export abstract class IModelConnection extends IModel {
    * Don't modify this directly - use [[expandDisplayedExtents]].
    */
   public readonly displayedExtents: AxisAlignedBox3d;
+  private readonly _extentsExpansion = Range3d.createNull();
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
 
@@ -231,6 +232,11 @@ export abstract class IModelConnection extends IModel {
 
     this.onEcefLocationChanged.addListener(() => {
       this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
+    });
+
+    this.onProjectExtentsChanged.addListener(() => {
+      // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
+      this.expandDisplayedExtents(this._extentsExpansion);
     });
   }
 
@@ -542,7 +548,10 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public expandDisplayedExtents(range: Range3d): void {
-    this.displayedExtents.extendRange(range);
+    this._extentsExpansion.extendRange(range);
+    this.displayedExtents.setFrom(this.projectExtents);
+    this.displayedExtents.extendRange(this._extentsExpansion);
+
     for (const vp of IModelApp.viewManager) {
       if (vp.view.isSpatialView() && vp.iModel === this)
         vp.invalidateController();
