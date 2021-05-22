@@ -286,7 +286,7 @@ export class BriefcaseManager {
     try {
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getParentChangeSetId() !== args.checkpoint.changeSetId)
-        throw new IModelError(IModelStatus.WrongIModel, `Downloaded briefcase has wrong changesetId: ${fileName}`);
+        throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);
     } finally {
       nativeDb.closeIModel();
     }

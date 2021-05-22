@@ -345,7 +345,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
 
-  it("should merge changes made on a branch back to master", async () => {
+  it.only("should merge changes made on a branch back to master", async () => {
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     const projectId = await HubUtility.getTestContextId(requestContext);
     const initializeIModelTimeout = 15 * 60 * 1000; // 15 minutes (in case many CI integration jobs are running at the same time)
