@@ -104,7 +104,9 @@ export abstract class TileTree {
   public get range(): ElementAlignedBox3d { return this.rootTile.range; }
   /** The most recent time at which tiles [[selectTiles]] was called. */
   public get lastSelectedTime(): BeTimePoint { return this._lastSelected; }
-  /** @internal */
+  /** True if a tile and its child tiles should not be drawn simultaneously.
+   * Default: true.
+   */
   public get parentsAndChildrenExclusive(): boolean { return true; }
 
   /** Constructor */
