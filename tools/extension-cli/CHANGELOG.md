@@ -1,6 +1,13 @@
 # Change Log - @bentley/extension-cli
 
-This log was last generated on Thu, 20 May 2021 15:06:26 GMT and should not be manually modified.
+This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Add missing presentation-common dependency
 
 ## 2.15.5
 Thu, 20 May 2021 15:06:26 GMT
