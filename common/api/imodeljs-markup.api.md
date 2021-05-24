@@ -717,7 +717,7 @@ export class UndoManager {
     get undoString(): string | undefined;
 }
 
-// @public (undocumented)
+// @public
 export interface WidthAndHeight {
     // (undocumented)
     height: number;
