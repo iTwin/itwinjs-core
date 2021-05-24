@@ -134,8 +134,7 @@ describe("PerformanceElementsTests", () => {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
-        const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-        assert.equal(DbResult.BE_SQLITE_OK, result);
+        seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -342,8 +341,7 @@ describe("PerformanceElementsTests2d", () => {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
-        const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-        assert.equal(DbResult.BE_SQLITE_OK, result);
+        seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
         const codeProps = Code.createEmpty();

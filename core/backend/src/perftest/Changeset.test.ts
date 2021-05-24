@@ -2,20 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ChangeSetApplyOption, ChangeSetStatus, DbResult, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+
+import { assert } from "chai";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { ChangeSetApplyOption, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
 import {
   ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, IModelHubError, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { Code, ColorDef, GeometryStreamProps, IModel, IModelError, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Code, ColorDef, GeometryStreamProps, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
-import { assert } from "chai";
-import * as fs from "fs-extra";
-import * as path from "path";
 import {
-  BriefcaseManager, ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, SpatialCategory, StandaloneDb,
+  BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb,
 } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { HubUtility } from "../test/integration/HubUtility";
@@ -231,7 +232,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
   const startTime = new Date().getTime();
-  await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));
+  await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));// eslint-disable-line deprecation/deprecation
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
 
@@ -276,12 +277,12 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
   const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
-  await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));
+  await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));// eslint-disable-line deprecation/deprecation
   const reverseCount = getElementCount(rwIModel);
   assert.equal(reverseCount, firstCount);
 
   const startTime = new Date().getTime();
-  await rwIModel.reinstateChanges(requestContext, IModelVersion.latest());
+  await rwIModel.reinstateChanges(requestContext, IModelVersion.latest());// eslint-disable-line deprecation/deprecation
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   const reinstateCount = getElementCount(rwIModel);
@@ -627,14 +628,12 @@ describe("ImodelChangesetPerformance own data", () => {
       fs.copySync(pathName, localPath);
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(localPath, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not open iModel as Standalone");
+    nativeDb.openIModel(localPath, OpenMode.ReadWrite);
     nativeDb.saveLocalValue("StandaloneEdit", "");
     nativeDb.saveChanges();
     nativeDb.closeIModel();
   }
-  async function lastChangesetToken(modelId: string): Promise<ChangeSetToken> {
+  async function lastChangesetToken(modelId: string): Promise<IModelJsNative.ChangeSetProps> {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, modelId);
     const changeSet = changeSets[changeSets.length - 1];
@@ -642,9 +641,8 @@ describe("ImodelChangesetPerformance own data", () => {
     query.byId(changeSet.wsgId);
     const downloadDir = path.join(BriefcaseManager.cacheDir, modelId, "csets");
     await IModelHost.iModelClient.changeSets.download(requestContext, modelId, query, downloadDir);
-    const changeSetPathname = path.join(downloadDir, changeSet.fileName!);
-    const csToken = new ChangeSetToken(changeSet.id!, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!);
-    return csToken;
+    const pathname = path.join(downloadDir, changeSet.fileName!);
+    return { id: changeSet.id!, parentId: changeSet.parentId!, pathname, changesType: changeSet.changesType };
   }
   before(async () => {
     Logger.initializeToConsole();
@@ -789,19 +787,17 @@ describe("ImodelChangesetPerformance own data", () => {
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
         const csToken = await lastChangesetToken(iModel.id!);
-        const tempChangeSets = [csToken];
         const applyOption = ChangeSetApplyOption.Merge;
         // eslint-disable-next-line no-console
         console.log(`Applying Insert changeset to iModel ${iModelName}.`);
         requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-        const startTime = new Date().getTime();
-        const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(saIModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);
-        const endTime = new Date().getTime();
-        const elapsedTime = (endTime - startTime) / 1000.0;
-        if (status === ChangeSetStatus.Success) {
+        try {
+          const startTime = new Date().getTime();
+          saIModel.nativeDb.applyChangeSet(csToken, applyOption);
+          const endTime = new Date().getTime();
+          const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetInsert", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
-        } else {
-          Logger.logError(HubUtility.logCategory, "Error applying ChangeSet with token", () => ({ ...csToken, status, applyOption }));
+        } catch (error) {
           assert.isTrue(false, "Apply changeset failed");
         }
         saIModel.saveChanges();
@@ -823,18 +819,16 @@ describe("ImodelChangesetPerformance own data", () => {
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
         const csToken = await lastChangesetToken(iModel.id!);
-        const tempChangeSets = [csToken];
         const applyOption = ChangeSetApplyOption.Merge;
         // eslint-disable-next-line no-console
         console.log(`Applying Delete changeset to iModel ${iModelName}.`);
-        const startTime = new Date().getTime();
-        const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(saIModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);
-        const endTime = new Date().getTime();
-        const elapsedTime = (endTime - startTime) / 1000.0;
-        if (status === ChangeSetStatus.Success) {
+        try {
+          const startTime = new Date().getTime();
+          saIModel.nativeDb.applyChangeSet(csToken, applyOption);
+          const endTime = new Date().getTime();
+          const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetDelete", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
-        } else {
-          Logger.logError(HubUtility.logCategory, "Error applying ChangeSet with token", () => ({ ...csToken, status, applyOption }));
+        } catch (err) {
           assert.isTrue(false, "Apply changeset failed");
         }
         saIModel.saveChanges();
@@ -856,18 +850,16 @@ describe("ImodelChangesetPerformance own data", () => {
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
         const csToken = await lastChangesetToken(iModel.id!);
-        const tempChangeSets = [csToken];
         const applyOption = ChangeSetApplyOption.Merge;
         // eslint-disable-next-line no-console
         console.log(`Applying Update changeset to iModel ${iModelName}.`);
-        const startTime = new Date().getTime();
-        const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(saIModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);
-        const endTime = new Date().getTime();
-        const elapsedTime = (endTime - startTime) / 1000.0;
-        if (status === ChangeSetStatus.Success) {
+        try {
+          const startTime = new Date().getTime();
+          saIModel.nativeDb.applyChangeSet(csToken, applyOption);
+          const endTime = new Date().getTime();
+          const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetUpdate", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
-        } else {
-          Logger.logError(HubUtility.logCategory, "Error applying ChangeSet with token", () => ({ ...csToken, status, applyOption }));
+        } catch (err) {
           assert.isTrue(false, "Apply changeset failed");
         }
         saIModel.saveChanges();

@@ -5,17 +5,18 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { assert } from "chai";
-import { DbResult, Guid, Id64Array, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import * as fs from "fs";
+import * as path from "path";
+import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance, UpgradeOptions,
+  CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
+  UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import * as path from "path";
-import * as fs from "fs";
 
 export function copyFile(newName: string, pathToCopy: string): string {
   const newPath = path.join(path.dirname(pathToCopy), newName);
@@ -65,10 +66,10 @@ class TestHelper {
     this.db = StandaloneDb.openFile(writeDbFileName, OpenMode.ReadWrite);
     assert.isTrue(this.db !== undefined);
 
-    Logger.setLevelDefault(LogLevel.Info);
-    Logger.setLevel("EDGTest", LogLevel.Trace);
-    Logger.setLevel("ElementDependencyGraph", LogLevel.Trace);
-    Logger.setLevel("ECObjectsNative", LogLevel.Error);
+    // Logger.setLevelDefault(LogLevel.Info);
+    // Logger.setLevel("EDGTest", LogLevel.Trace);
+    // Logger.setLevel("ElementDependencyGraph", LogLevel.Trace);
+    // Logger.setLevel("ECObjectsNative", LogLevel.Error);
 
     this.db.nativeDb.enableTxnTesting();
     assert.equal(this.db.nativeDb.addChildPropagatesChangesToParentRelationship("TestBim", "ChildPropagatesChangesToParent"), 0);
@@ -146,17 +147,14 @@ describe("ElementDependencyGraph", () => {
   const requestContext = new BackendRequestContext();
   let dbInfo: DbInfo;
 
-  const performUpgrade = (pathname: string): DbResult => {
+  const performUpgrade = (pathname: string) => {
     const nativeDb = new IModelHost.platform.DgnDb();
     const upgradeOptions: UpgradeOptions = {
       domain: DomainOptions.Upgrade,
     };
-    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
-    if (DbResult.BE_SQLITE_OK === res) {
-      nativeDb.deleteAllTxns();
-      nativeDb.closeIModel();
-    }
-    return res;
+    nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
+    nativeDb.deleteAllTxns();
+    nativeDb.closeIModel();
   };
 
   before(async () => {
@@ -166,7 +164,7 @@ describe("ElementDependencyGraph", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
-    assert.equal(performUpgrade(testFileName), 0);
+    performUpgrade(testFileName);
     const imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
     const physicalModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "EDGTestModel");

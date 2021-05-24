@@ -5,7 +5,7 @@
 import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
 import * as backend from "@bentley/imodeljs-backend";
-import { SchemaKey } from "@bentley/ecschema-metadata";
+import { SchemaKeyProps, SchemaProps } from "@bentley/ecschema-metadata";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 /**
@@ -43,14 +43,15 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
   }
 
   /**
-   * Returns an array of SchemaKey that exists in the current iModel context.
+   * Returns an array of SchemaKeyProps that exists in the current iModel context. The client can call
+   * SchemaKey.fromJson() to parse the props to a SchemaKey.
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
-   * @returns                 An array of SchemaKey.
+   * @returns                 An array of SchemaKeyProps.
    */
-  public async getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKey[]> {
+  public async getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]> {
     ClientRequestContext.current.enter();
 
-    const schemaKeys: SchemaKey[] = [];
+    const schemaKeyProps: SchemaKeyProps[] = [];
     const iModelDb = await this.getIModelDatabase(tokenProps);
 
     // Iterate over the rows returned from AsyncIterableIterator. The custom Query overload returns
@@ -61,18 +62,19 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
       const read = Number(schemaDefinitionRow.read);
       const write = Number(schemaDefinitionRow.write);
       const minor = Number(schemaDefinitionRow.minor);
-      schemaKeys.push(new SchemaKey(schemaFullName, read, write, minor));
+      schemaKeyProps.push({name: schemaFullName, read, write, minor});
     }
-    return schemaKeys;
+    return schemaKeyProps;
   }
 
   /**
-   * Gets the schema JSON for the current iModel context and returns the schema as a string which the client can parse to SchemaProps.
+   * Gets the schema JSON for the current iModel context and returns the schema as a SchemaProps which
+   * the client can call Schema.fromJson() to return a Schema.
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
    * @param schemaName        The name of the schema that shall be returned.
-   * @returns                 The SchemaProps as a string.
+   * @returns                 The SchemaProps.
    */
-  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<string> {
+  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps> {
     ClientRequestContext.current.enter();
 
     if (schemaName === undefined || schemaName.length < 1) {
@@ -90,6 +92,6 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
       throw new Error("Schema does not exists");
     }
 
-    return schemaResult.result;
+    return JSON.parse(schemaResult.result);
   }
 }

@@ -51,7 +51,6 @@ import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
-import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { EditingScopeNotifications } from '@bentley/imodeljs-common';
@@ -435,12 +434,13 @@ export class BriefcaseDb extends IModelDb {
     static open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<string>;
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
+    // @deprecated
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+    // @deprecated
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     saveChanges(description?: string): void;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
-    // @beta (undocumented)
     readonly txns: TxnManager;
     static upgradeSchemas(requestContext: AuthorizedClientRequestContext, briefcaseProps: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void>;
 }
@@ -459,14 +459,16 @@ export enum BriefcaseIdValue {
     Standalone = 0
 }
 
-// @beta
+// @public
 export class BriefcaseManager {
     static acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number>;
     static get cacheDir(): string;
+    // @beta
     static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
     // @internal (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
     static deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void>;
+    // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
     // @internal
@@ -491,21 +493,22 @@ export class BriefcaseManager {
     static getCompatibilityPath(iModelId: GuidString): string;
     static getFileName(briefcase: BriefcaseProps): string;
     static getIModelPath(iModelId: GuidString): string;
-    static initialize(cacheRootDir: string, compatibilityDir: string): void;
+    static initialize(cacheRootDir: string, compatibilityDir?: string): void;
+    // @deprecated
     static isStandaloneBriefcaseId(id: BriefcaseId): boolean;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps): void;
+    // @internal
     static processChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex?: number): Promise<void>;
     // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, mergeToVersion?: IModelVersion): Promise<void>;
     // @internal
     static pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType?: ChangesType, relinquishCodesLocks?: boolean): Promise<void>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     static reinstateChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reinstateToVersion?: IModelVersion): Promise<void>;
-    // (undocumented)
     static releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     static reverseChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reverseToVersion: IModelVersion): Promise<void>;
     }
 
@@ -574,23 +577,6 @@ export class ChangedElementsDb implements IDisposable {
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
     processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
-}
-
-// @internal
-export class ChangeSetToken {
-    constructor(id: string, parentId: string, index: number, pathname: string, changeType: ChangesType, pushDate?: string | undefined);
-    // (undocumented)
-    changeType: ChangesType;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    index: number;
-    // (undocumented)
-    parentId: string;
-    // (undocumented)
-    pathname: string;
-    // (undocumented)
-    pushDate?: string | undefined;
 }
 
 // @beta
@@ -669,7 +655,7 @@ export class CheckpointManager {
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean;
 }
 
-// @beta
+// @public
 export interface CheckpointProps {
     changeSetId: string;
     contextId: GuidString;
@@ -759,14 +745,14 @@ export class CodeSpecs {
     queryId(name: string): Id64String;
 }
 
-// @beta
+// @public
 export interface ComputedProjectExtents {
     extents: Range3d;
     extentsWithOutliers?: Range3d;
     outliers?: Id64Array;
 }
 
-// @beta
+// @public
 export interface ComputeProjectExtentsOptions {
     reportExtentsWithOutliers?: boolean;
     reportOutliers?: boolean;
@@ -1302,8 +1288,6 @@ export interface DownloadJob {
     promise?: Promise<any>;
     // (undocumented)
     request: DownloadRequest;
-    // (undocumented)
-    status: DownloadBriefcaseStatus;
 }
 
 // @internal
@@ -2471,7 +2455,6 @@ export abstract class IModelDb extends IModel {
     clearStatementCache(): void;
     close(): void;
     get codeSpecs(): CodeSpecs;
-    // @beta
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
     // (undocumented)
     protected _concurrentQueryStats: {
@@ -2506,16 +2489,13 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
-    // @beta
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
-    // @beta
     getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGuid(): GuidString;
     getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps>;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
-    // @beta
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
     // @alpha
@@ -2553,7 +2533,7 @@ export abstract class IModelDb extends IModel {
     static openDgnDb(file: {
         path: string;
         key?: string;
-    }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: string): IModelJsNative.DgnDb;
+    }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions): IModelJsNative.DgnDb;
     get pathName(): string;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
@@ -2642,7 +2622,6 @@ export namespace IModelDb {
         tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
         tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined;
         tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined;
-        // @beta
         updateGeometryGuid(modelId: Id64String): void;
         updateModel(props: UpdateModelOptions): void;
     }
@@ -2683,8 +2662,10 @@ export class IModelExporter {
     excludeCodeSpec(codeSpecName: string): void;
     excludeElement(elementId: Id64String): void;
     excludeElementAspectClass(classFullName: string): void;
+    // @deprecated
     excludeElementCategory(categoryId: Id64String): void;
     excludeElementClass(classFullName: string): void;
+    excludeElementsInCategory(categoryId: Id64String): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
     exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void>;
@@ -3540,7 +3521,7 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
 
 // @beta
 export interface OnElementPropsArg extends OnElementArg {
-    props: Readonly<ElementProps>;
+    props: ElementProps;
 }
 
 // @beta
@@ -3705,7 +3686,7 @@ export interface ProcessChangesetOptions {
     wantPropertyChecksums?: boolean;
 }
 
-// @beta
+// @public
 export type ProgressFunction = (loaded: number, total: number) => number;
 
 // @beta
@@ -3794,7 +3775,7 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
     static classFullName: string;
 }
 
-// @beta
+// @public
 export class RenderTimeline extends InformationRecordElement {
     // @internal
     protected constructor(props: RenderTimelineProps, iModel: IModelDb);
@@ -3833,7 +3814,7 @@ export class RepositoryModel extends DefinitionModel {
     static get className(): string;
 }
 
-// @beta
+// @public
 export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
     onProgress?: ProgressFunction;
 };
@@ -3857,6 +3838,8 @@ export class Schema {
     // @internal
     static get missingRequiredBehavior(): boolean;
     static get schemaName(): string;
+    // @beta
+    static toSemverString(paddedVersion: string): string;
 }
 
 // @internal (undocumented)
@@ -3892,7 +3875,7 @@ export class SectionDrawing extends Drawing {
     toJSON(): SectionDrawingProps;
 }
 
-// @beta
+// @public
 export class SectionDrawingLocation extends SpatialLocationElement {
     constructor(props: SectionDrawingLocationProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4098,7 +4081,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     get isPrepared(): boolean;
     get isReadonly(): boolean;
     next(): IteratorResult<any>;
-    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb): void;
+    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb): void;
     reset(): void;
     // (undocumented)
     get sql(): string;
@@ -4149,7 +4132,6 @@ export class StandaloneDb extends IModelDb {
     static openFile(filePath: string, openMode?: OpenMode, options?: StandaloneOpenOptions): StandaloneDb;
     // (undocumented)
     static tryFindByKey(key: string): StandaloneDb | undefined;
-    // @beta (undocumented)
     readonly txns: TxnManager;
     static upgradeSchemas(filePath: string): void;
 }
@@ -4362,20 +4344,17 @@ export enum TxnAction {
     Reverse = 3
 }
 
-// @beta (undocumented)
+// @public
 export interface TxnChangedEntities {
-    // (undocumented)
     deleted: OrderedId64Array;
-    // (undocumented)
     inserted: OrderedId64Array;
-    // (undocumented)
     updated: OrderedId64Array;
 }
 
 // @public
 export type TxnIdString = string;
 
-// @beta
+// @public
 export class TxnManager {
     // @internal
     constructor(_iModel: BriefcaseDb | StandaloneDb);
@@ -4524,7 +4503,7 @@ export class V2CheckpointManager {
     static downloadCheckpoint(request: DownloadRequest): Promise<void>;
     }
 
-// @beta
+// @public
 export interface ValidationError {
     errorType: string;
     fatal: boolean;

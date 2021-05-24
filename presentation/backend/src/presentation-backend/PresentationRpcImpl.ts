@@ -197,7 +197,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   /** @deprecated This is a noop now. Keeping just to avoid breaking the RPC interface. */
   // eslint-disable-next-line deprecation/deprecation
   public async loadHierarchy(_token: IModelRpcProps, _requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
-    return { statusCode: PresentationStatus.Error };
+    return { statusCode: PresentationStatus.Success };
   }
 
   // eslint-disable-next-line deprecation/deprecation

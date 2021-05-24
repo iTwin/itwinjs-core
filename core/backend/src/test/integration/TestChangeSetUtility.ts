@@ -7,7 +7,7 @@ import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-commo
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { BriefcaseDb, IModelHost } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, IModelHost } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -84,6 +84,26 @@ export class TestChangeSetUtility {
       throw new Error("Must first call createTestIModel");
     await this.addTestElements();
     await this._iModel.pushChanges(this._requestContext, "Added test elements");
+  }
+
+  public async redownloadBriefcase(): Promise<void> {
+    if (!this._iModel)
+      throw new Error("Must first call createTestIModel");
+
+    const briefcasePath = this._iModel.pathName;
+    this._iModel.nativeDb.deleteAllTxns();
+    await this._iModel.concurrencyControl.abandonResources(this._requestContext);
+    this._iModel.close();
+    await BriefcaseManager.deleteBriefcaseFiles(briefcasePath);
+
+    const briefcaseProps = {
+      requestContext: this._requestContext,
+      contextId: this.projectId,
+      iModelId: this._iModel.iModelId,
+      briefcaseId: this._iModel.briefcaseId,
+    };
+    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase(briefcaseProps);
+    this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
   }
 
   public async deleteTestIModel(): Promise<void> {

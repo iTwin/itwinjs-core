@@ -29,7 +29,7 @@
         "test:integration"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+        "${workspaceFolder}/core/backend/lib/**/*.js"
       ]
     },
     {
@@ -46,7 +46,7 @@
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+        "${workspaceFolder}/core/backend/lib/**/*.js"
       ]
     },
     {
@@ -923,14 +923,14 @@
       "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
+      "runtimeArgs": [ // NOTE: edit these to specify the command line arguments for the debugging session
         "start",
         "--",
         "--hub=qa",
-        "--sourceContextId='ec002f93-f0c1-4ab3-a407-351848eba233'",
-        "--sourceIModelId='73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a'",
-        "--logChangeSets=true",
-        "--logNamedVersions=true",
+        "--sourceContextId='ec002f93-f0c1-4ab3-a407-351848eba233'", // iModelJsIntegrationTest
+        "--sourceIModelId='73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a'", // ReadOnlyTest
+        "--targetFile='d:/tmp/test-target.bim'",
+        "--logTransformer",
       ],
       "outFiles": [
         "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",
