@@ -38,16 +38,16 @@ describe("QuantityInput", () => {
     expect(renderedComponent).not.to.be.null;
   });
 
-  // const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
-  // const scrollIntoViewMock = function () { };
+  const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
+  const scrollIntoViewMock = function () { };
 
-  // beforeEach(() => {
-  //   window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
-  // });
+  beforeEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
+  });
 
-  // afterEach(() => {
-  //   window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
-  // });
+  afterEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+  });
 
   it("should render basic panel with sample", () => {
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} />);
@@ -204,8 +204,9 @@ describe("QuantityInput", () => {
       FormatType.Decimal.toString(),
       FormatType.Scientific.toString(),
       FormatType.Station.toString(),
-    ].forEach(async (selectValue) => {
-      fireEvent.change(typeSelector, { target: { value: selectValue } });
+    ].forEach(async (_selectValue, index) => {
+      // fireEvent.change(typeSelector, { target: { value: selectValue } });
+      selectChangeValueByIndex(typeSelector, "format-type-selector-menu", index, handleError);
       expect(spy).to.be.called;
       await TestUtils.flushAsyncOperations();
       spy.resetHistory();
@@ -337,8 +338,8 @@ describe("QuantityInput", () => {
     expect(spy).to.be.called;
     spy.resetHistory();
 
-    const typeSelector = renderedComponent.getByTestId("thousands-separator-selector");
-    fireEvent.change(typeSelector, { target: { value: "." } });
+    const separatorSelector = renderedComponent.getByTestId("thousands-separator-selector");
+    fireEvent.change(separatorSelector, { target: { value: "." } });
     await TestUtils.flushAsyncOperations();
 
     /* turn off */
@@ -354,7 +355,7 @@ describe("QuantityInput", () => {
     spy.resetHistory();
     renderedComponent.getByText(`40.504'-2"`);
 
-    fireEvent.change(typeSelector, { target: { value: "," } });
+    fireEvent.change(separatorSelector, { target: { value: "," } });
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
