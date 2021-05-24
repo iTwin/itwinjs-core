@@ -113,6 +113,17 @@ export abstract class GeometryQuery {
     }
     return false;
   }
+  /** apply instance method isAlmostEqual if both are defined.
+   * * both undefined returns true
+   * * single defined returns false
+   */
+  public static areAlmostEqual(a: GeometryQuery | undefined, b: GeometryQuery | undefined): boolean {
+    if (a instanceof GeometryQuery && b instanceof GeometryQuery)
+      return a.isAlmostEqual(b);
+    if ((a === undefined) && (b === undefined))
+      return true;
+    return false;
+  }
   /**
    * * "double dispatch" call pattern.
    * * User code implements a `GeometryHandler` with specialized methods to handle `LineSegment3d`, `Arc3d` etc as relevant to its use case.
