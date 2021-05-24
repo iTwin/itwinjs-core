@@ -1,6 +1,26 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 20 May 2021 15:06:26 GMT and should not be manually modified.
+This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Dispatch events when changes are pulled or pushed.
+- added IModelDb.withStatement for executing ECSQL without statement caching
+- Allow RenderGraphic to be created from flatbuffers format geometry as well as json.
+- Improve exclusion handling in IModelTransformer
+- Fix `IModelDb.queryEntityIds` when used with `orderBy` and `limit` params.
+- IModelExportHandler.onProgress is now async
+- Add includeSourceProvenance option to IModelTransformer
+- Fixes to desktop/mobile authorization
+- return changesetId from pullAndMergeChanges
+- Add RenderTimeline element.
+- Invoke dependency callbacks only when inputs change
+- only add listener for shutdown once for IModelDb
+- change arguments to protected static methods of Element, Model, ElementAspect. Only affects schema writers.
+- Update version compare classes for property path support and briefcase rolling
 
 ## 2.15.5
 Thu, 20 May 2021 15:06:26 GMT
