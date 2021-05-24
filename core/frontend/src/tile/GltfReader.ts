@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
-import { Angle, Matrix3d, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, ElementAlignedBox3d, FeatureTable, FillFlags, GltfBufferData, GltfBufferView, GltfDataType, GltfHeader, GltfMeshMode,
   ImageSource, ImageSourceFormat, LinePixels, MeshEdge, MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList, QPoint3dList,
@@ -319,14 +319,52 @@ export abstract class GltfReader {
     }
     return meshes;
   }
+  private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined , needNormals: boolean, needParams: boolean): Polyface | undefined {
+    if (!mesh.pointQParams || !mesh.points || !mesh.indices) {
+      return undefined;
+    }
+    const { points, pointQParams, normals, uvs, uvQParams, indices } = mesh;
+
+    const includeNormals = needNormals && undefined !== normals;
+    const includeParams = needParams && undefined !== uvQParams && undefined !== uvs;
+
+    const polyface = IndexedPolyface.create(includeNormals, includeParams);
+    for (let i = 0; i < points.length; ) {
+      const point = pointQParams.unquantize(points[i++], points[i++], points[i++]);
+      if (transform)
+        transform.multiplyPoint3d(point, point);
+
+      polyface.addPoint(point);
+    }
+
+    if (includeNormals && normals)
+      for (let i = 0; i < normals.length; )
+        polyface.addNormal(OctEncodedNormal.decodeValue(normals[i++]));
+
+    if (includeParams && uvs && uvQParams)
+      for (let i = 0; i < uvs.length; )
+        polyface.addParam(uvQParams.unquantize(uvs[i++], uvs[i++]));
+
+    let j = 0;
+    indices.forEach((index: number) => {
+      polyface.addPointIndex(index);
+      if (includeNormals)
+        polyface.addNormalIndex(index);
+      if (includeParams)
+        polyface.addParamIndex(index);
+      if (0 === (++j % 3))
+        polyface.terminateFacet();
+    });
+    return polyface;
+
+  }
 
   private readNodeAndCreatePolyfaces(polyfaces: Polyface[], node: any, parentTransform: Transform | undefined, needNormals: boolean, needParams: boolean) {
     const thisTransform = this.getNodeTransform(node, parentTransform);
     const meshes = this.readMeshPrimitives(node);
 
     for (const mesh of meshes) {
-      const realityMesh = RealityMeshPrimitive.createFromGltfMesh(mesh);
-      const polyface = realityMesh?.createPolyface(thisTransform, needNormals, needParams);
+      const polyface = this.polyfaceFromGltfMesh (mesh, thisTransform, needNormals, needParams);
       if (polyface)
         polyfaces.push(polyface);
     }

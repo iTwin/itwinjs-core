@@ -94,6 +94,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
   }
 
   public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+    this._drapedStrings = undefined;
     if (this._drapePoints.length) {
       this._drapePoints.pop();
     } else {
