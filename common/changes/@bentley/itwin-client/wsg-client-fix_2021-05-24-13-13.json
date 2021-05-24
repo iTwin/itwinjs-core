@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "WsgClient.getUrl returns incomplete URL when querying concurently for the first time",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client",
+  "email": "17436829+GintV@users.noreply.github.com"
+}
