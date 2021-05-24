@@ -1,8 +1,8 @@
 ## [Dashboards](/getting-started/registration-dashboard?tab=1)
 
-##### [My iModels](/getting-started/registration-dashboard?tab=1)
+##### [My iModels](https://developer.bentley.com/my-imodels/)
 
-##### [My Applications](/getting-started/registration-dashboard?tab=0)
+##### [My Applications](https://developer.bentley.com/my-apps/)
 
 ---
 
