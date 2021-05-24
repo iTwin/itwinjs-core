@@ -6,10 +6,11 @@
 import { join } from "path";
 import { DbResult, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
-import { ChangesetFileProps, ChangesetProps } from "../BriefcaseManager";
+import { ChangesetFileProps, ChangesetProps, ChangesetRange } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
+import { rangeToString } from "@azure/storage-blob/typings/src/IRange";
 
 // cspell:ignore rowid
 
@@ -20,13 +21,31 @@ export interface MockBriefcaseIdProps {
 export type LocalFileName = string;
 export type LocalDirName = string;
 
+export interface LocalHubProps {
+  readonly contextId: GuidString;
+  readonly iModelId: GuidString;
+  readonly iModelName: string;
+  readonly description?: string;
+  readonly revision0: string;
+}
+
 export class LocalHub {
+  public readonly contextId: GuidString;
+  public readonly iModelId: GuidString;
+  public readonly iModelName: string;
+  public readonly description?: string;
   private _hubDb?: SQLiteDb;
   private _nextBriefcaseId = BriefcaseIdValue.FirstValid;
-  public constructor(public readonly contextId: GuidString, public readonly iModelId: GuidString, public readonly iModelName: string, public readonly mockDir: string, revision0: string) {
+
+  public constructor(public readonly rootDir: string, arg: LocalHubProps) {
+    this.contextId = arg.contextId;
+    this.iModelId = arg.iModelId;
+    this.iModelName = arg.iModelName;
+    this.description = arg.description;
+
     this.cleanup();
 
-    IModelJsFs.recursiveMkDirSync(this.mockDir);
+    IModelJsFs.recursiveMkDirSync(this.rootDir);
     IModelJsFs.mkdirSync(this.changesetDir);
     IModelJsFs.mkdirSync(this.checkpointDir);
 
@@ -38,11 +57,11 @@ export class LocalHub {
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY,id TEXT,FOREIGN KEY(id) REFERENCES timeline(id))");
     db.saveChanges();
 
-    const path = this.addCheckpoint({ id: "", localFile: revision0 });
+    const path = this.addCheckpoint({ id: "", localFile: arg.revision0 });
     const nativeDb = IModelDb.openDgnDb({ path }, OpenMode.ReadWrite);
     try {
-      nativeDb.saveProjectGuid(contextId);
-      nativeDb.setDbGuid(iModelId);
+      nativeDb.saveProjectGuid(this.contextId);
+      nativeDb.setDbGuid(this.iModelId);
       nativeDb.saveChanges();
       nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
       nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -52,9 +71,9 @@ export class LocalHub {
   }
 
   private get db() { return this._hubDb!; } // eslint-disable-line @typescript-eslint/naming-convention
-  public get changesetDir() { return join(this.mockDir, "changesets"); }
-  public get checkpointDir() { return join(this.mockDir, "checkpoints"); }
-  public get mockDbName() { return join(this.mockDir, "localHub.db"); }
+  public get changesetDir() { return join(this.rootDir, "changesets"); }
+  public get checkpointDir() { return join(this.rootDir, "checkpoints"); }
+  public get mockDbName() { return join(this.rootDir, "localHub.db"); }
 
   public acquireNewBriefcaseId(user: string): number {
     const db = this.db;
@@ -102,7 +121,7 @@ export class LocalHub {
     const db = this.db;
     db.withSqliteStatement("INSERT INTO timeline(id,parentId,description,size,type,pushDate,user) VALUES (?,?,?,?,?,?,?)", (stmt) => {
       stmt.bindValue(1, changeset.id);
-      stmt.bindValue(2, changeset.parentId);
+      stmt.bindValue(2, changeset.parentId === "" ? undefined : changeset.parentId);
       stmt.bindValue(3, changeset.description);
       stmt.bindValue(4, stats.size);
       stmt.bindValue(5, changeset.changesType ?? 0);
@@ -128,6 +147,10 @@ export class LocalHub {
 
       return stmt.getValue(0).getInteger();
     });
+  }
+
+  public getChangesetById(id: string): ChangesetProps {
+    return this.getChangesetByIndex(this.getChangesetIndex(id));
   }
 
   public getChangesetByIndex(index: number): ChangesetProps {
@@ -267,11 +290,12 @@ export class LocalHub {
     IModelJsFs.copySync(join(this.changesetDir, arg.id), arg.pathname);
   }
 
-  public downloadChangesets(arg: { fromId: string, toId: string, targetDir: LocalDirName }): ChangesetFileProps[] {
-    let startIndex = this.getChangesetIndex(arg.fromId);
+  public downloadChangesets(arg: { range: ChangesetRange, targetDir: LocalDirName }): ChangesetFileProps[] {
+    const startId = (undefined !== arg.range.before) ? this.getChangesetById(arg.range.before).id : arg.range.start;
+    let startIndex = this.getChangesetIndex(startId);
     if (startIndex === 0) // there's no changeset for index 0 - that's revision0
       startIndex = 1;
-    const endIndex = this.getChangesetIndex(arg.toId);
+    const endIndex = this.getChangesetIndex(arg.range.end);
     if (endIndex < startIndex)
       throw new Error("illegal changeset range");
 
@@ -290,6 +314,6 @@ export class LocalHub {
       this._hubDb.closeDb();
       this._hubDb = undefined;
     }
-    IModelJsFs.purgeDirSync(this.mockDir);
+    IModelJsFs.purgeDirSync(this.rootDir);
   }
 }

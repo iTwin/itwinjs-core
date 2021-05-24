@@ -55,6 +55,8 @@ export interface ChangesetFileProps extends ChangesetProps {
   pathname: string;
 }
 
+export type ChangesetRange = { start: string, before?: never, end: string } | { before: string, start?: never, end: string };
+
 /** The Id assigned to a briefcase by iModelHub, or a [[BriefcaseIdValue]] that identify special kinds of iModels.
  * @public
  */
@@ -398,19 +400,32 @@ export class BriefcaseManager {
     return val;
   }
 
+  public static async queryChangesetProps(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changesetId: string): Promise<ChangesetProps> {
+    const query = new ChangeSetQuery();
+    query.byId(changesetId);
+
+    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, query);
+    if (changeSets.length === 0)
+      throw new Error(`Unable to find change set ${changesetId} for iModel ${iModelId}`);
+
+    const cs = changeSets[0];
+    return { id: cs.id!, changesType: cs.changesType!, parentId: cs.parentId ?? "", description: cs.description ?? "", pushDate: cs.pushDate, userCreated: cs.userCreated };
+  }
+
   /** Downloads change sets in the specified range.
    *  * Downloads change sets *after* the specified fromChangeSetId, up to and including the toChangeSetId
    *  * If the ids are the same returns an empty array.
    * @internal
    */
-  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangesetFileProps[]> {
+  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, range: ChangesetRange): Promise<ChangesetFileProps[]> {
     requestContext.enter();
 
-    if (toChangeSetId === "" /* first version */ || fromChangeSetId === toChangeSetId)
+    const before = range.before ?? (await this.queryChangesetProps(requestContext, iModelId, range.start)).parentId!;
+    if (range.end === "" || before === range.end)
       return [];
 
     const query = new ChangeSetQuery();
-    query.betweenChangeSets(toChangeSetId, fromChangeSetId);
+    query.betweenChangeSets(before, range.end);
 
     return BriefcaseManager.downloadChangeSetsInternal(requestContext, iModelId, query);
   }
@@ -581,7 +596,9 @@ export class BriefcaseManager {
 
     // Download change sets
     const reverse = (targetChangeSetIndex < currentChangeSetIndex);
-    const changeSets = await BriefcaseManager.downloadChangeSets(requestContext, db.iModelId, reverse ? targetChangeSetId : currentChangeSetId, reverse ? currentChangeSetId : targetChangeSetId);
+
+    const changeSets = await BriefcaseManager.downloadChangeSets(requestContext, db.iModelId,
+      { before: reverse ? targetChangeSetId : currentChangeSetId, end: reverse ? currentChangeSetId : targetChangeSetId });
     requestContext.enter();
     assert(changeSets.length <= Math.abs(targetChangeSetIndex - currentChangeSetIndex));
     if (reverse)
@@ -659,8 +676,8 @@ export class BriefcaseManager {
     if (targetChangeSetIndex < currentChangeSetIndex)
       throw new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge");
 
-    await BriefcaseManager.updatePendingChangeSets(requestContext, db);
-    requestContext.enter();
+    // await BriefcaseManager.updatePendingChangeSets(requestContext, db);
+    // requestContext.enter();
 
     return BriefcaseManager.processChangeSets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
   }
@@ -802,8 +819,8 @@ export class BriefcaseManager {
   }
 
   /** so iModelHub can be mocked
-   * @internal
-   */
+ * @internal
+ */
   public static async pushChangesetFile(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changesetProps: ChangesetFileProps) {
     const changeset = new ChangeSet();
     changeset.id = changesetProps.id;

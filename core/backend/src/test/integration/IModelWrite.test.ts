@@ -12,7 +12,7 @@ import { WsgError } from "@bentley/itwin-client";
 import { assert, expect } from "chai";
 import * as semver from "semver";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, SpatialCategory,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, Timer } from "../IModelTestUtils";
@@ -45,7 +45,7 @@ export async function createNewModelAndCategory(requestContext: AuthorizedBacken
   return { modelId, spatialCategoryId };
 }
 
-function toHubLock(props: ConcurrencyControl.LockProps, briefcaseId: number): Lock {
+function toHubLock(props: LockProps, briefcaseId: number): Lock {
   const lock = new Lock();
   lock.briefcaseId = briefcaseId;
   lock.lockLevel = props.level;

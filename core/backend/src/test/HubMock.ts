@@ -6,18 +6,21 @@
 import { join } from "path";
 import * as sinon from "sinon";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { BriefcaseProps, IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseProps, CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseManager, ChangesetFileProps } from "../BriefcaseManager";
+import { BriefcaseManager, ChangesetFileProps, ChangesetProps, ChangesetRange } from "../BriefcaseManager";
 import { CheckpointManager, DownloadRequest } from "../CheckpointManager";
+import { ConcurrencyControl, LockProps } from "../ConcurrencyControl";
+import { BriefcaseDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
-import { LocalDirName, LocalFileName, LocalHub } from "./LocalHub";
+import { LocalDirName, LocalHub, LocalHubProps } from "./LocalHub";
 
 /** Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changeset. */
 export class HubMock {
   private static mockRoot: LocalDirName;
   private static hubs = new Map<string, LocalHub>();
 
+  public static get isValid() { return undefined !== this.mockRoot; }
   public static startup(mockRoot: LocalDirName) {
     this.mockRoot = mockRoot;
     IModelJsFs.recursiveMkDirSync(mockRoot);
@@ -34,8 +37,12 @@ export class HubMock {
       return this.findLocalHub(iModelId).getChangesetIndex(changeSetId);
     });
 
-    sinon.stub(BriefcaseManager, "downloadChangeSets").callsFake(async (_, iModelId: GuidString, fromId: string, toId: string): Promise<ChangesetFileProps[]> => {
-      return this.findLocalHub(iModelId).downloadChangesets({ fromId, toId, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    sinon.stub(BriefcaseManager, "queryChangesetProps").callsFake(async (_, iModelId: GuidString, changeSetId: string): Promise<ChangesetProps> => {
+      return this.findLocalHub(iModelId).getChangesetById(changeSetId);
+    });
+
+    sinon.stub(BriefcaseManager, "downloadChangeSets").callsFake(async (_, iModelId: GuidString, range: ChangesetRange): Promise<ChangesetFileProps[]> => {
+      return this.findLocalHub(iModelId).downloadChangesets({ range, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
     });
 
     sinon.stub(BriefcaseManager, "pushChangesetFile").callsFake(async (_, iModelId: GuidString, changesetProps: ChangesetFileProps) => {
@@ -52,6 +59,13 @@ export class HubMock {
 
     sinon.stub(IModelVersion, "getChangeSetFromNamedVersion").callsFake(async (_1, _2, iModelId: GuidString, versionName: string): Promise<GuidString> => {
       return this.findLocalHub(iModelId).findNamedVersion(versionName);
+    });
+
+    sinon.stub(ConcurrencyControl, "getAllLocks").callsFake(async (_1, _db: BriefcaseDb): Promise<LockProps[]> => {
+      return [];
+    });
+    sinon.stub(ConcurrencyControl, "getAllCodes").callsFake(async (_1, _db: BriefcaseDb): Promise<CodeProps[]> => {
+      return [];
     });
   }
 
@@ -76,12 +90,18 @@ export class HubMock {
    *  - iModelName - the name of the iModel to mock
    *  - revision0 - the local filename of the revision 0 (aka "seed") .bim file
    */
-  public static create(arg: { contextId: GuidString, iModelId: GuidString, iModelName: string, revision0: LocalFileName }) {
+  public static create(arg: LocalHubProps) {
     if (!this.mockRoot)
       throw new Error("call startup first");
 
-    const mock = new LocalHub(arg.contextId, arg.iModelId, arg.iModelName, join(HubMock.mockRoot, arg.iModelId), arg.revision0);
+    const mock = new LocalHub(join(this.mockRoot, arg.iModelId), arg);
     this.hubs.set(arg.iModelId, mock);
+  }
+
+  public static destroy(imodelId: GuidString) {
+    const hub = this.findLocalHub(imodelId);
+    hub.cleanup();
+    this.hubs.delete(imodelId);
   }
 }
 

@@ -259,30 +259,13 @@ export class ChangeSummaryManager {
     }
   }
 
-  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangesetFileProps[]> {
+  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, start: string, end: string): Promise<ChangesetFileProps[]> {
     requestContext.enter();
-    // Get the change set before the startChangeSet so that startChangeSet is included in the download and processing
-    let beforeStartChangeSetId: string;
-    if (startChangeSetId.length === 0)
-      beforeStartChangeSetId = "";
-    else {
-      const query = new ChangeSetQuery();
-      query.byId(startChangeSetId);
 
-      const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, ctx.iModelId, query);
-      requestContext.enter();
-      if (changeSets.length === 0)
-        throw new Error(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);
-
-      const changeSetInfo: ChangeSet = changeSets[0];
-
-      beforeStartChangeSetId = !changeSetInfo.parentId ? "" : changeSetInfo.parentId;
-    }
-
-    const changeSetInfos = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, beforeStartChangeSetId, endChangeSetId);
+    const changeSetInfos = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, { start, end });
     requestContext.enter();
-    assert(startChangeSetId.length === 0 || startChangeSetId === changeSetInfos[0].id);
-    assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].id);
+    assert(start === "" || start === changeSetInfos[0].id);
+    assert(end === changeSetInfos[changeSetInfos.length - 1].id);
     return changeSetInfos;
   }
 
