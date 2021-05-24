@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import * as Yargs from "yargs";
-import { assert, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ChangeSet, Version } from "@bentley/imodelhub-client";
 import { BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
@@ -32,10 +32,12 @@ interface CommandLineArgs {
   clean?: boolean;
   logChangeSets: boolean;
   logNamedVersions: boolean;
+  logProvenanceScopes: boolean;
   logTransformer: boolean;
   validation: boolean;
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
+  exportViewDefinition?: Id64String;
   deleteUnusedGeometryParts?: boolean;
   noProvenance?: boolean;
   includeSourceProvenance?: boolean;
@@ -74,12 +76,14 @@ void (async () => {
     // print/debug options
     Yargs.option("logChangeSets", { desc: "If true, log the list of changeSets", type: "boolean", default: false });
     Yargs.option("logNamedVersions", { desc: "If true, log the list of named versions", type: "boolean", default: false });
+    Yargs.option("logProvenanceScopes", { desc: "If true, log the provenance scopes in the source and target iModels", type: "boolean", default: false });
     Yargs.option("logTransformer", { desc: "If true, turn on verbose logging for iModel transformation", type: "boolean", default: false });
     Yargs.option("validation", { desc: "If true, perform extra and potentially expensive validation to assist with finding issues and confirming results", type: "boolean", default: false });
 
     // transformation options
     Yargs.option("simplifyElementGeometry", { desc: "Simplify element geometry upon import into target iModel", type: "boolean", default: false });
     Yargs.option("combinePhysicalModels", { desc: "Combine all source PhysicalModels into a single PhysicalModel in the target iModel", type: "boolean", default: false });
+    Yargs.option("exportViewDefinition", { desc: "Only export elements that would be visible using the specified ViewDefinition Id", type: "string", default: undefined });
     Yargs.option("deleteUnusedGeometryParts", { desc: "Delete unused GeometryParts from the target iModel", type: "boolean", default: false });
     Yargs.option("excludeSubCategories", { desc: "Exclude geometry in the specified SubCategories (names with comma separators) from the target iModel", type: "string" });
     Yargs.option("excludeCategories", { desc: "Exclude a categories (names with comma separators) and their elements from the target iModel", type: "string" });
@@ -221,12 +225,28 @@ void (async () => {
       });
     }
 
+    if (args.logProvenanceScopes) {
+      const sourceScopeIds = ElementUtils.queryProvenanceScopeIds(sourceDb);
+      if (sourceScopeIds.size === 0) {
+        Logger.logInfo(loggerCategory, "Source Provenance Scope: Not Found");
+      } else {
+        sourceScopeIds.forEach((scopeId) => Logger.logInfo(loggerCategory, `Source Provenance Scope: ${scopeId} ${sourceDb.elements.getElement(scopeId).getDisplayLabel()}`));
+      }
+      const targetScopeIds = ElementUtils.queryProvenanceScopeIds(targetDb);
+      if (targetScopeIds.size === 0) {
+        Logger.logInfo(loggerCategory, "Target Provenance Scope: Not Found");
+      } else {
+        targetScopeIds.forEach((scopeId) => Logger.logInfo(loggerCategory, `Target Provenance Scope: ${scopeId} ${targetDb.elements.getElement(scopeId).getDisplayLabel()}`));
+      }
+    }
+
     const excludeSubCategories = args.excludeSubCategories?.split(",");
     const excludeCategories = args.excludeCategories?.split(",");
 
     const transformerOptions: TransformerOptions = {
       simplifyElementGeometry: args.simplifyElementGeometry,
       combinePhysicalModels: args.combinePhysicalModels,
+      exportViewDefinition: args.exportViewDefinition,
       deleteUnusedGeometryParts: args.deleteUnusedGeometryParts,
       excludeSubCategories,
       excludeCategories,
@@ -240,6 +260,10 @@ void (async () => {
       await Transformer.transformChanges(requestContext, sourceDb, targetDb, args.sourceStartChangeSetId, transformerOptions);
     } else {
       await Transformer.transformAll(requestContext, sourceDb, targetDb, transformerOptions);
+    }
+
+    if (args.exportViewDefinition) {
+      ElementUtils.insertViewDefinition(targetDb, "Default", true);
     }
 
     if (args.validation) {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/eslint-plugin",
+      "comment": "Output parent symbol and skip local files in no-internal eslint rule",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/eslint-plugin",
+  "email": "48103957+toddsouthenbentley@users.noreply.github.com"
+}

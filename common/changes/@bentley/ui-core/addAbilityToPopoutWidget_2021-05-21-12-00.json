@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Update use of resize observer to be compatible with using it in a child/popup window.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

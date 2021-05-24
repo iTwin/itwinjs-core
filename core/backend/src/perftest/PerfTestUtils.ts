@@ -44,8 +44,7 @@ export class PerfTestDataMgr {
       if (undefined === this.catId) {
         this.catId = SpatialCategory.insert(this.db, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
       }
-      const result: DbResult = this.db.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-      assert.equal(DbResult.BE_SQLITE_OK, result);
+      this.db.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
       this.db.saveChanges();
     }
   }

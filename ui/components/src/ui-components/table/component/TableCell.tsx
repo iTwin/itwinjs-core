@@ -45,6 +45,7 @@ export interface TableCellProps extends CommonProps {
 export class TableCell extends React.PureComponent<TableCellProps> {
   /** @internal */
   public render() {
+
     if (this.props.cellEditingProps) {
       return (
         <div
@@ -150,7 +151,9 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
     this._isMounted = true;
     const content = await this.renderContent(this.props);
 
-    this.setState({ content });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({ content });
   }
 
   /** @internal */

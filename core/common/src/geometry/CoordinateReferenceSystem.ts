@@ -2,64 +2,81 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Geometry
+ */
 // cspell:ignore NAVD, NGVD
 
 import { GeodeticDatum, GeodeticDatumProps } from "./GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
-import { MinMax, MinMaxProps, Projection, ProjectionProps } from "./Projection";
+import { Carto2DDegrees, Carto2DDegreesProps, Projection, ProjectionProps } from "./Projection";
 import { AdditionalTransform, AdditionalTransformProps } from "./AdditionalTransform";
 /** This type indicates possible linear and angular units supported.
- *  @alpha
+ *  @public
 */
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
-/** The area in latitude, longitude bounds where a horizontal CRS is applicable
- *  @alpha
+/** The extent in latitude, longitude bounds where a horizontal CRS is applicable
+ *  @public
 */
-export interface HorizontalCRSAreaProps {
-  /* The latitude minimum and maximum for the user-defined area of the CRS */
-  latitude: MinMaxProps;
-  /* The longitude minimum and maximum for the user-defined area of the CRS */
-  longitude: MinMaxProps;
+export interface HorizontalCRSExtentProps {
+  /** The South West point in latitude and longitude in degrees for the user-defined extent of the CRS */
+  southWest: Carto2DDegreesProps;
+  /** The North East point in latitude in longitude in degrees for the user-defined extent of the CRS.
+     The latitude of the North East must be greater or equal to the latitude of the South West point
+     It is possible, however, for the longitude of the South West corner to have greater value than the
+     longitude of the North East point such as when the west longitude is located on the other side
+     of the -180/180 degree longitude line.*/
+  northEast: Carto2DDegreesProps;
 }
 
-/** The area in latitude, longitude bounds where a horizontal CRS is applicable
- *  @alpha
+/** The extent in latitude, longitude bounds where a horizontal CRS is applicable
+ *  @public
  */
-export class HorizontalCRSArea implements HorizontalCRSAreaProps {
-  /* The latitude minimum and maximum for the user-defined area of the CRS */
-  public readonly latitude: MinMax;
-  /* The longitude minimum and maximum for the user-defined area of the CRS */
-  public readonly longitude: MinMax;
+export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
+  /** The latitude minimum and maximum for the user-defined extent of the CRS */
+  public readonly southWest: Carto2DDegrees;
+  /** The North East point in latitude in longitude in degrees for the user-defined extent of the CRS.
+     The latitude of the North East must be greater or equal to the latitude of the South West point
+     It is possible, however, for the longitude of the South West corner to have greater value than the
+     longitude of the North East point such as when the west longitude is located on the other side
+     of the -180/180 degree longitude line.*/
+  public readonly northEast: Carto2DDegrees;
 
-  public constructor(data?: HorizontalCRSAreaProps) {
+  public constructor(data?: HorizontalCRSExtentProps) {
     if (data) {
-      this.latitude = MinMax.fromJSON(data.latitude);
-      this.longitude = MinMax.fromJSON(data.longitude);
+      this.southWest = Carto2DDegrees.fromJSON(data.southWest);
+      this.northEast = Carto2DDegrees.fromJSON(data.northEast);
+      if (this.northEast.latitude < this.southWest.latitude)
+        this.northEast.latitude = this.southWest.latitude;
     } else {
-      this.latitude = new MinMax();
-      this.longitude = new MinMax();
+      this.southWest = new Carto2DDegrees();
+      this.northEast = new Carto2DDegrees();
     }
   }
 
-  /** @internal */
-  public static fromJSON(data: HorizontalCRSAreaProps): HorizontalCRSArea {
-    return new HorizontalCRSArea(data);
+  /** Creates an extent object from JSON representation.
+   * @public */
+  public static fromJSON(data: HorizontalCRSExtentProps): HorizontalCRSExtent {
+    return new HorizontalCRSExtent(data);
   }
 
-  /** @internal */
-  public toJSON(): HorizontalCRSAreaProps {
-    return { latitude: this.latitude.toJSON(), longitude: this.longitude.toJSON() };
+  /** Creates a JSON from the Extent definition
+   * @public */
+  public toJSON(): HorizontalCRSExtentProps {
+    return { southWest: this.southWest.toJSON(), northEast: this.northEast.toJSON() };
   }
 
-  /** @internal */
-  public equals(other: HorizontalCRSArea): boolean {
-    return this.latitude.equals(other.latitude) && this.longitude.equals(other.longitude);
+  /** Compares two Extents. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
+  public equals(other: HorizontalCRSExtent): boolean {
+    return this.southWest.equals(other.southWest) && this.northEast.equals(other.northEast);
   }
 }
 
 /** Horizontal Geographic Coordinate Reference System definition
- *  @alpha
+ *  @public
  */
 export interface HorizontalCRSProps {
   /** The identifier of the horizontal CRS as stored in the dictionary or the service database */
@@ -92,9 +109,12 @@ export interface HorizontalCRSProps {
    *  in either service or dictionary
    */
   ellipsoid?: GeodeticEllipsoidProps;
+  /** The text indicating the unit used. */
   unit?: UnitType;
+  /** Projection including projection parameters. */
   projection?: ProjectionProps;
-  area?: HorizontalCRSAreaProps;
+  /** Extent representing the domain of application of the CRS. */
+  extent?: HorizontalCRSExtentProps;
 }
 
 /** Horizontal Geographic Coordinate reference System implementation.
@@ -121,7 +141,7 @@ export interface HorizontalCRSProps {
  *  ellipsoid properties will automatically be undefined. If datumId or datum is defined then attempts to set ellipsoidId or ellipsoid
  *  will fail silently, the values remaining undefined. The ellipsoidId will not be a repeat of the ellipsoidId property part of the
  *  geodetic datum definition.
- *  @alpha
+ *  @public
  */
 export class HorizontalCRS implements HorizontalCRSProps {
   /** The identifier of the horizontal CRS as stored in the dictionary or the service database */
@@ -149,19 +169,19 @@ export class HorizontalCRS implements HorizontalCRSProps {
 
   /** The identifier of the geodetic ellipsoid as stored in the dictionary or the service database. This property is exclusive
    *  of having datumId and datum properties undefined.
-   *  @alpha
   */
   public readonly ellipsoidId?: string;
   /** The complete definition of the geodetic ellipsoid referred to by ellipsoidId. It can also be used if the ellipsoid is not stored
    *  in either service or dictionary. This property is exclusive
    *  of having datumId and datum properties undefined.
-   *  @alpha
   */
   public readonly ellipsoid?: GeodeticEllipsoid;
-
+  /** The text indicating the unit used. */
   public readonly unit?: UnitType;
+  /** Projection including projection parameters. */
   public readonly projection?: Projection;
-  public readonly area?: HorizontalCRSArea;
+  /** Extent representing the domain of application of the CRS. */
+  public readonly extent?: HorizontalCRSExtent;
 
   public constructor(_data?: HorizontalCRSProps) {
     this.deprecated = false;
@@ -179,35 +199,50 @@ export class HorizontalCRS implements HorizontalCRSProps {
       }
       this.unit = _data.unit;
       this.projection = _data.projection ? Projection.fromJSON(_data.projection) : undefined;
-      this.area = _data.area ? HorizontalCRSArea.fromJSON(_data.area) : undefined;
+      this.extent = _data.extent ? HorizontalCRSExtent.fromJSON(_data.extent) : undefined;
     }
   }
 
-  /** @internal */
+  /** Creates an Horizontal CRS from JSON representation.
+   * @public */
   public static fromJSON(data: HorizontalCRSProps): HorizontalCRS {
     return new HorizontalCRS(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Horizontal CRS definition
+   * @public */
   public toJSON(): HorizontalCRSProps {
     const data: HorizontalCRSProps = {};
     data.id = this.id;
     data.description = this.description;
     data.source = this.source;
     /* We prefer to use the default undef instead of false value for deprecated in Json */
-    data.deprecated = (this.deprecated === false ? undefined : true);
+    if (this.deprecated)
+      data.deprecated = true;
+
     data.epsg = this.epsg;
     data.datumId = this.datumId;
-    data.datum = this.datum ? this.datum.toJSON() : undefined;
+    if (this.datum)
+      data.datum = this.datum.toJSON();
+
     data.ellipsoidId = this.ellipsoidId;
-    data.ellipsoid = this.ellipsoid ? this.ellipsoid.toJSON() : undefined;
+    if (this.ellipsoid)
+      data.ellipsoid = this.ellipsoid.toJSON();
+
     data.unit = this.unit;
-    data.projection = this.projection ? this.projection.toJSON() : undefined;
-    data.area = this.area ? this.area.toJSON() : undefined;
+    if (this.projection)
+      data.projection = this.projection.toJSON();
+
+    if (this.extent)
+      data.extent = this.extent.toJSON();
+
     return data;
   }
 
-  /** @internal */
+  /** Compares two horizontal CRS. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: HorizontalCRS): boolean {
     if (this.id !== other.id ||
       this.description !== other.description ||
@@ -237,10 +272,10 @@ export class HorizontalCRS implements HorizontalCRSProps {
     if (this.projection && !this.projection.equals(other.projection!))
       return false;
 
-    if ((this.area === undefined) !== (other.area === undefined))
+    if ((this.extent === undefined) !== (other.extent === undefined))
       return false;
 
-    if (this.area && !this.area.equals(other.area!))
+    if (this.extent && !this.extent.equals(other.extent!))
       return false;
 
     return true;
@@ -248,7 +283,7 @@ export class HorizontalCRS implements HorizontalCRSProps {
 }
 
 /** Vertical Geographic Coordinate reference System definition
- * @alpha
+ * @public
  */
 export interface VerticalCRSProps {
   /** Vertical CRS Key name. */
@@ -260,7 +295,7 @@ export interface VerticalCRSProps {
  *  we currently only support four distinct key values "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29"
  *  we expect to support a broader set in the future including, eventually, user defined vertical CRS
  *  which will require additional parameters to be added.
- *  @alpha
+ *  @public
 */
 export class VerticalCRS implements VerticalCRSProps {
   /** Vertical CRS Key name. The only supported values are currently "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29". The default is ELLIPSOID */
@@ -272,24 +307,29 @@ export class VerticalCRS implements VerticalCRSProps {
       this.id = data.id;
   }
 
-  /** @internal */
+  /** Creates a Vertical CRS from JSON representation.
+   * @public */
   public static fromJSON(data: VerticalCRSProps): VerticalCRS {
     return new VerticalCRS(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Vertical CRS definition
+   * @public */
   public toJSON(): VerticalCRSProps {
     return { id: this.id };
   }
 
-  /** @internal */
+  /** Compares two vertical CRS. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: VerticalCRS): boolean {
     return (this.id === other.id);
   }
 }
 
 /** Geographic Coordinate Reference System definition that includes both the horizontal and vertical definitions
- *  @alpha
+ *  @public
  */
 export interface GeographicCRSProps {
   /** The horizontal portion of the geographic coordinate reference system. */
@@ -304,7 +344,7 @@ export interface GeographicCRSProps {
  *  coordinate reference system comprised of two components: Horizontal and Vertical.
  *  The vertical component (see [[VerticalCRS]]) is the simplest being formed of a simple identifier as a string.
  *  The horizontal component contains a list of identification and documentation properties as well as
- *  defining details possibly including the projection with method and parameters, the definition of the datum, ellipsoid, area and so on.
+ *  defining details possibly including the projection with method and parameters, the definition of the datum, ellipsoid, extent and so on.
  *  The principle of describing a Geographic CRS is that the definition may be incomplete. The whole set of classes related to geographic
  *  coordinate reference system classes ([[GeodeticEllipsoid]], [[GeodeticDatum]], [[Projection]], [[GeodeticTransform]], ...) are designed
  *  so that they can be parsed from incomplete JSON fragments, or produce incomplete JSON fragments such as would be
@@ -323,7 +363,7 @@ export interface GeographicCRSProps {
  *  @note Earth Centered, Earth Fixed coordinate system (ECEF) is a full 3D cartesian system that unambiguously
  *        expressed coordinates relative to the Earth Center. Since there is no horizontal portion independent from
  *        the vertical portion this system cannot be represented by a GeographicCRS and remains a separate concept.
- *  @alpha
+ *  @public
 */
 export class GeographicCRS implements GeographicCRSProps {
   /** The horizontal portion of the geographic coordinate reference system. */
@@ -341,21 +381,31 @@ export class GeographicCRS implements GeographicCRSProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Geographic CRS from JSON representation.
+   * @public */
   public static fromJSON(data: GeographicCRSProps): GeographicCRS {
     return new GeographicCRS(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geographic CRS definition
+   * @public */
   public toJSON(): GeographicCRSProps {
     const data: GeographicCRSProps = {};
-    data.horizontalCRS = this.horizontalCRS ? this.horizontalCRS.toJSON() : undefined;
-    data.verticalCRS = this.verticalCRS ? this.verticalCRS.toJSON() : undefined;
-    data.additionalTransform = this.additionalTransform ? this.additionalTransform.toJSON() : undefined;
+    if (this.horizontalCRS)
+      data.horizontalCRS = this.horizontalCRS.toJSON();
+
+    if (this.verticalCRS)
+      data.verticalCRS = this.verticalCRS.toJSON();
+
+    if (this.additionalTransform)
+      data.additionalTransform = this.additionalTransform.toJSON();
+
     return data;
   }
 
-  /** @internal */
+  /** Compares two Geographic CRS for exact equality, comparing both mathematical and descriptive properties.
+   * @public
+   */
   public equals(other: GeographicCRS): boolean {
     if ((this.horizontalCRS === undefined) !== (other.horizontalCRS === undefined))
       return false;

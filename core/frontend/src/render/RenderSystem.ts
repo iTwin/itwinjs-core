@@ -279,7 +279,6 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Obtain an object capable of producing a custom screen-space effect to be applied to the image rendered by a [[Viewport]].
    * @returns undefined if screen-space effects are not supported by this RenderSystem.
-   * @beta
    */
   public createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined {
     return undefined;
@@ -530,7 +529,6 @@ export abstract class RenderSystem implements IDisposable {
    * @note Context loss is reported by the browser some short time *after* it has occurred. It is not possible to determine the specific cause.
    * @see [[TileAdmin.gpuMemoryLimit]] to limit the amount of GPU memory consumed thereby reducing the likelihood of context loss.
    * @see [[TileAdmin.totalTileContentBytes]] for the amount of GPU memory allocated for tile graphics.
-   * @beta
    */
   public static async contextLossHandler(): Promise<any> {
     const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
