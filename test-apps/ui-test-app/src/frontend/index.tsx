@@ -280,6 +280,8 @@ export class SampleAppIModelApp {
     // go ahead and initialize settings before login or in case login is by-passed
     await UiFramework.setUiSettingsStorage(SampleAppIModelApp.getUiSettingsStorage());
 
+    UiFramework.useDefaultPopoutUrl = true;
+
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
   }

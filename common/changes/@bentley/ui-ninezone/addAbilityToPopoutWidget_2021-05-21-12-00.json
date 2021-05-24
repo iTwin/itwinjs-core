@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-ninezone",
+      "comment": "Add ability to define state of popout widgets in NinezoneState.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}
