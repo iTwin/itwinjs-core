@@ -73,25 +73,27 @@ export class ChildWindowManager {
         parentWindow: window,
       });
 
-      setTimeout(() => copyStyles(childWindow.document));
-      childWindow.document.documentElement.setAttribute("data-theme", UiFramework.getColorTheme());
-      setImmediate(() => {
-        ReactDOM.render(
-          <Provider store={StateManager.store} >
-            <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
-              <div className="uifw-child-window-container-host">
-                <PopupRenderer />
-                <ModalDialogRenderer />
-                <ModelessDialogRenderer />
-                <CursorPopupMenu />
-                <div className="uifw-child-window-container nz-widget-widget">
-                  {content}
+      setTimeout(() => {
+        copyStyles(childWindow.document);
+        childWindow.document.documentElement.setAttribute("data-theme", UiFramework.getColorTheme());
+        setImmediate(() => {
+          ReactDOM.render(
+            <Provider store={StateManager.store} >
+              <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
+                <div className="uifw-child-window-container-host">
+                  <PopupRenderer />
+                  <ModalDialogRenderer />
+                  <ModelessDialogRenderer />
+                  <CursorPopupMenu />
+                  <div className="uifw-child-window-container nz-widget-widget">
+                    {content}
+                  </div>
                 </div>
-              </div>
-            </UiSettingsProvider>
-          </Provider>,
-          reactConnectionDiv
-        );
+              </UiSettingsProvider>
+            </Provider>,
+            reactConnectionDiv
+          );
+        });
       });
 
       childWindow.onbeforeunload = () => {
