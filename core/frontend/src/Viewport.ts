@@ -821,7 +821,7 @@ export abstract class Viewport implements IDisposable {
    * Tile geometry can be  by used indirectly by methods such as [[RealityTileTree.drapeLineString]] or by calling [[RealityTileTree.collectTiles]] and
    * iterating through[[RealityTileCollector.acceptedGeometry]]
    */
-  public getGeometryTreeRef(modelId?: Id64String): TileTreeReference | undefined {
+  public getGeometryTreeRef(modelId: Id64String): TileTreeReference | undefined {
     let geometryTreeRef: TileTreeReference | undefined;
     this.forEachTileTreeRef((treeRef) => {
       const tree = treeRef.treeOwner.load();
