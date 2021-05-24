@@ -120,6 +120,11 @@ export function handleButtonError(msg: string) {
   console.log(msg); // eslint-disable-line no-console
 }
 
+/** Handle an error when attempting to get an element */
+export function handleError(msg: string) {
+  console.log(msg); // eslint-disable-line no-console
+}
+
 /** Creates Promise */
 export class ResolvablePromise<T> implements PromiseLike<T> {
   private _wrapped: Promise<T>;
