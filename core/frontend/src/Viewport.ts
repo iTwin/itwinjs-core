@@ -1274,9 +1274,7 @@ export abstract class Viewport implements IDisposable {
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
-  /** Allows visibility of categories within this viewport to be overridden on a per-model basis.
-   * @beta
-   */
+  /** Allows visibility of categories within this viewport to be overridden on a per-model basis. */
   public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides { return this._perModelCategoryVisibility; }
 
   /** Adds visibility overrides for any subcategories whose visibility differs from that defined by the view's
