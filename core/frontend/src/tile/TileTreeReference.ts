@@ -220,7 +220,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /** create a tile tree that produces geometry rather than graphics.
    * This is currently supported only for reality and map tile trees.
-   * @alpha
+   * @internal
    */
   public createGeometryTreeRef(): TileTreeReference | undefined {  return undefined;   }
 }

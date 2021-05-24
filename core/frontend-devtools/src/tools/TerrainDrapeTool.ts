@@ -11,6 +11,10 @@ import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, I
  * @module Tools
  */
 
+/**
+ * Demonstrates draping line strings on terrain meshes.  The terrain can be defined by map terrain (from Cesium World Terrain) or a reality model.
+ * @alpha
+ */
 export class TerrainDrapeTool extends PrimitiveTool {
   private _drapePoints = new GrowableXYZArray();
   private _drapedStrings?: LineString3d[];
@@ -77,14 +81,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
     if (!hit.modelId)
       return LocateFilterStatus.Reject;
 
-    let hitTreeRef: TileTreeReference | undefined;
-    hit.viewport.forEachTileTreeRef((treeRef) => {
-      const tree = treeRef.treeOwner.load();
-      if (tree?.modelId === hit.modelId)
-        hitTreeRef = treeRef;
-    });
-
-    return (hitTreeRef?.createGeometryTreeRef()) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
+    return hit.viewport.getGeometryTreeRef(hit.modelId) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -115,11 +112,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
       if (hit?.modelId) {
         this._drapePoints.push(hit.hitPoint);
         this._drapeViewport = hit.viewport;
-        this._drapeViewport.forEachTileTreeRef((treeRef) => {
-          const tree = treeRef.treeOwner.load();
-          if (tree && tree.modelId === hit.modelId)
-            this._drapeTreeRef = treeRef.createGeometryTreeRef();
-        });
+        this._drapeTreeRef = hit.viewport.getGeometryTreeRef(hit.modelId);
       }
     } else {
       this._drapePoints.push(hit ? hit.hitPoint : ev.point);

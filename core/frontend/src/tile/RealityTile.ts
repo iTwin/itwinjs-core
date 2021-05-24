@@ -9,12 +9,13 @@
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Polyface, Transform } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { RealityTileCollector, TileCollectionSelectionStatus } from "../imodeljs-frontend";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
+  RealityTileCollectionSelectionStatus,
+  RealityTileCollector,
   RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TraversalDetails, TraversalSelectionContext,
 } from "./internal";
 
@@ -25,7 +26,9 @@ export interface RealityTileParams extends TileParams {
   readonly noContentButTerminateOnSelection?: boolean;
   readonly rangeCorners?: Point3d[];
 }
-/** @internal */
+/** The geometry representing the contents of a reality tile.  Currently only polyfaces are returned
+ * @alpha
+ */
 export interface RealityTileGeometry {
   polyfaces?: Polyface[];
 }
@@ -295,10 +298,10 @@ export class RealityTile extends Tile {
     const status = collector.selectTile(this);
 
     switch(status) {
-      case TileCollectionSelectionStatus.Reject:
+      case RealityTileCollectionSelectionStatus.Reject:
         return;
 
-      case TileCollectionSelectionStatus.Continue:
+      case RealityTileCollectionSelectionStatus.Continue:
         if (!this.isLeaf && !this._anyChildNotFound) {
           const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
           if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
@@ -312,7 +315,7 @@ export class RealityTile extends Tile {
         }
 
       // eslint-disable-next-line no-fallthrough
-      case TileCollectionSelectionStatus.Accept:
+      case RealityTileCollectionSelectionStatus.Accept:
         if (this.isReady)
           collector.accepted.push(this);
         else

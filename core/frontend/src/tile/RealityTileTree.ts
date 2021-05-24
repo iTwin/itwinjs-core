@@ -11,10 +11,10 @@ import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, PolyfaceQuery, Rang
 import { ColorDef, Frustum, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { GraphicBuilder, GraphicType } from "../render/GraphicBuilder";
-import { DecorateContext, SceneContext } from "../ViewContext";
+import { GraphicBuilder } from "../render/GraphicBuilder";
+import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
+import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileGeometry, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
 /** @internal */
 export class TraversalDetails {
@@ -113,49 +113,89 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly rootTile: RealityTileParams;
 }
 
-export enum TileCollectionSelectionStatus { Continue, Reject, Accept }
-export enum TileCollectionStatus { Loading, Success }
+/** The return status for collecting a tile with [[RealityTileCollector.SelectTile]]
+ * @alpha
+ */
+export enum RealityTileCollectionSelectionStatus { Continue, Reject, Accept }
+
+/**  The return status for collecting a set of tiles with [[RealityTileTree.collectTiles.
+ * @alpha
+ */
+export enum RealityTileCollectionStatus { Loading, Success }
+
+/** @alpha */
 export enum RealityTileDrapeStatus { Loading, Success, Error }
+
+/** Base class for a collecting reality tiles from a [[RealityTileTree]].
+ * @alpha
+ */
 export abstract class RealityTileCollector {
+  public acceptedGeometry(): RealityTileGeometry[] {
+    const geometry = new Array<RealityTileGeometry>();
+    for (const accepted of this.accepted) {
+      if (accepted.geometry)
+        geometry.push(accepted.geometry);
+    }
+
+    return geometry;
+  }
+
+  /** Missing (not yet loaded) tiles.  Loading of these tiles can be requested by calling [[RealityTileCollector.requestMissingTiles]].
+   * @internal
+  */
   public missing = new Set<RealityTile>();
+  /** The accepted tiles. If [[RealityTileTree.collectTiles]] returns [[RealityTileCollectionStatus.Success]] then this contains complete
+   * collection of loaded tiles accepted by [[RealityTileCollector.selectTile]].
+   * @internal
+   */
   public accepted = new Array<RealityTile>();
 
-  protected constructor(private _tolerance: number, private _range: Range3d, protected _iModelTransform: Transform) {
-  }
+  protected constructor(private _tolerance: number, private _range: Range3d, protected _iModelTransform: Transform) {  }
 
   private _childrenLoading = false;
 
+  /** @internal */
   public markChildrenLoading() {
     this._childrenLoading = true;
   }
+  /** @internal */
   public get loadingComplete() {
     return !this._childrenLoading && 0 === this.missing.size;
   }
+
+  /** Request missing (unloaded) tiles.  Call this method if [[RealityTileTree.collectTiles]] returns [[RealityTileCollectionStatus.Loading]]. */
   public requestMissingTiles(viewport: Viewport) {
     IModelApp.tileAdmin.requestTiles(viewport, this.missing);
   }
-  public selectTile(tile: RealityTile): TileCollectionSelectionStatus {
+
+  /** select tile based on the range and tolerance.   Subclasses can refine the selection by calling this method first and
+   * then performing additional filtering on accepted tiles.
+   */
+  public selectTile(tile: Tile): RealityTileCollectionSelectionStatus {
     const tileRange = this._iModelTransform.multiplyRange(tile.range);
     if (!tileRange.intersectsRange(this._range))
-      return TileCollectionSelectionStatus.Reject;
+      return RealityTileCollectionSelectionStatus.Reject;
 
     if (tile.maximumSize === 0.0 || !tile.isDisplayable)
-      return TileCollectionSelectionStatus.Continue;
+      return RealityTileCollectionSelectionStatus.Continue;
 
     const tileTolerance = tile.radius/ tile.maximumSize;
-    return tileTolerance < this._tolerance ? TileCollectionSelectionStatus.Accept : TileCollectionSelectionStatus.Continue;
+    return tileTolerance < this._tolerance ? RealityTileCollectionSelectionStatus.Accept : RealityTileCollectionSelectionStatus.Continue;
   }
 }
 
+/** [[RealityTileCollector]] subclass that restricts selection to tiles that overlap a line string.
+ * @alpha
+ */
 export class RealityTileByDrapeLineStringCollector extends RealityTileCollector {
   constructor(tolerance: number, range: Range3d, iModelTransform: Transform, private _points: GrowableXYZArray) {
     super(tolerance, range, iModelTransform);
   }
-  public selectTile(tile: RealityTile): TileCollectionSelectionStatus {
+  public selectTile(tile: Tile): RealityTileCollectionSelectionStatus {
     let status = super.selectTile(tile);
 
-    if (TileCollectionSelectionStatus.Reject !== status && !this.rangeOverlapsLineString(tile.range))
-      status = TileCollectionSelectionStatus.Reject;
+    if (RealityTileCollectionSelectionStatus.Reject !== status && !this.rangeOverlapsLineString(tile.range))
+      status = RealityTileCollectionSelectionStatus.Reject;
 
     return status;
   }
@@ -196,10 +236,10 @@ export class RealityTileTree extends TileTree {
 
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
 
-  public collectRealityTiles(collector: RealityTileCollector) {
+  public collectRealityTiles(collector: RealityTileCollector): RealityTileCollectionStatus {
     this.rootTile.collectRealityTiles(collector);
 
-    return collector.loadingComplete ? TileCollectionStatus.Success : TileCollectionStatus.Loading;
+    return collector.loadingComplete ? RealityTileCollectionStatus.Success : RealityTileCollectionStatus.Loading;
   }
 
   public prune(): void {
@@ -384,7 +424,10 @@ export class RealityTileTree extends TileTree {
     console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // eslint-disable-line
   }
 
-  public drapeLinestring(outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, viewport: Viewport, maxDistance = 1.0E5, debugContext?: DecorateContext): RealityTileDrapeStatus {
+  /** Drape a line string on a reality  tile tree.
+   * @alpha
+   */
+  public drapeLinestring(outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, viewport: Viewport, maxDistance = 1.0E5): RealityTileDrapeStatus {
     const range = Range3d.createNull();
     range.extendArray(inPoints);
     range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
@@ -392,35 +435,18 @@ export class RealityTileTree extends TileTree {
     const tileSelector = new RealityTileByDrapeLineStringCollector(tolerance, range, this.iModelTransform, inPoints);
     const collectionStatus = this.collectRealityTiles(tileSelector);
 
-    if (collectionStatus === TileCollectionStatus.Loading)
+    if (collectionStatus === RealityTileCollectionStatus.Loading)
       tileSelector.requestMissingTiles(viewport);
 
-    for (const tile of tileSelector.accepted) {
-      if (tile.geometry?.polyfaces) {
-        tile.geometry.polyfaces.forEach((polyface) => {
+    for (const geometry of tileSelector.acceptedGeometry()) {
+      if (geometry.polyfaces)
+        geometry.polyfaces.forEach((polyface) => {
           const sweepStrings = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(inPoints, polyface);
           sweepStrings.forEach((sweepString) => outStrings.push(sweepString));
         });
-      }
     }
 
-    if (debugContext) {
-      const builder =  debugContext.createGraphicBuilder(GraphicType.WorldDecoration);
-      builder.setSymbology(ColorDef.green, ColorDef.green, 1);
-      builder.addLineString(inPoints.getPoint3dArray());
-      for (const tile of tileSelector.accepted) {
-        const corners = tile.contentRange.corners();
-        this.iModelTransform.multiplyPoint3dArrayInPlace(corners);
-        builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
-        builder.addRangeBoxFromCorners(corners);
-        builder.setSymbology(ColorDef.red, ColorDef.red, 1);
-        // tile.geometry?.polyfaces?.forEach((polyface) => builder.addPolyface(polyface, false));
-
-        debugContext.addDecorationFromBuilder(builder);
-      }
-    }
-
-    return collectionStatus === TileCollectionStatus.Loading ? RealityTileDrapeStatus.Loading : RealityTileDrapeStatus.Success;
+    return collectionStatus === RealityTileCollectionStatus.Loading ? RealityTileDrapeStatus.Loading : RealityTileDrapeStatus.Success;
   }
 }
 
