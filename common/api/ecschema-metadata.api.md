@@ -751,7 +751,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem";
+export function diagnosticTypeToString(type: DiagnosticType): "None" | "Schema" | "SchemaItem" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint";
 
 // @beta
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
@@ -2032,7 +2032,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): [InvertedUnit | Unit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -2440,7 +2440,7 @@ export enum PropertyType {
 }
 
 // @beta (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "NavigationProperty" | "StructProperty" | "StructArrayProperty";
 
 // @beta (undocumented)
 export namespace PropertyTypeUtils {
@@ -2910,13 +2910,13 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     BaseClassDelta: {
-        new (ecClass: AnyClass, messageArgs: [CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined, CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined], category?: DiagnosticCategory): {
+        new (ecClass: AnyClass, messageArgs: [EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined, CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined] | undefined;
+            messageArgs?: [EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -3111,25 +3111,25 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     FormatUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [InvertedUnit | Unit], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
-            messageArgs?: [Unit | InvertedUnit] | undefined;
+            messageArgs?: [InvertedUnit | Unit] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
     UnitLabelOverrideDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [InvertedUnit | Unit, string | undefined, string | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
-            messageArgs?: [Unit | InvertedUnit, string | undefined, string | undefined] | undefined;
+            messageArgs?: [InvertedUnit | Unit, string | undefined, string | undefined] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -3463,6 +3463,7 @@ export class SchemaKey {
     // (undocumented)
     compareByName(rhs: SchemaKey | string | undefined): boolean;
     compareByVersion(rhs: SchemaKey): number;
+    static fromJSON(props: SchemaKeyProps): SchemaKey;
     // (undocumented)
     matches(rhs: SchemaKey, matchType?: SchemaMatchType): boolean;
     // (undocumented)
@@ -3473,6 +3474,7 @@ export class SchemaKey {
     static parseString(fullName: string): SchemaKey;
     // (undocumented)
     get readVersion(): number;
+    toJSON(): SchemaKeyProps;
     toString(padZeroes?: boolean): string;
     // (undocumented)
     get version(): ECVersion;
@@ -3480,6 +3482,14 @@ export class SchemaKey {
     protected _version: ECVersion;
     // (undocumented)
     get writeVersion(): number;
+}
+
+// @beta
+export interface SchemaKeyProps {
+    readonly minor: number;
+    readonly name: string;
+    readonly read: number;
+    readonly write: number;
 }
 
 // @beta (undocumented)

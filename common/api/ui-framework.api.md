@@ -920,7 +920,7 @@ export interface ChangeSetInfo {
     userCreated?: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface ChildWindowLocationProps {
     // (undocumented)
     height: number;
@@ -932,8 +932,9 @@ export interface ChildWindowLocationProps {
     width: number;
 }
 
-// @alpha
+// @beta
 export class ChildWindowManager {
+    closeAllChildWindows(): void;
     // (undocumented)
     closeChildWindow: (childWindowId: string, processWindowClose?: boolean) => boolean;
     // (undocumented)
@@ -941,7 +942,7 @@ export class ChildWindowManager {
     // (undocumented)
     findChildWindowId(contentWindow: Window | undefined | null): string | undefined;
     // (undocumented)
-    openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useBlankUrl?: boolean): boolean;
+    openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean): boolean;
     // (undocumented)
     get openChildWindows(): OpenChildWindowInfo[];
     }
@@ -1941,7 +1942,7 @@ export const expandWidget: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "left" | "right" | "bottom" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -1957,7 +1958,26 @@ export const expandWidget: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "left" | "right" | "bottom" | "top";
+                    readonly side: PanelSide;
+                };
+            };
+        };
+        readonly allIds: readonly string[];
+    };
+    readonly popoutWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -2023,8 +2043,15 @@ export const expandWidget: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPopoutWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+                readonly x: number;
+                readonly y: number;
+            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("left" | "right" | "bottom" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -2122,7 +2149,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("@bentley/itwin-client").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("@bentley/itwin-client").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2336,6 +2363,9 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     render(): React.ReactNode;
     }
 
+// @internal (undocumented)
+export const FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings";
+
 // @public
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> {
 }
@@ -2444,6 +2474,8 @@ export class FrontstageDef {
     get defaultLayoutId(): string;
     // (undocumented)
     get defaultTool(): ToolItemDef | undefined;
+    // @internal
+    dockPopoutWidgetContainer(widgetContainerId: string): void;
     // @beta
     dockWidgetContainer(widgetId: string): void;
     findWidgetDef(id: string): WidgetDef | undefined;
@@ -2460,9 +2492,15 @@ export class FrontstageDef {
     initializeFromProps(props: FrontstageProps): void;
     initializeFromProvider(frontstageProvider: FrontstageProvider): void;
     // (undocumented)
+    get isApplicationClosing(): boolean;
+    // (undocumented)
     isFloatingWidget(widgetId: string): boolean;
     // (undocumented)
     get isInFooterMode(): boolean;
+    // (undocumented)
+    isPopoutWidget(widgetId: string): boolean;
+    // (undocumented)
+    get isStageClosing(): boolean;
     // @beta (undocumented)
     get leftPanel(): StagePanelDef | undefined;
     // @internal (undocumented)
@@ -2477,16 +2515,24 @@ export class FrontstageDef {
     protected _onDeactivated(): void;
     onFrontstageReady(): void;
     protected _onFrontstageReady(): void;
+    // @internal
+    openPopoutWidgetContainer(state: NineZoneState, widgetContainerId: string): void;
     // @beta
     get panelDefs(): StagePanelDef[];
+    // @beta
+    popoutWidget(widgetId: string, point?: PointProps, size?: SizeProps): void;
     // @beta (undocumented)
     restoreLayout(): void;
     // @beta (undocumented)
     get rightPanel(): StagePanelDef | undefined;
+    // @internal (undocumented)
+    saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window): Promise<void>;
     setActiveContent(): boolean;
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
     setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
+    // @internal (undocumented)
+    setIsApplicationClosing(value: boolean): void;
     startDefaultTool(): void;
     // @internal (undocumented)
     get timeTracker(): TimeTracker;
@@ -2764,6 +2810,9 @@ export const getFloatingZoneStyle: (props: ZoneManagerProps) => {
     zIndex: number;
     position: "relative";
 } | undefined;
+
+// @internal (undocumented)
+export function getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]): string;
 
 // @beta
 export function getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue;
@@ -4127,7 +4176,7 @@ export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessage
 // @public
 export type NotifyMessageType = MessageType;
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface OpenChildWindowInfo {
     // (undocumented)
     childWindowId: string;
@@ -4413,7 +4462,7 @@ export interface ProjectServices {
 }
 
 // @public @deprecated
-export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "style" | "className" | "ref" | "key" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "isInFooterMode" | "className" | "key" | "onOpenWidget" | "openWidget">>;
 
 // @public
 export class PropsHelper {
@@ -4588,6 +4637,9 @@ export interface SavedViewProps extends ViewStateProps {
     emphasizeElementsProps?: EmphasizeElementsProps;
 }
 
+// @internal (undocumented)
+export function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window): Promise<NineZoneState>;
+
 // @alpha
 export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
@@ -4636,10 +4688,10 @@ export class SelectionContextToolDefinitions {
 }
 
 // @public
-export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "style" | "className" | "ref" | "key" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "isInFooterMode" | "className" | "key" | "onOpenWidget" | "openWidget">>;
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "style" | "className" | "ref" | "key" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "isInFooterMode" | "className" | "key" | "onOpenWidget" | "openWidget">>;
 
 // @public
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -4765,7 +4817,7 @@ export const setPanelSize: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "left" | "right" | "bottom" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4781,7 +4833,26 @@ export const setPanelSize: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "left" | "right" | "bottom" | "top";
+                    readonly side: PanelSide;
+                };
+            };
+        };
+        readonly allIds: readonly string[];
+    };
+    readonly popoutWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4847,8 +4918,15 @@ export const setPanelSize: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPopoutWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+                readonly x: number;
+                readonly y: number;
+            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("left" | "right" | "bottom" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -4868,7 +4946,7 @@ export const setPanelSize: (base: {
         readonly width: number;
         readonly height: number;
     };
-}, side: "left" | "right" | "bottom" | "top", size: number | undefined) => import("immer/dist/internal").WritableDraft<NineZoneState>;
+}, side: PanelSide, size: number | undefined) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @beta
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
@@ -4903,7 +4981,7 @@ export const setWidgetLabel: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "left" | "right" | "bottom" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4919,7 +4997,26 @@ export const setWidgetLabel: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "left" | "right" | "bottom" | "top";
+                    readonly side: PanelSide;
+                };
+            };
+        };
+        readonly allIds: readonly string[];
+    };
+    readonly popoutWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4985,8 +5082,15 @@ export const setWidgetLabel: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPopoutWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+                readonly x: number;
+                readonly y: number;
+            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("left" | "right" | "bottom" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5019,7 +5123,7 @@ export const setWidgetState: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "left" | "right" | "bottom" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -5035,7 +5139,26 @@ export const setWidgetState: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "left" | "right" | "bottom" | "top";
+                    readonly side: PanelSide;
+                };
+            };
+        };
+        readonly allIds: readonly string[];
+    };
+    readonly popoutWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -5101,8 +5224,15 @@ export const setWidgetState: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPopoutWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+                readonly x: number;
+                readonly y: number;
+            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("left" | "right" | "bottom" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5199,7 +5329,7 @@ export const showWidget: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "left" | "right" | "bottom" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -5215,7 +5345,26 @@ export const showWidget: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "left" | "right" | "bottom" | "top";
+                    readonly side: PanelSide;
+                };
+            };
+        };
+        readonly allIds: readonly string[];
+    };
+    readonly popoutWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -5281,8 +5430,15 @@ export const showWidget: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPopoutWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+                readonly x: number;
+                readonly y: number;
+            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("left" | "right" | "bottom" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5334,7 +5490,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     }
 
 // @public
-export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "style" | "className" | "ref" | "key" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "isInFooterMode" | "className" | "key" | "onOpenWidget" | "openWidget">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -5976,7 +6132,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<ThemeManagerComponent> & ThemeProps, "children" | "ref" | "key">>;
+export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<ThemeManagerComponent> & ThemeProps, "ref" | "children" | "key">>;
 
 // @beta
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -6443,8 +6599,8 @@ export interface UiDataProvidedDialogProps {
 export class UiFramework {
     // @beta (undocumented)
     static get backstageManager(): BackstageManager;
-    // @alpha (undocumented)
-    static get ChildWindowManager(): ChildWindowManager;
+    // @beta (undocumented)
+    static get childWindowManager(): ChildWindowManager;
     // @beta (undocumented)
     static closeCursorMenu(): void;
     // (undocumented)
@@ -6550,6 +6706,8 @@ export class UiFramework {
     static translate(key: string | string[]): string;
     // @beta
     static get uiVersion(): string;
+    // (undocumented)
+    static useDefaultPopoutUrl: boolean;
     // (undocumented)
     static get useDragInteraction(): boolean;
     // @alpha (undocumented)
@@ -7081,6 +7239,8 @@ export class WidgetDef {
     // (undocumented)
     canOpen(): boolean;
     // (undocumented)
+    get canPopout(): boolean | undefined;
+    // (undocumented)
     get classId(): string | ConfigurableUiControlConstructor | undefined;
     // (undocumented)
     static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps;
@@ -7129,6 +7289,8 @@ export class WidgetDef {
     set reactNode(node: React.ReactNode);
     restoreTransientState(): boolean;
     saveTransientState(): void;
+    // (undocumented)
+    setCanPopout(value: boolean | undefined): void;
     setLabel(v: string | ConditionalStringValue | StringGetter): void;
     setTooltip(v: string | ConditionalStringValue | StringGetter): void;
     // (undocumented)
@@ -7484,7 +7646,7 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>>) => JSX.Element;
 
 // @alpha
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
@@ -7542,7 +7704,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
 };
 
 // @public
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "onOpenWidget" | "openWidget">>>) => JSX.Element;
 
 // @public
 export class Workflow extends ItemDefBase {
