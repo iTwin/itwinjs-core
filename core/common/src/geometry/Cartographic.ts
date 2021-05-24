@@ -44,6 +44,14 @@ export class Cartographic implements LatLongAndHeight {
     return result;
   }
 
+  public toJSON(): LatLongAndHeight {
+    return {
+      latitude: this.latitude,
+      longitude: this.longitude,
+      height: this.height,
+    };
+  }
+
   /** Freeze this Cartographic */
   public freeze(): Readonly<this> {
     return Object.freeze(this);

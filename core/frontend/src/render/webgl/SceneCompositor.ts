@@ -936,6 +936,7 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     // Render opaque geometry
+    this.target.frameStatsCollector.beginTime("onRenderOpaqueTime");
     IModelFrameLifecycle.onRenderOpaque.raiseEvent({
       commands,
       needComposite,
@@ -943,6 +944,7 @@ abstract class Compositor extends SceneCompositor {
       fbo: this.getBackgroundFbo(needComposite),
       frameBufferStack: System.instance.frameBufferStack,
     });
+    this.target.frameStatsCollector.endTime("onRenderOpaqueTime");
 
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");
