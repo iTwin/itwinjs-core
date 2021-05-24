@@ -822,7 +822,7 @@ export abstract class Viewport implements IDisposable {
   }
   /** Get a tile tree ref will load a tree that returns geometry rather than graphics.  Currently only the return of Polyface geometry from reality tile
    * or map tile trees (with terrain enabled) are supported, calling [[getTileTreeRef]] on other tile trees will return undefined.
-   * Tile geometry can be  by used indirectly by methods such as [[RealityTileTree.drapeLineString]] or by returned by calling [[RealityTileTree.collectTiles]] and
+   * Tile geometry can be  by used indirectly by methods such as [[RealityTileTree.drapeLineString]] or by calling [[RealityTileTree.collectTiles]] and
    * iterating through[[RealityTileCollector.acceptedGeometry]]
    */
   public getGeometryTreeRef(modelId?: Id64String): TileTreeReference | undefined {
