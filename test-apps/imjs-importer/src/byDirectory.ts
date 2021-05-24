@@ -32,6 +32,7 @@ IModelHost.startup().then(async () => {
   console.log(`input from${directoryTail}`);
   if (directoryTail) {
     const fullBimName = path.isAbsolute(outputFileName) ? outputFileName : `d:\\bfiles\\importIMJS\\${directoryTail}.bim`;
+    console.log({ outputFile: fullBimName});
     const importer = ImportIMJS.create(fullBimName,
       "testSubject");
 

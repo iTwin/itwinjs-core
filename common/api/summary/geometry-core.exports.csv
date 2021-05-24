@@ -66,6 +66,7 @@ public;ClipStatus
 public;ClipUtilities
 public;ClipVector
 public;ClipVectorProps = ClipPrimitiveProps[]
+public;Cloneable
 internal;ClusterableArray 
 internal;compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number
 internal;Complex 
@@ -250,6 +251,8 @@ alpha;StringifiedClipVector
 public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour
+public;TaggedNumericConstants
+public;TaggedNumericData
 internal;TorusImplicit
 public;TorusPipe 
 public;Transform 

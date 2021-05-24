@@ -294,10 +294,45 @@ export class Matrix3d implements BeJSONFunctions {
    * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
    */
   public isAlmostEqual(other: Matrix3d, tol?: number): boolean {
-    if (tol)
       return Geometry.isDistanceWithinTol(this.maxDiff(other), tol);
-    return Geometry.isSmallMetricDistance(this.maxDiff(other));
   }
+  /** Test if `this` and `other` have almost equal Z column and have X and Y columns differing only by a rotation around that Z.
+   * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
+   */
+  public isAlmostEqualAllowZRotation(other: Matrix3d, tol?: number): boolean {
+    if (this.isAlmostEqual(other, tol))
+      return true;
+
+    if (this.isAlmostEqualColumn(AxisIndex.Z, other, tol)) {
+      const radians = Angle.radiansBetweenVectorsXYZ(this.coffs[0], this.coffs[3], this.coffs[6], other.coffs[0], other.coffs[3], other.coffs[6]);
+      const angle = Angle.createRadians(radians);
+      const columnX = this.columnX();
+      const columnY = this.columnY();
+      const columnZ = this.columnZ();
+      let column = Vector3d.createRotateVectorAroundVector(columnX, columnZ, angle)!;
+      if (other.isAlmostEqualColumnXYZ(0, column.x, column.y, column.z, tol)){
+        column = Vector3d.createRotateVectorAroundVector(columnY, columnZ, angle)!;
+        return other.isAlmostEqualColumnXYZ(1, column.x, column.y, column.z, tol);
+      }
+    }
+    return false;
+  }
+
+  public isAlmostEqualColumn(columnIndex: AxisIndex, other: Matrix3d, tol?: number): boolean{
+    const a = Geometry.maxAbsXYZ(
+      this.coffs[columnIndex] - other.coffs[columnIndex],
+      this.coffs[columnIndex + 3] - other.coffs[columnIndex + 3],
+      this.coffs[columnIndex + 6] - other.coffs[columnIndex + 6]);
+    return Geometry.isDistanceWithinTol(a, tol);
+  }
+  public isAlmostEqualColumnXYZ(columnIndex: AxisIndex, ax: number, ay: number, az: number, tol?: number): boolean{
+    const a = Geometry.maxAbsXYZ(
+      this.coffs[columnIndex] - ax,
+      this.coffs[columnIndex + 3] - ay,
+      this.coffs[columnIndex + 6] - az);
+    return Geometry.isDistanceWithinTol(a, tol);
+  }
+
   /** Test for exact (bitwise) equality with other. */
   public isExactEqual(other: Matrix3d): boolean { return this.maxDiff(other) === 0.0; }
   /** test if all entries in the z row and column are exact 001, i.e. the matrix only acts in 2d */
