@@ -1,4 +1,4 @@
-## [Dashboards](/getting-started/registration-dashboard?tab=1)
+## [Dashboards](https://developer.bentley.com/my-apps/)
 
 ##### [My iModels](https://developer.bentley.com/my-imodels/)
 
