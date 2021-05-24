@@ -121,7 +121,7 @@ export class CopyStaticAssetsPlugin {
         to({ absoluteFilename }: { absoluteFilename: string }) {
           const regex = new RegExp(`(${fromTo}\\\\)(.*)`);
           return regex.exec(absoluteFilename)![2];
-        }
+        },
       });
     }
     return patterns;
