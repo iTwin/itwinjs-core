@@ -68,13 +68,12 @@ export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderP
   }
 
   const [info, setInfo] = useState<Info>({ treeModel: undefined });
-  const dataProvider = useDisposable(useCallback(
-    () => createDataProvider(props),
-    [info, ...Object.values(props)], /* eslint-disable-line react-hooks/exhaustive-deps */ /* re-create the data-provider whenever any prop changes */
-  ));
+  const dataProvider = useDisposable(useCallback(() => createDataProvider(props), [info, ...Object.values(props)]));
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const modelSource = useMemo(() => new TreeModelSource(info.treeModel), [dataProvider, info]);
+  let treeModelSeed = props.enableHierarchyAutoUpdate ? info.treeModel : undefined;
+  // Set treeModelSeed to undefined if props have changed
+  useMemo(() => treeModelSeed = undefined, Object.values(props));
+  const modelSource = useMemo(() => new TreeModelSource(treeModelSeed), [dataProvider]);
 
   const rerenderWithTreeModel = useCallback((treeModel?: MutableTreeModel) => setInfo({ treeModel }), []);
   const modelSourceUpdateProps: ModelSourceUpdateProps = {
