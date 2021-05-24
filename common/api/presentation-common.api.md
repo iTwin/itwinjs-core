@@ -1779,7 +1779,7 @@ export enum PresentationStatus {
     UseAfterDisposal = 65538
 }
 
-// @alpha (undocumented)
+// @beta
 export enum PresentationUnitSystem {
     // (undocumented)
     BritishImperial = "british-imperial",
@@ -2185,7 +2185,7 @@ export interface RequestOptions<TIModel> {
     imodel: TIModel;
     locale?: string;
     priority?: number;
-    // @alpha
+    // @beta
     unitSystem?: PresentationUnitSystem;
 }
 

@@ -27,7 +27,10 @@ export enum RequestPriority {
   Max = Number.MAX_SAFE_INTEGER,
 }
 
-/** @alpha */
+/**
+ * Enumeration of unit systems that can be used when formatting values.
+ * @beta
+ */
 export enum PresentationUnitSystem {
   Metric = "metric",
   BritishImperial = "british-imperial",
@@ -50,7 +53,7 @@ export interface RequestOptions<TIModel> {
    * Unit system to use when formatting property values with units. Default presentation
    * unit is used if unit system is not specified.
    *
-   * @alpha
+   * @beta
    */
   unitSystem?: PresentationUnitSystem;
 
