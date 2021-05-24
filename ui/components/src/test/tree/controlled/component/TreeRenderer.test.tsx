@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { VariableSizeList } from "react-window";
+import { Observable } from "rxjs/internal/Observable";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
@@ -14,7 +15,7 @@ import { TreeRenderer } from "../../../../ui-components/tree/controlled/componen
 import { from } from "../../../../ui-components/tree/controlled/Observable";
 import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActions";
 import {
-  TreeModel, TreeModelNode, TreeModelNodePlaceholder, TreeModelRootNode, VisibleTreeNodes,
+  MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodePlaceholder, TreeModelRootNode, VisibleTreeNodes,
 } from "../../../../ui-components/tree/controlled/TreeModel";
 import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
 import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
@@ -81,80 +82,112 @@ describe("TreeRenderer", () => {
     getByText(label);
   });
 
-  it("renders placeholder and starts loading root node", () => {
-    const treeRoot: TreeModelRootNode = { depth: -1, id: undefined, numChildren: 1 };
-    const node: TreeModelNodePlaceholder = {
-      childIndex: 0,
-      depth: 0,
-    };
-    const modelMock = moq.Mock.ofType<TreeModel>();
-    modelMock.setup((x) => x.getRootNode()).returns(() => treeRoot);
-    nodeLoaderMock.setup((x) => x.loadNode(treeRoot, 0)).returns(() => from([]));
-    visibleNodesMock.setup((x) => x.getModel()).returns(() => modelMock.object);
-    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
-    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
+  describe("node loading", () => {
+    it("renders placeholder and starts loading root node", () => {
+      const treeRoot: TreeModelRootNode = { depth: -1, id: undefined, numChildren: 1 };
+      const node: TreeModelNodePlaceholder = {
+        childIndex: 0,
+        depth: 0,
+      };
+      const modelMock = moq.Mock.ofType<TreeModel>();
+      modelMock.setup((x) => x.getRootNode()).returns(() => treeRoot);
+      nodeLoaderMock.setup((x) => x.loadNode(treeRoot, 0)).returns(() => from([]));
+      visibleNodesMock.setup((x) => x.getModel()).returns(() => modelMock.object);
+      visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
+      visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
-    const { container } = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-      />);
+      const { container } = render(
+        <TreeRenderer
+          nodeLoader={nodeLoaderMock.object}
+          treeActions={treeActionsMock.object}
+          visibleNodes={visibleNodesMock.object}
+          nodeHeight={() => 50}
+        />);
 
-    expect(container).to.not.be.null;
-    nodeLoaderMock.verify((x) => x.loadNode(treeRoot, 0), moq.Times.once());
-  });
+      expect(container).to.not.be.null;
+      nodeLoaderMock.verify((x) => x.loadNode(treeRoot, 0), moq.Times.once());
+    });
 
-  it("renders placeholder and starts loading node with parent", () => {
-    const parentNode = createRandomMutableTreeModelNode();
-    const node: TreeModelNodePlaceholder = {
-      parentId: parentNode.id,
-      childIndex: 0,
-      depth: 0,
-    };
-    const modelMock = moq.Mock.ofType<TreeModel>();
-    modelMock.setup((x) => x.getNode(parentNode.id)).returns(() => parentNode);
-    nodeLoaderMock.setup((x) => x.loadNode(parentNode, 0)).returns(() => from([]));
-    visibleNodesMock.setup((x) => x.getModel()).returns(() => modelMock.object);
-    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
-    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
+    it("renders placeholder and starts loading node with parent", () => {
+      const parentNode = createRandomMutableTreeModelNode();
+      const node: TreeModelNodePlaceholder = {
+        parentId: parentNode.id,
+        childIndex: 0,
+        depth: 0,
+      };
+      const modelMock = moq.Mock.ofType<TreeModel>();
+      modelMock.setup((x) => x.getNode(parentNode.id)).returns(() => parentNode);
+      nodeLoaderMock.setup((x) => x.loadNode(parentNode, 0)).returns(() => from([]));
+      visibleNodesMock.setup((x) => x.getModel()).returns(() => modelMock.object);
+      visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
+      visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
-    const { container } = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-      />);
+      const { container } = render(
+        <TreeRenderer
+          nodeLoader={nodeLoaderMock.object}
+          treeActions={treeActionsMock.object}
+          visibleNodes={visibleNodesMock.object}
+          nodeHeight={() => 50}
+        />);
 
-    expect(container).to.not.be.null;
-    nodeLoaderMock.verify((x) => x.loadNode(parentNode, 0), moq.Times.once());
-  });
+      expect(container).to.not.be.null;
+      nodeLoaderMock.verify((x) => x.loadNode(parentNode, 0), moq.Times.once());
+    });
 
-  it("renders placeholder node but does not start loading if parent node is not found", () => {
-    const parentNode = createRandomMutableTreeModelNode();
-    const node: TreeModelNodePlaceholder = {
-      parentId: parentNode.id,
-      childIndex: 0,
-      depth: 0,
-    };
-    const modelMock = moq.Mock.ofType<TreeModel>();
-    modelMock.setup((x) => x.getNode(parentNode.id)).returns(() => undefined);
-    visibleNodesMock.setup((x) => x.getModel()).returns(() => modelMock.object);
-    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
-    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
+    it("renders placeholder node but does not start loading if parent node is not found", () => {
+      const parentNode = createRandomMutableTreeModelNode();
+      const node: TreeModelNodePlaceholder = {
+        parentId: parentNode.id,
+        childIndex: 0,
+        depth: 0,
+      };
+      const modelMock = moq.Mock.ofType<TreeModel>();
+      modelMock.setup((x) => x.getNode(parentNode.id)).returns(() => undefined);
+      visibleNodesMock.setup((x) => x.getModel()).returns(() => modelMock.object);
+      visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
+      visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
-    const { container } = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-      />);
+      const { container } = render(
+        <TreeRenderer
+          nodeLoader={nodeLoaderMock.object}
+          treeActions={treeActionsMock.object}
+          visibleNodes={visibleNodesMock.object}
+          nodeHeight={() => 50}
+        />);
 
-    expect(container).to.not.be.null;
-    nodeLoaderMock.verify((x) => x.loadNode(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      expect(container).to.not.be.null;
+      nodeLoaderMock.verify((x) => x.loadNode(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+    });
+
+    it("does not request to load a node again if visibleNodes changes while the node is still loading", async () => {
+      const treeModel = new MutableTreeModel();
+      treeModel.setNumChildren(undefined, 1);
+
+      nodeLoaderMock
+        .setup((x) => x.loadNode(treeModel.getRootNode(), 0))
+        .returns(() => new Observable(() => { }))
+        .verifiable(moq.Times.once());
+
+      const { rerender } = render(
+        <TreeRenderer
+          nodeLoader={nodeLoaderMock.object}
+          treeActions={treeActionsMock.object}
+          visibleNodes={treeModel.computeVisibleNodes()}
+          nodeHeight={() => 50}
+        />,
+      );
+      nodeLoaderMock.verifyAll();
+
+      rerender(
+        <TreeRenderer
+          nodeLoader={nodeLoaderMock.object}
+          treeActions={treeActionsMock.object}
+          visibleNodes={treeModel.computeVisibleNodes()}
+          nodeHeight={() => 50}
+        />,
+      );
+      nodeLoaderMock.verifyAll();
+    });
   });
 
   it("rerenders with loaded node", () => {

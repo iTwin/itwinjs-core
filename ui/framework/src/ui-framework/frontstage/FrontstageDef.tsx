@@ -6,10 +6,15 @@
  * @module Frontstage
  */
 
+// cSpell:ignore popout
+
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
-import { dockWidgetContainer, findTab, floatWidget, isFloatingLocation, NineZoneManagerProps, NineZoneState } from "@bentley/ui-ninezone";
+import {
+  dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
+  NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow,
+} from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
@@ -27,6 +32,10 @@ import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { PointProps, SizeProps } from "@bentley/ui-core";
+import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
+import { PopoutWidget } from "../childwindow/PopoutWidget";
+import { setImmediate } from "timers";
+import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -48,6 +57,8 @@ export class FrontstageDef {
   private _defaultContentId: string = "";
   private _contentGroupId: string = "";
   private _isInFooterMode: boolean = true;
+  private _isStageClosing = false;
+  private _isApplicationClosing = false;
   private _applicationData?: any;
   private _usage?: string;
   private _version: number = 0;
@@ -120,10 +131,13 @@ export class FrontstageDef {
     if (this._nineZoneState === state)
       return;
     this._nineZoneState = state;
-    FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
-      frontstageDef: this,
-      state,
-    });
+    // istanbul ignore else
+    if (!(this._isStageClosing || this._isApplicationClosing)) {
+      FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
+        frontstageDef: this,
+        state,
+      });
+    }
   }
 
   /** @internal */
@@ -181,7 +195,16 @@ export class FrontstageDef {
 
     this._timeTracker.stopTiming();
 
+    this._isStageClosing = true; // this keeps widgets in child windows from automatically re-docking
+    UiFramework.childWindowManager.closeAllChildWindows();
+
     this._onDeactivated();
+    this._isStageClosing = false;
+  }
+
+  /** @internal */
+  public setIsApplicationClosing(value: boolean) {
+    this._isApplicationClosing = value;
   }
 
   /** Returns once the contained widgets and content controls are ready to use */
@@ -534,6 +557,18 @@ export class FrontstageDef {
     FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
   }
 
+  public isPopoutWidget(widgetId: string) {
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const location = findTab(this.nineZoneState, widgetId);
+      // istanbul ignore else
+      if (location)
+        return isPopoutLocation(location);
+    }
+
+    return false;
+  }
+
   public isFloatingWidget(widgetId: string) {
     // istanbul ignore else
     if (this.nineZoneState) {
@@ -555,13 +590,128 @@ export class FrontstageDef {
    * @beta
    */
   public floatWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
-    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
-      return;
     // istanbul ignore else
     if (this.nineZoneState) {
-      const state = floatWidget(this.nineZoneState, widgetId, point, size);
-      if (state)
-        this.nineZoneState = state;
+      const location = findTab(this.nineZoneState, widgetId);
+      if (location) {
+        let popoutWidgetContainerId: string | undefined;
+        if (isPopoutLocation(location)) {
+          popoutWidgetContainerId = location.popoutWidgetId;
+        }
+        const state = floatWidget(this.nineZoneState, widgetId, point, size);
+        // istanbul ignore else
+        if (state) {
+          this.nineZoneState = state;
+          setImmediate(() => {
+            popoutWidgetContainerId && UiFramework.childWindowManager.closeChildWindow(popoutWidgetContainerId, true);
+          });
+        }
+      }
+    }
+  }
+
+  /** Opens window for specified PopoutWidget container. Used to reopen popout when running in Electron.
+   * @internal */
+  public openPopoutWidgetContainer(state: NineZoneState, widgetContainerId: string) {
+    const location = findWidget(state, widgetContainerId);
+    // istanbul ignore else
+    if (location && isPopoutWidgetLocation(location) && 1 === state.widgets[widgetContainerId].tabs.length) {
+      // NOTE: Popout Widget Container will only contain a single WidgetTab
+      const widgetDef = this.findWidgetDef(state.widgets[widgetContainerId].tabs[0]);
+      // istanbul ignore else
+      if (widgetDef) {
+        const tab = state.tabs[widgetDef.id];
+        const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
+        const position: ChildWindowLocationProps = {
+          width: tab.preferredPopoutWidgetSize?.width ?? 600,
+          height: tab.preferredPopoutWidgetSize?.height ?? 800,
+          left: tab.preferredPopoutWidgetSize?.x ?? 0,
+          top: tab.preferredPopoutWidgetSize?.y ?? 0,
+        };
+        UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
+      }
+    }
+  }
+
+  /** Create a new popout/child window that contains the widget specified by its Id. Supported only when in
+   *  UI 2.0 or higher.
+   * @param widgetId case sensitive Widget Id
+   * @param point Position of top left corner of floating panel in pixels. If undefined {x:0, y:0} is used.
+   * @param size defines the width and height of the floating panel. If undefined and widget has been floated before
+   * the previous size is used, else {height:800, width:600} is used.
+   * @beta
+   */
+  public popoutWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      let location = findTab(this.nineZoneState, widgetId);
+      // istanbul ignore else
+      if (location) {
+        if (isPopoutLocation(location))
+          return;
+
+        // get the state to apply that will pop-out the specified WidgetTab to child window.
+        const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, point, size);
+        // istanbul ignore else
+        if (state) {
+          // now that the state is updated get the id of the container that houses the widgetTab/widgetId
+          location = findTab(state, widgetId);
+          // istanbul ignore else
+          if (location && isPopoutLocation(location)) {
+            const widgetDef = this.findWidgetDef(widgetId);
+            // istanbul ignore else
+            if (widgetDef) {
+              const widgetContainerId = location.widgetId;
+              const tab = state.tabs[widgetId];
+              this.nineZoneState = state;
+              setImmediate(() => {
+                const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
+                const position: ChildWindowLocationProps = {
+                  width: tab.preferredPopoutWidgetSize!.width,  // preferredPopoutWidgetSize set in popoutWidgetToChildWindow method above
+                  height: tab.preferredPopoutWidgetSize!.height,
+                  left: tab.preferredPopoutWidgetSize!.x,
+                  top: tab.preferredPopoutWidgetSize!.y,
+                };
+                UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  public get isStageClosing() {
+    return this._isStageClosing;
+  }
+
+  public get isApplicationClosing() {
+    return this._isApplicationClosing;
+  }
+
+  /** @internal */
+  public async saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window) {
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const newState = await saveFrontstagePopoutWidgetSizeAndPosition(this.nineZoneState, this.id, this.version, childWindowId, childWindow);
+      this._nineZoneState = newState; // set without triggering new render as only preferred floating position set
+    }
+  }
+
+  /** Method used to possibly change a Popout Wigdet back to a docked widget if the user was the one closing the popout's child
+   * window (i.e. UiFramework.childWindowManager.isClosingChildWindow === false).
+   *  @internal
+   */
+  public dockPopoutWidgetContainer(widgetContainerId: string) {
+    if (this.nineZoneState) {
+      const location = findWidget(this.nineZoneState, widgetContainerId);
+      // Make sure the widgetContainerId is still in popout state. We don't want to set it to docked if the window is being closed because
+      // an API call has moved the widget from a popout state to a floating state.
+      // istanbul ignore else
+      if (location && isPopoutWidgetLocation(location)) {
+        const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
+        state && (this.nineZoneState = state);
+      }
     }
   }
 
@@ -572,13 +722,17 @@ export class FrontstageDef {
    * @beta
    */
   public dockWidgetContainer(widgetId: string) {
-    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
-      return;
     // istanbul ignore else
     if (this.nineZoneState) {
-      const state = dockWidgetContainer(this.nineZoneState, widgetId);
-      if (state)
-        this.nineZoneState = state;
+      const location = findTab(this.nineZoneState, widgetId);
+      if (location) {
+        const widgetContainerId = location.widgetId;
+        const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
+        state && (this.nineZoneState = state);
+        if (isPopoutLocation(location)) {
+          UiFramework.childWindowManager.closeChildWindow(location.widgetId, true);
+        }
+      }
     }
   }
 }

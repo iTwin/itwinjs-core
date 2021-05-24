@@ -47,7 +47,7 @@ describe("IModelTransformerHub (#integration)", () => {
     // Create and push seed of source IModel
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     const projectId = await HubUtility.getTestContextId(requestContext);
-    const sourceIModelName: string = generateUniqueName("TransformerSource");
+    const sourceIModelName: string = HubUtility.generateUniqueName("TransformerSource");
     const sourceSeedFileName: string = path.join(outputDir, `${sourceIModelName}.bim`);
     if (IModelJsFs.existsSync(sourceSeedFileName)) {
       IModelJsFs.removeSync(sourceSeedFileName);
@@ -61,7 +61,7 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(Guid.isGuid(sourceIModelId));
 
     // Create and push seed of target IModel
-    const targetIModelName: string = generateUniqueName("TransformerTarget");
+    const targetIModelName: string = HubUtility.generateUniqueName("TransformerTarget");
     const targetSeedFileName: string = path.join(outputDir, `${targetIModelName}.bim`);
     if (IModelJsFs.existsSync(targetSeedFileName)) {
       IModelJsFs.removeSync(targetSeedFileName);
@@ -269,10 +269,10 @@ describe("IModelTransformerHub (#integration)", () => {
   it("Clone/upgrade test", async () => {
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     const projectId = await HubUtility.getTestContextId(requestContext);
-    const sourceIModelName: string = generateUniqueName("CloneSource");
+    const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
     const sourceIModelId = await HubUtility.recreateIModel(requestContext, projectId, sourceIModelName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
-    const targetIModelName: string = generateUniqueName("CloneTarget");
+    const targetIModelName: string = HubUtility.generateUniqueName("CloneTarget");
     const targetIModelId = await HubUtility.recreateIModel(requestContext, projectId, targetIModelName);
     assert.isTrue(Guid.isGuid(targetIModelId));
 
@@ -351,7 +351,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const initializeIModelTimeout = 15 * 60 * 1000; // 15 minutes (in case many CI integration jobs are running at the same time)
 
     // create and push master IModel
-    const masterIModelName = generateUniqueName("Master");
+    const masterIModelName = HubUtility.generateUniqueName("Master");
     const masterSeedFileName = path.join(outputDir, `${masterIModelName}.bim`);
     if (IModelJsFs.existsSync(masterSeedFileName)) {
       IModelJsFs.removeSync(masterSeedFileName); // make sure file from last run does not exist
@@ -375,7 +375,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const changeSetMasterState0 = masterDb.changeSetId;
 
     // create Branch1 iModel using Master as a template
-    const branchIModelName1 = generateUniqueName("Branch1");
+    const branchIModelName1 = HubUtility.generateUniqueName("Branch1");
     await deleteIModelByName(requestContext, projectId, branchIModelName1);
     const branchIModel1 = await IModelHost.iModelClient.iModels.create(requestContext, projectId, branchIModelName1, {
       description: `Branch1 of ${masterIModelName}`,
@@ -392,7 +392,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const changeSetBranch1First = branchDb1.changeSetId;
 
     // create Branch2 iModel using Master as a template
-    const branchIModelName2 = generateUniqueName("Branch2");
+    const branchIModelName2 = HubUtility.generateUniqueName("Branch2");
     await deleteIModelByName(requestContext, projectId, branchIModelName2);
     const branchIModel2 = await IModelHost.iModelClient.iModels.create(requestContext, projectId, branchIModelName2, {
       description: `Branch2 of ${masterIModelName}`,
@@ -409,7 +409,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const changeSetBranch2First = branchDb2.changeSetId;
 
     // create empty iModel meant to contain replayed master history
-    const replayedIModelName = generateUniqueName("Replayed");
+    const replayedIModelName = HubUtility.generateUniqueName("Replayed");
     await deleteIModelByName(requestContext, projectId, replayedIModelName);
     const replayedIModel = await IModelHost.iModelClient.iModels.create(requestContext, projectId, replayedIModelName, {
       description: `Replay of ${masterIModelName}`,
@@ -709,13 +709,5 @@ describe("IModelTransformerHub (#integration)", () => {
       await IModelHost.iModelClient.iModels.delete(requestContext, projectId, iModelId);
     } catch (e) {
     }
-  }
-
-  /** Generate a unique name from the supplied baseName parameter.
-   * - Add "IMT" prefix to group files in the integration test project.
-   * - Add unique (GUID) suffix to make sure CI jobs get different file names.
-   */
-  function generateUniqueName(baseName: string): string {
-    return `IMT_${baseName}_${Guid.createValue()}`;
   }
 });

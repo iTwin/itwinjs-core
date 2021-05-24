@@ -5,9 +5,9 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { DbResult, Guid, OpenMode } from "@bentley/bentleyjs-core";
+import { Guid, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue } from "@bentley/imodeljs-common";
 
 let prefix = "";
 
@@ -47,10 +47,7 @@ function setToStandalone(iModelName: string) {
 
   try {
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not open iModel [${iModelName}]`);
-
+    nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
     nativeDb.saveProjectGuid(Guid.empty); // empty projectId means "standalone"
     nativeDb.saveChanges(); // save change to ProjectId
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId

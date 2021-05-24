@@ -27,6 +27,8 @@ public provideStatusBarItems(stageId: string, stageUsage: string): CommonStatusB
 
 Below is the UiItemsProvider function called when ui-framework is populating StagePanels. The [StagePanelLocation]($ui-abstract) will be the default location for the widget. The [StagePanelSection]($ui-abstract) will specify what zone/area in the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
 
+Starting in version 2.17 Widgets can specify if they support being "popped-out" to a child window by setting the AbstractWidgetProps property `canPopout` to true. This option must be explicitly set because the method `getWidgetContent` must return React components that works properly in a child window. At minimum  components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window.
+
 ```ts
 public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation,
   _section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps>

@@ -224,6 +224,20 @@ describe("CategorizedStructProperty", () => {
       });
     });
 
+    describe("getVisibleDescendants", () => {
+      it("Should return children even when not expanded when `PropertyRecord.property.hideCompositePropertyLabel` is set", () => {
+        const propertyRecord = TestUtils.createStructProperty("CADID1", structChildren);
+        propertyRecord.property.hideCompositePropertyLabel = true;
+
+        const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
+        const { expectedDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, []);
+
+        const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
+        property.isExpanded = false;
+        expect(property.getVisibleDescendants()).to.deep.equal(expectedDescendants);
+      });
+    });
+
     describe("getVisibleDescendantsAndSelf", () => {
       it("Should return self when called on struct property with no children", () => {
         const propertyRecord = TestUtils.createStructProperty("Prop", {});

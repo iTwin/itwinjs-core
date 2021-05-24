@@ -8,19 +8,13 @@ import * as path from "path";
 import { ChangeSetApplyOption, ChangeSetStatus, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import {
-  ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb,
-} from "../../imodeljs-backend";
+import { ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 // Combine all local Txns and generate a changeset file. Then delete all local Txns.
-function createChangeSet(imodel: IModelDb): ChangeSetToken {
-  const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = imodel.nativeDb.startCreateChangeSet();
-  if (res.error)
-    throw new IModelError(res.error.status, "Error in startCreateChangeSet");
-
-  const token: ChangeSetToken = JSON.parse(res.result!);
+function createChangeSet(imodel: IModelDb): IModelJsNative.ChangeSetProps {
+  const token = imodel.nativeDb.startCreateChangeSet();
 
   // finishCreateChangeSet deletes the file that startCreateChangeSet created.
   // We make a copy of it now, before he does that.
@@ -35,12 +29,15 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
   return token;
 }
 
-function applyOneChangeSet(imodel: IModelDb, csToken: ChangeSetToken) {
-  const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(imodel.nativeDb, JSON.stringify([csToken]), ChangeSetApplyOption.Merge);
-  assert.equal(status, ChangeSetStatus.Success);
+function applyOneChangeSet(imodel: IModelDb, csToken: IModelJsNative.ChangeSetProps) {
+  try {
+    imodel.nativeDb.applyChangeSet(csToken, ChangeSetApplyOption.Merge);
+  } catch (err) {
+    assert.isTrue(false, `apply failed, err=${err.errorNumber}`);
+  }
 }
 
-function applyChangeSets(imodel: IModelDb, csHistory: ChangeSetToken[], curIdx: number): number {
+function applyChangeSets(imodel: IModelDb, csHistory: IModelJsNative.ChangeSetProps[], curIdx: number): number {
   while (curIdx < (csHistory.length - 1)) {
     ++curIdx;
     applyOneChangeSet(imodel, csHistory[curIdx]);
@@ -78,7 +75,7 @@ describe("ChangeMerging", () => {
     secondDb.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);
     // // Note: neutral observer's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
 
-    const csHistory: ChangeSetToken[] = [];
+    const csHistory: IModelJsNative.ChangeSetProps[] = [];
 
     let firstParent: number = -1;
     let secondParent: number = -1; // eslint-disable-line @typescript-eslint/no-unused-vars
