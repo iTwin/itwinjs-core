@@ -65,6 +65,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     if (!schemaText)
       return undefined;
 
+    console.log(`Here ${schemaKey.name}`);
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 
     const schema = await Schema.fromJson(schemaText, context);
