@@ -44,9 +44,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
   }
 
   public componentDidMount() {
-    // istanbul ignore if
-    if (IModelApp.authorizationClient !== undefined)
-      this._oidcClient = IModelApp.authorizationClient;
+    this._oidcClient = IModelApp.authorizationClient;
 
     // istanbul ignore if
     if (this._oidcClient?.isAuthorized)
@@ -56,20 +54,16 @@ export class SignIn extends React.PureComponent<SignInProps> {
   // istanbul ignore next
   private _onUserStateChanged() {
     // istanbul ignore next
-    if (this._oidcClient && this._oidcClient.isAuthorized && this.props.onSignedIn)
+    if (this._oidcClient?.isAuthorized && this.props.onSignedIn)
       this.props.onSignedIn();
   }
 
   public componentWillUnmount() {
-    // istanbul ignore next
-    if (this._oidcClient)
-      this._oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+    this._oidcClient?.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 
   private _onStartSignin = async () => {
-    // istanbul ignore next
-    if (this._oidcClient)
-      this._oidcClient.signIn(new ClientRequestContext()); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this._oidcClient?.signIn(new ClientRequestContext()); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // istanbul ignore else
     if (this.props.onStartSignIn)

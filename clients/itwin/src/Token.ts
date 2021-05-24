@@ -52,7 +52,7 @@ export interface AccessTokenProps {
 }
 
 /** Token issued by DelegationSecureTokenService for API access
- * @beta
+ * @public
  */
 @TokenPrefix("Bearer")
 export class AccessToken {
@@ -110,6 +110,7 @@ export class AccessToken {
     const jwt = this._tokenString;
     return (includePrefix === IncludePrefix.Yes) ? `${this._prefix} ${jwt}` : jwt;
   }
+
   /**
    * Initialize the jwt field of the current instance of the AccessToken
    * Users would typically override this method in a subclass of AccessToken
@@ -123,6 +124,7 @@ export class AccessToken {
     const jwt = tokenStr.substr(this._prefix.length + 1);
     this._tokenString = jwt;
   }
+
   /**
    * Create an AccessToken from a string that's typically passed across the wire
    * - The AccessToken will not include the user information or expiry information
