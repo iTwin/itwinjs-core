@@ -10,7 +10,7 @@ import {
   SpatialCategory, SpatialModel,
 } from "@bentley/imodeljs-backend";
 import { AxisAlignedBox3d, Code, ColorDef, PhysicalElementProps, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
-
+/* eslint-disable no-console */
 function collectRange(g: any, rangeToExtend: Range3d) {
   if (g instanceof GeometryQuery) {
     g.extendRange(rangeToExtend);
@@ -103,12 +103,15 @@ export class ImportIMJS {
       const globalRange = Range3d.createNull();
       for (const fileName of fileList) {
         const fullPath = directoryPath + fileName;
+        console.log("File: ", fullPath);
         const fileString = fs.readFileSync(fullPath, "utf8");
         stats.numFile++;
         const json = JSON.parse(fileString);
         const g = IModelJson.Reader.parse(json);
         // numTotal++;
-        if (g) {
+        if (Array.isArray(g) && g.length === 0) {
+          // skip this one?
+        } else if (g) {
           // numGeometry++;
           const range = Range3d.createNull();
           // skip files with large footprint
@@ -132,6 +135,7 @@ export class ImportIMJS {
             };
             const g1 = IModelJson.Writer.toIModelJson(g);
             featureProps.geom = Array.isArray(g1) ? g1 : [g1];
+            // console.log(g1);
             this.iModelDb.elements.insertElement(featureProps);
             const featureModel: SpatialModel = this.iModelDb.models.getModel(physicalModelId);
             const featureModelExtents = featureModel.queryExtents();
