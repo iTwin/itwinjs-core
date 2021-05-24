@@ -285,7 +285,7 @@ describe("usePresentationNodeLoader", () => {
 
       // Update tree so that `info.treeModel` is not undefined
       presentationManagerMock
-        .setup((x) => x.compareHierarchies(moq.It.isAny()))
+        .setup(async (x) => x.compareHierarchies(moq.It.isAny()))
         .returns(async () => [{ type: "Update", target: createNode("test").key, changes: createNode("test_updated") }]);
       onRulesetModified.raiseEvent(
         new RegisteredRuleset({ id: "initial", rules: [] }, "", () => { }),
