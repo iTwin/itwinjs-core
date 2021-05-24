@@ -3247,30 +3247,54 @@ function _clear2dCanvas(canvas: HTMLCanvasElement) {
   ctx.restore();
 }
 
-/** An off-screen viewport is not rendered to the screen. It is never added to the [[ViewManager]], therefore does not participate in
- * the render loop. It must be initialized with an explicit height and width, and its renderFrame function must be manually invoked.
- * @internal
+/** Options supplied when creating an [[OffScreenViewport]].
+ * @see [[OffScreenViewport.create]].
+ * @public
+ */
+export interface OffScreenViewportOptions {
+  /** The view to be drawn in the viewport. */
+  view: ViewState;
+  /** The dimensions of the viewport. */
+  viewRect: ViewRect;
+  /** If true, the viewport's aspect ratio will remain fixed. */
+  lockAspectRatio?: boolean;
+}
+
+/** A viewport that draws to an offscreen buffer instead of to the screen. An offscreen viewport is never added to the [[ViewManager]], therefore does not participate in
+ * the render loop. Its dimensions are specified directly instead of being derived from an HTMLCanvasElement, and its renderFrame function must be manually invoked.
+ * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImage]] and [[Viewport.readImageToCanvas]])
+ * without drawing to the screen.
+ * @public
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
 
-  public static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio = false, target?: RenderTarget) {
-    const rect = new ViewRect(0, 0, 1, 1);
-    if (undefined !== viewRect)
-      rect.setFrom(viewRect);
+  public static create(options: OffScreenViewportOptions): OffScreenViewport {
+    return this.createViewport(options.view, IModelApp.renderSystem.createOffscreenTarget(options.viewRect), options.lockAspectRatio);
+  }
 
-    const vp = new this(target ?? IModelApp.renderSystem.createOffscreenTarget(rect));
+  /** @internal because RenderTarget is internal */
+  public static createViewport(view: ViewState, target: RenderTarget, lockAspectRatio = false): OffScreenViewport {
+    const vp = new this(target);
     vp._isAspectRatioLocked = lockAspectRatio;
     vp.changeView(view);
     vp._decorationsValid = true;
     return vp;
   }
 
-  public get isAspectRatioLocked(): boolean { return this._isAspectRatioLocked; }
-  public get viewRect(): ViewRect { return this.target.viewRect; }
+  /** @internal override */
+  public get isAspectRatioLocked(): boolean {
+    return this._isAspectRatioLocked;
+  }
 
-  public setRect(rect: ViewRect, temporary: boolean = false) {
-    this.target.setViewRect(rect, temporary);
+  /** @internal override */
+  public get viewRect(): ViewRect {
+    return this.target.viewRect;
+  }
+
+  /** Change the dimensions of the viewport. */
+  public setRect(rect: ViewRect): void {
+    this.target.setViewRect(rect, false);
     this.changeView(this.view);
   }
 }
