@@ -1,6 +1,21 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Thu, 20 May 2021 15:06:26 GMT and should not be manually modified.
+This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Add `requiredSchemas` attribute to `Ruleset`
+- Add `PropertyCategorySpecification.parentId` attribute` to support custom categories nesting.
+- Added `diagnostics` attribute to all presentation requests' props.
+- Call given diagnostics handler with diagnostics data whenever response has any.
+- Add `propertySource` attribute to `InstanceLabelOverridePropertyValueSpecification` to allow picking property from a related instance.
+- Add a new `InstanceLabelOverrideRelatedInstanceLabelSpecification` to allow picking label of a related instance.
+- Release tags' review
+- Introduce `requiredSchemas` attribute for presentation rules
+- Add support for custom property category renderers.
 
 ## 2.15.5
 Thu, 20 May 2021 15:06:26 GMT
