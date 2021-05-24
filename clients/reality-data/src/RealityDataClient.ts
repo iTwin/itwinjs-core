@@ -8,7 +8,7 @@
  */
 import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
 import {
-  AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance,
+  AuthorizedClientRequestContext, ECJsonTypeMap, getArrayBuffer, getJson, RequestQueryOptions, WsgClient, WsgInstance,
 } from "@bentley/itwin-client";
 import { URL } from "url";
 
@@ -196,6 +196,7 @@ export class RealityData extends WsgInstance {
    * @param requestContext The client request context.
    * @param name name or path of tile
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
+   * @deprecated use [[getTileJson]] instead
    * @returns tile data json
    */
   public async getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
@@ -255,13 +256,10 @@ export class RealityData extends WsgInstance {
     requestContext.enter();
     const stringUrl = await this.getBlobStringUrl(requestContext, name, nameRelativeToRootDocumentPath);
     requestContext.enter();
-    const options: RequestOptions = {
-      method: "GET",
-      responseType: "json",
-    };
-    const data = await request(requestContext, stringUrl, options);
+
+    const data = await getJson(requestContext, stringUrl);
     requestContext.enter();
-    return data.body;
+    return data;
   }
 
   /**
@@ -275,13 +273,10 @@ export class RealityData extends WsgInstance {
     requestContext.enter();
     const stringUrl = await this.getBlobStringUrl(requestContext, name, nameRelativeToRootDocumentPath);
     requestContext.enter();
-    const options: RequestOptions = {
-      method: "GET",
-      responseType: "arraybuffer",
-    };
-    const data = await request(requestContext, stringUrl, options);
+
+    const data = await getArrayBuffer(requestContext, stringUrl);
     requestContext.enter();
-    return data.body;
+    return data;
   }
 
   /**
@@ -296,8 +291,9 @@ export class RealityData extends WsgInstance {
       throw new Error(`Root document not defined for reality data: ${this.id}`);
 
     const root = this.rootDocument;
-
-    return this.getModelData(requestContext, root, false);
+    const rootJson = await this.getTileJson(requestContext, root, false);
+    requestContext.enter();
+    return rootJson;
   }
 
 }
