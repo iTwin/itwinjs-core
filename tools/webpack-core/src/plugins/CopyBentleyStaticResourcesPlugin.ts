@@ -7,7 +7,7 @@ import * as path from "path";
 import { Compiler } from "webpack";
 import { paths, resolveApp } from "../utils/paths";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-const CopyPlugin = require('copy-webpack-plugin');
+const CopyPlugin = require("copy-webpack-plugin");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 abstract class AbstractAsyncStartupPlugin {
@@ -100,7 +100,7 @@ export class CopyStaticAssetsPlugin {
   private _scopes: string[];
   private _fromTo: string;
 
-  constructor({ scopes = ['@bentley', '@itwin'], fromTo = 'public' }) {
+  constructor({ scopes = ["@bentley", "@itwin"], fromTo = "public" }) {
     this._scopes = scopes;
     this._fromTo = fromTo;
   }
@@ -110,7 +110,7 @@ export class CopyStaticAssetsPlugin {
       return [];
     }
 
-    const patterns = []
+    const patterns = [];
     const fromTo = this._fromTo;
 
     for (const scope of this._scopes) {
@@ -120,15 +120,15 @@ export class CopyStaticAssetsPlugin {
         noErrorOnMissing: true,
         to({ absoluteFilename }: { absoluteFilename: string }) {
           const regex = new RegExp(`(${fromTo}\\\\)(.*)`);
-          return Promise.resolve(regex.exec(absoluteFilename)![2]);
+          return regex.exec(absoluteFilename)![2];
         }
-      })
+      });
     }
     return patterns;
   }
 
   public apply(compiler: Compiler) {
-    const patterns = this._getPatterns()
-    new CopyPlugin({ patterns }).apply(compiler)
+    const patterns = this._getPatterns();
+    new CopyPlugin({ patterns }).apply(compiler);
   }
 }
