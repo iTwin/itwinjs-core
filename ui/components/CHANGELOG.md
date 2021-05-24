@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 20 May 2021 15:06:26 GMT and should not be manually modified.
+This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Add support for child popup windows.
+- Add ability to not render array/struct property label in virtualized property grid
+- Add support for custom property category renderers.
+- Improved Multi-Value column filtering in the Table component
+- Move `VirtualizedPropertyGrid` related types from @alpha to @beta.
+- Fixed getting distinct values when Table rows are updated
+- Update to latest classnames package 
 
 ## 2.15.5
 Thu, 20 May 2021 15:06:26 GMT
