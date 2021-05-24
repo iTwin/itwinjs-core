@@ -194,7 +194,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
 
     return (
       <>
-        <div ref={this._target} >
+        <div ref={this._target} style={this.props.style} >
           <LineWeightSwatch
             data-testid="components-weightpicker-button"
             className={buttonClassNames}

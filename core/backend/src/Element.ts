@@ -702,7 +702,7 @@ export class VolumeElement extends SpatialLocationElement {
 
 /** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]].
  * @note The associated ECClass was added to the BisCore schema in version 1.0.11.
- * @beta
+ * @public
  */
 export class SectionDrawingLocation extends SpatialLocationElement {
   /** The Id of the [[ViewDefinition]] to which this location refers. */
@@ -1566,7 +1566,7 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
 
 /** Describes how to animate a view of a [[GeometricModel]] to show change over time using a [RenderSchedule.Script]($common).
  * @note This class was introduced in version 01.00.13 of the BisCore ECSchema. It should only be used with [[IModelDb]]s containing that version or newer.
- * @beta
+ * @public
  */
 export class RenderTimeline extends InformationRecordElement {
   /** @internal */

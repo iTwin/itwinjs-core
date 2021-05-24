@@ -84,13 +84,17 @@ exports[`WidgetPanels should render widget content 1`] = `
               </div>
             </div>
           </div>
-          <button
-            class="nz-widget-pinToggle"
+          <div
+            class="nz-widget-tabBarButtons"
           >
-            <i
-              class="icon icon-chevron-left"
-            />
-          </button>
+            <button
+              class="nz-widget-pinToggle"
+            >
+              <i
+                class="icon icon-chevron-left"
+              />
+            </button>
+          </div>
         </div>
         <div
           class="nz-widget-content-container"
