@@ -1863,7 +1863,7 @@ export class DisplayStyleSettings {
     // @internal @deprecated
     readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
-    readonly onSubCategoryOverridesChanged: BeEvent<() => void>;
+    readonly onSubCategoryOverridesChanged: BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>;
     readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
     readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
     readonly onViewFlagsChanged: BeEvent<(newFlags: Readonly<ViewFlags>) => void>;
@@ -7962,14 +7962,14 @@ export interface ThematicGradientSettingsProps {
     stepCount?: number;
 }
 
-// @alpha
+// @public
 export interface ThumbnailFormatProps {
     format: "jpeg" | "png";
     height: number;
     width: number;
 }
 
-// @alpha
+// @public
 export interface ThumbnailProps extends ThumbnailFormatProps {
     image: Uint8Array;
 }
@@ -8136,7 +8136,7 @@ export interface TileTreeProps {
     rootTile: TileProps;
 }
 
-// @alpha
+// @public
 export interface TileVersionInfo {
     formatVersion: number;
 }

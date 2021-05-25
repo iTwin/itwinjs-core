@@ -247,7 +247,7 @@ public;GraphicShape2d
 public;GraphicType
 alpha;GroupMark
 internal;Hilites
-beta;HiliteSet
+public;HiliteSet
 public;HitDetail
 public;HitDetailType
 public;HitGeomType
@@ -375,7 +375,8 @@ public;NotifyMessageDetails
 internal;NullRenderSystem 
 internal;NullTarget 
 internal;OffScreenTarget 
-internal;OffScreenViewport 
+public;OffScreenViewport 
+public;OffScreenViewportOptions
 beta;OidcBrowserClient 
 deprecated;OidcBrowserClient 
 alpha;OnFrameStatsReadyEvent = BeEvent
@@ -401,7 +402,7 @@ public;ParticleCollectionBuilderParams
 public;ParticleProps 
 beta;PendingExtension
 internal;PerformanceMetrics
-beta;PerModelCategoryVisibility
+public;PerModelCategoryVisibility
 public;PhysicalModelState 
 public;PickableGraphicOptions 
 internal;PingTestResult
