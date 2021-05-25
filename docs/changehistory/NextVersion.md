@@ -12,6 +12,7 @@ More of the utilities and classes around authorization are now declared public -
 - Single Page Applications (Browser) - [BrowserAuthorizationClient]($frontend-authorization-client)
 - Agent Authorization - [AgentAuthorizationClient]($backend-itwin-client)
 - Access Token - [AccessToken]($itwin-client)
+- User Info - [UserInfo]($itwin-client)
 
 ### Changes to authorization with agents
 
