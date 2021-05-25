@@ -375,7 +375,7 @@ class OverridesMap<OverrideProps, Override extends { toJSON: () => OverrideProps
     private readonly _json: DisplayStyleSettingsProps,
     private readonly _arrayKey: OverridesArrayKey,
     private readonly _event: BeEvent<(id: Id64String, ovr: Override | undefined) => void>,
-    private readonly _idFromProps: (props: OverrideProps) => Id64String,
+    private readonly _idFromProps: (props: OverrideProps) => Id64String | undefined,
     private readonly _overrideFromProps: (props: OverrideProps) => Override | undefined) {
     super();
     this.populate();
@@ -423,9 +423,11 @@ class OverridesMap<OverrideProps, Override extends { toJSON: () => OverrideProps
 
     for (const props of ovrs) {
       const id = this._idFromProps(props);
-      const ovr = Id64.isValid(id) ? this._overrideFromProps(props) : undefined;
-      if (ovr)
-        super.set(id, ovr);
+      if (undefined !== id && Id64.isValid(id)) {
+        const ovr = this._overrideFromProps(props);
+        if (ovr)
+          super.set(id, ovr);
+      }
     }
   }
 
@@ -468,7 +470,7 @@ export class DisplayStyleSettings {
   private _background: ColorDef;
   private _monochrome: ColorDef;
   private _monochromeMode: MonochromeMode;
-  private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
+  private readonly _subCategoryOverrides: OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>;
   private readonly _modelAppearanceOverrides: Map<Id64String, FeatureAppearance> = new Map<Id64String, FeatureAppearance>();
   private readonly _planarClipMasks: OverridesMap<DisplayStyleRealityModelPlanarClipMaskProps, PlanarClipMaskSettings>;
   private readonly _excludedElements: ExcludedElements;
@@ -573,31 +575,22 @@ export class DisplayStyleSettings {
     if (this._json.analysisStyle)
       this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
 
-    this.populateSubCategoryOverridesFromJSON();
-    this.populateModelAppearanceOverridesFromJSON();
-
     this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
 
+    this._subCategoryOverrides = new OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>(this._json, "subCategoryOvr", this.onSubCategoryOverridesChanged,
+      (props) => props.subCategory, (props) => {
+        const ovr = SubCategoryOverride.fromJSON(props);
+        return ovr.anyOverridden ? ovr : undefined;
+      });
+
+    this.populateModelAppearanceOverridesFromJSON();
+
+
     this._planarClipMasks = new OverridesMap<DisplayStyleRealityModelPlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onRealityModelPlanarClipMaskChanged,
-      (props) => props.modelId ?? Id64.invalid, (props) => {
+      (props) => props.modelId, (props) => {
         const settings = PlanarClipMaskSettings.fromJSON(props);
         return settings.isValid ? settings : undefined;
       });
-  }
-
-  private populateSubCategoryOverridesFromJSON(): void {
-    this._subCategoryOverrides.clear();
-    const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
-    if (undefined !== ovrsArray) {
-      for (const ovrJson of ovrsArray) {
-        const subCatId = Id64.fromJSON(ovrJson.subCategory);
-        if (Id64.isValid(subCatId)) {
-          const subCatOvr = SubCategoryOverride.fromJSON(ovrJson);
-          if (subCatOvr.anyOverridden)
-            this.changeSubCategoryOverride(subCatId, false, subCatOvr);
-        }
-      }
-    }
   }
 
   private populateModelAppearanceOverridesFromJSON(): void {
@@ -774,7 +767,7 @@ export class DisplayStyleSettings {
    * @see [[dropSubCategoryOverride]]
    */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void {
-    this.changeSubCategoryOverride(id, true, ovr);
+    this.subCategoryOverrides.set(id, ovr);
   }
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
@@ -782,7 +775,7 @@ export class DisplayStyleSettings {
    * @see [[overrideSubCategory]]
    */
   public dropSubCategoryOverride(id: Id64String): void {
-    this.changeSubCategoryOverride(id, true);
+    this.subCategoryOverrides.delete(id);
   }
 
   /** The overrides applied by this style. */
@@ -796,12 +789,12 @@ export class DisplayStyleSettings {
    * @see [[overrideSubCategory]]
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
-    return this._subCategoryOverrides.get(id);
+    return this.subCategoryOverrides.get(id);
   }
 
   /** Returns true if an [[SubCategoryOverride]]s are defined by this style. */
   public get hasSubCategoryOverride(): boolean {
-    return this._subCategoryOverrides.size > 0;
+    return this.subCategoryOverrides.size > 0;
   }
 
   /** Customize the way a [Model]($backend)   is drawn by this display style.
@@ -1038,7 +1031,7 @@ export class DisplayStyleSettings {
 
     if (overrides.subCategoryOvr) {
       this._json.subCategoryOvr = [...overrides.subCategoryOvr];
-      this.populateSubCategoryOverridesFromJSON();
+      this._subCategoryOverrides.populate();
     }
 
     if (overrides.modelOvr) {
@@ -1050,61 +1043,6 @@ export class DisplayStyleSettings {
       this._excludedElements.reset("string" === typeof overrides.excludedElements ? overrides.excludedElements : [...overrides.excludedElements]);
 
     this.onOverridesApplied.raiseEvent(overrides);
-  }
-
-  private findIndexOfSubCategoryOverrideInJSON(id: Id64String, allowAppend: boolean): number {
-    const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
-    if (undefined === ovrsArray) {
-      if (allowAppend) {
-        this._json.subCategoryOvr = [];
-        return 0;
-      } else {
-        return -1;
-      }
-    } else {
-      for (let i = 0; i < ovrsArray.length; i++) {
-        if (ovrsArray[i].subCategory === id)
-          return i;
-      }
-
-      return allowAppend ? ovrsArray.length : -1;
-    }
-  }
-
-  private changeSubCategoryOverride(id: Id64String, updateJson: boolean, ovr?: SubCategoryOverride): void {
-    this.onSubCategoryOverridesChanged.raiseEvent(id, ovr);
-
-    if (undefined === ovr) {
-      // undefined => drop the override if present.
-      this._subCategoryOverrides.delete(id);
-      if (updateJson) {
-        const index = this.findIndexOfSubCategoryOverrideInJSON(id, false);
-        if (-1 !== index)
-          this._json.subCategoryOvr!.splice(index, 1);
-      }
-    } else {
-      // add override, or update if present.
-      this._subCategoryOverrides.set(id, ovr);
-      if (updateJson) {
-        const index = this.findIndexOfSubCategoryOverrideInJSON(id, true);
-        this._json.subCategoryOvr![index] = ovr.toJSON();
-        this._json.subCategoryOvr![index].subCategory = id;
-      }
-    }
-  }
-
-  /** @internal */
-  public equalSubCategoryOverrides(other: DisplayStyleSettings): boolean {
-    if (this._subCategoryOverrides.size !== other._subCategoryOverrides.size)
-      return false;
-
-    for (const [key, value] of this._subCategoryOverrides.entries()) {
-      const otherValue = other._subCategoryOverrides.get(key);
-      if (undefined === otherValue || !value.equals(otherValue))
-        return false;
-    }
-
-    return true;
   }
 
   private findIndexOfModelAppearanceOverrideInJSON(id: Id64String, allowAppend: boolean): number {
