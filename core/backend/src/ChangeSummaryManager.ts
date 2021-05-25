@@ -8,7 +8,6 @@
 
 import * as path from "path";
 import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
-import { ChangeSet, ChangeSetQuery } from "@bentley/imodelhub-client";
 import { ChangedValueState, ChangeOpCode, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -259,12 +258,12 @@ export class ChangeSummaryManager {
     }
   }
 
-  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, start: string, end: string): Promise<ChangesetFileProps[]> {
+  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: string, end: string): Promise<ChangesetFileProps[]> {
     requestContext.enter();
 
-    const changeSetInfos = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, { start, end });
+    const changeSetInfos = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, { first, end });
     requestContext.enter();
-    assert(start === "" || start === changeSetInfos[0].id);
+    assert(first === "" || first === changeSetInfos[0].id);
     assert(end === changeSetInfos[changeSetInfos.length - 1].id);
     return changeSetInfos;
   }

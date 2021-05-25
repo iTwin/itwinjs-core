@@ -66,7 +66,7 @@ describe.only("HubMock", () => {
     assert.deepEqual(briefcases[1], { id: 5, user: "user4" });
 
     const cs1: ChangesetFileProps = {
-      id: "changeset0", description: "first changeset", changesType: ChangesType.Regular,
+      id: "changeset0", description: "first changeset", changesType: ChangesType.Regular, parentId: "",
       userCreated: "user1", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
     };
     localHub.addChangeset(cs1);
@@ -128,7 +128,7 @@ describe.only("HubMock", () => {
     assert.equal(2, localHub.getPreviousCheckpoint(cs2.id));
     assert.equal(2, localHub.getPreviousCheckpoint(cs3.id));
 
-    const cSets = localHub.downloadChangesets({ range: { start: cs1.id, end: cs2.id }, targetDir: tmpDir });
+    const cSets = localHub.downloadChangesets({ range: { first: cs1.id, end: cs2.id }, targetDir: tmpDir });
     assert.equal(cSets.length, 2);
     assert.equal(cSets[0].id, cs1.id);
     assert.equal(cSets[0].changesType, cs1.changesType);

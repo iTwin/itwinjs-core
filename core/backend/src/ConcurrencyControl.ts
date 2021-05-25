@@ -114,9 +114,12 @@ export class ConcurrencyControl {
     this._bulkMode = false;
   }
 
+  public static throwSaveError() {
+    throw new IModelError(IModelStatus.TransactionActive, "Call BriefcaseDb.concurrencyControl.request before saving changes");
+  }
   public onSaveChanges() {
     if (this.hasPendingRequests)
-      throw new IModelError(IModelStatus.TransactionActive, "Call BriefcaseDb.concurrencyControl.request before saving changes");
+      ConcurrencyControl.throwSaveError();
   }
 
   /** @internal */

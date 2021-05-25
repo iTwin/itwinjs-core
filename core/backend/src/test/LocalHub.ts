@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { join } from "path";
+import { dirname, join } from "path";
 import { DbResult, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
-import { ChangesetFileProps, ChangesetProps, ChangesetRange } from "../BriefcaseManager";
+import { BriefcaseManager, ChangesetFileProps, ChangesetProps, ChangesetRange } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
-import { rangeToString } from "@azure/storage-blob/typings/src/IRange";
 
 // cspell:ignore rowid
 
@@ -155,7 +154,7 @@ export class LocalHub {
 
   public getChangesetByIndex(index: number): ChangesetProps {
     if (index === 0)
-      return { id: "", changesType: 0, description: "revision0" };
+      return { id: "", changesType: 0, description: "revision0", parentId: "" };
 
     return this.db.withPreparedSqliteStatement("SELECT parentId,description,size,type,pushDate,user,id FROM timeline WHERE rowid=?", (stmt) => {
       stmt.bindValue(1, index);
@@ -164,7 +163,7 @@ export class LocalHub {
         throw new IModelError(rc, `changeset at index ${index} not found`);
 
       return {
-        parentId: stmt.getValue(0).isNull ? undefined : stmt.getValue(0).getString(),
+        parentId: stmt.getValue(0).isNull ? "" : stmt.getValue(0).getString(),
         description: stmt.getValue(1).getString(),
         size: stmt.getValue(2).getDouble(),
         changesType: stmt.getValue(3).getInteger(),
@@ -291,8 +290,10 @@ export class LocalHub {
   }
 
   public downloadChangesets(arg: { range: ChangesetRange, targetDir: LocalDirName }): ChangesetFileProps[] {
-    const startId = (undefined !== arg.range.before) ? this.getChangesetById(arg.range.before).id : arg.range.start;
+    const startId = (undefined !== arg.range.after) ? arg.range.after : arg.range.first;
     let startIndex = this.getChangesetIndex(startId);
+    if (undefined !== arg.range.after)
+      startIndex++;
     if (startIndex === 0) // there's no changeset for index 0 - that's revision0
       startIndex = 1;
     const endIndex = this.getChangesetIndex(arg.range.end);
@@ -309,11 +310,19 @@ export class LocalHub {
     return changesets;
   }
 
+  public removeDir(dirName: string) {
+    if (IModelJsFs.existsSync(dirName)) {
+      IModelJsFs.purgeDirSync(dirName);
+      IModelJsFs.rmdirSync(dirName);
+    }
+
+  }
   public cleanup() {
     if (this._hubDb) {
       this._hubDb.closeDb();
       this._hubDb = undefined;
     }
-    IModelJsFs.purgeDirSync(this.rootDir);
+    this.removeDir(BriefcaseManager.getIModelPath(this.iModelId));
+    this.removeDir(this.rootDir);
   }
 }

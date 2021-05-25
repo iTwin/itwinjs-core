@@ -67,6 +67,7 @@ export class HubMock {
     sinon.stub(ConcurrencyControl, "getAllCodes").callsFake(async (_1, _db: BriefcaseDb): Promise<CodeProps[]> => {
       return [];
     });
+    sinon.stub(ConcurrencyControl, "throwSaveError").callsFake(() => { });
   }
 
   public static shutdown() {

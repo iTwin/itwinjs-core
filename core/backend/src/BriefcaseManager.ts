@@ -38,7 +38,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
  */
 export interface ChangesetProps {
   id: string;
-  parentId?: string;
+  parentId: string;
   changesType: number;
   description: string;
   briefcaseId?: number;
@@ -55,7 +55,7 @@ export interface ChangesetFileProps extends ChangesetProps {
   pathname: string;
 }
 
-export type ChangesetRange = { start: string, before?: never, end: string } | { before: string, start?: never, end: string };
+export type ChangesetRange = { first: string, after?: never, end: string } | { after: string, first?: never, end: string };
 
 /** The Id assigned to a briefcase by iModelHub, or a [[BriefcaseIdValue]] that identify special kinds of iModels.
  * @public
@@ -395,7 +395,7 @@ export class BriefcaseManager {
 
     const val: ChangesetFileProps[] = [];
     for (const cs of changeSets)
-      val.push({ id: cs.wsgId, parentId: cs.parentId, pathname: path.join(changeSetsPath, cs.fileName!), description: cs.description ?? "", changesType: cs.changesType ?? ChangesType.Regular, userCreated: cs.userCreated });
+      val.push({ id: cs.wsgId, parentId: cs.parentId ? cs.parentId : "", pathname: path.join(changeSetsPath, cs.fileName!), description: cs.description ?? "", changesType: cs.changesType ?? ChangesType.Regular, userCreated: cs.userCreated });
 
     return val;
   }
@@ -420,12 +420,12 @@ export class BriefcaseManager {
   public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, range: ChangesetRange): Promise<ChangesetFileProps[]> {
     requestContext.enter();
 
-    const before = range.before ?? (await this.queryChangesetProps(requestContext, iModelId, range.start)).parentId!;
-    if (range.end === "" || before === range.end)
+    const after = range.after ?? (await this.queryChangesetProps(requestContext, iModelId, range.first)).parentId;
+    if (range.end === "" || after === range.end)
       return [];
 
     const query = new ChangeSetQuery();
-    query.betweenChangeSets(before, range.end);
+    query.betweenChangeSets(after, range.end);
 
     return BriefcaseManager.downloadChangeSetsInternal(requestContext, iModelId, query);
   }
@@ -583,7 +583,7 @@ export class BriefcaseManager {
   }
 
   private static async applySingleChangeSet(db: IModelDb, changeSet: ChangesetFileProps, processOption: ChangeSetApplyOption) {
-    return db.nativeDb.applyChangeSet(changeSet as IModelJsNative.ChangeSetProps, processOption);
+    return db.nativeDb.applyChangeSet(changeSet, processOption);
   }
 
   private static async applyChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
@@ -598,7 +598,7 @@ export class BriefcaseManager {
     const reverse = (targetChangeSetIndex < currentChangeSetIndex);
 
     const changeSets = await BriefcaseManager.downloadChangeSets(requestContext, db.iModelId,
-      { before: reverse ? targetChangeSetId : currentChangeSetId, end: reverse ? currentChangeSetId : targetChangeSetId });
+      { after: reverse ? targetChangeSetId : currentChangeSetId, end: reverse ? currentChangeSetId : targetChangeSetId });
     requestContext.enter();
     assert(changeSets.length <= Math.abs(targetChangeSetIndex - currentChangeSetIndex));
     if (reverse)
@@ -773,7 +773,7 @@ export class BriefcaseManager {
 
   /** Extracts codes from ChangeSet file */
   private static extractCodesFromFile(db: BriefcaseDb, changeSets: ChangesetFileProps[]): HubCode[] {
-    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = db.nativeDb.extractCodesFromFile(changeSets as IModelJsNative.ChangeSetProps[]);
+    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = db.nativeDb.extractCodesFromFile(changeSets);
     if (res.error)
       throw new IModelError(res.error.status, "Error in extractCodesFromFile");
     return BriefcaseManager.parseCodesFromJson(db, res.result!);
