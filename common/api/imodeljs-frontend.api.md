@@ -6759,13 +6759,15 @@ export function openImageDataUrlInNewWindow(url: string, title?: string): void;
 
 // @internal (undocumented)
 export class OrbitGtTileTree extends TileTree {
-    constructor(treeParams: TileTreeParams, _dataManager: OrbitGtDataManager, cloudRange: Range3d, _centerOffset: Vector3d);
+    constructor(treeParams: TileTreeParams, _dataManager: OrbitGtDataManager, cloudRange: Range3d, _centerOffset: Vector3d, _ecefTransform: Transform);
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
     dispose(): void;
     // (undocumented)
     draw(args: TileDrawArgs): void;
+    // (undocumented)
+    getEcefTranform(): Promise<Transform | undefined>;
     // (undocumented)
     get is3d(): boolean;
     // (undocumented)
@@ -10354,6 +10356,8 @@ export abstract class TileTree {
     dispose(): void;
     abstract draw(args: TileDrawArgs): void;
     readonly expirationTime: BeDuration;
+    // @beta
+    getEcefTransform(): Promise<Transform | undefined>;
     readonly id: string;
     // (undocumented)
     readonly iModel: IModelConnection;
