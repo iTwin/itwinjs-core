@@ -3053,13 +3053,13 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
-// @beta
+// @public
 export abstract class IpcHandler {
     abstract get channelName(): string;
     static register(): RemoveFunction;
 }
 
-// @beta
+// @public
 export class IpcHost {
     static addListener(channel: string, listener: IpcListener): RemoveFunction;
     static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
@@ -3078,7 +3078,7 @@ export class IpcHost {
     static startup(opt?: IpcHostOpts): Promise<void>;
 }
 
-// @beta
+// @public
 export interface IpcHostOpts {
     // (undocumented)
     iModelHost?: IModelHostConfiguration;
@@ -3414,7 +3414,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     abstract signOut(): Promise<void>;
 }
 
-// @beta
+// @public
 export class NativeAppStorage {
     close(deleteFile?: boolean): void;
     // @internal
@@ -3436,7 +3436,7 @@ export class NativeAppStorage {
     setData(key: string, value: StorageValue): void;
     }
 
-// @beta
+// @public
 export class NativeHost {
     // (undocumented)
     static get applicationName(): string;
@@ -3446,19 +3446,17 @@ export class NativeHost {
     static checkInternetConnectivity(): InternetConnectivityStatus;
     // (undocumented)
     static get isValid(): boolean;
-    // (undocumented)
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
-    // (undocumented)
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
+    // @internal
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
-    // (undocumented)
     static get settingsStore(): NativeAppStorage;
     static shutdown(): Promise<void>;
     static startup(opt?: NativeHostOpts): Promise<void>;
 }
 
-// @beta (undocumented)
+// @public
 export interface NativeHostOpts extends IpcHostOpts {
     // (undocumented)
     nativeHost?: {
