@@ -370,12 +370,13 @@ type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr";
  *  - JSON representation kept in sync with changes to map; and
  *  - Events dispatched when map contents change.
  */
-class OverridesMap<OverrideProps, Override extends { toJSON: () => OverrideProps }> extends Map<Id64String, Override> {
+class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
   public constructor(
     private readonly _json: DisplayStyleSettingsProps,
     private readonly _arrayKey: OverridesArrayKey,
     private readonly _event: BeEvent<(id: Id64String, ovr: Override | undefined) => void>,
     private readonly _idFromProps: (props: OverrideProps) => Id64String | undefined,
+    private readonly _overrideToProps: (ovr: Override, id: Id64String) => OverrideProps,
     private readonly _overrideFromProps: (props: OverrideProps) => Override | undefined) {
     super();
     this.populate();
@@ -388,7 +389,7 @@ class OverridesMap<OverrideProps, Override extends { toJSON: () => OverrideProps
     const index = this.findOrAllocateIndex(id);
     const array = this._array;
     assert(undefined !== array);
-    array[index] = override.toJSON();
+    array[index] = this._overrideToProps(override, id);
 
     return this;
   }
@@ -471,7 +472,7 @@ export class DisplayStyleSettings {
   private _monochrome: ColorDef;
   private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>;
-  private readonly _modelAppearanceOverrides: Map<Id64String, FeatureAppearance> = new Map<Id64String, FeatureAppearance>();
+  private readonly _modelAppearanceOverrides: OverridesMap<DisplayStyleModelAppearanceProps, FeatureAppearance>;
   private readonly _planarClipMasks: OverridesMap<DisplayStyleRealityModelPlanarClipMaskProps, PlanarClipMaskSettings>;
   private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
@@ -578,34 +579,28 @@ export class DisplayStyleSettings {
     this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
 
     this._subCategoryOverrides = new OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>(this._json, "subCategoryOvr", this.onSubCategoryOverridesChanged,
-      (props) => props.subCategory, (props) => {
+      (props) => props.subCategory,
+      (ovr, subCategory) => { return { ...ovr.toJSON(), subCategory }; },
+      (props) => {
         const ovr = SubCategoryOverride.fromJSON(props);
         return ovr.anyOverridden ? ovr : undefined;
       });
 
-    this.populateModelAppearanceOverridesFromJSON();
-
+    this._modelAppearanceOverrides = new OverridesMap<DisplayStyleModelAppearanceProps, FeatureAppearance>(this._json, "modelOvr", this.onModelAppearanceOverrideChanged,
+      (props) => props.modelId,
+      (ovr, modelId) => { return { ...ovr.toJSON(), modelId }; },
+      (props) => {
+        const app = FeatureAppearance.fromJSON(props);
+        return app.anyOverridden ? app : undefined;
+      });
 
     this._planarClipMasks = new OverridesMap<DisplayStyleRealityModelPlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onRealityModelPlanarClipMaskChanged,
-      (props) => props.modelId, (props) => {
+      (props) => props.modelId,
+      (ovr, modelId) => { return { ...ovr.toJSON(), modelId }; },
+      (props) => {
         const settings = PlanarClipMaskSettings.fromJSON(props);
         return settings.isValid ? settings : undefined;
       });
-  }
-
-  private populateModelAppearanceOverridesFromJSON(): void {
-    this._modelAppearanceOverrides.clear();
-    const ovrsArray = JsonUtils.asArray(this._json.modelOvr);
-    if (undefined !== ovrsArray) {
-      for (const ovrJson of ovrsArray) {
-        const modelId = Id64.fromJSON(ovrJson.modelId);
-        if (Id64.isValid(modelId)) {
-          const appearance = FeatureAppearance.fromJSON(ovrJson);
-          if (appearance.anyOverridden)
-            this.changeModelAppearanceOverride(modelId, false, appearance);
-        }
-      }
-    }
   }
 
   /** Flags controlling various aspects of the display style. To change the style's view flags, do something like:
@@ -803,7 +798,7 @@ export class DisplayStyleSettings {
    * @see [[dropModelAppearanceOverride]]
    */
   public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void {
-    this.changeModelAppearanceOverride(modelId, true, ovr);
+    this.modelAppearanceOverrides.set(modelId, ovr);
   }
 
   /** Remove any appearance overrides applied to a [Model]($backend)  by this style.
@@ -812,7 +807,7 @@ export class DisplayStyleSettings {
    * @see [[overrideModelAppearance]]
    */
   public dropModelAppearanceOverride(id: Id64String): void {
-    this.changeModelAppearanceOverride(id, true);
+    this.modelAppearanceOverrides.delete(id);
   }
 
   /** The overrides applied by this style. */
@@ -826,12 +821,12 @@ export class DisplayStyleSettings {
    * @see [[overrideModelAppearance]]
    */
   public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
-    return this._modelAppearanceOverrides.get(id);
+    return this.modelAppearanceOverrides.get(id);
   }
 
   /** Returns true if model appearance overrides are defined by this style. */
   public get hasModelAppearanceOverride(): boolean {
-    return this._modelAppearanceOverrides.size > 0;
+    return this.modelAppearanceOverrides.size > 0;
   }
 
   /** The set of elements that will not be drawn by this display style.
@@ -1036,67 +1031,13 @@ export class DisplayStyleSettings {
 
     if (overrides.modelOvr) {
       this._json.modelOvr = [...overrides.modelOvr];
-      this.populateModelAppearanceOverridesFromJSON();
+      this._modelAppearanceOverrides.populate();
     }
 
     if (overrides.excludedElements)
       this._excludedElements.reset("string" === typeof overrides.excludedElements ? overrides.excludedElements : [...overrides.excludedElements]);
 
     this.onOverridesApplied.raiseEvent(overrides);
-  }
-
-  private findIndexOfModelAppearanceOverrideInJSON(id: Id64String, allowAppend: boolean): number {
-    const ovrsArray = JsonUtils.asArray(this._json.modelOvr);
-    if (undefined === ovrsArray) {
-      if (allowAppend) {
-        this._json.modelOvr = [];
-        return 0;
-      } else {
-        return -1;
-      }
-    } else {
-      for (let i = 0; i < ovrsArray.length; i++) {
-        if (ovrsArray[i].modelId === id)
-          return i;
-      }
-
-      return allowAppend ? ovrsArray.length : -1;
-    }
-  }
-
-  private changeModelAppearanceOverride(id: Id64String, updateJson: boolean, ovr?: FeatureAppearance): void {
-    this.onModelAppearanceOverrideChanged.raiseEvent(id, ovr);
-    if (undefined === ovr) {
-      // undefined => drop the override if present.
-      this._modelAppearanceOverrides.delete(id);
-      if (updateJson) {
-        const index = this.findIndexOfModelAppearanceOverrideInJSON(id, false);
-        if (-1 !== index)
-          this._json.modelOvr!.splice(index, 1);
-      }
-    } else {
-      // add override, or update if present.
-      this._modelAppearanceOverrides.set(id, ovr);
-      if (updateJson) {
-        const index = this.findIndexOfModelAppearanceOverrideInJSON(id, true);
-        this._json.modelOvr![index] = ovr.toJSON();
-        this._json.modelOvr![index].modelId = id;
-      }
-    }
-  }
-
-  /** @internal */
-  public equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean {
-    if (this._modelAppearanceOverrides.size !== other._modelAppearanceOverrides.size)
-      return false;
-
-    for (const [key, value] of this._modelAppearanceOverrides.entries()) {
-      const otherValue = other._modelAppearanceOverrides.get(key);
-      if (undefined === otherValue || !value.equals(otherValue))
-        return false;
-    }
-
-    return true;
   }
 
   /** @internal */
