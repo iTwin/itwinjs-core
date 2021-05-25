@@ -225,7 +225,7 @@ internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;class NativeAppAuthorizationBackend 
-beta;NativeAppStorage
+public;NativeAppStorage
 public;NativeHost
 public;NativeHostOpts 
 beta;OnAspectArg

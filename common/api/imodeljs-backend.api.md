@@ -3414,7 +3414,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     abstract signOut(): Promise<void>;
 }
 
-// @beta
+// @public
 export class NativeAppStorage {
     close(deleteFile?: boolean): void;
     // @internal
@@ -3451,7 +3451,6 @@ export class NativeHost {
     static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     // @internal
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
-    // @internal (undocumented)
     static get settingsStore(): NativeAppStorage;
     static shutdown(): Promise<void>;
     static startup(opt?: NativeHostOpts): Promise<void>;
