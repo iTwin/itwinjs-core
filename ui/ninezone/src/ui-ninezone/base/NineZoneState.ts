@@ -11,6 +11,7 @@ import { Point, PointProps, Rectangle, RectangleProps, SizeProps } from "@bentle
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@bentley/bentleyjs-core";
 import { getUniqueId } from "./NineZone";
+import { wait } from "@testing-library/react";
 
 /** @internal future */
 export interface TabState {
@@ -38,8 +39,6 @@ export interface FloatingWidgetState {
   readonly id: WidgetState["id"];
   readonly home: FloatingWidgetHomeState;
   readonly animateTransition: boolean;
-  readonly animateEnter: boolean;
-  readonly animateExit: boolean;
 }
 
 /** @internal future */
@@ -234,6 +233,12 @@ export interface FloatingWidgetSendBackAction {
   readonly type: "FLOATING_WIDGET_SEND_BACK";
   readonly id: FloatingWidgetState["id"];
 }
+/** @internal turn on enableAnimation flag for widget */
+export interface FloatingWidgetSetAnimationAction {
+  readonly type: "FLOATING_WIDGET_SET_ANIMATE_TRANSITION";
+  readonly id: FloatingWidgetState["id"];
+  readonly animateTransition: boolean;
+}
 
 /** @internal future */
 export interface PanelWidgetDragStartAction {
@@ -321,6 +326,7 @@ export type NineZoneActionTypes =
   FloatingWidgetResizeAction |
   FloatingWidgetBringToFrontAction |
   FloatingWidgetSendBackAction |
+  FloatingWidgetSetAnimationAction |
   PanelWidgetDragStartAction |
   WidgetDragAction |
   WidgetDragEndAction |
@@ -398,8 +404,6 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           widgetIndex,
         },
         animateTransition: false,
-        animateEnter: false,
-        animateExit: false,
       };
       state.widgets[action.newFloatingWidgetId] = state.widgets[action.id];
       state.widgets[action.newFloatingWidgetId].id = action.newFloatingWidgetId;
@@ -419,6 +423,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     case "WIDGET_DRAG": {
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
       assert(!!floatingWidget);
+      floatingWidget.animateTransition = false;
       const newBounds = Rectangle.create(floatingWidget.bounds).offset(action.dragBy);
       setRectangleProps(floatingWidget.bounds, newBounds);
       return;
@@ -485,13 +490,16 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       floatingWidgetBringToFront(state, action.id);
       return;
     }
+    case "FLOATING_WIDGET_SET_ANIMATE_TRANSITION": {
+      floatingWidgetSetAnimateTransition(state, action.id, action.animateTransition);
+      return;
+    }
+
     case "FLOATING_WIDGET_SEND_BACK": {
       const floatingWidget = state.floatingWidgets.byId[action.id];
       const widget = state.widgets[action.id];
       const home = floatingWidget.home;
       const panel = state.panels[home.side];
-      floatingWidget.animateTransition = false;
-      floatingWidget.animateExit = true;
       let homeWidget;
       if (home.widgetId) {
         homeWidget = state.widgets[home.widgetId];
@@ -640,8 +648,6 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           id: target.newFloatingWidgetId,
           home: state.draggedTab.home,
           animateTransition: false,
-          animateEnter: false,
-          animateExit: false,
         };
         state.floatingWidgets.allIds.push(target.newFloatingWidgetId);
         state.widgets[target.newFloatingWidgetId] = {
@@ -676,8 +682,6 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
             widgetIndex: 0,
           },
           animateTransition: false,
-          animateEnter: false,
-          animateExit: false,
         };
         state.floatingWidgets.allIds.push(action.newFloatingWidgetId);
       }
@@ -699,6 +703,11 @@ function isToolSettingsFloatingWidget(state: Draft<NineZoneState>, id: WidgetSta
     widget.tabs[0] === toolSettingsTabId &&
     id in state.floatingWidgets.byId
   );
+}
+/** @internal */
+export function floatingWidgetSetAnimateTransition(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"], animate: boolean) {
+  const floatingWidget = state.floatingWidgets.byId[floatingWidgetId];
+  floatingWidget.animateTransition = animate;
 }
 
 /** @internal */
@@ -858,8 +867,6 @@ export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: 
       widgetIndex: 0,
     },
     animateTransition: false,
-    animateEnter: false,
-    animateExit: false,
     ...args,
   };
 }
@@ -910,6 +917,7 @@ export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState[
   });
 }
 
+/**  */
 /** @internal */
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
   const tab = {
@@ -1091,7 +1099,7 @@ export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetL
 }
 
 /** @internal */
-export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps) {
+export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps, animateTransition?: boolean) {
   const location = findTab(state, widgetTabId);
   if (location) {
     if (isFloatingLocation(location))
@@ -1122,9 +1130,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
             widgetId: location.widgetId,
             widgetIndex,
           },
-          animateTransition: true,
-          animateEnter: true,
-          animateExit: true,
+          animateTransition: (!!animateTransition ? animateTransition : false),
         };
         draft.floatingWidgets.allIds.push(floatingWidgetId);
         draft.widgets[floatingWidgetId] = {
@@ -1139,14 +1145,22 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
   return undefined;
 }
 /** @internal */
-export function dockWidgetContainer(state: NineZoneState, widgetTabId: string) {
+export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, animateTransition?: boolean) {
   const location = findTab(state, widgetTabId);
   if (location && isFloatingLocation(location)) {
     const floatingWidgetId = location.widgetId;
-    return NineZoneStateReducer(state, {
+    window.requestAnimationFrame (() => {
+      state = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_SET_ANIMATE_TRANSITION",
+        id: floatingWidgetId,
+        animateTransition: !!animateTransition,
+      });
+    });
+    state = NineZoneStateReducer(state, {
       type: "FLOATING_WIDGET_SEND_BACK",
       id: floatingWidgetId,
     });
+    return state;
   } else {
     return undefined;
   }

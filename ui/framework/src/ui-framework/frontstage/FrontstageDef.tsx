@@ -554,12 +554,10 @@ export class FrontstageDef {
    * the previous size is used, else {height:400, width:400} is used.
    * @beta
    */
-  public floatWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
-    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
-      return;
+  public floatWidget(widgetId: string, point?: PointProps, size?: SizeProps, animateTransition?: boolean) {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const state = floatWidget(this.nineZoneState, widgetId, point, size);
+      const state = floatWidget(this.nineZoneState, widgetId, point, size, (!!animateTransition ? animateTransition : false));
       if (state)
         this.nineZoneState = state;
     }
@@ -571,12 +569,10 @@ export class FrontstageDef {
    * @param widgetId  case sensitive Wigdet Id.
    * @beta
    */
-  public dockWidgetContainer(widgetId: string) {
-    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
-      return;
+  public dockWidgetContainer(widgetId: string, animateTransition?: boolean) {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const state = dockWidgetContainer(this.nineZoneState, widgetId);
+      const state = dockWidgetContainer(this.nineZoneState, widgetId, animateTransition);
       if (state)
         this.nineZoneState = state;
     }

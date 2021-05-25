@@ -14,12 +14,10 @@ import { assert } from "@bentley/bentleyjs-core";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
 import { FloatingWidgetHomeState, FloatingWidgetState, WidgetState } from "../base/NineZoneState";
-import { Transition } from "react-transition-group";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
-import { CssProperties } from "../utilities/Css";
 
 type FloatingWidgetEdgeHandle = "left" | "right" | "top" | "bottom";
 type FloatingWidgetCornerHandle = "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
@@ -31,59 +29,28 @@ export type FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidg
 export interface FloatingWidgetProps {
   floatingWidget: FloatingWidgetState;
   widget: WidgetState;
-
+  defaultStyle?: React.CSSProperties;
+  transitionStyle?: React.CSSProperties;
 }
 
 /** @internal */
 export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const { id, bounds } = props.floatingWidget;
+  const { id, animateTransition } = props.floatingWidget;
   const { minimized } = props.widget;
-  const useAnimationTransitions = props.floatingWidget.animateEnter || props.floatingWidget.animateExit;
-  const duration = 300;
-  const finalPosition = React.useMemo(() => {
-    const boundsRect = Rectangle.create(bounds);
-    return boundsRect.topLeft();
-  }, [bounds]);
-  const startPosition: PointProps = getAnimateStartPoint(props.floatingWidget.home);
-  const defaultStyle = React.useMemo(() => {
-    const boundsRect = Rectangle.create(bounds);
-    const { height, width } = boundsRect.getSize();
-    const position = useAnimationTransitions ? startPosition : finalPosition;
-    return {
-      ...CssProperties.transformFromPosition(position),
-      height: minimized ? undefined : height,
-      width,
-      opacity:  useAnimationTransitions ? 0 : undefined,
-    };
-  }, [bounds, minimized, startPosition, finalPosition, useAnimationTransitions]);
-
   const className = React.useMemo(() => classnames(
     minimized && "nz-minimized",
   ), [minimized]);
-  const transitionStyles: { [id: string]: React.CSSProperties } = {
-    entering: { opacity: 0, transition: `all ${duration}ms ease-in-out` },
-    entered:  { opacity: 1, transform: `translate(${finalPosition.x}px, ${finalPosition.y}px)`, transition: `all ${duration}ms ease-in-out`},
-    exiting:  { opacity: 1, transform: `translate(${startPosition.x}px, ${startPosition.y}px)`, transition: `all ${duration}ms ease-in-out` },
-    exited:  { opacity: 0 },
-  };
-
+  const widgetStyle = animateTransition ? props.transitionStyle : props.defaultStyle;
   return (
     <FloatingWidgetIdContext.Provider value={id}>
       <FloatingWidgetContext.Provider value={props.floatingWidget}>
         <WidgetProvider
           widget={props.widget}
         >
-          <Transition in={props.floatingWidget.animateTransition} timeout={duration} appear={props.floatingWidget.animateEnter} exit={props.floatingWidget.animateExit}>
-            {(state) =>(
-              <FloatingWidgetComponent
-                className={className}
-                style={useAnimationTransitions ? {
-                  ...defaultStyle,
-                  ...transitionStyles[state],
-                } : defaultStyle}
-              />
-            )}
-          </Transition>
+          <FloatingWidgetComponent
+            className={className}
+            style={widgetStyle}
+          />
         </WidgetProvider>
       </FloatingWidgetContext.Provider>
     </FloatingWidgetIdContext.Provider>
@@ -206,36 +173,5 @@ export function getResizeBy(handle: FloatingWidgetResizeHandle, offset: PointPro
       return new Rectangle(-offset.x, 0, 0, offset.y);
     case "bottomRight":
       return new Rectangle(0, 0, offset.x, offset.y);
-  }
-}
-function getAnimateStartPoint(home: FloatingWidgetHomeState) {
-  let x = 0;
-  let y = 0;
-  switch (home.side) {
-    case "bottom":
-      if (home.widgetIndex === 1)
-        x = 500;
-      else if (home.widgetIndex === 2)
-        x = 999;
-      return { x, y:999};
-    case "top":
-      if (home.widgetIndex === 1)
-        x = 500;
-      else if (home.widgetIndex === 2)
-        x = 999;
-      return { x, y:0 };
-    case "left":
-      if (home.widgetIndex === 1)
-        y = 500;
-      else if (home.widgetIndex === 2)
-        y = 999;
-      return { x: 0, y };
-    case "right":
-      if (home.widgetIndex === 1)
-        y = 500;
-      else if (home.widgetIndex === 2)
-        y = 999;
-      return { x:999, y};
-
   }
 }
