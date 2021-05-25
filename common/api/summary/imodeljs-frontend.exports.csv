@@ -127,8 +127,8 @@ public;DisplayStyle2dState
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
 internal;disposeTileTreesForGeometricModels(modelIds: Set
-beta;DownloadBriefcaseId =
-beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
+public;DownloadBriefcaseId =
+public;DownloadBriefcaseOptions = DownloadBriefcaseId &
 internal;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -291,8 +291,8 @@ internal;InstancedGraphicParams
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
-beta;IpcApp
-beta;IpcAppOptions
+public;IpcApp
+public;IpcAppOptions
 beta;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
 beta;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
 beta;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
@@ -364,10 +364,10 @@ public;ModelSelectorState
 public;ModelState 
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
-beta;NativeApp
-beta;NativeAppAuthorization
+public;NativeApp
+public;NativeAppAuthorization
 internal;NativeAppLogger
-beta;NativeAppOpts 
+public;NativeAppOpts 
 internal;NoRenderApp
 public;class NotificationHandler
 public;NotificationManager
@@ -524,7 +524,7 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-beta;Storage
+public;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
