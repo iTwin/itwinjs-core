@@ -49,6 +49,7 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
+import { TaggedNumericData } from "../polyface/TaggedNumericData";
 // cspell:word bagof
 /* eslint-disable no-console*/
 /**
@@ -482,7 +483,21 @@ export namespace IModelJson {
     /** optional capping flag. */
     capped?: boolean;
   }
-
+  /**
+   * Interface for extra data attached to an indexed mesh.
+   * See `TaggedNumericData` for further information (e.g. value `tagA` and `tagB` values)
+   * @public
+   */
+  export interface TaggedNumericDataProps {
+    /** integer tag identifying the meaning of this tag.  */
+    tagA: number;
+    /** Second integer tag.  */
+    tagB: number;
+/** application specific integer data */
+    intData?: number[];
+    /** application specific doubles */
+    doubleData?: number[];
+  }
   /**
    * Interface for an indexed mesh.
    * * IMPORTANT: All indices are one-based.
@@ -511,6 +526,8 @@ export namespace IModelJson {
     normalIndex?: [number];
     /** ONE BASED ZERO TERMINATED array of color indices. ZERO is terminator for single facet. */
     colorIndex?: [number];
+    /** optional array of tagged geometry (such as to request subdivision surface) */
+    taggedNumericData?: TaggedNumericDataProps;
   }
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
@@ -561,22 +578,38 @@ export namespace IModelJson {
       }
       return defaultValue;
     }
-    /* ==============
-        private static parseNumberArrayProperty(json: any, propertyName: string, minValues: number, maxValues: number, defaultValue?: number[] | undefined): number[] | undefined {
-          if (json.hasOwnProperty(propertyName)) {
-            const value = json[propertyName];
-            if (Array.isArray(value)
-              && value.length >= minValues && value.length <= maxValues) {
-              const result = [];
-              for (const a of value) {
-                result.push(a);
-              }
-              return result;
-            }
+    /**
+     * @internal
+     */
+    public static parseTaggedNumericProps(json: any): TaggedNumericData | undefined {
+      const tagA = this.parseNumberProperty(json, "tagA");
+      const tagB = this.parseNumberProperty(json, "tagB", 0);
+      if (tagA !== undefined) {
+        const result = new TaggedNumericData(tagA, tagB);
+        if (json.hasOwnProperty("intData"))
+          result.intData = this.parseNumberArrayProperty (json, "intData", 0,undefined);
+        if (json.hasOwnProperty("doubleData"))
+          result.doubleData = this.parseNumberArrayProperty (json, "doubleData", 0,undefined);
+        return result;
+      }
+      return undefined;
+    }
+
+    private static parseNumberArrayProperty(json: any, propertyName: string, minValues: number, maxValues: number | undefined, defaultValue?: number[] | undefined): number[] | undefined {
+      if (json.hasOwnProperty(propertyName)) {
+        const value = json[propertyName];
+        if (Array.isArray(value)
+          && value.length >= minValues && (undefined === maxValues || value.length <= maxValues)) {
+          const result = [];
+          for (const a of value) {
+            result.push(a);
           }
-          return defaultValue;
+          return result;
         }
-    */
+      }
+      return defaultValue;
+    }
+
     private static parseAngleProperty(json: any, propertyName: string, defaultValue?: Angle | undefined): Angle | undefined {
       if (json.hasOwnProperty(propertyName)) {
         const value = json[propertyName];
@@ -961,6 +994,10 @@ export namespace IModelJson {
         if (data.hasOwnProperty("auxData"))
           polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData);
 
+        if (data.hasOwnProperty("tags")){
+          polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
+        }
+
         return polyface;
       }
       return undefined;
@@ -1255,6 +1292,15 @@ export namespace IModelJson {
    * @public
    */
   export class Writer extends GeometryHandler {
+
+    public handleTaggedNumericData(data: TaggedNumericData): TaggedNumericDataProps {
+      const result: TaggedNumericDataProps = { tagA: data.tagA, tagB: data.tagB};
+      if (data.intData !== undefined && data.intData.length > 0)
+        result.intData = data.intData.slice();
+      if (data.doubleData !== undefined && data.doubleData.length > 0)
+        result.doubleData = data.doubleData.slice();
+      return result;
+    }
     /** Convert strongly typed instance to tagged json */
     public handleLineSegment3d(data: LineSegment3d): any {
       return { lineSegment: [data.point0Ref.toJSON(), data.point1Ref.toJSON()] };
@@ -1716,6 +1762,10 @@ export namespace IModelJson {
           colorIndex.push(0);
         }
       }
+      let taggedNumericData;
+      if (pf.data.taggedNumericData) {
+        taggedNumericData = this.handleTaggedNumericData(pf.data.taggedNumericData);
+      }
       // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
       if (pf.expectedClosure  !== 0)
@@ -1737,6 +1787,8 @@ export namespace IModelJson {
       contents.point = points;
       contents.pointIndex = pointIndex;
 
+      if (taggedNumericData)
+        contents.tags = taggedNumericData;
       return { indexedMesh: contents };
     }
 
@@ -1945,6 +1997,8 @@ export namespace IModelJson {
 
       if (data instanceof GeometryQuery) {
         return data.dispatchToGeometryHandler(this);
+      } else if (data instanceof TaggedNumericData) {
+        return this.handleTaggedNumericData(data);
       }
       return undefined;
     }
