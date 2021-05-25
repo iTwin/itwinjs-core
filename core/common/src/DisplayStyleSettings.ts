@@ -363,6 +363,101 @@ class ExcludedElements implements OrderedId64Iterable {
   }
 }
 
+type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr";
+
+/** An implementation of Map that is based on a JSON array, used for a display styles subcategory overrides, model appearance overrides,
+ * and planar clip masks. Ensures:
+ *  - JSON representation kept in sync with changes to map; and
+ *  - Events dispatched when map contents change.
+ */
+class OverridesMap<OverrideProps, Override extends { toJSON: () => OverrideProps }> extends Map<Id64String, Override> {
+  public constructor(
+    private readonly _json: DisplayStyleSettingsProps,
+    private readonly _arrayKey: OverridesArrayKey,
+    private readonly _idFromProps: (props: OverrideProps) => Id64String,
+    private readonly _event: BeEvent<(id: Id64String, ovr: Override | undefined) => void>,
+    private readonly _overrideFromProps: (props: OverrideProps) => Override | undefined) {
+    super();
+    this.populate();
+  }
+
+  public set(id: Id64String, override: Override): this {
+    this._event.raiseEvent(id, override);
+    super.set(id, override);
+
+    const index = this.findOrAllocateIndex(id);
+    const array = this._array;
+    assert(undefined !== array);
+    array[index] = override.toJSON();
+
+    return this;
+  }
+
+  public delete(id: Id64String): boolean {
+    this._event.raiseEvent(id, undefined);
+    if (!super.delete(id))
+      return false;
+
+    const index = this.findExistingIndex(id);
+    if (undefined !== index) {
+      assert(undefined !== this._array);
+      this._array.splice(index, 1);
+    }
+
+    return true;
+  }
+
+  public clear(): void {
+    for (const id of this.keys())
+      this.delete(id);
+
+    this._json[this._arrayKey] = undefined;
+  }
+
+  public populate(): void {
+    super.clear();
+
+    const ovrs = this._array;
+    if (!ovrs)
+      return;
+
+    for (const props of ovrs) {
+      const id = this._idFromProps(props);
+      const ovr = Id64.isValid(id) ? this._overrideFromProps(props) : undefined;
+      if (ovr)
+        super.set(id, ovr);
+    }
+  }
+
+  private get _array(): OverrideProps[] | undefined {
+    return JsonUtils.asArray(this._json[this._arrayKey]);
+  }
+
+  private findOrAllocateIndex(id: Id64String): number {
+    const index = this.findExistingIndex(id);
+    if (undefined !== index)
+      return index;
+
+    let ovrs = this._array;
+    if (!ovrs)
+      ovrs = this._json[this._arrayKey] = [];
+
+    return ovrs.length;
+  }
+
+  private findExistingIndex(id: Id64String): number | undefined {
+    const ovrs = this._array;
+    if (!ovrs)
+      return undefined;
+
+    for (let i = 0; i < ovrs.length; i++)
+      if (this._idFromProps(ovrs[i]) === id)
+        return i;
+
+    return undefined;
+  }
+}
+
 /** Provides access to the settings defined by a [[DisplayStyle]] or [[DisplayStyleState]], and ensures that
  * the style's JSON properties are kept in sync.
  * @public
