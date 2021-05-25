@@ -179,7 +179,8 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 }
 
-/** @beta */
+/** Options for [[NativeHost.startup]]
+ * @public */
 export interface NativeHostOpts extends IpcHostOpts {
   nativeHost?: {
     /** Application named. Used to name settings file */
@@ -188,8 +189,8 @@ export interface NativeHostOpts extends IpcHostOpts {
 }
 
 /**
- * Used by desktop/mobile native applications
- * @beta
+ * Backend for desktop/mobile native applications
+ * @public
  */
 export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
@@ -202,6 +203,7 @@ export class NativeHost {
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or because the token was refreshed */
   public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
+  /** Event called when the internet connectivity changes, if known. */
   public static readonly onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
 
   private static _appSettingsCacheDir?: string;
@@ -213,6 +215,7 @@ export class NativeHost {
     return this._appSettingsCacheDir;
   }
 
+  /** Send a notification to the NativeApp connected to this NativeHost. */
   public static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>) {
     return IpcHost.send(nativeAppNotify, methodName, ...args);
   }
@@ -220,13 +223,13 @@ export class NativeHost {
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
   public static get applicationName() { return this._applicationName; }
+  /** @internal */
   public static get settingsStore() {
     return NativeAppStorage.open(this.applicationName);
   }
 
   /**
    * Start the backend of a native app.
-   * @param opt
    * @note this method calls [[IpcHost.startup]] internally.
    */
   public static async startup(opt?: NativeHostOpts): Promise<void> {
@@ -260,6 +263,7 @@ export class NativeHost {
   /**
    * Override internet connectivity state
    * @param _overridenBy who overrode the value.
+   * @internal
    */
   public static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void {
     if (this._reachability !== status) {
