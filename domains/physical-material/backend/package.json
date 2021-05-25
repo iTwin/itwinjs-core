@@ -1,6 +1,6 @@
 {
   "name": "@bentley/physical-material-backend",
-  "version": "2.17.0-dev.14",
+  "version": "2.17.0-dev.15",
   "main": "lib/physical-material-backend.js",
   "typings": "lib/physical-material-backend",
   "license": "MIT",
@@ -31,20 +31,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.17.0-dev.14",
-    "@bentley/imodeljs-backend": "^2.17.0-dev.14",
-    "@bentley/imodeljs-common": "^2.17.0-dev.14"
+    "@bentley/bentleyjs-core": "^2.17.0-dev.15",
+    "@bentley/imodeljs-backend": "^2.17.0-dev.15",
+    "@bentley/imodeljs-common": "^2.17.0-dev.15"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.17.0-dev.14",
-    "@bentley/build-tools": "2.17.0-dev.14",
-    "@bentley/eslint-plugin": "2.17.0-dev.14",
-    "@bentley/imodeljs-backend": "2.17.0-dev.14",
-    "@bentley/imodeljs-common": "2.17.0-dev.14",
+    "@bentley/bentleyjs-core": "2.17.0-dev.15",
+    "@bentley/build-tools": "2.17.0-dev.15",
+    "@bentley/eslint-plugin": "2.17.0-dev.15",
+    "@bentley/imodeljs-backend": "2.17.0-dev.15",
+    "@bentley/imodeljs-common": "2.17.0-dev.15",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",

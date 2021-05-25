@@ -9,6 +9,7 @@
 import { BeDuration, BeTimePoint, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix4d, Range3d, Transform } from "@bentley/geometry-core";
 import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -161,4 +162,28 @@ export abstract class TileTree {
   public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, location: Transform, frustumPlanes?: FrustumPlanes): void {
     this.rootTile.extendRangeForContent(range, matrix, location, frustumPlanes);
   }
+
+  /**
+   * Return the transform from the tile tree's coordinate space to [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates.
+   * If a geographic coordinate system is present then this transform will be calculated at the tile tree center.
+   * @beta
+   */
+  public async getEcefTransform(): Promise<Transform | undefined> {
+    if (!this.iModel.ecefLocation)
+      return undefined;
+
+    let dbToEcef: Transform | undefined;
+    const range = this.contentRange ? this.contentRange : this.range;
+    const center = range.localXYZToWorld(.5, .5, .5);
+    if (center) {
+      this.iModelTransform.multiplyPoint3d(center, center);
+      const ecefToDb = await calculateEcefToDbTransformAtLocation(center, this.iModel);
+      dbToEcef = ecefToDb?.inverse();
+    }
+    if (!dbToEcef)
+      dbToEcef = this.iModel.ecefLocation.getTransform();
+
+    return dbToEcef.multiplyTransformTransform(this.iModelTransform);
+  }
 }
+

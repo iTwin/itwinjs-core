@@ -1460,6 +1460,16 @@ export class Sample {
     result.push(Cone.createAxisPoints(topZ, origin, 0.0, 1.0, true) as Cone);
     return result;
   }
+  /** Return a TorusPipe with swept circle in xz plane rotating through an angle range around the Z axis. */
+  public static createPartialTorusAroundZ(majorRadius: number, majorSweep: Angle, minorRadius: number, minorStart: Angle, minorEnd: Angle): RotationalSweep{
+    const arc = Arc3d.createXYZXYZXYZ(
+      majorRadius, 0, 0,
+      minorRadius, 0, 0,
+      0, minorRadius, 0,
+      AngleSweep.createStartEnd(minorStart, minorEnd));
+    const contour = Path.create(arc);
+    return RotationalSweep.create(contour, Ray3d.createZAxis(), majorSweep, false)!;
+  }
   /** Create assorted Torus Pipes */
   public static createTorusPipes(): TorusPipe[] {
     const result: TorusPipe[] = [];
@@ -2347,7 +2357,9 @@ export class Sample {
       channelDataArray.push(new AuxChannelData(input, values));
     }
     const channel = new AuxChannel(channelDataArray, dataType, name, inputName);
-    data.auxData.indices.push(channelIndex);
+    for (const _q of data.pointIndex){
+      data.auxData.indices.push(channelIndex);
+    }
     data.auxData.channels.push(channel);
   }
 }
