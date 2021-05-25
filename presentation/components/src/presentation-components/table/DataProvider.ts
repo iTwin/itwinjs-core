@@ -8,15 +8,15 @@
 
 import { sort } from "fast-sort";
 import memoize from "micro-memoize";
+import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item,
-  NestedContentValue,
-  PresentationError, PresentationStatus, RelationshipMeaning, Ruleset, SortDirection, Value, ValuesDictionary,
+  Content, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item, NestedContentValue,
+  PresentationError, PresentationStatus, RelationshipMeaning, Ruleset, SortDirection, StartItemProps, traverseContentItem, Value, ValuesDictionary,
 } from "@bentley/presentation-common";
 import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
 import { HorizontalAlignment, SortDirection as UiSortDirection } from "@bentley/ui-core";
-import { ContentBuilder } from "../common/ContentBuilder";
+import { FieldHierarchyRecord, PropertyRecordsBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
 import { Page, PageContainer } from "../common/PageContainer";
@@ -318,7 +318,7 @@ const getFieldsWithExtractedSameInstanceFieldsAndCreateMap = (fields: Field[]) =
 const extractValues = (values: ValuesDictionary<Value>, sameInstanceNestedFieldNames: string[]) => {
   // Map representing how many fields were merged in order to create a field specified by fieldName.
   const mergedFieldsCounts: { [fieldName: string]: number } = {};
-  const updatedValues: ValuesDictionary<Value> = {...values};
+  const updatedValues: ValuesDictionary<Value> = { ...values };
   for (const fieldName of sameInstanceNestedFieldNames) {
     const value = values[fieldName];
     if (!Value.isNestedContent(value))
@@ -389,7 +389,7 @@ const createRows = (c: Readonly<Content> | undefined): RowItem[] => {
   return c.contentSet.map((item) => createRow(c.descriptor, item, sameInstanceFieldsMap, updatedFields));
 };
 
-const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>, sameInstanceFieldsMap: {[fieldName: string]: Field}, updatedFields: Field[]): RowItem => {
+const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>, sameInstanceFieldsMap: { [fieldName: string]: Field }, updatedFields: Field[]): RowItem => {
   if (item.primaryKeys.length !== 1) {
     // note: for table view we expect the record to always have only 1 primary key
     throw new PresentationError(PresentationStatus.InvalidArgument, "item.primaryKeys");
@@ -408,24 +408,52 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>, sameI
     };
   }
 
-  return {
-    key,
-    cells: updatedFields.map((field: Field): CellItem => {
-      const itemProps: Partial<CellItem> = {};
-      const mergedCellsCount = mergedCellsCounts[field.name];
-      if (mergedCellsCount) {
-        itemProps.mergedCellsCount = mergedCellsCount;
-        itemProps.alignment = HorizontalAlignment.Center;
-
-        const nestedField = sameInstanceFieldsMap[field.name];
-        nestedField.name = field.name;
-        field = nestedField;
-      }
-      return {
-        key: field.name,
-        record: ContentBuilder.createPropertyRecord({ field }, updatedItem).record,
-        ...itemProps,
-      };
-    }),
-  };
+  const builder = new CellsBuilder(mergedCellsCounts, sameInstanceFieldsMap);
+  traverseContentItem(builder, { ...descriptor, fields: updatedFields }, updatedItem);
+  return { key, cells: builder.cells };
 };
+
+class CellsBuilder extends PropertyRecordsBuilder {
+  private _cells?: CellItem[];
+
+  public constructor(
+    private _mergedCellCounts: { [fieldName: string]: number },
+    private _sameInstanceFields: { [fieldName: string]: Field },
+  ) {
+    super();
+  }
+
+  public get cells(): CellItem[] {
+    assert(this._cells !== undefined);
+    return this._cells;
+  }
+
+  protected createRootPropertiesAppender() {
+    return {
+      append: (record: FieldHierarchyRecord) => {
+        assert(this._cells !== undefined);
+        const itemProps: Partial<CellItem> = {};
+        const mergedCellsCount = this._mergedCellCounts[record.fieldHierarchy.field.name];
+        if (mergedCellsCount) {
+          itemProps.mergedCellsCount = mergedCellsCount;
+          itemProps.alignment = HorizontalAlignment.Center;
+
+          // FIXME: what is this for? all tests pass with it commented-out
+          // const nestedField = this._sameInstanceFields[record.fieldHierarchy.field.name];
+          // nestedField.name = record.fieldHierarchy.field.name;
+          // record.fieldHierarchy.field = nestedField;
+        }
+        this._cells.push({
+          key: record.fieldHierarchy.field.name,
+          record: record.record,
+          ...itemProps,
+        });
+      },
+    };
+  }
+
+  public startItem(props: StartItemProps): boolean {
+    this._cells = [];
+    return super.startItem(props);
+  }
+}

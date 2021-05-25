@@ -15,6 +15,12 @@ import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { RpcInterface } from '@bentley/imodeljs-common';
 
+// @alpha (undocumented)
+export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void;
+
+// @internal (undocumented)
+export function applyOptionalPrefix(str: string, prefix?: string): string;
+
 // @public
 export interface ArrayTypeDescription extends BaseTypeDescription {
     memberType: TypeDescription;
@@ -798,6 +804,9 @@ export class Field {
     type: TypeDescription;
 }
 
+// @internal (undocumented)
+export const FIELD_NAMES_SEPARATOR = "$";
+
 // @public
 export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor;
 
@@ -819,6 +828,14 @@ export enum FieldDescriptorType {
     Name = "name",
     // (undocumented)
     Properties = "properties"
+}
+
+// @alpha (undocumented)
+export interface FieldHierarchy {
+    // (undocumented)
+    childFields: FieldHierarchy[];
+    // (undocumented)
+    field: Field;
 }
 
 // @public
@@ -954,6 +971,40 @@ export interface HierarchyUpdateRecordJSON {
     nodesCount: number;
     // (undocumented)
     parent?: NodeKeyJSON;
+}
+
+// @alpha (undocumented)
+export interface IContentVisitor {
+    // (undocumented)
+    finishArray(): void;
+    // (undocumented)
+    finishCategory(): void;
+    // (undocumented)
+    finishContent(): void;
+    // (undocumented)
+    finishField(): void;
+    // (undocumented)
+    finishItem(): void;
+    // (undocumented)
+    finishStruct(): void;
+    // (undocumented)
+    processFieldHierarchies(props: ProcessFieldHierarchiesProps): void;
+    // (undocumented)
+    processMergedValue(props: ProcessMergedValueProps): void;
+    // (undocumented)
+    processPrimitiveValue(props: ProcessPrimitiveValueProps): void;
+    // (undocumented)
+    startArray(props: StartArrayProps): boolean;
+    // (undocumented)
+    startCategory(props: StartCategoryProps): boolean;
+    // (undocumented)
+    startContent(props: StartContentProps): boolean;
+    // (undocumented)
+    startField(props: StartFieldProps): boolean;
+    // (undocumented)
+    startItem(props: StartItemProps): boolean;
+    // (undocumented)
+    startStruct(props: StartStructProps): boolean;
 }
 
 // @public
@@ -1799,6 +1850,36 @@ export interface PrimitiveTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Primitive;
 }
 
+// @alpha (undocumented)
+export interface ProcessFieldHierarchiesProps {
+    // (undocumented)
+    hierarchies: FieldHierarchy[];
+}
+
+// @alpha (undocumented)
+export interface ProcessMergedValueProps {
+    // (undocumented)
+    mergedField: Field;
+    // (undocumented)
+    namePrefix?: string;
+    // (undocumented)
+    requestedField: Field;
+}
+
+// @alpha (undocumented)
+export interface ProcessPrimitiveValueProps {
+    // (undocumented)
+    displayValue: DisplayValue;
+    // (undocumented)
+    field: Field;
+    // (undocumented)
+    namePrefix?: string;
+    // (undocumented)
+    rawValue: Value;
+    // (undocumented)
+    valueType: TypeDescription;
+}
+
 // @public
 export class PropertiesField extends Field {
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
@@ -2470,6 +2551,58 @@ export enum StandardNodeTypes {
     ECPropertyGroupingNode = "ECPropertyGroupingNode"
 }
 
+// @alpha (undocumented)
+export interface StartArrayProps {
+    // (undocumented)
+    displayValues: DisplayValuesArray;
+    // (undocumented)
+    hierarchy: FieldHierarchy;
+    // (undocumented)
+    namePrefix?: string;
+    // (undocumented)
+    rawValues: ValuesArray;
+    // (undocumented)
+    valueType: TypeDescription;
+}
+
+// @alpha (undocumented)
+export interface StartCategoryProps {
+    // (undocumented)
+    category: CategoryDescription;
+}
+
+// @alpha (undocumented)
+export interface StartContentProps {
+    // (undocumented)
+    descriptor: Descriptor;
+}
+
+// @alpha (undocumented)
+export interface StartFieldProps {
+    // (undocumented)
+    hierarchy: FieldHierarchy;
+}
+
+// @alpha (undocumented)
+export interface StartItemProps {
+    // (undocumented)
+    item: Item;
+}
+
+// @alpha (undocumented)
+export interface StartStructProps {
+    // (undocumented)
+    displayValues: DisplayValuesMap;
+    // (undocumented)
+    hierarchy: FieldHierarchy;
+    // (undocumented)
+    namePrefix?: string;
+    // (undocumented)
+    rawValues: ValuesMap;
+    // (undocumented)
+    valueType: TypeDescription;
+}
+
 // @public
 export interface StringQuerySpecification extends QuerySpecificationBase {
     query: string;
@@ -2529,6 +2662,15 @@ export type Subtract<T, K> = Omit<T, keyof K>;
 export interface SupplementationInfo {
     supplementationPurpose: string;
 }
+
+// @alpha (undocumented)
+export function traverseContent(visitor: IContentVisitor, content: Content): void;
+
+// @alpha (undocumented)
+export function traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item): void;
+
+// @internal (undocumented)
+export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldHierarchy) => boolean): void;
 
 // @public
 export type TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription;

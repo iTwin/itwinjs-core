@@ -58,6 +58,7 @@ export * from "./presentation-common/content/Property";
 export * from "./presentation-common/content/Renderer";
 export * from "./presentation-common/content/TypeDescription";
 export * from "./presentation-common/content/Value";
+export * from "./presentation-common/content/ContentTraverser";
 
 /**
  * @module Hierarchies
