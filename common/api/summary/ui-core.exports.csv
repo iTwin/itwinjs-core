@@ -152,7 +152,9 @@ deprecated;LabeledInput(props: LabeledInputProps): JSX.Element
 public;LabeledInputProps 
 deprecated;LabeledInputProps 
 public;LabeledSelect 
+deprecated;LabeledSelect 
 public;LabeledSelectProps 
+deprecated;LabeledSelectProps 
 public;LabeledTextarea(props: LabeledTextareaProps): JSX.Element
 deprecated;LabeledTextarea(props: LabeledTextareaProps): JSX.Element
 public;LabeledTextareaProps 
@@ -267,8 +269,11 @@ public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
 public;SearchBoxProps 
 public;Select: (props: SelectProps) => JSX.Element | null
+deprecated;Select: (props: SelectProps) => JSX.Element | null
 public;SelectOption
+deprecated;SelectOption
 public;SelectProps 
+deprecated;SelectProps 
 public;SessionSettingsStorage 
 beta;SessionUiSettings 
 deprecated;SessionUiSettings 
@@ -335,8 +340,11 @@ internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10
 internal;TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35
 internal;TOOLBAR_OPACITY_DEFAULT = 0.5
 beta;Tooltip(props: TooltipProps): JSX.Element
+deprecated;Tooltip(props: TooltipProps): JSX.Element
 beta;TooltipPlacement = "bottom" | "left" | "right" | "top"
+deprecated;TooltipPlacement = "bottom" | "left" | "right" | "top"
 beta;TooltipProps 
+deprecated;TooltipProps 
 public;Tree 
 public;TreeBranch 
 public;TreeBranchProps 

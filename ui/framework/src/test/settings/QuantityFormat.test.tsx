@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import { IModelApp, MockRender, QuantityType, QuantityTypeKey, UnitSystemKey } from "@bentley/imodeljs-frontend";
-import TestUtils, { getButtonWithText, handleButtonError } from "../TestUtils";
+import TestUtils, { getButtonWithText, handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
 // import { getQuantityFormatsSettingsManagerEntry, ModalDialogRenderer} from "../../ui-framework";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
@@ -46,6 +46,8 @@ describe("QuantityFormatSettingsPage", () => {
     sandbox.restore();
   });
 
+  stubScrollIntoView();
+
   it("will handle internal unit system change", async () => {
     const settingsEntry = getQuantityFormatsSettingsManagerEntry(10);
     expect(settingsEntry.itemPriority).to.eql(10);
@@ -60,25 +62,30 @@ describe("QuantityFormatSettingsPage", () => {
     const selectButton = wrapper.getByTestId("unitSystemSelector");
 
     // initial unit system value should be imperial so no change expected for initial change.
-    fireEvent.change(selectButton, { target: { value: "imperial" } });
+    // fireEvent.change(selectButton, { target: { value: "imperial" } });
+    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.BritishImperial", handleError);
     expect(unitSystemSpy.calledOnce).to.be.false;
 
-    fireEvent.change(selectButton, { target: { value: "metric" } });
+    // fireEvent.change(selectButton, { target: { value: "metric" } });
+    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.Metric", handleError);
     expect(unitSystemSpy.calledOnce).to.be.true;
     unitSystemSpy.resetHistory();
     await TestUtils.flushAsyncOperations();
 
-    fireEvent.change(selectButton, { target: { value: "usCustomary" } });
+    // fireEvent.change(selectButton, { target: { value: "usCustomary" } });
+    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.USCustomary", handleError);
     expect(unitSystemSpy.calledOnce).to.be.true;
     unitSystemSpy.resetHistory();
     await TestUtils.flushAsyncOperations();
 
-    fireEvent.change(selectButton, { target: { value: "usSurvey" } });
+    // fireEvent.change(selectButton, { target: { value: "usSurvey" } });
+    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.USSurvey", handleError);
     expect(unitSystemSpy.calledOnce).to.be.true;
     unitSystemSpy.resetHistory();
     await TestUtils.flushAsyncOperations();
 
-    fireEvent.change(selectButton, { target: { value: "imperial" } });
+    // fireEvent.change(selectButton, { target: { value: "imperial" } });
+    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.BritishImperial", handleError);
     expect(unitSystemSpy.calledOnce).to.be.true;
     await TestUtils.flushAsyncOperations();
 
@@ -138,9 +145,9 @@ describe("QuantityFormatSettingsPage", () => {
       {settingsEntry.page}
     </div>);
 
-    const setButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.setButtonLabel", handleButtonError);
+    const setButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.setButtonLabel", handleError);
     expect(setButton!.hasAttribute("disabled")).to.be.true;
-    const clearButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.clearButtonLabel", handleButtonError);
+    const clearButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.clearButtonLabel", handleError);
     expect(clearButton!.hasAttribute("disabled")).to.be.true;
 
     const checkbox = wrapper.getByTestId("show-unit-label-checkbox");
@@ -169,9 +176,9 @@ describe("QuantityFormatSettingsPage", () => {
       {settingsEntry.page}
     </div>);
 
-    const setButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.setButtonLabel", handleButtonError);
+    const setButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.setButtonLabel", handleError);
     expect(setButton!.hasAttribute("disabled")).to.be.true;
-    const clearButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.clearButtonLabel", handleButtonError);
+    const clearButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.clearButtonLabel", handleError);
     expect(clearButton!.hasAttribute("disabled")).to.be.true;
 
     const checkbox = wrapper.getByTestId("show-unit-label-checkbox");
@@ -202,9 +209,9 @@ describe("QuantityFormatSettingsPage", () => {
       {settingsEntry.page}
     </div>);
 
-    const setButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.setButtonLabel", handleButtonError);
+    const setButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.setButtonLabel", handleError);
     expect(setButton!.hasAttribute("disabled")).to.be.true;
-    const clearButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.clearButtonLabel", handleButtonError);
+    const clearButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.clearButtonLabel", handleError);
     expect(clearButton!.hasAttribute("disabled")).to.be.true;
     await TestUtils.flushAsyncOperations();
 
@@ -237,9 +244,9 @@ describe("QuantityFormatSettingsPage", () => {
       {settingsEntry.page}
     </div>);
 
-    const setButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.setButtonLabel", handleButtonError);
+    const setButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.setButtonLabel", handleError);
     expect(setButton!.hasAttribute("disabled")).to.be.true;
-    const clearButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.clearButtonLabel", handleButtonError);
+    const clearButton = getButtonWithText(wrapper.container, "settings.quantity-formatting.clearButtonLabel", handleError);
     expect(clearButton!.hasAttribute("disabled")).to.be.true;
     await TestUtils.flushAsyncOperations();
 

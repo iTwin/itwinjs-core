@@ -1117,13 +1117,13 @@ export function LabeledInput(props: LabeledInputProps): JSX.Element;
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @public
+// @public @deprecated
 export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, MessagedComponentProps {
 }
 
@@ -1922,17 +1922,17 @@ export interface SearchBoxProps extends CommonProps {
     valueChangedDelay?: number;
 }
 
-// @public
+// @public @deprecated
 export const Select: (props: SelectProps) => JSX.Element | null;
 
-// @public
+// @public @deprecated
 export interface SelectOption {
     disabled?: boolean;
     label: string;
     value?: string | number | readonly string[];
 }
 
-// @public
+// @public @deprecated
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
     options: (string | SelectOption)[] | {
         [key: string]: (string | SelectOption);
@@ -2398,13 +2398,13 @@ export const TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35;
 // @internal
 export const TOOLBAR_OPACITY_DEFAULT = 0.5;
 
-// @beta
+// @beta @deprecated
 export function Tooltip(props: TooltipProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export type TooltipPlacement = "bottom" | "left" | "right" | "top";
 
-// @beta
+// @beta @deprecated
 export interface TooltipProps extends CommonProps {
     children?: React.ReactNode;
     placement?: TooltipPlacement;

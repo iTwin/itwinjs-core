@@ -113,13 +113,6 @@ export function getButtonWithText(container: HTMLElement, label: string, onError
   return button;
 }
 
-/**
- * Handle an error when attempting to get an element
- */
-export function handleButtonError(msg: string) {
-  console.log(msg); // eslint-disable-line no-console
-}
-
 /** Handle an error when attempting to get an element */
 export function handleError(msg: string) {
   console.log(msg); // eslint-disable-line no-console
@@ -143,4 +136,18 @@ export class ResolvablePromise<T> implements PromiseLike<T> {
       setImmediate(resolve);
     });
   }
+}
+
+/** Stubs scrollIntoView. */
+export function stubScrollIntoView() {
+  const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
+  const scrollIntoViewMock = function () { };
+
+  beforeEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
+  });
+
+  afterEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+  });
 }

@@ -5,6 +5,8 @@
 import * as enzyme from "enzyme";
 import { createStore, Store } from "redux";
 import * as sinon from "sinon";
+import { fireEvent } from "@testing-library/react";
+import { expect } from "chai";
 
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UserInfo } from "@bentley/itwin-client";
@@ -312,9 +314,94 @@ export function getButtonWithText(container: HTMLElement, label: string, onError
   return button;
 }
 
+/**
+ * Select component pick value using index
+ */
+export const selectChangeValueByIndex = (select: HTMLElement, menuId: string, index: number, onError?: (msg: string) => void): void => {
+  fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
+
+  const selector = `.iui-menu.${menuId}`;
+  const menu = document.querySelector(selector) as HTMLUListElement;
+  if (!menu)
+    onError && onError(`Couldn't find '${selector}'`);
+  expect(menu).to.exist;
+
+  const menuItem = menu.querySelectorAll("li");
+  expect(menuItem).to.exist;
+  if (!menuItem)
+    onError && onError(`Couldn't find any 'li' menu items`);
+  if (menuItem[index] === undefined)
+    onError && onError(`Couldn't find menu item ${index}`);
+  expect(menuItem[index]).to.not.be.undefined;
+
+  fireEvent.click(menuItem[index]);
+};
+
+/**
+ * Select component change value using text of menu item to find item
+ */
+export const selectChangeValueByText = (select: HTMLElement, menuId: string, label: string, onError?: (msg: string) => void): void => {
+  fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
+
+  let selector = `.iui-menu.${menuId}`;
+  const menu = document.querySelector(selector) as HTMLUListElement;
+  if (!menu)
+    onError && onError(`Couldn't find '${selector}'`);
+  expect(menu).to.exist;
+
+  selector = "li span.iui-content";
+  const menuItems = menu.querySelectorAll(selector);
+  if (menuItems.length <= 0)
+    onError && onError(`Couldn't find any '${selector}' menu items`);
+  expect(menuItems.length).to.be.greaterThan(0);
+
+  const menuItem = [...menuItems].find((span) => span.textContent === label);
+  if (!menuItem)
+    onError && onError(`No menu items found`);
+  expect(menuItem).to.not.be.undefined;
+
+  fireEvent.click(menuItem!);
+};
+
+/**
+ * Select component test number of options
+ */
+export const selectTestOptionCount = (select: HTMLElement, menuId: string, expectedCount: number, onError?: (msg: string) => void): void => {
+  fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
+
+  let selector = `.iui-menu.${menuId}`;
+  const menu = document.querySelector(selector) as HTMLUListElement;
+  if (!menu)
+    onError && onError(`Couldn't find '${selector}'`);
+  expect(menu).to.exist;
+
+  selector = "li span.iui-content";
+  const menuItems = menu.querySelectorAll(selector);
+  if (menuItems.length <= 0)
+    onError && onError(`Couldn't find any '${selector}' menu items`);
+
+  expect(menuItems.length).to.eq(expectedCount);
+
+  fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
+};
+
 /** Handle an error when attempting to get an element */
-export function handleButtonError(msg: string) {
+export function handleError(msg: string) {
   console.log(msg); // eslint-disable-line no-console
+}
+
+/** Stubs scrollIntoView. */
+export function stubScrollIntoView() {
+  const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
+  const scrollIntoViewMock = function () { };
+
+  beforeEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
+  });
+
+  afterEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+  });
 }
 
 export default TestUtils;   // eslint-disable-line: no-default-export

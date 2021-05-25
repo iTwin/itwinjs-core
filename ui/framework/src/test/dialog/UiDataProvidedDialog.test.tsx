@@ -6,7 +6,7 @@ import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import { /* ModelessDialogManager, */ UiDataProvidedDialog } from "../../ui-framework";
 import { DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames } from "@bentley/ui-abstract";
-import TestUtils, { getButtonWithText, handleButtonError } from "../TestUtils";
+import TestUtils, { getButtonWithText, handleError } from "../TestUtils";
 import { expect } from "chai";
 import sinon = require("sinon");
 
@@ -146,19 +146,19 @@ describe("UiDataProvidedDialog", () => {
         isModal={true}
       />;
       const component = render(reactNode);
-      let nextButton = getButtonWithText(component.container, "dialog.next", handleButtonError);
+      let nextButton = getButtonWithText(component.container, "dialog.next", handleError);
       expect(nextButton).to.not.be.undefined;
       fireEvent.click(nextButton!);
-      const previousButton = getButtonWithText(component.container, "dialog.previous", handleButtonError);
+      const previousButton = getButtonWithText(component.container, "dialog.previous", handleError);
       expect(previousButton).to.not.be.undefined;
       fireEvent.click(previousButton!);
-      nextButton = getButtonWithText(component.container, "dialog.next", handleButtonError);
+      nextButton = getButtonWithText(component.container, "dialog.next", handleError);
       expect(nextButton).to.not.be.undefined;
       fireEvent.click(nextButton!);
-      const cancelButton = getButtonWithText(component.container, "dialog.cancel", handleButtonError);
+      const cancelButton = getButtonWithText(component.container, "dialog.cancel", handleError);
       expect(cancelButton).to.not.be.undefined;
       fireEvent.click(cancelButton!);
-      const okButton = getButtonWithText(component.container, "dialog.ok", handleButtonError) as HTMLButtonElement;
+      const okButton = getButtonWithText(component.container, "dialog.ok", handleError) as HTMLButtonElement;
       expect(okButton).to.not.be.undefined;
       fireEvent.click(okButton);
       const inputs = component.container.querySelectorAll("input");
@@ -193,19 +193,19 @@ describe("UiDataProvidedDialog", () => {
         id="my-test-id"
       />;
       const component = render(reactNode);
-      let nextButton = getButtonWithText(component.container, "dialog.next", handleButtonError);
+      let nextButton = getButtonWithText(component.container, "dialog.next", handleError);
       expect(nextButton).to.not.be.undefined;
       fireEvent.click(nextButton!);
-      const previousButton = getButtonWithText(component.container, "dialog.previous", handleButtonError);
+      const previousButton = getButtonWithText(component.container, "dialog.previous", handleError);
       expect(previousButton).to.not.be.undefined;
       fireEvent.click(previousButton!);
-      nextButton = getButtonWithText(component.container, "dialog.next", handleButtonError);
+      nextButton = getButtonWithText(component.container, "dialog.next", handleError);
       expect(nextButton).to.not.be.undefined;
       fireEvent.click(nextButton!);
-      const cancelButton = getButtonWithText(component.container, "dialog.cancel", handleButtonError);
+      const cancelButton = getButtonWithText(component.container, "dialog.cancel", handleError);
       expect(cancelButton).to.not.be.undefined;
       fireEvent.click(cancelButton!);
-      const okButton = getButtonWithText(component.container, "dialog.ok", handleButtonError) as HTMLButtonElement;
+      const okButton = getButtonWithText(component.container, "dialog.ok", handleError) as HTMLButtonElement;
       expect(okButton).to.not.be.undefined;
       fireEvent.click(okButton);
       const inputs = component.container.querySelectorAll("input");

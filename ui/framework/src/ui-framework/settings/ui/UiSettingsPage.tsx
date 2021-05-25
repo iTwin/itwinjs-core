@@ -11,13 +11,13 @@
 import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg?sprite";
 import "./UiSettingsPage.scss";
 import * as React from "react";
-import { Select, SelectOption, SettingsTabEntry, Slider } from "@bentley/ui-core";
+import { SettingsTabEntry, Slider } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
-import { ToggleSwitch } from "@itwin/itwinui-react";
+import { Select, SelectOption, ToggleSwitch } from "@itwin/itwinui-react";
 
 /** UiSettingsPage displaying the active UI settings. This page lets users set the following settings.
  *
@@ -89,15 +89,14 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   }, [autoHideUi, snapWidgetOpacity, theme, uiVersion, useDragInteraction, useProximityOpacity, widgetOpacity]);
 
   const defaultThemeOption = { label: systemPreferredLabel.current, value: SYSTEM_PREFERRED_COLOR_THEME };
-  const themeOptions: Array<SelectOption> = [
+  const themeOptions: SelectOption<string>[] = [
     defaultThemeOption,
     { label: lightLabel.current, value: ColorTheme.Light },
     { label: darkLabel.current, value: ColorTheme.Dark },
   ];
 
-  const onThemeChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    e.preventDefault();
-    UiFramework.setColorTheme(e.target.value);
+  const onThemeChange = React.useCallback((newValue: string) => {
+    UiFramework.setColorTheme(newValue);
   }, []);
 
   const onAutoHideChange = React.useCallback(async () => {
@@ -137,6 +136,7 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
               value={currentTheme}
               onChange={onThemeChange}
               options={themeOptions}
+              data-testid="select-theme" menuClassName="select-theme-menu"
             />
           </div>
         }
