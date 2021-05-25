@@ -223,7 +223,7 @@ export class NativeHost {
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
   public static get applicationName() { return this._applicationName; }
-  /** @internal */
+  /** Get the settings store for this NativeHost. */
   public static get settingsStore() {
     return NativeAppStorage.open(this.applicationName);
   }
