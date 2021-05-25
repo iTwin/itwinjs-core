@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webpack-tools-core",
+      "comment": "Add new plugin to copy and deliver all static assets required from bentley and itwin scopes. Will work with the webpack dev server\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools-core",
+  "email": "aruniverse@users.noreply.github.com"
+}
