@@ -51,7 +51,7 @@ export interface AccessTokenProps {
   userInfo?: UserInfoProps;
 }
 
-/** Token issued by DelegationSecureTokenService for API access
+/** Token used for authorization
  * @public
  */
 @TokenPrefix("Bearer")
