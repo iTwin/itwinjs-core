@@ -15,9 +15,6 @@ import {
   PerfLogger, WSStatus,
 } from "@bentley/bentleyjs-core";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, IModelHubError,
-} from "@bentley/imodelhub-client";
-import {
   BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps,
   RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
@@ -30,32 +27,9 @@ import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
+import { ChangesetFileProps } from "./HubAccess";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
-
-/** Properties of a changeset
- * @internal
- */
-export interface ChangesetProps {
-  id: string;
-  parentId: string;
-  changesType: number;
-  description: string;
-  briefcaseId?: number;
-  pushDate?: string;
-  userCreated?: string;
-  size?: number;
-  index?: number;
-}
-
-/** Properties of a changeset file
- * @internal
- */
-export interface ChangesetFileProps extends ChangesetProps {
-  pathname: string;
-}
-
-export type ChangesetRange = { first: string, after?: never, end: string } | { after: string, first?: never, end: string };
 
 /** The Id assigned to a briefcase by iModelHub, or a [[BriefcaseIdValue]] that identify special kinds of iModels.
  * @public
@@ -183,20 +157,6 @@ export class BriefcaseManager {
   /** Get the root directory for the briefcase cache */
   public static get cacheDir() { return this._cacheDir; }
 
-  /** Get the index of the change set from its id
-   * @internal
-   */
-  public static async getChangeSetIndexFromId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string): Promise<number> {
-    requestContext.enter();
-    if (changeSetId === "")
-      return 0; // the first version
-
-    const changeSet = (await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
-    requestContext.enter();
-
-    return +changeSet.index!;
-  }
-
   /** Determine whether the supplied briefcaseId is a standalone briefcase
    * @note this function returns true if the id is either unassigned or the value "DeprecatedStandalone"
    * @deprecated use id === BriefcaseIdValue.Unassigned
@@ -218,16 +178,7 @@ export class BriefcaseManager {
    * @throws IModelError if a new briefcaseId could not be acquired.
    */
   public static async acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number> {
-    requestContext.enter();
-
-    const briefcase = await IModelHost.iModelClient.briefcases.create(requestContext, iModelId);
-    requestContext.enter();
-
-    if (!briefcase) {
-      // Could well be that the current user does not have the appropriate access
-      throw new IModelError(BriefcaseStatus.CannotAcquire, "Could not acquire briefcase");
-    }
-    return briefcase.briefcaseId!;
+    return IModelHost.hubAccess.acquireNewBriefcaseId(requestContext, iModelId);
   }
 
   /** Download a new briefcase from iModelHub for the supplied iModelId.
@@ -309,23 +260,8 @@ export class BriefcaseManager {
    * @see deleteBriefcaseFiles
    */
   public static async releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void> {
-    requestContext.enter();
-    const { briefcaseId, iModelId } = briefcase;
-    if (!this.isValidBriefcaseId(briefcaseId))
-      return;
-
-    try {
-      await IModelHost.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().byId(briefcaseId));
-      requestContext.enter();
-    } catch (error) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, "Could not find briefcase to release", () => ({ iModelId, briefcaseId }));
-      throw error;
-    }
-
-    await IModelHost.iModelClient.briefcases.delete(requestContext, iModelId, briefcaseId);
-    requestContext.enter();
-    Logger.logTrace(loggerCategory, "Released briefcase from the server", () => ({ iModelId, briefcaseId }));
+    if (this.isValidBriefcaseId(briefcase.briefcaseId))
+      return IModelHost.hubAccess.releaseBriefcase(requestContext, briefcase);
   }
 
   /**
@@ -373,61 +309,6 @@ export class BriefcaseManager {
       }
     } catch (err) {
     }
-  }
-
-  private static async downloadChangeSetsInternal(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery): Promise<ChangesetFileProps[]> {
-    requestContext.enter();
-    const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
-
-    Logger.logTrace(loggerCategory, "Started downloading change sets", () => ({ iModelId }));
-    const perfLogger = new PerfLogger("Downloading change sets", () => ({ iModelId }));
-    let changeSets: ChangeSet[];
-    try {
-      changeSets = await IModelHost.iModelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
-      requestContext.enter();
-    } catch (error) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, "Error downloading changesets", () => ({ iModelId }));
-      throw error;
-    }
-    perfLogger.dispose();
-    Logger.logTrace(loggerCategory, "Finished downloading change sets", () => ({ iModelId }));
-
-    const val: ChangesetFileProps[] = [];
-    for (const cs of changeSets)
-      val.push({ id: cs.wsgId, parentId: cs.parentId ? cs.parentId : "", pathname: path.join(changeSetsPath, cs.fileName!), description: cs.description ?? "", changesType: cs.changesType ?? ChangesType.Regular, userCreated: cs.userCreated });
-
-    return val;
-  }
-
-  public static async queryChangesetProps(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changesetId: string): Promise<ChangesetProps> {
-    const query = new ChangeSetQuery();
-    query.byId(changesetId);
-
-    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, query);
-    if (changeSets.length === 0)
-      throw new Error(`Unable to find change set ${changesetId} for iModel ${iModelId}`);
-
-    const cs = changeSets[0];
-    return { id: cs.id!, changesType: cs.changesType!, parentId: cs.parentId ?? "", description: cs.description ?? "", pushDate: cs.pushDate, userCreated: cs.userCreated };
-  }
-
-  /** Downloads change sets in the specified range.
-   *  * Downloads change sets *after* the specified fromChangeSetId, up to and including the toChangeSetId
-   *  * If the ids are the same returns an empty array.
-   * @internal
-   */
-  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, range: ChangesetRange): Promise<ChangesetFileProps[]> {
-    requestContext.enter();
-
-    const after = range.after ?? (await this.queryChangesetProps(requestContext, iModelId, range.first)).parentId;
-    if (range.end === "" || after === range.end)
-      return [];
-
-    const query = new ChangeSetQuery();
-    query.betweenChangeSets(after, range.end);
-
-    return BriefcaseManager.downloadChangeSetsInternal(requestContext, iModelId, query);
   }
 
   /** Deletes a file

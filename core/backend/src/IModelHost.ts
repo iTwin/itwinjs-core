@@ -39,6 +39,7 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
+import { HubAccess, IModelHubAccess } from "./HubAccess";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -331,6 +332,9 @@ export class IModelHost {
   /** @internal */
   public static tileUploader: CloudStorageTileUploader;
 
+  public static hubAccess: HubAccess;
+
+  /** @deprecated */
   public static get iModelClient(): IModelClient {
     if (!IModelHost._imodelClient)
       IModelHost._imodelClient = new IModelHubClient(new AzureFileHandler());
@@ -423,6 +427,7 @@ export class IModelHost {
       FunctionalSchema,
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
+    IModelHost.hubAccess = IModelHubAccess;
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
 
