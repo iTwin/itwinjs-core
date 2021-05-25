@@ -62,6 +62,7 @@ describe("CategoryVisibilityHandler", () => {
     viewManagerMock.setup((x) => x.selectedView).returns(() => selectedViewMock.object);
     selectedViewMock.setup((x) => x.view).returns(() => selectedViewStateMock.object);
     selectedViewMock.setup((x) => x.perModelCategoryVisibility).returns(() => perModelCategoryVisibilityMock.object);
+    perModelCategoryVisibilityMock.setup((x) => x[Symbol.iterator]()).returns(() => [][Symbol.iterator]());
   });
 
   interface ViewportMockProps {
@@ -307,6 +308,7 @@ describe("CategoryVisibilityHandler", () => {
 
       selectedViewMock.setup((x) => x.view).returns(() => selectedViewStateMock.object);
       selectedViewMock.setup((x) => x.perModelCategoryVisibility).returns(() => perModelCategoryVisibilityMock.object);
+      perModelCategoryVisibilityMock.setup((x) => x[Symbol.iterator]()).returns(() => [][Symbol.iterator]());
     });
 
     it("enables category", () => {
