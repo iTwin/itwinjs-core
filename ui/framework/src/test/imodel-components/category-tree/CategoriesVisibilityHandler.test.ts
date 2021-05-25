@@ -329,6 +329,7 @@ describe("CategoryVisibilityHandler", () => {
 
     it("removes overrides per model when enabling category", () => {
       const ovrs = [{ modelId: "ModelId", categoryId: "CategoryId", visible: false }];
+      perModelCategoryVisibilityMock.reset();
       perModelCategoryVisibilityMock.setup((x) => x[Symbol.iterator]()).returns(() => ovrs[Symbol.iterator]());
       CategoryVisibilityHandler.enableCategory(viewManagerMock.object, imodelMock.object, ["CategoryId"], true, false, false);
       selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], true, false), moq.Times.once());
