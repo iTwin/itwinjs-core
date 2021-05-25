@@ -599,8 +599,8 @@ public;ThematicGradientColorScheme
 public;ThematicGradientMode
 public;ThematicGradientSettings
 public;ThematicGradientSettingsProps
-alpha;ThumbnailFormatProps
-alpha;ThumbnailProps 
+public;ThumbnailFormatProps
+public;ThumbnailProps 
 internal;TileContentDescription 
 beta;TileContentIdentifier
 internal;TileContentMetadata
@@ -616,7 +616,7 @@ internal;TileReadStatus
 internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
-alpha;TileVersionInfo
+public;TileVersionInfo
 alpha;TreeFlags
 public;Tween
 public;TweenCallback = (obj: any) => void

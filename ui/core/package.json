@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.17.0-dev.14",
+  "version": "2.17.0-dev.15",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.17.0-dev.14",
-    "@bentley/geometry-core": "^2.17.0-dev.14",
-    "@bentley/imodeljs-i18n": "^2.17.0-dev.14",
-    "@bentley/ui-abstract": "^2.17.0-dev.14",
+    "@bentley/bentleyjs-core": "^2.17.0-dev.15",
+    "@bentley/geometry-core": "^2.17.0-dev.15",
+    "@bentley/imodeljs-i18n": "^2.17.0-dev.15",
+    "@bentley/ui-abstract": "^2.17.0-dev.15",
     "@itwin/itwinui-css": "^0.16.0",
     "@itwin/itwinui-react": "^1.5.0",
     "react": "^16.8.0",
@@ -49,13 +49,13 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.17.0-dev.14",
-    "@bentley/build-tools": "2.17.0-dev.14",
-    "@bentley/eslint-plugin": "2.17.0-dev.14",
-    "@bentley/geometry-core": "2.17.0-dev.14",
-    "@bentley/imodeljs-i18n": "2.17.0-dev.14",
+    "@bentley/bentleyjs-core": "2.17.0-dev.15",
+    "@bentley/build-tools": "2.17.0-dev.15",
+    "@bentley/eslint-plugin": "2.17.0-dev.15",
+    "@bentley/geometry-core": "2.17.0-dev.15",
+    "@bentley/imodeljs-i18n": "2.17.0-dev.15",
     "@bentley/react-scripts": "3.4.9",
-    "@bentley/ui-abstract": "2.17.0-dev.14",
+    "@bentley/ui-abstract": "2.17.0-dev.15",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",

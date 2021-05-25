@@ -271,6 +271,7 @@ import { ThematicDisplaySensorSettings } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
 import { TileProps } from '@bentley/imodeljs-common';
 import { TileReadStatus } from '@bentley/imodeljs-common';
+import { TileVersionInfo } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
@@ -2900,7 +2901,6 @@ export class ElementState extends EntityState implements ElementProps {
     readonly federationGuid?: GuidString;
     readonly model: Id64String;
     readonly parent?: RelatedElement;
-    // @internal (undocumented)
     toJSON(): ElementProps;
     readonly userLabel?: string;
 }
@@ -3894,20 +3894,14 @@ export class GraphicBranch implements IDisposable {
     clear(): void;
     // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
     dispose(): void;
     readonly entries: RenderGraphic[];
-    // @internal (undocumented)
     getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags;
-    // (undocumented)
     get isEmpty(): boolean;
     readonly ownsEntries: boolean;
-    // @internal (undocumented)
     setViewFlagOverrides(ovr: ViewFlagOverrides): void;
-    // @internal (undocumented)
     setViewFlags(flags: ViewFlags): void;
     symbologyOverrides?: FeatureSymbology.Overrides;
-    // (undocumented)
     viewFlagOverrides: ViewFlagOverrides;
 }
 
@@ -4124,19 +4118,19 @@ export interface Hilites {
     readonly subcategories: Id64.Uint32Set;
 }
 
-// @beta
+// @public
 export class HiliteSet {
+    // @internal
     constructor(iModel: IModelConnection, syncWithSelectionSet?: boolean);
     clear(): void;
-    // (undocumented)
     get elements(): Id64.Uint32Set;
     // (undocumented)
     iModel: IModelConnection;
     get isEmpty(): boolean;
-    // (undocumented)
+    // @beta
     readonly models: Id64.Uint32Set;
     setHilite(arg: Id64Arg, onOff: boolean): void;
-    // (undocumented)
+    // @beta
     readonly subcategories: Id64.Uint32Set;
     get wantSyncWithSelectionSet(): boolean;
     set wantSyncWithSelectionSet(want: boolean);
@@ -4603,10 +4597,8 @@ export abstract class IModelConnection extends IModel {
     static connectionTimeout: number;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;
-    // @internal
     readonly displayedExtents: AxisAlignedBox3d;
     readonly elements: IModelConnection.Elements;
-    // @internal
     expandDisplayedExtents(range: Range3d): void;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     fontMap?: FontMap;
@@ -4620,7 +4612,6 @@ export abstract class IModelConnection extends IModel {
     // @alpha
     getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
-    // @beta
     readonly hilited: HiliteSet;
     get isBlank(): boolean;
     isBlankConnection(): this is BlankConnection;
@@ -6791,18 +6782,26 @@ export class OffScreenTarget extends Target {
     updateViewRect(): boolean;
 }
 
-// @internal
+// @public
 export class OffScreenViewport extends Viewport {
     // (undocumented)
-    static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio?: boolean, target?: RenderTarget): OffScreenViewport;
-    // (undocumented)
+    static create(options: OffScreenViewportOptions): OffScreenViewport;
+    // @internal
+    static createViewport(view: ViewState, target: RenderTarget, lockAspectRatio?: boolean): OffScreenViewport;
+    // @internal
     get isAspectRatioLocked(): boolean;
     // (undocumented)
     protected _isAspectRatioLocked: boolean;
-    // (undocumented)
-    setRect(rect: ViewRect, temporary?: boolean): void;
-    // (undocumented)
+    setRect(rect: ViewRect): void;
+    // @internal
     get viewRect(): ViewRect;
+}
+
+// @public
+export interface OffScreenViewportOptions {
+    lockAspectRatio?: boolean;
+    view: ViewState;
+    viewRect: ViewRect;
 }
 
 // @beta @deprecated
@@ -6868,13 +6867,15 @@ export function openImageDataUrlInNewWindow(url: string, title?: string): void;
 
 // @internal (undocumented)
 export class OrbitGtTileTree extends TileTree {
-    constructor(treeParams: TileTreeParams, _dataManager: OrbitGtDataManager, cloudRange: Range3d, _centerOffset: Vector3d);
+    constructor(treeParams: TileTreeParams, _dataManager: OrbitGtDataManager, cloudRange: Range3d, _centerOffset: Vector3d, _ecefTransform: Transform);
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
     dispose(): void;
     // (undocumented)
     draw(args: TileDrawArgs): void;
+    // (undocumented)
+    getEcefTranform(): Promise<Transform | undefined>;
     // (undocumented)
     get is3d(): boolean;
     // (undocumented)
@@ -7086,7 +7087,7 @@ export class PerformanceMetrics {
     spfTimes: number[];
     }
 
-// @beta
+// @public
 export namespace PerModelCategoryVisibility {
     // (undocumented)
     export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides;
@@ -7095,10 +7096,15 @@ export namespace PerModelCategoryVisibility {
         None = 0,
         Show = 1
     }
+    export interface OverrideEntry {
+        readonly categoryId: Id64String;
+        readonly modelId: Id64String;
+        readonly visible: boolean;
+    }
     export interface Overrides {
+        [Symbol.iterator]: () => Iterator<OverrideEntry>;
         addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
         clearOverrides(modelIds?: Id64Arg): void;
-        forEachOverride(func: (modelId: Id64String, categoryId: Id64String, visible: boolean) => boolean): boolean;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
         setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
     }
@@ -7236,7 +7242,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
     // (undocumented)
     exitTool(): void;
     getPrompt(): string;
-    // @internal
     get iModel(): IModelConnection;
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
@@ -7255,7 +7260,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
     // (undocumented)
     get targetModelId(): string | undefined;
     set targetModelId(v: string | undefined);
-    // (undocumented)
     targetView?: Viewport;
     // @internal (undocumented)
     undoPreviousStep(): Promise<boolean>;
@@ -7808,7 +7812,6 @@ export class RenderContext {
     // @internal
     adjustPixelSizeForLOD(cssPixelSize: number): number;
     createBranch(branch: GraphicBranch, location: Transform): RenderGraphic;
-    // @internal (undocumented)
     createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic;
     // @internal (undocumented)
     protected _createGraphicBuilder(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
@@ -8117,7 +8120,6 @@ export abstract class RenderSystem implements IDisposable {
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
-    // @internal (undocumented)
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     // @internal
@@ -8451,7 +8453,6 @@ export class SceneContext extends RenderContext {
     markChildrenLoading(): void;
     // @internal (undocumented)
     readonly missingTiles: Set<Tile>;
-    // @internal (undocumented)
     outputGraphic(graphic: RenderGraphic): void;
     get overlayGraphics(): RenderGraphic[];
     // @internal (undocumented)
@@ -8520,7 +8521,6 @@ export class ScreenViewport extends Viewport {
     animateFrustumChange(options?: ViewAnimationOptions): void;
     // @internal
     animateToCurrent(_start: Frustum, options?: ViewAnimationOptions): void;
-    // @beta
     static animation: {
         time: {
             fast: BeDuration;
@@ -8590,7 +8590,7 @@ export class ScreenViewport extends Viewport {
     setEventController(controller?: EventController): void;
     // @internal
     static setToParentSize(div: HTMLElement): void;
-    // @internal (undocumented)
+    // @internal
     synchWithView(options?: ViewChangeOptions | boolean): void;
     readonly toolTipDiv: HTMLDivElement;
     // @internal (undocumented)
@@ -9897,7 +9897,6 @@ export abstract class Tile {
     get contentId(): string;
     protected _contentId: string;
     get contentRange(): ElementAlignedBox3d;
-    // @internal (undocumented)
     protected _contentRange?: ElementAlignedBox3d;
     countDescendants(): number;
     readonly depth: number;
@@ -10055,6 +10054,7 @@ export class TileAdmin {
     process(): void;
     // @internal
     purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
+    queryVersionInfo(): Promise<Readonly<TileVersionInfo>>;
     // @internal
     registerViewport(vp: Viewport): void;
     // @internal (undocumented)
@@ -10199,7 +10199,6 @@ export interface TileDrawArgParams {
     intersectionClip?: ClipVector;
     location: Transform;
     now: BeTimePoint;
-    // @internal (undocumented)
     parentsAndChildrenExclusive: boolean;
     symbologyOverrides: FeatureSymbology.Overrides | undefined;
     tree: TileTree;
@@ -10243,7 +10242,6 @@ export class TileDrawArgs {
     get maxRealityTreeSelectionCount(): number | undefined;
     // @internal (undocumented)
     readonly now: BeTimePoint;
-    // @internal (undocumented)
     parentsAndChildrenExclusive: boolean;
     // @internal (undocumented)
     readonly pixelSizeScaleFactor: number;
@@ -10467,6 +10465,8 @@ export abstract class TileTree {
     dispose(): void;
     abstract draw(args: TileDrawArgs): void;
     readonly expirationTime: BeDuration;
+    // @beta
+    getEcefTransform(): Promise<Transform | undefined>;
     readonly id: string;
     // (undocumented)
     readonly iModel: IModelConnection;
@@ -10484,7 +10484,6 @@ export abstract class TileTree {
     get loadPriority(): TileLoadPriority;
     abstract get maxDepth(): number | undefined;
     readonly modelId: Id64String;
-    // @internal (undocumented)
     get parentsAndChildrenExclusive(): boolean;
     abstract prune(): void;
     get range(): ElementAlignedBox3d;
@@ -10655,10 +10654,8 @@ export class ToolAdmin {
     get cursorView(): ScreenViewport | undefined;
     // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // @internal
     get defaultToolArgs(): any[] | undefined;
     set defaultToolArgs(args: any[] | undefined);
-    // @internal
     get defaultToolId(): string;
     set defaultToolId(toolId: string);
     // @beta
@@ -10745,7 +10742,6 @@ export class ToolAdmin {
     setPrimitiveTool(newTool?: PrimitiveTool): void;
     // @internal (undocumented)
     setViewTool(newTool?: ViewTool): void;
-    // @internal
     startDefaultTool(): void;
     // @internal (undocumented)
     startInputCollector(newTool: InputCollector): void;
@@ -12122,7 +12118,6 @@ export abstract class Viewport implements IDisposable {
     set clipStyle(style: ClipStyle);
     // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
-    // @internal (undocumented)
     computeViewRange(): Range3d;
     get continuousRendering(): boolean;
     set continuousRendering(contRend: boolean);
@@ -12130,9 +12125,7 @@ export abstract class Viewport implements IDisposable {
     get controllerValid(): boolean;
     // @internal (undocumented)
     protected _controllerValid: boolean;
-    // @internal (undocumented)
     createScene(context: SceneContext): void;
-    // @internal (undocumented)
     createSceneContext(): SceneContext;
     cssPixelsToDevicePixels(cssPixels: number): number;
     get debugBoundingBoxes(): TileBoundingBoxes;
@@ -12211,7 +12204,6 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     getWorldFrustum(box?: Frustum): Frustum;
-    // @internal (undocumented)
     hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean;
     get hilite(): Hilite.Settings;
     set hilite(hilite: Hilite.Settings);
@@ -12221,7 +12213,6 @@ export abstract class Viewport implements IDisposable {
     invalidateDecorations(): void;
     // @internal (undocumented)
     invalidateRenderPlan(): void;
-    // @internal (undocumented)
     invalidateScene(): void;
     // @internal (undocumented)
     protected _inViewChangedEvent: boolean;
@@ -12283,7 +12274,6 @@ export abstract class Viewport implements IDisposable {
     // @beta
     overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
-    // @beta
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;
     pixelsFromInches(inches: number): number;
     // @internal (undocumented)
@@ -12293,13 +12283,11 @@ export abstract class Viewport implements IDisposable {
     // @beta
     queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
-    // @internal
     readImageToCanvas(): HTMLCanvasElement;
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
     removeScreenSpaceEffects(): void;
-    // @internal (undocumented)
     renderFrame(): void;
     // @internal (undocumented)
     get renderPlanValid(): boolean;
@@ -12320,7 +12308,6 @@ export abstract class Viewport implements IDisposable {
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     setAnimator(animator?: Animator): void;
     setFeatureOverrideProviderChanged(): void;
-    // @internal
     setFlashed(id: string | undefined, duration: number): void;
     // (undocumented)
     setLightSettings(settings: LightSettings): void;
@@ -12374,7 +12361,6 @@ export abstract class Viewport implements IDisposable {
     get viewingGlobe(): boolean;
     // (undocumented)
     get viewingSpace(): ViewingSpace;
-    // @internal
     get viewportId(): number;
     // @internal (undocumented)
     protected readonly _viewRange: ViewRect;
@@ -12676,7 +12662,6 @@ export abstract class ViewState extends ElementState {
     resetExtentLimits(): void;
     // @internal (undocumented)
     abstract savePose(): ViewPose;
-    // @beta
     get scheduleScript(): RenderSchedule.Script | undefined;
     // @internal (undocumented)
     get scheduleState(): RenderScheduleState | undefined;

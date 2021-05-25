@@ -299,7 +299,11 @@ export abstract class Viewport implements IDisposable {
     this._decorationsValid = false;
     IModelApp.requestNextAnimation();
   }
-  /** @internal */
+
+  /** Mark the viewport's scene as invalid, so that the next call to [[renderFrame]] will recreate it.
+   * This method is not typically invoked directly - the scene is automatically invalidated in response to events such as moving the viewing frustum,
+   * changing the set of viewed models, new tiles being loaded, etc.
+   */
   public invalidateScene(): void {
     this._sceneValid = false;
     this._timePointValid = false;
@@ -1188,12 +1192,22 @@ export abstract class Viewport implements IDisposable {
   /** This gives each Viewport a unique Id, which can be used for comparing and sorting Viewport objects inside collections.
    * @internal
    */
-  public get viewportId(): number { return this._viewportId; }
+  /** A unique integer Id for this viewport that can be used for comparing and sorting Viewport objects inside collections like [SortedArray]($bentleyjs-core)s. */
+  public get viewportId(): number {
+    return this._viewportId;
+  }
 
   /** The ViewState for this Viewport */
-  public get view(): ViewState { return this._view; }
+  public get view(): ViewState {
+    return this._view;
+  }
+
   /** @internal */
-  public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
+  public get pixelsPerInch() {
+    // ###TODO? This is apparently unobtainable information in a browser...
+    return 96;
+  }
+
   /** @internal */
   public get backgroundMapGeometry(): BackgroundMapGeometry | undefined { return this.view.displayStyle.getBackgroundMapGeometry(); }
 
@@ -1260,9 +1274,7 @@ export abstract class Viewport implements IDisposable {
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
-  /** Allows visibility of categories within this viewport to be overridden on a per-model basis.
-   * @beta
-   */
+  /** Allows visibility of categories within this viewport to be overridden on a per-model basis. */
   public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides { return this._perModelCategoryVisibility; }
 
   /** Adds visibility overrides for any subcategories whose visibility differs from that defined by the view's
@@ -1449,7 +1461,7 @@ export abstract class Viewport implements IDisposable {
     this.invalidateScene();
   }
 
-  /** @internal */
+  /** Returns true if the specified provider has been registered with this viewport via [[addTiledGraphicsProvider]]. */
   public hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean {
     return this._tiledGraphicsProviders.has(provider);
   }
@@ -1488,9 +1500,9 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** Set or clear the currently *flashed* element.
-   * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element
-   * @param duration The amount of time, in seconds, the flash intensity will increase (see [[flashDuration]])
-   * @internal
+   * @note This method is not typically invoked directly - [[ToolAdmin]] will invoke it for you when the user hovers over an element.
+   * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element.
+   * @param duration The amount of time, in seconds, the flash intensity will increase (see [[flashDuration]]).
    */
   public setFlashed(id: string | undefined, duration: number): void {
     if (id !== this._flashedElem) {
@@ -1962,7 +1974,7 @@ export abstract class Viewport implements IDisposable {
     return (ViewStatus.Success === this.setupFromView() && ViewStatus.Success === validSize);
   }
 
-  /** @internal */
+  /** Compute the range of all geometry to be displayed in this viewport. */
   public computeViewRange(): Range3d {
     const fitRange = this.view.computeFitRange();
     this.forEachTiledGraphicsProviderTree((ref) => {
@@ -2164,10 +2176,14 @@ export abstract class Viewport implements IDisposable {
     return needsFlashUpdate;
   }
 
-  /** @internal */
-  public createSceneContext(): SceneContext { return new SceneContext(this); }
+  /** Create a context appropriate for producing the scene to be rendered by this viewport, e.g., by [[createScene]]. */
+  public createSceneContext(): SceneContext {
+    return new SceneContext(this);
+  }
 
-  /** @internal */
+  /** Populate the context with the scene to be rendered by this viewport.
+   * @note This method is not typically invoked directly - [[renderFrame]] invokes it as needed to recreate the scene.
+   */
   public createScene(context: SceneContext): void {
     this.view.createScene(context);
     if (this._mapTiledGraphicsProvider)
@@ -2188,7 +2204,10 @@ export abstract class Viewport implements IDisposable {
     this._renderPlanValid = true;
   }
 
-  /** @internal */
+  /** Renders the contents of this viewport. This method performs only as much work as necessary based on what has changed since
+   * the last frame. If nothing has changed since the last frame, nothing is rendered.
+   * @note This method should almost never be invoked directly - it is invoked on your behalf by [[ViewManager]]'s render loop.
+   */
   public renderFrame(): void {
     this._frameStatsCollector.beginFrame();
 
@@ -2388,7 +2407,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
-   * @internal
+   * @see [[readImage]] to obtain the image as a JPEG or PNG.
    */
   public readImageToCanvas(): HTMLCanvasElement {
     return this.target.readImageToCanvas();
@@ -2575,8 +2594,8 @@ export abstract class Viewport implements IDisposable {
  * @public
  */
 export class ScreenViewport extends Viewport {
-  /** Settings that may be adjusted to control the way animations of viewing operations work.
-   * @beta
+  /** Settings that may be adjusted to control the way animations are applied to a [[ScreenViewport]] by methods like
+   * [[changeView]] and [[synchWithView].
    */
   public static animation = {
     /** Duration of animations of viewing operations. */
@@ -2584,16 +2603,17 @@ export class ScreenViewport extends Viewport {
       fast: BeDuration.fromSeconds(.5),
       normal: BeDuration.fromSeconds(1.0),
       slow: BeDuration.fromSeconds(1.25),
-      wheel: BeDuration.fromSeconds(.5), // zooming with the wheel
+      /** Duration used when zooming with the mouse wheel. */
+      wheel: BeDuration.fromSeconds(.5),
     },
     /** The easing function to use for view animations. */
     easing: Easing.Cubic.Out,
-    /** ZoomOut pertains to view transitions that move far distances, but maintain the same view direction.
+    /** Pertains to view transitions that move far distances, but maintain the same view direction.
      * In that case we zoom out, move the camera, and zoom back in rather than transitioning linearly to
      * provide context for the starting and ending positions. These settings control how and when that happens.
      */
     zoomOut: {
-      /** whether to allow zooming out. If you don't want it, set this to false. */
+      /** Whether to allow zooming out. If you don't want it, set this to false. */
       enable: true,
       /** The interpolation function used for camera height and position over the zoomOut operation. */
       interpolation: Interpolation.Bezier,
@@ -2607,9 +2627,9 @@ export class ScreenViewport extends Viewport {
        * Must start at 0 and end at 1.
        */
       positions: [0, 0, .1, .3, .5, .8, 1],
-      /** zoom out/in only if the beginning and ending view's range, each expanded by this factor, overlap. */
+      /** Zoom out/in only if the beginning and ending view's range, each expanded by this factor, overlap. */
       margin: 2.5,
-      /** multiply the duration of the animation by this factor if perform a zoom out. */
+      /** Multiply the duration of the animation by this factor when performing a zoom out. */
       durationFactor: 1.5,
     },
   };
@@ -2984,7 +3004,7 @@ export class ScreenViewport extends Viewport {
     this.canvas.style.cursor = cursor;
   }
 
-  /** @internal */
+  /** @internal override */
   public synchWithView(options?: ViewChangeOptions | boolean): void {
     options = (undefined === options) ? {} :
       (typeof options !== "boolean") ? options : { noSaveInUndo: !options }; // for backwards compatibility, was "saveInUndo"
@@ -3227,30 +3247,54 @@ function _clear2dCanvas(canvas: HTMLCanvasElement) {
   ctx.restore();
 }
 
-/** An off-screen viewport is not rendered to the screen. It is never added to the [[ViewManager]], therefore does not participate in
- * the render loop. It must be initialized with an explicit height and width, and its renderFrame function must be manually invoked.
- * @internal
+/** Options supplied when creating an [[OffScreenViewport]].
+ * @see [[OffScreenViewport.create]].
+ * @public
+ */
+export interface OffScreenViewportOptions {
+  /** The view to be drawn in the viewport. */
+  view: ViewState;
+  /** The dimensions of the viewport. */
+  viewRect: ViewRect;
+  /** If true, the viewport's aspect ratio will remain fixed. */
+  lockAspectRatio?: boolean;
+}
+
+/** A viewport that draws to an offscreen buffer instead of to the screen. An offscreen viewport is never added to the [[ViewManager]], therefore does not participate in
+ * the render loop. Its dimensions are specified directly instead of being derived from an HTMLCanvasElement, and its renderFrame function must be manually invoked.
+ * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImage]] and [[Viewport.readImageToCanvas]])
+ * without drawing to the screen.
+ * @public
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
 
-  public static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio = false, target?: RenderTarget) {
-    const rect = new ViewRect(0, 0, 1, 1);
-    if (undefined !== viewRect)
-      rect.setFrom(viewRect);
+  public static create(options: OffScreenViewportOptions): OffScreenViewport {
+    return this.createViewport(options.view, IModelApp.renderSystem.createOffscreenTarget(options.viewRect), options.lockAspectRatio);
+  }
 
-    const vp = new this(target ?? IModelApp.renderSystem.createOffscreenTarget(rect));
+  /** @internal because RenderTarget is internal */
+  public static createViewport(view: ViewState, target: RenderTarget, lockAspectRatio = false): OffScreenViewport {
+    const vp = new this(target);
     vp._isAspectRatioLocked = lockAspectRatio;
     vp.changeView(view);
     vp._decorationsValid = true;
     return vp;
   }
 
-  public get isAspectRatioLocked(): boolean { return this._isAspectRatioLocked; }
-  public get viewRect(): ViewRect { return this.target.viewRect; }
+  /** @internal override */
+  public get isAspectRatioLocked(): boolean {
+    return this._isAspectRatioLocked;
+  }
 
-  public setRect(rect: ViewRect, temporary: boolean = false) {
-    this.target.setViewRect(rect, temporary);
+  /** @internal override */
+  public get viewRect(): ViewRect {
+    return this.target.viewRect;
+  }
+
+  /** Change the dimensions of the viewport. */
+  public setRect(rect: ViewRect): void {
+    this.target.setViewRect(rect, false);
     this.changeView(this.view);
   }
 }
