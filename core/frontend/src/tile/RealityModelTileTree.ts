@@ -669,7 +669,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
     const drawArgs = super.createDrawArgs(context);
     if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded)
-      drawArgs.location.origin.z += context.viewport.displayStyle.backgroundMapElevationBias;
+      drawArgs.location.origin.z += context.viewport.view.displayStyle.backgroundMapElevationBias;
 
     return drawArgs;
   }
@@ -678,7 +678,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     const tree = this.treeOwner.tileTree as RealityTileTree;
     if (undefined !== tree && context.viewport.iModel.isGeoLocated &&  (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
       // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
-      this._mapDrapeTree = context.viewport.displayStyle.backgroundDrapeMap;
+      this._mapDrapeTree = context.viewport.backgroundDrapeMap;
       context.addBackgroundDrapedModel(this, undefined);
     }
 

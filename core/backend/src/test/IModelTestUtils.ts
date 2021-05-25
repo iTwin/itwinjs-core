@@ -505,9 +505,7 @@ export class IModelTestUtils {
 
   /** Flushes the Txns in the TxnTable - this allows importing of schemas */
   public static flushTxns(iModelDb: IModelDb): boolean {
-    const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = iModelDb.nativeDb.startCreateChangeSet();
-    if (res.error)
-      return false;
+    iModelDb.nativeDb.startCreateChangeSet();
     const status = iModelDb.nativeDb.finishCreateChangeSet();
     if (ChangeSetStatus.Success !== status)
       return false;

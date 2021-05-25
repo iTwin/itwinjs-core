@@ -221,6 +221,7 @@ export namespace Id64 {
    * @param highBytes The upper 4 bytes of the Id
    * @returns an Id64String containing the hexadecimal string representation of the unsigned 64-bit integer which would result from the
    * operation `lowBytes | (highBytes << 32)`.
+   * @see [[Id64.fromUint32PairObject]] if you have a [[Id64.Uint32Pair]] object.
    */
   export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String {
     const localIdLow = lowBytes >>> 0;
@@ -252,6 +253,13 @@ export namespace Id64 {
       buffer.length = index;
 
     return String.fromCharCode(...scratchCharCodes);
+  }
+
+  /** Create an Id64String from a [[Id64.Uint32Pair]].
+   * @see [[Id64.fromUint32Pair]].
+   */
+  export function fromUint32PairObject(pair: Uint32Pair): Id64String {
+    return fromUint32Pair(pair.lower, pair.upper);
   }
 
   /** Returns true if the inputs represent two halves of a valid 64-bit Id.

@@ -23,7 +23,7 @@ describe("RenderTimeline", () => {
       modelId: "0x123",
       elementTimelines: [{
         batchId: 1,
-        elementIds: [ "0xabc", "0xdef" ],
+        elementIds: ["0xabc", "0xdef"],
         visibilityTimeline: [{ time: 42, value: 50 }],
       }],
     }];
@@ -100,7 +100,7 @@ describe("RenderTimeline", () => {
     IModelJsFs.copySync(seedFileName, filename);
 
     const imodel = StandaloneDb.openFile(filename, OpenMode.ReadWrite);
-    expect(() => insertTimeline(imodel)).to.throw("Error inserting element, class=BisCore:RenderTimeline");
+    expect(() => insertTimeline(imodel)).to.throw("ecClass not found");
     imodel.close();
   });
 
@@ -130,7 +130,7 @@ describe("RenderTimeline", () => {
   it("remaps schedule script Ids on clone", async () => {
     const sourceDb = createIModel("remap-source");
     const model = insertPhysicalModel(sourceDb);
-    const category = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "cat", { });
+    const category = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "cat", {});
     const elementIds: Id64String[] = [];
     for (let i = 0; i < 3; i++)
       elementIds.push(insertPhysicalElement(sourceDb, model, category));

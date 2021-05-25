@@ -20,7 +20,7 @@ import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
+import { BatchOptions, GraphicBuilder, GraphicBuilderOptions, GraphicType } from "./GraphicBuilder";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
@@ -178,25 +178,6 @@ export interface PlanarGridProps {
   transparency?: PlanarGridTransparency;
 }
 
-/** Options used when constructing a `Batch` - that is, a [[RenderGraphic]] with an associated [FeatureTable]($common) describing individual [Feature]($common)s within the
- * graphic. Individual features can be resymbolized in a variety of ways including flashing and hiliting.
- * For example, to prevent graphics produced by [[readElementGraphics]] from being hilited when their corresponding element is in the [[SelectionSet]],
- * pass `{ noHilite: true }` to [[readElementGraphics]].
- * @public
- */
-export interface BatchOptions {
-  /** Identifies the [[Tile]] associated with the batch, chiefly for debugging purposes.
-   * @beta
-   */
-  tileId?: string;
-  /** If true, features within the batch will not be flashed on mouseover. */
-  noFlash?: boolean;
-  /** If true, features within the batch will not be hilited when their corresponding element is in the [[SelectionSet]]. */
-  noHilite?: boolean;
-  /** If true, features within the batch will not be emphasized when the corresponding [[Feature]] is emphasized using [FeatureOverrides]($common). */
-  noEmphasis?: boolean;
-}
-
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
@@ -284,7 +265,16 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[RenderContext.createGraphicBuilder]].
    * @see [[Decorator]]
    */
-  public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
+  public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder {
+    const pickable = undefined !== pickableId ? { id: pickableId } : undefined;
+    return this.createGraphic({ type, viewport, placement, pickable });
+  }
+
+  /** Obtain a [[GraphicBuilder]] from which to produce a [[RenderGraphic]].
+   * @param options Options describing how to create the builder.
+   * @returns A builder that produces a [[RenderGraphic]].
+   */
+  public abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
 
   /** Obtain an object capable of producing a custom screen-space effect to be applied to the image rendered by a [[Viewport]].
    * @returns undefined if screen-space effects are not supported by this RenderSystem.

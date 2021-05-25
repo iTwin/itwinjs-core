@@ -506,7 +506,7 @@ export class RotateElementsTool extends TransformElementsTool {
     if (undefined === this.anchorPoint)
       return;
 
-    const builder = context.target.createGraphicBuilder(GraphicType.WorldOverlay, context.viewport);
+    const builder = context.createGraphic({ type: GraphicType.WorldOverlay });
     builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
     builder.addLineString([this.anchorPoint.clone(), ev.point.clone()]);
     context.addGraphic(builder.finish());
