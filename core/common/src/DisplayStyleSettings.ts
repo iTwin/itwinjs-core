@@ -427,7 +427,7 @@ export class DisplayStyleSettings {
   /** Event raised just prior to assignment to the [[clipStyle]] property. */
   public readonly onClipStyleChanged = new BeEvent<(newStyle: ClipStyle) => void>();
   /** Event raised when the [[SubCategoryOverride]]s change. */
-  public readonly onSubCategoryOverridesChanged = new BeEvent<() => void>();
+  public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
   public readonly onModelAppearanceOverrideChanged = new BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>();
   /** Event raised just prior to assignment to the [[thematic]] property. */
@@ -678,7 +678,7 @@ export class DisplayStyleSettings {
   }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
-   * @param id The ID of the SubCategory whose appearance is to be overridden.
+   * @param id The Id of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
    * @see [[dropSubCategoryOverride]]
    */
@@ -687,7 +687,7 @@ export class DisplayStyleSettings {
   }
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
-   * @param id The ID of the [[SubCategory]].
+   * @param id The Id of the [[SubCategory]].
    * @see [[overrideSubCategory]]
    */
   public dropSubCategoryOverride(id: Id64String): void {
@@ -700,7 +700,7 @@ export class DisplayStyleSettings {
   }
 
   /** Obtain the override applied to a [[SubCategoryAppearance]] by this style.
-   * @param id The ID of the [[SubCategory]].
+   * @param id The Id of the [[SubCategory]].
    * @returns The corresponding SubCategoryOverride, or undefined if the SubCategory's appearance is not overridden.
    * @see [[overrideSubCategory]]
    */
@@ -714,7 +714,7 @@ export class DisplayStyleSettings {
   }
 
   /** Customize the way a [Model]($backend)   is drawn by this display style.
-   * @param modelId The ID of the [Model]($backend)  whose appearance is to be overridden.
+   * @param modelId The Id of the [Model]($backend)  whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [Model]($backend) .
    * @see [[dropModelAppearanceOverride]]
    */
@@ -723,7 +723,7 @@ export class DisplayStyleSettings {
   }
 
   /** Remove any appearance overrides applied to a [Model]($backend)  by this style.
-   * @param modelId The ID of the [Model]($backend) .
+   * @param modelId The Id of the [Model]($backend) .
    * @param ovr The overrides to apply to the [Model]($backend) .
    * @see [[overrideModelAppearance]]
    */
@@ -737,7 +737,7 @@ export class DisplayStyleSettings {
   }
 
   /** Obtain the override applied to a [Model]($backend)  by this style.
-   * @param id The ID of the [Model]($backend).
+   * @param id The Id of the [Model]($backend).
    * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
    * @see [[overrideModelAppearance]]
    */
@@ -751,7 +751,7 @@ export class DisplayStyleSettings {
   }
 
   /** Set the planar clip mask for a persistent reality [Model]($backend)  drawn by this display style.  Masking of BIM models is not supported although they can be used for masking for reality models and background maps.
- * @param modelId The ID of the persistent reality [Model]($backend)
+ * @param modelId The Id of the persistent reality [Model]($backend)
  * @param planarClipMask The clip mask to apply to the [Model]($backend).
 
  * @see [[dropModelPlanarClipMaskOverride]]
@@ -760,7 +760,7 @@ export class DisplayStyleSettings {
   public overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean { return this.changePlanarClipMaskOverride(modelId, true, planarClipMask); }
 
   /** Remove planar clip mask applied to a [Model]($backend)  by this style.
-   * @param modelId The ID of the [Model]($backend).
+   * @param modelId The Id of the [Model]($backend).
    * @param planarClipMask The planar clip mask to apply to the [Model]($backend).
    * @see [[overrideModelPlanarClipMask]]
    * @beta
@@ -768,7 +768,7 @@ export class DisplayStyleSettings {
   public dropModelPlanarClipMaskOverride(id: Id64String): boolean { return this.changePlanarClipMaskOverride(id, true); }
 
   /** Obtain the planar clip applied to a [Model]($backend)  by this style.
-    * @param id The ID of the [Model]($backend) .
+    * @param id The Id of the [Model]($backend) .
     * @returns The corresponding planar clip mask, or undefined if none exist.
     * @beta
     */
@@ -798,7 +798,7 @@ export class DisplayStyleSettings {
   }
 
   /** Add one or more elements to the set of elements not to be displayed.
-   * @param id The IDs of the element(s) to be excluded.
+   * @param id The Ids of the element(s) to be excluded.
    */
   public addExcludedElements(id: Id64String | Iterable<Id64String>) {
     this._excludedElements.add("string" === typeof id ? [id] : id);
@@ -812,7 +812,7 @@ export class DisplayStyleSettings {
   }
 
   /** Remove one or more elements from the set of elements not to be displayed.
-   * @param id The IDs of the element(s) to be removed from the set of excluded elements.
+   * @param id The Ids of the element(s) to be removed from the set of excluded elements.
    */
   public dropExcludedElements(id: Id64String | Iterable<Id64String>) {
     this._excludedElements.delete("string" === typeof id ? [id] : id);
@@ -1007,6 +1007,8 @@ export class DisplayStyleSettings {
   }
 
   private changeSubCategoryOverride(id: Id64String, updateJson: boolean, ovr?: SubCategoryOverride): void {
+    this.onSubCategoryOverridesChanged.raiseEvent(id, ovr);
+
     if (undefined === ovr) {
       // undefined => drop the override if present.
       this._subCategoryOverrides.delete(id);
@@ -1024,8 +1026,6 @@ export class DisplayStyleSettings {
         this._json.subCategoryOvr![index].subCategory = id;
       }
     }
-
-    this.onSubCategoryOverridesChanged.raiseEvent();
   }
 
   /** @internal */
