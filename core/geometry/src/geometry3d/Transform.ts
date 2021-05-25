@@ -98,7 +98,14 @@ export class Transform implements BeJSONFunctions {
    */
   public isAlmostEqual(other: Transform): boolean { return this._origin.isAlmostEqual(other._origin) && this._matrix.isAlmostEqual(other._matrix); }
 
-  /** Return a 3 by 4 matrix containing the rows of this Transform
+  /**
+   * Test for near equality with other Transform.  Comparison uses the isAlmostEqualAllowZRotation method of Matrix3d
+   * the origin and matrix parts.
+   * @param other Transform to compare to.
+   */
+   public isAlmostEqualAllowZRotation(other: Transform): boolean { return this._origin.isAlmostEqual(other._origin) && this._matrix.isAlmostEqualAllowZRotation(other._matrix); }
+
+   /** Return a 3 by 4 matrix containing the rows of this Transform
    * * This transform's origin is the [3] entry of the json arrays
    */
   public toJSON(): TransformProps {

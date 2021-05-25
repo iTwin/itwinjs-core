@@ -277,10 +277,10 @@ describe("IModelTransformerHub (#integration)", () => {
   });
 
   it("Clone/upgrade test", async () => {
-    const sourceIModelName: string = generateUniqueName("CloneSource");
+    const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
     const sourceIModelId = await HubUtility.recreateIModel(requestContext, projectId, sourceIModelName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
-    const targetIModelName: string = generateUniqueName("CloneTarget");
+    const targetIModelName: string = HubUtility.generateUniqueName("CloneTarget");
     const targetIModelId = await HubUtility.recreateIModel(requestContext, projectId, targetIModelName);
     assert.isTrue(Guid.isGuid(targetIModelId));
 
@@ -687,11 +687,4 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   }
 
-  /** Generate a unique name from the supplied baseName parameter.
- * - Add "IMT" prefix to group files in the integration test project.
- * - Add unique (GUID) suffix to make sure CI jobs get different file names.
- */
-  function generateUniqueName(baseName: string): string {
-    return `IMT_${baseName}_${Guid.createValue()}`;
-  }
 });

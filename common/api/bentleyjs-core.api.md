@@ -1304,12 +1304,10 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     protected readonly _duplicatePolicy: DuplicatePolicy;
     protected _extractArray(): T[];
     findEqual(value: T): T | undefined;
-    // @beta
     findEquivalent(criterion: (element: T) => number): T | undefined;
     forEach(func: (value: T) => void): void;
     get(index: number): T | undefined;
     indexOf(value: T): number;
-    // @beta
     indexOfEquivalent(criterion: (element: T) => number): number;
     protected _insert(value: T, onInsert?: (value: T) => any): number;
     get isEmpty(): boolean;

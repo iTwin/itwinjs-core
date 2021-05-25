@@ -217,13 +217,17 @@ export class OrbitGtTileTree extends TileTree {
   public viewFlagOverrides = new ViewFlagOverrides();
   private _tileGraphics = new Map<string, OrbitGtTileGraphic>();
 
-  public constructor(treeParams: TileTreeParams, private _dataManager: OrbitGtDataManager, cloudRange: Range3d, private _centerOffset: Vector3d) {
+  public constructor(treeParams: TileTreeParams, private _dataManager: OrbitGtDataManager, cloudRange: Range3d, private _centerOffset: Vector3d, private _ecefTransform: Transform) {
     super(treeParams);
 
     const worldContentRange = this.iModelTransform.multiplyRange(cloudRange);
     this.iModel.expandDisplayedExtents(worldContentRange);
     this._tileParams = { contentId: "0", range: cloudRange, maximumSize: 256 };
     this.rootTile = new OrbitGtRootTile(this._tileParams, this);
+  }
+
+  public async getEcefTranform(): Promise<Transform | undefined> {
+    return this._ecefTransform;
   }
 
   public dispose(): void {
@@ -359,6 +363,7 @@ export namespace OrbitGtTileTree {
     const pointCloudRange = rangeFromOrbitGt(pointCloudBounds);
     const pointCloudCenter = pointCloudRange.localXYZToWorld(.5, .5, .5)!;
     const addCloudCenter = Transform.createTranslation(pointCloudCenter);
+    const ecefTransform = Transform.createIdentity();
     let pointCloudCenterToDb = addCloudCenter;
     if (pointCloudCRS.length > 0) {
       await CRSManager.ENGINE.prepareForArea(pointCloudCRS, pointCloudBounds);
@@ -366,8 +371,9 @@ export namespace OrbitGtTileTree {
       await CRSManager.ENGINE.prepareForArea(wgs84CRS, new OrbitGtBounds());
       const pointCloudToEcef = transformFromOrbitGt(CRSManager.createTransform(pointCloudCRS, new OrbitGtCoordinate(pointCloudCenter.x, pointCloudCenter.y, pointCloudCenter.z), wgs84CRS));
       const pointCloudCenterToEcef = pointCloudToEcef.multiplyTransformTransform(addCloudCenter);
+      ecefTransform.setFrom(pointCloudCenterToEcef);
 
-      let ecefToDb = iModel.backgroundMapLocation.getMapEcefToDb(0);
+      let ecefToDb = iModel.ecefLocation ? iModel.backgroundMapLocation.getMapEcefToDb(0) : Transform.createIdentity();
       // In initial publishing version the iModel ecef Transform was used to locate the reality model.
       // This would work well only for tilesets published from that iModel but for iModels the ecef transform is calculated
       // at the center of the project extents and the reality model location may differ greatly, and the curvature of the earth
@@ -400,7 +406,7 @@ export namespace OrbitGtTileTree {
     const centerOffset = Vector3d.create(-pointCloudCenter.x, -pointCloudCenter.y, -pointCloudCenter.z);
     pointCloudRange.low.addInPlace(centerOffset);
     pointCloudRange.high.addInPlace(centerOffset);
-    return new OrbitGtTileTree(params, dataManager, pointCloudRange, centerOffset);
+    return new OrbitGtTileTree(params, dataManager, pointCloudRange, centerOffset, ecefTransform);
   }
 }
 
