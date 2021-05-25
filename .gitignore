@@ -23,6 +23,7 @@ package-deps.json
 /**/.rush
 *.build.log
 *.build.error.log
+common/autoinstallers/*/.npmrc
 
 # docs
 /public

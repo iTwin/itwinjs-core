@@ -3,15 +3,20 @@
 # exit with non-zero status after issuing an appropriate message if
 # it wants to stop the commit.
 
-command="common/temp/node_modules/.bin/lint-staged --quiet --config 'common/scripts/.lintstagedrc.json'"
+# command="common/temp/node_modules/.bin/lint-staged --quiet --config 'common/scripts/.lintstagedrc.json'"
 
-eval $command
+# eval $command
 
-exitCode=$?
+# exitCode=$?
 
-if [ $exitCode != 0 ]
-then
-  echo Failed Git hook: pre-commit
-fi
+# if [ $exitCode != 0 ]
+# then
+#   echo Failed Git hook: pre-commit
+# fi
 
-exit $exitCode
+# exit $exitCode
+
+# Invoke the "rush prettier" custom command to reformat files whenever they
+# are committed. The command is defined in common/config/rush/command-line.json
+# and uses the "rush-prettier" autoinstaller.
+node common/scripts/install-run-rush.js copyright:linter || exit $?
