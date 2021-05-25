@@ -230,12 +230,6 @@ describe("Per-model category visibility overrides", () => {
     pmcv.setOverride("0x1d", ["0x2f", "0x2e"], hide);
 
     let nIterations = 0;
-    for (const entry of pmcv)
-      ++nIterations;
-
-    expect(nIterations).to.equal(3);
-
-    nIterations = 0;
     const cats1c = [new Set<string>(), new Set<string>()];
     const cats1d = [new Set<string>(), new Set<string>()];
 
@@ -249,7 +243,7 @@ describe("Per-model category visibility overrides", () => {
       const set = vis ? arr[0] : arr[1];
       set.add(catId);
       ++nIterations;
-    });
+    }
 
     expect(nIterations).to.equal(6);
 

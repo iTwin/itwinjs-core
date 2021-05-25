@@ -615,7 +615,7 @@ export class TileAdmin {
   public async queryVersionInfo(): Promise<Readonly<TileVersionInfo>> {
     if (!this._versionInfo) {
       this.initializeRpc();
-      this._versionInfo = await IModelTileRpcInterface.queryVersionInfo();
+      this._versionInfo = await IModelTileRpcInterface.getClient().queryVersionInfo();
     }
 
     return this._versionInfo;
