@@ -790,6 +790,10 @@
       ]
     },
     {
+      "name": "copy-webpack-plugin",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "cpx",
       "allowedCategories": [
         "backend",
