@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-rpcinterface-impl",
-  "version": "2.17.0-dev.14",
+  "version": "2.17.0-dev.15",
   "description": "Schema RPC Interface backend implementation",
   "main": "lib/ecschema-rpc-impl.js",
   "typings": "lib/ecschema-rpc-impl",
@@ -30,14 +30,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "2.17.0-dev.14",
-    "@bentley/ecschema-metadata": "2.17.0-dev.14",
-    "@bentley/geometry-core": "2.17.0-dev.14",
-    "@bentley/imodelhub-client": "2.17.0-dev.14",
-    "@bentley/imodeljs-backend": "2.17.0-dev.14",
-    "@bentley/imodeljs-common": "2.17.0-dev.14",
-    "@bentley/itwin-client": "2.17.0-dev.14",
-    "@bentley/ecschema-rpcinterface-common": "2.17.0-dev.14"
+    "@bentley/bentleyjs-core": "2.17.0-dev.15",
+    "@bentley/ecschema-metadata": "2.17.0-dev.15",
+    "@bentley/geometry-core": "2.17.0-dev.15",
+    "@bentley/imodelhub-client": "2.17.0-dev.15",
+    "@bentley/imodeljs-backend": "2.17.0-dev.15",
+    "@bentley/imodeljs-common": "2.17.0-dev.15",
+    "@bentley/itwin-client": "2.17.0-dev.15",
+    "@bentley/ecschema-rpcinterface-common": "2.17.0-dev.15"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
