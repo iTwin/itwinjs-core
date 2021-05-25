@@ -120,9 +120,8 @@ export class IpcApp {
     return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
-  /** this should not be called directly. It is called by NativeApp.startup
-   * @internal
-   */
+  /** start an IpcApp.
+   * @note this should not be called directly. It is called by NativeApp.startup */
   public static async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions) {
     this._ipc = ipc;
     IpcAppNotifyHandler.register(); // receives notifications from backend

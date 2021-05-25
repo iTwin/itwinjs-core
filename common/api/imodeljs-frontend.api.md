@@ -4981,7 +4981,6 @@ export class IpcApp {
     static send(channel: string, ...data: any[]): void;
     // @internal (undocumented)
     static shutdown(): Promise<void>;
-    // @internal
     static startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions): Promise<void>;
 }
 

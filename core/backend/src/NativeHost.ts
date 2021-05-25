@@ -183,7 +183,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
  * @public */
 export interface NativeHostOpts extends IpcHostOpts {
   nativeHost?: {
-    /** Application named. Used to name settings file */
+    /** Application name. Used, for example, to name the settings file. If not supplied, defaults to "iTwinApp". */
     applicationName?: string;
   };
 }
