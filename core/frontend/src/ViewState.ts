@@ -214,7 +214,6 @@ export abstract class ViewState extends ElementState {
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
    * @see [[DisplayStyleState.scheduleScript]].
-   * @beta
    */
   public get scheduleScript(): RenderSchedule.Script | undefined {
     return this.displayStyle.scheduleScript;
