@@ -12,7 +12,7 @@ import {
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@bentley/geometry-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";
-import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps } from "../ElementProps";
+import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, isPlacement2dProps, PlacementProps } from "../ElementProps";
 import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
 import { IModelError } from "../IModelError";
@@ -21,6 +21,7 @@ import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
 import { TextString, TextStringProps } from "./TextString";
 import { Base64EncodedString } from "../Base64EncodedString";
+import { Placement2d, Placement3d } from "./Placement";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -207,6 +208,14 @@ export class GeometryStreamBuilder {
     this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)));
   }
 
+  /** Supply local to world transform from a PlacementProps2d or PlacementProps3d.
+   * @see [[PlacementProps]]
+   */
+  public setLocalToWorldFromPlacement(props: PlacementProps) {
+    const placement = isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
+    this.setLocalToWorld(placement.transform);
+  }
+
   /** Store local ranges in GeometryStream for all subsequent geometry appended. Can improve performance of range testing for elements with a GeometryStream
    * containing more than one [[GeometryQuery]] differentiable by range. Not useful for a single [[GeometryQuery]] as its range and that of the [[GeometricElement]] are the same.
    * Ignored when defining a [[GeometryPart]] and not needed when only appending [[GeometryPart]] instances to a [[GeometricElement]] as these store their own range.
@@ -316,9 +325,7 @@ export class GeometryStreamBuilder {
     return true;
   }
 
-  /** Append an [[ImageGraphic]] supplied in either local or world coordinates.
-   * @beta
-   */
+  /** Append an [[ImageGraphic]] supplied in either local or world coordinates. */
   public appendImage(image: ImageGraphic): boolean {
     if (undefined !== this._worldToLocal)
       image = image.cloneTransformed(this._worldToLocal);
@@ -416,7 +423,6 @@ export interface TextStringPrimitive {
  */
 export interface ImagePrimitive {
   type: "image";
-  /** @beta */
   readonly image: ImageGraphic;
 }
 

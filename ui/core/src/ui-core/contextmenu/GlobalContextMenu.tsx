@@ -24,42 +24,49 @@ export interface GlobalContextMenuProps extends ContextMenuProps {
   contextMenuComponent?: React.ComponentType<ContextMenuProps>;
 }
 
+/** @internal */
+interface GlobalContextMenuState {
+  parentDocument: Document | null;
+}
+
 /** GlobalContextMenu React component used to display a [[ContextMenu]] at the cursor
  * @public
  */
-export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps> {
-  private _container: HTMLDivElement;
+export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps, GlobalContextMenuState> {
+  private _container?: HTMLDivElement;
+
+  public readonly state: GlobalContextMenuState = {
+    parentDocument: null,
+  };
 
   constructor(props: GlobalContextMenuProps) {
     super(props);
-
-    this._container = document.createElement("div");
-    this._container.id = props.identifier !== undefined ? `core-context-menu-${props.identifier}` : "core-context-menu";
-    let rt = document.getElementById("core-context-menu-root") as HTMLDivElement;
-
-    // istanbul ignore else
-    if (!rt) {
-      rt = document.createElement("div");
-      rt.id = "core-context-menu-root";
-      document.body.appendChild(rt);
-    }
-
-    rt.appendChild(this._container);
   }
 
   public componentWillUnmount() {
     // istanbul ignore else
-    if (this._container.parentElement) { // cleanup
+    if (this._container && this._container.parentElement) { // cleanup
       this._container.parentElement.removeChild(this._container);
     }
-
-    const rt = document.getElementById("core-context-menu-root") as HTMLDivElement;
-
-    // istanbul ignore else
-    if (rt && rt.parentElement !== null && rt.children.length === 0) {
-      rt.parentElement.removeChild(rt);
-    }
   }
+
+  private _handleRefSet = (popupDiv: HTMLElement | null) => {
+    const parentDocument = popupDiv?.ownerDocument ?? null;
+    if (parentDocument) {
+      this._container = parentDocument.createElement("div");
+      this._container.id = this.props.identifier !== undefined ? `dialog-${this.props.identifier}` : "core-global-context-menu";
+      let rt = parentDocument.getElementById("core-global-context-menu-root") as HTMLDivElement;
+      if (!rt) {
+        rt = parentDocument.createElement("div");
+        rt.id = "core-global-context-menu-root";
+        parentDocument.body.appendChild(rt);
+      }
+      rt.appendChild(this._container);
+
+      // used to support component rendering in pop-out window
+      this.setState({ parentDocument });
+    }
+  };
 
   public render(): React.ReactNode {
     const { x, y, identifier, contextMenuComponent, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -70,11 +77,16 @@ export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProp
 
     const CtxMenu = contextMenuComponent || ContextMenu; // eslint-disable-line @typescript-eslint/naming-convention
 
-    return ReactDOM.createPortal(
-      <div className="core-context-menu-global" style={positioningStyle}>
-        <CtxMenu
-          {...props} />
-      </div >
-      , this._container);
+    return (
+      <div ref={this._handleRefSet} style={{ display: "none" }}>
+        {this.state.parentDocument &&
+          ReactDOM.createPortal(
+            <div className="core-context-menu-global" style={positioningStyle}>
+              <CtxMenu
+                {...props} />
+            </div >, this.state.parentDocument.body)
+        }
+      </div>
+    );
   }
 }

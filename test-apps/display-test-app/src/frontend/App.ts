@@ -42,6 +42,7 @@ import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { SyncViewportsTool } from "./SyncViewportsTool";
+import { FrameStatsTool } from "./FrameStatsTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -210,6 +211,7 @@ export class DisplayTestApp {
       EditingScopeTool,
       FenceClassifySelectedTool,
       FocusWindowTool,
+      FrameStatsTool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
       MarkupSelectTestTool,
@@ -238,7 +240,7 @@ export class DisplayTestApp {
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true });
+    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true, registerSketchTools: true });
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

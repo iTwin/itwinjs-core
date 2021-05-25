@@ -12,12 +12,13 @@ import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@bentley/imodeljs
 import { Decorations } from "../Decorations";
 import { SurfaceType } from "../primitives/VertexTable";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
+import { AnimationBranchState } from "../GraphicBranch";
 import { BranchStack } from "./BranchStack";
 import { BatchState } from "./BatchState";
 import { BranchState } from "./BranchState";
 import {
-  DrawCommands, getAnimationBranchState, PopBatchCommand, PopBranchCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
-  PushBranchCommand, PushCommand, PushStateCommand,
+  DrawCommands, PopBatchCommand, PopBranchCommand, PopClipCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
+  PushBranchCommand, PushClipCommand, PushCommand, PushStateCommand,
 } from "./DrawCommand";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
 import { Layer, LayerContainer } from "./Layer";
@@ -27,11 +28,12 @@ import { Primitive } from "./Primitive";
 import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
 import { TargetGraphics } from "./TargetGraphics";
 import { Target } from "./Target";
+import { ClipVolume } from "./ClipVolume";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal
  */
-export class RenderCommands {
+export class RenderCommands implements Iterable<DrawCommands> {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
   private readonly _scratchRange = new Range3d();
@@ -40,12 +42,17 @@ export class RenderCommands {
   private _stack: BranchStack; // refers to the Target's BranchStack
   private _batchState: BatchState; // refers to the Target's BatchState
   private _forcedRenderPass: RenderPass = RenderPass.None;
+  private _addLayersAsNormalGraphics = false;
   private _opaqueOverrides = false;
   private _translucentOverrides = false;
   private _addTranslucentAsOpaque = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
   private readonly _layers: LayerCommandLists;
 
   public get target(): Target { return this._target; }
+
+  public [Symbol.iterator](): Iterator<DrawCommands> {
+    return this._commands[Symbol.iterator]();
+  }
 
   public get isEmpty(): boolean {
     for (const commands of this._commands)
@@ -101,6 +108,15 @@ export class RenderCommands {
     this._stack = stack;
     this._batchState = batchState;
     this.clear();
+  }
+
+  public collectGraphicsForPlanarProjection(scene: GraphicList): void {
+    assert(this._forcedRenderPass === RenderPass.None);
+    assert(!this._addLayersAsNormalGraphics);
+
+    this._addLayersAsNormalGraphics = true;
+    this.addGraphics(scene);
+    this._addLayersAsNormalGraphics = false;
   }
 
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
@@ -285,6 +301,16 @@ export class RenderCommands {
   }
 
   public addLayerCommands(layer: Layer): void {
+    if (this._addLayersAsNormalGraphics) {
+      // GraphicsCollectorDrawArgs wants to collect graphics to project to a plane for masking.
+      // It bypasses PlanProjectionTreeReference.createDrawArgs which would otherwise wrap the graphics in a LayerContainer.
+      assert(this._forcedRenderPass === RenderPass.None);
+      this._forcedRenderPass = RenderPass.OpaqueGeneral;
+      layer.graphic.addCommands(this);
+      this._forcedRenderPass = RenderPass.None;
+      return;
+    }
+
     assert(this.isDrawingLayers);
     if (!this.isDrawingLayers)
       return;
@@ -301,8 +327,8 @@ export class RenderCommands {
   }
 
   public addHiliteLayerCommands(graphic: Graphic, pass: RenderPass): void {
-    assert(this.isDrawingLayers);
-    if (!this.isDrawingLayers)
+    assert(this.isDrawingLayers || this._addLayersAsNormalGraphics);
+    if (!this.isDrawingLayers && !this._addLayersAsNormalGraphics)
       return;
 
     const prevPass = this._forcedRenderPass;
@@ -313,15 +339,16 @@ export class RenderCommands {
     this._forcedRenderPass = prevPass;
   }
 
-  private shouldOmitBranch(branch: Branch): boolean {
-    const anim = getAnimationBranchState(branch, this.target);
-    return undefined !== anim && true === anim.omit;
+  private getAnimationBranchState(branch: Branch): AnimationBranchState | undefined {
+    const animId = branch.branch.animationId;
+    return undefined !== animId ? this.target.animationBranches?.get(animId) : undefined;
   }
 
   private pushAndPopBranchForPass(pass: RenderPass, branch: Branch, func: () => void): void {
     assert(!this.isDrawingLayers);
 
-    if (this.shouldOmitBranch(branch))
+    const animState = this.getAnimationBranchState(branch);
+    if (animState?.omit)
       return;
 
     assert(RenderPass.None !== pass);
@@ -330,17 +357,27 @@ export class RenderCommands {
     if (branch.planarClassifier)
       branch.planarClassifier.pushBatchState(this._batchState);
 
-    const push = new PushBranchCommand(branch);
     const cmds = this.getCommands(pass);
+    const clip = animState?.clip as ClipVolume | undefined;
+    const pushClip = undefined !== clip ? new PushClipCommand(clip) : undefined;
+    if (pushClip)
+      cmds.push(pushClip);
+
+    const push = new PushBranchCommand(branch);
     cmds.push(push);
 
     func();
 
     this._stack.pop();
-    if (cmds[cmds.length - 1] === push)
+    if (cmds[cmds.length - 1] === push) {
       cmds.pop();
-    else
+      if (pushClip)
+        cmds.pop();
+    } else {
       cmds.push(PopBranchCommand.instance);
+      if (pushClip)
+        cmds.push(PopClipCommand.instance);
+    }
   }
 
   private pushAndPop(push: PushCommand, pop: PopCommand, func: () => void): void {
@@ -397,9 +434,17 @@ export class RenderCommands {
   }
 
   public pushAndPopBranch(branch: Branch, func: () => void): void {
-    if (this.shouldOmitBranch(branch))
+    const animState = this.getAnimationBranchState(branch);
+    if (animState?.omit)
       return;
 
+    if (animState?.clip)
+      this.pushAndPop(new PushClipCommand(animState.clip as ClipVolume), PopClipCommand.instance, () => this._pushAndPopBranch(branch, func));
+    else
+      this._pushAndPopBranch(branch, func);
+  }
+
+  private _pushAndPopBranch(branch: Branch, func: () => void): void {
     this._stack.pushBranch(branch);
     if (branch.planarClassifier)
       branch.planarClassifier.pushBatchState(this._batchState);
@@ -562,6 +607,9 @@ export class RenderCommands {
   }
 
   public addBatch(batch: Batch): void {
+    if (batch.locateOnly && !this.target.isReadPixelsInProgress)
+      return;
+
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
     // NB: This is no longer true - pickable overlay decorations are defined as Batches. Problem?

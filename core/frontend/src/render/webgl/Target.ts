@@ -14,6 +14,7 @@ import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
 import { Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
+import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -27,6 +28,7 @@ import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
 import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
 import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { Scene } from "../Scene";
+import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "../VisibleFeature";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
@@ -55,6 +57,8 @@ import { TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
+import { VisibleTileFeatures } from "./VisibleTileFeatures";
+import { FrameStatsCollector } from "../FrameStats";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -589,10 +593,17 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
   }
 
+  private _frameStatsCollector = new FrameStatsCollector();
+
+  public get frameStatsCollector(): FrameStatsCollector { return this._frameStatsCollector; }
+
+  public assignFrameStatsCollector(collector: FrameStatsCollector) { this._frameStatsCollector = collector; }
+
   private paintScene(sceneMilSecElapsed?: number): void {
     if (!this._dcAssigned)
       return;
 
+    this._frameStatsCollector.beginTime("totalFrameTime");
     this.beginPerfMetricFrame(sceneMilSecElapsed, this.drawForReadPixels);
     this.beginPerfMetricRecord("Begin Paint", this.drawForReadPixels);
     assert(undefined !== this._fbo);
@@ -605,28 +616,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Set this to true to visualize the output of readPixels()...useful for debugging pick.
     if (this.drawForReadPixels) {
-      this._isReadPixelsInProgress = true;
-      this._readPixelsSelector = Pixel.Selector.Feature;
-
-      const vf = this.getViewFlagsForReadPixels();
-      const top = this.currentBranch;
-      const state = new BranchState({
-        viewFlags: vf,
-        symbologyOverrides: top.symbologyOverrides,
-        is3d: top.is3d,
-        edgeSettings: top.edgeSettings,
-        transform: Transform.createIdentity(),
-        clipVolume: top.clipVolume,
-      });
-
-      this.pushState(state);
-
-      this.beginPerfMetricRecord("Init Commands", this.drawForReadPixels);
-      this._renderCommands.initForReadPixels(this.graphics);
-      this.endPerfMetricRecord(this.drawForReadPixels);
-
+      this.beginReadPixels(Pixel.Selector.Feature);
       this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
-      this.uniforms.branch.pop();
+      this.endReadPixels();
     } else {
       // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
       // the compositor's textures, framebuffers, etc. This *must* occur before any drawing occurs.
@@ -634,13 +626,17 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       // before then. So do it now.
       this.compositor.preDraw();
 
+      this._frameStatsCollector.beginTime("classifiersTime");
       this.beginPerfMetricRecord("Planar Classifiers");
       this.drawPlanarClassifiers();
       this.endPerfMetricRecord();
+      this._frameStatsCollector.endTime("classifiersTime");
 
+      this._frameStatsCollector.beginTime("shadowsTime");
       this.beginPerfMetricRecord("Shadow Maps");
       this.drawSolarShadowMap();
       this.endPerfMetricRecord();
+      this._frameStatsCollector.endTime("shadowsTime");
 
       this.beginPerfMetricRecord("Texture Drapes");
       this.drawTextureDrapes();
@@ -652,6 +648,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
+      this._frameStatsCollector.beginTime("overlaysTime");
       this.beginPerfMetricRecord("Overlay Draws");
 
       this.beginPerfMetricRecord("World Overlays");
@@ -663,14 +660,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.endPerfMetricRecord();
 
       this.endPerfMetricRecord(); // End "Overlay Draws"
+      this._frameStatsCollector.endTime("overlaysTime");
     }
 
     // Apply screen-space effects. Note we do not reset this._isReadPixelsInProgress until *after* doing so, as screen-space effects only apply
     // during readPixels() if the effect shifts pixels from their original locations.
+    this._frameStatsCollector.beginTime("screenspaceEffectsTime");
     this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
     this.renderSystem.screenSpaceEffects.apply(this);
-    this._isReadPixelsInProgress = false;
     this.endPerfMetricRecord(this.drawForReadPixels);
+    this._frameStatsCollector.endTime("screenspaceEffectsTime");
 
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
@@ -680,6 +679,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.endPerfMetricRecord(this.drawForReadPixels);
 
     this.endPerfMetricFrame(this.drawForReadPixels);
+    this._frameStatsCollector.endTime("totalFrameTime");
   }
 
   private drawPass(pass: RenderPass): void {
@@ -752,20 +752,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.uniforms.batch.resetBatchState();
   }
 
-  private getViewFlagsForReadPixels(): ViewFlags {
-    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = false;
-    if (!this.uniforms.thematic.wantIsoLines)
-      vf.thematicDisplay = false;
-    vf.noGeometryMap = true;
-    return vf;
-  }
-
-  private readonly _scratchTmpFrustum = new Frustum();
-  private readonly _scratchRectFrustum = new Frustum();
-  private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
-    // const collectReadPixelsTimings = this.performanceMetrics !== undefined && !this.performanceMetrics.gatherCurPerformanceMetrics; // Only collect data here if in display-perf-test-app
-    // if (collectReadPixelsTimings) this.beginPerfMetricRecord("Init Commands");
+  private beginReadPixels(selector: Pixel.Selector, cullingFrustum?: Frustum): void {
     this.beginPerfMetricRecord("Init Commands", true);
 
     this._isReadPixelsInProgress = true;
@@ -773,7 +760,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
-    const vf = this.getViewFlagsForReadPixels();
+    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
+    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = false;
+    if (!this.uniforms.thematic.wantIsoLines)
+      vf.thematicDisplay = false;
+
+    vf.noGeometryMap = true;
     const top = this.currentBranch;
     const state = new BranchState({
       viewFlags: vf,
@@ -786,7 +778,29 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.pushState(state);
 
+    // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
+    if (cullingFrustum)
+      this._renderCommands.setCheckRange(cullingFrustum);
+
+    this._renderCommands.initForReadPixels(this.graphics);
+    this._renderCommands.clearCheckRange();
+    this.endPerfMetricRecord(true);
+  }
+
+  private endReadPixels(preserveBatchState = false): void {
+    // Pop the BranchState pushed by beginReadPixels.
+    this.uniforms.branch.pop();
+    if (!preserveBatchState)
+      this.uniforms.batch.resetBatchState();
+
+    this._isReadPixelsInProgress = false;
+  }
+
+  private readonly _scratchTmpFrustum = new Frustum();
+  private readonly _scratchRectFrustum = new Frustum();
+  private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     // Create a culling frustum based on the input rect. We can't do this if a screen-space effect is going to move pixels around.
+    let rectFrust;
     if (!this.renderSystem.screenSpaceEffects.shouldApply(this)) {
       const viewRect = this.viewRect;
       const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
@@ -805,7 +819,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
       interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
 
-      const rectFrust = this._scratchRectFrustum;
+      rectFrust = this._scratchRectFrustum;
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
@@ -814,22 +828,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
-
-      this._renderCommands.setCheckRange(rectFrust);
-
-      // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
-      // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
-      // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
-      //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
-      //     return undefined;
     }
 
-    // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
-    this._renderCommands.clear();
-    this._renderCommands.initForReadPixels(this.graphics);
-    this._renderCommands.clearCheckRange();
-
-    this.endPerfMetricRecord(true); // End "Init Commands"
+    this.beginReadPixels(selector, rectFrust);
 
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
@@ -853,8 +854,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.renderSystem.screenSpaceEffects.apply(this);
     this.endPerfMetricRecord(true); // End "Screenspace Effects"
 
-    // Restore the state
-    this.uniforms.branch.pop();
+    this.endReadPixels(true);
 
     this.beginPerfMetricRecord("Read Pixels", true);
     const result = this.compositor.readPixels(rect, selector);
@@ -867,8 +867,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.performanceMetrics.endFrame();
     }
 
-    this._isReadPixelsInProgress = false;
     return result;
+  }
+
+  public queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void {
+    this.beginReadPixels(Pixel.Selector.Feature);
+    callback(new VisibleTileFeatures(this._renderCommands, options, this, iModel));
+    this.endReadPixels();
   }
 
   protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean {

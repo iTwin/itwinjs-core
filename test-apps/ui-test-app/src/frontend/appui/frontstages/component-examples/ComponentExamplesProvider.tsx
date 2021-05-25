@@ -11,14 +11,14 @@ import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
 } from "@bentley/imodeljs-frontend";
 import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { DateFormatter, IconSpecUtilities, ParseResults, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
+import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
-  adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
+  adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
+  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
 } from "@bentley/ui-components";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
-  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
+  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalAlignment, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
   MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
   SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
@@ -38,7 +38,7 @@ function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
     {
       itemPriority: 10, tabId: "Quantity", pageWillHandleCloseRequest: true, label: "Quantity", tooltip: "Quantity Format Settings", icon: "icon-measure",
-      page: <QuantityFormatSettingsPage initialQuantityType={QuantityType.Length} availableUnitSystems={new Set(["metric","imperial","usCustomary","usSurvey"])} />,
+      page: <QuantityFormatSettingsPage initialQuantityType={QuantityType.Length} availableUnitSystems={new Set(["metric", "imperial", "usCustomary", "usSurvey"])} />,
     },
     {
       itemPriority: 20, tabId: "Accudraw", label: "Accudraw", tooltip: "Accudraw Settings", icon: "icon-paintbrush",
@@ -358,7 +358,7 @@ export function WeightPickerHost(props: { activeWeight: number, onLineWeightPick
   }, [onLineWeightPick]);
 
   return (
-    <WeightPickerButton activeWeight={currentWeight} onLineWeightPick={handleWeightPick} />
+    <WeightPickerButton style={{ width: "max-content" }} activeWeight={currentWeight} onLineWeightPick={handleWeightPick} />
   );
 }
 
@@ -526,6 +526,24 @@ export class ComponentExamplesProvider {
   private static get datePickerSample(): ComponentExampleCategory {
     const londonDate = adjustDateToTimezone(new Date(), 1 * 60);
     const laDate = adjustDateToTimezone(new Date(), -7 * 60);
+    // example showing converting to UTC time and using that to format.
+    const msPerHour = 60 * 60 * 1000;
+    const tzOffset = -4; // this should be similar to Math.floor(.5 + location.longitudeDegrees / 15.0);
+    const tzOffsetMs = tzOffset * msPerHour; // offset to project
+    const projectSunrise = new Date(Date.UTC(1999, 3, 15, 7, 30) + tzOffsetMs); // this should be same as time returned from calculateSunriseOrSunset
+    const projectSunset = new Date(Date.UTC(1999, 3, 15, 20, 30) + tzOffsetMs); // this should be same as time returned from calculateSunriseOrSunset
+    const projectSunriseMs = projectSunrise.getTime();
+    const projectSunsetMs = projectSunset.getTime();
+    const projectSunTimeMs = Date.UTC(1999, 3, 15, 9, 30) + tzOffsetMs;  // this should be same as displayStyle.settings.sunTime
+    const dateFormatter = new Intl.DateTimeFormat("default", { month: "numeric", day: "numeric", timeZone: "UTC" } as any);
+    const timeFormatter = new Intl.DateTimeFormat("default", { timeStyle: "short", timeZone: "UTC" } as any);
+    const monthLetterFormatter = new Intl.DateTimeFormat("default", { month: "narrow", timeZone: "UTC" } as any);
+    const projectDate = dateFormatter.format(new Date(projectSunriseMs - tzOffsetMs));
+    const projectSunriseTime = timeFormatter.format(new Date(projectSunriseMs - tzOffsetMs));
+    const projectSunsetTime = timeFormatter.format(new Date(projectSunsetMs - tzOffsetMs));
+    const projectSunTime = timeFormatter.format(new Date(projectSunTimeMs - tzOffsetMs));
+    const month = monthLetterFormatter.format(new Date(projectSunriseMs - tzOffsetMs));
+
     return {
       title: "DatePicker",
       examples: [
@@ -538,6 +556,14 @@ export class ComponentExamplesProvider {
         createComponentExample("Date Picker Popup w/custom formatter", undefined, <DatePickerHost selected={new Date()} displayEditField={true} dateFormatter={new IntlFormatter(customDayFormatter)} />),
         createComponentExample("Date Picker Popup w/IntlFormatter", undefined, <DatePickerHost fieldStyle={{ width: "16em" }} selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} dateFormatter={new IntlFormatter()} />),
         createComponentExample("Date Picker Popup w/MDY Formatter", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} dateFormatter={new MdyFormatter()} />),
+        createComponentExample("Date Formatting", undefined,
+          <div className="component-examples-date-sample">
+            <span>{`date: ${projectDate}`}</span>
+            <span>{`monthLetter: ${month}`}</span>
+            <span>{`sunrise: ${projectSunriseTime}`}</span>
+            <span>{`sun time: ${projectSunTime}`}</span>
+            <span>{`sunset: ${projectSunsetTime}`}</span>
+          </div>),
       ],
     };
   }
@@ -586,6 +612,56 @@ export class ComponentExamplesProvider {
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
+      ],
+    };
+  }
+
+  private static get mergedCellsSamples(): ComponentExampleCategory {
+    const testRecord = (valueString: string): PropertyRecord => {
+      const value: PropertyValue = {
+        value: valueString,
+        displayValue: valueString,
+        valueFormat: PropertyValueFormat.Primitive,
+      };
+      const description: PropertyDescription = {
+        name: "1",
+        typename: "text",
+        displayLabel: "column",
+      };
+      return new PropertyRecord(value, description);
+    };
+
+    const rowData = [{
+      key: "row1",
+      cells: [
+        { key: "1", record: testRecord("Cell 1 text") },
+        { key: "2", record: testRecord("Text in the merged cells (2, 3)"), mergedCellsCount: 2, alignment: HorizontalAlignment.Center },
+        { key: "3", record: testRecord("") },
+        { key: "4", record: testRecord("Cell 4 text") }],
+    },
+    ];
+    const onColumnsChanged = new TableDataChangeEvent();
+    const onRowsChanged = new TableDataChangeEvent();
+    const dataProvider: TableDataProvider = {
+      getColumns: async (): Promise<ColumnDescription[]> => [
+        { key: "1", label: "Column1", resizable: true },
+        { key: "2", label: "Column2", resizable: true },
+        { key: "3", label: "Column3", resizable: true },
+        { key: "4", label: "Column4", resizable: true }],
+      getRowsCount: async () => rowData.length,
+      getRow: async (index: number) => rowData[index],
+      sort: async () => { },
+      onColumnsChanged,
+      onRowsChanged,
+    };
+
+    return {
+      title: "Merged Table Cells",
+      examples: [
+        createComponentExample("Table", "Table with merged cells",
+          <Table
+            dataProvider={dataProvider}
+          />),
       ],
     };
   }
@@ -1144,6 +1220,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.quantityFormatting,
       ComponentExamplesProvider.settingPage,
       ComponentExamplesProvider.deprecatedComponentSamples,
+      ComponentExamplesProvider.mergedCellsSamples,
     ];
   }
 }

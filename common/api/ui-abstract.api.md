@@ -74,6 +74,8 @@ export interface AbstractToolbarProps {
 export interface AbstractWidgetProps extends ProvidedItem {
     readonly applicationData?: any;
     readonly badgeType?: BadgeType;
+    // @beta
+    readonly canPopout?: boolean;
     readonly defaultState?: WidgetState;
     readonly fillZone?: boolean;
     readonly getWidgetContent: () => any;
@@ -899,6 +901,7 @@ export interface CommonBackstageItem extends ProvidedItem {
     readonly icon?: string | ConditionalStringValue;
     readonly id: string;
     readonly internalData?: Map<string, any>;
+    readonly isActive?: boolean | ConditionalBooleanValue;
     readonly isDisabled?: boolean | ConditionalBooleanValue;
     readonly isHidden?: boolean | ConditionalBooleanValue;
     readonly itemPriority: number;
@@ -1471,6 +1474,8 @@ export interface PropertyDescription {
     displayLabel: string;
     editor?: PropertyEditorInfo;
     enum?: EnumerationChoicesInfo;
+    // @alpha
+    hideCompositePropertyLabel?: boolean;
     name: string;
     // @alpha
     quantityType?: string;

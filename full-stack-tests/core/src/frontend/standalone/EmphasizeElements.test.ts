@@ -355,15 +355,14 @@ describe("EmphasizeElements tests", () => {
       const aApp = after.defaultAppearance;
       const bApp = before.defaultAppearance;
       expect(undefined === aApp).to.equal(undefined === bApp);
-      if (undefined !== aApp && undefined !== bApp) {
-        expect(undefined !== aApp.rgb).to.equal(undefined !== bApp.rgb);
-        expect(aApp.weight).to.equal(bApp.weight);
-        expect(aApp.transparency).to.equal(bApp.transparency);
-        expect(aApp.linePixels).to.equal(bApp.linePixels);
-        expect(aApp.ignoresMaterial).to.equal(bApp.ignoresMaterial);
-        expect(aApp.nonLocatable).to.equal(bApp.nonLocatable);
-        expect(aApp.emphasized).to.equal(bApp.emphasized);
-      }
+      if (undefined !== aApp && undefined !== bApp)
+        expect(aApp.equals(bApp)).to.be.true;
+
+      const aUnanimated = after.unanimatedAppearance;
+      const bUnanimated = before.unanimatedAppearance;
+      expect(undefined === aUnanimated).to.equal(undefined === bUnanimated);
+      if (aUnanimated && bUnanimated)
+        expect(aUnanimated.equals(bUnanimated)).to.be.true;
 
       expectEqualSets(after.getHiddenElements(vp2), before.getHiddenElements(vp1));
       expectEqualSets(after.getEmphasizedElements(vp2), before.getEmphasizedElements(vp1));
@@ -458,6 +457,39 @@ describe("EmphasizeElements tests", () => {
       expect(emph.overrideElements(blueIds, vp, ColorDef.blue, undefined, true)).to.be.true;
       const currBlueIds = emph.getOverriddenElementsByKey(blueKey);
       assert.isTrue(undefined !== currBlueIds && blueIds.size === currBlueIds.size);
+    });
+
+    roundTrip((emph, vp) => {
+      const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+      emph.unanimatedAppearance = blue;
+      expect(emph.unanimatedAppearance).not.to.be.undefined;
+      expect(JSON.stringify(emph.unanimatedAppearance.toJSON())).to.equal(JSON.stringify(blue.toJSON()));
+
+      const ovrs = new FeatureSymbology.Overrides();
+      const feature = new Feature("0x123");
+      let app = ovrs.getFeatureAppearance(feature, "0x456")!;
+      expect(app).not.to.be.undefined;
+      expect(app.matchesDefaults).to.be.true;
+
+      emph.addFeatureOverrides(ovrs, vp);
+      app = ovrs.getFeatureAppearance(feature, "0x456")!;
+      expect(app).not.to.be.undefined;
+      expect(app.matchesDefaults).to.be.false;
+      expect(app.equals(blue)).to.be.true;
+    });
+
+    roundTrip((emph, vp) => {
+      const transp = FeatureAppearance.fromTransparency(1.0);
+      emph.unanimatedAppearance = transp;
+
+      const ovrs = new FeatureSymbology.Overrides();
+      const feature = new Feature("0x123");
+      const app = ovrs.getFeatureAppearance(feature, "0x456");
+      expect(app).not.to.be.undefined;
+      expect(app!.matchesDefaults).to.be.true;
+
+      emph.addFeatureOverrides(ovrs, vp);
+      expect(ovrs.getFeatureAppearance(feature, "0x456")).to.be.undefined;
     });
   });
 });

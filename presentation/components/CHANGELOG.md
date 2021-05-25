@@ -1,6 +1,57 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Thu, 22 Apr 2021 21:07:33 GMT and should not be manually modified.
+This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Added ability to get diagnostics data when using presentation data providers (tree, property grid, table).
+- Fix wrong colors being assigned to objects created using presentation rules
+- Fix `PresentationPropertyDataProvider` not working after Presentation re-initialization
+- Drop lodash dependency
+- Fix nested fields' enum info not being carried to PropertyRecords
+- Add `PresentationPropertyDataProvider.getPropertyRecordInstanceKeys` function to find keys of instance that is the source of given `PropertyRecord`.
+- Sort categories and fields in table and property data providers based on priority and label rather than name.
+- Release tags' review
+- Set renderer and editor for deeply nested `PropertyRecord` instances.
+- Add support for custom property category renderers.
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+_Version update only_
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Refactor the way presentation type of content is mapped to UI type of content. This is a more flexible approach and allowed to fix invalid properties display when an element had multiple aspects with categorized properties.
+- Change hierarchy auto updating after iModel data changes to reload only nodes visible in the tree
+- Disable hierarchy preloading
+- Fix compatibility issue when multiple versions of `rxjs` are in use.
 
 ## 2.14.4
 Thu, 22 Apr 2021 21:07:33 GMT

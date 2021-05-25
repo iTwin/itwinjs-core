@@ -11,7 +11,7 @@ import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive
 import { Cartographic, ColorByName, ColorDef, EcefLocation, Frustum, GeoCoordStatus, GlobeMode } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
-import { WebMercatorTilingScheme } from "./tile/internal";
+import { BingElevationProvider, WebMercatorTilingScheme } from "./tile/internal";
 
 const scratchRange = Range3d.createNull();
 const scratchZeroPoint = Point3d.createZero();
@@ -432,9 +432,11 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
 export class BackgroundMapLocation {
   private _ecefToDb?: Transform;
   private _ecefValidated = false;
+  private _geodeticToSeaLevel?: number;
+  private _projectCenterAltitude?: number;
 
-  public onEcefChanged(ecefLocation: EcefLocation) {
-    this._ecefToDb = ecefLocation.getTransform().inverse()!;
+  public onEcefChanged(ecefLocation: EcefLocation| undefined) {
+    this._ecefToDb = ecefLocation?.getTransform().inverse();
     this._ecefValidated = false;
   }
 
@@ -444,6 +446,8 @@ export class BackgroundMapLocation {
 
     if (!iModel.ecefLocation) {
       this._ecefToDb = Transform.createIdentity();
+      this._geodeticToSeaLevel = 0;
+      this._projectCenterAltitude = 0;
       return;
     }
 
@@ -466,6 +470,10 @@ export class BackgroundMapLocation {
     if (undefined !== ecefToDb)
       this._ecefToDb = ecefToDb;
 
+    const elevationProvider = new BingElevationProvider();
+
+    this._geodeticToSeaLevel = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
+    this._projectCenterAltitude = await elevationProvider.getHeightValue(iModel.projectExtents.center, iModel, true);
     this._ecefValidated = true;
   }
   public getMapEcefToDb(bimElevationBias: number): Transform {
@@ -480,4 +488,18 @@ export class BackgroundMapLocation {
     return mapEcefToDb;
   }
 
+  public get geodeticToSeaLevel(): number {
+    if (undefined === this._geodeticToSeaLevel) {
+      assert (false);
+      return 0.0;
+    }
+    return this._geodeticToSeaLevel;
+  }
+  public get projectCenterAltitude(): number {
+    if (undefined === this._projectCenterAltitude) {
+      assert (false);
+      return 0.0;
+    }
+    return this._projectCenterAltitude;
+  }
 }

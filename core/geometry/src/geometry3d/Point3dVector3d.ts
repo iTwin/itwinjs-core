@@ -371,6 +371,16 @@ export class Point3d extends XYZ {
     }
     return undefined;
   }
+/**
+ * Return an array of points constructed from groups of 3 entries in a Float64Array.
+ * Any incomplete group at the tail of the array is ignored.
+ */
+  public static createArrayFromPackedXYZ(data: Float64Array): Point3d[]{
+    const result = [];
+    for (let i = 0; i + 2 < data.length; i += 3)
+      result.push(new Point3d(data[i], data[i + 1], data[i + 2]));
+    return result;
+  }
   /** Create a new point with 000 xyz */
   public static createZero(result?: Point3d): Point3d { return Point3d.create(0, 0, 0, result); }
   /** Return the cross product of the vectors from this to pointA and pointB
@@ -528,6 +538,17 @@ export class Point3d extends XYZ {
  */
 export class Vector3d extends XYZ {
   constructor(x: number = 0, y: number = 0, z: number = 0) { super(x, y, z); }
+/**
+ * Return an array of vectors constructed from groups of 3 entries in a Float64Array.
+ * Any incomplete group at the tail of the array is ignored.
+ */
+ public static createArrayFromPackedXYZ(data: Float64Array): Vector3d[]{
+  const result = [];
+  for (let i = 0; i + 2 < data.length; i += 3)
+    result.push(new Vector3d(data[i], data[i + 1], data[i + 2]));
+  return result;
+}
+
   /**
    * Copy xyz from this instance to a new (or optionally reused) Vector3d
    * @param result optional instance to reuse.
@@ -837,7 +858,7 @@ export class Vector3d extends XYZ {
    * @param vectorB second vector
    * @param result optional preallocated result.
    */
-  public interpolate(fraction: number, vectorB: Vector3d, result?: Vector3d): Vector3d {
+  public interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
     if (fraction <= 0.5) {
       result.x = this.x + fraction * (vectorB.x - this.x);

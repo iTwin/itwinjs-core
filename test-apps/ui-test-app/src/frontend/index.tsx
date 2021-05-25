@@ -59,13 +59,12 @@ import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Propert
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
-import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
-import { EditingScopeTool } from "./tools/editing/PrimitiveToolEx";
+import { EditingScopeTool } from "./tools/editing/EditingTools";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
-import { UiProviderTool } from "./tools/UiProviderTool";
+import { OpenCustomPopoutTool, OpenViewPopoutTool, OpenWidgetPopoutTool, UiProviderTool } from "./tools/UiProviderTool";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -184,7 +183,8 @@ export class SampleAppIModelApp {
       await WebViewerApp.startup(opts);
 
     window.onerror = function (error) {
-      alert(error);
+      // eslint-disable-next-line no-console
+      console.log(error);
     };
 
     // For testing local extensions only, should not be used in production.
@@ -230,12 +230,14 @@ export class SampleAppIModelApp {
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
     ToolWithDynamicSettings.register(this.sampleAppNamespace);
+    OpenWidgetPopoutTool.register(this.sampleAppNamespace);
+    OpenCustomPopoutTool.register(this.sampleAppNamespace);
+    OpenViewPopoutTool.register(this.sampleAppNamespace);
 
     // Register editing tools
     if (this.allowWrite) {
       EditingScopeTool.register(this.sampleAppNamespace);
       PlaceBlockTool.register(this.sampleAppNamespace);
-      PlaceLineStringTool.register(this.sampleAppNamespace);
     }
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
@@ -246,7 +248,7 @@ export class SampleAppIModelApp {
 
     await MarkupApp.initialize();
     await FrontendDevTools.initialize();
-    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true });
+    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true, registerSketchTools: true });
 
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
@@ -277,6 +279,8 @@ export class SampleAppIModelApp {
 
     // go ahead and initialize settings before login or in case login is by-passed
     await UiFramework.setUiSettingsStorage(SampleAppIModelApp.getUiSettingsStorage());
+
+    UiFramework.useDefaultPopoutUrl = true;
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
@@ -384,6 +388,10 @@ export class SampleAppIModelApp {
       FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
         // Frontstage & ScreenViewports are ready
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
+        if (false && ProcessDetector.isElectronAppFrontend) { // used for testing pop-out support
+          // delay 5 seconds to see if window opens - since web browser will block pop-out if we wait. Also web browser will not allow multiple pop-outs.
+          setTimeout(() => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
+        }
       });
     } else {
       throw new Error(`Frontstage with id "${stageId}" does not exist`);

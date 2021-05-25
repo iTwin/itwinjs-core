@@ -7,7 +7,7 @@
  */
 import { flatbuffers } from "flatbuffers";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringProps } from "./TextString";
@@ -19,58 +19,64 @@ import { AreaPattern } from "./AreaPattern";
 import { BRepEntity } from "./GeometryStream";
 import { ImageGraphic, ImageGraphicCorners, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
-import { ElementAlignedBox3d, Placement3d } from "./Placement";
+import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
+import { isPlacement2dProps, PlacementProps } from "../ElementProps";
 
-/** Values for [[ElementGeometryDataEntry.opcode]]
- * @alpha
+/** Specifies the type of an entry in a geometry stream.
+ * @see [[ElementGeometryDataEntry.opcode]].
+ * @public
  */
 export enum ElementGeometryOpcode {
-  /** Local range of next geometric primitive */
+  /** Local range of the next geometric primitive in the geometry stream. */
   SubGraphicRange = 2,
-  /** Reference to a geometry part */
+  /** A reference to a [GeometryPart]($backend). */
   PartReference = 3,
-  /** Set symbology for subsequent geometry to override sub-category appearance */
+  /** Sets symbology for subsequent geometry to override [SubCategory]($backend) appearance */
   BasicSymbology = 4,
-  /** Line, line string, shape, or point string (automatic simplification of a CurvePrimitive/CurveCollection) */
+  /** A line, line string, shape, or point string (automatic simplification of a [CurvePrimitive]($geometry-core) or [CurveCollection]($geometry-core)) */
   PointPrimitive = 5,
-  /** 2d line, line string, shape, or point string (automatic simplification of a CurvePrimitive/CurveCollection) */
+  /** A 2d line, line string, shape, or point string (automatic simplification of a [CurvePrimitive]($geometry-core) or [CurveCollection]($geometry-core)) */
   PointPrimitive2d = 6,
-  /** Arc or ellipse (automatic simplification of a CurvePrimitive/CurveCollection) */
+  /** Arc or ellipse (automatic simplification of a [CurvePrimitive]($geometry-core) or [CurveCollection]($geometry-core)) */
   ArcPrimitive = 7,
-  /** [[CurveCollection]] */
+  /** [CurveCollection]($geometry-core) */
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   CurveCollection = 8,
-  /** [[Polyface]] */
+  /** [Polyface]($geometry-core) */
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   Polyface = 9,
-  /** [[CurvePrimitive]] */
+  /** [CurvePrimitive]($geometry-core) */
   CurvePrimitive = 10,
-  /** [[SolidPrimitive]] */
+  /** [SolidPrimitive]($geometry-core) */
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   SolidPrimitive = 11,
-  /** [[BSplineSurface3d]] */
+  /** [BSplineSurface3d]($geometry-core) */
   BsplineSurface = 12,
-  /** Opaque and gradient fills [[Gradient]] */
+  /** Opaque and [[Gradient]] fills. */
   Fill = 19,
-  /** Hatch, cross-hatch, or area pattern [[AreaPattern]] */
+  /** Hatch, cross-hatch, or [[AreaPattern]]. */
   Pattern = 20,
-  /** Render material */
+  /** [[RenderMaterial]] */
   Material = 21,
   /** [[TextString]] */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   TextString = 22,
-  /** Specifies line style overrides [[LineStyle.Modifier]] */
+  /** Specifies line style overrides as a [[LineStyle.Modifier]] */
   LineStyleModifiers = 23,
-  /** Boundary represention solid, sheet, or wire body [[BRepEntity.DataProps]] */
+  /** Boundary represention solid, sheet, or wire body as a [[BRepEntity.DataProps]] */
   BRep = 25,
-  /** Small single-tile raster image [[ImageGraphic]] */
+  /** Small single-tile raster image as an [[ImageGraphic]] */
   Image = 28,
 }
 
-/** Geometry stream entry data plus opcode to describe what the data represents.
- * @alpha
+/** Describes an entry in a geometry stream as an op-code plus the binary flatbuffer representation of the associated data.
+ * @see [[FlatBufferGeometryStream]].
+ * @public
  */
 export interface ElementGeometryDataEntry {
-  /** The geometry stream entry type idenfiier [[ElementGeometryOpcode]] */
-  opcode: number;
-  /** Zero-based flatbuffers data */
+  /** The type of this entry. */
+  opcode: ElementGeometryOpcode;
+  /** Zero-based flatbuffer-encoded data. */
   data: Uint8Array;
 }
 
@@ -268,6 +274,14 @@ export namespace ElementGeometry {
      */
     public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
       this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)));
+    }
+
+    /** Supply local to world transform from a PlacementProps2d or PlacementProps3d.
+     * @see [[PlacementProps]]
+     */
+    public setLocalToWorldFromPlacement(props: PlacementProps) {
+      const placement = isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
+      this.setLocalToWorld(placement.transform);
     }
 
     /** Compute angles suitable for passing to [[setLocalToWorld3d]] from an array of 3d points. */
@@ -599,6 +613,17 @@ export namespace ElementGeometry {
     }
   }
 
+  /** Return whether the supplied entry is geometric or a part reference */
+  export function isDisplayableEntry(entry: ElementGeometryDataEntry): boolean {
+    switch (entry.opcode) {
+      case ElementGeometryOpcode.PartReference:
+        return true;
+
+      default:
+        return isGeometricEntry(entry);
+    }
+  }
+
   /** Return whether the supplied entry represents appearance information */
   export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean {
     switch (entry.opcode) {
@@ -611,6 +636,251 @@ export namespace ElementGeometry {
 
       default:
         return false;
+    }
+  }
+
+  /** Return whether the supplied entry represents a single open curve or path */
+  export function isCurve(entry: ElementGeometryDataEntry): boolean {
+    switch (entry.opcode) {
+      case ElementGeometryOpcode.PointPrimitive: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
+        return (EGFBAccessors.BoundaryType.Open === ppfb.boundary());
+      }
+
+      case ElementGeometryOpcode.PointPrimitive2d: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
+        return (EGFBAccessors.BoundaryType.Open === ppfb.boundary());
+      }
+
+      case ElementGeometryOpcode.ArcPrimitive: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.ArcPrimitive.getRootAsArcPrimitive(buffer);
+        return (EGFBAccessors.BoundaryType.Open === ppfb.boundary());
+      }
+
+      case ElementGeometryOpcode.CurvePrimitive: {
+        // should never be a point string or closed bcurve...
+        return true;
+      }
+
+      case ElementGeometryOpcode.CurveCollection: {
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
+        if (undefined === geom || Array.isArray(geom))
+          return false;
+        return ("curveCollection" === geom.geometryCategory && !(geom as CurveCollection).isAnyRegionType);
+      }
+
+      default:
+        return false;
+    }
+  }
+
+  /** Return whether the supplied entry represents a loop, planar region, open polyface, or sheet body */
+  export function isSurface(entry: ElementGeometryDataEntry): boolean {
+    switch (entry.opcode) {
+      case ElementGeometryOpcode.PointPrimitive: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
+        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary());
+      }
+
+      case ElementGeometryOpcode.PointPrimitive2d: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
+        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary());
+      }
+
+      case ElementGeometryOpcode.ArcPrimitive: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.ArcPrimitive.getRootAsArcPrimitive(buffer);
+        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary());
+      }
+
+      case ElementGeometryOpcode.CurvePrimitive: {
+        // should never be a closed bcurve...
+        return false;
+      }
+
+      case ElementGeometryOpcode.CurveCollection: {
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
+        if (undefined === geom || Array.isArray(geom))
+          return false;
+        return ("curveCollection" === geom.geometryCategory && (geom as CurveCollection).isAnyRegionType);
+      }
+
+      case ElementGeometryOpcode.SolidPrimitive: {
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
+        if (undefined === geom || Array.isArray(geom))
+          return false;
+        return ("solid" === geom.geometryCategory && !(geom as SolidPrimitive).isClosedVolume);
+      }
+
+      case ElementGeometryOpcode.Polyface: {
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
+        if (undefined === geom || Array.isArray(geom))
+          return false;
+        if ("polyface" !== geom.geometryCategory)
+          return false;
+        const polyface = (geom as Polyface);
+        switch (polyface.expectedClosure) {
+          case 0:
+            return !PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);
+          case 1:
+            return true;
+          case 2:
+          default:
+            return false;
+        }
+      }
+
+      case ElementGeometryOpcode.BsplineSurface: {
+        // never treated as a solid even if closed/periodic in u/v...
+        return true;
+      }
+
+      case ElementGeometryOpcode.BRep: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.BRepData.getRootAsBRepData(buffer);
+        return (EGFBAccessors.BRepType.Sheet === ppfb.brepType());
+      }
+
+      default:
+        return false;
+    }
+  }
+
+  /** Return whether the supplied entry represents a capped solid, closed polyface, or solid body */
+  export function isSolid(entry: ElementGeometryDataEntry): boolean {
+    switch (entry.opcode) {
+      case ElementGeometryOpcode.SolidPrimitive: {
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
+        if (undefined === geom || Array.isArray(geom))
+          return false;
+        return ("solid" === geom.geometryCategory && (geom as SolidPrimitive).isClosedVolume);
+      }
+
+      case ElementGeometryOpcode.Polyface: {
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
+        if (undefined === geom || Array.isArray(geom))
+          return false;
+        if ("polyface" !== geom.geometryCategory)
+          return false;
+        const polyface = (geom as Polyface);
+        switch (polyface.expectedClosure) {
+          case 0:
+            return PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);
+          case 2:
+            return true;
+          case 1:
+          default:
+            return false;
+        }
+      }
+
+      case ElementGeometryOpcode.BRep: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.BRepData.getRootAsBRepData(buffer);
+        return (EGFBAccessors.BRepType.Solid === ppfb.brepType());
+      }
+
+      default:
+        return false;
+    }
+  }
+
+  /** Return the body type that would be used to represent the supplied entry */
+  export function getBRepEntityType(entry: ElementGeometryDataEntry): BRepEntity.Type | undefined {
+    switch (entry.opcode) {
+      case ElementGeometryOpcode.PointPrimitive: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
+        if (EGFBAccessors.BoundaryType.None === ppfb.boundary())
+          return undefined;
+        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire);
+      }
+
+      case ElementGeometryOpcode.PointPrimitive2d: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
+        if (EGFBAccessors.BoundaryType.None === ppfb.boundary())
+          return undefined;
+        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire);
+      }
+
+      case ElementGeometryOpcode.ArcPrimitive: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.ArcPrimitive.getRootAsArcPrimitive(buffer);
+        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire);
+      }
+
+      case ElementGeometryOpcode.CurvePrimitive: {
+        // should never be a point string or closed bcurve...
+        return BRepEntity.Type.Wire;
+      }
+
+      case ElementGeometryOpcode.CurveCollection: {
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
+        if (undefined === geom || Array.isArray(geom))
+          return undefined;
+        if ("curveCollection" !== geom.geometryCategory)
+          return undefined;
+        const curves = geom as CurveCollection;
+        return (curves.isAnyRegionType ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire);
+      }
+
+      case ElementGeometryOpcode.SolidPrimitive: {
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
+        if (undefined === geom || Array.isArray(geom))
+          return undefined;
+        if ("solid" !== geom.geometryCategory)
+          return undefined;
+        const solid = geom as SolidPrimitive;
+        return (solid.isClosedVolume ? BRepEntity.Type.Solid : BRepEntity.Type.Sheet);
+      }
+
+      case ElementGeometryOpcode.BsplineSurface: {
+        // always a surface...
+        return BRepEntity.Type.Sheet;
+      }
+
+      case ElementGeometryOpcode.Polyface: {
+        const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
+        if (undefined === geom || Array.isArray(geom))
+          return undefined;
+        if ("polyface" !== geom.geometryCategory)
+          return undefined;
+        const polyface = (geom as Polyface);
+        switch (polyface.expectedClosure) {
+          case 0:
+            return PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface) ? BRepEntity.Type.Solid : BRepEntity.Type.Sheet;
+          case 1:
+            return BRepEntity.Type.Sheet;
+          case 2:
+            return BRepEntity.Type.Solid;
+          default:
+            return undefined;
+        }
+      }
+
+      case ElementGeometryOpcode.BRep: {
+        const buffer = new flatbuffers.ByteBuffer(entry.data);
+        const ppfb = EGFBAccessors.BRepData.getRootAsBRepData(buffer);
+        switch (ppfb.brepType()) {
+          case EGFBAccessors.BRepType.Wire:
+            return BRepEntity.Type.Wire; // always be persisted as a curve type...
+          case EGFBAccessors.BRepType.Sheet:
+            return BRepEntity.Type.Sheet;
+          case EGFBAccessors.BRepType.Solid:
+            return BRepEntity.Type.Solid;
+          default:
+            return undefined;
+        }
+      }
+
+      default:
+        return undefined;
     }
   }
 

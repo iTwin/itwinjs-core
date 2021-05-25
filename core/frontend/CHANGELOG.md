@@ -1,6 +1,117 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 22 Apr 2021 21:07:33 GMT and should not be manually modified.
+This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Make AccuDrawHintBuilder public and include everything needed by an InteractiveTool.
+- Fix acs rotation and remove unneeded clones.
+- (geomlibs) fix swap logic in Matrix3d.inverse alias case
+- motion event changes.
+- Add BatchOptions to customize how features can be resymbolized.
+- Synchronize viewports when changes are made to geometry outside of a graphical editing scope.
+- wip: CreateElementTool. Fix not being able to pick decorations after changing files.
+- BatchOptions can specify that the contents of the batch should only be drawn for readPixels.
+- Simplify GraphicBuilder creation using GraphicBuilderOptions.
+- IModelConnection.View.load throws if the input is not a valid Id.
+- Fix ViewState.hasSameCoordinates returning true if a 2d model was mistakenly included in a spatial view's model selector.
+- Produce rounded joints when tesselating polylines.
+- Return empty symbology overrides for maps to avoid inheriting from view
+- Add hiliter for reality meshes
+- Fix hiliting of reality meshes.
+- Fix shader header typo
+- Ensure materials are ignored unless smooth render mode is enabled.
+- Add FrameStats API.
+- In FrameStats, break down scene time.
+- Enable querying geometry and other properties via IModelConnection.Elements.loadProps.
+- The idleTool can now be set.
+- improved silhouettes for non-perspective views
+- Mobile fixes
+- Fixes to desktop/mobile authorization
+- set authorizationClient to undefined in IModelApp.shutdown
+- Fix errors when masking background map with a plan projection model.
+- Support planar masks for OrbitGT, fix infinite recursion collecting classifiers graphics.
+- Add shader based grid display.
+- set changesetId on BriefcaseConnection in pullAndMergeChanges
+- Add Viewport.queryVisibleFeatures to determine the set of features currently visible in a viewport.
+- Display styles support schedule scripts hosted by RenderTimeline elements.
+- Move map tile trees to Viewport to handle synching correctly
+- Only draw the TouchCursor in the viewport that initiated the touch.
+- Add iterator to ViewManager and deprecate forEachViewport.
+- Transform tool dynamics.
+- add placement to GeomtricElementProps
+- Revert to using older GPU timer extension in webgl2 if the newer extension isn't supported
+- ViewCreator APIs tagged as public
+- View Creator API - comments updated.
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+_Version update only_
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+### Updates
+
+- Fix animations from schedule script being erroneously applied to tile graphics.
+- Return empty symbology overrides for maps to avoid inheriting from view
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+### Updates
+
+- EmphasizeElements can override the appearance of unanimated schedule script nodes.
+- Fix iOS shader bugs
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Promote display-related APIs.
+- Do not drape background map on reality if not geolocated
+- Revert the change which defaulted shader precompiling on. It resulted in noticeable UI sluggishness before any viewports were added, while shaders precompiled.
+- TileAdmin.requestElementGraphics can obtain graphics for a non-persistent geometry stream.
+- Refactor grid-in-view line creation to make the same context repeatedly callable.
+- gridline filtering corrections
+- Fix orbitgt pointcloud position
+- Implement fixes for point cloud relative paths and node transforms
+- improved flickering silhouettes
+- Fix raster view attachments using black background color.
+- Fix delay before raster view attachments appear in a sheet view.
+- Fix WebGL1 clipping shaders.
+- Fixed silhouettes for instanced geometry when running with WebGL1
+- Allow saved map layer definition to be deleted from setting service.
+- No longer parse MapLayerSource URL for 'basemap' token.
+- promote NativeApp to beta
+- Support nested clip volumes.
+- Precompile WebGL shaders by default.
+- Promote globe view tools to public. Add NextVersion promotion entries for these and for thematic display.
+- Optimize reality model processing.
+- Drop deprecated ldclient-js dependency
+- Remove deprecated ElementEditor that was replaced by EditCommands.
+- Renamed InteractiveEditingSession to GraphicalEditingScope.
+- Update release tags.
+- Add BriefcaseTxns for monitoring changes to the briefcase.
+- Update api tags
+- ViewCreator2d API - modelType parameter removed
+- Add an option to use the virtual cursor to help with element locate w/touch input.
+- Added capability to scale the model display transform nonuniformly and have still Accusnap properly.
 
 ## 2.14.4
 Thu, 22 Apr 2021 21:07:33 GMT

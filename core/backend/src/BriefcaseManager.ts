@@ -8,22 +8,22 @@
 
 // cspell:ignore cset csets ecchanges
 
+import * as os from "os";
+import * as path from "path";
 import {
-  assert, BeDuration, BentleyError, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus,
-  IModelStatus, Logger, OpenMode, PerfLogger,
+  assert, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus, IModelStatus, Logger, OpenMode,
+  PerfLogger, WSStatus,
 } from "@bentley/bentleyjs-core";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
-  BriefcaseIdValue,
-  BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
+  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps,
+  RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
-import * as os from "os";
-import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
@@ -39,7 +39,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 export type BriefcaseId = number;
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
- * @beta
+ * @public
 */
 export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
   /** If present, a function called periodically during the download to indicate progress.
@@ -48,15 +48,8 @@ export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
   onProgress?: ProgressFunction;
 };
 
-/** A token that represents a ChangeSet
- * @internal
- */
-export class ChangeSetToken {
-  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public changeType: ChangesType, public pushDate?: string) { }
-}
-
-/** Utility to manage downloading Briefcases and applying and uploading changesets.
- * @beta
+/** Manages downloading Briefcases and downloading and uploading changesets.
+ * @public
  */
 export class BriefcaseManager {
   /** @internal
@@ -65,7 +58,7 @@ export class BriefcaseManager {
    */
   public static getCompatibilityPath(iModelId: GuidString): string { return path.join(this._compatibilityDir, iModelId, "bc"); }
 
-  /** Get the local path of the folder storing files associated with an imodel */
+  /** Get the local path of the folder storing files that are associated with an imodel */
   public static getIModelPath(iModelId: GuidString): string { return path.join(this._cacheDir, iModelId); }
 
   /** @internal */
@@ -77,17 +70,17 @@ export class BriefcaseManager {
   /** @internal */
   public static getChangedElementsPathName(iModelId: GuidString): string { return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
 
-  private static _bcSubDir = "briefcases";
+  private static _briefcaseSubDir = "briefcases";
   /** @internal */
   public static getBriefcaseBasePath(iModelId: GuidString): string {
-    return path.join(this.getIModelPath(iModelId), this._bcSubDir);
+    return path.join(this.getIModelPath(iModelId), this._briefcaseSubDir);
   }
 
-  /** Get the name of the local file that holds, or will hold, a briefcase in the briefcase cache established in the call to [[BriefcaseManager.initialize]], based
- * on an iModelId and BriefcaseId.
- * @param briefcase the iModelId and BriefcaseId for the filename
- * @see getIModelPath
- */
+  /** Get the name of the local file that holds, or will hold, a local briefcase in the briefcase cache.
+   * @note The briefcase cache is a local directory established in the call to [[BriefcaseManager.initialize]].
+   * @param briefcase the iModelId and BriefcaseId for the filename
+   * @see getIModelPath
+   */
   public static getFileName(briefcase: BriefcaseProps): string {
     return path.join(this.getBriefcaseBasePath(briefcase.iModelId), `${briefcase.briefcaseId}.bim`);
   }
@@ -110,13 +103,14 @@ export class BriefcaseManager {
   private static _compatibilityDir: string;
   private static _initialized?: boolean;
   /** Initialize BriefcaseManager
-   * @param cacheRootDir The root directory for storing a cache of downloaded briefcase files. Briefcases are stored relative to this path in sub-folders organized by IModelId.
+   * @param cacheRootDir The root directory for storing a cache of downloaded briefcase files on the local computer.
+   * Briefcases are stored relative to this path in sub-folders organized by IModelId.
    * @note It is perfectly valid for applications to store briefcases in locations they manage, outside of `cacheRootDir`.
    */
-  public static initialize(cacheRootDir: string, compatibilityDir: string) {
+  public static initialize(cacheRootDir: string, compatibilityDir?: string) {
     if (this._initialized)
       return;
-    this._compatibilityDir = compatibilityDir;
+    this._compatibilityDir = compatibilityDir ?? "";
     this.setupCacheDir(cacheRootDir);
     IModelHost.onBeforeShutdown.addOnce(this.finalize, this);
     this._initialized = true;
@@ -126,16 +120,17 @@ export class BriefcaseManager {
     this._initialized = false;
   }
 
-  /** Get a list of all local briefcase held in the system briefcase cache, optionally for a single iModelId
+  /** Get a list of the local briefcase held in the briefcase cache, optionally for a single iModelId
    * @param iModelId if present, only briefcases for this iModelId are returned
-  */
+   * @note usually there should only be one briefcase per iModel.
+   */
   public static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[] {
     const briefcaseList: LocalBriefcaseProps[] = [];
     const iModelDirs = IModelJsFs.readdirSync(this._cacheDir);
     for (const iModelDir of iModelDirs) {
       if (iModelId && iModelId !== iModelDir)
         continue;
-      const bcPath = path.join(this._cacheDir, iModelDir, this._bcSubDir);
+      const bcPath = path.join(this._cacheDir, iModelDir, this._briefcaseSubDir);
       try {
         if (!IModelJsFs.lstatSync(bcPath)?.isDirectory)
           continue;
@@ -176,13 +171,16 @@ export class BriefcaseManager {
     return +changeSet.index!;
   }
 
-  /** Determine whether the supplied briefcaseId is a standalone briefcase */
+  /** Determine whether the supplied briefcaseId is a standalone briefcase
+   * @note this function returns true if the id is either unassigned or the value "DeprecatedStandalone"
+   * @deprecated use id === BriefcaseIdValue.Unassigned
+   */
   public static isStandaloneBriefcaseId(id: BriefcaseId) {
     // eslint-disable-next-line deprecation/deprecation
     return id === BriefcaseIdValue.Unassigned || id === BriefcaseIdValue.DeprecatedStandalone;
   }
 
-  /** Determine whether the supplied briefcaseId is in the range of BriefcaseIds issued by iModelHub
+  /** Determine whether the supplied briefcaseId is in the range of assigned BriefcaseIds issued by iModelHub
    * @note this does check whether the id was actually acquired by the caller.
    */
   public static isValidBriefcaseId(id: BriefcaseId) {
@@ -190,6 +188,7 @@ export class BriefcaseManager {
   }
 
   /** Acquire a new briefcaseId from iModelHub for the supplied iModelId
+   * @note usually there should only be one briefcase per iModel per user.
    * @throws IModelError if a new briefcaseId could not be acquired.
    */
   public static async acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number> {
@@ -200,7 +199,7 @@ export class BriefcaseManager {
 
     if (!briefcase) {
       // Could well be that the current user does not have the appropriate access
-      throw new IModelError(BriefcaseStatus.CannotAcquire, "Could not acquire briefcase", Logger.logError, loggerCategory);
+      throw new IModelError(BriefcaseStatus.CannotAcquire, "Could not acquire briefcase");
     }
     return briefcase.briefcaseId!;
   }
@@ -223,7 +222,7 @@ export class BriefcaseManager {
    * a filename, the local briefcase cache is used by creating a file with the briefcaseId as its name in the `briefcases` folder below the folder named
    * for the IModelId.
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
-   * @note The special briefcaseId [[BriefcaseIdValue.Unassigned]] (0) can be used for a local briefcase that can accept changesets but may not be changed locally.
+   * @note The special briefcaseId [[BriefcaseIdValue.Unassigned]] (0) can be used for a local briefcase that can accept changesets but may not be generate changesets.
    * @see CheckpointManager.downloadCheckpoint
    */
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
@@ -255,26 +254,34 @@ export class BriefcaseManager {
 
     // now open the downloaded checkpoint and reset its BriefcaseId
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(fileName, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not open downloaded briefcase for write access: ${fileName}, err=${new BentleyError(status).name}`, Logger.logError);
+    try {
+      nativeDb.openIModel(fileName, OpenMode.ReadWrite);
+    } catch (err) {
+      throw new IModelError(err.errorNumber, `Could not open downloaded briefcase for write access: ${fileName}, err=${err.message}`);
+    }
     try {
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getParentChangeSetId() !== args.checkpoint.changeSetId)
-        throw new IModelError(IModelStatus.WrongIModel, `Downloaded briefcase has wrong changesetId: ${fileName}`, Logger.logError);
+        throw new IModelError(IModelStatus.WrongIModel, `Downloaded briefcase has wrong changesetId: ${fileName}`);
     } finally {
       nativeDb.closeIModel();
     }
     return response;
   }
 
-  /** Deletes change sets of an iModel from local disk */
+  /** Deletes change sets of an iModel from local disk
+   * @internal
+   */
   public static deleteChangeSetsFromLocalDisk(iModelId: string) {
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
     if (BriefcaseManager.deleteFolderAndContents(changeSetsPath))
       Logger.logTrace(loggerCategory, "Deleted change sets from local disk", () => ({ iModelId, changeSetsPath }));
   }
 
+  /** Releases a briefcaseId from iModelHub. After this call it is illegal to generate changesets for the released briefcaseId.
+   * @note generally, this method should not be called directly. Instead use [[deleteBriefcaseFiles]].
+   * @see deleteBriefcaseFiles
+   */
   public static async releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void> {
     requestContext.enter();
     const { briefcaseId, iModelId } = briefcase;
@@ -296,10 +303,11 @@ export class BriefcaseManager {
   }
 
   /**
-   * Delete all files associated with a local briefcase. First releases the BriefcaseId from iModelHub, if a requestContext is supplied.
+   * Delete and clean up a briefcase and all of its associated files. First, this method opens the supplied filename to determine its briefcaseId.
+   * Then, if a requestContext is supplied, it releases a BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
+   * associated files (that is, all files in the same directory that start with the briefcase name).
    * @param filePath the full file name of the Briefcase to delete
-   * @param requestContext context to delete
-   * @throws [[IModelError]] If unable to delete the briefcase
+   * @param requestContext context for releasing the briefcaseId
    */
   public static async deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void> {
     try {
@@ -459,12 +467,13 @@ export class BriefcaseManager {
 
   /** Processes (merges, reverses, reinstates) change sets to get the briefcase to the specified target version.
    * Note: The briefcase must have been opened ReadWrite, and the method keeps it in the same state.
+   * @internal
    */
   public static async processChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex?: number): Promise<void> {
     requestContext.enter();
 
     if (!db.isOpen || db.nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
-      throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets", Logger.logError, loggerCategory, () => db.getRpcProps());
+      throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
 
     if (undefined === targetChangeSetIndex)
       targetChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, targetChangeSetId);
@@ -529,6 +538,10 @@ export class BriefcaseManager {
     }
   }
 
+  private static async applySingleChangeSet(db: IModelDb, changeSet: IModelJsNative.ChangeSetProps, processOption: ChangeSetApplyOption) {
+    return db.nativeDb.applyChangeSet(changeSet, processOption);
+  }
+
   private static async applyChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
     requestContext.enter();
 
@@ -545,115 +558,48 @@ export class BriefcaseManager {
     if (reverse)
       changeSets.reverse();
 
-    // Gather the changeset tokens
-    const changeSetTokens = new Array<ChangeSetToken>();
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(db.iModelId);
-    let maxFileSize: number = 0;
-    let containsSchemaChanges = false;
-    changeSets.forEach((changeSet: ChangeSet) => {
-      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      assert(IModelJsFs.existsSync(changeSetPathname), `Change set file ${changeSetPathname} does not exist`);
-      const changeSetToken = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!);
-      changeSetTokens.push(changeSetToken);
-      if (+changeSet.fileSize! > maxFileSize)
-        maxFileSize = +changeSet.fileSize!;
-      if (changeSet.changesType === ChangesType.Schema)
-        containsSchemaChanges = true;
-    });
 
-    /* Apply change sets
-     * If any of the change sets contain schema changes, or are otherwise too large, we process them asynchronously
-     * to avoid blocking the main-thread/event-loop and keep the backend responsive. However, this will be an invasive
-     * operation that will force the Db to be closed and reopened.
-     * If the change sets are processed synchronously, they are applied one-by-one to avoid blocking the main
-     * thread and the event loop. Even so, if any single change set too long to process that will again cause the
-     * cause the event loop to be blocked. Also if any of the change sets contain schema changes, that will cause
-     * the Db to be closed and reopened.
-     */
-    const perfLogger = new PerfLogger("Applying change sets", () => ({ ...db.getRpcProps() }));
-    let status: ChangeSetStatus;
-    if (containsSchemaChanges || maxFileSize > 1024 * 1024) {
-      status = await this.applyChangeSetsToNativeDbAsync(requestContext, db, changeSetTokens, processOption);
-      requestContext.enter();
-    } else {
-      status = await this.applyChangeSetsToNativeDbSync(db, changeSetTokens, processOption);
+    for (const changeSet of changeSets) {
+      await this.applySingleChangeSet(db, {
+        id: changeSet.wsgId,
+        parentId: changeSet.parentId!,
+        pathname: path.join(changeSetsPath, changeSet.fileName!),
+        changesType: changeSet.changesType,
+      }, processOption);
     }
-    perfLogger.dispose();
-
-    if (ChangeSetStatus.Success !== status)
-      throw new IModelError(status, "Error applying changesets", Logger.logError, loggerCategory, () => ({ ...db.getRpcProps(), targetChangeSetId, targetChangeSetIndex }));
 
     // notify listeners
     db.notifyChangesetApplied();
   }
 
-  /** Apply change sets synchronously
-   * - change sets are applied one-by-one to avoid blocking the main thread
-   * - must NOT be called if some of the change sets are too large since that will also block the main thread and leave the backend unresponsive
-   * - may cause the Db to close and reopen *if* the change sets contain schema changes
-   */
-  private static async applyChangeSetsToNativeDbSync(db: IModelDb, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): Promise<ChangeSetStatus> {
-    // Apply the changes (one by one to avoid blocking the event loop)
-    for (const changeSetToken of changeSetTokens) {
-      const tempChangeSetTokens = new Array<ChangeSetToken>(changeSetToken);
-      const status = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(db.nativeDb, JSON.stringify(tempChangeSetTokens), processOption);
-      if (ChangeSetStatus.Success !== status)
-        return status;
-      await BeDuration.wait(0); // Just turns this operation asynchronous to avoid blocking the event loop
-    }
-    return ChangeSetStatus.Success;
-  }
-
-  /** Apply change sets asynchronously
-   * - invasive operation that closes/reopens the Db
-   * - must be called if some of the change sets are too large and the synchronous call will leave the backend unresponsive
-   */
-  private static async applyChangeSetsToNativeDbAsync(requestContext: AuthorizedClientRequestContext, db: IModelDb, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): Promise<ChangeSetStatus> {
-    requestContext.enter();
-
-    const applyRequest = new IModelHost.platform.ApplyChangeSetsRequest(db.nativeDb);
-
-    let status: ChangeSetStatus = applyRequest.readChangeSets(JSON.stringify(changeSetTokens));
-    if (status !== ChangeSetStatus.Success)
-      return status;
-
-    db.clearCaches();
-    applyRequest.closeBriefcase();
-
-    const doApply = new Promise<ChangeSetStatus>((resolve, _reject) => {
-      applyRequest.doApplyAsync(resolve, processOption);
-    });
-    status = await doApply;
-    requestContext.enter();
-
-    const result = applyRequest.reopenBriefcase(db.openMode);
-    if (result !== DbResult.BE_SQLITE_OK)
-      status = ChangeSetStatus.ApplyError;
-
-    return status;
-  }
-
-  /** @internal */
+  /**
+   * @internal
+   * @deprecated - reversing previously applied changesets is not supported.
+  */
   public static async reverseChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reverseToVersion: IModelVersion): Promise<void> {
     requestContext.enter();
     if (db.openMode === OpenMode.Readonly)
-      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changes in a ReadOnly briefcase", Logger.logError, loggerCategory, () => db.getRpcProps());
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changes in a ReadOnly briefcase");
 
     const { changeSetId: targetChangeSetId, changeSetIndex: targetChangeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, reverseToVersion, db.iModelId);
     const currentChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, db.changeSetId);
 
     requestContext.enter();
     if (targetChangeSetIndex > currentChangeSetIndex)
-      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse to a later version", Logger.logError, loggerCategory, () => ({ ...db.getRpcProps(), targetChangeSetId, targetChangeSetIndex }));
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse to a later version");
 
     return BriefcaseManager.processChangeSets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
   }
 
-  /** @internal */
+  /**
+   * @internal
+   * @deprecated - reversing previously applied changesets is not supported.
+   */
   public static async reinstateChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reinstateToVersion?: IModelVersion): Promise<void> {
     requestContext.enter();
     if (db.openMode === OpenMode.Readonly)
-      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate changes in a ReadOnly briefcase", Logger.logError, loggerCategory, () => db.getRpcProps());
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate changes in a ReadOnly briefcase");
 
     const targetVersion: IModelVersion = reinstateToVersion || IModelVersion.asOfChangeSet(db.nativeDb.getParentChangeSetId());
 
@@ -661,12 +607,12 @@ export class BriefcaseManager {
     requestContext.enter();
     const currentChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, db.changeSetId);
     if (targetChangeSetIndex < currentChangeSetIndex)
-      throw new IModelError(ChangeSetStatus.ApplyError, "Can reinstate only to a later version", Logger.logError, loggerCategory, () => ({ ...db.getRpcProps(), targetChangeSetId, targetChangeSetIndex }));
+      throw new IModelError(ChangeSetStatus.ApplyError, "Can reinstate only to a later version");
 
     return BriefcaseManager.processChangeSets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
   }
 
-  /** Pull and merge changes from the hub
+  /** Pull and merge changes from iModelHub
    * @param requestContext The client request context
    * @param briefcase Local briefcase
    * @param mergeToVersion Version of the iModel to merge until.
@@ -676,10 +622,21 @@ export class BriefcaseManager {
     requestContext.enter();
 
     const { changeSetId: targetChangeSetId, changeSetIndex: targetChangeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, mergeToVersion, db.iModelId);
-    const currentChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, db.changeSetId);
-    requestContext.enter();
+
+    let currentChangeSetIndex: number;
+    try {
+      currentChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, db.changeSetId);
+      requestContext.enter();
+    } catch (error) {
+      requestContext.enter();
+      if (error instanceof WsgError && error.errorNumber === WSStatus.InstanceNotFound)
+        throw new IModelError(BriefcaseStatus.ContainsDeletedChangeSets, "Briefcase contains changeSets that were deleted", Logger.logError, loggerCategory, () => db.changeSetId);
+
+      throw error;
+    }
+
     if (targetChangeSetIndex < currentChangeSetIndex)
-      throw new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge", Logger.logError, loggerCategory, () => ({ ...db.getRpcProps(), targetChangeSetId, targetChangeSetIndex }));
+      throw new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge");
 
     await BriefcaseManager.updatePendingChangeSets(requestContext, db);
     requestContext.enter();
@@ -687,17 +644,14 @@ export class BriefcaseManager {
     return BriefcaseManager.processChangeSets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
   }
 
-  private static startCreateChangeSet(db: BriefcaseDb): ChangeSetToken {
-    const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = db.nativeDb.startCreateChangeSet();
-    if (res.error)
-      throw new IModelError(res.error.status, "Error in startCreateChangeSet", Logger.logError, loggerCategory, () => db.getRpcProps());
-    return JSON.parse(res.result!);
+  private static startCreateChangeSet(db: BriefcaseDb): IModelJsNative.ChangeSetProps {
+    return db.nativeDb.startCreateChangeSet();
   }
 
   private static finishCreateChangeSet(db: BriefcaseDb) {
     const status = db.nativeDb.finishCreateChangeSet();
     if (ChangeSetStatus.Success !== status)
-      throw new IModelError(status, "Error in finishCreateChangeSet", Logger.logError, loggerCategory, () => db.getRpcProps());
+      throw new IModelError(status, "Error in finishCreateChangeSet");
   }
 
   private static abandonCreateChangeSet(db: BriefcaseDb) {
@@ -706,9 +660,9 @@ export class BriefcaseManager {
 
   /** Get array of pending ChangeSet ids that need to have their codes updated */
   private static getPendingChangeSets(db: BriefcaseDb): string[] {
-    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = db.nativeDb.getPendingChangeSets();
+    const res = db.nativeDb.getPendingChangeSets();
     if (res.error)
-      throw new IModelError(res.error.status, "Error in getPendingChangeSets", Logger.logWarning, loggerCategory, () => db.getRpcProps());
+      throw new IModelError(res.error.status, "Error in getPendingChangeSets");
     return JSON.parse(res.result!) as string[];
   }
 
@@ -716,7 +670,7 @@ export class BriefcaseManager {
   private static addPendingChangeSet(db: BriefcaseDb, changeSetId: string): void {
     const result = db.nativeDb.addPendingChangeSet(changeSetId);
     if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, "Error in addPendingChangeSet", Logger.logError, loggerCategory, () => db.getRpcProps());
+      throw new IModelError(result, "Error in addPendingChangeSet");
   }
 
   /** Remove a pending ChangeSet after its codes have been updated */
@@ -744,7 +698,7 @@ export class BriefcaseManager {
 
     for (const changeSet of changeSets) {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      const token = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!);
+      const token = { id: changeSet.wsgId, parentId: changeSet.parentId!, pathname: changeSetPathname, changesType: changeSet.changesType };
       try {
         const codes = BriefcaseManager.extractCodesFromFile(db, [token]);
         await IModelHost.iModelClient.codes.update(requestContext, db.iModelId, codes, { deniedCodes: true, continueOnConflict: true });
@@ -779,15 +733,15 @@ export class BriefcaseManager {
   private static extractCodes(db: BriefcaseDb): HubCode[] {
     const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = db.nativeDb.extractCodes();
     if (res.error)
-      throw new IModelError(res.error.status, "Error in extractCodes", Logger.logError, loggerCategory, () => db.getRpcProps());
+      throw new IModelError(res.error.status, "Error in extractCodes");
     return BriefcaseManager.parseCodesFromJson(db, res.result!);
   }
 
   /** Extracts codes from ChangeSet file */
-  private static extractCodesFromFile(db: BriefcaseDb, changeSetTokens: ChangeSetToken[]): HubCode[] {
-    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = db.nativeDb.extractCodesFromFile(JSON.stringify(changeSetTokens));
+  private static extractCodesFromFile(db: BriefcaseDb, changeSets: IModelJsNative.ChangeSetProps[]): HubCode[] {
+    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = db.nativeDb.extractCodesFromFile(changeSets);
     if (res.error)
-      throw new IModelError(res.error.status, "Error in extractCodesFromFile", Logger.logError, loggerCategory, () => db.getRpcProps());
+      throw new IModelError(res.error.status, "Error in extractCodesFromFile");
     return BriefcaseManager.parseCodesFromJson(db, res.result!);
   }
 
@@ -834,13 +788,13 @@ export class BriefcaseManager {
   private static async pushChangeSet(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesType, relinquishCodesLocks: boolean): Promise<void> {
     requestContext.enter();
 
-    const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(db);
+    const changeSetProps = BriefcaseManager.startCreateChangeSet(db);
     const changeSet = new ChangeSet();
     changeSet.briefcaseId = db.briefcaseId;
-    changeSet.id = changeSetToken.id;
-    changeSet.parentId = changeSetToken.parentId;
-    changeSet.changesType = changeSetToken.changeType === ChangesType.Schema ? ChangesType.Schema : changeType;
-    changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
+    changeSet.id = changeSetProps.id;
+    changeSet.parentId = changeSetProps.parentId;
+    changeSet.changesType = changeSetProps.changesType === ChangesType.Schema ? ChangesType.Schema : changeType;
+    changeSet.fileSize = IModelJsFs.lstatSync(changeSetProps.pathname)!.size.toString();
     changeSet.description = description;
     if (changeSet.description.length >= 255) {
       Logger.logWarning(loggerCategory, `pushChanges - Truncating description to 255 characters. ${changeSet.description}`, () => db.getRpcProps());
@@ -848,7 +802,7 @@ export class BriefcaseManager {
     }
 
     try {
-      await IModelHost.iModelClient.changeSets.create(requestContext, db.iModelId, changeSet, changeSetToken.pathname);
+      await IModelHost.iModelClient.changeSets.create(requestContext, db.iModelId, changeSet, changeSetProps.pathname);
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
@@ -902,7 +856,9 @@ export class BriefcaseManager {
    */
   public static async pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesType = ChangesType.Regular, relinquishCodesLocks: boolean = true): Promise<void> {
     requestContext.enter();
-    for (let i = 0; i < 5; ++i) {
+
+    const retryCount = 5;
+    for (let currentIteration = 0; currentIteration < retryCount; ++currentIteration) {
       let pushed = false;
       let error: any;
       try {
@@ -916,7 +872,7 @@ export class BriefcaseManager {
       if (pushed)
         return;
 
-      if (!BriefcaseManager.shouldRetryPush(error)) {
+      if (!BriefcaseManager.shouldRetryPush(error) || currentIteration === retryCount - 1) {
         throw error;
       }
       const delay = Math.floor(Math.random() * 4800) + 200;
@@ -930,14 +886,13 @@ export class BriefcaseManager {
   public static async create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString> {
     requestContext.enter();
     if (IModelHost.isUsingIModelBankClient) {
-      throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation", Logger.logError, loggerCategory, () => ({ contextId, iModelName }));
+      throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation");
     }
     const hubIModel = await IModelHost.iModelClient.iModels.create(requestContext, contextId, iModelName, { description: args.rootSubject.description });
     return hubIModel.wsgId;
   }
 
   /** @internal */
-  // TODO: This should take contextId as an argument, so that we know which server (iModelHub or iModelBank) to use.
   public static async deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString) {
     requestContext.enter();
     if (IModelHost.iModelClient === undefined)
@@ -955,6 +910,7 @@ export class BriefcaseManager {
     return Promise.all(promises);
   }
 
+  /** @internal */
   public static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps) {
     // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {

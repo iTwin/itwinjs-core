@@ -28,6 +28,7 @@ to do that.
 Name | Required? | Type | Default | Meaning
 -|-|-|-|-
 *Filtering* |
+`requiredSchemas` | No | [`RequiredSchemaSpecification[]`](../SchemaRequirements.md) | `[]` | Specifications that define schema requirements for the rule to take effect.
 `priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
 `onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
 `condition` | No | [ECExpression](./ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
@@ -91,6 +92,7 @@ Name | Required? | Type | Default | Meaning
 {
   "ruleType": "Grouping",
   "priority": 999,
+  "requiredSchemas": [{ "name": "MySchema", "minVersion": "1.2.3" }],
   "class": { "schemaName": "MySchema", "className": "MyClass" },
   "groups": [{
     "specType": "Property",

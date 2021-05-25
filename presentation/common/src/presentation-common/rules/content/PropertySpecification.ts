@@ -7,7 +7,7 @@
  */
 
 import { PropertyEditorSpecification } from "./modifiers/PropertyEditorsSpecification";
-import { PropertyRendererSpecification } from "./modifiers/PropertyRendererSpecification";
+import { CustomRendererSpecification } from "./modifiers/CustomRendererSpecification";
 
 /**
  * A container structure for possible property overrides
@@ -23,7 +23,7 @@ export interface PropertyOverrides {
   /** Display override. `true` to force display, `false` to force hide, `undefined` to use default. */
   isDisplayed?: boolean;
   /** Custom property renderer specification. */
-  renderer?: PropertyRendererSpecification;
+  renderer?: CustomRendererSpecification;
   /** Custom property editor specification. */
   editor?: PropertyEditorSpecification;
   /**

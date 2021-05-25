@@ -41,11 +41,15 @@ exports[`FloatingWidget should render 1`] = `
         </div>
       </div>
     </div>
-    <button
-      class="nz-widget-sendBack nz-left"
+    <div
+      class="nz-widget-tabBarButtons"
     >
-      <i />
-    </button>
+      <button
+        class="nz-widget-sendBack nz-left"
+      >
+        <i />
+      </button>
+    </div>
   </div>
   <div
     class="nz-widget-content-container"
@@ -118,11 +122,15 @@ exports[`FloatingWidget should render dragged 1`] = `
         </div>
       </div>
     </div>
-    <button
-      class="nz-widget-sendBack nz-left"
+    <div
+      class="nz-widget-tabBarButtons"
     >
-      <i />
-    </button>
+      <button
+        class="nz-widget-sendBack nz-left"
+      >
+        <i />
+      </button>
+    </div>
   </div>
   <div
     class="nz-widget-content-container nz-minimized"
@@ -195,11 +203,15 @@ exports[`FloatingWidget should render minimized 1`] = `
         </div>
       </div>
     </div>
-    <button
-      class="nz-widget-sendBack nz-left"
+    <div
+      class="nz-widget-tabBarButtons"
     >
-      <i />
-    </button>
+      <button
+        class="nz-widget-sendBack nz-left"
+      >
+        <i />
+      </button>
+    </div>
   </div>
   <div
     class="nz-widget-content-container nz-minimized"

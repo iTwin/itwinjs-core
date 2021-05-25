@@ -1,6 +1,69 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 22 Apr 2021 21:07:33 GMT and should not be manually modified.
+This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Dispatch events when changes are pulled or pushed.
+- added IModelDb.withStatement for executing ECSQL without statement caching
+- Allow RenderGraphic to be created from flatbuffers format geometry as well as json.
+- Improve exclusion handling in IModelTransformer
+- Fix `IModelDb.queryEntityIds` when used with `orderBy` and `limit` params.
+- IModelExportHandler.onProgress is now async
+- Add includeSourceProvenance option to IModelTransformer
+- Fixes to desktop/mobile authorization
+- return changesetId from pullAndMergeChanges
+- Add RenderTimeline element.
+- Invoke dependency callbacks only when inputs change
+- only add listener for shutdown once for IModelDb
+- change arguments to protected static methods of Element, Model, ElementAspect. Only affects schema writers.
+- Update version compare classes for property path support and briefcase rolling
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+_Version update only_
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
+
+## 2.15.3
+Mon, 17 May 2021 13:31:37 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Update test for AzCopyFileHandler
+- Fix tests for changed elements processing
+- Properly declare changeSetId variables as string.
+- Promote display-related APIs.
+- IModelDb.generateElementGraphics can generate graphics for a non-persistent geometry stream.
+- Add TypeScript wrappers for ExternalSource and related classes and relationships.
+- Fixes to desktop and iOS apps.
+- Remove deprecated ElementEditor that was replaced by EditCommands.
+- rename (deprecate) BriefcaseIdValue.Standalone to BriefcaseIdValue.Unassigned to reduce confusion
+- Add onModelsChanged and onModelGeometryChanged events to TxnManager.
+- Saving & restoring Electron main window size, position & maximized state
+- add NativeHost.settingsStore
 
 ## 2.14.4
 Thu, 22 Apr 2021 21:07:33 GMT

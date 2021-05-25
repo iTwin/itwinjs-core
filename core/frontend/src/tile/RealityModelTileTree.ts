@@ -669,7 +669,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
     const drawArgs = super.createDrawArgs(context);
     if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded)
-      drawArgs.location.origin.z += context.viewport.displayStyle.backgroundMapElevationBias;
+      drawArgs.location.origin.z += context.viewport.view.displayStyle.backgroundMapElevationBias;
 
     return drawArgs;
   }
@@ -678,7 +678,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     const tree = this.treeOwner.tileTree as RealityTileTree;
     if (undefined !== tree && context.viewport.iModel.isGeoLocated &&  (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
       // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
-      this._mapDrapeTree = context.viewport.displayStyle.backgroundDrapeMap;
+      this._mapDrapeTree = context.viewport.backgroundDrapeMap;
       context.addBackgroundDrapedModel(this, undefined);
     }
 
@@ -866,7 +866,8 @@ export class RealityModelTileClient {
   public async getTileContent(url: string): Promise<any> {
     assert(url !== undefined);
     const useRds = this.rdsProps !== undefined && this._token !== undefined;
-    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!) : new FrontendRequestContext("");
+    // Use an empty activityId to keep tile content as simple request
+    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!, "") : new FrontendRequestContext("");
     if (useRds) {
       await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
       requestContext.enter();
@@ -885,7 +886,8 @@ export class RealityModelTileClient {
   public async getTileJson(url: string): Promise<any> {
     assert(url !== undefined);
     const useRds = this.rdsProps !== undefined && this._token !== undefined;
-    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!) : new FrontendRequestContext("");
+    // Use an empty activityId to keep tile json as simple request
+    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!, "") : new FrontendRequestContext("");
     requestContext.enter();
 
     if (this.rdsProps && this._token) {

@@ -22,28 +22,27 @@ public;BriefcaseDb
 public;BriefcaseId = number
 public;BriefcaseIdValue
 deprecated;BriefcaseIdValue
-beta;BriefcaseManager
+public;BriefcaseManager
 public;class Callout 
 public;Category 
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
 internal;ChangedElementsDb 
-internal;ChangeSetToken
 beta;ChangeSummary
 beta;ChangeSummaryExtractContext
 beta;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
 internal;CheckpointManager
-beta;CheckpointProps
+public;CheckpointProps
 public;ClassRegistry
 beta;class CloudStorageService
 beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
-beta;ComputedProjectExtents
-beta;ComputeProjectExtentsOptions
+public;ComputedProjectExtents
+public;ComputeProjectExtentsOptions
 beta;ConcurrencyControl
 beta;ConcurrencyControl
 alpha;Channel
@@ -211,9 +210,9 @@ public;InformationRecordModel
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
 beta;InstanceChange
-beta;class IpcHandler
-beta;IpcHost
-beta;IpcHostOpts
+public;class IpcHandler
+public;IpcHost
+public;IpcHostOpts
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -226,9 +225,9 @@ internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;class NativeAppAuthorizationBackend 
-beta;NativeAppStorage
-beta;NativeHost
-beta;NativeHostOpts 
+public;NativeAppStorage
+public;NativeHost
+public;NativeHostOpts 
 beta;OnAspectArg
 beta;OnAspectIdArg 
 beta;OnAspectPropsArg 
@@ -260,16 +259,17 @@ public;PhysicalTypeIsOfPhysicalMaterial
 public;PlanCallout 
 public;Platform
 internal;ProcessChangesetOptions
-beta;ProgressFunction = (loaded: number, total: number) => number
+public;ProgressFunction = (loaded: number, total: number) => number
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
 public;RenderMaterialElement 
 public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
+public;RenderTimeline 
 public;RepositoryLink 
 public;RepositoryModel 
-beta;RequestNewBriefcaseArg = RequestNewBriefcaseProps &
+public;RequestNewBriefcaseArg = RequestNewBriefcaseProps &
 public;class RoleElement 
 public;RoleModel 
 public;Schema
@@ -278,7 +278,7 @@ internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas
 public;SectionCallout 
 public;SectionDrawing 
-beta;SectionDrawingLocation 
+public;SectionDrawingLocation 
 public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
 public;Sheet 
@@ -322,9 +322,9 @@ internal;TextureCreateProps
 public;TitleText 
 public;TxnAction
 deprecated;TxnAction
-beta;TxnChangedEntities
+public;TxnChangedEntities
 public;TxnIdString = string
-beta;TxnManager
+public;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
 public;UrlLink 
@@ -332,7 +332,7 @@ internal;UsageLoggingUtilities
 internal;UsageLoggingUtilitiesOptions
 internal;V1CheckpointManager
 internal;V2CheckpointManager
-beta;ValidationError
+public;ValidationError
 public;ViewAttachment 
 public;ViewAttachmentLabel 
 public;class ViewDefinition 

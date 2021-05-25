@@ -140,15 +140,19 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   analysisFraction?: number;
-  /** Schedule script
+  /** A schedule script embedded into the display style settings. This is how schedule scripts were stored prior to the introduction of
+   * [RenderTimeline]($backend) elements. It should no longer be used - instead, set [[renderTimeline]] to the Id of the RenderTimeline element
+   * that hosts the script.
    * @note For a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend), the element Ids will be omitted from all
-   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory - they are not needed for display on the frontend.
-   * @beta
+   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory, because they are not needed for display on the frontend.
+   * @deprecated Use DisplayStyleSettingsProps.renderTimeline.
+   * @internal
    */
   scheduleScript?: RenderSchedule.ModelTimelineProps[];
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view. */
+  renderTimeline?: Id64String;
   /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
-   * @beta
+   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    */
   timePoint?: number;
   /** Overrides applied to the appearances of subcategories in the view. */
@@ -401,12 +405,14 @@ export class DisplayStyleSettings {
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
+   * @deprecated Use onRenderTimelineChanged
    * @internal
    */
   public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>();
-  /** Event raised just prior to assignment to the [[timePoint]] property.
-   * @beta
-   */
+
+  /** Event raised just prior to assignment to the [[renderTimeline]] property. */
+  public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
+  /** Event raised just prior to assignment to the [[timePoint]] property. */
   public readonly onTimePointChanged = new BeEvent<(newTimePoint: number | undefined) => void>();
   /** Event raised just prior to assignment to the [[analysisStyle]] property.
    * @alpha
@@ -421,7 +427,7 @@ export class DisplayStyleSettings {
   /** Event raised just prior to assignment to the [[clipStyle]] property. */
   public readonly onClipStyleChanged = new BeEvent<(newStyle: ClipStyle) => void>();
   /** Event raised when the [[SubCategoryOverride]]s change. */
-  public readonly onSubCategoryOverridesChanged = new BeEvent<() => void>();
+  public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
   public readonly onModelAppearanceOverrideChanged = new BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>();
   /** Event raised just prior to assignment to the [[thematic]] property. */
@@ -607,18 +613,29 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** @internal */
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view. */
+  public get renderTimeline(): Id64String | undefined {
+    return this._json.renderTimeline;
+  }
+  public set renderTimeline(id: Id64String | undefined) {
+    this.onRenderTimelineChanged.raiseEvent(id);
+    this._json.renderTimeline = id;
+  }
+
+  /** @internal @deprecated */
   public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
+    // eslint-disable-next-line deprecation/deprecation
     return this._json.scheduleScript;
   }
   public set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined) {
+    // eslint-disable-next-line deprecation/deprecation
     this.onScheduleScriptPropsChanged.raiseEvent(props);
+    // eslint-disable-next-line deprecation/deprecation
     this._json.scheduleScript = props;
   }
 
   /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
-   * @beta
+   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    */
   public get timePoint(): number | undefined {
     return this._json.timePoint;
@@ -661,7 +678,7 @@ export class DisplayStyleSettings {
   }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
-   * @param id The ID of the SubCategory whose appearance is to be overridden.
+   * @param id The Id of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
    * @see [[dropSubCategoryOverride]]
    */
@@ -670,7 +687,7 @@ export class DisplayStyleSettings {
   }
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
-   * @param id The ID of the [[SubCategory]].
+   * @param id The Id of the [[SubCategory]].
    * @see [[overrideSubCategory]]
    */
   public dropSubCategoryOverride(id: Id64String): void {
@@ -683,7 +700,7 @@ export class DisplayStyleSettings {
   }
 
   /** Obtain the override applied to a [[SubCategoryAppearance]] by this style.
-   * @param id The ID of the [[SubCategory]].
+   * @param id The Id of the [[SubCategory]].
    * @returns The corresponding SubCategoryOverride, or undefined if the SubCategory's appearance is not overridden.
    * @see [[overrideSubCategory]]
    */
@@ -697,7 +714,7 @@ export class DisplayStyleSettings {
   }
 
   /** Customize the way a [Model]($backend)   is drawn by this display style.
-   * @param modelId The ID of the [Model]($backend)  whose appearance is to be overridden.
+   * @param modelId The Id of the [Model]($backend)  whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [Model]($backend) .
    * @see [[dropModelAppearanceOverride]]
    */
@@ -706,7 +723,7 @@ export class DisplayStyleSettings {
   }
 
   /** Remove any appearance overrides applied to a [Model]($backend)  by this style.
-   * @param modelId The ID of the [Model]($backend) .
+   * @param modelId The Id of the [Model]($backend) .
    * @param ovr The overrides to apply to the [Model]($backend) .
    * @see [[overrideModelAppearance]]
    */
@@ -720,7 +737,7 @@ export class DisplayStyleSettings {
   }
 
   /** Obtain the override applied to a [Model]($backend)  by this style.
-   * @param id The ID of the [Model]($backend).
+   * @param id The Id of the [Model]($backend).
    * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
    * @see [[overrideModelAppearance]]
    */
@@ -734,7 +751,7 @@ export class DisplayStyleSettings {
   }
 
   /** Set the planar clip mask for a persistent reality [Model]($backend)  drawn by this display style.  Masking of BIM models is not supported although they can be used for masking for reality models and background maps.
- * @param modelId The ID of the persistent reality [Model]($backend)
+ * @param modelId The Id of the persistent reality [Model]($backend)
  * @param planarClipMask The clip mask to apply to the [Model]($backend).
 
  * @see [[dropModelPlanarClipMaskOverride]]
@@ -743,7 +760,7 @@ export class DisplayStyleSettings {
   public overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean { return this.changePlanarClipMaskOverride(modelId, true, planarClipMask); }
 
   /** Remove planar clip mask applied to a [Model]($backend)  by this style.
-   * @param modelId The ID of the [Model]($backend).
+   * @param modelId The Id of the [Model]($backend).
    * @param planarClipMask The planar clip mask to apply to the [Model]($backend).
    * @see [[overrideModelPlanarClipMask]]
    * @beta
@@ -751,7 +768,7 @@ export class DisplayStyleSettings {
   public dropModelPlanarClipMaskOverride(id: Id64String): boolean { return this.changePlanarClipMaskOverride(id, true); }
 
   /** Obtain the planar clip applied to a [Model]($backend)  by this style.
-    * @param id The ID of the [Model]($backend) .
+    * @param id The Id of the [Model]($backend) .
     * @returns The corresponding planar clip mask, or undefined if none exist.
     * @beta
     */
@@ -781,7 +798,7 @@ export class DisplayStyleSettings {
   }
 
   /** Add one or more elements to the set of elements not to be displayed.
-   * @param id The IDs of the element(s) to be excluded.
+   * @param id The Ids of the element(s) to be excluded.
    */
   public addExcludedElements(id: Id64String | Iterable<Id64String>) {
     this._excludedElements.add("string" === typeof id ? [id] : id);
@@ -795,7 +812,7 @@ export class DisplayStyleSettings {
   }
 
   /** Remove one or more elements from the set of elements not to be displayed.
-   * @param id The IDs of the element(s) to be removed from the set of excluded elements.
+   * @param id The Ids of the element(s) to be removed from the set of excluded elements.
    */
   public dropExcludedElements(id: Id64String | Iterable<Id64String>) {
     this._excludedElements.delete("string" === typeof id ? [id] : id);
@@ -874,8 +891,14 @@ export class DisplayStyleSettings {
         props.analysisFraction = this.analysisFraction;
       }
 
-      if (this.scheduleScriptProps)
+      // eslint-disable-next-line deprecation/deprecation
+      if (this.scheduleScriptProps) {
+        // eslint-disable-next-line deprecation/deprecation
         props.scheduleScript = [...this.scheduleScriptProps];
+      }
+
+      if (this.renderTimeline)
+        props.renderTimeline = this.renderTimeline;
 
       props.subCategoryOvr = this._json.subCategoryOvr ? [...this._json.subCategoryOvr] : [];
       props.modelOvr = this._json.modelOvr ? [...this._json.modelOvr] : [];
@@ -939,8 +962,14 @@ export class DisplayStyleSettings {
     if (undefined !== overrides.analysisFraction)
       this.analysisFraction = overrides.analysisFraction;
 
-    if (overrides.scheduleScript)
+    // eslint-disable-next-line deprecation/deprecation
+    if (overrides.scheduleScript) {
+      // eslint-disable-next-line deprecation/deprecation
       this.scheduleScriptProps = [...overrides.scheduleScript];
+    }
+
+    if (overrides.renderTimeline)
+      this.renderTimeline = overrides.renderTimeline;
 
     if (overrides.subCategoryOvr) {
       this._json.subCategoryOvr = [...overrides.subCategoryOvr];
@@ -978,6 +1007,8 @@ export class DisplayStyleSettings {
   }
 
   private changeSubCategoryOverride(id: Id64String, updateJson: boolean, ovr?: SubCategoryOverride): void {
+    this.onSubCategoryOverridesChanged.raiseEvent(id, ovr);
+
     if (undefined === ovr) {
       // undefined => drop the override if present.
       this._subCategoryOverrides.delete(id);
@@ -995,8 +1026,6 @@ export class DisplayStyleSettings {
         this._json.subCategoryOvr![index].subCategory = id;
       }
     }
-
-    this.onSubCategoryOverridesChanged.raiseEvent();
   }
 
   /** @internal */

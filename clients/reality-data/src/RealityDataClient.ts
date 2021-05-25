@@ -6,11 +6,22 @@
 /** @packageDocumentation
  * @module RealityData
  */
-import { URL } from "url";
 import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
 import {
-  AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance,
+  AuthorizedClientRequestContext, ECJsonTypeMap, getArrayBuffer, getJson, RequestQueryOptions, WsgClient, WsgInstance,
 } from "@bentley/itwin-client";
+import { URL } from "url";
+
+/** Currenlty supported  ProjectWise ContextShare reality data types
+ * @internal
+ */
+export enum RealityDataType {
+  REALITYMESH3DTILES  = "RealityMesh3DTiles", // Web Ready Scalable Mesh
+  OPC = "OPC", // Orbit Point Cloud
+  TERRAIN3DTILE = "Terrain3DTiles", // Terrain3DTiles
+  OMR = "OMR", // Mapping Resource,
+  CESIUM_3DTILE = "Cesium3DTiles" // Cesium 3dTiles
+}
 
 /** RealityData
  * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)
@@ -185,6 +196,7 @@ export class RealityData extends WsgInstance {
    * @param requestContext The client request context.
    * @param name name or path of tile
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
+   * @deprecated use [[getTileJson]] instead
    * @returns tile data json
    */
   public async getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
@@ -244,13 +256,10 @@ export class RealityData extends WsgInstance {
     requestContext.enter();
     const stringUrl = await this.getBlobStringUrl(requestContext, name, nameRelativeToRootDocumentPath);
     requestContext.enter();
-    const options: RequestOptions = {
-      method: "GET",
-      responseType: "json",
-    };
-    const data = await request(requestContext, stringUrl, options);
+
+    const data = await getJson(requestContext, stringUrl);
     requestContext.enter();
-    return data.body;
+    return data;
   }
 
   /**
@@ -264,13 +273,10 @@ export class RealityData extends WsgInstance {
     requestContext.enter();
     const stringUrl = await this.getBlobStringUrl(requestContext, name, nameRelativeToRootDocumentPath);
     requestContext.enter();
-    const options: RequestOptions = {
-      method: "GET",
-      responseType: "arraybuffer",
-    };
-    const data = await request(requestContext, stringUrl, options);
+
+    const data = await getArrayBuffer(requestContext, stringUrl);
     requestContext.enter();
-    return data.body;
+    return data;
   }
 
   /**
@@ -285,8 +291,9 @@ export class RealityData extends WsgInstance {
       throw new Error(`Root document not defined for reality data: ${this.id}`);
 
     const root = this.rootDocument;
-
-    return this.getModelData(requestContext, root, false);
+    const rootJson = await this.getTileJson(requestContext, root, false);
+    requestContext.enter();
+    return rootJson;
   }
 
 }
@@ -452,20 +459,45 @@ export class RealityDataClient extends WsgClient {
     return realityDatas[0];
   }
 
+  /** Return the filter string used to query all supported Reality Data types or only the input type if defined
+  * @param type  reality data type to query or all supported type if undefined
+  * @returns the filter string to use
+  * @internal
+  */
+  private getRealityDataTypesFilter(type?: string): string {
+    let filter: string = "";
+    if (!type) {
+      // ref: https://www.petermorlion.com/iterating-a-typescript-enum/
+      function enumKeys<O extends object, K extends keyof O = keyof O>(obj: O): K[] {
+        return Object.keys(obj).filter((k) => Number.isNaN(+k)) as K[];
+      }
+      // If type not specified, add all supported known types
+      let isFirst=true;
+      for (const rdType of enumKeys(RealityDataType)) {
+        if (isFirst)
+          isFirst=false;
+        else
+          filter += `+or+`;
+        filter += `Type+eq+'${RealityDataType[rdType]}'`;
+      }
+    } else {
+      filter = `Type+eq+'${type}'`;
+    }
+    return filter;
+  }
+
   /**
    * Gets all reality data associated to the project. Consider using getRealityDataInProjectOverlapping() if spatial extent is known.
    * @param requestContext The client request context.
    * @param projectId id of associated iTwin project
+   * @param type  reality data type to query or all supported type if undefined
    * @returns an array of RealityData that are associated to the project.
    */
   public async getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string, type?: string): Promise<RealityData[]> {
     requestContext.enter();
 
     const newQueryOptions = { project: projectId } as RequestQueryOptions;
-    if (!type)
-      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'+or+Type+eq+'OMR'`;
-    else
-      newQueryOptions.$filter = `Type+eq+'${type}'`;
+    newQueryOptions.$filter = this.getRealityDataTypesFilter(type);
 
     const realityDatas: RealityData[] = await this.getRealityDatas(requestContext, projectId, newQueryOptions);
     requestContext.enter();
@@ -488,10 +520,8 @@ export class RealityDataClient extends WsgClient {
     const polygonString = `{\"points\":[[${minLongDeg},${minLatDeg}],[${maxLongDeg},${minLatDeg}],[${maxLongDeg},${maxLatDeg}],[${minLongDeg},${maxLatDeg}],[${minLongDeg},${minLatDeg}]], \"coordinate_system\":\"4326\"}`;
 
     const newQueryOptions = { project: projectId, polygon: polygonString } as RequestQueryOptions;
-    if (!type)
-      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'+or+Type+eq+'OMR'`;
-    else
-      newQueryOptions.$filter = `Type+eq+'${type}'`;
+    newQueryOptions.$filter = this.getRealityDataTypesFilter(type);
+
     return this.getRealityDatas(requestContext, projectId, newQueryOptions);
   }
 

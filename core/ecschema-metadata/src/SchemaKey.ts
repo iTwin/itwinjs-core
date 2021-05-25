@@ -6,6 +6,7 @@
  * @module Metadata
  */
 
+import { SchemaKeyProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
@@ -211,6 +212,27 @@ export class SchemaKey {
       default:
         return false;
     }
+  }
+
+  /**
+   * Deserializes a SchemaKeyProps JSON object into a SchemaKey object.
+   * @param props SchemaKeyProps
+   * @returns A SchemaKey object.
+   */
+  public static fromJSON(props: SchemaKeyProps): SchemaKey {
+    return new SchemaKey(props.name, props.read, props.write, props.minor);
+  }
+
+  /**
+   * Save this SchemaKey's properties to an object for serializing to JSON.
+   */
+  public toJSON(): SchemaKeyProps {
+    return {
+      name: this.name,
+      read: this.readVersion,
+      write: this.writeVersion,
+      minor: this.minorVersion,
+    };
   }
 }
 

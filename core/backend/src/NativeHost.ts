@@ -7,9 +7,9 @@
  */
 
 import { join } from "path";
-import { BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { AuthStatus, BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
+  BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
@@ -25,8 +25,15 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
   protected abstract refreshToken(): Promise<AccessToken>;
-  public config!: NativeAppAuthorizationConfiguration;
+  public config?: NativeAppAuthorizationConfiguration;
   public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
+  public issuerUrl?: string;
+
+  protected constructor(config?: NativeAppAuthorizationConfiguration) {
+    super();
+    this.config = config;
+  }
+
   public get isAuthorized(): boolean {
     return undefined !== this._accessToken && !this._accessToken.isExpired(this.expireSafety);
   }
@@ -37,6 +44,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     this._accessToken = token;
     NativeHost.onUserStateChanged.raiseEvent(token);
   }
+
   public async getAccessToken(): Promise<AccessToken> {
     if (!this.isAuthorized)
       this.setAccessToken(await this.refreshToken());
@@ -44,14 +52,14 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
   }
 
   public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
-  public async initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration) {
-    if (config)
-      this.config = config;
+
+  public async initialize(config?: NativeAppAuthorizationConfiguration) {
+    this.config = config ?? this.config;
+    if (!this.config)
+      throw new IModelError(AuthStatus.Error, "Must specify a valid configuration when initializing authorization");
     if (this.config.expiryBuffer)
       this.expireSafety = this.config.expiryBuffer;
-    IModelHost.session.applicationId = props.applicationId;
-    IModelHost.applicationVersion = props.applicationVersion;
-    IModelHost.sessionId = props.sessionId;
+    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl(this.getClientRequestContext());
   }
 }
 
@@ -61,11 +69,15 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
-  public async silentLogin(token: AccessTokenProps) {
+  public async setAccessTokenProps(token: AccessTokenProps) {
     NativeHost.authorization.setAccessToken(AccessToken.fromJson(token));
   }
   public async initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number> {
-    await NativeHost.authorization.initialize(props, config);
+    IModelHost.session.applicationId = props.applicationId;
+    IModelHost.applicationVersion = props.applicationVersion;
+    IModelHost.sessionId = props.sessionId;
+
+    await NativeHost.authorization.initialize(config);
     return NativeHost.authorization.expireSafety;
   }
   public async signIn(): Promise<void> {
@@ -99,7 +111,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     };
 
     if (reportProgress) {
-      const interval = progressInterval ?? 500; // by default, only send progress events every 500 milliseconds
+      const interval = progressInterval ?? 250; // by default, only send progress events every 250 milliseconds
       let nextTime = Date.now() + interval;
       args.onProgress = (loaded, total) => {
         const now = Date.now();
@@ -167,17 +179,18 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 }
 
-/** @beta */
+/** Options for [[NativeHost.startup]]
+ * @public */
 export interface NativeHostOpts extends IpcHostOpts {
   nativeHost?: {
-    /** Application named. Used to name settings file */
+    /** Application name. Used, for example, to name the settings file. If not supplied, defaults to "iTwinApp". */
     applicationName?: string;
   };
 }
 
 /**
- * Used by desktop/mobile native applications
- * @beta
+ * Backend for desktop/mobile native applications
+ * @public
  */
 export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
@@ -190,6 +203,7 @@ export class NativeHost {
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or because the token was refreshed */
   public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
+  /** Event called when the internet connectivity changes, if known. */
   public static readonly onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
 
   private static _appSettingsCacheDir?: string;
@@ -201,6 +215,7 @@ export class NativeHost {
     return this._appSettingsCacheDir;
   }
 
+  /** Send a notification to the NativeApp connected to this NativeHost. */
   public static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>) {
     return IpcHost.send(nativeAppNotify, methodName, ...args);
   }
@@ -208,13 +223,13 @@ export class NativeHost {
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
   public static get applicationName() { return this._applicationName; }
+  /** Get the settings store for this NativeHost. */
   public static get settingsStore() {
     return NativeAppStorage.open(this.applicationName);
   }
 
   /**
    * Start the backend of a native app.
-   * @param opt
    * @note this method calls [[IpcHost.startup]] internally.
    */
   public static async startup(opt?: NativeHostOpts): Promise<void> {
@@ -248,6 +263,7 @@ export class NativeHost {
   /**
    * Override internet connectivity state
    * @param _overridenBy who overrode the value.
+   * @internal
    */
   public static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void {
     if (this._reachability !== status) {

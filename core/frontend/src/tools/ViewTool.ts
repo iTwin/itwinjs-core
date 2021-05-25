@@ -3016,8 +3016,13 @@ export class ZoomViewTool extends ViewManip {
   public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("Zoom.Prompts.FirstPoint"); }
 }
 
-/** A tool that performs the walk operation using mouse+keyboard or touch controls
- * @beta
+/** A tool that performs the walk operation using mouse+keyboard or touch controls.
+ * Keyboard and mouse controls are similar to those used by many video games:
+ *  - Mouse motion: look around.
+ *  - W, A, S, D (or arrow keys): move forward, left, right, or backward respectively.
+ *  - E, Q (or PgUp, PgDn): move up and down respectively.
+ *  - +, - (or scroll wheel): increase or decrease velocity.
+ * @public
  */
 export class LookAndMoveTool extends ViewManip {
   public static toolId = "View.LookAndMove";
@@ -3698,6 +3703,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   private _hasZoom = false;
   private _rotate2dDisabled = false;
   private _rotate2dThreshold?: Angle;
+  private _only2dManipulations = false;
 
   /** Move this handle during the inertia duration */
   public animate(): boolean {
@@ -3724,8 +3730,9 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 
   public interrupt() { }
 
-  constructor(startEv: BeTouchEvent, ev: BeTouchEvent) {
+  constructor(startEv: BeTouchEvent, ev: BeTouchEvent, only2dManipulations = false) {
     super(startEv.viewport, 0, true, false);
+    this._only2dManipulations = only2dManipulations;
     this.onStart(ev);
   }
 
@@ -3915,7 +3922,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     vp.setupViewFromFrustum(this._frustum);
 
     const singleTouch = this._singleTouch;
-    return vp.view.allow3dManipulations() ?
+    return (!this._only2dManipulations && vp.view.allow3dManipulations()) ?
       singleTouch ? this.handle3dRotate() : this.handle3dPanZoom(ev) :
       singleTouch ? this.handle2dPan() : this.handle2dRotateZoom(ev);
   }
@@ -3994,7 +4001,7 @@ export class ViewToggleCameraTool extends ViewTool {
 /** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool to allow the view to be panned, zoomed, and rotated while defining the points.
  * To show tool settings for specifying camera and target heights above the snap point, make sure formatting and parsing data are cached before the tool starts
  * by calling QuantityFormatter.onInitialized at app startup.
- * @alpha
+ * @public
  */
 export class SetupCameraTool extends PrimitiveTool {
   public static toolId = "View.SetupCamera";

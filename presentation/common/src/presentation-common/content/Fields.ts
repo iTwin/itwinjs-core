@@ -9,6 +9,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
+import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { EditorDescription } from "./Editor";
 import { Property, PropertyJSON } from "./Property";
@@ -45,6 +46,8 @@ export interface PropertiesFieldJSON extends BaseFieldJSON {
 export interface NestedContentFieldJSON extends BaseFieldJSON {
   contentClassInfo: ClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON;
+  /** @alpha */
+  relationshipMeaning?: RelationshipMeaning;
   /** @alpha */
   actualPrimaryClassIds?: Id64String[];
   autoExpand?: boolean;
@@ -341,6 +344,8 @@ export class NestedContentField extends Field {
   /** Relationship path to [Primary class]($docs/learning/presentation/Content/Terminology#primary-class) */
   public pathToPrimaryClass: RelationshipPath;
   /** @alpha */
+  public relationshipMeaning: RelationshipMeaning;
+  /** @alpha */
   public actualPrimaryClassIds: Id64String[];
   /** Contained nested fields */
   public nestedFields: Field[];
@@ -360,6 +365,7 @@ export class NestedContentField extends Field {
    * @param nestedFields Contained nested fields
    * @param editor Property editor used to edit values of this field
    * @param autoExpand Flag specifying whether field should be expanded
+   * @param relationshipMeaning RelationshipMeaning of the field
    * @param renderer Property renderer used to render values of this field
    */
   public constructor(
@@ -379,6 +385,7 @@ export class NestedContentField extends Field {
     super(category, name, label, description, isReadonly, priority, editor, renderer);
     this.contentClassInfo = contentClassInfo;
     this.pathToPrimaryClass = pathToPrimaryClass;
+    this.relationshipMeaning = RelationshipMeaning.RelatedInstance;
     this.nestedFields = nestedFields;
     this.autoExpand = autoExpand;
     this.actualPrimaryClassIds = [];
@@ -400,6 +407,7 @@ export class NestedContentField extends Field {
       this.renderer,
     );
     clone.actualPrimaryClassIds = this.actualPrimaryClassIds;
+    clone.relationshipMeaning = this.relationshipMeaning;
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -419,6 +427,7 @@ export class NestedContentField extends Field {
       ...super.toJSON(),
       contentClassInfo: this.contentClassInfo,
       pathToPrimaryClass: this.pathToPrimaryClass,
+      relationshipMeaning: this.relationshipMeaning,
       actualPrimaryClassIds: this.actualPrimaryClassIds,
       nestedFields: this.nestedFields.map((field: Field) => field.toJSON()),
       autoExpand: this.autoExpand,
@@ -446,6 +455,7 @@ export class NestedContentField extends Field {
         .filter((nestedField): nestedField is Field => !!nestedField),
       contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
       pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
+      relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
       actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
       autoExpand: json.autoExpand,
     });

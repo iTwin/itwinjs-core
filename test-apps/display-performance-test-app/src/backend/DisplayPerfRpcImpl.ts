@@ -214,7 +214,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   private _matchRuleRegex(rule: string) {
     rule = rule.toLowerCase();
     const escapeRegex = (str: string) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-    return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`);
+    return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`, "i");
   }
 
   public async getMatchingFiles(rootDir: string, pattern: string): Promise<string> {
