@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-application-insights-client",
-  "version": "2.17.0-dev.14",
+  "version": "2.17.0-dev.15",
   "description": "iModel.js Frontend Application Insights Client",
   "main": "lib/frontend-application-insights-client.js",
   "typings": "lib/frontend-application-insights-client",
@@ -31,19 +31,19 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.17.0-dev.14",
-    "@bentley/telemetry-client": "2.17.0-dev.14",
+    "@bentley/bentleyjs-core": "2.17.0-dev.15",
+    "@bentley/telemetry-client": "2.17.0-dev.15",
     "@microsoft/applicationinsights-web": "^2.5.5"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.17.0-dev.14"
+    "@bentley/itwin-client": "^2.17.0-dev.15"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.17.0-dev.14",
-    "@bentley/certa": "2.17.0-dev.14",
-    "@bentley/config-loader": "2.17.0-dev.14",
-    "@bentley/eslint-plugin": "2.17.0-dev.14",
-    "@bentley/itwin-client": "2.17.0-dev.14",
+    "@bentley/build-tools": "2.17.0-dev.15",
+    "@bentley/certa": "2.17.0-dev.15",
+    "@bentley/config-loader": "2.17.0-dev.15",
+    "@bentley/eslint-plugin": "2.17.0-dev.15",
+    "@bentley/itwin-client": "2.17.0-dev.15",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
