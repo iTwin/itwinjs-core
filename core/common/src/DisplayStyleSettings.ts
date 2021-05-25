@@ -374,8 +374,8 @@ class OverridesMap<OverrideProps, Override extends { toJSON: () => OverrideProps
   public constructor(
     private readonly _json: DisplayStyleSettingsProps,
     private readonly _arrayKey: OverridesArrayKey,
-    private readonly _idFromProps: (props: OverrideProps) => Id64String,
     private readonly _event: BeEvent<(id: Id64String, ovr: Override | undefined) => void>,
+    private readonly _idFromProps: (props: OverrideProps) => Id64String,
     private readonly _overrideFromProps: (props: OverrideProps) => Override | undefined) {
     super();
     this.populate();
@@ -470,7 +470,7 @@ export class DisplayStyleSettings {
   private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _modelAppearanceOverrides: Map<Id64String, FeatureAppearance> = new Map<Id64String, FeatureAppearance>();
-  private readonly _planarClipMaskOverrides: Map<Id64String, PlanarClipMaskSettings> = new Map<Id64String, PlanarClipMaskSettings>();
+  private readonly _planarClipMasks: OverridesMap<DisplayStyleRealityModelPlanarClipMaskProps, PlanarClipMaskSettings>;
   private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
   private _mapImagery: MapImagerySettings;
@@ -479,6 +479,10 @@ export class DisplayStyleSettings {
 
   public is3d(): this is DisplayStyle3dSettings {
     return false;
+  }
+
+  public get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings> {
+    return this._planarClipMasks;
   }
 
   /** Event raised by [[applyOverrides]] just before the overrides are applied. */
@@ -571,9 +575,14 @@ export class DisplayStyleSettings {
 
     this.populateSubCategoryOverridesFromJSON();
     this.populateModelAppearanceOverridesFromJSON();
-    this.populatePlanarClipMaskOverridesFromJSON();
 
     this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
+
+    this._planarClipMasks = new OverridesMap<DisplayStyleRealityModelPlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onRealityModelPlanarClipMaskChanged,
+      (props) => props.modelId ?? Id64.invalid, (props) => {
+        const settings = PlanarClipMaskSettings.fromJSON(props);
+        return settings.isValid ? settings : undefined;
+      });
   }
 
   private populateSubCategoryOverridesFromJSON(): void {
@@ -605,20 +614,7 @@ export class DisplayStyleSettings {
       }
     }
   }
-  private populatePlanarClipMaskOverridesFromJSON(): void {
-    this._planarClipMaskOverrides.clear();
-    const ovrsArray = JsonUtils.asArray(this._json.planarClipOvr);
-    if (undefined !== ovrsArray) {
-      for (const ovrJson of ovrsArray) {
-        const modelId = Id64.fromJSON(ovrJson.modelId);
-        if (Id64.isValid(modelId)) {
-          const mask = PlanarClipMaskSettings.fromJSON(ovrJson);
-          if (mask.isValid)
-            this.changePlanarClipMaskOverride(modelId, false, mask);
-        }
-      }
-    }
-  }
+
   /** Flags controlling various aspects of the display style. To change the style's view flags, do something like:
    * ```ts
    *  const flags = settings.viewFlags.clone();
@@ -843,32 +839,6 @@ export class DisplayStyleSettings {
   /** Returns true if model appearance overrides are defined by this style. */
   public get hasModelAppearanceOverride(): boolean {
     return this._modelAppearanceOverrides.size > 0;
-  }
-
-  /** Set the planar clip mask for a persistent reality [Model]($backend)  drawn by this display style.  Masking of BIM models is not supported although they can be used for masking for reality models and background maps.
- * @param modelId The Id of the persistent reality [Model]($backend)
- * @param planarClipMask The clip mask to apply to the [Model]($backend).
-
- * @see [[dropModelPlanarClipMaskOverride]]
- * @beta
- */
-  public overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean { return this.changePlanarClipMaskOverride(modelId, true, planarClipMask); }
-
-  /** Remove planar clip mask applied to a [Model]($backend)  by this style.
-   * @param modelId The Id of the [Model]($backend).
-   * @param planarClipMask The planar clip mask to apply to the [Model]($backend).
-   * @see [[overrideModelPlanarClipMask]]
-   * @beta
-   */
-  public dropModelPlanarClipMaskOverride(id: Id64String): boolean { return this.changePlanarClipMaskOverride(id, true); }
-
-  /** Obtain the planar clip applied to a [Model]($backend)  by this style.
-    * @param id The Id of the [Model]($backend) .
-    * @returns The corresponding planar clip mask, or undefined if none exist.
-    * @beta
-    */
-  public getModelPlanarClipMask(id: Id64String): PlanarClipMaskSettings | undefined {
-    return this._planarClipMaskOverrides.get(id);
   }
 
   /** The set of elements that will not be drawn by this display style.
@@ -1190,67 +1160,10 @@ export class DisplayStyleSettings {
 
     return true;
   }
-  private findIndexOfPlanarClipMaskOverrideInJSON(id: Id64String, allowAppend: boolean): number {
-    const ovrsArray = JsonUtils.asArray(this._json.planarClipOvr);
-    if (undefined === ovrsArray) {
-      if (allowAppend) {
-        this._json.planarClipOvr = [];
-        return 0;
-      } else {
-        return -1;
-      }
-    } else {
-      for (let i = 0; i < ovrsArray.length; i++) {
-        if (ovrsArray[i].modelId === id)
-          return i;
-      }
-
-      return allowAppend ? ovrsArray.length : -1;
-    }
-  }
 
   /** @internal */
   public raiseRealityModelPlanarClipMaskChangedEvent(idOrIndex: Id64String | number, ovr?: PlanarClipMaskSettings) {
     this.onRealityModelPlanarClipMaskChanged.raiseEvent(idOrIndex, ovr);
-  }
-
-  private changePlanarClipMaskOverride(id: Id64String, updateJson: boolean, ovr?: PlanarClipMaskSettings): boolean {
-    this.raiseRealityModelPlanarClipMaskChangedEvent(id, ovr);
-    if (undefined === ovr) {
-      // undefined => drop the override if present.
-      this._planarClipMaskOverrides.delete(id);
-      if (updateJson) {
-        const index = this.findIndexOfPlanarClipMaskOverrideInJSON(id, false);
-        if (index < 0)
-          return false;
-        this._json.planarClipOvr!.splice(index, 1);
-      }
-    } else {
-      // add override, or update if present.
-      this._planarClipMaskOverrides.set(id, ovr);
-      if (updateJson) {
-        const index = this.findIndexOfPlanarClipMaskOverrideInJSON(id, true);
-        if (index < 0)
-          return false;
-        this._json.planarClipOvr![index] = ovr.toJSON();
-        this._json.planarClipOvr![index].modelId = id;
-      }
-    }
-    return true;
-  }
-
-  /** @internal */
-  public equalPlanarClipMaskOverrides(other: DisplayStyleSettings): boolean {
-    if (this._planarClipMaskOverrides.size !== other._planarClipMaskOverrides.size)
-      return false;
-
-    for (const [key, value] of this._planarClipMaskOverrides.entries()) {
-      const otherValue = other._planarClipMaskOverrides.get(key);
-      if (undefined === otherValue || !value.equals(otherValue))
-        return false;
-    }
-
-    return true;
   }
 }
 
