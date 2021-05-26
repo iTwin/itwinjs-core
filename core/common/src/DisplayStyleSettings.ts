@@ -57,7 +57,7 @@ export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps
  * @see [[DisplayStyleSettingsProps.planarClipOvr]].
  * @public
  */
-export interface DisplayStyleRealityModelPlanarClipMaskProps extends PlanarClipMaskProps {
+export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
   /** The Id of the model to mask. */
   modelId?: Id64String;
 }
@@ -174,7 +174,7 @@ export interface DisplayStyleSettingsProps {
   /** Style applied by the view's [ClipVector]($geometry-core). */
   clipStyle?: ClipStyleProps;
   /** Planar clip masks applied to reality models. */
-  planarClipOvr?: DisplayStyleRealityModelPlanarClipMaskProps[];
+  planarClipOvr?: DisplayStylePlanarClipMaskProps[];
 
 }
 
@@ -421,7 +421,7 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
 
     for (const props of ovrs) {
       const id = this._idFromProps(props);
-      if (undefined !== id && Id64.isValid(id)) {
+      if (undefined !== id && Id64.isValidId64(id)) {
         const ovr = this._overrideFromProps(props);
         if (ovr)
           super.set(id, ovr);
@@ -470,7 +470,7 @@ export class DisplayStyleSettings {
   private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>;
   private readonly _modelAppearanceOverrides: OverridesMap<DisplayStyleModelAppearanceProps, FeatureAppearance>;
-  private readonly _planarClipMasks: OverridesMap<DisplayStyleRealityModelPlanarClipMaskProps, PlanarClipMaskSettings>;
+  private readonly _planarClipMasks: OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>;
   private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
   private _mapImagery: MapImagerySettings;
@@ -594,7 +594,7 @@ export class DisplayStyleSettings {
         return app.anyOverridden ? app : undefined;
       });
 
-    this._planarClipMasks = new OverridesMap<DisplayStyleRealityModelPlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onRealityModelPlanarClipMaskChanged,
+    this._planarClipMasks = new OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onRealityModelPlanarClipMaskChanged,
       (props) => props.modelId,
       (ovr, modelId) => { return { ...ovr.toJSON(), modelId }; },
       (props) => {
