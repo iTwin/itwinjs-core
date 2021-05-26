@@ -4,16 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { assert, ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
   BackendRequestContext,
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
-  IModelDb, IModelJsFs, IModelTransformer, IModelTransformOptions, InformationPartitionElement, KnownLocations, ModelSelector, PhysicalModel, PhysicalPartition,
+  IModelDb, IModelJsFs, IModelTransformer, IModelTransformOptions, InformationPartitionElement, ModelSelector, PhysicalModel, PhysicalPartition,
   Relationship, SpatialCategory, SpatialViewDefinition, SubCategory, ViewDefinition,
 } from "@bentley/imodeljs-backend";
 import { ElementProps, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { SchemaEditOperation } from "./SchemaEditUtils";
 import { Schema } from "@bentley/ecschema-metadata";
 import { DOMParser, XMLSerializer } from "xmldom";
 
@@ -27,7 +26,6 @@ export interface TransformerOptions extends IModelTransformOptions {
   deleteUnusedGeometryParts?: boolean;
   excludeSubCategories?: string[];
   excludeCategories?: string[];
-  schemaEditOperations?: Map<string, SchemaEditOperation[]>;
   /** alter the xml document of the source schema before it is serialized for import to the target */
   alterExportedSchema?: (xmlSchemaDoc: Document) => Document;
 }
@@ -39,7 +37,6 @@ export class Transformer extends IModelTransformer {
   private _numSourceRelationshipsProcessed = 0;
   private _startTime = new Date();
   private _targetPhysicalModelId = Id64.invalid; // will be valid when PhysicalModels are being combined
-  private _schemaEditOperations = new Map<string, SchemaEditOperation[]>();
   private _alterExportedSchema: TransformerOptions["alterExportedSchema"];
 
   public static async transformAll(requestContext: AuthorizedClientRequestContext | ClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
@@ -128,7 +125,6 @@ export class Transformer extends IModelTransformer {
       this.excludeCategories(options.excludeCategories);
     }
 
-    this._schemaEditOperations = options?.schemaEditOperations ?? new Map();
     this._alterExportedSchema = options?.alterExportedSchema;
 
     // query for and log the number of source Elements that will be processed
@@ -287,25 +283,13 @@ export class Transformer extends IModelTransformer {
     this.targetDb.elements.deleteDefinitionElements(geometryPartIds); // will delete only if unused
   }
 
-  // for now source is required but can be made optional and the function reads it itself
-  public applySchemaOperations(editOps: SchemaEditOperation[], source: string): string {
-    for (const editOp of editOps) {
-      source = source.replace(editOp.pattern, editOp.substitution);
-    }
-    return source;
-  }
-
   public async onExportSchema(schema: Schema): Promise<void> {
-    const editOps = this._schemaEditOperations.get(schema.name)!;
     const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
     const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);
     let filledDoc = await schema.toXml(xmlDoc);
     if (this._alterExportedSchema)
       filledDoc = this._alterExportedSchema(filledDoc);
-    let schemaText = new XMLSerializer().serializeToString(filledDoc);
-    if (this._schemaEditOperations.has(schema.name)) {
-      schemaText = this.applySchemaOperations(editOps, schemaText);
-    }
+    const schemaText = new XMLSerializer().serializeToString(filledDoc);
     IModelJsFs.writeFileSync(schemaPath, schemaText);
     await this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
   }

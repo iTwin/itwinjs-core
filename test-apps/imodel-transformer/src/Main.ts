@@ -14,7 +14,6 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";
 import { Transformer, TransformerOptions } from "./Transformer";
-import { ensureArray, keyPairsToMultimap, SchemaEditOperation, tryParseSchemaEditOperation } from "./SchemaEditUtils";
 
 const loggerCategory = "imodel-transformer";
 
@@ -244,20 +243,10 @@ void (async () => {
       }
     }
 
-    const schemaEditOperations: Map<string, SchemaEditOperation[]> | undefined =
-      args.schemaOp !== undefined
-        ? keyPairsToMultimap(ensureArray(args.schemaOp).map((op) => {
-          const parseResult = tryParseSchemaEditOperation(op);
-          assert(parseResult !== undefined, "schema edit parse failed, see logged error");
-          return [parseResult.schemaName, parseResult];
-        }))
-        : undefined;
-
     const transformerOptions: TransformerOptions = {
       ...args,
       excludeSubCategories: args.excludeSubCategories?.split(","),
       excludeCategories: args.excludeCategories?.split(","),
-      schemaEditOperations,
     };
 
     if (processChanges) {

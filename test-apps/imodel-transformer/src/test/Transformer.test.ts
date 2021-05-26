@@ -12,7 +12,6 @@ import {
 } from "@bentley/imodeljs-backend";
 import { progressLoggerCategory, Transformer } from "../Transformer";
 import { Code, PhysicalElementProps } from "@bentley/imodeljs-common";
-import { Schema } from "@bentley/ecschema-metadata";
 
 describe("imodel-transformer", () => {
   const sourceDbFileName = "../../core/backend/src/test/assets/CompatibilityTestSeed.bim";
@@ -132,70 +131,6 @@ describe("imodel-transformer", () => {
     const elemsInCategoryInTarget = await getElementCountInTestCategory(targetDb);
     assert.equal(elemsInCategoryInTarget, 0);
 
-    targetDb.close();
-  });
-
-  it("should edit schemas", async () => {
-    const testSchemaPath = initOutputFile("TestSchema-EditSchemas.ecschema.xml");
-    IModelJsFs.writeFileSync(testSchemaPath, `<?xml version="1.0" encoding="UTF-8"?>
-      <ECSchema schemaName="Test" alias="test" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
-          <ECEntityClass typeName="Foo">
-            <BaseClass>bis:PhysicalElement</BaseClass>
-            <ECProperty propertyName="Bar" typeName="string"/>
-          </ECEntityClass>
-      </ECSchema>`
-    );
-
-    const newSchemaSourceDbPath = initOutputFile("sourceDb-EditSchemas.bim");
-    IModelJsFs.copySync(sourceDbFileName, newSchemaSourceDbPath);
-    const newSchemaSourceDb = SnapshotDb.createFrom(sourceDb, newSchemaSourceDbPath);
-
-    const requestContext = new BackendRequestContext();
-
-    await newSchemaSourceDb.importSchemas(requestContext, [testSchemaPath]);
-
-    const [firstModelId] = newSchemaSourceDb.queryEntityIds({ from: PhysicalModel.classFullName, limit: 1 });
-    assert.isString(firstModelId);
-    const [firstSpatialCategId] = newSchemaSourceDb.queryEntityIds({ from: SpatialCategory.classFullName, limit: 1 });
-    assert.isString(firstSpatialCategId);
-
-    newSchemaSourceDb.elements.insertElement({
-      classFullName: "Test:Foo",
-      model: firstModelId,
-      code: Code.createEmpty(),
-      category: firstSpatialCategId,
-    } as PhysicalElementProps);
-
-    const targetDbFileName = initOutputFile("EditSchemas.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbFileName, {
-      rootSubject: { name: `${newSchemaSourceDb.rootSubject.name}-EditSchemas` },
-      ecefLocation: newSchemaSourceDb.ecefLocation,
-    });
-
-    await Transformer.transformAll(requestContext, newSchemaSourceDb, targetDb, {
-      schemaEditOperations: new Map([[
-        "Test", [{
-          schemaName: "Test",
-          pattern: /typeName="string"/,
-          substitution: 'typeName="double"',
-        }]],
-      ]),
-    });
-
-    async function getFooBarType(db: IModelDb): Promise<number | undefined> {
-      for await (const row of db.query(`SELECT PrimitiveType FROM meta.ECPropertyDef WHERE NAME='Bar'`)) {
-        return row.primitiveType;
-      }
-      return undefined;
-    }
-
-    const stringPrimitiveTypeCode = 0x901;
-    const doublePrimitiveTypeCode = 0x401;
-    assert.equal(stringPrimitiveTypeCode, (await getFooBarType(newSchemaSourceDb))!);
-    assert.equal(doublePrimitiveTypeCode, (await getFooBarType(targetDb))!);
-
-    newSchemaSourceDb.close();
     targetDb.close();
   });
 
