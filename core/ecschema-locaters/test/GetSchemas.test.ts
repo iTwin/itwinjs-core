@@ -42,11 +42,11 @@ describe("Concurrent schema accesses", () => {
     await Promise.all(schemaKeys.map( async (key) => {
       if (!key)
         return;
-      console.log(`Starting retrieval of ${key.name}`);
+      console.log(`Starting retrieval of ${key.name} asynchronously`);
       const schema = await asyncContext.getSchema(key, SchemaMatchType.Latest);
       if (!schema)
         return;
-      console.log(`Retrieval of ${key.name} complete`);
+      console.log(`Retrieval of ${key.name} asynchronously completed`);
       asyncSchemas.push(schema);
       return;
     }));
@@ -57,11 +57,11 @@ describe("Concurrent schema accesses", () => {
     schemaKeys.forEach((key) => {
       if (!key)
         return;
-      console.log(`Starting retrieval of ${key.name}`);
+      console.log(`Starting retrieval of ${key.name} synchronously`);
       const schema = syncContext.getSchemaSync(key, SchemaMatchType.Latest);
       if (!schema)
         return;
-      console.log(`Retrieval of ${key.name} complete`);
+      console.log(`Retrieval of ${key.name} synchronously completed`);
       syncSchemas.push(schema);
       return;
     });
@@ -86,8 +86,12 @@ describe("Concurrent schema accesses", () => {
     // expect(asyncSchemas.length).to.equal(schemaKeys.length);
 
     for (let i = 0; i < schemaKeys.length; i++) {
-      const asyncSerialized = asyncSchemas[i].toJSON();
-      const syncSerialized = syncSchemas[i].toJSON();
+      const syncSchema = syncSchemas[i];
+      const syncSerialized = syncSchema.toJSON();
+
+      const asyncSchema = asyncSchemas.find(asyncSchema => asyncSchema.schemaKey.matches(syncSchema.schemaKey));
+      expect(asyncSchema).not.to.be.undefined;
+      const asyncSerialized = asyncSchema!.toJSON();
       expect(asyncSerialized).to.deep.equal(syncSerialized);
     }
   });
