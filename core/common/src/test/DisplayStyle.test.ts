@@ -15,7 +15,7 @@ import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProj
 import { SpatialClassificationProps } from "../SpatialClassificationProps";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
-import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "../PlanarClipMask";
+import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
 
 /* eslint-disable deprecation/deprecation */
 //  - for DisplayStyleSettings.excludedElements.
@@ -220,9 +220,8 @@ describe("DisplayStyleSettings", () => {
     it("dispatches events", () => {
       const events: Array<[Id64String, boolean]> = [];
       const style = new DisplayStyleSettings({});
-      style.onPlanarClipMaskChanged.addListener((id, mask) => {
-        expect(typeof id).to.equal("string");
-        events.push([id as string, undefined !== mask]);
+      style.onPlanarClipMaskChanged.addListener((id, newMask) => {
+        events.push([id, undefined !== newMask]);
       });
 
       const map = style.planarClipMasks;
