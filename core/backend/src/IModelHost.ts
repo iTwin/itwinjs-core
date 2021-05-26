@@ -10,13 +10,12 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import {
-  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager,
-  IntrospectionClient,
+  BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager, IntrospectionClient,
 } from "@bentley/backend-itwin-client";
 import {
   assert, BeEvent, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps,
 } from "@bentley/bentleyjs-core";
-import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
+import { IModelBankClient, IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
@@ -30,6 +29,8 @@ import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, 
 import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
+import { HubAccess } from "./HubAccess";
+import { IModelHubAccess } from "./IModelHubAccess";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -39,7 +40,6 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
-import { HubAccess, IModelHubAccess } from "./HubAccess";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -203,8 +203,6 @@ export class IModelHost {
   private constructor() { }
   public static authorizationClient?: AuthorizationClient;
 
-  private static _imodelClient?: IModelClient;
-
   private static _clientAuthIntrospectionManager?: ClientAuthIntrospectionManager;
   /** @alpha */
   public static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined { return this._clientAuthIntrospectionManager; }
@@ -335,14 +333,12 @@ export class IModelHost {
   public static hubAccess: HubAccess;
 
   /** @deprecated */
-  public static get iModelClient(): IModelClient {
-    if (!IModelHost._imodelClient)
-      IModelHost._imodelClient = new IModelHubClient(new AzureFileHandler());
-
-    return IModelHost._imodelClient;
-  }
+  // public static get iModelClient(): IModelClient {
+  //   return IModelHubAccess.iModelClient;
+  // }
+  /** @deprecated */
   public static get isUsingIModelBankClient(): boolean {
-    return IModelHost.iModelClient instanceof IModelBankClient;
+    return IModelHubAccess.isUsingIModelBankClient;
   }
 
   private static _isValid = false;
@@ -407,7 +403,7 @@ export class IModelHost {
     }
 
     this.setupCacheDirs(configuration);
-    this._imodelClient = configuration.imodelClient;
+    IModelHubAccess.setIModelClient(configuration.imodelClient);
     BriefcaseManager.initialize(this._briefcaseCacheDir, path.join(this._cacheDir, "bc", "v4_0"));
 
     IModelHost.setupRpcRequestContext();

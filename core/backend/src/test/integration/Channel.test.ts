@@ -42,7 +42,7 @@ describe("Channel Control (#integration)", () => {
 
   after(async () => {
     try {
-      await IModelHost.iModelClient.iModels.delete(managerRequestContext, testProjectId, readWriteTestIModelId);
+      await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, contextId: testProjectId, iModelId: readWriteTestIModelId });
     } catch (err) {
     }
   });

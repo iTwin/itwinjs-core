@@ -6,8 +6,9 @@
  * @module HubAccess
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
-import { BriefcaseProps } from "@bentley/imodeljs-common";
+import { GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { LockLevel, LockType } from "@bentley/imodelhub-client";
+import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 /** Properties of a changeset
@@ -34,17 +35,51 @@ export interface ChangesetFileProps extends ChangesetProps {
 
 export type ChangesetRange = { first: string, after?: never, end?: string } | { after: string, first?: never, end?: string };
 
+/**
+ * The properties of an iModel server lock.
+ * @beta
+ */
+export interface LockProps {
+  type: LockType;
+  objectId: Id64String;
+  level: LockLevel;
+}
+
+export interface IModelIdArg {
+  iModelId: GuidString;
+  requestContext?: AuthorizedClientRequestContext;
+}
+
+export interface BriefcaseIdArg extends IModelIdArg {
+  briefcaseId: number;
+}
+
 export interface HubAccess {
-  downloadChangeSets: (requestContext: AuthorizedClientRequestContext, iModelId: GuidString, range: ChangesetRange) => Promise<ChangesetFileProps[]>;
-  queryChangesetProps: (requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changesetId: string) => Promise<ChangesetProps>;
+  downloadChangeSets: (arg: IModelIdArg & { range?: ChangesetRange }) => Promise<ChangesetFileProps[]>;
+  downloadChangeSet: (arg: IModelIdArg & { id: string }) => Promise<ChangesetFileProps>;
+  queryChangesetProps: (arg: IModelIdArg & { changesetId: string }) => Promise<ChangesetProps>;
+  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<void>;
+  getLatestChangeSetId: (arg: IModelIdArg) => Promise<string>;
+  getChangeSetIdFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<string>;
+  getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<string>;
 
   /** Get the index of the change set from its id */
-  getChangeSetIndexFromId: (requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string) => Promise<number>;
+  getChangeSetIndexFromId: (arg: IModelIdArg & { changeSetId: string }) => Promise<number>;
   /** Acquire a new briefcaseId for the supplied iModelId
-   * @note usually there should only be one briefcase per iModel per user.
-   */
-  acquireNewBriefcaseId: (requestContext: AuthorizedClientRequestContext, iModelId: GuidString) => Promise<number>;
+     * @note usually there should only be one briefcase per iModel per user.
+     */
+  acquireNewBriefcaseId: (arg: IModelIdArg) => Promise<number>;
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
-  releaseBriefcase: (requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps) => Promise<void>;
+  releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 
+  getMyBriefcaseIds: (arg: IModelIdArg) => Promise<number[]>;
+
+  getAllLocks: (arg: BriefcaseIdArg) => Promise<LockProps[]>;
+  getAllCodes: (arg: BriefcaseIdArg) => Promise<CodeProps[]>;
+  releaseAllLocks: (arg: BriefcaseIdArg) => Promise<void>;
+  releaseAllCodes: (arg: BriefcaseIdArg) => Promise<void>;
+
+  createIModel: (arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string }) => Promise<GuidString>;
+  deleteIModel: (arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString }) => Promise<void>;
 }
+

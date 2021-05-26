@@ -12,9 +12,9 @@ import { ChangesType } from "@bentley/imodelhub-client";
 import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
-  ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, NativeLoggerCategory,
-  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect,
+  GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, NativeLoggerCategory, PhysicalModel,
+  PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -348,8 +348,8 @@ describe("IModelTransformerHub (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
     } finally {
       // delete iModel briefcases
-      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, sourceIModelId);
-      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, targetIModelId);
+      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: sourceIModelId });
+      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: targetIModelId });
     }
   });
 
@@ -435,8 +435,8 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isAbove(count(branchDb2, ExternalSourceAspect.classFullName), state0.length);
 
       // push Branch1 and Branch2 provenance changes
-      await saveAndPushChanges(requestContext, branchDb1, "State0");
-      await saveAndPushChanges(requestContext, branchDb2, "State0");
+      await saveAndPushChanges(branchDb1, "State0");
+      await saveAndPushChanges(branchDb2, "State0");
       const changeSetBranch1State0 = branchDb1.changeSetId;
       const changeSetBranch2State0 = branchDb2.changeSetId;
       assert.notEqual(changeSetBranch1State0, changeSetBranch1First);
@@ -447,7 +447,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const state1 = [1, 2, 3, 4];
       maintainPhysicalObjects(branchDb1, delta01);
       assertPhysicalObjects(branchDb1, state1);
-      await saveAndPushChanges(requestContext, branchDb1, "State0 -> State1");
+      await saveAndPushChanges(branchDb1, "State0 -> State1");
       const changeSetBranch1State1 = branchDb1.changeSetId;
       assert.notEqual(changeSetBranch1State1, changeSetBranch1State0);
 
@@ -456,7 +456,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const state2 = [1, 2, -3, 4, 5, 6];
       maintainPhysicalObjects(branchDb1, delta12);
       assertPhysicalObjects(branchDb1, state2);
-      await saveAndPushChanges(requestContext, branchDb1, "State1 -> State2");
+      await saveAndPushChanges(branchDb1, "State1 -> State2");
       const changeSetBranch1State2 = branchDb1.changeSetId;
       assert.notEqual(changeSetBranch1State2, changeSetBranch1State1);
 
@@ -470,7 +470,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assertPhysicalObjectUpdated(masterDb, 1);
       assertPhysicalObjectUpdated(masterDb, 2);
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
-      await saveAndPushChanges(requestContext, masterDb, "State0 -> State2"); // a squash of 2 branch changes into 1 in the masterDb change ledger
+      await saveAndPushChanges(masterDb, "State0 -> State2"); // a squash of 2 branch changes into 1 in the masterDb change ledger
       const changeSetMasterState2 = masterDb.changeSetId;
       assert.notEqual(changeSetMasterState2, changeSetMasterState0);
       branchDb1.saveChanges(); // saves provenance locally in case of re-merge
@@ -480,7 +480,7 @@ describe("IModelTransformerHub (#integration)", () => {
       await masterToBranch2.processChanges(requestContext, changeSetMasterState2);
       masterToBranch2.dispose();
       assertPhysicalObjects(branchDb2, state2);
-      await saveAndPushChanges(requestContext, branchDb2, "State0 -> State2");
+      await saveAndPushChanges(branchDb2, "State0 -> State2");
       const changeSetBranch2State2 = branchDb2.changeSetId;
       assert.notEqual(changeSetBranch2State2, changeSetBranch2State0);
 
@@ -489,7 +489,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const state3 = [1, 2, -3, 4, 5, 6, 7, 8];
       maintainPhysicalObjects(branchDb2, delta23);
       assertPhysicalObjects(branchDb2, state3);
-      await saveAndPushChanges(requestContext, branchDb2, "State2 -> State3");
+      await saveAndPushChanges(branchDb2, "State2 -> State3");
       const changeSetBranch2State3 = branchDb2.changeSetId;
       assert.notEqual(changeSetBranch2State3, changeSetBranch2State2);
 
@@ -501,7 +501,7 @@ describe("IModelTransformerHub (#integration)", () => {
       branch2ToMaster.dispose();
       assertPhysicalObjects(masterDb, state3);
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
-      await saveAndPushChanges(requestContext, masterDb, "State2 -> State3");
+      await saveAndPushChanges(masterDb, "State2 -> State3");
       const changeSetMasterState3 = masterDb.changeSetId;
       assert.notEqual(changeSetMasterState3, changeSetMasterState2);
       branchDb2.saveChanges(); // saves provenance locally in case of re-merge
@@ -511,7 +511,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const state4 = [1, 2, -3, 4, 5, 6, -7, 8];
       maintainPhysicalObjects(masterDb, delta34);
       assertPhysicalObjects(masterDb, state4);
-      await saveAndPushChanges(requestContext, masterDb, "State3 -> State4");
+      await saveAndPushChanges(masterDb, "State3 -> State4");
       const changeSetMasterState4 = masterDb.changeSetId;
       assert.notEqual(changeSetMasterState4, changeSetMasterState3);
 
@@ -521,11 +521,11 @@ describe("IModelTransformerHub (#integration)", () => {
       masterToBranch1.dispose();
       assertPhysicalObjects(branchDb1, state4);
       assertPhysicalObjectUpdated(branchDb1, 6);
-      await saveAndPushChanges(requestContext, branchDb1, "State2 -> State4");
+      await saveAndPushChanges(branchDb1, "State2 -> State4");
       const changeSetBranch1State4 = branchDb1.changeSetId;
       assert.notEqual(changeSetBranch1State4, changeSetBranch1State2);
 
-      const masterDbChangeSets = await BriefcaseManager.downloadChangeSets(requestContext, masterIModelId, { after: "", end: masterDb.changeSetId }); // downloads actual changeSets
+      const masterDbChangeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: masterIModelId, range: { after: "", end: masterDb.changeSetId } });
       assert.equal(masterDbChangeSets.length, 3);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeSet of masterDbChangeSets) {
@@ -553,18 +553,18 @@ describe("IModelTransformerHub (#integration)", () => {
       }
       // note: this test knows that there were no schema changes, so does not call `processSchemas`
       await replayTransformer.processAll(); // process any elements that were part of the "seed"
-      await saveAndPushChanges(requestContext, replayedDb, "changes from source seed");
+      await saveAndPushChanges(replayedDb, "changes from source seed");
       for (const masterDbChangeSet of masterDbChangeSets) {
         await sourceDb.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(masterDbChangeSet.id));
         await replayTransformer.processChanges(requestContext, sourceDb.changeSetId);
-        await saveAndPushChanges(requestContext, replayedDb, masterDbChangeSet.description ?? "", masterDbChangeSet.changesType);
+        await saveAndPushChanges(replayedDb, masterDbChangeSet.description ?? "", masterDbChangeSet.changesType);
       }
       replayTransformer.dispose();
       sourceDb.close();
       assertPhysicalObjects(replayedDb, state4); // should have same ending state as masterDb
 
       // make sure there are no deletes in the replay history (all elements that were eventually deleted from masterDb were excluded)
-      const replayedDbChangeSets = await BriefcaseManager.downloadChangeSets(requestContext, replayedIModelId, { after: "", end: replayedDb.changeSetId }); // downloads actual changeSets
+      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: replayedIModelId, range: { after: "", end: replayedDb.changeSetId } });
       assert.isAtLeast(replayedDbChangeSets.length, masterDbChangeSets.length); // replayedDb will have more changeSets when seed contains elements
       const replayedDeletedElementIds = new Set<Id64String>();
       for (const replayedDbChangeSet of replayedDbChangeSets) {
@@ -601,7 +601,7 @@ describe("IModelTransformerHub (#integration)", () => {
     });
   }
 
-  async function saveAndPushChanges(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb, description: string, changesType?: ChangesType): Promise<void> {
+  async function saveAndPushChanges(briefcaseDb: BriefcaseDb, description: string, changesType?: ChangesType): Promise<void> {
     // await briefcaseDb.concurrencyControl.request(requestContext);
     briefcaseDb.saveChanges(description);
     return briefcaseDb.pushChanges(requestContext, description, changesType);

@@ -22,20 +22,12 @@ import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
 import { SQLiteDb } from "./SQLiteDb";
+import { IModelHubAccess } from "./IModelHubAccess";
+import { LockProps } from "./HubAccess";
 
 // cspell:ignore rqctx req's cpid cctl stmts specid
 
 const loggerCategory: string = BackendLoggerCategory.ConcurrencyControl;
-
-/**
- * The properties of an iModel server lock.
- * @beta
- */
-export interface LockProps {
-  type: LockType;
-  objectId: Id64String;
-  level: LockLevel;
-}
 
 /** ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
  * @internal
@@ -53,16 +45,6 @@ export class ConcurrencyControl {
     this._cache = new ConcurrencyControl.StateCache(this);
     this._policy = new ConcurrencyControl.PessimisticPolicy();
     this._channel = new ConcurrencyControl.Channel(_iModel);
-  }
-
-  public static async getAllLocks(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseDb): Promise<LockProps[]> {
-    const heldLocks = await IModelHost.iModelClient.locks.get(requestContext, briefcase.iModelId, new LockQuery().byBriefcaseId(briefcase.briefcaseId));
-    return heldLocks.map((lock) => ({ type: lock.lockType!, objectId: lock.objectId!, level: lock.lockLevel! }));
-  }
-
-  public static async getAllCodes(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseDb): Promise<CodeProps[]> {
-    const reservedCodes = await IModelHost.iModelClient.codes.get(requestContext, briefcase.iModelId, new CodeQuery().byBriefcaseId(briefcase.briefcaseId));
-    return reservedCodes.map((code) => ({ spec: code.codeSpecId!, scope: code.codeScope!, value: code.value! }));
   }
 
   /**
@@ -449,18 +431,13 @@ export class ConcurrencyControl {
    * @beta
    */
   public async abandonResources(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    requestContext.enter();
-
-    if (this._iModel.txns.hasPendingTxns) {
+    if (this._iModel.txns.hasPendingTxns)
       throw new IModelError(RepositoryStatus.PendingTransactions, "");
-    }
 
     this.abandonRequest();
     this._cache.deleteFile();
-    await Promise.all([
-      IModelHost.iModelClient.locks.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcaseId),
-      IModelHost.iModelClient.codes.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcaseId),
-    ]);
+    const arg = { requestContext, iModelId: this.iModel.iModelId, briefcaseId: this.iModel.briefcaseId };
+    await Promise.all([IModelHost.hubAccess.releaseAllLocks(arg), IModelHost.hubAccess.releaseAllCodes(arg)]);
     requestContext.enter();
     return this.openOrCreateCache(requestContext); // re-create after we know that locks and codes were deleted.
   }
@@ -524,7 +501,7 @@ export class ConcurrencyControl {
     requestContext.enter();
 
     Logger.logTrace(loggerCategory, `lockSchema`);
-    const res = await IModelHost.iModelClient.locks.update(requestContext, this._iModel.iModelId, locks);
+    const res = await IModelHubAccess.iModelClient.locks.update(requestContext, this._iModel.iModelId, locks);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive) {
       Logger.logError(loggerCategory, `lockSchema failed`);
       assert(false, "update should have thrown if it could not satisfy the request.");
@@ -563,21 +540,15 @@ export class ConcurrencyControl {
     return this._cache.isCodeReserved(code);
   }
 
-  /** @internal @deprecated Use concurrencyControl.locks.lockCodeSpecs */
-  public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
-    return this.lockCodeSpecs0(requestContext);
-  }
-
   /** @internal */
   public async lockCodeSpecs0(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
 
     const locks = [ConcurrencyControl.Request.getHubCodeSpecsLock(this)];
-
     if (this.locks.hasCodeSpecsLock)
       return locks;
 
     requestContext.enter();
-    const res = await IModelHost.iModelClient.locks.update(requestContext, this._iModel.iModelId, locks);
+    const res = await IModelHubAccess.iModelClient.locks.update(requestContext, this._iModel.iModelId, locks);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive) {
       assert(false, "update should have thrown if it could not satisfy the request.");
     }
@@ -629,7 +600,7 @@ export class ConcurrencyControl {
 
     const hubLocks = ConcurrencyControl.Request.toHubLocks(this, locks);
 
-    const lockStates = await IModelHost.iModelClient.locks.update(requestContext, this._iModel.iModelId, hubLocks);
+    const lockStates = await IModelHubAccess.iModelClient.locks.update(requestContext, this._iModel.iModelId, hubLocks);
     requestContext.enter();
 
     return lockStates;
@@ -653,7 +624,7 @@ export class ConcurrencyControl {
       throw new Error("not open");
 
     Logger.logTrace(loggerCategory, `reserveCodes ${JSON.stringify(hubCodes)}`);
-    const codeStates = await IModelHost.iModelClient.codes.update(requestContext, this._iModel.iModelId, hubCodes);
+    const codeStates = await IModelHubAccess.iModelClient.codes.update(requestContext, this._iModel.iModelId, hubCodes);
     requestContext.enter();
     Logger.logTrace(loggerCategory, `result = ${JSON.stringify(codeStates)}`);
 
@@ -699,7 +670,7 @@ export class ConcurrencyControl {
 
     const hubCodes = ConcurrencyControl.Request.toHubCodes(this, req.codes);
 
-    const codesHandler = IModelHost.iModelClient.codes;
+    const codesHandler = IModelHubAccess.iModelClient.codes;
     const chunkSize = 100;
     for (let i = 0; i < hubCodes.length; i += chunkSize) {
       const query = new CodeQuery().byCodes(hubCodes.slice(i, i + chunkSize));
@@ -737,7 +708,7 @@ export class ConcurrencyControl {
 
     const briefcaseId = this.iModel.getBriefcaseId();
 
-    const locksHandler = IModelHost.iModelClient.locks;
+    const locksHandler = IModelHubAccess.iModelClient.locks;
     const chunkSize = 100;
     for (let i = 0; i < hubLocks.length; i += chunkSize) {
       const query = new LockQuery().byLocks(hubLocks.slice(i, i + chunkSize));
@@ -1367,7 +1338,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
         query.byCodeSpecId(specId).byCodeScope(scopeId);
       }
 
-      return IModelHost.iModelClient.codes.get(requestContext, this._iModel.iModelId, query);
+      return IModelHubAccess.iModelClient.codes.get(requestContext, this._iModel.iModelId, query);
     }
 
     /** Returns `true` if the specified code has been reserved by this briefcase.
@@ -1685,8 +1656,9 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     public async populate(requestContext: AuthorizedClientRequestContext): Promise<void> {
       this.mustHaveBriefcase();
       this.clear();
-      this.insertLocks(await ConcurrencyControl.getAllLocks(requestContext, this.concurrencyControl.iModel));
-      this.insertCodes(await ConcurrencyControl.getAllCodes(requestContext, this.concurrencyControl.iModel));
+      const arg = { requestContext, iModelId: this.concurrencyControl.iModel.iModelId, briefcaseId: this.concurrencyControl.iModel.briefcaseId };
+      this.insertLocks(await IModelHost.hubAccess.getAllLocks(arg));
+      this.insertCodes(await IModelHost.hubAccess.getAllCodes(arg));
       this.saveChanges();
     }
   }

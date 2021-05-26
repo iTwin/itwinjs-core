@@ -42,25 +42,25 @@ describe.only("HubMock", () => {
     assert.equal(3, localHub.acquireNewBriefcaseId("user2"));
     assert.equal(4, localHub.acquireNewBriefcaseId("user3"));
 
-    let briefcases = localHub.getBriefcaseIds();
+    let briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 3);
     assert.deepEqual(briefcases[0], { id: 2, user: "user1" });
     assert.deepEqual(briefcases[1], { id: 3, user: "user2" });
     assert.deepEqual(briefcases[2], { id: 4, user: "user3" });
 
     localHub.releaseBriefcaseId(2);
-    briefcases = localHub.getBriefcaseIds();
+    briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 2);
     assert.deepEqual(briefcases[0], { id: 3, user: "user2" });
     assert.deepEqual(briefcases[1], { id: 4, user: "user3" });
 
     localHub.releaseBriefcaseId(4);
-    briefcases = localHub.getBriefcaseIds();
+    briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 1);
     assert.deepEqual(briefcases[0], { id: 3, user: "user2" });
 
     assert.equal(5, localHub.acquireNewBriefcaseId("user4"));
-    briefcases = localHub.getBriefcaseIds();
+    briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 2);
     assert.deepEqual(briefcases[0], { id: 3, user: "user2" });
     assert.deepEqual(briefcases[1], { id: 5, user: "user4" });

@@ -40,6 +40,7 @@ import { generateElementGraphics } from "./ElementGraphics";
 import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
+import { IModelHubAccess } from "./IModelHubAccess";
 import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
@@ -2207,7 +2208,7 @@ export class BriefcaseDb extends IModelDb {
     lock.seedFileId = iModelId;
 
     Logger.logTrace(loggerCategory, `lockSchema`);
-    const res = await IModelHost.iModelClient.locks.update(requestContext, iModelId, [lock]);
+    const res = await IModelHubAccess.iModelClient.locks.update(requestContext, iModelId, [lock]);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive)
       throw new IModelError(IModelStatus.UpgradeFailed, `Could not acquire schema lock: ${iModelId}, ${changeSetId}, ${briefcaseId}`);
   }
@@ -2217,9 +2218,10 @@ export class BriefcaseDb extends IModelDb {
    */
   private static async upgradeProfileOrDomainSchemas(requestContext: AuthorizedClientRequestContext, briefcaseProps: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, changeSetDescription: string): Promise<GuidString> {
     requestContext.enter();
+    const { briefcaseId, iModelId } = briefcaseProps;
 
     // Lock schemas
-    await this.lockSchema(requestContext, briefcaseProps.iModelId, briefcaseProps.changeSetId, briefcaseProps.briefcaseId);
+    await this.lockSchema(requestContext, iModelId, briefcaseProps.changeSetId, briefcaseId);
     requestContext.enter();
 
     // Upgrade and validate
@@ -2236,7 +2238,7 @@ export class BriefcaseDb extends IModelDb {
           contextId: nativeDb.queryProjectGuid(),
           changeSetId: nativeDb.getParentChangeSetId(),
         };
-        if (localBriefcaseProps.iModelId !== briefcaseProps.iModelId || localBriefcaseProps.contextId !== briefcaseProps.contextId || localBriefcaseProps.changeSetId !== briefcaseProps.changeSetId)
+        if (localBriefcaseProps.iModelId !== iModelId || localBriefcaseProps.contextId !== briefcaseProps.contextId || localBriefcaseProps.changeSetId !== briefcaseProps.changeSetId)
           throw new IModelError(BentleyStatus.ERROR, "Local briefcase does not match the briefcase properties passed in to upgrade");
         if (!nativeDb.hasPendingTxns())
           return briefcaseProps.changeSetId; // No changes made due to the upgrade
@@ -2244,7 +2246,7 @@ export class BriefcaseDb extends IModelDb {
         nativeDb.closeIModel();
       }
     } catch (err) {
-      await IModelHost.iModelClient.locks.deleteAll(requestContext, briefcaseProps.iModelId, briefcaseProps.briefcaseId);
+      await IModelHost.hubAccess.releaseAllLocks({ requestContext, briefcaseId, iModelId });
       throw err;
     }
 

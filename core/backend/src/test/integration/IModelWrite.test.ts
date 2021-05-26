@@ -2,17 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbOpcode, DbResult, GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
-import {
-  CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType, MultiCode,
-} from "@bentley/imodelhub-client";
-import { CodeScopeSpec, CodeSpec, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { WsgError } from "@bentley/itwin-client";
+
 import { assert, expect } from "chai";
 import * as semver from "semver";
+import { DbOpcode, DbResult, GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType, MultiCode } from "@bentley/imodelhub-client";
+import { CodeScopeSpec, CodeSpec, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { WsgError } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { LockProps } from "../../HubAccess";
+import { IModelHubAccess } from "../../IModelHubAccess";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps, SpatialCategory,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, Timer } from "../IModelTestUtils";
@@ -146,24 +147,24 @@ describe("IModelWriteTest (#integration)", () => {
     codeSpecsLock.objectId = "0x1";
     await model.pullAndMergeChanges(superRequestContext);
     codeSpecsLock.releasedWithChangeSet = model.changeSetId;
-    const locks = await IModelHost.iModelClient.locks.update(superRequestContext, model.iModelId, [codeSpecsLock]);
+    const locks = await IModelHubAccess.iModelClient.locks.update(superRequestContext, model.iModelId, [codeSpecsLock]);
     assert.equal(locks.length, 1);
     model.insertCodeSpec(codeSpec1);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(superRequestContext, model);
   });
 
   it("should verify that briefcase A can acquire Schema lock while briefcase B holds an element lock", async () => {
-    const bcA = await IModelHost.iModelClient.briefcases.create(managerRequestContext, readWriteTestIModelId);
-    const bcB = await IModelHost.iModelClient.briefcases.create(managerRequestContext, readWriteTestIModelId);
+    const bcA = await IModelHubAccess.iModelClient.briefcases.create(managerRequestContext, readWriteTestIModelId);
+    const bcB = await IModelHubAccess.iModelClient.briefcases.create(managerRequestContext, readWriteTestIModelId);
     assert.notEqual(bcA.briefcaseId, bcB.briefcaseId);
     assert.isTrue(bcA.briefcaseId !== undefined);
     assert.isTrue(bcB.briefcaseId !== undefined);
     const bcALockReq = toHubLock(ConcurrencyControl.Request.schemaLock, bcA.briefcaseId!);
     const bcBLockReq = toHubLock(ConcurrencyControl.Request.getElementLock("0x1", LockLevel.Exclusive), bcB.briefcaseId!);
     // First, B acquires element lock
-    const bcBLocksAcquired = await IModelHost.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
+    const bcBLocksAcquired = await IModelHubAccess.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
     // Next, A acquires schema lock
-    const bcALocksAcquired = await IModelHost.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcALockReq]);
+    const bcALocksAcquired = await IModelHubAccess.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcALockReq]);
 
     assert.isTrue(bcALocksAcquired.length !== 0);
     assert.equal(bcALocksAcquired[0].briefcaseId, bcA.briefcaseId);
@@ -173,18 +174,18 @@ describe("IModelWriteTest (#integration)", () => {
     assert.equal(bcBLocksAcquired[0].briefcaseId, bcB.briefcaseId);
     assert.equal(bcBLocksAcquired[0].lockType, bcBLockReq.lockType);
 
-    const bcALocksQueryResults = await IModelHost.iModelClient.locks.get(managerRequestContext, readWriteTestIModelId, new LockQuery().byBriefcaseId(bcA.briefcaseId!));
-    const bcBLocksQueryResults = await IModelHost.iModelClient.locks.get(managerRequestContext, readWriteTestIModelId, new LockQuery().byBriefcaseId(bcB.briefcaseId!));
+    const bcALocksQueryResults = await IModelHubAccess.iModelClient.locks.get(managerRequestContext, readWriteTestIModelId, new LockQuery().byBriefcaseId(bcA.briefcaseId!));
+    const bcBLocksQueryResults = await IModelHubAccess.iModelClient.locks.get(managerRequestContext, readWriteTestIModelId, new LockQuery().byBriefcaseId(bcB.briefcaseId!));
     assert.deepEqual(bcALocksAcquired, bcALocksQueryResults);
     assert.deepEqual(bcBLocksAcquired, bcBLocksQueryResults);
 
     bcBLockReq.lockLevel = LockLevel.None;
-    await IModelHost.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
+    await IModelHubAccess.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
     bcALockReq.lockLevel = LockLevel.None;
-    await IModelHost.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcALockReq]);
+    await IModelHubAccess.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcALockReq]);
 
-    await IModelHost.iModelClient.briefcases.delete(managerRequestContext, readWriteTestIModelId, bcA.briefcaseId!);
-    await IModelHost.iModelClient.briefcases.delete(managerRequestContext, readWriteTestIModelId, bcB.briefcaseId!);
+    await IModelHubAccess.iModelClient.briefcases.delete(managerRequestContext, readWriteTestIModelId, bcA.briefcaseId!);
+    await IModelHubAccess.iModelClient.briefcases.delete(managerRequestContext, readWriteTestIModelId, bcB.briefcaseId!);
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
@@ -362,9 +363,9 @@ describe("IModelWriteTest (#integration)", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
-    const iModels = await IModelHost.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
+    const iModels = await IModelHubAccess.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
+      await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
     }
     timer.end();
 
@@ -376,7 +377,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const initialCodes = await IModelHost.iModelClient.codes.get(adminRequestContext, rwIModelId);
+    const initialCodes = await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -402,7 +403,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await IModelHost.iModelClient.codes.get(adminRequestContext, rwIModelId);
+    const codes = await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId);
     timer.end();
     expect(codes.length > initialCodes.length);
     assert.isTrue(codes.some((hcode) => (hcode.value === code.value) && (hcode.state === CodeState.Used)), "verify that I got the code that I reserved and used");
@@ -416,7 +417,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.equal(postPushChangeSetId, rwIModel.changeSetId), "no changeset created or pushed";
     assert.isFalse(rwIModel.concurrencyControl.codes.isReserved(code2), "I released my reservation of the code anotherCode");
 
-    const codesAfter = await IModelHost.iModelClient.codes.get(adminRequestContext, rwIModelId);
+    const codesAfter = await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId);
     assert.deepEqual(codesAfter, codes, "The code that used above is still marked as used");
   });
 
@@ -426,7 +427,7 @@ describe("IModelWriteTest (#integration)", () => {
     const iModelName = HubUtility.generateUniqueName("ConcurrencyControlBulkModeTest");
     const deleteIModel = await HubUtility.queryIModelByName(adminRequestContext, testContextId, iModelName);
     if (undefined !== deleteIModel)
-      await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, deleteIModel.wsgId);
+      await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, deleteIModel.wsgId);
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     const rwIModelId = await BriefcaseManager.create(adminRequestContext, testContextId, iModelName, { rootSubject: { name: "TestSubject" } });
@@ -470,19 +471,19 @@ describe("IModelWriteTest (#integration)", () => {
     const bcId = rwIModel.concurrencyControl.iModel.briefcaseId;
     const iModelId = rwIModel.concurrencyControl.iModel.iModelId;
 
-    let heldLocks = await IModelHost.iModelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
+    let heldLocks = await IModelHubAccess.iModelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
     assert.isTrue(heldLocks.length !== 0);
 
     await expect(rwIModel.concurrencyControl.abandonResources(adminRequestContext)).to.be.rejectedWith(IModelError, "");
 
     await rwIModel.pushChanges(adminRequestContext, "");
 
-    heldLocks = await IModelHost.iModelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
+    heldLocks = await IModelHubAccess.iModelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
     assert.isTrue(heldLocks.length === 0);
 
     await rwIModel.concurrencyControl.abandonResources(adminRequestContext); // should do nothing and be harmless
 
-    await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelId);
+    await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelId);
   });
 
   it("should handle undo/redo (#integration)", async () => {
@@ -490,9 +491,9 @@ describe("IModelWriteTest (#integration)", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
-    const iModels = await IModelHost.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
+    const iModels = await IModelHubAccess.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
+      await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
     }
     timer.end();
 
@@ -548,7 +549,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // The iModel should have code1 marked as used and not code2
     timer = new Timer("querying codes");
-    const codes = await IModelHost.iModelClient.codes.get(adminRequestContext, rwIModelId);
+    const codes = await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId);
     timer.end();
     assert.isTrue(codes.find((code) => (code.value === "newPhysicalModel2" && code.state === CodeState.Used)) !== undefined);
     assert.isFalse(codes.find((code) => (code.value === "newPhysicalModel" && code.state === CodeState.Used)) !== undefined);
@@ -558,9 +559,9 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     const iModelName = "LocksConflictTest";
-    const iModels = await IModelHost.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
+    const iModels = await IModelHubAccess.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
+      await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
       adminRequestContext.enter();
     }
     timer.end();
@@ -591,11 +592,11 @@ describe("IModelWriteTest (#integration)", () => {
     adminRequestContext.enter();
 
     //  Have another briefcase take out an exclusive lock on element #1
-    const otherBriefcase = await IModelHost.iModelClient.briefcases.create(adminRequestContext, rwIModelId);
+    const otherBriefcase = await IModelHubAccess.iModelClient.briefcases.create(adminRequestContext, rwIModelId);
     assert.notEqual(otherBriefcase.briefcaseId, rwIModel.briefcaseId);
     const otherBriefcaseLockReq = ConcurrencyControl.Request.toHubLock(rwIModel.concurrencyControl, ConcurrencyControl.Request.getElementLock(elid1, LockLevel.Exclusive));
     otherBriefcaseLockReq.briefcaseId = otherBriefcase.briefcaseId; // We want this lock to be held by another briefcase
-    const otherBriefcaseLockResult = await IModelHost.iModelClient.locks.update(adminRequestContext, rwIModelId, [otherBriefcaseLockReq]);
+    const otherBriefcaseLockResult = await IModelHubAccess.iModelClient.locks.update(adminRequestContext, rwIModelId, [otherBriefcaseLockReq]);
     assert.isTrue(otherBriefcaseLockResult.length === 1);
     assert.equal(otherBriefcase.briefcaseId, otherBriefcaseLockResult[0].briefcaseId);
     assert.equal(elid1, otherBriefcaseLockResult[0].objectId);
@@ -657,7 +658,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Now make the other briefcase release its lock and show that this briefcase can update element #1.
     otherBriefcaseLockReq.lockLevel = LockLevel.None;
-    await IModelHost.iModelClient.locks.update(adminRequestContext, rwIModelId, [otherBriefcaseLockReq]);
+    await IModelHubAccess.iModelClient.locks.update(adminRequestContext, rwIModelId, [otherBriefcaseLockReq]);
     if (true) {
       const el1Props = rwIModel.elements.getElement(elid1);
       el1Props.userLabel = "changed by this briefcase";
@@ -678,9 +679,9 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     const iModelName = "LocksConflictTestII";
-    const iModels = await IModelHost.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
+    const iModels = await IModelHubAccess.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
+      await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
       adminRequestContext.enter();
     }
     timer.end();
@@ -737,9 +738,9 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     const iModelName = "CodesConflictTest";
-    const iModels = await IModelHost.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
+    const iModels = await IModelHubAccess.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
+      await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
     }
     timer.end();
 
@@ -751,9 +752,9 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    const otherBriefcase = await IModelHost.iModelClient.briefcases.create(adminRequestContext, rwIModelId);
+    const otherBriefcase = await IModelHubAccess.iModelClient.briefcases.create(adminRequestContext, rwIModelId);
 
-    let codesReserved = (await IModelHost.iModelClient.codes.get(adminRequestContext, rwIModelId)).filter((c) => c.state === CodeState.Reserved);
+    let codesReserved = (await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId)).filter((c) => c.state === CodeState.Reserved);
     assert.equal(codesReserved.length, 0);
 
     const hubCode = new HubCode();
@@ -762,13 +763,13 @@ describe("IModelWriteTest (#integration)", () => {
     hubCode.codeScope = code.scope;
     hubCode.briefcaseId = otherBriefcase.briefcaseId;
     hubCode.state = CodeState.Reserved;
-    await IModelHost.iModelClient.codes.update(adminRequestContext, rwIModelId, [hubCode]);
+    await IModelHubAccess.iModelClient.codes.update(adminRequestContext, rwIModelId, [hubCode]);
     adminRequestContext.enter();
     await rwIModel.concurrencyControl.syncCache(adminRequestContext); // I must tell ConcurrencyControl whenever I make changes to locks/codes in iModelHub by using the lower-level API directly.
     adminRequestContext.enter();
 
     timer = new Timer("querying codes");
-    codesReserved = (await IModelHost.iModelClient.codes.get(adminRequestContext, rwIModelId)).filter((c) => c.state === CodeState.Reserved);
+    codesReserved = (await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId)).filter((c) => c.state === CodeState.Reserved);
     timer.end();
     assert.equal(codesReserved.length, 1);
     assert.equal(codesReserved[0].value, hubCode.value);
@@ -894,7 +895,7 @@ describe("IModelWriteTest (#integration)", () => {
     await IModelTestUtils.closeAndDeleteBriefcaseDb(adminRequestContext, rwIModel);
     roIModel.close();
 
-    await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, rwIModelId);
+    await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, rwIModelId);
   });
 
   it("Run plain SQL against fixed version connection", async () => {
@@ -1049,7 +1050,7 @@ describe("IModelWriteTest (#integration)", () => {
     managerRequestContext.enter();
 
     // Validate state after upgrade
-    const schemaLocks = await IModelHost.iModelClient.locks.get(managerRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
+    const schemaLocks = await IModelHubAccess.iModelClient.locks.get(managerRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
     managerRequestContext.enter();
     assert.isTrue(schemaLocks.length === 0); // Validate no schema locks held by the hub
     iModel = await BriefcaseDb.open(managerRequestContext, { fileName: managerBriefcaseProps.fileName });
@@ -1096,7 +1097,7 @@ describe("IModelWriteTest (#integration)", () => {
     superIModel.close();
     await BriefcaseManager.deleteBriefcaseFiles(superName, superRequestContext); // delete from local disk
     managerRequestContext.enter();
-    await IModelHost.iModelClient.iModels.delete(managerRequestContext, projectId, iModelId); // delete from hub
+    await IModelHubAccess.iModelClient.iModels.delete(managerRequestContext, projectId, iModelId); // delete from hub
     managerRequestContext.enter();
   });
 

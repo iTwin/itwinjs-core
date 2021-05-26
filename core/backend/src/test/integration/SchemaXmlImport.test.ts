@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { GuidString } from "@bentley/bentleyjs-core";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
@@ -35,7 +36,7 @@ describe("Schema XML Import Tests (#integration)", () => {
 
   after(async () => {
     try {
-      await IModelHost.iModelClient.iModels.delete(requestContext, testContextId, readWriteTestIModelId);
+      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
     } catch (err) {
     }
   });

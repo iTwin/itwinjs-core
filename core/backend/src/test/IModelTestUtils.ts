@@ -130,7 +130,7 @@ export class IModelTestUtils {
       tokenProps: {
         contextId: args.contextId,
         iModelId: args.iModelId,
-        changeSetId: (await BriefcaseManager.evaluateVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changeSetId,
+        changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changeSetId,
       },
       requestContext: args.requestContext,
       syncMode: args.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush,
@@ -156,7 +156,7 @@ export class IModelTestUtils {
       contextId: args.contextId,
       iModelId: args.iModelId,
       requestContext: args.requestContext,
-      changeSetId: (await BriefcaseManager.evaluateVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changeSetId,
+      changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changeSetId,
     };
 
     return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
@@ -172,7 +172,7 @@ export class IModelTestUtils {
       tokenProps: {
         contextId: args.contextId,
         iModelId: args.iModelId,
-        changeSetId: (await BriefcaseManager.evaluateVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changeSetId,
+        changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changeSetId,
       },
       requestContext: args.requestContext,
       syncMode: SyncMode.FixedVersion,

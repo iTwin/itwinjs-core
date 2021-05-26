@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dirname, join } from "path";
+import { join } from "path";
 import { DbResult, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
-import { BriefcaseManager, ChangesetFileProps, ChangesetProps, ChangesetRange } from "../BriefcaseManager";
+import { BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
+import { ChangesetFileProps, ChangesetProps, ChangesetRange, IModelIdArg } from "../HubAccess";
 
 // cspell:ignore rowid
 
@@ -99,7 +100,7 @@ export class LocalHub {
     db.saveChanges();
   }
 
-  public getBriefcaseIds(): MockBriefcaseIdProps[] {
+  public getBriefcases(): MockBriefcaseIdProps[] {
     const briefcases: MockBriefcaseIdProps[] = [];
     this.db.withSqliteStatement("SELECT id,user FROM briefcases", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
@@ -108,6 +109,16 @@ export class LocalHub {
           user: stmt.getValue(1).getString(),
         });
       }
+    });
+    return briefcases;
+  }
+
+  public getBriefcaseIds(user: string): number[] {
+    const briefcases: number[] = [];
+    this.db.withSqliteStatement("SELECT id FROM briefcases WHERE user=?", (stmt) => {
+      stmt.bindValue(1, user);
+      while (DbResult.BE_SQLITE_ROW === stmt.step())
+        briefcases.push(stmt.getValue(0).getInteger());
     });
     return briefcases;
   }
@@ -285,8 +296,15 @@ export class LocalHub {
     IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromId(arg.id)), arg.targetFile);
   }
 
-  public downloadChangeset(arg: { id: string, pathname: LocalFileName }) {
+  private copyChangeset(arg: ChangesetFileProps): ChangesetFileProps {
     IModelJsFs.copySync(join(this.changesetDir, arg.id), arg.pathname);
+    return arg;
+  }
+
+  public downloadChangeset(arg: { id: string, targetDir: LocalDirName }) {
+    const cs = this.getChangesetById(arg.id);
+    const csProps = { ...cs, pathname: join(arg.targetDir, cs.id) };
+    return this.copyChangeset(csProps);
   }
 
   public downloadChangesets(arg: { range: ChangesetRange, targetDir: LocalDirName }): ChangesetFileProps[] {
@@ -296,7 +314,7 @@ export class LocalHub {
       startIndex++;
     if (startIndex === 0) // there's no changeset for index 0 - that's revision0
       startIndex = 1;
-    const endIndex = this.getChangesetIndex(arg.range.end);
+    const endIndex = arg.range.end ? this.getChangesetIndex(arg.range.end) : this.getLatestChangesetIndex();
     if (endIndex < startIndex)
       throw new Error("illegal changeset range");
 
@@ -304,7 +322,7 @@ export class LocalHub {
     while (startIndex <= endIndex) {
       const cs = this.getChangesetByIndex(startIndex++);
       const csProps = { ...cs, pathname: join(arg.targetDir, cs.id) };
-      this.downloadChangeset(csProps);
+      this.copyChangeset(csProps);
       changesets.push(csProps);
     }
     return changesets;

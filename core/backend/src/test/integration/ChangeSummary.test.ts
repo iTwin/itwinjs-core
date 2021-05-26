@@ -9,6 +9,7 @@ import {
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
+import { IModelHubAccess } from "../../IModelHubAccess";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement,
   ElementOwnsChildElements, IModelHost, IModelJsFs, SpatialCategory,
@@ -154,10 +155,10 @@ describe("ChangeSummary (#integration)", () => {
   it("Extract ChangeSummary for single changeset", async () => {
     setupTest(readOnlyTestIModelId);
 
-    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModelId);
+    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
-    const changesetId: string = changeSets[1].wsgId;
+    const changesetId: string = changeSets[1].id;
 
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     try {
@@ -193,10 +194,10 @@ describe("ChangeSummary (#integration)", () => {
   it("Extracting ChangeSummaries for a range of changesets", async () => {
     setupTest(readOnlyTestIModelId);
 
-    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModelId);
+    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
     assert.isAtLeast(changeSets.length, 3);
-    const startChangeSetId: string = changeSets[0].id!;
-    const endChangeSetId: string = changeSets[1].id!;
+    const startChangeSetId: string = changeSets[0].id;
+    const endChangeSetId: string = changeSets[1].id;
     const startVersion: IModelVersion = IModelVersion.asOfChangeSet(startChangeSetId);
     const endVersion: IModelVersion = IModelVersion.asOfChangeSet(endChangeSetId);
 
@@ -239,10 +240,10 @@ describe("ChangeSummary (#integration)", () => {
   it("Subsequent ChangeSummary extractions", async () => {
     setupTest(readOnlyTestIModelId);
 
-    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModelId);
+    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
-    const firstChangesetId: string = changeSets[0].id!;
+    const firstChangesetId: string = changeSets[0].id;
 
     let iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     try {
@@ -272,7 +273,7 @@ describe("ChangeSummary (#integration)", () => {
       });
 
       // now do second extraction for last changeset
-      const lastChangesetId: string = changeSets[changeSets.length - 1].id!;
+      const lastChangesetId: string = changeSets[changeSets.length - 1].id;
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
       iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(lastChangesetId).toJSON() });
       // WIP not working yet until cache can be detached.
@@ -460,7 +461,7 @@ describe("ChangeSummary (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
     }
 
-    await IModelHost.iModelClient.iModels.delete(requestContext, projectId, iModelId);
+    await IModelHubAccess.iModelClient.iModels.delete(requestContext, projectId, iModelId);
   });
 
   it.skip("should be able to extract the last change summary right after applying a change set", async () => {

@@ -3,23 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseStatus, Config, GuidString, IModelStatus, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
-import { ChangeSetQuery, ChangesType } from "@bentley/imodelhub-client";
-import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
+import { BriefcaseStatus, Config, GuidString, IModelStatus, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { ChangesType } from "@bentley/imodelhub-client";
+import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
-import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost,
-  IModelJsFs,
-} from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
+import { IModelHubAccess } from "../../IModelHubAccess";
 
 // Configuration needed:
 //    imjs_test_regular_user_name
@@ -97,7 +95,7 @@ describe("BriefcaseManager (#integration)", () => {
     // Validate that the IModelDb is readonly
     assert(iModel.isReadonly, "iModel not set to Readonly mode");
 
-    const expectedChangeSetId = await IModelVersion.first().evaluateChangeSet(requestContext, readOnlyTestIModelId, IModelHost.iModelClient);
+    const expectedChangeSetId = await IModelHost.hubAccess.getChangesetIdFromVersion({ version: IModelVersion.first(), requestContext, iModelId: readOnlyTestIModelId });
     assert.strictEqual<string>(iModel.changeSetId!, expectedChangeSetId);
     assert.strictEqual<string>(iModel.changeSetId!, expectedChangeSetId);
 
@@ -148,17 +146,17 @@ describe("BriefcaseManager (#integration)", () => {
     assert.exists(iModelFirstVersion);
     assert.strictEqual<string>(iModelFirstVersion.changeSetId!, "");
 
-    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModelId);
+    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
 
     for (const [arrayIndex, versionName] of readOnlyTestVersions.entries()) {
-      const iModelFromVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[arrayIndex + 1].wsgId).toJSON() });
+      const iModelFromVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[arrayIndex + 1].id).toJSON() });
       assert.exists(iModelFromVersion);
-      assert.strictEqual<string>(iModelFromVersion.changeSetId!, changeSets[arrayIndex + 1].wsgId);
+      assert.strictEqual<string>(iModelFromVersion.changeSetId!, changeSets[arrayIndex + 1].id);
 
       const iModelFromChangeSet = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named(versionName).toJSON() });
       assert.exists(iModelFromChangeSet);
       assert.strictEqual(iModelFromChangeSet, iModelFromVersion);
-      assert.strictEqual<string>(iModelFromChangeSet.changeSetId!, changeSets[arrayIndex + 1].wsgId);
+      assert.strictEqual<string>(iModelFromChangeSet.changeSetId!, changeSets[arrayIndex + 1].id);
 
       const elementCount = getElementCount(iModelFromVersion);
       assert.equal(elementCount, readOnlyTestElementCounts[arrayIndex], `Count isn't what's expected for ${iModelFromVersion.pathName}, version ${versionName}`);
@@ -170,7 +168,7 @@ describe("BriefcaseManager (#integration)", () => {
     const iModelLatestVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     assert.isDefined(iModelLatestVersion);
     assert.isUndefined(iModelLatestVersion.nativeDb.getReversedChangeSetId());
-    assert.strictEqual<string>(iModelLatestVersion.nativeDb.getParentChangeSetId(), changeSets[3].wsgId);
+    assert.strictEqual<string>(iModelLatestVersion.nativeDb.getParentChangeSetId(), changeSets[3].id);
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelFirstVersion);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelLatestVersion);
@@ -339,10 +337,9 @@ describe("BriefcaseManager (#integration)", () => {
     let revIndex: number;
     for (revIndex = readOnlyTestVersions.length - 1; revIndex >= 0; revIndex--) {
       // Stop at a schema change
-      const changeSetId = await IModelVersion.named(readOnlyTestVersions[revIndex]).evaluateChangeSet(requestContext, readOnlyTestIModelId, IModelHost.iModelClient);
-      const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModelId, new ChangeSetQuery().byId(changeSetId));
-      assert.equal(changeSets.length, 1);
-      if (changeSets[0].changesType === ChangesType.Schema)
+      const changeSetId = await IModelHost.hubAccess.getChangeSetIdFromNamedVersion({ versionName: readOnlyTestVersions[revIndex], requestContext, iModelId: readOnlyTestIModelId });
+      const changeSet = await IModelHost.hubAccess.downloadChangeSet({ requestContext, iModelId: readOnlyTestIModelId, id: changeSetId });
+      if (changeSet.changesType === ChangesType.Schema)
         break;
 
       await iModelPullAndPush.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));// eslint-disable-line deprecation/deprecation
@@ -673,7 +670,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.pushTestChangeSet();
 
     // Push an invalid changeSet
-    const fileHandler = IModelHost.iModelClient.fileHandler!;
+    const fileHandler = IModelHubAccess.iModelClient.fileHandler!;
     const oldUploadFunc = fileHandler.uploadFile.bind(fileHandler);
     try {
       const newUploadFunc =
@@ -696,10 +693,10 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.pushTestChangeSet();
 
     // Ensure that DoNotScheduleRenderThumbnailJob option is disabled
-    assert.isFalse(IModelHost.iModelClient.requestOptions.isSet);
+    assert.isFalse(IModelHubAccess.iModelClient.requestOptions.isSet);
     // Create version to trigger checkpoint generation
     const lastChangeSetId = iModel.nativeDb.getParentChangeSetId();
-    await IModelHost.iModelClient.versions.create(userContext, iModel.iModelId, lastChangeSetId, "Version 1");
+    await IModelHubAccess.iModelClient.versions.create(userContext, iModel.iModelId, lastChangeSetId, "Version 1");
 
     // Wait until the scheduled checkpoint job fails
     await HubUtility.waitforCheckpointGenerationFailure(userContext, iModel.iModelId, lastChangeSetId);
@@ -724,7 +721,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.pushTestChangeSet();
 
     // Assert the final number of changeSets
-    assert.equal(4, (await IModelHost.iModelClient.changeSets.get(userContext, iModel.iModelId)).length);
+    assert.equal(4, (await IModelHubAccess.iModelClient.changeSets.get(userContext, iModel.iModelId)).length);
 
     // Delete the test iModel
     await testUtility.deleteTestIModel();

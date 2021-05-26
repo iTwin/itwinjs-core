@@ -13,6 +13,7 @@ import { IModelHost } from "../../imodeljs-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelHubAccess } from "../../IModelHubAccess";
 
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
@@ -82,15 +83,15 @@ describe("V1 Checkpoint Manager", () => {
       mergedChangeSetId: changeSetId,
     };
 
-    const checkpointsHandler = IModelHost.iModelClient.checkpoints;
+    const checkpointsHandler = IModelHubAccess.iModelClient.checkpoints;
     sinon.stub(checkpointsHandler, "get").callsFake(async () => [mockCheckpoint]);
-    sinon.stub(IModelHost.iModelClient, "checkpoints").get(() => checkpointsHandler);
+    sinon.stub(IModelHubAccess.iModelClient, "checkpoints").get(() => checkpointsHandler);
 
-    const fileHandler = IModelHost.iModelClient.fileHandler!;
+    const fileHandler = IModelHubAccess.iModelClient.fileHandler!;
     sinon.stub(fileHandler, "downloadFile").callsFake(async (_requestContext: AuthorizedClientRequestContext, _downloadUrl: string, downloadPath: string) => {
       IModelJsFs.copySync(dbPath, downloadPath);
     });
-    sinon.stub(IModelHost.iModelClient, "fileHandler").get(() => fileHandler);
+    sinon.stub(IModelHubAccess.iModelClient, "fileHandler").get(() => fileHandler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const downloadedDbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");

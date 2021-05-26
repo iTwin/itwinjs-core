@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { BentleyError, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
@@ -70,11 +71,11 @@ describe("IModelOpen (#integration)", () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 
-    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, testIModelId);
+    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: testIModelId });
     const numChangeSets = changeSets.length;
     assert.isAbove(numChangeSets, 10);
 
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[9].wsgId).toJSON() });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[9].id).toJSON() });
     assert.isDefined(iModel);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
   });
@@ -83,14 +84,14 @@ describe("IModelOpen (#integration)", () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 
-    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, testIModelId);
+    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: testIModelId });
     const numChangeSets = changeSets.length;
     assert.isAbove(numChangeSets, 10);
 
     const changeSetIds = new Array<GuidString>();
     const indices: number[] = [0, Math.floor(numChangeSets / 3), Math.floor(numChangeSets / 2), Math.floor(numChangeSets * 2 / 3), numChangeSets - 1];
     for (const index of indices) {
-      changeSetIds.push(changeSets[index].wsgId);
+      changeSetIds.push(changeSets[index].id);
     }
 
     const openPromises = new Array<Promise<SnapshotDb>>();

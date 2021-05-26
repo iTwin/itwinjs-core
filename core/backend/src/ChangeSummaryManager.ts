@@ -12,13 +12,14 @@ import { ChangedValueState, ChangeOpCode, IModelError, IModelVersion } from "@be
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseManager, ChangesetFileProps } from "./BriefcaseManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelHost } from "./imodeljs-backend";
+import { ChangesetFileProps } from "./HubAccess";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -156,7 +157,7 @@ export class ChangeSummaryManager {
     let startChangeSetId = "";
     if (options) {
       if (options.startVersion) {
-        startChangeSetId = await options.startVersion.evaluateChangeSet(requestContext, ctx.iModelId, IModelHost.iModelClient);
+        startChangeSetId = await IModelHost.hubAccess.getChangesetIdFromVersion({ version: options.startVersion, requestContext, iModelId: ctx.iModelId });
         requestContext.enter();
       } else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
@@ -261,7 +262,7 @@ export class ChangeSummaryManager {
   public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: string, end: string): Promise<ChangesetFileProps[]> {
     requestContext.enter();
 
-    const changeSetInfos = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, { first, end });
+    const changeSetInfos = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: ctx.iModelId, range: { first, end } });
     requestContext.enter();
     assert(first === "" || first === changeSetInfos[0].id);
     assert(end === changeSetInfos[changeSetInfos.length - 1].id);

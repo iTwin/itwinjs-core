@@ -6,12 +6,12 @@
 import { join } from "path";
 import * as sinon from "sinon";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { BriefcaseProps, CodeProps, IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseManager, ChangesetFileProps, ChangesetProps, ChangesetRange } from "../BriefcaseManager";
+import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
+import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
+import { BriefcaseManager } from "../BriefcaseManager";
 import { CheckpointManager, DownloadRequest } from "../CheckpointManager";
-import { ConcurrencyControl, LockProps } from "../ConcurrencyControl";
-import { BriefcaseDb } from "../IModelDb";
+import { BriefcaseIdArg, ChangesetFileProps, ChangesetProps, ChangesetRange, HubAccess, IModelIdArg, LockProps } from "../HubAccess";
+import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { LocalDirName, LocalHub, LocalHubProps } from "./LocalHub";
 
@@ -19,35 +19,15 @@ import { LocalDirName, LocalHub, LocalHubProps } from "./LocalHub";
 export class HubMock {
   private static mockRoot: LocalDirName;
   private static hubs = new Map<string, LocalHub>();
+  private static _saveHubAccess: HubAccess;
 
   public static get isValid() { return undefined !== this.mockRoot; }
   public static startup(mockRoot: LocalDirName) {
     this.mockRoot = mockRoot;
     IModelJsFs.recursiveMkDirSync(mockRoot);
     IModelJsFs.purgeDirSync(mockRoot);
-
-    sinon.stub(BriefcaseManager, "acquireNewBriefcaseId").callsFake(async (req: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number> => {
-      return this.findLocalHub(iModelId).acquireNewBriefcaseId(req.accessToken.getUserInfo()!.id);
-    });
-    sinon.stub(BriefcaseManager, "releaseBriefcase").callsFake(async (_, briefcase: BriefcaseProps) => {
-      return this.findLocalHub(briefcase.iModelId).releaseBriefcaseId(briefcase.briefcaseId);
-    });
-
-    sinon.stub(BriefcaseManager, "getChangeSetIndexFromId").callsFake(async (_, iModelId: GuidString, changeSetId: string): Promise<number> => {
-      return this.findLocalHub(iModelId).getChangesetIndex(changeSetId);
-    });
-
-    sinon.stub(BriefcaseManager, "queryChangesetProps").callsFake(async (_, iModelId: GuidString, changeSetId: string): Promise<ChangesetProps> => {
-      return this.findLocalHub(iModelId).getChangesetById(changeSetId);
-    });
-
-    sinon.stub(BriefcaseManager, "downloadChangeSets").callsFake(async (_, iModelId: GuidString, range: ChangesetRange): Promise<ChangesetFileProps[]> => {
-      return this.findLocalHub(iModelId).downloadChangesets({ range, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
-    });
-
-    sinon.stub(BriefcaseManager, "pushChangesetFile").callsFake(async (_, iModelId: GuidString, changesetProps: ChangesetFileProps) => {
-      return this.findLocalHub(iModelId).addChangeset(changesetProps);
-    });
+    this._saveHubAccess = IModelHost.hubAccess;
+    IModelHost.hubAccess = this;
 
     sinon.stub(CheckpointManager, "downloadCheckpoint").callsFake(async (request: DownloadRequest): Promise<void> => {
       return this.findLocalHub(request.checkpoint.iModelId).downloadCheckpoint({ id: request.checkpoint.changeSetId, targetFile: request.localFile });
@@ -61,13 +41,79 @@ export class HubMock {
       return this.findLocalHub(iModelId).findNamedVersion(versionName);
     });
 
-    sinon.stub(ConcurrencyControl, "getAllLocks").callsFake(async (_1, _db: BriefcaseDb): Promise<LockProps[]> => {
-      return [];
-    });
-    sinon.stub(ConcurrencyControl, "getAllCodes").callsFake(async (_1, _db: BriefcaseDb): Promise<CodeProps[]> => {
-      return [];
-    });
-    sinon.stub(ConcurrencyControl, "throwSaveError").callsFake(() => { });
+  }
+
+  public static async getChangeSetIdFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<string> {
+    return this.findLocalHub(arg.iModelId).findNamedVersion(arg.versionName);
+  }
+
+  public static async getChangesetIdFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<string> {
+    const version = arg.version;
+    if (version.isFirst)
+      return "";
+
+    const asOf = version.getAsOfChangeSet();
+    if (asOf)
+      return asOf;
+
+    const versionName = version.getName();
+    if (versionName)
+      return this.getChangeSetIdFromNamedVersion({ ...arg, versionName });
+
+    return this.getLatestChangeSetId(arg);
+  }
+
+  public static async getLatestChangeSetId(arg: IModelIdArg): Promise<string> {
+    return this.findLocalHub(arg.iModelId).getLatestChangesetId();
+  }
+
+  public static async getChangeSetIndexFromId(arg: IModelIdArg & { changeSetId: string }): Promise<number> {
+    return this.findLocalHub(arg.iModelId).getChangesetIndex(arg.changeSetId);
+  }
+
+  public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
+    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
+    return this.findLocalHub(arg.iModelId).getBriefcaseIds(requestContext.accessToken.getUserInfo()!.id);
+  }
+
+  public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<number> {
+    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
+    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(requestContext.accessToken.getUserInfo()!.id);
+
+  }
+  /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
+  public static async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
+    return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
+  }
+
+  public static async downloadChangeSet(arg: IModelIdArg & { id: string }): Promise<ChangesetFileProps> {
+    return this.findLocalHub(arg.iModelId).downloadChangeset({ id: arg.id, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
+  }
+
+  public static async downloadChangeSets(arg: IModelIdArg & { range: ChangesetRange }): Promise<ChangesetFileProps[]> {
+    return this.findLocalHub(arg.iModelId).downloadChangesets({ range: arg.range, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
+  }
+
+  public static async queryChangesetProps(arg: IModelIdArg & { changesetId: string }): Promise<ChangesetProps> {
+    return this.findLocalHub(arg.iModelId).getChangesetById(arg.changesetId);
+  }
+
+  public static async pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }): Promise<void> {
+    return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
+  }
+
+  public static async releaseAllLocks(_arg: BriefcaseIdArg) {
+
+  }
+  public static async releaseAllCodes(_arg: BriefcaseIdArg) {
+  }
+
+  public static async getAllLocks(_arg: BriefcaseIdArg): Promise<LockProps[]> {
+    return [];
+  }
+
+  public static async getAllCodes(_arg: BriefcaseIdArg): Promise<CodeProps[]> {
+    return [];
   }
 
   public static shutdown() {
@@ -76,6 +122,7 @@ export class HubMock {
 
     IModelJsFs.purgeDirSync(this.mockRoot);
     sinon.restore();
+    IModelHost.hubAccess = this._saveHubAccess;
   }
 
   public static findLocalHub(iModelId: GuidString): LocalHub {

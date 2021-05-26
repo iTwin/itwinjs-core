@@ -21,6 +21,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { IModelHubAccess } from "./IModelHubAccess";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -118,7 +119,7 @@ export class V2CheckpointManager {
     try {
       requestContext.enter();
       const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
-      const checkpoints = await IModelHost.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
+      const checkpoints = await IModelHubAccess.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
       requestContext.enter();
       if (checkpoints.length < 1)
         throw new Error("no checkpoint");
@@ -248,7 +249,7 @@ export class V1CheckpointManager {
       // Download checkpoint
       let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
       checkpointQuery = checkpointQuery.precedingCheckpoint(requestedCkp.changeSetId);
-      const checkpoints = await IModelHost.iModelClient.checkpoints.get(requestedCkp.requestContext, requestedCkp.iModelId, checkpointQuery);
+      const checkpoints = await IModelHubAccess.iModelClient.checkpoints.get(requestedCkp.requestContext, requestedCkp.iModelId, checkpointQuery);
       requestContext.enter();
       if (checkpoints.length === 0)
         throw new IModelError(BriefcaseStatus.VersionNotFound, "Checkpoint not found");
@@ -260,7 +261,7 @@ export class V1CheckpointManager {
           if (job.request.onProgress && job.request.onProgress(progress.loaded, progress.total!) !== 0)
             cancelRequest.cancel?.();
         };
-        await IModelHost.iModelClient.checkpoints.download(requestContext, checkpoint, localFile, progressCallback, cancelRequest);
+        await IModelHubAccess.iModelClient.checkpoints.download(requestContext, checkpoint, localFile, progressCallback, cancelRequest);
       } catch (error) {
         requestContext.enter();
         if (!(error instanceof UserCancelledError))

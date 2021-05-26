@@ -7,14 +7,15 @@
  */
 
 import { BeDuration, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseQuery } from "@bentley/imodelhub-client";
-import { BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
+import {
+  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode,
+} from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
-import { IModelHost } from "../IModelHost";
+import { IModelHost } from "../imodeljs-backend";
 import { IModelJsFs } from "../IModelJsFs";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -37,14 +38,12 @@ export class RpcBriefcaseUtility {
   private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     const { requestContext, tokenProps } = args;
     const iModelId = tokenProps.iModelId!;
-    const myBriefcaseIds: number[] = [];
+    let myBriefcaseIds: number[];
     if (args.syncMode === SyncMode.PullOnly) {
-      myBriefcaseIds.push(0); // PullOnly means briefcaseId 0
+      myBriefcaseIds = [0]; // PullOnly means briefcaseId 0
     } else {
       // check with iModelHub and see if we already have acquired any briefcaseIds
-      const myHubBriefcases = await IModelHost.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe().selectDownloadUrl());
-      for (const hubBc of myHubBriefcases)
-        myBriefcaseIds.push(hubBc.briefcaseId!); // save the list of briefcaseIds we already own.
+      myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
     }
 
     const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg), (arg) => BriefcaseManager.getCompatibilityFileName(arg)]; // eslint-disable-line deprecation/deprecation
