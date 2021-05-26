@@ -2620,11 +2620,11 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     // @internal
     protected _patterns: boolean;
     setAlwaysDrawn(id: Id64String): void;
-    setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean, ignoreSubCategory?: boolean): void;
+    setAlwaysDrawnSet(ids: Iterable<Id64String>, exclusive: boolean, ignoreSubCategory?: boolean): void;
     setAnimationNodeNeverDrawn(id: number): void;
     setDefaultOverrides(appearance: FeatureAppearance, replaceExisting?: boolean): void;
     setNeverDrawn(id: Id64String): void;
-    setNeverDrawnSet(ids: Id64Set): void;
+    setNeverDrawnSet(ids: Iterable<Id64String>): void;
     setVisibleSubCategory(id: Id64String): void;
     // @internal
     protected readonly _subCategoryOverrides: Id64.Uint32Map<FeatureAppearance>;
@@ -5503,9 +5503,9 @@ export class PlanarClipMaskSettings {
     static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings;
     get isValid(): boolean;
     readonly mode: PlanarClipMaskMode;
-    readonly modelIds?: CompressedId64Set;
+    readonly modelIds?: OrderedId64Iterable;
     readonly priority?: number;
-    readonly subCategoryOrElementIds?: CompressedId64Set;
+    readonly subCategoryOrElementIds?: OrderedId64Iterable;
     toJSON(): PlanarClipMaskProps;
     readonly transparency?: number;
 }

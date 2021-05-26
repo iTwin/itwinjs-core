@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { CompressedId64Set, Id64String } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 
 /** The different modes by which a [[PlanarClipMaskSettings]] collects the geometry used to mask a model.
  * @public
@@ -80,17 +80,19 @@ export class PlanarClipMaskSettings {
    * If `undefined`, the set of all models in the view's [ModelSelector]($backend) is used.
    * The mask geometry can be filtered by [[subCategoryOrElementIds]].
    */
-  public readonly modelIds?: CompressedId64Set;
+  public readonly modelIds?: OrderedId64Iterable;
   /** For [[PlanarClipMaskMode.IncludeElements]] or [[PlanarClipMaskMode.ExcludedElements]], the Ids of the [GeometricElement]($backend)s to include or exclude from masking;
    * for [[PlanarClipMaskMode.IncludeSubCategories]], the Ids of the subcategories whose geometry contributes to the mask.
    */
-  public readonly subCategoryOrElementIds?: CompressedId64Set;
+  public readonly subCategoryOrElementIds?: OrderedId64Iterable;
   /** For [[PlanarClipMaskMode.Priority]], the priority value. */
   public readonly priority?: number;
   /** A value between 0 and 1 indicating an override for mask transparency. A transparency of 0 indicates complete masking. 1 is completely transparent (no masking).
    If no transparency is defined then the transparencies of the mask elements are used.
    */
   public readonly transparency?: number;
+  private readonly _modelIds?: CompressedId64Set;
+  private readonly _subCategoryOrElementIds?: CompressedId64Set;
 
   /** Create a new [[PlanarClipMaskSettings]] object from its JSON representation. */
   public static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings {
@@ -130,11 +132,11 @@ export class PlanarClipMaskSettings {
   /** Create JSON object representing this [[PlanarClipMaskSettings]] */
   public toJSON(): PlanarClipMaskProps {
     const props: PlanarClipMaskProps = { mode: this.mode };
-    if (undefined !== this.modelIds)
-      props.modelIds = this.modelIds;
+    if (undefined !== this._modelIds)
+      props.modelIds = this._modelIds;
 
-    if (undefined !== this.subCategoryOrElementIds)
-      props.subCategoryOrElementIds = this.subCategoryOrElementIds;
+    if (undefined !== this._subCategoryOrElementIds)
+      props.subCategoryOrElementIds = this._subCategoryOrElementIds;
 
     if (undefined !== this.priority)
       props.priority = this.priority;
@@ -154,8 +156,8 @@ export class PlanarClipMaskSettings {
     return this.mode === other.mode &&
       this.priority === other.priority &&
       this.transparency === other.transparency &&
-      this.modelIds === other.modelIds  &&
-      this.subCategoryOrElementIds ===  other.subCategoryOrElementIds;
+      this._modelIds === other._modelIds  &&
+      this._subCategoryOrElementIds ===  other._subCategoryOrElementIds;
   }
 
   /** Create a copy of this TerrainSettings, optionally modifying some of its properties.
@@ -174,10 +176,16 @@ export class PlanarClipMaskSettings {
 
   private constructor(mode: PlanarClipMaskMode, transparency?: number, modelIds?: CompressedId64Set, subCategoryOrElementIds?: CompressedId64Set, priority?: number) {
     this.mode = mode;
-    this.modelIds = modelIds;
-    this.subCategoryOrElementIds = subCategoryOrElementIds;
+    this._modelIds = modelIds;
+    this._subCategoryOrElementIds = subCategoryOrElementIds;
     this.priority = priority;
     this.transparency = undefined !== transparency ? Math.max(0, Math.min(1, transparency)) : undefined;
+
+    if (modelIds)
+      this.modelIds = CompressedId64Set.iterable(modelIds);
+
+    if (subCategoryOrElementIds)
+      this.subCategoryOrElementIds = CompressedId64Set.iterable(subCategoryOrElementIds);
   }
 
   /** A default PlanarClipMask which masks nothing. */
