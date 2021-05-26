@@ -18,18 +18,18 @@ import {
   SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
+import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
+import { BingElevationProvider } from "./imodeljs-frontend";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
-import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
-import { BingElevationProvider, iModelTileParamsFromJSON } from "./imodeljs-frontend";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
