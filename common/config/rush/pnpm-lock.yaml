@@ -594,6 +594,7 @@ importers:
       '@types/semver': ^5.5.0
       '@types/sinon': ^9.0.0
       '@types/ws': ^6.0.4
+      '@types/xmldom': ^0.1.30
       azurite: ^3.8.0
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -621,6 +622,7 @@ importers:
       typescript: ~4.1.0
       webpack: 4.42.0
       ws: ^7.2.0
+      xmldom: ^0.5.0
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
@@ -634,6 +636,7 @@ importers:
       multiparty: 4.2.2
       semver: 5.7.1
       ws: 7.4.6
+      xmldom: 0.5.0
     devDependencies:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
@@ -663,6 +666,7 @@ importers:
       '@types/semver': 5.5.0
       '@types/sinon': 9.0.11
       '@types/ws': 6.0.4
+      '@types/xmldom': 0.1.30
       azurite: 3.12.0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -3742,6 +3746,7 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/context-registry-client': workspace:*
+      '@bentley/ecschema-metadata': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -3755,6 +3760,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/request-promise-native': ^1.0.15
+      '@types/xmldom': ^0.1.30
       '@types/yargs': ^12.0.5
       eslint: ^6.8.0
       fs-extra: ^8.1.0
@@ -3762,10 +3768,12 @@ importers:
       request-promise-native: ^1.0.5
       rimraf: ^3.0.2
       typescript: ~4.1.0
+      xmldom: ^0.5.0
       yargs: ^16.0.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/context-registry-client': link:../../clients/context-registry
+      '@bentley/ecschema-metadata': link:../../core/ecschema-metadata
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
@@ -3774,6 +3782,7 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       fs-extra: 8.1.0
       request-promise-native: 1.0.9
+      xmldom: 0.5.0
       yargs: 16.2.0
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -3784,6 +3793,7 @@ importers:
       '@types/mocha': 8.2.2
       '@types/node': 10.14.1
       '@types/request-promise-native': 1.0.17
+      '@types/xmldom': 0.1.30
       '@types/yargs': 12.0.19
       eslint: 6.8.0
       mocha: 8.4.0
