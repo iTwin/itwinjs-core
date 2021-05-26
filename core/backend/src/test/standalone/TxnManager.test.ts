@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, DbResult, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb,
-  TxnChangedEntities, TxnManager,
+  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
@@ -21,17 +20,14 @@ describe("TxnManager", () => {
   let testFileName: string;
   const requestContext = new BackendRequestContext();
 
-  const performUpgrade = (pathname: string): DbResult => {
+  const performUpgrade = (pathname: string) => {
     const nativeDb = new IModelHost.platform.DgnDb();
     const upgradeOptions: UpgradeOptions = {
       domain: DomainOptions.Upgrade,
     };
-    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
-    if (DbResult.BE_SQLITE_OK === res) {
-      nativeDb.deleteAllTxns();
-      nativeDb.closeIModel();
-    }
-    return res;
+    nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
+    nativeDb.deleteAllTxns();
+    nativeDb.closeIModel();
   };
 
   before(async () => {
@@ -41,7 +37,7 @@ describe("TxnManager", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
-    assert.equal(performUpgrade(testFileName), 0);
+    performUpgrade(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
 
