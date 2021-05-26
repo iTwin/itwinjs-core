@@ -1652,7 +1652,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
   }
   protected async onExportSchema(schema: Schema): Promise<void> {
     this.writeLine(`[Schema] ${schema.name}`);
-    super.onExportSchema(schema);
+    await super.onExportSchema(schema);
   }
   protected onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined): void {
     this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}${this.formatOperationName(isUpdate)}`);

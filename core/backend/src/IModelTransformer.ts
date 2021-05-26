@@ -756,7 +756,7 @@ export class IModelTransformer extends IModelExportHandler {
     const filledDoc = await schema.toXml(xmlDoc);
     const schemaText = new XMLSerializer().serializeToString(filledDoc);
     IModelJsFs.writeFileSync(schemaPath, schemaText);
-    this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
+    await this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
   }
 
   public shouldExportSchema(schema: Schema): boolean {
