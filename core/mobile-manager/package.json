@@ -31,14 +31,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.17.0-dev.16",
-    "@bentley/frontend-authorization-client": "^2.17.0-dev.16",
-    "@bentley/imodelhub-client": "^2.17.0-dev.16",
-    "@bentley/imodeljs-backend": "^2.17.0-dev.16",
-    "@bentley/imodeljs-common": "^2.17.0-dev.16",
-    "@bentley/imodeljs-frontend": "^2.17.0-dev.16",
-    "@bentley/itwin-client": "^2.17.0-dev.16",
-    "@bentley/presentation-common": "^2.17.0-dev.16",
+    "@bentley/bentleyjs-core": "workspace:^",
+    "@bentley/frontend-authorization-client": "workspace:^",
+    "@bentley/imodelhub-client": "workspace:^",
+    "@bentley/imodeljs-backend": "workspace:^",
+    "@bentley/imodeljs-common": "workspace:^",
+    "@bentley/imodeljs-frontend": "workspace:^",
+    "@bentley/itwin-client": "workspace:^",
+    "@bentley/presentation-common": "workspace:^",
     "js-base64": "^2.4.5",
     "ws": "^7.2.0"
   },

@@ -50,7 +50,7 @@
     "typescript": "~4.1.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.17.0-dev.16"
+    "@bentley/bentleyjs-core": "workspace:^"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc"

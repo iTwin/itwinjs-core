@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.17.0-dev.16",
-    "@bentley/geometry-core": "^2.17.0-dev.16",
-    "@bentley/imodeljs-common": "^2.17.0-dev.16"
+    "@bentley/bentleyjs-core": "workspace:^",
+    "@bentley/geometry-core": "workspace:^",
+    "@bentley/imodeljs-common": "workspace:^"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

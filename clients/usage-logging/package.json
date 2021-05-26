@@ -39,8 +39,8 @@
     "@bentley/bentleyjs-core": "workspace:*"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.17.0-dev.16",
-    "@bentley/telemetry-client": "^2.17.0-dev.16"
+    "@bentley/itwin-client": "workspace:^",
+    "@bentley/telemetry-client": "workspace:^"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",

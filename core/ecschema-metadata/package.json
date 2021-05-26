@@ -63,8 +63,8 @@
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.17.0-dev.16",
-    "@bentley/imodeljs-i18n": "^2.17.0-dev.16"
+    "@bentley/bentleyjs-core": "workspace:^",
+    "@bentley/imodeljs-i18n": "workspace:^"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

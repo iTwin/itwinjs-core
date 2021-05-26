@@ -37,11 +37,11 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.17.0-dev.16",
-    "@bentley/imodeljs-backend": "^2.17.0-dev.16",
-    "@bentley/imodeljs-common": "^2.17.0-dev.16",
-    "@bentley/imodeljs-quantity": "^2.17.0-dev.16",
-    "@bentley/presentation-common": "^2.17.0-dev.16"
+    "@bentley/bentleyjs-core": "workspace:^",
+    "@bentley/imodeljs-backend": "workspace:^",
+    "@bentley/imodeljs-common": "workspace:^",
+    "@bentley/imodeljs-quantity": "workspace:^",
+    "@bentley/presentation-common": "workspace:^"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
