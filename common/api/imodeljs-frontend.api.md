@@ -2504,7 +2504,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 // @internal
 export function disposeTileTreesForGeometricModels(modelIds: Set<Id64String>, iModel: IModelConnection): void;
 
-// @beta
+// @public
 export type DownloadBriefcaseId = {
     syncMode?: SyncMode;
     briefcaseId?: never;
@@ -2513,7 +2513,7 @@ export type DownloadBriefcaseId = {
     syncMode?: never;
 };
 
-// @beta
+// @public
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
     fileName?: string;
     progressInterval?: number;
@@ -4959,7 +4959,7 @@ export class IntersectDetail extends SnapDetail {
     readonly otherPrimitive: CurvePrimitive;
 }
 
-// @beta
+// @public
 export class IpcApp {
     static addListener(channel: string, handler: IpcListener): RemoveFunction;
     // @internal
@@ -4970,13 +4970,12 @@ export class IpcApp {
     static get isValid(): boolean;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
-    // (undocumented)
+    // @internal (undocumented)
     static shutdown(): Promise<void>;
-    // (undocumented)
     static startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions): Promise<void>;
 }
 
-// @beta
+// @public
 export interface IpcAppOptions {
     // (undocumented)
     iModelApp?: IModelAppOptions;
@@ -6557,34 +6556,31 @@ export class MutableChangeFlags extends ChangeFlags {
     setViewState(): void;
 }
 
-// @beta
+// @public
 export class NativeApp {
     // (undocumented)
     static callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
-    // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage, deleteStorage?: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;
-    // (undocumented)
     static getBriefcaseFileName(props: BriefcaseProps): Promise<string>;
     static getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
     static get isValid(): boolean;
-    // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static openStorage(name: string): Promise<Storage>;
-    // (undocumented)
+    // @internal (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
     static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
-    // (undocumented)
+    // @internal (undocumented)
     static shutdown(): Promise<void>;
     // @internal
     static startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts): Promise<void>;
     }
 
-// @beta
+// @public
 export class NativeAppAuthorization {
     constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
@@ -6617,7 +6613,7 @@ export class NativeAppLogger {
     static logWarning(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
     }
 
-// @beta
+// @public
 export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
     nativeApp?: {
@@ -9359,7 +9355,7 @@ export enum StartOrResume {
     Start = 1
 }
 
-// @beta
+// @public
 export class Storage {
     constructor(id: string);
     getData(key: string): Promise<StorageValue | undefined>;
