@@ -7,7 +7,7 @@
   - This will generate a new application based on the iTwin Viewer React component in the `your-app-name` directory.
 - Open the `your-app-name` directory in VS Code.
 - Add a valid contextId (i.e. Project Id) and iModelId for your user to the IMJS_CONTEXT_ID and IMJS_IMODEL_ID variables in the .env file within the application's root directory.
-  - You can obtain these ids from the "Show Ids" column of your [registration dashboard](https://www.itwinjs.org/getting-started/registration-dashboard?tab=1)
+  - You can obtain these ids from the "Show Ids" column of your "[My sample iModels](https://developer.bentley.com/my-imodels/)" page.
   - This will be used for initial development. The idea is that it would be replaced by a proper model selection process in a production application.
 - From a terminal at your application's root directory, `npm start`. This will serve the application with live reloading.
 - Add/Update/Remove files as needed for your use case. If running `npm start` while making changes, your application will recompile and reload.
