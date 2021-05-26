@@ -2936,7 +2936,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
-    onExportSchema(schema: Schema_2): Promise<void>;
+    protected onExportSchema(schema: Schema_2): Promise<void>;
     protected onTransformElement(sourceElement: Element): ElementProps;
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
@@ -2960,7 +2960,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected shouldExportElement(_sourceElement: Element): boolean;
     protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
     protected shouldExportRelationship(_sourceRelationship: Relationship): boolean;
-    shouldExportSchema(schema: Schema_2): boolean;
+    protected shouldExportSchema(schema: Schema_2): boolean;
     protected skipElement(sourceElement: Element): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
