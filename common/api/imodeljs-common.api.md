@@ -787,6 +787,8 @@ export class Cartographic implements LatLongAndHeight {
     static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined;
     toEcef(result?: Point3d): Point3d;
+    // (undocumented)
+    toJSON(): LatLongAndHeight;
     toString(): string;
     }
 
@@ -1861,7 +1863,7 @@ export class DisplayStyleSettings {
     // @internal @deprecated
     readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
-    readonly onSubCategoryOverridesChanged: BeEvent<() => void>;
+    readonly onSubCategoryOverridesChanged: BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>;
     readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
     readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
     readonly onViewFlagsChanged: BeEvent<(newFlags: Readonly<ViewFlags>) => void>;
@@ -2016,8 +2018,11 @@ export class EcefLocation implements EcefLocationProps {
     static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle): EcefLocation;
     get earthCenter(): Point3d;
     getTransform(): Transform;
+    isAlmostEqual(other: EcefLocation): boolean;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
+    // (undocumented)
+    toJSON(): EcefLocationProps;
 }
 
 // @public
@@ -2978,7 +2983,6 @@ export interface GeodeticTransformProps {
 export class GeographicCRS implements GeographicCRSProps {
     constructor(data?: GeographicCRSProps);
     readonly additionalTransform?: AdditionalTransform;
-    // @internal
     equals(other: GeographicCRS): boolean;
     static fromJSON(data: GeographicCRSProps): GeographicCRS;
     readonly horizontalCRS?: HorizontalCRS;
@@ -4008,10 +4012,10 @@ export abstract class IModel implements IModelProps {
     protected _contextId?: GuidString;
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
+    set ecefLocation(ecefLocation: EcefLocation | undefined);
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     // @internal
     protected _fileKey: string;
-    // (undocumented)
     get geographicCoordinateSystem(): GeographicCRS | undefined;
     set geographicCoordinateSystem(geoCRS: GeographicCRS | undefined);
     // @internal (undocumented)
@@ -4030,15 +4034,22 @@ export abstract class IModel implements IModelProps {
     abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
     get key(): string;
-    name: string;
+    get name(): string;
+    set name(name: string);
+    readonly onEcefLocationChanged: BeEvent<(previousLocation: EcefLocation | undefined) => void>;
+    readonly onGeographicCoordinateSystemChanged: BeEvent<(previousGCS: GeographicCRS | undefined) => void>;
+    readonly onGlobalOriginChanged: BeEvent<(previousOrigin: Point3d) => void>;
+    readonly onNameChanged: BeEvent<(previousName: string) => void>;
+    readonly onProjectExtentsChanged: BeEvent<(previousExtents: AxisAlignedBox3d) => void>;
+    readonly onRootSubjectChanged: BeEvent<(previousSubject: RootSubjectProps) => void>;
     readonly openMode: OpenMode;
     get projectExtents(): AxisAlignedBox3d;
     set projectExtents(extents: AxisAlignedBox3d);
     static readonly repositoryModelId: Id64String;
-    rootSubject: RootSubjectProps;
+    get rootSubject(): RootSubjectProps;
+    set rootSubject(subject: RootSubjectProps);
     static readonly rootSubjectId: Id64String;
     setEcefLocation(ecef: EcefLocationProps): void;
-    // (undocumented)
     setGeographicCoordinateSystem(geoCRS: GeographicCRSProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
@@ -4084,7 +4095,7 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 // @public
 export interface IModelProps {
     ecefLocation?: EcefLocationProps;
-    geographicCoordinateSystem?: GeographicCRS;
+    geographicCoordinateSystem?: GeographicCRSProps;
     globalOrigin?: XYZProps;
     name?: string;
     projectExtents?: Range3dProps;
@@ -4386,22 +4397,22 @@ export type IpcInvokeReturn = {
     };
 };
 
-// @beta
+// @public
 export type IpcListener = (evt: Event, ...args: any[]) => void;
 
-// @beta
+// @public
 export interface IpcSocket {
     addListener: (channel: string, listener: IpcListener) => RemoveFunction;
     removeListener: (channel: string, listener: IpcListener) => void;
     send: (channel: string, ...data: any[]) => void;
 }
 
-// @beta
+// @public
 export interface IpcSocketBackend extends IpcSocket {
     handle: (channel: string, handler: (...args: any[]) => Promise<any>) => RemoveFunction;
 }
 
-// @beta
+// @public
 export interface IpcSocketFrontend extends IpcSocket {
     invoke: (channel: string, ...args: any[]) => Promise<any>;
 }
@@ -4490,7 +4501,7 @@ export function isPowerOfTwo(num: number): boolean;
 // @internal (undocumented)
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
-// @beta
+// @internal
 export const iTwinChannel: (channel: string) => string;
 
 // @public
@@ -7951,14 +7962,14 @@ export interface ThematicGradientSettingsProps {
     stepCount?: number;
 }
 
-// @alpha
+// @public
 export interface ThumbnailFormatProps {
     format: "jpeg" | "png";
     height: number;
     width: number;
 }
 
-// @alpha
+// @public
 export interface ThumbnailProps extends ThumbnailFormatProps {
     image: Uint8Array;
 }
@@ -8125,7 +8136,7 @@ export interface TileTreeProps {
     rootTile: TileProps;
 }
 
-// @alpha
+// @public
 export interface TileVersionInfo {
     formatVersion: number;
 }
@@ -8247,15 +8258,27 @@ export interface TxnNotifications {
     // (undocumented)
     notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
     // (undocumented)
+    notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
+    // (undocumented)
     notifyElementsChanged: (changes: ChangedEntities) => void;
+    // (undocumented)
+    notifyGeographicCoordinateSystemChanged: (gcs: GeographicCRSProps | undefined) => void;
     // (undocumented)
     notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
     // (undocumented)
+    notifyGlobalOriginChanged: (origin: XYZProps) => void;
+    // (undocumented)
+    notifyIModelNameChanged: (name: string) => void;
+    // (undocumented)
     notifyModelsChanged: (changes: ChangedEntities) => void;
+    // (undocumented)
+    notifyProjectExtentsChanged: (extents: Range3dProps) => void;
     // (undocumented)
     notifyPulledChanges: (parentChangeSetId: string) => void;
     // (undocumented)
     notifyPushedChanges: (parentChangeSetId: string) => void;
+    // (undocumented)
+    notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }
 
 // @public

@@ -113,7 +113,7 @@ export class BeTimePoint {
     plus(duration: BeDuration): BeTimePoint;
 }
 
-// @beta
+// @public
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }

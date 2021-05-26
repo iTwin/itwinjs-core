@@ -89,6 +89,7 @@ export interface ComputedProjectExtents {
  * @public
  */
 export abstract class IModelDb extends IModel {
+  private _initialized = false;
   protected static readonly _edit = "StandaloneEdit";
   /** Keep track of open imodels to support `tryFind` for RPC purposes */
   private static readonly _openDbs = new Map<string, IModelDb>();
@@ -184,6 +185,20 @@ export abstract class IModelDb extends IModel {
   protected initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     super.initialize(props.rootSubject.name, props);
+    if (this._initialized)
+      return;
+
+    this._initialized = true;
+    const db = this.isBriefcaseDb() || this.isStandaloneDb() ? this : undefined;
+    if (!db || !IpcHost.isValid)
+      return;
+
+    db.onNameChanged.addListener(() => IpcHost.notifyTxns(db, "notifyIModelNameChanged", db.name));
+    db.onRootSubjectChanged.addListener(() => IpcHost.notifyTxns(db, "notifyRootSubjectChanged", db.rootSubject));
+    db.onProjectExtentsChanged.addListener(() => IpcHost.notifyTxns(db, "notifyProjectExtentsChanged", db.projectExtents.toJSON()));
+    db.onGlobalOriginChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGlobalOriginChanged", db.globalOrigin.toJSON()));
+    db.onEcefLocationChanged.addListener(() => IpcHost.notifyTxns(db, "notifyEcefLocationChanged", db.ecefLocation?.toJSON()));
+    db.onGeographicCoordinateSystemChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGeographicCoordinateSystemChanged", db.geographicCoordinateSystem?.toJSON()));
   }
 
   /** Returns true if this is a BriefcaseDb
