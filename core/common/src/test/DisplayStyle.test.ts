@@ -244,6 +244,9 @@ describe("DisplayStyleSettings", () => {
 
       map.clear();
       expectEvents([["0x1", false], ["0x2", false]]);
+
+      map.clear();
+      expectEvents([]);
     });
   });
 });

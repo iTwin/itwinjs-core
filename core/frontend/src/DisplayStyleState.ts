@@ -479,7 +479,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (typeof modelIdOrIndex === "string") {
       const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
       if (model?.isRealityModel) {
-        this.settings.overrideModelPlanarClipMask(modelIdOrIndex, mask);
+        this.settings.planarClipMasks.set(modelIdOrIndex, mask);
         return true;
       } else
         return false;
@@ -503,7 +503,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
       if (model && model.isRealityModel) {
         this._attachedRealityModelPlanarClipMasks.delete(modelIdOrIndex);
-        this.settings.dropModelPlanarClipMaskOverride(modelIdOrIndex);
+        this.settings.planarClipMasks.delete(modelIdOrIndex);
         return true;
       } else
         return false;
