@@ -12,6 +12,7 @@ import {
 } from "@bentley/imodeljs-backend";
 import { progressLoggerCategory, Transformer } from "../Transformer";
 import { Code, PhysicalElementProps } from "@bentley/imodeljs-common";
+import { Schema } from "@bentley/ecschema-metadata";
 
 describe("imodel-transformer", () => {
   const sourceDbFileName = "../../core/backend/src/test/assets/CompatibilityTestSeed.bim";
@@ -252,17 +253,15 @@ describe("imodel-transformer", () => {
     });
 
     await Transformer.transformAll(requestContext, newSchemaSourceDb, targetDb, {
-      schemaEditOperations: new Map([[
-        "Test", [{
-          schemaName: "Test",
-          pattern: /propertyName="SomeNumber" typeName="string"/,
-          substitution: 'propertyName="SomeNumber" typeName="integer"',
-        }, {
-          schemaName: "Test",
-          pattern: /propertyName="MyProp" typeName="string"/,
-          substitution: 'propertyName="MyProp" typeName="double"',
-        }]],
-      ]),
+      alterExportedSchema: (xmlSchema) => {
+        if (xmlSchema.documentElement.getAttribute("schemaName") === "Test") {
+          // change TestElement.MyProp type to double
+          xmlSchema.documentElement.getElementsByTagName("ECEntityClass")[0].getElementsByTagName("ECProperty")[0].setAttribute("typeName", "double");
+          // change TestStruct.SomeNumber type to integer
+          xmlSchema.documentElement.getElementsByTagName("ECStructClass")[0].getElementsByTagName("ECProperty")[0].setAttribute("typeName", "int");
+        }
+        return xmlSchema;
+      },
     });
 
     async function getStructInstances(db: IModelDb): Promise<typeof elementProps | {}> {
@@ -271,8 +270,8 @@ describe("imodel-transformer", () => {
       return [...result][0];
     }
 
-    assert.deepEqual(elementProps, (await getStructInstances(newSchemaSourceDb))!);
-    assert.deepEqual(transformedElemProps, (await getStructInstances(targetDb))!);
+    assert.deepEqual(await getStructInstances(newSchemaSourceDb), elementProps);
+    assert.deepEqual(await getStructInstances(targetDb), transformedElemProps);
 
     newSchemaSourceDb.close();
     targetDb.close();
@@ -334,8 +333,8 @@ describe("imodel-transformer", () => {
       return [...result][0];
     }
 
-    assert.deepEqual(elementProps, (await getStructValue(newSchemaSourceDb))!);
-    assert.deepEqual(elementProps, (await getStructValue(targetDb))!);
+    assert.deepEqual(await getStructValue(newSchemaSourceDb), elementProps);
+    assert.deepEqual(await getStructValue(targetDb), elementProps);
 
     newSchemaSourceDb.close();
     targetDb.close();

@@ -28,6 +28,8 @@ export interface TransformerOptions extends IModelTransformOptions {
   excludeSubCategories?: string[];
   excludeCategories?: string[];
   schemaEditOperations?: Map<string, SchemaEditOperation[]>;
+  /** alter the xml document of the source schema before it is serialized for import to the target */
+  alterExportedSchema?: (xmlSchemaDoc: Document) => Document;
 }
 
 export class Transformer extends IModelTransformer {
@@ -38,6 +40,7 @@ export class Transformer extends IModelTransformer {
   private _startTime = new Date();
   private _targetPhysicalModelId = Id64.invalid; // will be valid when PhysicalModels are being combined
   private _schemaEditOperations = new Map<string, SchemaEditOperation[]>();
+  private _alterExportedSchema: TransformerOptions["alterExportedSchema"];
 
   public static async transformAll(requestContext: AuthorizedClientRequestContext | ClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
     requestContext.enter();
@@ -126,6 +129,7 @@ export class Transformer extends IModelTransformer {
     }
 
     this._schemaEditOperations = options?.schemaEditOperations ?? new Map();
+    this._alterExportedSchema = options?.alterExportedSchema;
 
     // query for and log the number of source Elements that will be processed
     this._numSourceElements = this.sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
@@ -295,7 +299,9 @@ export class Transformer extends IModelTransformer {
     const editOps = this._schemaEditOperations.get(schema.name)!;
     const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
     const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);
-    const filledDoc = await schema.toXml(xmlDoc);
+    let filledDoc = await schema.toXml(xmlDoc);
+    if (this._alterExportedSchema)
+      filledDoc = this._alterExportedSchema(filledDoc);
     let schemaText = new XMLSerializer().serializeToString(filledDoc);
     if (this._schemaEditOperations.has(schema.name)) {
       schemaText = this.applySchemaOperations(editOps, schemaText);
