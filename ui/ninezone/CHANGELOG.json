@@ -20,6 +20,18 @@
       }
     },
     {
+      "version": "2.15.6",
+      "tag": "@bentley/ui-ninezone_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Footer separator fix"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.15.5",
       "tag": "@bentley/ui-ninezone_v2.15.5",
       "date": "Thu, 20 May 2021 15:06:27 GMT",
