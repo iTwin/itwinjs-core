@@ -196,7 +196,7 @@ export class MaskBackgroundMapByElementTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: this.createElementMask("include") });
+    vp.changeBackgroundMapProps({ planarClipMask: this.createElementMask("include").toJSON() });
   }
 }
 /** Tool to mask background map by excluded elements
@@ -212,7 +212,7 @@ export class MaskBackgroundMapByExcludedElementTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapByExcludedElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: this.createElementMask("exclude") });
+    vp.changeBackgroundMapProps({ planarClipMask: this.createElementMask("exclude").toJSON() });
   }
 }
 
@@ -230,7 +230,7 @@ export class MaskBackgroundMapBySubCategoryTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapBySubCategoryTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: this.createSubCategoryMask() });
+    vp.changeBackgroundMapProps({ planarClipMask: this.createSubCategoryMask().toJSON() });
   }
 }
 
@@ -247,7 +247,7 @@ export class MaskBackgroundMapByModelTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapByModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: this.createModelMask() });
+    vp.changeBackgroundMapProps({ planarClipMask: this.createModelMask().toJSON() });
   }
 }
 
