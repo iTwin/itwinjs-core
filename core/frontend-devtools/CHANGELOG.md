@@ -1,6 +1,6 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+This log was last generated on Wed, 26 May 2021 15:55:18 GMT and should not be manually modified.
 
 ## 2.16.0
 Mon, 24 May 2021 15:58:39 GMT
@@ -10,6 +10,11 @@ Mon, 24 May 2021 15:58:39 GMT
 - Promote and document API in frontend-devtools
 - Add `fdt emphasize visible` and `fdt clear emphasized` key-ins.
 - Fix call to test on viewport if tiles are loaded (map tiles on viewport now)
+
+## 2.15.6
+Wed, 26 May 2021 15:55:18 GMT
+
+_Version update only_
 
 ## 2.15.5
 Thu, 20 May 2021 15:06:26 GMT
