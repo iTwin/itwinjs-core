@@ -29,7 +29,7 @@ import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
-import { BingElevationProvider } from "./imodeljs-frontend";
+import { BingElevationProvider, iModelTileParamsFromJSON } from "./imodeljs-frontend";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -1043,10 +1043,12 @@ export class ProjectAltitudeProvider {
   private _projectCenterAltitude: number | undefined;
 
   constructor(iModel: IModelConnection) {
-    const elevationProvider = new BingElevationProvider();
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    elevationProvider.getHeightValue(iModel.projectExtents.center, iModel, true).then((elevation) => this._projectCenterAltitude = elevation);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel).then((geodeticToSeaLevel) => this._geodeticToSeaLevel = geodeticToSeaLevel);
+    if (iModel.isGeoLocated) {
+      const elevationProvider = new BingElevationProvider();
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      elevationProvider.getHeightValue(iModel.projectExtents.center, iModel, true).then((elevation) => this._projectCenterAltitude = elevation);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel).then((geodeticToSeaLevel) => this._geodeticToSeaLevel = geodeticToSeaLevel);
+    }
   }
 }
