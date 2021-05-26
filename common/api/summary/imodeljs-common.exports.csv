@@ -118,10 +118,10 @@ public;DisplayStyle3dProps
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
 public;DisplayStyleLoadProps
-beta;DisplayStyleModelAppearanceProps 
+public;DisplayStyleModelAppearanceProps 
 public;DisplayStyleOverridesOptions
 public;DisplayStyleProps 
-beta;DisplayStyleRealityModelPlanarClipMaskProps 
+public;DisplayStyleRealityModelPlanarClipMaskProps 
 public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
@@ -414,10 +414,10 @@ public;Placement2dProps
 public;Placement3d 
 public;Placement3dProps
 public;PlacementProps = Placement2dProps | Placement3dProps
-beta;PlanarClipMaskMode
-beta;PlanarClipMaskPriority
-beta;PlanarClipMaskProps
-beta;PlanarClipMaskSettings
+public;PlanarClipMaskMode
+public;PlanarClipMaskPriority
+public;PlanarClipMaskProps
+public;PlanarClipMaskSettings
 public;PlanProjectionSettings
 public;PlanProjectionSettingsProps
 internal;PntsHeader 

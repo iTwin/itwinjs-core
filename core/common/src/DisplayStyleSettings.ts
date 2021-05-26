@@ -44,17 +44,18 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
   subCategory?: Id64String;
 }
 
-/** Describes the [[FeatureAppearance]] overrides applied to a model by a [[DisplayStyle]].
- * @see [[DisplayStyleSettingsProps]]
- * @beta
+/** A [[FeatureAppearanceProps]] applied to a specific model to override its appearance within the context of a [DisplayStyle]($backend).
+ * @see [[DisplayStyleSettingsProps.modelOvr]].
+ * @public
  */
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
   /** The Id of the model whose appearance is to be overridden. */
   modelId?: Id64String;
 }
 
-/** Describes the [[PlanarClipMaskSettings]] applied to a model.
- * @beta
+/** A [[PlanarClipMaskProps]] associated with a specific reality model.
+ * @see [[DisplayStyleSettingsProps.planarClipOvr]].
+ * @public
  */
 export interface DisplayStyleRealityModelPlanarClipMaskProps extends PlanarClipMaskProps {
   /** The Id of the model to mask. */
@@ -93,7 +94,7 @@ export interface ContextRealityModelProps {
   description?: string;
   /** @beta */
   classifiers?: SpatialClassificationProps.Properties[];
-  /** @beta */
+  /** Masking to be applied to the reality model. */
   planarClipMask?: PlanarClipMaskProps;
   /** Appearance overrides.  Only the color, transparency, emphasized and nonLocatable properties are applicable.
    * @beta
@@ -168,15 +169,11 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   mapImagery?: MapImageryProps;
-  /** Overrides applied to the appearance of models in the view.
-   * @beta
-   */
+  /** Overrides applied to the appearance of models in the view. */
   modelOvr?: DisplayStyleModelAppearanceProps[];
   /** Style applied by the view's [ClipVector]($geometry-core). */
   clipStyle?: ClipStyleProps;
-  /** Overrides to the planar clip masks.  Currently only supported for reality models
-   * @beta
-   */
+  /** Planar clip masks applied to reality models. */
   planarClipOvr?: DisplayStyleRealityModelPlanarClipMaskProps[];
 
 }
@@ -484,6 +481,9 @@ export class DisplayStyleSettings {
     return false;
   }
 
+  /** Planar clip masks to be applied to persistent reality models (@see [GeometricModelState.isRealityModel]($frontend).
+   * The key for each entry is the Id of the model to which the mask settings apply.
+   */
   public get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings> {
     return this._planarClipMasks;
   }
@@ -546,8 +546,8 @@ export class DisplayStyleSettings {
   public readonly onLightsChanged = new BeEvent<(newLights: LightSettings) => void>();
   /** Event raised just before changing the plan projection settings for a model. */
   public readonly onPlanProjectionSettingsChanged = new BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>();
-  /** Event raised just before changing the planar clip mask overrides for an attached reality  model.
-   * @beta
+  /** Event raised just before changing the planar clip mask overrides for a reality model.
+   * `idOrIndex` is an `Id64String` for a persistent reality model, or an index into [[DisplayStyleSettingsProps.contextRealityModels]].
    */
   public readonly onRealityModelPlanarClipMaskChanged = new BeEvent<(idOrIndex: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => void>();
 

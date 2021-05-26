@@ -1567,7 +1567,6 @@ export interface ContextRealityModelProps {
     name?: string;
     // @alpha (undocumented)
     orbitGtBlob?: OrbitGtBlobProps;
-    // @beta (undocumented)
     planarClipMask?: PlanarClipMaskProps;
     realityDataId?: string;
     // (undocumented)
@@ -1754,7 +1753,7 @@ export interface DisplayStyleLoadProps {
     omitScheduleScriptElementIds?: boolean;
 }
 
-// @beta
+// @public
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
     modelId?: Id64String;
 }
@@ -1775,7 +1774,7 @@ export interface DisplayStyleProps extends DefinitionElementProps {
     };
 }
 
-// @beta
+// @public
 export interface DisplayStyleRealityModelPlanarClipMaskProps extends PlanarClipMaskProps {
     modelId?: Id64String;
 }
@@ -1807,21 +1806,11 @@ export class DisplayStyleSettings {
     dropExcludedElement(id: Id64String): void;
     dropExcludedElements(id: Id64String | Iterable<Id64String>): void;
     dropModelAppearanceOverride(id: Id64String): void;
-    // @beta
-    dropModelPlanarClipMaskOverride(id: Id64String): boolean;
     dropSubCategoryOverride(id: Id64String): void;
-    // @internal (undocumented)
-    equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean;
-    // @internal (undocumented)
-    equalPlanarClipMaskOverrides(other: DisplayStyleSettings): boolean;
-    // @internal (undocumented)
-    equalSubCategoryOverrides(other: DisplayStyleSettings): boolean;
     get excludedElementIds(): OrderedId64Iterable;
     // @deprecated
     get excludedElements(): Set<Id64String>;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
-    // @beta
-    getModelPlanarClipMask(id: Id64String): PlanarClipMaskSettings | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
@@ -1857,7 +1846,6 @@ export class DisplayStyleSettings {
     readonly onMonochromeModeChanged: BeEvent<(newMode: MonochromeMode) => void>;
     readonly onOverridesApplied: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
     readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>;
-    // @beta
     readonly onRealityModelPlanarClipMaskChanged: BeEvent<(idOrIndex: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => void>;
     readonly onRenderTimelineChanged: BeEvent<(newRenderTimeline: Id64String | undefined) => void>;
     // @internal @deprecated
@@ -1868,9 +1856,8 @@ export class DisplayStyleSettings {
     readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
     readonly onViewFlagsChanged: BeEvent<(newFlags: Readonly<ViewFlags>) => void>;
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
-    // @beta
-    overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+    get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings>;
     // @internal (undocumented)
     raiseRealityModelPlanarClipMaskChangedEvent(idOrIndex: Id64String | number, ovr?: PlanarClipMaskSettings): void;
     get renderTimeline(): Id64String | undefined;
@@ -1903,11 +1890,9 @@ export interface DisplayStyleSettingsProps {
     excludedElements?: Id64Array | CompressedId64Set;
     // @alpha
     mapImagery?: MapImageryProps;
-    // @beta
     modelOvr?: DisplayStyleModelAppearanceProps[];
     monochromeColor?: ColorDefProps;
     monochromeMode?: MonochromeMode;
-    // @beta
     planarClipOvr?: DisplayStyleRealityModelPlanarClipMaskProps[];
     renderTimeline?: Id64String;
     // @internal @deprecated
@@ -5480,7 +5465,7 @@ export interface Placement3dProps {
 // @public (undocumented)
 export type PlacementProps = Placement2dProps | Placement3dProps;
 
-// @beta
+// @public
 export enum PlanarClipMaskMode {
     ExcludeElements = 5,
     IncludeElements = 4,
@@ -5490,16 +5475,16 @@ export enum PlanarClipMaskMode {
     Priority = 1
 }
 
-// @beta
+// @public
 export enum PlanarClipMaskPriority {
     BackgroundMap = -2048,
-    BIM = 2048,
+    DesignModel = 2048,
     GlobalRealityModel = -1024,
     Maximum = 4096,
     RealityModel = 0
 }
 
-// @beta
+// @public
 export interface PlanarClipMaskProps {
     mode: PlanarClipMaskMode;
     modelIds?: CompressedId64Set;
@@ -5508,11 +5493,12 @@ export interface PlanarClipMaskProps {
     transparency?: number;
 }
 
-// @beta
+// @public
 export class PlanarClipMaskSettings {
     clone(changedProps?: PlanarClipMaskProps): PlanarClipMaskSettings;
-    static create(mode: PlanarClipMaskMode, modelIds?: Id64Set, subCategoryOrElementIds?: Id64Set, transparency?: number): PlanarClipMaskSettings | undefined;
     static createByPriority(priority: number, transparency?: number): PlanarClipMaskSettings;
+    static createForElementsOrSubCategories(mode: PlanarClipMaskMode.IncludeElements | PlanarClipMaskMode.ExcludeElements | PlanarClipMaskMode.IncludeSubCategories, elementOrSubCategoryIds: Iterable<Id64String>, modelIds?: Iterable<Id64String>, transparency?: number): PlanarClipMaskSettings;
+    static createForModels(modelIds: Iterable<Id64String> | undefined, transparency?: number): PlanarClipMaskSettings;
     static defaults: PlanarClipMaskSettings;
     // (undocumented)
     equals(other: PlanarClipMaskSettings): boolean;

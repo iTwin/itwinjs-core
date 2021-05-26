@@ -46,10 +46,18 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
 
   /** Given a set of [[Id64String]]s, produce a compact string representation. Useful when serializing potentially large sets of Ids.
    * @note Invalid Ids are ignored.
+   * @see [[CompressedId64Set.sortAndCompress]] to compress any unordered collection of Ids.
    * @see [[CompressedId64Set.compressArray]] to perform the same operation on an [[Id64Array]].
    * @see [[CompressedId64Set.decompressSet]] to perform the inverse operation.
    */
   export function compressSet(ids: Id64Set): CompressedId64Set {
+    return sortAndCompress(ids);
+  }
+
+  /** Create a sorted array from `ids`, then return a compact string representation of those Ids.
+   * @see [[compressIds]] if `ids` is known to already be sorted.
+   */
+  export function sortAndCompress(ids: Iterable<Id64String>): CompressedId64Set {
     const arr = Array.from(ids);
     OrderedId64Iterable.sortArray(arr);
     return compressArray(arr);
@@ -62,6 +70,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * @note Invalid Ids are ignored.
    * @see [[CompressedId64Set.decompressArray]] to perform the inverse operation.
    * @see [[OrderedId64Iterable.sortArray]] to ensure the Ids are properly sorted.
+   * @see [[CompressedId64Set.sortAndCompress]] to compress any unordered collection of Ids.
    */
   export function compressArray(ids: Id64Array): CompressedId64Set {
     return compressIds(ids);
@@ -74,6 +83,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * @note Invalid Ids are ignored.
    * @see [[CompressedId64Set.iterable]] to perform the inverse operation.
    * @see [[OrderedId64Iterable.sortArray]] or [[OrderedId64Iterable.compare]] to ensure the Ids are properly sorted.
+   * @see [[CompressedId64Set.sortAndCompress]] to compress any unordered collection of Ids.
    */
   export function compressIds(ids: OrderedId64Iterable): CompressedId64Set {
     if ("string" === typeof ids)
