@@ -348,8 +348,8 @@ describe("IModelTransformerHub (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
     } finally {
       // delete iModel briefcases
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: sourceIModelId });
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: targetIModelId });
+      HubMock.destroy(sourceIModelId);
+      HubMock.destroy(targetIModelId);
     }
   });
 
@@ -367,9 +367,7 @@ describe("IModelTransformerHub (#integration)", () => {
     masterSeedDb.nativeDb.saveProjectGuid(projectId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
     masterSeedDb.close();
-    const masterIModelId = Guid.createValue();
-
-    HubMock.create({ contextId: projectId, iModelId: masterIModelId, iModelName: masterIModelName, revision0: masterSeedFileName });
+    const masterIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: masterIModelName, revision0: masterSeedFileName });
     assert.isTrue(Guid.isGuid(masterIModelId));
     IModelJsFs.removeSync(masterSeedFileName); // now that iModel is pushed, can delete local copy of the seed
     const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: masterIModelId });
@@ -405,13 +403,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     // create empty iModel meant to contain replayed master history
     const replayedIModelName = "Replayed";
-    const replayedIModelId = Guid.createValue();
-    const blankName = join(outputDir, "blank.bim");
-    const blank = SnapshotDb.createEmpty(blankName, { rootSubject: { name: "blank" } });
-    blank.saveChanges();
-    blank.close();
-    HubMock.create({ contextId: projectId, iModelId: replayedIModelId, iModelName: replayedIModelName, revision0: blankName });
-    IModelJsFs.removeSync(blankName);
+    const replayedIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: replayedIModelName, description: "blank" });
 
     const replayedDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: replayedIModelId });
     replayedDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());

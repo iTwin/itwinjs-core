@@ -7,10 +7,10 @@ import { join } from "path";
 import { DbResult, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import { BriefcaseManager } from "../BriefcaseManager";
+import { ChangesetFileProps, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName } from "../HubAccess";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
-import { ChangesetFileProps, ChangesetProps, ChangesetRange, IModelIdArg } from "../HubAccess";
 
 // cspell:ignore rowid
 
@@ -18,8 +18,6 @@ export interface MockBriefcaseIdProps {
   id: number;
   user: string;
 }
-export type LocalFileName = string;
-export type LocalDirName = string;
 
 export interface LocalHubProps {
   readonly contextId: GuidString;
@@ -307,14 +305,15 @@ export class LocalHub {
     return this.copyChangeset(csProps);
   }
 
-  public downloadChangesets(arg: { range: ChangesetRange, targetDir: LocalDirName }): ChangesetFileProps[] {
-    const startId = (undefined !== arg.range.after) ? arg.range.after : arg.range.first;
+  public downloadChangesets(arg: { range?: ChangesetRange, targetDir: LocalDirName }): ChangesetFileProps[] {
+    const range = arg.range ?? { first: "" };
+    const startId = (undefined !== range.after) ? range.after : range.first;
     let startIndex = this.getChangesetIndex(startId);
-    if (undefined !== arg.range.after)
+    if (undefined !== range.after)
       startIndex++;
     if (startIndex === 0) // there's no changeset for index 0 - that's revision0
       startIndex = 1;
-    const endIndex = arg.range.end ? this.getChangesetIndex(arg.range.end) : this.getLatestChangesetIndex();
+    const endIndex = range.end ? this.getChangesetIndex(range.end) : this.getLatestChangesetIndex();
     if (endIndex < startIndex)
       throw new Error("illegal changeset range");
 

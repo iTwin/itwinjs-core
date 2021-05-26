@@ -13,7 +13,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { LockProps } from "../../HubAccess";
 import { IModelHubAccess } from "../../IModelHubAccess";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs, SpatialCategory,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, Timer } from "../IModelTestUtils";
@@ -371,7 +371,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
-    const rwIModelId = await BriefcaseManager.create(adminRequestContext, testContextId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     timer.end();
@@ -430,7 +430,7 @@ describe("IModelWriteTest (#integration)", () => {
       await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, deleteIModel.wsgId);
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await BriefcaseManager.create(adminRequestContext, testContextId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
 
@@ -499,7 +499,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
-    const rwIModelId = await BriefcaseManager.create(adminRequestContext, testContextId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     timer.end();
@@ -567,7 +567,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("create iModel");
-    const rwIModelId = await BriefcaseManager.create(adminRequestContext, testContextId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
 
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     adminRequestContext.enter();
@@ -687,8 +687,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("create iModel");
-    const rwIModelId = await BriefcaseManager.create(adminRequestContext, testContextId, iModelName, { rootSubject: { name: "TestSubject" } });
-
+    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     adminRequestContext.enter();
     timer.end();
@@ -745,7 +744,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("create iModel");
-    const rwIModelId = await BriefcaseManager.create(adminRequestContext, testContextId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
 
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
@@ -792,7 +791,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     let timer = new Timer("create iModel");
-    const rwIModelId = await BriefcaseManager.create(adminRequestContext, testContextId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     timer.end();

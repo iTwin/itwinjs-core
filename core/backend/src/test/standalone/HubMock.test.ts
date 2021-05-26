@@ -11,8 +11,9 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { BriefcaseManager, ChangesetFileProps } from "../../BriefcaseManager";
+import { BriefcaseManager } from "../../BriefcaseManager";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { ChangesetFileProps } from "../../HubAccess";
 
 describe.only("HubMock", () => {
   const mockRoot = join(KnownTestLocations.outputDir, "HubMockTest");

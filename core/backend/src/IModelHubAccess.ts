@@ -12,7 +12,7 @@ import { BriefcaseStatus, GuidString, IModelStatus, Logger } from "@bentley/bent
 import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CodeQuery, IModelBankClient, IModelClient, IModelHubClient, Lock, LockQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { CodeProps, CreateIModelProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { CodeProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";

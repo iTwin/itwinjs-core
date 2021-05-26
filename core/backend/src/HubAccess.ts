@@ -11,6 +11,9 @@ import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
+export type LocalFileName = string;
+export type LocalDirName = string;
+
 /** Properties of a changeset
  * @internal
  */
@@ -79,7 +82,7 @@ export interface HubAccess {
   releaseAllLocks: (arg: BriefcaseIdArg) => Promise<void>;
   releaseAllCodes: (arg: BriefcaseIdArg) => Promise<void>;
 
-  createIModel: (arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string }) => Promise<GuidString>;
+  createIModel: (arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: LocalFileName }) => Promise<GuidString>;
   deleteIModel: (arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString }) => Promise<void>;
 }
 

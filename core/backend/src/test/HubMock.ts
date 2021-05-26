@@ -5,15 +5,17 @@
 
 import { join } from "path";
 import * as sinon from "sinon";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { CheckpointManager, DownloadRequest } from "../CheckpointManager";
-import { BriefcaseIdArg, ChangesetFileProps, ChangesetProps, ChangesetRange, HubAccess, IModelIdArg, LockProps } from "../HubAccess";
+import { BriefcaseIdArg, ChangesetFileProps, ChangesetProps, ChangesetRange, HubAccess, IModelIdArg, LocalDirName, LocalFileName, LockProps } from "../HubAccess";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
-import { LocalDirName, LocalHub, LocalHubProps } from "./LocalHub";
+import { LocalHub, LocalHubProps } from "./LocalHub";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { SnapshotDb } from "../IModelDb";
 
 /** Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changeset. */
 export class HubMock {
@@ -90,7 +92,7 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).downloadChangeset({ id: arg.id, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
   }
 
-  public static async downloadChangeSets(arg: IModelIdArg & { range: ChangesetRange }): Promise<ChangesetFileProps[]> {
+  public static async downloadChangeSets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetFileProps[]> {
     return this.findLocalHub(arg.iModelId).downloadChangesets({ range: arg.range, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
   }
 
@@ -114,6 +116,26 @@ export class HubMock {
 
   public static async getAllCodes(_arg: BriefcaseIdArg): Promise<CodeProps[]> {
     return [];
+  }
+
+  public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: LocalFileName }): Promise<GuidString> {
+    const revision0 = arg.revision0 ?? join(this.mockRoot, "revision0.bim");
+    const localProps = { ...arg, iModelId: Guid.createValue(), revision0 };
+    if (localProps.revision0 === undefined) {
+      const blank = SnapshotDb.createEmpty(localProps.revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
+      blank.saveChanges();
+      blank.close();
+    }
+
+    this.create(localProps);
+    if (!arg.revision0)
+      IModelJsFs.removeSync(revision0);
+
+    return localProps.iModelId;
+  }
+
+  public static async deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void> {
+    return this.destroy(arg.iModelId);
   }
 
   public static shutdown() {

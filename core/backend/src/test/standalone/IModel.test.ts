@@ -1710,9 +1710,9 @@ describe("iModel", () => {
       containerAccessKeySAS: "testSAS",
       containerAccessKeyDbName: "testDb",
     };
-    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
+    const checkpointsV2Handler = IModelHubAccess.iModelClient.checkpointsV2;
     sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
-    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHubAccess.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     // Mock blockcacheVFS daemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);

@@ -106,9 +106,9 @@ export class ChangedElementsDb implements IDisposable {
     requestContext.enter();
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
-    const status: DbResult = this.nativeDb.processChangesets(
+    const status = this.nativeDb.processChangesets(
       briefcase.nativeDb,
-      changesets as IModelJsNative.ChangeSetProps[],
+      changesets,
       options.rulesetId,
       options.filterSpatial,
       options.wantParents,
@@ -139,10 +139,10 @@ export class ChangedElementsDb implements IDisposable {
     const dbGuid = briefcase.getGuid();
     briefcase.close();
     // Process changesets
-    const status: DbResult = this.nativeDb.processChangesetsAndRoll(
+    const status = this.nativeDb.processChangesetsAndRoll(
       dbFilename,
       dbGuid,
-      changesets as IModelJsNative.ChangeSetProps[],
+      changesets,
       options.rulesetId,
       options.filterSpatial,
       options.wantParents,

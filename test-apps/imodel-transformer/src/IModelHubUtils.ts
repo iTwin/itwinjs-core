@@ -53,7 +53,7 @@ export namespace IModelHubUtils {
   }
 
   export async function queryIModel(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string): Promise<HubIModel | undefined> {
-    const hubIModels = await IModelHost.iModelClient.iModels.get(requestContext, contextId, new IModelQuery().byName(iModelName));
+    const hubIModels = await IModelHubAccess.iModelClient.iModels.get(requestContext, contextId, new IModelQuery().byName(iModelName));
     if (hubIModels.length === 0)
       return undefined;
     if (hubIModels.length > 1)
@@ -63,7 +63,7 @@ export namespace IModelHubUtils {
 
   /** Call the specified function for each changeSet of the specified iModel. */
   export async function forEachChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, func: (c: ChangeSet) => void): Promise<void> {
-    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, iModelId);
+    const changeSets = await IModelHost.hubAccess.changeSets.get(requestContext, iModelId);
     for (const changeSet of changeSets) {
       func(changeSet);
     }
