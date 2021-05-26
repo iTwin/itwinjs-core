@@ -368,6 +368,9 @@ type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr";
  *  - Events dispatched when map contents change.
  */
 class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
+  // This is required for mock framework used by ui libraries, which otherwise try to clone this as a standard Map.
+  public get [Symbol.toStringTag]() { return "OverridesMap"; }
+
   public constructor(
     private readonly _json: DisplayStyleSettingsProps,
     private readonly _arrayKey: OverridesArrayKey,
