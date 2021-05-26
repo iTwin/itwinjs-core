@@ -53,9 +53,9 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
-    "electron": "^11.1.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
+    "electron": "^11.1.0",
     "eslint": "^6.8.0",
     "glob": "^7.1.2",
     "mocha": "^8.3.2",
@@ -69,9 +69,9 @@
   ],
   "dependencies": {
     "@bentley/geometry-core": "workspace:*",
+    "@bentley/imodeljs-editor-common": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
-    "@bentley/imodeljs-editor-common": "workspace:*"
+    "@bentley/ui-abstract": "workspace:*"
   },
   "eslintConfig": {
     "plugins": [
