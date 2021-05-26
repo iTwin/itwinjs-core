@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { DbResult, GuidString, Id64, Id64String, Logger, LogLevel, PerfLogger } from "@bentley/bentleyjs-core";
 import {
   ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelVersion, SubCategoryAppearance,
@@ -9,7 +10,6 @@ import {
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelHubAccess } from "../../IModelHubAccess";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement,
   ElementOwnsChildElements, IModelHost, IModelJsFs, SpatialCategory,
@@ -155,7 +155,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Extract ChangeSummary for single changeset", async () => {
     setupTest(readOnlyTestIModelId);
 
-    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].id;
@@ -194,7 +194,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Extracting ChangeSummaries for a range of changesets", async () => {
     setupTest(readOnlyTestIModelId);
 
-    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
     assert.isAtLeast(changeSets.length, 3);
     const startChangeSetId: string = changeSets[0].id;
     const endChangeSetId: string = changeSets[1].id;
@@ -240,7 +240,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Subsequent ChangeSummary extractions", async () => {
     setupTest(readOnlyTestIModelId);
 
-    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id;
@@ -461,7 +461,7 @@ describe("ChangeSummary (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
     }
 
-    await IModelHubAccess.iModelClient.iModels.delete(requestContext, projectId, iModelId);
+    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId });
   });
 
   it.skip("should be able to extract the last change summary right after applying a change set", async () => {

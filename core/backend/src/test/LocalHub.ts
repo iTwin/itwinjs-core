@@ -7,7 +7,7 @@ import { join } from "path";
 import { DbResult, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { ChangesetFileProps, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName } from "../HubAccess";
+import { ChangeSetFileProps, ChangeSetProps, ChangeSetRange, LocalDirName, LocalFileName } from "../HubAccess";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
@@ -44,7 +44,7 @@ export class LocalHub {
     this.cleanup();
 
     IModelJsFs.recursiveMkDirSync(this.rootDir);
-    IModelJsFs.mkdirSync(this.changesetDir);
+    IModelJsFs.mkdirSync(this.changeSetDir);
     IModelJsFs.mkdirSync(this.checkpointDir);
 
     const db = this._hubDb = new SQLiteDb();
@@ -69,7 +69,7 @@ export class LocalHub {
   }
 
   private get db() { return this._hubDb!; } // eslint-disable-line @typescript-eslint/naming-convention
-  public get changesetDir() { return join(this.rootDir, "changesets"); }
+  public get changeSetDir() { return join(this.rootDir, "changesets"); }
   public get checkpointDir() { return join(this.rootDir, "checkpoints"); }
   public get mockDbName() { return join(this.rootDir, "localHub.db"); }
 
@@ -121,7 +121,7 @@ export class LocalHub {
     return briefcases;
   }
 
-  public addChangeset(changeset: ChangesetFileProps) {
+  public addChangeSet(changeset: ChangeSetFileProps) {
     const stats = IModelJsFs.lstatSync(changeset.pathname);
     if (!stats)
       throw new Error(`cannot read changeset file ${changeset.pathname}`);
@@ -140,10 +140,10 @@ export class LocalHub {
         throw new IModelError(rc, "can't insert changeset into mock db");
     });
     db.saveChanges();
-    IModelJsFs.copySync(changeset.pathname, join(this.changesetDir, changeset.id));
+    IModelJsFs.copySync(changeset.pathname, join(this.changeSetDir, changeset.id));
   }
 
-  public getChangesetIndex(id: string): number {
+  public getChangeSetIndex(id: string): number {
     if (id === "")
       return 0;
 
@@ -157,11 +157,11 @@ export class LocalHub {
     });
   }
 
-  public getChangesetById(id: string): ChangesetProps {
-    return this.getChangesetByIndex(this.getChangesetIndex(id));
+  public getChangeSetById(id: string): ChangeSetProps {
+    return this.getChangeSetByIndex(this.getChangeSetIndex(id));
   }
 
-  public getChangesetByIndex(index: number): ChangesetProps {
+  public getChangeSetByIndex(index: number): ChangeSetProps {
     if (index === 0)
       return { id: "", changesType: 0, description: "revision0", parentId: "" };
 
@@ -184,14 +184,14 @@ export class LocalHub {
     });
   }
 
-  public getChangesets(first?: number, last?: number): ChangesetProps[] {
-    const changesets: ChangesetProps[] = [];
+  public getChangeSets(first?: number, last?: number): ChangeSetProps[] {
+    const changesets: ChangeSetProps[] = [];
     if (undefined === first)
       first = 1;
     if (undefined === last)
-      last = this.getLatestChangesetIndex();
+      last = this.getLatestChangeSetIndex();
     if (0 === first) {
-      changesets.push(this.getChangesetByIndex(0));
+      changesets.push(this.getChangeSetByIndex(0));
       ++first;
     }
 
@@ -199,20 +199,20 @@ export class LocalHub {
       stmt.bindValue(1, first);
       stmt.bindValue(2, last);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        changesets.push(this.getChangesetByIndex(stmt.getValue(0).getInteger()));
+        changesets.push(this.getChangeSetByIndex(stmt.getValue(0).getInteger()));
     });
     return changesets;
   }
 
-  public getLatestChangesetIndex(): number {
+  public getLatestChangeSetIndex(): number {
     return this.db.withSqliteStatement("SELECT max(rowid) FROM timeline", (stmt) => {
       stmt.step();
       return stmt.getValue(0).getInteger();
     });
   }
 
-  public getLatestChangesetId(): string {
-    return this.getChangesetByIndex(this.getLatestChangesetIndex()).id;
+  public getLatestChangeSetId(): string {
+    return this.getChangeSetByIndex(this.getLatestChangeSetIndex()).id;
   }
 
   public addNamedVersion(arg: { versionName: string, id: string }) {
@@ -253,7 +253,7 @@ export class LocalHub {
   }
 
   public addCheckpoint(arg: { id: string, localFile: LocalFileName }) {
-    const index = (arg.id !== "") ? this.getChangesetIndex(arg.id) : 0;
+    const index = (arg.id !== "") ? this.getChangeSetIndex(arg.id) : 0;
     const db = this.db;
     db.withSqliteStatement("INSERT INTO checkpoints(csIndex) VALUES (?)", (stmt) => {
       stmt.bindValue(1, index);
@@ -280,7 +280,7 @@ export class LocalHub {
   public getPreviousCheckpoint(id: string): number {
     if (id === "")
       return 0;
-    const index = this.getChangesetIndex(id);
+    const index = this.getChangeSetIndex(id);
     return this.db.withSqliteStatement("SELECT max(csIndex) FROM checkpoints WHERE csIndex <= ? ", (stmt) => {
       stmt.bindValue(1, index);
       const res = stmt.step();
@@ -294,37 +294,42 @@ export class LocalHub {
     IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromId(arg.id)), arg.targetFile);
   }
 
-  private copyChangeset(arg: ChangesetFileProps): ChangesetFileProps {
-    IModelJsFs.copySync(join(this.changesetDir, arg.id), arg.pathname);
+  private copyChangeSet(arg: ChangeSetFileProps): ChangeSetFileProps {
+    IModelJsFs.copySync(join(this.changeSetDir, arg.id), arg.pathname);
     return arg;
   }
 
-  public downloadChangeset(arg: { id: string, targetDir: LocalDirName }) {
-    const cs = this.getChangesetById(arg.id);
+  public downloadChangeSet(arg: { id: string, targetDir: LocalDirName }) {
+    const cs = this.getChangeSetById(arg.id);
     const csProps = { ...cs, pathname: join(arg.targetDir, cs.id) };
-    return this.copyChangeset(csProps);
+    return this.copyChangeSet(csProps);
   }
 
-  public downloadChangesets(arg: { range?: ChangesetRange, targetDir: LocalDirName }): ChangesetFileProps[] {
-    const range = arg.range ?? { first: "" };
+  public queryChangeSets(range?: ChangeSetRange): ChangeSetProps[] {
+    range = range ?? { first: "" };
     const startId = (undefined !== range.after) ? range.after : range.first;
-    let startIndex = this.getChangesetIndex(startId);
+    let startIndex = this.getChangeSetIndex(startId);
     if (undefined !== range.after)
       startIndex++;
     if (startIndex === 0) // there's no changeset for index 0 - that's revision0
       startIndex = 1;
-    const endIndex = range.end ? this.getChangesetIndex(range.end) : this.getLatestChangesetIndex();
+    const endIndex = range.end ? this.getChangeSetIndex(range.end) : this.getLatestChangeSetIndex();
     if (endIndex < startIndex)
       throw new Error("illegal changeset range");
 
-    const changesets: ChangesetFileProps[] = [];
-    while (startIndex <= endIndex) {
-      const cs = this.getChangesetByIndex(startIndex++);
-      const csProps = { ...cs, pathname: join(arg.targetDir, cs.id) };
-      this.copyChangeset(csProps);
-      changesets.push(csProps);
-    }
+    const changesets: ChangeSetProps[] = [];
+    while (startIndex <= endIndex)
+      changesets.push(this.getChangeSetByIndex(startIndex++));
     return changesets;
+  }
+
+  public downloadChangeSets(arg: { range?: ChangeSetRange, targetDir: LocalDirName }): ChangeSetFileProps[] {
+    const cSets = this.queryChangeSets(arg.range) as ChangeSetFileProps[];
+    for (const cs of cSets) {
+      cs.pathname = join(arg.targetDir, cs.id);
+      this.copyChangeSet(cs);
+    }
+    return cSets;
   }
 
   public removeDir(dirName: string) {

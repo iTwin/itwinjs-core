@@ -93,7 +93,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       if (true) { // initial import
         IModelTransformerUtils.populateSourceDb(sourceDb);
-        // await sourceDb.concurrencyControl.request(requestContext);
+        await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Populate source");
 
@@ -127,7 +127,7 @@ describe("IModelTransformerHub (#integration)", () => {
         const transformer = new TestIModelTransformer(sourceDb, targetDb);
         await transformer.processChanges(requestContext);
         transformer.dispose();
-        // await targetDb.concurrencyControl.request(requestContext);
+        await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, "Import #1");
         IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
@@ -180,7 +180,7 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(numTargetExternalSourceAspects, count(targetDb, ExternalSourceAspect.classFullName), "Second import should not add aspects");
         assert.equal(numTargetRelationships, count(targetDb, ElementRefersToElements.classFullName), "Second import should not add relationships");
         transformer.dispose();
-        // await targetDb.concurrencyControl.request(requestContext);
+        await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         assert.isFalse(targetDb.nativeDb.hasPendingTxns());
         await targetDb.pushChanges(requestContext, "Should not actually push because there are no changes");
@@ -188,7 +188,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       if (true) { // update source db, then import again
         IModelTransformerUtils.updateSourceDb(sourceDb);
-        // await sourceDb.concurrencyControl.request(requestContext);
+        await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Update source");
 
@@ -223,7 +223,7 @@ describe("IModelTransformerHub (#integration)", () => {
         const transformer = new TestIModelTransformer(sourceDb, targetDb);
         await transformer.processChanges(requestContext);
         transformer.dispose();
-        // await targetDb.concurrencyControl.request(requestContext);
+        await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, "Import #2");
         IModelTransformerUtils.assertUpdatesInDb(targetDb);
@@ -257,17 +257,17 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(targetDbChanges.model.deleteIds.size, 0);
       }
 
-      // const sourceIModelChangeSets = await IModelHost.iModelClient.changeSets.get(requestContext, sourceIModelId);
-      // const targetIModelChangeSets = await IModelHost.iModelClient.changeSets.get(requestContext, targetIModelId);
-      // assert.equal(sourceIModelChangeSets.length, 2);
-      // assert.equal(targetIModelChangeSets.length, 2);
+      const sourceIModelChangeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: sourceIModelId });
+      const targetIModelChangeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: targetIModelId });
+      assert.equal(sourceIModelChangeSets.length, 2);
+      assert.equal(targetIModelChangeSets.length, 2);
 
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, sourceDb);
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
     } finally {
       try {
-        HubMock.destroy(sourceIModelId);
-        HubMock.destroy(targetIModelId);
+        await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: sourceIModelId });
+        await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: targetIModelId });
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log("can't destroy", err);
@@ -276,7 +276,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
 
-  it("Clone/upgrade test", async () => {
+  it.only("Clone/upgrade test", async () => {
     const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
     const sourceIModelId = await HubUtility.recreateIModel(requestContext, projectId, sourceIModelName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
@@ -347,9 +347,14 @@ describe("IModelTransformerHub (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, sourceDb);
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
     } finally {
-      // delete iModel briefcases
-      HubMock.destroy(sourceIModelId);
-      HubMock.destroy(targetIModelId);
+      try {
+        // delete iModel briefcases
+        await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: sourceIModelId });
+        await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: targetIModelId });
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log("can't destroy", err);
+      }
     }
   });
 
@@ -594,7 +599,7 @@ describe("IModelTransformerHub (#integration)", () => {
   }
 
   async function saveAndPushChanges(briefcaseDb: BriefcaseDb, description: string, changesType?: ChangesType): Promise<void> {
-    // await briefcaseDb.concurrencyControl.request(requestContext);
+    await briefcaseDb.concurrencyControl.request(requestContext);
     briefcaseDb.saveChanges(description);
     return briefcaseDb.pushChanges(requestContext, description, changesType);
   }

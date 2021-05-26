@@ -23,7 +23,7 @@ import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client"
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
-import { ChangesetFileProps } from "./HubAccess";
+import { ChangeSetFileProps } from "./HubAccess";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -188,7 +188,7 @@ export class BriefcaseManager {
    * one briefcase on their machine for a given iModelId. Rarely, it may be necessary to use more than one briefcase to make isolated independent sets of changes,
    * but that is exceedingly complicated and rare. If no BriefcaseId is supplied, a new one is acquired from iModelHub.
    *
-   * Then, a Checkpoint file (as of a ChangesetId, typically "Latest") is downloaded from IModelHub. After the download completes,
+   * Then, a Checkpoint file (as of a ChangeSetId, typically "Latest") is downloaded from IModelHub. After the download completes,
    * the briefcaseId in the local file is changed to acquired briefcaseId, changing the checkpoint file into a briefcase file.
    *
    * Each of these steps requires a valid `AuthorizedClientRequestContext` to provide the user's credentials for the requests.
@@ -381,7 +381,7 @@ export class BriefcaseManager {
 
   /** @internal */
   public static async changesetFromVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<{ changeSetId: string, changeSetIndex: number }> {
-    const changeSetId = await IModelHost.hubAccess.getChangesetIdFromVersion({ requestContext, iModelId, version });
+    const changeSetId = await IModelHost.hubAccess.getChangeSetIdFromVersion({ requestContext, iModelId, version });
     requestContext.enter();
 
     const changeSetIndex = await IModelHost.hubAccess.getChangeSetIndexFromId({ requestContext, iModelId, changeSetId });
@@ -461,7 +461,7 @@ export class BriefcaseManager {
     }
   }
 
-  private static async applySingleChangeSet(db: IModelDb, changeSet: ChangesetFileProps, processOption: ChangeSetApplyOption) {
+  private static async applySingleChangeSet(db: IModelDb, changeSet: ChangeSetFileProps, processOption: ChangeSetApplyOption) {
     return db.nativeDb.applyChangeSet(changeSet, processOption);
   }
 
@@ -567,14 +567,14 @@ export class BriefcaseManager {
   private static async pushChangeSet(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesType, releaseLocks: boolean): Promise<void> {
     requestContext.enter();
 
-    const changesetProps = db.nativeDb.startCreateChangeSet() as ChangesetFileProps;
+    const changesetProps = db.nativeDb.startCreateChangeSet() as ChangeSetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.changesType = changesetProps.changesType === ChangesType.Schema ? ChangesType.Schema : changeType;
     changesetProps.description = description;
     changesetProps.size = IModelJsFs.lstatSync(changesetProps.pathname)!.size;
 
     try {
-      await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: db.iModelId, changesetProps, releaseLocks });
+      await IModelHost.hubAccess.pushChangeSet({ requestContext, iModelId: db.iModelId, changesetProps, releaseLocks });
       requestContext.enter();
     } catch (error) {
       requestContext.enter();

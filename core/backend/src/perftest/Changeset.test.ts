@@ -129,7 +129,7 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
   // delete any existing imodel with given name
   const iModels = await IModelHubAccess.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels) {
-    await IModelHubAccess.iModelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
+    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
   }
   // create new imodel with given name
   const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
@@ -156,7 +156,7 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   // delete any existing imodel with given name
   const iModels = await IModelHubAccess.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels) {
-    await IModelHubAccess.iModelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
+    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
   }
   // create new imodel with given name
   const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
@@ -203,7 +203,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   // delete any existing imodel with given name
   const iModels = await IModelHubAccess.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels)
-    await IModelHubAccess.iModelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
+    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
 
   // create new imodel with given name
   const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
@@ -229,9 +229,9 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
-  const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, "reverseChangeTest");
-  const changeSets = await IModelHubAccess.iModelClient.changeSets.get(requestContext, imodelId);
-  const firstChangeSetId = changeSets[0].wsgId;
+  const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, "reverseChangeTest");
+  const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId });
+  const firstChangeSetId = changeSets[0].id;
   const startTime = new Date().getTime();
   await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));// eslint-disable-line deprecation/deprecation
   const endTime = new Date().getTime();
@@ -249,7 +249,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   // delete any existing imodel with given name
   const iModels = await IModelHubAccess.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels)
-    await IModelHubAccess.iModelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
+    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
 
   // create new imodel with given name
   const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
@@ -276,7 +276,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   assert.equal(secondCount, 11);
 
   const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-  const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId });
+  const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId });
   const firstChangeSetId = changeSets[0].id;
   await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));// eslint-disable-line deprecation/deprecation
   const reverseCount = getElementCount(rwIModel);

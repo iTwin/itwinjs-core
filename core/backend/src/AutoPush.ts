@@ -15,6 +15,8 @@ import { IModelHost } from "./IModelHost";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
+/* eslint-disable deprecation/deprecation */
+
 /** Monitors backend activity.
  * @beta
  * @deprecated auto-push is no longer supported and will be removed in 3.0.

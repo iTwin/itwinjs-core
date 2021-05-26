@@ -17,7 +17,7 @@ export type LocalDirName = string;
 /** Properties of a changeset
  * @internal
  */
-export interface ChangesetProps {
+export interface ChangeSetProps {
   id: string;
   parentId: string;
   changesType: number;
@@ -32,11 +32,11 @@ export interface ChangesetProps {
 /** Properties of a changeset file
  * @internal
  */
-export interface ChangesetFileProps extends ChangesetProps {
+export interface ChangeSetFileProps extends ChangeSetProps {
   pathname: string;
 }
 
-export type ChangesetRange = { first: string, after?: never, end?: string } | { after: string, first?: never, end?: string };
+export type ChangeSetRange = { first: string, after?: never, end?: string } | { after: string, first?: never, end?: string };
 
 /**
  * The properties of an iModel server lock.
@@ -58,13 +58,14 @@ export interface BriefcaseIdArg extends IModelIdArg {
 }
 
 export interface HubAccess {
-  downloadChangeSets: (arg: IModelIdArg & { range?: ChangesetRange }) => Promise<ChangesetFileProps[]>;
-  downloadChangeSet: (arg: IModelIdArg & { id: string }) => Promise<ChangesetFileProps>;
-  queryChangesetProps: (arg: IModelIdArg & { changesetId: string }) => Promise<ChangesetProps>;
-  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<void>;
+  downloadChangeSets: (arg: IModelIdArg & { range?: ChangeSetRange }) => Promise<ChangeSetFileProps[]>;
+  downloadChangeSet: (arg: IModelIdArg & { id: string }) => Promise<ChangeSetFileProps>;
+  queryChangeSet: (arg: IModelIdArg & { id: string }) => Promise<ChangeSetProps>;
+  queryChangeSets: (arg: IModelIdArg & { range?: ChangeSetRange }) => Promise<ChangeSetProps[]>;
+  pushChangeSet: (arg: IModelIdArg & { changesetProps: ChangeSetFileProps, releaseLocks: boolean }) => Promise<void>;
   getLatestChangeSetId: (arg: IModelIdArg) => Promise<string>;
   getChangeSetIdFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<string>;
-  getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<string>;
+  getChangeSetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<string>;
 
   /** Get the index of the change set from its id */
   getChangeSetIndexFromId: (arg: IModelIdArg & { changeSetId: string }) => Promise<number>;
@@ -84,5 +85,6 @@ export interface HubAccess {
 
   createIModel: (arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: LocalFileName }) => Promise<GuidString>;
   deleteIModel: (arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString }) => Promise<void>;
+  queryIModelByName: (arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }) => Promise<GuidString | undefined>;
 }
 

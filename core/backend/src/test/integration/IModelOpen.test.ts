@@ -71,7 +71,7 @@ describe("IModelOpen (#integration)", () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 
-    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: testIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: testIModelId });
     const numChangeSets = changeSets.length;
     assert.isAbove(numChangeSets, 10);
 
@@ -84,7 +84,7 @@ describe("IModelOpen (#integration)", () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 
-    const changeSets = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: testIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: testIModelId });
     const numChangeSets = changeSets.length;
     assert.isAbove(numChangeSets, 10);
 

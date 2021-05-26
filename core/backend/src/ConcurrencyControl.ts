@@ -395,8 +395,8 @@ export class ConcurrencyControl {
     else
       this.cull(req);
 
-    await this.reserveCodes0(requestContext, req.codes); // throws if any code cannot be reserved
-    requestContext.enter();
+    // await this.reserveCodes0(requestContext, req.codes); // throws if any code cannot be reserved
+    // requestContext.enter();
 
     await this.acquireLocks(requestContext, req.locks); // throws if any lock cannot be acquired.
     requestContext.enter();
@@ -612,23 +612,24 @@ export class ConcurrencyControl {
     return this.reserveCodes0(requestContext, codes);
   }
 
-  private async reserveCodes0(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]> {
-    requestContext.enter();
+  private async reserveCodes0(_requestContext: AuthorizedClientRequestContext, _codes: CodeProps[]): Promise<HubCode[]> {
+    return [];
+    // requestContext.enter();
 
-    if (codes.length === 0)
-      return [];
+    // if (codes.length === 0)
+    //   return [];
 
-    const hubCodes = ConcurrencyControl.Request.toHubCodes(this, codes);
+    // const hubCodes = ConcurrencyControl.Request.toHubCodes(this, codes);
 
-    if (!this._iModel.isOpen)
-      throw new Error("not open");
+    // if (!this._iModel.isOpen)
+    //   throw new Error("not open");
 
-    Logger.logTrace(loggerCategory, `reserveCodes ${JSON.stringify(hubCodes)}`);
-    const codeStates = await IModelHubAccess.iModelClient.codes.update(requestContext, this._iModel.iModelId, hubCodes);
-    requestContext.enter();
-    Logger.logTrace(loggerCategory, `result = ${JSON.stringify(codeStates)}`);
+    // Logger.logTrace(loggerCategory, `reserveCodes ${JSON.stringify(hubCodes)}`);
+    // const codeStates = await IModelHubAccess.iModelClient.codes.update(requestContext, this._iModel.iModelId, hubCodes);
+    // requestContext.enter();
+    // Logger.logTrace(loggerCategory, `result = ${JSON.stringify(codeStates)}`);
 
-    return codeStates;
+    // return codeStates;
   }
 
   /**

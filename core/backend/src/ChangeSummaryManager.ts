@@ -19,7 +19,7 @@ import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelHost } from "./imodeljs-backend";
-import { ChangesetFileProps } from "./HubAccess";
+import { ChangeSetFileProps } from "./HubAccess";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -157,7 +157,7 @@ export class ChangeSummaryManager {
     let startChangeSetId = "";
     if (options) {
       if (options.startVersion) {
-        startChangeSetId = await IModelHost.hubAccess.getChangesetIdFromVersion({ version: options.startVersion, requestContext, iModelId: ctx.iModelId });
+        startChangeSetId = await IModelHost.hubAccess.getChangeSetIdFromVersion({ version: options.startVersion, requestContext, iModelId: ctx.iModelId });
         requestContext.enter();
       } else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
@@ -165,7 +165,7 @@ export class ChangeSummaryManager {
     }
 
     Logger.logInfo(loggerCategory, "Started Change Summary extraction...", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId }));
-    const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${ctx.iModelId}]`);
+    const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [ChangeSets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${ctx.iModelId}]`);
 
     // download necessary changesets if they were not downloaded before and retrieve infos about those changesets
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download ChangeSets from Hub");
@@ -218,7 +218,7 @@ export class ChangeSummaryManager {
 
         const changeSetFilePath: string = currentChangeSetInfo.pathname;
         if (!IModelJsFs.existsSync(changeSetFilePath))
-          throw new IModelError(IModelStatus.FileNotFound, `Failed to extract change summary: Changeset file "${changeSetFilePath}" does not exist.`);
+          throw new IModelError(IModelStatus.FileNotFound, `Failed to extract change summary: ChangeSet file "${changeSetFilePath}" does not exist.`);
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Extract ChangeSummary");
         const stat: IModelJsNative.ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
@@ -259,7 +259,7 @@ export class ChangeSummaryManager {
     }
   }
 
-  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: string, end: string): Promise<ChangesetFileProps[]> {
+  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: string, end: string): Promise<ChangeSetFileProps[]> {
     requestContext.enter();
 
     const changeSetInfos = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: ctx.iModelId, range: { first, end } });

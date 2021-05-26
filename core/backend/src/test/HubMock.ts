@@ -7,15 +7,18 @@ import { join } from "path";
 import * as sinon from "sinon";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { CheckpointManager, DownloadRequest } from "../CheckpointManager";
-import { BriefcaseIdArg, ChangesetFileProps, ChangesetProps, ChangesetRange, HubAccess, IModelIdArg, LocalDirName, LocalFileName, LockProps } from "../HubAccess";
+import {
+  BriefcaseIdArg, ChangeSetFileProps, ChangeSetProps, ChangeSetRange, HubAccess, IModelIdArg, LocalDirName, LocalFileName,
+  LockProps,
+} from "../HubAccess";
+import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { LocalHub, LocalHubProps } from "./LocalHub";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { SnapshotDb } from "../IModelDb";
 
 /** Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changeset. */
 export class HubMock {
@@ -36,7 +39,7 @@ export class HubMock {
     });
 
     sinon.stub(IModelVersion, "getLatestChangeSetId").callsFake(async (_1, _2, iModelId: GuidString): Promise<GuidString> => {
-      return this.findLocalHub(iModelId).getLatestChangesetId();
+      return this.findLocalHub(iModelId).getLatestChangeSetId();
     });
 
     sinon.stub(IModelVersion, "getChangeSetFromNamedVersion").callsFake(async (_1, _2, iModelId: GuidString, versionName: string): Promise<GuidString> => {
@@ -49,7 +52,7 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).findNamedVersion(arg.versionName);
   }
 
-  public static async getChangesetIdFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<string> {
+  public static async getChangeSetIdFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<string> {
     const version = arg.version;
     if (version.isFirst)
       return "";
@@ -66,11 +69,11 @@ export class HubMock {
   }
 
   public static async getLatestChangeSetId(arg: IModelIdArg): Promise<string> {
-    return this.findLocalHub(arg.iModelId).getLatestChangesetId();
+    return this.findLocalHub(arg.iModelId).getLatestChangeSetId();
   }
 
   public static async getChangeSetIndexFromId(arg: IModelIdArg & { changeSetId: string }): Promise<number> {
-    return this.findLocalHub(arg.iModelId).getChangesetIndex(arg.changeSetId);
+    return this.findLocalHub(arg.iModelId).getChangeSetIndex(arg.changeSetId);
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
@@ -88,20 +91,24 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
   }
 
-  public static async downloadChangeSet(arg: IModelIdArg & { id: string }): Promise<ChangesetFileProps> {
-    return this.findLocalHub(arg.iModelId).downloadChangeset({ id: arg.id, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
+  public static async downloadChangeSet(arg: IModelIdArg & { id: string }): Promise<ChangeSetFileProps> {
+    return this.findLocalHub(arg.iModelId).downloadChangeSet({ id: arg.id, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
   }
 
-  public static async downloadChangeSets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetFileProps[]> {
-    return this.findLocalHub(arg.iModelId).downloadChangesets({ range: arg.range, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
+  public static async downloadChangeSets(arg: IModelIdArg & { range?: ChangeSetRange }): Promise<ChangeSetFileProps[]> {
+    return this.findLocalHub(arg.iModelId).downloadChangeSets({ range: arg.range, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
   }
 
-  public static async queryChangesetProps(arg: IModelIdArg & { changesetId: string }): Promise<ChangesetProps> {
-    return this.findLocalHub(arg.iModelId).getChangesetById(arg.changesetId);
+  public static async queryChangeSet(arg: IModelIdArg & { id: string }): Promise<ChangeSetProps> {
+    return this.findLocalHub(arg.iModelId).getChangeSetById(arg.id);
   }
 
-  public static async pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }): Promise<void> {
-    return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
+  public static async queryChangeSets(arg: IModelIdArg & { range?: ChangeSetRange }): Promise<ChangeSetProps[]> {
+    return this.findLocalHub(arg.iModelId).queryChangeSets(arg.range);
+  }
+
+  public static async pushChangeSet(arg: IModelIdArg & { changesetProps: ChangeSetFileProps, releaseLocks: boolean }): Promise<void> {
+    return this.findLocalHub(arg.iModelId).addChangeSet(arg.changesetProps);
   }
 
   public static async releaseAllLocks(_arg: BriefcaseIdArg) {
@@ -118,11 +125,21 @@ export class HubMock {
     return [];
   }
 
+  public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {
+    for (const hub of this.hubs) {
+      const localHub = hub[1];
+      if (localHub.contextId === arg.contextId && localHub.iModelName === arg.iModelName)
+        return localHub.iModelId;
+    }
+    return undefined;
+  }
+
   public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: LocalFileName }): Promise<GuidString> {
     const revision0 = arg.revision0 ?? join(this.mockRoot, "revision0.bim");
+
     const localProps = { ...arg, iModelId: Guid.createValue(), revision0 };
-    if (localProps.revision0 === undefined) {
-      const blank = SnapshotDb.createEmpty(localProps.revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
+    if (!arg.revision0) {
+      const blank = SnapshotDb.createEmpty(revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
       blank.saveChanges();
       blank.close();
     }

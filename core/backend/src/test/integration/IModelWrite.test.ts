@@ -427,7 +427,7 @@ describe("IModelWriteTest (#integration)", () => {
     const iModelName = HubUtility.generateUniqueName("ConcurrencyControlBulkModeTest");
     const deleteIModel = await HubUtility.queryIModelByName(adminRequestContext, testContextId, iModelName);
     if (undefined !== deleteIModel)
-      await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, deleteIModel.wsgId);
+      await IModelHost.hubAccess.deleteIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelId: deleteIModel });
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
