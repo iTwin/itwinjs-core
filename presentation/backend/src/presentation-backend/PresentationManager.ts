@@ -432,8 +432,15 @@ export class PresentationManager {
       });
     }
     this.getNativePlatform().setupSupplementalRulesetDirectories(supplementalRulesetDirectories);
-    if (props && props.rulesetDirectories)
-      this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
+
+    const primaryRulesetDirectories = [path.join(getPresentationBackendAssetsRoot(props?.presentationAssetsRoot), "primary-presentation-rules")];
+    if (props && props.rulesetDirectories) {
+      props.rulesetDirectories.forEach((dir) => {
+        if (-1 === primaryRulesetDirectories.indexOf(dir))
+          primaryRulesetDirectories.push(dir);
+      });
+    }
+    this.getNativePlatform().setupRulesetDirectories(primaryRulesetDirectories);
   }
 
   private getRulesetIdObject(rulesetOrId: Ruleset | string): { uniqueId: string, parts: { id: string, hash?: string } } {

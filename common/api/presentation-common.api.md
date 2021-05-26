@@ -713,6 +713,87 @@ export interface EditorDescription {
     params: any;
 }
 
+// @beta
+export type ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem;
+
+// @beta
+export interface ElementPropertiesArrayPropertyItemBase extends ElementPropertiesPropertyItemBase {
+    type: "array";
+    valueType: "primitive" | "struct";
+}
+
+// @beta
+export interface ElementPropertiesCategoryItem extends ElementPropertiesResponseItemBase {
+    items: {
+        [label: string]: ElementPropertiesItem;
+    };
+    type: "category";
+}
+
+// @beta
+export type ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem;
+
+// @beta
+export interface ElementPropertiesPrimitiveArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
+    values: string[];
+    valueType: "primitive";
+}
+
+// @beta
+export interface ElementPropertiesPrimitivePropertyItem extends ElementPropertiesPropertyItemBase {
+    type: "primitive";
+    value: string;
+}
+
+// @beta
+export type ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem;
+
+// @beta
+export interface ElementPropertiesPropertyItemBase extends ElementPropertiesResponseItemBase {
+    type: ElementPropertiesPropertyValueType;
+}
+
+// @beta
+export type ElementPropertiesPropertyValueType = "primitive" | "array" | "struct";
+
+// @beta
+export interface ElementPropertiesResponse {
+    class: string;
+    id: Id64String;
+    items: {
+        [label: string]: ElementPropertiesItem;
+    };
+    label: string;
+}
+
+// @beta
+export interface ElementPropertiesResponseItemBase {
+    type: "category" | ElementPropertiesPropertyValueType;
+}
+
+// @beta
+export interface ElementPropertiesRpcRequestOptions {
+    elementId: Id64String;
+    locale?: string;
+    unitSystem?: PresentationUnitSystem;
+}
+
+// @beta
+export interface ElementPropertiesStructArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
+    values: Array<{
+        [memberLabel: string]: ElementPropertiesPropertyItem;
+    }>;
+    valueType: "struct";
+}
+
+// @beta
+export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPropertyItemBase {
+    members: {
+        [memberLabel: string]: ElementPropertiesPropertyItem;
+    };
+    type: "struct";
+}
+
 // @public
 export interface EnumerationChoice {
     label: string;
@@ -1766,6 +1847,8 @@ export class PresentationRpcInterface extends RpcInterface {
     getDisplayLabelDefinitions(_token: IModelRpcProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]>;
     // @deprecated (undocumented)
     getDistinctValues(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
+    // @beta (undocumented)
+    getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementPropertiesResponse>;
     // (undocumented)
     getFilteredNodePaths(_token: IModelRpcProps, _options: Omit<ExtendedHierarchyRpcRequestOptions, "parentKey">, _filterText: string): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)

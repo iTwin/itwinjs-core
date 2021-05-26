@@ -10,16 +10,18 @@ import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-cor
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
-  ContentDescriptorRpcRequestOptions, ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions,
-  DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,
-  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyCompareInfo,
-  HierarchyCompareInfoJSON, HierarchyCompareRpcOptions, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON, isContentDescriptorRequestOptions,
-  isDisplayLabelRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition,
-  LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse,
-  PageOptions, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcResponse,
+  ContentDescriptorRpcRequestOptions, ContentFlags, ContentJSON, ContentRpcRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON,
+  DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup,
+  DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementPropertiesResponse, ElementPropertiesRpcRequestOptions,
+  ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareRpcOptions,
+  HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
+  isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
+  LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions,
+  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcResponse,
   PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
+import { buildElementPropertiesResponse } from "./ElementPropertiesHelper";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
 
@@ -297,6 +299,21 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   public async getPagedContentSet(token: IModelRpcProps, requestOptions: Paged<ExtendedContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> {
     const content = await this.getPagedContent(token, requestOptions);
     return this.successResponse(content.result ? content.result.contentSet : { total: 0, items: [] });
+  }
+
+  public async getElementProperties(token: IModelRpcProps, requestOptions: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementPropertiesResponse | undefined> {
+    return this.makeRequest(token, "getElementProperties", { ...requestOptions, clientId: undefined }, async (options) => {
+      const content = await this.getManager().getContent({
+        ...options,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys: new KeySet([{ className: "BisCore:Element", id: requestOptions.elementId }]),
+      });
+      return buildElementPropertiesResponse(content);
+    });
   }
 
   // eslint-disable-next-line deprecation/deprecation
