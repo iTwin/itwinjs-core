@@ -704,9 +704,13 @@ export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderP
 };
 
 // @public
-export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): {
+export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): UsePropertyDataProviderWithUnifiedSelectionResult;
+
+// @public
+export interface UsePropertyDataProviderWithUnifiedSelectionResult {
     isOverLimit: boolean;
-};
+    numSelectedElements: number;
+}
 
 // @public
 export function useRulesetRegistration(ruleset: Ruleset): void;
