@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "2.17.0-dev.15",
+  "version": "2.17.0-dev.16",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/backend-itwin-client.js",
   "browser": {
@@ -38,14 +38,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.17.0-dev.15",
-    "@bentley/frontend-authorization-client": "^2.17.0-dev.15",
-    "@bentley/geometry-core": "^2.17.0-dev.15",
-    "@bentley/imodelhub-client": "^2.17.0-dev.15",
-    "@bentley/imodeljs-common": "^2.17.0-dev.15",
-    "@bentley/itwin-client": "^2.17.0-dev.15",
-    "@bentley/rbac-client": "^2.17.0-dev.15",
-    "@bentley/telemetry-client": "^2.17.0-dev.15"
+    "@bentley/bentleyjs-core": "^2.17.0-dev.16",
+    "@bentley/frontend-authorization-client": "^2.17.0-dev.16",
+    "@bentley/geometry-core": "^2.17.0-dev.16",
+    "@bentley/imodelhub-client": "^2.17.0-dev.16",
+    "@bentley/imodeljs-common": "^2.17.0-dev.16",
+    "@bentley/itwin-client": "^2.17.0-dev.16",
+    "@bentley/rbac-client": "^2.17.0-dev.16",
+    "@bentley/telemetry-client": "^2.17.0-dev.16"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

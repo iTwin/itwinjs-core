@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "2.17.0-dev.15",
+  "version": "2.17.0-dev.16",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -55,15 +55,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "^2.17.0-dev.15",
-    "@bentley/bentleyjs-core": "^2.17.0-dev.15",
-    "@bentley/ecschema-metadata": "^2.17.0-dev.15",
-    "@bentley/geometry-core": "^2.17.0-dev.15",
-    "@bentley/imodelhub-client": "^2.17.0-dev.15",
-    "@bentley/imodeljs-common": "^2.17.0-dev.15",
-    "@bentley/itwin-client": "^2.17.0-dev.15",
-    "@bentley/rbac-client": "^2.17.0-dev.15",
-    "@bentley/telemetry-client": "^2.17.0-dev.15"
+    "@bentley/backend-itwin-client": "^2.17.0-dev.16",
+    "@bentley/bentleyjs-core": "^2.17.0-dev.16",
+    "@bentley/ecschema-metadata": "^2.17.0-dev.16",
+    "@bentley/geometry-core": "^2.17.0-dev.16",
+    "@bentley/imodelhub-client": "^2.17.0-dev.16",
+    "@bentley/imodeljs-common": "^2.17.0-dev.16",
+    "@bentley/itwin-client": "^2.17.0-dev.16",
+    "@bentley/rbac-client": "^2.17.0-dev.16",
+    "@bentley/telemetry-client": "^2.17.0-dev.16"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
