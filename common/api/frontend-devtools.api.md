@@ -25,6 +25,7 @@ import { LocateFilterStatus } from '@bentley/imodeljs-frontend';
 import { LocateResponse } from '@bentley/imodeljs-frontend';
 import { MapLayerSource } from '@bentley/imodeljs-frontend';
 import { ParticleProps } from '@bentley/imodeljs-frontend';
+import { PlanarClipMaskSettings } from '@bentley/imodeljs-common';
 import { Point3d } from '@bentley/geometry-core';
 import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 import { Range1d } from '@bentley/geometry-core';
@@ -1350,6 +1351,12 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     protected allowSelection(): boolean;
     // (undocumented)
     protected abstract applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createElementMask(option: "include" | "exclude"): PlanarClipMaskSettings;
+    // (undocumented)
+    protected createModelMask(): PlanarClipMaskSettings;
+    // (undocumented)
+    protected createSubCategoryMask(): PlanarClipMaskSettings;
     // (undocumented)
     protected abstract createToolInstance(): PlanarMaskBaseTool;
     // (undocumented)

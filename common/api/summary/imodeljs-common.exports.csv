@@ -120,8 +120,8 @@ public;DisplayStyle3dSettingsProps
 public;DisplayStyleLoadProps
 public;DisplayStyleModelAppearanceProps 
 public;DisplayStyleOverridesOptions
+public;DisplayStylePlanarClipMaskProps 
 public;DisplayStyleProps 
-public;DisplayStyleRealityModelPlanarClipMaskProps 
 public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
