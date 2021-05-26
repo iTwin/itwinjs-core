@@ -307,10 +307,9 @@ describe("imodel-transformer", () => {
     const [firstSpatialCategId] = newSchemaSourceDb.queryEntityIds({ from: SpatialCategory.classFullName, limit: 1 });
     assert.isString(firstSpatialCategId);
 
-
     const elementProps = {
       myStruct: { myStructProp: "5" },
-      myProp: "10"
+      myProp: "10",
     };
 
     const _newElemId = newSchemaSourceDb.elements.insertElement({
@@ -321,9 +320,9 @@ describe("imodel-transformer", () => {
       ...elementProps,
     } as PhysicalElementProps);
 
-    const targetDbFileName = initOutputFile("EditSchemas.bim");
+    const targetDbFileName = initOutputFile("targetDb-Struct.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFileName, {
-      rootSubject: { name: `${newSchemaSourceDb.rootSubject.name}-EditSchemas` },
+      rootSubject: { name: `${newSchemaSourceDb.rootSubject.name}-targetDb-Struct` },
       ecefLocation: newSchemaSourceDb.ecefLocation,
     });
 

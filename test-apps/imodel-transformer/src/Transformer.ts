@@ -292,15 +292,15 @@ export class Transformer extends IModelTransformer {
   }
 
   public async onExportSchema(schema: Schema): Promise<void> {
-    if (!this._schemaEditOperations.has(schema.name))
-      return;
     const editOps = this._schemaEditOperations.get(schema.name)!;
     const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
     const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);
     const filledDoc = await schema.toXml(xmlDoc);
-    const schemaText = new XMLSerializer().serializeToString(filledDoc);
-    const textAfterEdits = this.applySchemaOperations(editOps, schemaText);
-    IModelJsFs.writeFileSync(schemaPath, textAfterEdits);
-    this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
+    let schemaText = new XMLSerializer().serializeToString(filledDoc);
+    if (this._schemaEditOperations.has(schema.name)) {
+      schemaText = this.applySchemaOperations(editOps, schemaText);
+    }
+    IModelJsFs.writeFileSync(schemaPath, schemaText);
+    await this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
   }
 }
