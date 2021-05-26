@@ -803,6 +803,8 @@ export interface CellItem {
     alignment?: HorizontalAlignment;
     isDisabled?: boolean;
     key: string;
+    // @alpha
+    mergedCellsCount?: number;
     record?: PropertyRecord;
     style?: ItemStyle;
 }
@@ -2771,9 +2773,11 @@ export class MutableCategorizedArrayProperty extends MutableCategorizedProperty 
     // (undocumented)
     getChildren(): IMutableCategorizedPropertyItem[];
     // (undocumented)
-    getDescendantsAndSelf(): import("./MutableFlatGridItem").IMutableFlatGridItem[];
+    getDescendantsAndSelf(): IMutableFlatGridItem[];
     // (undocumented)
-    getVisibleDescendantsAndSelf(): import("./MutableFlatGridItem").IMutableFlatGridItem[];
+    getVisibleDescendants(): IMutableFlatGridItem[];
+    // (undocumented)
+    getVisibleDescendantsAndSelf(): IMutableFlatGridItem[];
     // (undocumented)
     get type(): FlatGridItemType.Array;
 }
@@ -2812,9 +2816,11 @@ export class MutableCategorizedStructProperty extends MutableCategorizedProperty
     // (undocumented)
     getChildren(): IMutableCategorizedPropertyItem[];
     // (undocumented)
-    getDescendantsAndSelf(): import("./MutableFlatGridItem").IMutableFlatGridItem[];
+    getDescendantsAndSelf(): IMutableFlatGridItem[];
     // (undocumented)
-    getVisibleDescendantsAndSelf(): import("./MutableFlatGridItem").IMutableFlatGridItem[];
+    getVisibleDescendants(): IMutableFlatGridItem[];
+    // (undocumented)
+    getVisibleDescendantsAndSelf(): IMutableFlatGridItem[];
     // (undocumented)
     get type(): FlatGridItemType.Struct;
 }
@@ -4431,7 +4437,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
-    componentDidUpdate(previousProps: TableProps): void;
+    componentDidUpdate(previousProps: TableProps, previousState: TableState): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal

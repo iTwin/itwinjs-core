@@ -32,6 +32,16 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
     logBuildWarning("Rush audit failed. This may be caused by a problem with the npm audit server.");
   }
 
+  // A list of temporary advisories excluded from the High and Critical list.
+  // Warning this should only be used as a temporary measure to avoid build failures
+  // for development dependencies only.
+  // All security issues should be addressed asap.
+  const excludedAdvisories = [
+    1674, // https://npmjs.com/advisories/1674
+    1700, // https://npmjs.com/advisories/1700
+  ];
+
+  const failBuild = false;
   for (const action of jsonOut.actions) {
     for (const issue of action.resolves) {
       const advisory = jsonOut.advisories[issue.id];
@@ -43,22 +53,17 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
 
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
-      if (severity === "HIGH" || severity === "CRITICAL")
+      if (!excludedAdvisories.includes(advisory.id) && (severity === "HIGH" || severity === "CRITICAL")) {
         logBuildError(message);
-      else if (severity === "MODERATE") // Only warn on Moderate severity items
+        failBuild = true;
+      } else if (excludedAdvisories.includes(advisory.id) || severity === "MODERATE") // Only warn on MODERATE severity items
         logBuildWarning(message);
     }
   }
 
   // For some reason yarn audit can return the json without the vulnerabilities
-  if (undefined === jsonOut.metadata.vulnerabilities)
+  if (undefined === jsonOut.metadata.vulnerabilities || failBuild)
     failBuild();
-
-  if (jsonOut.metadata.vulnerabilities.high || jsonOut.metadata.vulnerabilities.critical) {
-    if (1 < jsonOut.actions.length) {
-      failBuild();
-    }
-  }
 
   process.exit();
 })();

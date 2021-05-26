@@ -42,6 +42,7 @@ npm run start:servers
 Currently, display-test-app only supports opening snapshot iModels from the local disk. If you define the `SVT_STANDALONE_FILENAME` environment variable to contain the absolute path to an existing iModel file on your machine, then upon startup, a viewport displaying the contents of this iModel will be displayed. Otherwise, on startup the toolbar will have a button allowing you to select an iModel to open.
 
 display-test-app's UI consists of:
+
 * A toolbar containing tools for interacting with the currently-selected viewport.
 * A status bar at the top containing:
   * A key-in field into which key-in commands can be entered for execution.
@@ -54,6 +55,7 @@ display-test-app's UI consists of:
 Much of display-test-app's functionality can be efficiently accessed via the key-in field. Press the backtick key to focus the key-in field. As you type, available key-in commands matching the input will be displayed. Press `Enter` to execute the key-in. See the list of key-ins below.
 
 Viewports are displayed as floating windows. The currently-focused window is indicated by a bright title bar and border. Windows can be manipulated as follows:
+
 * Left-drag title bar: move the window.
 * Left-click cross in top-left corner: close the window.
 * Left-drag triangle in top-right corner: resize the window
@@ -93,6 +95,7 @@ rush install -c
 ## Environment Variables
 
 You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you will need to edit display-test-app's entry in apps.config.json. In the "env" section, add an entry corresponding to the desired property from the SVTConfiguration interface. The "env" section contains a JSON version of an SVTConfiguration object.
+
 * SVT_STANDALONE_FILENAME
   * Absolute path to an iModel to be opened on start-up.
 * SVT_STANDALONE_FILEPATH (browser only)
@@ -212,6 +215,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 ## Editing
 
 display-test-app supplies minimal features for editing the contents of an iModel, strictly for testing purposes. To use it:
+
 * Set SVT_READ_WRITE=1 in the environment.
 * Open an editable standalone iModel.
 * Use the key-ins below to make changes; typically:

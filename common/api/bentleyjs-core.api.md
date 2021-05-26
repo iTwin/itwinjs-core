@@ -113,7 +113,7 @@ export class BeTimePoint {
     plus(duration: BeDuration): BeTimePoint;
 }
 
-// @beta
+// @public
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
@@ -134,6 +134,8 @@ export enum BriefcaseStatus {
     CannotDownload = 131073,
     // (undocumented)
     CannotUpload = 131074,
+    // (undocumented)
+    ContainsDeletedChangeSets = 131080,
     // (undocumented)
     DownloadCancelled = 131079,
     // (undocumented)
@@ -1302,12 +1304,10 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     protected readonly _duplicatePolicy: DuplicatePolicy;
     protected _extractArray(): T[];
     findEqual(value: T): T | undefined;
-    // @beta
     findEquivalent(criterion: (element: T) => number): T | undefined;
     forEach(func: (value: T) => void): void;
     get(index: number): T | undefined;
     indexOf(value: T): number;
-    // @beta
     indexOfEquivalent(criterion: (element: T) => number): number;
     protected _insert(value: T, onInsert?: (value: T) => any): number;
     get isEmpty(): boolean;

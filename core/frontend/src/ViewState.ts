@@ -214,7 +214,6 @@ export abstract class ViewState extends ElementState {
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
    * @see [[DisplayStyleState.scheduleScript]].
-   * @beta
    */
   public get scheduleScript(): RenderSchedule.Script | undefined {
     return this.displayStyle.scheduleScript;
@@ -431,7 +430,6 @@ export abstract class ViewState extends ElementState {
   /** @internal */
   public createScene(context: SceneContext): void {
     this.forEachTileTreeRef((ref: TileTreeReference) => ref.addToScene(context));
-    context.viewport.forEachMapTreeRef((ref: TileTreeReference) => ref.addToScene(context));
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
@@ -1917,7 +1915,6 @@ export abstract class ViewState3d extends ViewState {
     const mapParams = new TextureMapping.Params();
     const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
     mapParams.textureMatrix = transform;
-    mapParams.textureMatrix.setTransform();
     matParams.textureMapping = new TextureMapping(texture, mapParams);
     const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
     if (!material)

@@ -82,7 +82,16 @@ export class Tiles {
   public get isDisposed() { return this._disposed; }
 
   /** @internal */
-  constructor(iModel: IModelConnection) { this._iModel = iModel; }
+  constructor(iModel: IModelConnection) {
+    this._iModel = iModel;
+
+    iModel.onEcefLocationChanged.addListener(() => {
+      for (const supplier of this._treesBySupplier.keys()) {
+        if (supplier.isEcefDependent)
+          this.dropSupplier(supplier);
+      }
+    });
+  }
 
   /** @internal */
   public dispose(): void {
@@ -167,14 +176,6 @@ export class Tiles {
           if (undefined === exclude || !exclude.has(tree))
             owner.dispose();
       });
-    }
-  }
-
-  /** @internal */
-  public onEcefChanged(): void {
-    for (const supplier of this._treesBySupplier.keys()) {
-      if (supplier.isEcefDependent)
-        this.dropSupplier(supplier);
     }
   }
 }
