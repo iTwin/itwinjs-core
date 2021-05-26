@@ -20,6 +20,12 @@
       }
     },
     {
+      "version": "2.15.6",
+      "tag": "@bentley/frontend-devtools_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.15.5",
       "tag": "@bentley/frontend-devtools_v2.15.5",
       "date": "Thu, 20 May 2021 15:06:26 GMT",
