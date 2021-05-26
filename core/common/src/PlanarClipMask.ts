@@ -87,14 +87,14 @@ export class PlanarClipMaskSettings {
   public readonly subCategoryOrElementIds?: CompressedId64Set;
   /** For [[PlanarClipMaskMode.Priority]], the priority value. */
   public readonly priority?: number;
-  /** A value between 0 and 1 indicating an override for mask transparency. A transparency of 0 (the default) indicates complete masking. 1 is completely transparent (no masking).
+  /** A value between 0 and 1 indicating an override for mask transparency. A transparency of 0 indicates complete masking. 1 is completely transparent (no masking).
    If no transparency is defined then the transparencies of the mask elements are used.
    */
   public readonly transparency?: number;
 
   /** Create a new [[PlanarClipMaskSettings]] object from its JSON representation. */
   public static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings {
-    if (!json)
+    if (!json || undefined === json.mode)
       return this.defaults;
 
     return new PlanarClipMaskSettings(json.mode, json.transparency, json.modelIds, json.subCategoryOrElementIds, json.priority);
@@ -129,7 +129,20 @@ export class PlanarClipMaskSettings {
 
   /** Create JSON object representing this [[PlanarClipMaskSettings]] */
   public toJSON(): PlanarClipMaskProps {
-    return { mode: this.mode, modelIds: this.modelIds, subCategoryOrElementIds: this.subCategoryOrElementIds, priority: this.priority, transparency: this.transparency  };
+    const props: PlanarClipMaskProps = { mode: this.mode };
+    if (undefined !== this.modelIds)
+      props.modelIds = this.modelIds;
+
+    if (undefined !== this.subCategoryOrElementIds)
+      props.subCategoryOrElementIds = this.subCategoryOrElementIds;
+
+    if (undefined !== this.priority)
+      props.priority = this.priority;
+
+    if (undefined !== this.transparency)
+      props.transparency = this.transparency;
+
+    return props;
   }
 
   /** Returns true if masking is enabled. */
@@ -147,21 +160,16 @@ export class PlanarClipMaskSettings {
 
   /** Create a copy of this TerrainSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
-   * @returns A TerrainSettings with all of its properties set to match those of`this`, except those explicitly defined in `changedProps`.
+   * @returns A PlanarClipMaskSettings with all of its properties set to match those of`this`, except those explicitly defined in `changedProps`.
    */
   public clone(changedProps?: PlanarClipMaskProps): PlanarClipMaskSettings {
     if (undefined === changedProps)
       return this;
 
-    const props = {
-      mode: changedProps.mode ?? this.mode,
-      transparency: changedProps.transparency ?? this.transparency,
-      modelIds: changedProps.modelIds ?? this.modelIds,
-      subCategoryOrElementIds: changedProps.subCategoryOrElementIds ?? this.subCategoryOrElementIds,
-      priority: changedProps.priority ?? this.priority,
-    };
-
-    return PlanarClipMaskSettings.fromJSON(props);
+    return PlanarClipMaskSettings.fromJSON({
+      ...this.toJSON(),
+      ...changedProps,
+    });
   }
 
   private constructor(mode: PlanarClipMaskMode, transparency?: number, modelIds?: CompressedId64Set, subCategoryOrElementIds?: CompressedId64Set, priority?: number) {
@@ -169,7 +177,7 @@ export class PlanarClipMaskSettings {
     this.modelIds = modelIds;
     this.subCategoryOrElementIds = subCategoryOrElementIds;
     this.priority = priority;
-    this.transparency = transparency;
+    this.transparency = undefined !== transparency ? Math.max(0, Math.min(1, transparency)) : undefined;
   }
 
   /** A default PlanarClipMask which masks nothing. */
