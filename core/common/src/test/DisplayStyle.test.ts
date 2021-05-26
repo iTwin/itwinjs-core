@@ -180,13 +180,13 @@ describe("DisplayStyleSettings", () => {
 
     it("synchronizes JSON and in-memory representations", () => {
       function expectMasks(initialProps: DisplayStylePlanarClipMaskProps[] | undefined,
-        func: (masks: Map<Id64String, PlanarClipMaskSettings>) => void,
+        func: (masks: Map<Id64String, PlanarClipMaskSettings>, style: DisplayStyleSettings) => void,
         expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>,
         expectedProps: DisplayStylePlanarClipMaskProps[] | undefined) {
         const styleProps = initialProps ? { styles: { planarClipOvr: initialProps } } : { };
         const style = new DisplayStyleSettings(styleProps);
 
-        func(style.planarClipMasks);
+        func(style.planarClipMasks, style);
 
         expect(Array.from(style.planarClipMasks)).to.deep.equal(expectedPairs);
         expect(style.toJSON().planarClipOvr).to.deep.equal(expectedProps);
@@ -197,10 +197,53 @@ describe("DisplayStyleSettings", () => {
         map.set("0x1", makeSettings(1));
         map.set("0x3", makeSettings(3));
       }, [["0x2", makeSettings(2)], ["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
-      [ makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3") ]);
+      [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
+
+      expectMasks([makeProps(1, "0x1")], (map) => map.set("0x1", makeSettings(2)),
+        [["0x1", makeSettings(2)]], [makeProps(2, "0x1")]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(3, "0x3"), makeProps(2, "0x2")], (map) => {
+        map.delete("0x2");
+        map.delete("0x4");
+      }, [["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
+      [makeProps(1, "0x1"), makeProps(3, "0x3")]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map, style) => {
+        style.toJSON().planarClipOvr = [makeProps(4, "0x4")];
+        expect(typeof (map as any).populate).to.equal("function");
+        (map as any).populate();
+      }, [["0x4", makeSettings(4)]], [makeProps(4, "0x4")]);
     });
 
     it("dispatches events", () => {
+      const events: Array<[Id64String, boolean]> = [];
+      const style = new DisplayStyleSettings({});
+      style.onRealityModelPlanarClipMaskChanged.addListener((id, mask) => {
+        expect(typeof id).to.equal("string");
+        events.push([id as string, undefined !== mask]);
+      });
+
+      const map = style.planarClipMasks;
+      function expectEvents(expected: Array<[Id64String, boolean]>): void {
+        expect(events).to.deep.equal(expected);
+        events.length = 0;
+      }
+
+      const mask = makeSettings(1);
+      map.set("0x1", mask);
+      expectEvents([["0x1", true]]);
+
+      map.delete("0x1");
+      expectEvents([["0x1", false]]);
+
+      map.set("0x1", mask);
+      map.set("0x2", mask);
+      expectEvents([["0x1", true], ["0x2", true]]);
+
+      map.clear();
+      expectEvents([["0x1", false], ["0x2", false]]);
     });
   });
 });
