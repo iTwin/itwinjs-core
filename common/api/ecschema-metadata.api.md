@@ -751,7 +751,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "None" | "Schema" | "SchemaItem" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint";
+export function diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem";
 
 // @beta
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
@@ -2440,7 +2440,7 @@ export enum PropertyType {
 }
 
 // @beta (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "PrimitiveArrayProperty" | "NavigationProperty" | "StructProperty" | "StructArrayProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
 
 // @beta (undocumented)
 export namespace PropertyTypeUtils {
@@ -2910,13 +2910,13 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     BaseClassDelta: {
-        new (ecClass: AnyClass, messageArgs: [EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined], category?: DiagnosticCategory): {
+        new (ecClass: AnyClass, messageArgs: [CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined, CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined] | undefined;
+            messageArgs?: [CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined, CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;

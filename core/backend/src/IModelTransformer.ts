@@ -748,8 +748,10 @@ export class IModelTransformer extends IModelExportHandler {
     return targetElementAspectProps;
   }
 
+  /** The directory where schemas will be exported, a random temporary directory */
   protected _schemaExportDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
 
+  /** Override of [IModelExportHandler.onExportSchema]($backend) that imports a schema into the target iModel when it is exported from the source iModel. */
   public async onExportSchema(schema: Schema): Promise<void> {
     const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
     const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
@@ -759,6 +761,9 @@ export class IModelTransformer extends IModelExportHandler {
     await this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
   }
 
+  /** Override of [IModelExportHandler.shouldExportSchema]($backend) that is called to determine if a schema should be exported
+   * @note the default behavior doesn't import schemas older than those already in the target
+   */
   public shouldExportSchema(schema: Schema): boolean {
     const versionInTarget = this.targetDb.querySchemaVersion(schema.name);
     if (versionInTarget === undefined)
