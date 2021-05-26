@@ -27,16 +27,6 @@ import { TestConfig } from "../TestConfig";
 // set imjs_test_imodel_bank_run_orchestrator=%SrcRoot%\imodel-bank\local-orchestrator\lib\server.js
 // set imjs_test_imodel_bank_logging_config=<somewhere>logging.config.json
 
-if (typeof before !== "undefined")
-  before(() => {
-    if (TestConfig.enableIModelBank && !TestConfig.enableMocks) {
-      RequestGlobalOptions.timeout = {
-        deadline: 60000,
-        response: 60000,
-      };
-    }
-  });
-
 let imodelBankClient: IModelBankClient;
 
 const authorizationClientFactory = (authScheme: string, userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient => {
