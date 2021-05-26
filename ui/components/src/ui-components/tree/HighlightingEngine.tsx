@@ -12,7 +12,7 @@ import { HighlightedText } from "../common/HighlightedText";
 
 /**
  * Active match info for highlightable [[Tree]]
- * @beta
+ * @public
  */
 export interface ActiveMatchInfo {
   nodeId: string;
@@ -21,7 +21,7 @@ export interface ActiveMatchInfo {
 
 /**
  * Properties for the [[HighlightingEngine]]
- * @beta
+ * @public
  */
 export interface HighlightableTreeProps {
   searchText: string;
@@ -30,7 +30,7 @@ export interface HighlightableTreeProps {
 
 /**
  * Properties for a highlightable [[TreeNode]]
- * @beta
+ * @public
  */
 export interface HighlightableTreeNodeProps {
   searchText: string;

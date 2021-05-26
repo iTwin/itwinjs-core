@@ -690,10 +690,10 @@ export interface BaseItemState {
     isVisible?: boolean;
 }
 
-// @beta
+// @public
 export function BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element;
 
-// @beta
+// @public
 export interface BasicNavigationWidgetProps {
     additionalHorizontalItems?: CommonToolbarItem[];
     additionalVerticalItems?: CommonToolbarItem[];
@@ -1941,7 +1941,7 @@ export const expandWidget: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "right" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -1957,7 +1957,7 @@ export const expandWidget: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "right" | "top";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -2024,7 +2024,7 @@ export const expandWidget: (base: {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "right" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -2122,7 +2122,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("@bentley/itwin-client").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("@bentley/itwin-client").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -4413,7 +4413,7 @@ export interface ProjectServices {
 }
 
 // @public @deprecated
-export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "style" | "ref" | "isInFooterMode" | "className" | "openWidget" | "key" | "onOpenWidget">>;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
 export class PropsHelper {
@@ -4636,10 +4636,10 @@ export class SelectionContextToolDefinitions {
 }
 
 // @public
-export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "style" | "ref" | "isInFooterMode" | "className" | "openWidget" | "key" | "onOpenWidget">>;
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "style" | "ref" | "isInFooterMode" | "className" | "openWidget" | "key" | "onOpenWidget">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -4765,7 +4765,7 @@ export const setPanelSize: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "right" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4781,7 +4781,7 @@ export const setPanelSize: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "right" | "top";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4848,7 +4848,7 @@ export const setPanelSize: (base: {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "right" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4868,7 +4868,7 @@ export const setPanelSize: (base: {
         readonly width: number;
         readonly height: number;
     };
-}, side: "bottom" | "left" | "right" | "top", size: number | undefined) => import("immer/dist/internal").WritableDraft<NineZoneState>;
+}, side: PanelSide, size: number | undefined) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @beta
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
@@ -4903,7 +4903,7 @@ export const setWidgetLabel: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "right" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4919,7 +4919,7 @@ export const setWidgetLabel: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "right" | "top";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4986,7 +4986,7 @@ export const setWidgetLabel: (base: {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "right" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -5019,7 +5019,7 @@ export const setWidgetState: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "right" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -5035,7 +5035,7 @@ export const setWidgetState: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "right" | "top";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -5102,7 +5102,7 @@ export const setWidgetState: (base: {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "right" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -5199,7 +5199,7 @@ export const showWidget: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "right" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -5215,7 +5215,7 @@ export const showWidget: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "right" | "top";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -5282,7 +5282,7 @@ export const showWidget: (base: {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "right" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -5334,7 +5334,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     }
 
 // @public
-export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "style" | "ref" | "isInFooterMode" | "className" | "openWidget" | "key" | "onOpenWidget">>;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -6646,13 +6646,13 @@ export function useActiveFrontstageDef(): FrontstageDef | undefined;
 // @beta
 export const useActiveFrontstageId: () => string;
 
-// @beta
+// @public
 export function useActiveIModelConnection(): IModelConnection | undefined;
 
 // @internal (undocumented)
 export function useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined;
 
-// @beta
+// @public
 export function useActiveViewport(): ScreenViewport | undefined;
 
 // @internal

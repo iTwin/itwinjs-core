@@ -227,9 +227,8 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
                 endDate={this.state.dataProvider.end}
                 initialDuration={this.state.dataProvider.initialDuration}
                 totalDuration={this.state.dataProvider.duration}
-                milestones={this.state.dataProvider.getMilestones()}
                 minimized={true}
-                alwaysMinimized={this.state.dataProvider.getMilestonesCount() > 0}
+                alwaysMinimized={true}
                 onChange={this.state.dataProvider.onAnimationFractionChanged}
                 onPlayPause={this.props.onPlayPause}
               />
