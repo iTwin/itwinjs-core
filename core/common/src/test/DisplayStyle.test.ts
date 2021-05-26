@@ -220,7 +220,7 @@ describe("DisplayStyleSettings", () => {
     it("dispatches events", () => {
       const events: Array<[Id64String, boolean]> = [];
       const style = new DisplayStyleSettings({});
-      style.onRealityModelPlanarClipMaskChanged.addListener((id, mask) => {
+      style.onPlanarClipMaskChanged.addListener((id, mask) => {
         expect(typeof id).to.equal("string");
         events.push([id as string, undefined !== mask]);
       });

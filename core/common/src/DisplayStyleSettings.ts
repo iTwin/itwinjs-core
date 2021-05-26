@@ -546,10 +546,8 @@ export class DisplayStyleSettings {
   public readonly onLightsChanged = new BeEvent<(newLights: LightSettings) => void>();
   /** Event raised just before changing the plan projection settings for a model. */
   public readonly onPlanProjectionSettingsChanged = new BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>();
-  /** Event raised just before changing the planar clip mask overrides for a reality model.
-   * `idOrIndex` is an `Id64String` for a persistent reality model, or an index into [[DisplayStyleSettingsProps.contextRealityModels]].
-   */
-  public readonly onRealityModelPlanarClipMaskChanged = new BeEvent<(idOrIndex: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => void>();
+  /** Event raised just before adding or removing an entry from [[planarClipMasks]]. */
+  public readonly onPlanarClipMaskChanged = new BeEvent<(modelId: Id64String, newSettings: PlanarClipMaskSettings | undefined) => void>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -594,7 +592,7 @@ export class DisplayStyleSettings {
         return app.anyOverridden ? app : undefined;
       });
 
-    this._planarClipMasks = new OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onRealityModelPlanarClipMaskChanged,
+    this._planarClipMasks = new OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onPlanarClipMaskChanged,
       (props) => props.modelId,
       (ovr, modelId) => { return { ...ovr.toJSON(), modelId }; },
       (props) => {
@@ -1038,11 +1036,6 @@ export class DisplayStyleSettings {
       this._excludedElements.reset("string" === typeof overrides.excludedElements ? overrides.excludedElements : [...overrides.excludedElements]);
 
     this.onOverridesApplied.raiseEvent(overrides);
-  }
-
-  /** @internal */
-  public raiseRealityModelPlanarClipMaskChangedEvent(idOrIndex: Id64String | number, ovr?: PlanarClipMaskSettings) {
-    this.onRealityModelPlanarClipMaskChanged.raiseEvent(idOrIndex, ovr);
   }
 }
 

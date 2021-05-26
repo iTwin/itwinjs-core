@@ -1097,7 +1097,8 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
-    removals.push(settings.onRealityModelPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    // ###TODO event for ContextRealityModelState.planarClipMask change needed?
 
     const analysisChanged = () => {
       this._changeFlags.setDisplayStyle();

@@ -487,7 +487,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return this.applyToRealityModel(modelIdOrIndex, (changeIndex: number, jsonContextRealityModels: any[]) => {
         jsonContextRealityModels[changeIndex].planarClipMask = mask;
         this._contextRealityModels[changeIndex].planarClipMask = maskState;
-        this.settings.raiseRealityModelPlanarClipMaskChangedEvent(changeIndex, mask);
+        // ###TODO? this.settings.raiseRealityModelPlanarClipMaskChangedEvent(changeIndex, mask);
         return true;
       });
     }
@@ -511,7 +511,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return this.applyToRealityModel(modelIdOrIndex, (changeIndex: number, jsonContextRealityModels: any[]) => {
         jsonContextRealityModels[changeIndex].planarClipMask = undefined;
         this._contextRealityModels[changeIndex].planarClipMask = undefined;
-        this.settings.raiseRealityModelPlanarClipMaskChangedEvent(changeIndex, undefined);
+        // ###TODO? this.settings.raiseRealityModelPlanarClipMaskChangedEvent(changeIndex, undefined);
         return true;
       });
     }
@@ -899,13 +899,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       }
     });
 
-    this.settings.onRealityModelPlanarClipMaskChanged.addListener((id: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => {
-      if (typeof id === "string") {
-        if (newSettings)
-          this._attachedRealityModelPlanarClipMasks.set(id, PlanarClipMaskState.create(newSettings));
-        else
-          this._attachedRealityModelPlanarClipMasks.delete(id);
-      }
+    this.settings.onPlanarClipMaskChanged.addListener((id, newSettings) => {
+      if (newSettings)
+        this._attachedRealityModelPlanarClipMasks.set(id, PlanarClipMaskState.create(newSettings));
+      else
+        this._attachedRealityModelPlanarClipMasks.delete(id);
     });
 
     // ###TODO contextRealityModels are a bit of a mess.

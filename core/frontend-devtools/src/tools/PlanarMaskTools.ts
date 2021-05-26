@@ -169,6 +169,19 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     this.setupAndPromptForNextAction();
     return EventHandled.No;
   }
+
+  protected createSubCategoryMask() {
+    return PlanarClipMaskSettings.createForElementsOrSubCategories(PlanarClipMaskMode.IncludeSubCategories, this._acceptedSubCategoryIds, this._acceptedModelIds, this._transparency);
+  }
+
+  protected createElementMask(option: "include" | "exclude") {
+    const mode = "include" === option ? PlanarClipMaskMode.IncludeElements : PlanarClipMaskMode.ExcludeElements;
+    return PlanarClipMaskSettings.createForElementsOrSubCategories(mode, this._acceptedElementIds, this._acceptedModelIds, this._transparency);
+  }
+
+  protected createModelMask() {
+    return PlanarClipMaskSettings.createForModels(this._acceptedModelIds, this._transparency);
+  }
 }
 /** Tool to mask background map by elements
  * @beta
@@ -183,7 +196,7 @@ export class MaskBackgroundMapByElementTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency) });
+    vp.changeBackgroundMapProps({ planarClipMask: this.createElementMask("include") });
   }
 }
 /** Tool to mask background map by excluded elements
@@ -199,7 +212,7 @@ export class MaskBackgroundMapByExcludedElementTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapByExcludedElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.ExcludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency) });
+    vp.changeBackgroundMapProps({ planarClipMask: this.createElementMask("exclude") });
   }
 }
 
@@ -217,7 +230,7 @@ export class MaskBackgroundMapBySubCategoryTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapBySubCategoryTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds, this._transparency) });
+    vp.changeBackgroundMapProps({ planarClipMask: this.createSubCategoryMask() });
   }
 }
 
@@ -234,7 +247,7 @@ export class MaskBackgroundMapByModelTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapByModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.Models, this._acceptedModelIds, undefined, this._transparency) });
+    vp.changeBackgroundMapProps({ planarClipMask: this.createModelMask() });
   }
 }
 
@@ -253,7 +266,7 @@ export class MaskRealityModelByElementTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetMaskModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency)!);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetMaskModelId!, this.createElementMask("include"));
   }
 }
 
@@ -272,7 +285,7 @@ export class MaskRealityModelByExcludedElementTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByExcludedElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetMaskModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.ExcludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency)!);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetMaskModelId!, this.createElementMask("exclude"));
   }
 }
 
@@ -293,7 +306,7 @@ export class MaskRealityModelByModelTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetMaskModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.Models, this._acceptedModelIds, undefined,  this._transparency)!);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetMaskModelId!, this.createModelMask());
   }
 }
 
@@ -313,7 +326,7 @@ export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelBySubCategoryTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetMaskModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds, this._transparency)!);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetMaskModelId!, this.createSubCategoryMask());
   }
 }
 
@@ -357,7 +370,8 @@ export class UnmaskRealityModelTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new UnmaskRealityModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetMaskModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds)!);
+    const settings = PlanarClipMaskSettings.createForElementsOrSubCategories(PlanarClipMaskMode.IncludeSubCategories, this._acceptedSubCategoryIds, this._acceptedModelIds);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetMaskModelId!, settings);
   }
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
