@@ -13,11 +13,10 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { RequestGlobalOptions, UserInfo } from "@bentley/itwin-client";
+import { UserInfo } from "@bentley/itwin-client";
 import { workDir } from "./TestConstants";
 import { createIModelBankFileHandler } from "./FileHandler";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
-import { TestConfig } from "../TestConfig";
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt
