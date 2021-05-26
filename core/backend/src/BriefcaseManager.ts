@@ -269,7 +269,7 @@ export class BriefcaseManager {
    * Then, if a requestContext is supplied, it releases a BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
    * associated files (that is, all files in the same directory that start with the briefcase name).
    * @param filePath the full file name of the Briefcase to delete
-   * @param requestContext context to delete
+   * @param requestContext context for releasing the briefcaseId
    */
   public static async deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void> {
     try {
