@@ -668,8 +668,12 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       return undefined;
 
     const drawArgs = super.createDrawArgs(context);
-    if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded)
-      drawArgs.location.origin.z += context.viewport.view.displayStyle.backgroundMapElevationBias;
+    if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded) {
+      const elevationBias = context.viewport.view.displayStyle.backgroundMapElevationBias;
+
+      if (undefined !== elevationBias)
+        drawArgs.location.origin.z += elevationBias;
+    }
 
     return drawArgs;
   }

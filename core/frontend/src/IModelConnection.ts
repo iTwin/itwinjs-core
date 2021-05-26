@@ -29,6 +29,7 @@ import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
+import { BingElevationProvider } from "./imodeljs-frontend";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -80,6 +81,8 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public readonly geoServices: GeoServices;
+  /** Provider for altitude data (calculated at center of project) */
+  public readonly altitudeProvider: ProjectAltitudeProvider;
   /** @internal Whether GCS has been disabled for this iModelConnection. */
   protected _gcsDisabled = false;
   /** @internal Return true if a GCS is not defined for this iModelConnection; also returns true if GCS is defined but disabled. */
@@ -225,6 +228,7 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
+    this.altitudeProvider = new ProjectAltitudeProvider(this);
   }
 
   /** Called prior to connection closing. Raises close events and calls tiles.dispose.
@@ -1023,5 +1027,26 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       val.set(thumbnail.image, 24); // image data at offset 24
       return IModelWriteRpcInterface.getClientForRouting(this._iModel.routingContext.token).saveThumbnail(this._iModel.getRpcProps(), val);
     }
+  }
+}
+
+export class ProjectAltitudeProvider {
+  public get geodeticToSeaLevel() {
+    return this._geodeticToSeaLevel;
+  }
+
+  public get projectCenterAltitude() {
+    return this._projectCenterAltitude;
+  }
+
+  private _geodeticToSeaLevel: number | undefined;
+  private _projectCenterAltitude: number | undefined;
+
+  constructor(iModel: IModelConnection) {
+    const elevationProvider = new BingElevationProvider();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    elevationProvider.getHeightValue(iModel.projectExtents.center, iModel, true).then((elevation) => this._projectCenterAltitude = elevation);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel).then((geodeticToSeaLevel) => this._geodeticToSeaLevel = geodeticToSeaLevel);
   }
 }
