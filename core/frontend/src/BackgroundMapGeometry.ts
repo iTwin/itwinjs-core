@@ -11,7 +11,7 @@ import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive
 import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
-import { BingElevationProvider, WebMercatorTilingScheme } from "./tile/internal";
+import { WebMercatorTilingScheme } from "./tile/internal";
 
 const scratchRange = Range3d.createNull();
 const scratchZeroPoint = Point3d.createZero();
