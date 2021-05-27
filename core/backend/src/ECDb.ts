@@ -6,7 +6,7 @@
  * @module ECDb
  */
 
-import { ClientRequestContext, DbResult, IDisposable, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import {
   Base64EncodedString, IModelError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
 } from "@bentley/imodeljs-common";
@@ -274,11 +274,9 @@ export class ECDb implements IDisposable {
 
   /** @internal */
   public get nativeDb(): IModelJsNative.ECDb {
-    if (!this._nativeDb)
-      throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
-
-    return this._nativeDb;
+    return this._nativeDb!;
   }
+
   /** Compute number of rows that would be returned by the ECSQL.
    *
    * See also:

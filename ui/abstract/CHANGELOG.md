@@ -1,6 +1,29 @@
 # Change Log - @bentley/ui-abstract
 
-This log was last generated on Mon, 17 May 2021 13:31:38 GMT and should not be manually modified.
+This log was last generated on Wed, 26 May 2021 15:55:19 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Adding ability to override isActive property for BackstageItem
+- Add `PropertyDescription.hideCompositePropertyLabel` flag to tell the renderers to not render array/struct property labels.
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+_Version update only_
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
 
 ## 2.15.3
 Mon, 17 May 2021 13:31:38 GMT
@@ -390,7 +413,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - In source documentation. Some learning docs & API changes.
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Started ui-components Learning doc section
-- Update doc tags for automatic UI creation 
+- Update doc tags for automatic UI creation
 - Refactor to remove duplicate ComponentGenerator instantiation. Rename files and components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
 - Add ConditionalBoolean support for isHidden and isDisabled properties.

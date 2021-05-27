@@ -1,6 +1,36 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 17 May 2021 13:31:38 GMT and should not be manually modified.
+This log was last generated on Wed, 26 May 2021 15:55:19 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Add support for child popup windows.
+- Add ability to not render array/struct property label in virtualized property grid
+- Add support for custom property category renderers.
+- Improved Multi-Value column filtering in the Table component
+- Move `VirtualizedPropertyGrid` related types from @alpha to @beta.
+- Fixed getting distinct values when Table rows are updated
+- Update to latest classnames package
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+### Updates
+
+- Fixed getting distinct values when Table rows are updated
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
 
 ## 2.15.3
 Mon, 17 May 2021 13:31:38 GMT
@@ -449,7 +479,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Fix toolbar overflow panel display.
-- Update to only show group separators if toolbar is not transparent. 
+- Update to only show group separators if toolbar is not transparent.
 - Fix toolbar error when scaling up UI.
 - Property grid horizontal layout updated according to UX requirements.
 - Fixed Table filter renderers after react-select version upgrade
@@ -921,7 +951,7 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Added DragDrop tests, added component withDragDrop HOC tests
 - Synchronizing navigation aids with view definition changes
 - Simplified property pane tooltips and improved Property Pane performance.
-- Simplified struct and array tooltips in Table component. 
+- Simplified struct and array tooltips in Table component.
 - Fix BeInspireTree's event listening functions to handle array inputs
 - Fix BeInspireTree's muting events with allowed number of triggers
 - Cache BeInspireTree.visible() result for better performance
@@ -1051,7 +1081,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix: Do not start search if input field is empty
 - Use strongly typed enums for identifying keyboard keys
 - PropertyGrid property editing and unit tests

@@ -82,7 +82,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     if (htmlElement) {
       const anchorOffset = htmlElement.getBoundingClientRect();
       position = { x: anchorOffset.left + location.x, y: anchorOffset.top + location.y };
-      childWindowId = UiFramework.ChildWindowManager.findChildWindowId(htmlElement.ownerDocument.defaultView);
+      childWindowId = UiFramework.childWindowManager.findChildWindowId(htmlElement.ownerDocument.defaultView);
     }
 
     const offset = -8;

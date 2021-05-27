@@ -33,12 +33,14 @@ export interface OnElementArg {
   iModel: IModelDb;
 }
 
-/** Argument for the `Element.onXxx` static methods that supply the properties of an Element to be inserted or updated.
+/** Argument for `Element.onInsert` and `Element.onUpdate` static methods.
  * @beta
  */
 export interface OnElementPropsArg extends OnElementArg {
-  /** The new properties of the Element affected by this method. */
-  props: Readonly<ElementProps>;
+  /** The properties of the Element affected by this method.
+   * @note the properties may be modified. If so the modified values will be inserted/updated.
+   */
+  props: ElementProps;
 }
 
 /** Argument for the `Element.onXxx` static methods that only supply the Id of the affected Element.
@@ -700,7 +702,7 @@ export class VolumeElement extends SpatialLocationElement {
 
 /** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]].
  * @note The associated ECClass was added to the BisCore schema in version 1.0.11.
- * @beta
+ * @public
  */
 export class SectionDrawingLocation extends SpatialLocationElement {
   /** The Id of the [[ViewDefinition]] to which this location refers. */
@@ -1564,7 +1566,7 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
 
 /** Describes how to animate a view of a [[GeometricModel]] to show change over time using a [RenderSchedule.Script]($common).
  * @note This class was introduced in version 01.00.13 of the BisCore ECSchema. It should only be used with [[IModelDb]]s containing that version or newer.
- * @beta
+ * @public
  */
 export class RenderTimeline extends InformationRecordElement {
   /** @internal */
