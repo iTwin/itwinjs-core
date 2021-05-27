@@ -6,7 +6,9 @@ import { expect } from "chai";
 import faker from "faker";
 import sinon from "sinon";
 import { DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { BisCoreSchema, CodeSpecs, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject } from "@bentley/imodeljs-backend";
+import {
+  BisCoreSchema, CodeSpecs, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject,
+} from "@bentley/imodeljs-backend";
 import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps } from "@bentley/imodeljs-common";
 import { Ruleset } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -178,6 +180,7 @@ describe("RulesetEmbedder", () => {
       modeledElement: definitionPartitionMock.object,
       name: "PresentationRules",
       classFullName: DefinitionModel.classFullName,
+      isPrivate: true,
     };
 
     rulesetCodeSpec.id = Id64.invalid;
@@ -191,6 +194,7 @@ describe("RulesetEmbedder", () => {
       model: modelId,
       code: DefinitionPartition.createCode(imodelMock.object, subjectId, "PresentationRules"),
       classFullName: DefinitionPartition.classFullName,
+      isPrivate: true,
     };
 
     elementsMock.setup((x) => x.tryGetElement(new Code({ spec: subjectCodeSpec.id, scope: rootSubjectMock.object.id, value: "PresentationRules" }))).returns(() => undefined);

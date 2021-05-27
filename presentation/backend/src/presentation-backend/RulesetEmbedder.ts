@@ -159,6 +159,7 @@ export class RulesetEmbedder {
       modeledElement: definitionPartition,
       name: this._rulesetModelName,
       classFullName: DefinitionModel.classFullName,
+      isPrivate: true,
     };
 
     const model = this._imodel.models.createModel(modelProps);
@@ -176,6 +177,7 @@ export class RulesetEmbedder {
       model: rulesetSubject.model,
       code: partitionCode,
       classFullName: DefinitionPartition.classFullName,
+      isPrivate: true,
     };
     const id = this._imodel.elements.insertElement(definitionPartitionProps);
     return this._imodel.elements.getElement(id);
