@@ -2633,43 +2633,31 @@ export namespace EditingFunctions {
         }
 }
 
-// @internal
+// @public
 export namespace EditManipulator {
-    // (undocumented)
     export enum EventType {
-        // (undocumented)
         Accept = 2,
-        // (undocumented)
         Cancel = 1,
-        // (undocumented)
         Synch = 0
     }
-    // (undocumented)
     export abstract class HandleProvider {
         constructor(iModel: IModelConnection);
         // (undocumented)
         protected clearControls(): void;
         protected abstract createControls(): Promise<boolean>;
-        // (undocumented)
         decorate(_context: DecorateContext): void;
         // (undocumented)
         iModel: IModelConnection;
         // (undocumented)
         protected _isActive: boolean;
         protected abstract modifyControls(_hit: HitDetail, _ev: BeButtonEvent): boolean;
-        // (undocumented)
         onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
-        // (undocumented)
         protected onDoubleClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
         // (undocumented)
         onManipulatorEvent(_eventType: EventType): void;
-        // (undocumented)
         onManipulatorToolEvent(_tool: Tool, event: ManipulatorToolEvent): void;
-        // (undocumented)
         protected onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
-        // (undocumented)
         onSelectionChanged(ev: SelectionSetEvent): void;
-        // (undocumented)
         protected onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
         // (undocumented)
         protected _removeDecorationListener?: () => void;
@@ -2677,25 +2665,21 @@ export namespace EditManipulator {
         protected _removeManipulatorToolListener?: () => void;
         // (undocumented)
         protected _removeSelectionListener?: () => void;
-        // (undocumented)
         protected stop(): void;
         // (undocumented)
         protected updateControls(): Promise<void>;
-        // (undocumented)
         protected updateDecorationListener(add: boolean): void;
     }
-    // (undocumented)
     export abstract class HandleTool extends InputCollector {
         constructor(manipulator: HandleProvider);
-        // (undocumented)
         protected abstract accept(_ev: BeButtonEvent): boolean;
-        // (undocumented)
         protected cancel(_ev: BeButtonEvent): boolean;
         // (undocumented)
         static hidden: boolean;
         protected init(): void;
         // (undocumented)
-        manipulator: HandleProvider;
+        readonly manipulator: HandleProvider;
+        protected onComplete(_ev: BeButtonEvent, event: EventType): Promise<EventHandled>;
         // (undocumented)
         onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
         // (undocumented)
@@ -2710,20 +2694,12 @@ export namespace EditManipulator {
         onTouchMove(ev: BeTouchEvent): Promise<void>;
         // (undocumented)
         static toolId: string;
+        protected get wantAccuSnap(): boolean;
     }
-    // (undocumented)
     export class HandleUtils {
         static adjustForBackgroundColor(color: ColorDef, vp: Viewport): ColorDef;
         static getArrowShape(baseStart?: number, baseWidth?: number, tipStart?: number, tipEnd?: number, tipWidth?: number, flangeStart?: number, flangeWidth?: number): Point3d[];
         static getArrowTransform(vp: Viewport, base: Point3d, direction: Vector3d, sizeInches: number): Transform | undefined;
-        // (undocumented)
-        static getBoresite(origin: Point3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Ray3d;
-        // (undocumented)
-        static isPointVisible(testPt: Point3d, vp: Viewport, borderPaddingFactor?: number): boolean;
-        // (undocumented)
-        static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
-        // (undocumented)
-        static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
     }
 }
 
@@ -2844,7 +2820,6 @@ export abstract class ElementSetTool extends PrimitiveTool {
     protected getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg>;
     // (undocumented)
     protected initAgendaDynamics(): Promise<boolean>;
-    protected get isControlDown(): boolean;
     protected isElementIdValid(id: Id64String, source: ModifyElementSource): boolean;
     protected isElementValidForOperation(hit: HitDetail, _out?: LocateResponse): Promise<boolean>;
     protected get isSelectByPoints(): boolean;
@@ -4905,6 +4880,7 @@ export abstract class InteractiveTool extends Tool {
     initLocateElements(enableLocate?: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
     // (undocumented)
     isCompatibleViewport(_vp: ScreenViewport, _isSelectedViewChange: boolean): boolean;
+    get isControlDown(): boolean;
     get isDynamicsStarted(): boolean;
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
@@ -11460,6 +11436,8 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     protected abstract updateViewClip(ev: BeButtonEvent, isAccept: boolean): boolean;
     // (undocumented)
     protected _viewRange: Range3d;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
 }
 
 // @internal
@@ -12226,6 +12204,7 @@ export abstract class Viewport implements IDisposable {
     isPixelSelectable(pixel: Pixel.Data): boolean;
     // @internal (undocumented)
     get isPointAdjustmentRequired(): boolean;
+    isPointVisibleXY(point: Point3d, coordSys?: CoordSystem, borderPaddingFactor?: number): boolean;
     // @internal (undocumented)
     get isSnapAdjustmentRequired(): boolean;
     isSubCategoryVisible(id: Id64String): boolean;

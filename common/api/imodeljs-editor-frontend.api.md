@@ -125,7 +125,6 @@ export abstract class CreateElementTool extends PrimitiveTool {
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     protected isComplete(_ev: BeButtonEvent): boolean;
-    protected get isControlDown(): boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     onPostInstall(): void;
