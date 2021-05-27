@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@bentley/bentleyjs-core";
 
 /** Describes how a [[SpatialClassifier]] affects the display of classified geometry - that is, geometry intersecting
  * the classifier.
@@ -161,7 +161,9 @@ export class SpatialClassifier {
     return new SpatialClassifier(props.modelId, props.name, SpatialClassifierFlags.fromJSON(props.flags), props.expand);
   }
 
-  /** Convert to JSON representation. */
+  /** Convert to JSON representation.
+   * @note This method always sets the [[SpatialClassifierProps.isActive]] property to `false`.
+   */
   public toJSON(): SpatialClassifierProps {
     return {
       modelId: this.modelId,
@@ -236,34 +238,44 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
   /** The classifier currently classifying the target reality model. The classifier passed to the setter must be one obtained from this set, or one equivalent to
    * one contained in this set; in the latter case, the equivalent classifier contained in this set becomes active.
    */
+  /** The classifier currently classifying the target reality model, if any.
+   * @see [[setActive]] to change the active classifier.
+   */
   public get active(): SpatialClassifier | undefined {
     return this._active;
   }
 
-  public set active(active: SpatialClassifier | undefined) {
+  /** Change the [[active]] classifier. The input must be a classifier belonging to this set, or equivalent to one in the set.
+   * If no equivalent classifier exists in the set, the active classifier remains unchanged.
+   * @param The classifier to set as active, or `undefined` to clear the active classifier.
+   * @returns the active classifier.
+   */
+  public setActive(active: SpatialClassifier | undefined): SpatialClassifier | undefined {
     const array = this._array;
     if (!array)
-      return;
+      return this.active;
 
     if (active) {
       active = this.findEquivalent(active);
       if (!active)
-        return;
+        return this.active;
     }
 
     if (active === this.active)
-      return;
+      return this.active;
 
     let propsIndex = -1;
     if (active) {
       propsIndex = array.findIndex((x) => active!.equalsProps(x));
       if (-1 === propsIndex)
-        return;
+        return this.active;
     }
 
     this._active = active;
     for (let i = 0; i < array.length; i++)
       array[i].isActive = (i === propsIndex);
+
+    return this.active;
   }
 
   /** Obtain an iterator over the classifiers contained in this set. */
@@ -286,6 +298,11 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
     return this.find((x) => x.equals(classifier));
   }
 
+  /** Return true if the specified classifier or one equivalent to it exists in this set. */
+  public has(classifier: SpatialClassifier): boolean {
+    return undefined !== this.findEquivalent(classifier);
+  }
+
   /** Add a classifier to this set. If an equivalent classifier already exists, the supplied classifier is not added.
    * @param classifier The classifier to add.
    * @returns The equivalent pre-existing classifier, if one existed; or the supplied classifier, if it was added to the set.
@@ -302,6 +319,44 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
     this._classifiers.push(classifier);
     array.push(classifier.toJSON());
     return classifier;
+  }
+
+  /** Remove the first classifier equivalent to `classifier` from this set.
+   * @param classifier The classifier to remove.
+   * @returns The classifier that was actually removed, or `undefined` if none was removed.
+   */
+  public delete(classifier: SpatialClassifier): SpatialClassifier | undefined {
+    const list = this._array;
+    if (!list)
+      return undefined;
+
+    const classifierIndex = this._classifiers.findIndex((x) => x.equals(classifier));
+    if (-1 === classifierIndex)
+      return undefined;
+
+    classifier = this._classifiers[classifierIndex];
+
+    const propsIndex = list.findIndex((x) => classifier.equalsProps(x));
+    assert(-1 !== propsIndex);
+    if (-1 === propsIndex)
+      return undefined;
+
+    list.splice(propsIndex, 1);
+    this._classifiers.splice(classifierIndex, 1);
+    if (list.length === 0)
+      this._json.classifiers = undefined;
+
+    if (classifier === this.active)
+      this._active = undefined;
+
+    return classifier;
+  }
+
+  /** Remove all classifiers from this set. */
+  public clear(): void {
+    this._classifiers.length = 0;
+    this._json.classifiers = undefined;
+    this._active = undefined;
   }
 
   private get _array(): SpatialClassifierProps[] | undefined {

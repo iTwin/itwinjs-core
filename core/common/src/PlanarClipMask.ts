@@ -29,8 +29,7 @@ export enum PlanarClipMaskMode {
   ExcludeElements = 5,
 }
 
-/** The default priority values for a [[PlanarClipMaskSettings]], based on model type. Models with a lower priority is masked by models with a higher priority
- * in [[PlanarClipMaskMode.Priority]].
+/** The default priority values for a [[PlanarClipMaskSettings]], based on model type. Models with a lower priority are masked by models with a higher priority.
  * The default can be overridden by [[PlanarClipMaskSettings.priority]].
  *  @public
  */
@@ -43,8 +42,6 @@ export enum PlanarClipMaskPriority {
   RealityModel = 0,
   /** A design model stored in the [IModelDb]($backend). */
   DesignModel = 2048,
-  /** The maximum supported priority. */
-  Maximum = 4096,
 }
 
 /** JSON representation of a [[PlanarClipMaskSettings]].

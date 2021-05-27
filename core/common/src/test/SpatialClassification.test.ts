@@ -4,122 +4,219 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SpatialClassifiers } from "../SpatialClassification";
+import { Id64String } from "@bentley/bentleyjs-core";
+import {
+  SpatialClassifier, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SpatialClassifierProps, SpatialClassifiers,
+  SpatialClassifiersContainer,
+} from "../SpatialClassification";
 
-/*
-describe("SpatialClassifiers", () => {
-  it("should construct from JSON", () => {
-    expect(new SpatialClassifiers({}).length).to.equal(0);
-
-    const classifierJson: SpatialClassifierProps[] = [{
-      modelId: "0x123",
-      expand: 456,
-      flags: new SpatialClassifierFlags().toJSON(),
-      name: "MyClassifier",
-      isActive: true,
-    }];
-
-    const classifiers = new SpatialClassifiers({ classifiers: classifierJson });
-    expect(classifiers.length).to.equal(1);
-    expect(classifiers.active).not.to.be.undefined;
-    expect(classifiers.active).to.equal(classifierJson[0]);
-  });
-
-  it("should set active classifier", () => {
-    const json = [
-      {
-        modelId: "0x123",
-        expand: 456,
-        flags: new SpatialClassifierFlags().toJSON(),
-        name: "123",
-        isActive: true,
-      },
-      {
-        modelId: "0x456",
-        expand: 123,
-        flags: new SpatialClassifierFlags().toJSON(),
-        name: "456",
-        isActive: true,
-      },
+describe("SpatialClassifierFlags", () => {
+  it("normalizes display mode", () => {
+    const tests: Array<[number, number | undefined, number | undefined]> = [
+      [ SpatialClassifierInsideDisplay.Off, undefined, undefined ],
+      [ SpatialClassifierInsideDisplay.On, undefined, undefined ],
+      [ SpatialClassifierInsideDisplay.Dimmed, undefined, undefined ],
+      [ SpatialClassifierInsideDisplay.Hilite, undefined, SpatialClassifierOutsideDisplay.Dimmed ],
+      [ SpatialClassifierInsideDisplay.ElementColor, undefined, SpatialClassifierOutsideDisplay.Dimmed ],
+      [ -1, SpatialClassifierInsideDisplay.ElementColor, SpatialClassifierOutsideDisplay.Dimmed ],
+      [ 5, SpatialClassifierInsideDisplay.ElementColor, SpatialClassifierOutsideDisplay.Dimmed ],
     ];
 
-    const sc = new SpatialClassifiers({ classifiers: json });
-    const prevActive = sc.active as SpatialClassificationProps.Properties;
-    expect(prevActive).not.to.be.undefined;
-    expect(prevActive.isActive).to.be.true;
-
-    // Two classifiers in json set as active - first one wins
-    expect(prevActive).to.equal(json[0]);
-    expect(json[0].isActive).to.be.true;
-    expect(json[1].isActive).to.be.false;
-
-    sc.active = undefined;
-    expect(prevActive.isActive).to.be.false;
-    expect(sc.active).to.be.undefined;
-
-    // Try to set active using instance not present in list
-    const clone = JSON.parse(JSON.stringify(json[0]));
-    sc.active = clone;
-    expect(sc.active).to.equal(json[0]);
-    expect(json[0].isActive).to.be.true;
-  });
-
-  it("should add a new classifier", () => {
-    const json = [{
-      modelId: "0x123",
-      expand: 456,
-      flags: new SpatialClassifierFlags().toJSON(),
-      name: "MyClassifier",
-      isActive: false,
-    }];
-
-    const sc = new SpatialClassifiers({ classifiers: json });
-    expect(sc.length).to.equal(1);
-    expect(sc.active).to.be.undefined;
-
-    const newJson = {
-      modelId: "0x456",
-      expand: 123,
-      flags: new SpatialClassifierFlags().toJSON(),
-      name: "NewClassifier",
-      isActive: true,
-    };
-
-    // push() makes a copy
-    const newClassifier = sc.push(newJson) as SpatialClassificationProps.Properties;
-    expect(newClassifier).not.to.be.undefined;
-    expect(newClassifier).not.to.equal(newJson);
-    expect(SpatialClassificationProps.equalClassifiers(newClassifier, newJson)).to.be.true;
-
-    expect(sc.length).to.equal(2);
-    expect(sc.active).to.be.undefined;
-    expect(newClassifier.isActive).to.be.false;
-
-    sc.active = newJson;
-    expect(sc.active).not.to.be.undefined;
-    expect(sc.active).to.equal(newClassifier);
-    expect(newClassifier.isActive).to.be.true;
-
-    sc.active = undefined;
-    newJson.modelId = "0x789";
-    sc.active = newJson;
-    expect(sc.active).to.be.undefined;
-  });
-
-  it("should not add duplicate classifier", () => {
-    const json: SpatialClassificationProps.Properties = {
-      modelId: "0x123",
-      expand: 456,
-      flags: new SpatialClassifierFlags().toJSON(),
-      name: "MyClassifier",
-      isActive: true,
-    };
-
-    const sc = new SpatialClassifiers({});
-    expect(sc.push(json)).not.to.be.undefined;
-
-    const clone = JSON.parse(JSON.stringify(json));
-    expect(sc.push(clone)).to.be.undefined;
+    for (const test of tests) {
+      const flags = SpatialClassifierFlags.fromJSON({ inside: test[0], outside: test[0] });
+      expect(flags.inside).to.equal(test[1] ?? test[0]);
+      expect(flags.outside).to.equal(test[2] ?? test[0]);
+    }
   });
 });
-*/
+
+describe("SpatialClassifiers", () => {
+  function makeClassifier(modelId: Id64String, name: string, flags = new SpatialClassifierFlags(), expand = 0) {
+    return new SpatialClassifier(modelId, name, flags, expand);
+  }
+
+  function makeClassifierProps(classifier: SpatialClassifier, isActive?: boolean) {
+    const props = classifier.toJSON();
+    if (undefined !== isActive)
+      props.isActive = isActive;
+
+    return props;
+  }
+
+  function expectJson(actual: SpatialClassifierProps[] | undefined, expected: SpatialClassifierProps[] | undefined) {
+    expect(actual).to.deep.equal(expected);
+  }
+
+  it("populates from JSON", () => {
+    const json: SpatialClassifiersContainer = { };
+    let set = new SpatialClassifiers({ });
+    expect(set.size).to.equal(0);
+    expect(json.classifiers).to.be.undefined;
+
+    const c1 = makeClassifier("0x1c", "c1");
+    const c2 = makeClassifier("0x2c", "c2", undefined, 12);
+    set = new SpatialClassifiers({ classifiers: [c1.toJSON(), c2.toJSON()] });
+    expect(set.size).to.equal(2);
+    expect(set.active).to.be.undefined;
+    expect(set.has(c1)).to.be.true;
+    expect(set.has(c2)).to.be.true;
+  });
+
+  it("uses first active classifier", () => {
+    const json: SpatialClassifiersContainer = {
+      classifiers: [
+        makeClassifierProps(makeClassifier("0x1c", "c1"), false),
+        makeClassifierProps(makeClassifier("0x2c", "c2"), true),
+        makeClassifierProps(makeClassifier("0x3c", "c3"), true),
+        makeClassifierProps(makeClassifier("0x4c", "c4"), false),
+      ],
+    };
+
+    const set = new SpatialClassifiers(json);
+    const active = set.active!;
+    expect(active).not.to.be.undefined;
+    expect(active.modelId).to.equal("0x2c");
+    for (const props of json.classifiers!)
+      expect(props.isActive).to.equal(props.modelId === "0x2c");
+  });
+
+  it("sets active classifier", () => {
+    const classifiers = [
+      makeClassifier("0x1", "1"),  makeClassifier("0x2", "2"), makeClassifier("0x3", "3"),
+    ];
+
+    const json = { classifiers: classifiers.map((x) => x.toJSON()) };
+    const set = new SpatialClassifiers(json);
+    expect(set.size).to.equal(3);
+    expect(set.active).to.be.undefined;
+
+    for (const classifier of set) {
+      expect(set.setActive(classifier)).to.equal(classifier);
+      expect(set.active).to.equal(classifier);
+      for (const props of json.classifiers)
+        expect(props.isActive).to.equal(props.name === classifier.name);
+
+      expect(set.setActive(undefined)).to.be.undefined;
+      expect(set.active).to.be.undefined;
+      for (const props of json.classifiers)
+        expect(props.isActive).to.be.false;
+    }
+
+    for (const classifier of classifiers) {
+      expect(set.setActive(classifier)).not.to.equal(classifier);
+      expect(set.active).not.to.equal(classifier);
+      expect(set.active).to.equal(set.findEquivalent(classifier));
+    }
+
+    const prevActive = set.active;
+    expect(prevActive).not.to.be.undefined;
+    expect(set.setActive(makeClassifier("0x4", "4"))).to.equal(prevActive);
+    expect(set.active).to.equal(prevActive);
+
+    expect(set.setActive(undefined)).to.be.undefined;
+    expect(set.active).to.be.undefined;
+
+    expect(set.setActive(makeClassifier("0x5", "5"))).to.be.undefined;
+    expect(set.active).to.be.undefined;
+  });
+
+  it("adds classifiers", () => {
+    const json = { classifiers: [ makeClassifier("0x1", "1").toJSON() ] };
+    const set = new SpatialClassifiers(json);
+    expect(set.size).to.equal(1);
+
+    const c2 = makeClassifier("0x2", "2");
+    expect(set.add(c2)).to.equal(c2);
+    expect(set.size).to.equal(2);
+    expect(set.has(c2)).to.be.true;
+
+    const c1 = makeClassifier("0x1", "1");
+    expect(set.add(c1)).not.to.equal(c1);
+    expect(set.size).to.equal(2);
+    expect(set.add(c1)).to.equal(set.findEquivalent(c1));
+    expect(set.has(c1)).to.be.true;
+
+    const c = makeClassifier("0x1", "1", undefined, 12);
+    expect(set.add(c)).to.equal(c);
+    expect(set.size).to.equal(3);
+    expect(set.has(c)).to.be.true;
+
+    expectJson(json.classifiers, [
+      makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON(), makeClassifier("0x1", "1", undefined, 12).toJSON(),
+    ]);
+  });
+
+  it("deletes classifiers", () => {
+    const json = { classifiers: [ makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON(), makeClassifier("0x3", "3").toJSON() ] };
+    const set = new SpatialClassifiers(json);
+    expect(set.size).to.equal(3);
+
+    const c2 = set.findEquivalent(makeClassifier("0x2", "2"))!;
+    expect(c2).not.to.be.undefined;
+    expect(set.delete(c2)).to.equal(c2);
+    expect(set.size).to.equal(2);
+    expect(set.delete(c2)).to.be.undefined;
+    expect(set.size).to.equal(2);
+    expectJson(json.classifiers, [ makeClassifier("0x1", "1").toJSON(), makeClassifier("0x3", "3").toJSON() ]);
+
+    const c1 = makeClassifier("0x1", "1");
+    const c1FromSet = set.findEquivalent(c1)!;
+    expect(c1FromSet).not.to.be.undefined;
+    expect(c1FromSet).not.to.equal(c1);
+    expect(set.delete(c1)).to.equal(c1FromSet);
+    expect(set.size).to.equal(1);
+    expectJson(json.classifiers, [ makeClassifier("0x3", "3").toJSON() ]);
+
+    for (const c of set)
+      expect(set.delete(c)).to.equal(c);
+
+    expect(set.size).to.equal(0);
+    expectJson(json.classifiers, undefined);
+
+    expect(set.add(makeClassifier("0x1", "1"))).not.to.be.undefined;
+    expect(set.size).to.equal(1);
+    expectJson(json.classifiers, [ makeClassifier("0x1", "1").toJSON() ]);
+
+    expect(set.delete(makeClassifier("0x4", "4"))).to.be.undefined;
+    expect(set.size).to.equal(1);
+  });
+
+  it("resets active classifier if deleted", () => {
+    const set = new SpatialClassifiers({ classifiers: [
+      makeClassifier("0x1", "1").toJSON(), makeClassifierProps(makeClassifier("0x2", "2"), true), makeClassifier("0x3", "3").toJSON(),
+    ]});
+    expect(set.active!.name).to.equal("2");
+
+    set.delete(set.active!);
+    expect(set.active).to.be.undefined;
+
+    expect(set.setActive(makeClassifier("0x3", "3"))).not.to.be.undefined;
+    expect(set.active).not.to.be.undefined;
+    set.delete(makeClassifier("0x1", "1"));
+    expect(set.active).not.to.be.undefined;
+    expect(set.active!.name).to.equal("3");
+
+    set.delete(makeClassifier("0x3", "3"));
+    expect(set.active).to.be.undefined;
+    expect(set.size).to.equal(0);
+  });
+
+  it("clears classifiers", () => {
+    const json = { classifiers: [ makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON() ] };
+    const set = new SpatialClassifiers(json);
+    expect(set.size).to.equal(2);
+
+    set.clear();
+    expect(set.size).to.equal(0);
+    expectJson(json.classifiers, undefined);
+  });
+
+  it("reset active classifier when cleared", () => {
+    const set = new SpatialClassifiers({ classifiers: [
+      makeClassifierProps(makeClassifier("0x1", "1"), true), makeClassifier("0x2", "2").toJSON(),
+    ]});
+    expect(set.active).not.to.be.undefined;
+    set.clear();
+    expect(set.active).to.be.undefined;
+  });
+});

@@ -5478,7 +5478,6 @@ export enum PlanarClipMaskPriority {
     BackgroundMap = -2048,
     DesignModel = 2048,
     GlobalRealityModel = -1024,
-    Maximum = 4096,
     RealityModel = 0
 }
 
@@ -7542,10 +7541,13 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
     [Symbol.iterator](): Iterator<SpatialClassifier>;
     constructor(container: SpatialClassifiersContainer);
     get active(): SpatialClassifier | undefined;
-    set active(active: SpatialClassifier | undefined);
     add(classifier: SpatialClassifier): SpatialClassifier;
+    clear(): void;
+    delete(classifier: SpatialClassifier): SpatialClassifier | undefined;
     find(criterion: (classifier: SpatialClassifier) => boolean): SpatialClassifier | undefined;
     findEquivalent(classifier: SpatialClassifier): SpatialClassifier | undefined;
+    has(classifier: SpatialClassifier): boolean;
+    setActive(active: SpatialClassifier | undefined): SpatialClassifier | undefined;
     get size(): number;
 }
 
