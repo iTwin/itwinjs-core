@@ -17,7 +17,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, NpcCenter, Placement, Placement2d,
+  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d,
   Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
   SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -1565,6 +1565,31 @@ export abstract class Viewport implements IDisposable {
       this.onChangeView.raiseEvent(this, prevView);
       this._changeFlags.setViewState();
     }
+  }
+
+  /** Determine whether the supplied point is visible in the viewport rectangle.
+   * @param point the point to test
+   * @param coordSys the coordinate system of the specified point
+   * @param borderPaddingFactor optional border for testing with inset view rectangle.
+   */
+  public isPointVisibleXY(point: Point3d, coordSys: CoordSystem = CoordSystem.World, borderPaddingFactor: number = 0.0): boolean {
+    let testPtView = point;
+    switch (coordSys) {
+      case CoordSystem.Npc:
+        testPtView = this.npcToView(point);
+        break;
+      case CoordSystem.World:
+        testPtView = this.worldToView(point);
+        break;
+    }
+
+    const frustum = this.getFrustum(CoordSystem.View);
+    const screenRangeX = frustum.points[Npc._000].distance(frustum.points[Npc._100]);
+    const screenRangeY = frustum.points[Npc._000].distance(frustum.points[Npc._010]);
+    const xBorder = screenRangeX * borderPaddingFactor;
+    const yBorder = screenRangeY * borderPaddingFactor;
+
+    return (!(testPtView.x < xBorder || testPtView.x > (screenRangeX - xBorder) || testPtView.y < yBorder || testPtView.y > (screenRangeY - yBorder)));
   }
 
   /** Computes the range of npc depth values for a region of the screen

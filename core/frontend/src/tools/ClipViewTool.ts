@@ -15,6 +15,7 @@ import {
 import { ClipStyle, ColorDef, LinePixels, Placement2d, Placement2dProps, Placement3d } from "@bentley/imodeljs-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
 import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
+import { CoordSystem } from "../CoordSystem";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -1048,11 +1049,13 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     }
   }
 
+  protected get wantAccuSnap(): boolean { return false; }
+
   protected init(): void {
-    this.receivedDownEvent = true;
-    this.initLocateElements(false, false, undefined, CoordinateLockOverrides.All); // Disable locate/snap/locks for control modification; overrides state inherited from suspended primitive...
+    super.init();
     AccuDrawHintBuilder.deactivate();
   }
+
   protected abstract updateViewClip(ev: BeButtonEvent, isAccept: boolean): boolean;
   protected abstract drawViewClip(context: DecorateContext): void;
 
@@ -1791,7 +1794,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
       // For single plane clip, choose location for handle that's visible in the current view...
       if (1 === this._controls.length && undefined !== this._clipPlanes && undefined !== this._clipPlanesLoops && this._clipPlanesLoops.length > 0) {
-        if (!EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].origin, vp, 0.05)) {
+        if (!vp.isPointVisibleXY(this._controls[iFace].origin, CoordSystem.World, 0.05)) {
           const geom = this._clipPlanesLoops[0];
           if (geom instanceof Loop && geom.children.length > 0) {
             const child = geom.getChild(0);
@@ -1811,7 +1814,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
               }
             }
           }
-        } else if (undefined !== this._controls[iFace].floatingOrigin && EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].floatingOrigin!, vp, 0.1)) {
+        } else if (undefined !== this._controls[iFace].floatingOrigin && vp.isPointVisibleXY(this._controls[iFace].floatingOrigin!, CoordSystem.World, 0.1)) {
           this._controls[iFace].origin.setFrom(this._controls[iFace].floatingOrigin);
           this._controls[iFace].floatingOrigin = undefined;
         }
