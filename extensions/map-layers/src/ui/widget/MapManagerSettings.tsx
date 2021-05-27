@@ -44,12 +44,6 @@ function getHeightOriginModeFromKey(mode: string): TerrainHeightOriginMode {
   return TerrainHeightOriginMode.Ground;
 }
 
-function displayElevationError(): void {
-  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error,
-    MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.InvalidElevationError"),
-    MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.InvalidElevationDetails")));
-}
-
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapManagerSettings() {
   const { activeViewport } = useSourceMapContext();
@@ -108,13 +102,9 @@ export function MapManagerSettings() {
   }, [updateMaskingSettings]);
 
   const handleElevationChange = React.useCallback((value: number | undefined, _stringValue: string) => {
-    if (value === null) {
-      displayElevationError();
-    } else {
-      if (value) {
-        updateBackgroundMap({ groundBias: value });
-        setGroundBias(value);
-      }
+    if (value != undefined) {
+      updateBackgroundMap({ groundBias: value });
+      setGroundBias(value);
     }
   }, [updateBackgroundMap]);
 
