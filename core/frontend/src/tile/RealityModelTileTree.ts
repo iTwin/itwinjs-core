@@ -12,7 +12,7 @@ import {
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import {
   Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings,
-  ViewFlagOverrides, ViewFlagPresence,
+  SpatialClassifiers, ViewFlagOverrides, ViewFlagPresence,
 } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -24,7 +24,6 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { RenderMemory } from "../render/RenderMemory";
-import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import { ViewState } from "../ViewState";
