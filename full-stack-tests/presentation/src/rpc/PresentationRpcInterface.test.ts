@@ -32,9 +32,6 @@ describe("PresentationRpcInterface", () => {
       rpcInterface = RpcManager.getClientForInterface(PresentationRpcInterface);
     });
 
-    afterEach(() => {
-    });
-
     it("returns properties for requested element", async () => {
       const result = await rpcInterface.getElementProperties(imodel.getRpcProps(), {
         elementId: "0x1",
