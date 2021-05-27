@@ -243,7 +243,10 @@ export class IModelHubAccess {
       return [];
 
     const query = new ChangeSetQuery();
-    query.betweenChangeSets(after, range.end);
+    if (!range.end)
+      query.fromId(after);
+    else
+      query.betweenChangeSets(range.end, after);
 
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(arg.iModelId);
     let changeSets: ChangeSet[];

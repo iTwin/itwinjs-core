@@ -106,7 +106,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isFalse(IModelJsFs.existsSync(pathname), `Briefcase continues to exist at ${pathname}`);
   });
 
-  it.only("should reuse checkpoints", async () => {
+  it("should reuse checkpoints", async () => {
     const iModel1 = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
@@ -141,7 +141,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isFalse(IModelJsFs.existsSync(pathname3));
   });
 
-  it("should open iModels of specific versions from the Hub", async () => {
+  it.only("should open iModels of specific versions from the Hub", async () => {
     const iModelFirstVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON() });
     assert.exists(iModelFirstVersion);
     assert.strictEqual<string>(iModelFirstVersion.changeSetId!, "");
