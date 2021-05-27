@@ -86,7 +86,7 @@ export * from "./SkyBox";
 export * from "./Snapping";
 export * from "./SolarCalculate";
 export * from "./SolarShadows";
-export * from "./SpatialClassificationProps";
+export * from "./SpatialClassification";
 export * from "./SubCategoryAppearance";
 export * from "./SubCategoryOverride";
 export * from "./TerrainSettings";

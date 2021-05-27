@@ -12,7 +12,7 @@ import {
 } from "../DisplayStyleSettings";
 import { LinePixels } from "../LinePixels";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
-import { SpatialClassificationProps } from "../SpatialClassificationProps";
+import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
@@ -398,10 +398,9 @@ describe("DisplayStyleSettings overrides", () => {
         modelId: "0x123",
         expand: 0.5,
         flags: {
-          inside: SpatialClassificationProps.Display.Off,
-          outside: SpatialClassificationProps.Display.Dimmed,
+          inside: SpatialClassifierInsideDisplay.Off,
+          outside: SpatialClassifierOutsideDisplay.Dimmed,
           isVolumeClassifier: true,
-          type: 0,
         },
         name: "classifier",
         isActive: true,
@@ -554,10 +553,9 @@ describe("DisplayStyleSettings overrides", () => {
           modelId: "0x321",
           expand: 1.5,
           flags: {
-            inside: SpatialClassificationProps.Display.Dimmed,
-            outside: SpatialClassificationProps.Display.On,
+            inside: SpatialClassifierInsideDisplay.Dimmed,
+            outside: SpatialClassifierOutsideDisplay.On,
             isVolumeClassifier: false,
-            type: 0,
           },
           name: "bing",
           isActive: true,

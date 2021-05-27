@@ -27,7 +27,7 @@ import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProje
 import { RenderSchedule } from "./RenderSchedule";
 import { SkyBoxProps } from "./SkyBox";
 import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows";
-import { SpatialClassificationProps } from "./SpatialClassificationProps";
+import { SpatialClassifierProps } from "./SpatialClassification";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
@@ -93,7 +93,7 @@ export interface ContextRealityModelProps {
   name?: string;
   description?: string;
   /** @beta */
-  classifiers?: SpatialClassificationProps.Properties[];
+  classifiers?: SpatialClassifierProps[];
   /** Masking to be applied to the reality model. */
   planarClipMask?: PlanarClipMaskProps;
   /** Appearance overrides.  Only the color, transparency, emphasized and nonLocatable properties are applicable.

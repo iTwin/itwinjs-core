@@ -562,7 +562,14 @@ public;SolarLightProps
 public;SolarShadowSettings
 public;SolarShadowSettingsProps
 public;SourceAndTarget
-beta;SpatialClassificationProps
+public;SpatialClassifier
+public;SpatialClassifierFlags
+public;SpatialClassifierFlagsProps
+public;SpatialClassifierInsideDisplay
+public;SpatialClassifierOutsideDisplay
+public;SpatialClassifierProps
+public;SpatialClassifiers 
+public;SpatialClassifiersContainer
 public;SpatialViewDefinitionProps 
 public;StandaloneOpenOptions = OpenDbKey
 beta;StorageValue = string | number | boolean | null | Uint8Array

@@ -1560,7 +1560,7 @@ export interface ContextRealityModelProps {
     // @beta
     appearanceOverrides?: FeatureAppearanceProps;
     // @beta (undocumented)
-    classifiers?: SpatialClassificationProps.Properties[];
+    classifiers?: SpatialClassifierProps[];
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -7480,47 +7480,78 @@ export interface SourceAndTarget {
     targetId: Id64String;
 }
 
-// @beta
-export namespace SpatialClassificationProps {
-    export interface Classifier {
-        expand: number;
-        flags: FlagsProps;
-        modelId: Id64String;
-        name: string;
-    }
-    export enum Display {
-        Dimmed = 2,
-        ElementColor = 4,
-        Hilite = 3,
-        Off = 0,
-        On = 1
-    }
-    export function equalClassifiers(lhs: Classifier, rhs: Classifier): boolean;
-    export function equalFlags(lhs: FlagsProps, rhs: FlagsProps): boolean;
-    export function equalProperties(lhs: Properties, rhs: Properties): boolean;
-    export class Flags implements FlagsProps {
-        constructor(inside?: Display, outside?: Display, isVolumeClassifier?: boolean);
-        // (undocumented)
-        inside: Display;
-        // (undocumented)
-        isVolumeClassifier: boolean;
-        // (undocumented)
-        outside: Display;
-        readonly type = 0;
-    }
-    export interface FlagsProps {
-        // (undocumented)
-        inside: SpatialClassificationProps.Display;
-        // (undocumented)
-        isVolumeClassifier?: boolean;
-        // (undocumented)
-        outside: SpatialClassificationProps.Display;
-        readonly type: number;
-    }
-    export interface Properties extends Classifier {
-        // (undocumented)
-        isActive: boolean;
-    }
+// @public
+export class SpatialClassifier {
+    constructor(modelId: Id64String, name: string, flags: SpatialClassifierFlags, expand?: number);
+    equals(other: SpatialClassifier): boolean;
+    equalsProps(props: SpatialClassifierProps): boolean;
+    readonly expand: number;
+    readonly flags: SpatialClassifierFlags;
+    static fromJSON(props: SpatialClassifierProps): SpatialClassifier;
+    readonly modelId: Id64String;
+    readonly name: string;
+    toJSON(): SpatialClassifierProps;
+}
+
+// @public
+export class SpatialClassifierFlags {
+    constructor(inside?: SpatialClassifierInsideDisplay, outside?: SpatialClassifierOutsideDisplay, isVolumeClassifier?: boolean);
+    equals(other: SpatialClassifierFlags): boolean;
+    equalsProps(props: SpatialClassifierFlagsProps): boolean;
+    static fromJSON(props: SpatialClassifierFlagsProps): SpatialClassifierFlags;
+    readonly inside: SpatialClassifierInsideDisplay;
+    readonly isVolumeClassifier: boolean;
+    readonly outside: SpatialClassifierOutsideDisplay;
+    toJSON(): SpatialClassifierFlagsProps;
+}
+
+// @public
+export interface SpatialClassifierFlagsProps {
+    inside: SpatialClassifierInsideDisplay;
+    isVolumeClassifier?: boolean;
+    outside: SpatialClassifierOutsideDisplay;
+}
+
+// @public
+export enum SpatialClassifierInsideDisplay {
+    Dimmed = 2,
+    ElementColor = 4,
+    Hilite = 3,
+    Off = 0,
+    On = 1
+}
+
+// @public
+export enum SpatialClassifierOutsideDisplay {
+    Dimmed = 2,
+    Off = 0,
+    On = 1
+}
+
+// @public
+export interface SpatialClassifierProps {
+    expand: number;
+    flags: SpatialClassifierFlagsProps;
+    isActive?: boolean;
+    modelId: Id64String;
+    name: string;
+}
+
+// @public
+export class SpatialClassifiers implements Iterable<SpatialClassifier> {
+    [Symbol.iterator](): Iterator<SpatialClassifier>;
+    constructor(container: SpatialClassifiersContainer);
+    get active(): SpatialClassifier | undefined;
+    set active(active: SpatialClassifier | undefined);
+    add(classifier: SpatialClassifier): SpatialClassifier;
+    find(criterion: (classifier: SpatialClassifier) => boolean): SpatialClassifier | undefined;
+    findEquivalent(classifier: SpatialClassifier): SpatialClassifier | undefined;
+    get size(): number;
+}
+
+// @public
+export interface SpatialClassifiersContainer {
+    classifiers?: SpatialClassifierProps[];
 }
 
 // @public
