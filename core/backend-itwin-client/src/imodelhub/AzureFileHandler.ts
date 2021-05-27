@@ -20,7 +20,7 @@ import {
 } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "../util/AzCopy";
-import { BlobDownloader, ProgressData } from "./BlobDownloader";
+import { BlobDownloader, ConfigData, ProgressData } from "./BlobDownloader";
 
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
@@ -115,15 +115,16 @@ export class AzureFileHandler implements FileHandler {
   public agent?: https.Agent;
   private _threshold: number;
   private _useDownloadBuffer: boolean | undefined;
-
+  private _config: ConfigData | undefined;
   /**
    * Constructor for AzureFileHandler.
    * @param useDownloadBuffer Should Buffering be used when downloading files. If undefined, buffering is enabled only for Azure File Shares mounted with a UNC path.
    * @param threshold Minimum chunk size in bytes for a single file write.
    */
-  constructor(useDownloadBuffer?: boolean, threshold = 1024 * 1024 * 20) {
+  constructor(useDownloadBuffer?: boolean, threshold = 1024 * 1024 * 20, config?: ConfigData ) {
     this._threshold = threshold;
     this._useDownloadBuffer = useDownloadBuffer;
+    this._config = config;
   }
 
   /** Check if using Azure File Share with UNC path. This is a temporary optimization for Design Review, until they move to using SSD disks. */
@@ -141,7 +142,6 @@ export class AzureFileHandler implements FileHandler {
       return;
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(dirPath));
-
     fs.mkdirSync(dirPath);
   }
 
@@ -192,7 +192,7 @@ export class AzureFileHandler implements FileHandler {
         progressCallback({percent: data.percentage,loaded: data.bytesDone, total: data.bytesTotal});
       lastProgressStat = data;
     };
-    await BlobDownloader.downloadFile(downloadUrl, downloadToPathname, {}, onProgress, cancelRequest);
+    await BlobDownloader.downloadFile(downloadUrl, downloadToPathname, this._config, onProgress, cancelRequest);
     if (!fs.existsSync(downloadToPathname)) {
       throw new Error("file not found");
     }

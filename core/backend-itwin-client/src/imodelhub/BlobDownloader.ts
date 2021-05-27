@@ -23,7 +23,7 @@ export interface ConfigData {
   checkMD5AfterDownload?: boolean;
   simultaneousDownloads?: number;
   downloadRateWindowSize?: number; /* specify time in seconds for window size for download rate*/
-  progressReportAfter?: number; /* specify time in seconds when to report progress */
+  progressReportAfter?: number; /* specify time in millsecond when to report progress */
   enableResumableDownload?: boolean;
 }
 enum BlockState {
@@ -51,6 +51,7 @@ interface SessionData {
   resumeData: ResumeData;
   startedOn: number;
   bytesDownloaded: number;
+  bytesDownloadedInPreviousSession: number;
   speedWindowInSecond: number;
   speedWindowBytes: number;
   speedWindowResetOn: number;
@@ -95,7 +96,7 @@ export class BlobDownloader {
     return hash.read() as string;
   }
   private static async readHeader(downloadUrl: string) {
-    const response = await got(downloadUrl, { method: "HEAD" });
+    const response = await got(downloadUrl, { method: "HEAD", retry: 3, throwHttpErrors: true});
     const findHeader = (header: string) => {
       return response.rawHeaders.find((v: string) => {
         return v.toLowerCase() === header.toLowerCase();
@@ -131,7 +132,7 @@ export class BlobDownloader {
       checkMD5AfterDownload: false,
       simultaneousDownloads: 4,
       downloadRateWindowSize: 2,
-      progressReportAfter: 1,
+      progressReportAfter: 500,
       enableResumableDownload: true,
     };
     if (Number.isInteger(userConfig.blockSize)) {
@@ -162,11 +163,11 @@ export class BlobDownloader {
       if (userConfig.downloadRateWindowSize! <= 0 || userConfig.simultaneousDownloads! >= 10)
         throw new Error("downloadRateWindowSize must be >= 1 and <= 10");
     } else {
-      userConfig.simultaneousDownloads = defaultConfig.simultaneousDownloads;
+      userConfig.downloadRateWindowSize = defaultConfig.downloadRateWindowSize;
     }
     if (Number.isInteger(userConfig.progressReportAfter)) {
-      if (userConfig.progressReportAfter! <= 0 || userConfig.progressReportAfter! >= 10)
-        throw new Error("progressReportAfter must be >= 1 and <= 10");
+      if (userConfig.progressReportAfter! <= 0 || userConfig.progressReportAfter! >= 10000)
+        throw new Error("progressReportAfter must be >= 1 and <= 10000");
     } else {
       userConfig.progressReportAfter = defaultConfig.progressReportAfter;
     }
@@ -232,6 +233,7 @@ export class BlobDownloader {
     const sessionData = {
       startedOn: Date.now(),
       bytesDownloaded: 0,
+      bytesDownloadedInPreviousSession: 0,
       failedBocks: 0,
       speedWindowInSecond: 2,
       speedWindowBytes: 0,
@@ -260,6 +262,9 @@ export class BlobDownloader {
     };
     if (cancelRequest) {
       cancelRequest.cancel = () => {
+        if (sessionData.cancelled || !this.hasPendingBlocks(sessionData.resumeData))
+          return false;
+
         sessionData.cancelled = true;
         return true;
       };
@@ -287,6 +292,10 @@ export class BlobDownloader {
     if (!fs.existsSync(downloadFile)) {
       this.allocateFile(sessionData.resumeData.tempName, blobSize);
     }
+    sessionData.resumeData.blocks.forEach((blockState, blockId) => {
+      if (blockState === BlockState.Downloaded)
+        sessionData.bytesDownloadedInPreviousSession += this.getBlockSize(sessionData.resumeData, blockId);
+    });
     return sessionData;
   }
   private static saveResumeData(session: SessionData) {
@@ -308,6 +317,8 @@ export class BlobDownloader {
     copy.version = this.resumeDataVer;
     copy.lastMod = Date.now();
     fs.writeFileSync(session.resumeDataFile, JSON.stringify(copy));
+    if (!session.cancelled)
+      session.progress.raiseEvent(this.getProgress(session));
   }
   private static nextBlockId(resumeData: ResumeData): number {
     const blockId = resumeData.blocks.findIndex((_) => _ === BlockState.Pending);
@@ -346,6 +357,7 @@ export class BlobDownloader {
     const downloadLink = session.resumeData.downloadUrl;
     const targetFile = session.resumeData.tempName;
     const { startByte, endByte } = this.getByteRange(session.resumeData, blockId);
+    let localDataBytes = 0;
     try {
       const downloadStream = got.stream(downloadLink, {
         method: "GET",
@@ -356,6 +368,7 @@ export class BlobDownloader {
       });
       downloadStream.on("data", (chunk: any) => {
         session.bytesDownloaded += chunk.length;
+        localDataBytes += chunk.length;
         if ((Date.now() - session.speedWindowResetOn) > session.speedWindowInSecond * 1000) {
           session.speedWindowResetOn = Date.now();
           session.speedWindowBytes = chunk.length;
@@ -366,6 +379,7 @@ export class BlobDownloader {
       await this.pipeline(downloadStream, fs.createWriteStream(targetFile, { flags: "r+", start: startByte }));
       this.markCompleted(session, blockId);
     } catch (err) {
+      session.bytesDownloaded -= localDataBytes;
       this.markFailed(session, blockId);
       session.lastError = err;
       session.failedBocks++;
@@ -403,12 +417,11 @@ export class BlobDownloader {
     let blocksPending = 0;
     let blocksDownloading = 0;
     let blocksDownloaded = 0;
-    let bytesDone = 0;
+    const bytesDone =  sessionData.bytesDownloadedInPreviousSession + sessionData.bytesDownloaded;
     const bytesTotal = resumeData.blobSize;
-    resumeData.blocks.forEach((blockState, blockId) => {
+    resumeData.blocks.forEach((blockState, _blockId) => {
       if (blockState === BlockState.Downloaded) {
         blocksDownloaded++;
-        bytesDone += this.getBlockSize(resumeData, blockId);
       } else if (blockState === BlockState.Downloading) {
         blocksDownloading++;
       } else if (blockState === BlockState.Pending) {
@@ -434,16 +447,16 @@ export class BlobDownloader {
       return;
     session.lastReportedBytes = -1;
     session.progressTimer = setInterval(() => {
-      if (session.lastReportedBytes !== session.bytesDownloaded) {
+      if (session.lastReportedBytes !== session.bytesDownloaded && !session.cancelled) {
         session.progress.raiseEvent(this.getProgress(session));
         session.lastReportedBytes = session.bytesDownloaded;
       }
-    }, 1000);
+    }, session.config.progressReportAfter!);
   }
   private static stopProgress(session: SessionData) {
     if (session.progressTimer) {
       clearInterval(session.progressTimer);
-      if (session.lastReportedBytes < 0)
+      if (!session.cancelled  && (session.lastReportedBytes !== session.bytesDownloaded || session.lastReportedBytes < 0))
         session.progress.raiseEvent(this.getProgress(session));
     }
   }
@@ -522,46 +535,55 @@ export class BlobDownloader {
     const downloadSession = this.downloads.get(downloadFile);
     if (downloadSession) {
       if (cancelRequest)
-        cancelRequest.cancel = () => { downloadSession.cancelled = true; return true; };
+        cancelRequest.cancel = () => {
+          if (downloadSession.cancelled)
+            return false;
+
+          downloadSession.cancelled = true;
+          return true;
+        };
       if (onProgress)
         downloadSession.progress.addListener(onProgress);
       unlock();
       return downloadSession.ready;
     }
-    const session = await this.createSession(downloadUrl, downloadFile, config, onProgress, cancelRequest);
-    this.downloads.set(downloadFile, session);
-    // let start download
-    session.ready = new Promise(async (resolve, reject) => {
-      const isDownloaded = await this.checkAnotherProcessIsDownloadingSameFile(session);
-      if (isDownloaded) {
-        if (!fs.existsSync(session.resumeData.fileName))
-          throw new Error("file does not exist");
-        resolve();
-        return;
-      }
-      const release = lockSync(session.resumeData.tempName, { stale: 10000 });
-      try {
-        if (this.hasPendingBlocks(session.resumeData)) {
-          this.startProgress(session);
-          const simTask = Math.min(session.config.simultaneousDownloads!, session.resumeData.blocks.length);
-          const httpsAgent = this.getHttpsAgent(simTask);
-          const worker = Array(simTask).fill(undefined).map(async () => this.downloadBlocks(session, httpsAgent));
-          await Promise.all(worker);
-          this.stopProgress(session);
+    try {
+      const session = await this.createSession(downloadUrl, downloadFile, config, onProgress, cancelRequest);
+      this.downloads.set(downloadFile, session);
+      // let start download
+      session.ready = new Promise(async (resolve, reject) => {
+        const isDownloaded = await this.checkAnotherProcessIsDownloadingSameFile(session);
+        if (isDownloaded) {
+          if (!fs.existsSync(session.resumeData.fileName))
+            throw new Error("file does not exist");
+          resolve();
+          return;
         }
-        this.saveResumeData(session);
-        this.checkDownloadCancelled(session);
-        fs.renameSync(session.resumeData.tempName, session.resumeData.fileName);
-        await this.checkDownloadedFileMD5(session);
-        resolve();
-      } catch (err) {
-        reject(err);
-      } finally {
-        this.downloads.delete(downloadFile);
-        release();
-      }
-    });
-    unlock();
-    return session.ready;
+        const release = lockSync(session.resumeData.tempName, { stale: 10000 });
+        try {
+          if (this.hasPendingBlocks(session.resumeData)) {
+            this.startProgress(session);
+            const simTask = Math.min(session.config.simultaneousDownloads!, session.resumeData.blocks.length);
+            const httpsAgent = this.getHttpsAgent(simTask);
+            const worker = Array(simTask).fill(undefined).map(async () => this.downloadBlocks(session, httpsAgent));
+            await Promise.all(worker);
+            this.stopProgress(session);
+          }
+          this.saveResumeData(session);
+          this.checkDownloadCancelled(session);
+          fs.renameSync(session.resumeData.tempName, session.resumeData.fileName);
+          await this.checkDownloadedFileMD5(session);
+          resolve();
+        } catch (err) {
+          reject(err);
+        } finally {
+          this.downloads.delete(downloadFile);
+          release();
+        }
+      });
+      return session.ready;
+    } finally {
+      unlock();
+    }
   }
 }
