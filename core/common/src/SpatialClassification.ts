@@ -86,6 +86,14 @@ export class SpatialClassifierFlags {
     return props;
   }
 
+  /** Create flags indentical to these ones except for any properties explicitly specified by `changedProps`. */
+  public clone(changedProps?: Partial<SpatialClassifierFlagsProps>): SpatialClassifierFlags {
+    if (!changedProps)
+      return this;
+
+    return SpatialClassifierFlags.fromJSON({ ...this.toJSON(), ...changedProps });
+  }
+
   /** Return true if these flags are equivalent to `other`. */
   public equals(other: SpatialClassifierFlags): boolean {
     if (other === this)
@@ -149,7 +157,7 @@ export class SpatialClassifier {
   public readonly name: string;
 
   /** Construct a new classifier. */
-  public constructor(modelId: Id64String, name: string, flags: SpatialClassifierFlags, expand = 0) {
+  public constructor(modelId: Id64String, name: string, flags = new SpatialClassifierFlags(), expand = 0) {
     this.modelId = modelId;
     this.expand = expand;
     this.flags = flags;
@@ -172,6 +180,14 @@ export class SpatialClassifier {
       name: this.name,
       isActive: false,
     };
+  }
+
+  /** Create a classifier identical to this one except for any properties explicitly specified by `changedProps`. */
+  public clone(changedProps?: Partial<SpatialClassifierProps>): SpatialClassifier {
+    if (!changedProps)
+      return this;
+
+    return SpatialClassifier.fromJSON({ ...this.toJSON(), ...changedProps });
   }
 
   /** Return true if this classifier is equivalent to `other`. */
@@ -321,6 +337,40 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
     return classifier;
   }
 
+  /** Replace an existing classifier with a different one.
+   * @param toReplace The classifier to be replaced.
+   * @param replacement The classifier to replace `toReplace`.
+   * @returns true if a classifier equivalent to `toReplace` existed in the set and was replaced by `replacement`.
+   * @note If `toReplace` was the [[active]] classifier, `replacement` will become active.
+   */
+  public replace(toReplace: SpatialClassifier, replacement: SpatialClassifier): boolean {
+    const list = this._array;
+    if (!list)
+      return false;
+
+    const classifierIndex = this._classifiers.findIndex((x) => x.equals(toReplace));
+    if (-1 === classifierIndex)
+      return false;
+
+    const propsIndex = list.findIndex((x) => toReplace.equalsProps(x));
+    assert(propsIndex === classifierIndex);
+    if (-1 === propsIndex)
+      return false;
+
+    toReplace = this._classifiers[classifierIndex];
+    const wasActive = this.active === toReplace;
+
+    this._classifiers[classifierIndex] = replacement;
+    const props = list[propsIndex] = replacement.toJSON();
+
+    if (wasActive) {
+      props.isActive = true;
+      this._active = replacement;
+    }
+
+    return true;
+  }
+
   /** Remove the first classifier equivalent to `classifier` from this set.
    * @param classifier The classifier to remove.
    * @returns The classifier that was actually removed, or `undefined` if none was removed.
@@ -335,9 +385,8 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
       return undefined;
 
     classifier = this._classifiers[classifierIndex];
-
     const propsIndex = list.findIndex((x) => classifier.equalsProps(x));
-    assert(-1 !== propsIndex);
+    assert(propsIndex === classifierIndex);
     if (-1 === propsIndex)
       return undefined;
 

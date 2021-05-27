@@ -211,12 +211,53 @@ describe("SpatialClassifiers", () => {
     expectJson(json.classifiers, undefined);
   });
 
-  it("reset active classifier when cleared", () => {
+  it("resets active classifier when cleared", () => {
     const set = new SpatialClassifiers({ classifiers: [
       makeClassifierProps(makeClassifier("0x1", "1"), true), makeClassifier("0x2", "2").toJSON(),
     ]});
     expect(set.active).not.to.be.undefined;
     set.clear();
     expect(set.active).to.be.undefined;
+  });
+
+  it("replaces classifiers", () => {
+    const json = { classifiers: [ makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON(), makeClassifierProps(makeClassifier("0x3", "3"), true) ] };
+    const set = new SpatialClassifiers(json);
+
+    const c2 = set.findEquivalent(makeClassifier("0x2", "2"))!;
+    expect(c2.flags.inside).to.equal(SpatialClassifierInsideDisplay.ElementColor);
+    expect(c2.flags.outside).to.equal(SpatialClassifierOutsideDisplay.Dimmed);
+    expect(c2.expand).to.equal(0);
+
+    const c2New = c2.clone({ flags: c2.flags.clone({ inside: SpatialClassifierInsideDisplay.Hilite }).toJSON(), expand: 12 });
+    expect(set.replace(c2, c2New)).to.be.true;
+    expect(c2New.equals(c2)).to.be.false;
+    expect(c2New.flags.inside).to.equal(SpatialClassifierInsideDisplay.Hilite);
+    expect(c2New.flags.outside).to.equal(SpatialClassifierOutsideDisplay.Dimmed);
+    expect(c2New.expand).to.equal(12);
+    expect(set.size).to.equal(3);
+    expect(set.has(c2New)).to.be.true;
+    expect(set.has(c2)).to.be.false;
+
+    const c1 = makeClassifier("0x1", "1");
+    const c1New = c1.clone({ name: "1new" });
+    expect(set.replace(c1, c1New)).to.be.true;
+    expect(set.has(c1New)).to.be.true;
+    expect(set.has(c1)).to.be.false;
+    expect(c1New.name).to.equal("1new");
+
+    expect(set.active).not.to.be.undefined;
+    expect(set.active!.name).to.equal("3");
+    const c3New = makeClassifier("0x3", "3new");
+    expect(set.replace(makeClassifier("0x3", "3"), c3New)).to.be.true;
+    expect(set.active).to.equal(c3New);
+    expect(set.active!.name).to.equal("3new");
+
+    expectJson(json.classifiers, [ c1New.toJSON(), c2New.toJSON(), makeClassifierProps(c3New, true) ]);
+
+    expect(set.replace(makeClassifier("0x4", "4"), makeClassifier("0x4", "4new"))).to.be.false;
+
+    set.clear();
+    expect(set.replace(c3New, makeClassifier("0x3", "3newer"))).to.be.false;
   });
 });

@@ -7481,7 +7481,8 @@ export interface SourceAndTarget {
 
 // @public
 export class SpatialClassifier {
-    constructor(modelId: Id64String, name: string, flags: SpatialClassifierFlags, expand?: number);
+    constructor(modelId: Id64String, name: string, flags?: SpatialClassifierFlags, expand?: number);
+    clone(changedProps?: Partial<SpatialClassifierProps>): SpatialClassifier;
     equals(other: SpatialClassifier): boolean;
     equalsProps(props: SpatialClassifierProps): boolean;
     readonly expand: number;
@@ -7495,6 +7496,7 @@ export class SpatialClassifier {
 // @public
 export class SpatialClassifierFlags {
     constructor(inside?: SpatialClassifierInsideDisplay, outside?: SpatialClassifierOutsideDisplay, isVolumeClassifier?: boolean);
+    clone(changedProps?: Partial<SpatialClassifierFlagsProps>): SpatialClassifierFlags;
     equals(other: SpatialClassifierFlags): boolean;
     equalsProps(props: SpatialClassifierFlagsProps): boolean;
     static fromJSON(props: SpatialClassifierFlagsProps): SpatialClassifierFlags;
@@ -7547,6 +7549,7 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
     find(criterion: (classifier: SpatialClassifier) => boolean): SpatialClassifier | undefined;
     findEquivalent(classifier: SpatialClassifier): SpatialClassifier | undefined;
     has(classifier: SpatialClassifier): boolean;
+    replace(toReplace: SpatialClassifier, replacement: SpatialClassifier): boolean;
     setActive(active: SpatialClassifier | undefined): SpatialClassifier | undefined;
     get size(): number;
 }
