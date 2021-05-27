@@ -32,7 +32,7 @@ export * from "./presentation-common/PresentationIpcInterface";
  */
 export * from "./presentation-common/PresentationRpcInterface";
 export * from "./presentation-common/RpcRequestsHandler";
-export * from "./presentation-common/ElementPropertiesRpcTypes";
+export * from "./presentation-common/ElementProperties";
 
 /**
  * @module UnifiedSelection

@@ -14,7 +14,7 @@ import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { DiagnosticsOptions, DiagnosticsScopeLogs } from "./Diagnostics";
 import { InstanceKeyJSON } from "./EC";
-import { ElementPropertiesResponse } from "./ElementPropertiesRpcTypes";
+import { ElementProperties } from "./ElementProperties";
 import { PresentationStatus } from "./Error";
 import { NodeKeyJSON } from "./hierarchy/Key";
 import { NodeJSON } from "./hierarchy/Node";
@@ -23,8 +23,8 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, HierarchyRequestOptions, LabelRequestOptions, Paged,
-  PresentationUnitSystem, SelectionScopeRequestOptions,
+  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, HierarchyRequestOptions,
+  LabelRequestOptions, Paged, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { SelectionScope } from "./selection/SelectionScope";
 import { HierarchyCompareInfoJSON, PartialHierarchyModificationJSON } from "./Update";
@@ -89,22 +89,10 @@ export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<C
 export type ExtendedContentRpcRequestOptions = PresentationRpcRequestOptions<ExtendedContentRequestOptions<never, DescriptorJSON, KeySetJSON>>;
 
 /**
- * Data structure for element properties request options.
+ * Data structure for element properties RPC request options.
  * @beta
  */
-export interface ElementPropertiesRpcRequestOptions {
-  /** ID of the element to get properties for. */
-  elementId: Id64String;
-
-  /** Optional locale to use when formatting / localizing data. */
-  locale?: string;
-
-  /**
-   * Unit system to use when formatting property values with units. Default presentation
-   * unit is used if unit system is not specified.
-   */
-  unitSystem?: PresentationUnitSystem;
-}
+export type ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementPropertiesRequestOptions<never>>;
 
 /**
  * Data structure for distinct values' request options.
@@ -208,7 +196,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ExtendedContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> { return this.forward(arguments); }
 
   /** @beta */
-  public async getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementPropertiesResponse> { return this.forward(arguments); }
+  public async getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties> { return this.forward(arguments); }
 
   /** @deprecated Use [[getPagedDistinctValues]] */
   // eslint-disable-next-line deprecation/deprecation

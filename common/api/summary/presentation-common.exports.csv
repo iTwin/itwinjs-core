@@ -100,18 +100,19 @@ public;ECInstancesNodeKeyJSON
 public;ECPropertyGroupingNodeKey 
 public;ECPropertyValueQuerySpecification 
 public;EditorDescription
+beta;ElementProperties
 beta;ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem
 beta;ElementPropertiesArrayPropertyItemBase 
 beta;ElementPropertiesCategoryItem 
 beta;ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem
+beta;ElementPropertiesItemBase
 beta;ElementPropertiesPrimitiveArrayPropertyItem 
 beta;ElementPropertiesPrimitivePropertyItem 
 beta;ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem
 beta;ElementPropertiesPropertyItemBase 
 beta;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
-beta;ElementPropertiesResponse
-beta;ElementPropertiesResponseItemBase
-beta;ElementPropertiesRpcRequestOptions
+beta;ElementPropertiesRequestOptions
+beta;ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
 public;EnumerationChoice

@@ -9,10 +9,11 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 
 /**
- * Data structure that describes response to an element properties request.
+ * Data structure for storing element properties information in a simplified format.
+ * @see [[Content]] for a format stores all available element property data.
  * @beta
  */
-export interface ElementPropertiesResponse {
+export interface ElementProperties {
   /** Label of element's ECClass. */
   class: string;
   /** Element's ID. */
@@ -27,7 +28,7 @@ export interface ElementPropertiesResponse {
  * Base type for all [[ElementPropertiesItem]] types.
  * @beta
  */
-export interface ElementPropertiesResponseItemBase {
+export interface ElementPropertiesItemBase {
   /** Type of the properties item. */
   type: "category" | ElementPropertiesPropertyValueType;
 }
@@ -36,7 +37,7 @@ export interface ElementPropertiesResponseItemBase {
  * Definition for a category. A category can nest other property items, including categories.
  * @beta
  */
-export interface ElementPropertiesCategoryItem extends ElementPropertiesResponseItemBase {
+export interface ElementPropertiesCategoryItem extends ElementPropertiesItemBase {
   /** Type of the properties item. */
   type: "category";
   /** Container of property values */
@@ -47,7 +48,7 @@ export interface ElementPropertiesCategoryItem extends ElementPropertiesResponse
  * Base type for all [[ElementPropertiesPropertyItem]] types.
  * @beta
  */
-export interface ElementPropertiesPropertyItemBase extends ElementPropertiesResponseItemBase {
+export interface ElementPropertiesPropertyItemBase extends ElementPropertiesItemBase {
   /** Type of the properties item. */
   type: ElementPropertiesPropertyValueType;
 }

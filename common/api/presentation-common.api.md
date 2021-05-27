@@ -714,6 +714,16 @@ export interface EditorDescription {
 }
 
 // @beta
+export interface ElementProperties {
+    class: string;
+    id: Id64String;
+    items: {
+        [label: string]: ElementPropertiesItem;
+    };
+    label: string;
+}
+
+// @beta
 export type ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem;
 
 // @beta
@@ -723,7 +733,7 @@ export interface ElementPropertiesArrayPropertyItemBase extends ElementPropertie
 }
 
 // @beta
-export interface ElementPropertiesCategoryItem extends ElementPropertiesResponseItemBase {
+export interface ElementPropertiesCategoryItem extends ElementPropertiesItemBase {
     items: {
         [label: string]: ElementPropertiesItem;
     };
@@ -732,6 +742,11 @@ export interface ElementPropertiesCategoryItem extends ElementPropertiesResponse
 
 // @beta
 export type ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem;
+
+// @beta
+export interface ElementPropertiesItemBase {
+    type: "category" | ElementPropertiesPropertyValueType;
+}
 
 // @beta
 export interface ElementPropertiesPrimitiveArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
@@ -749,7 +764,7 @@ export interface ElementPropertiesPrimitivePropertyItem extends ElementPropertie
 export type ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem;
 
 // @beta
-export interface ElementPropertiesPropertyItemBase extends ElementPropertiesResponseItemBase {
+export interface ElementPropertiesPropertyItemBase extends ElementPropertiesItemBase {
     type: ElementPropertiesPropertyValueType;
 }
 
@@ -757,26 +772,12 @@ export interface ElementPropertiesPropertyItemBase extends ElementPropertiesResp
 export type ElementPropertiesPropertyValueType = "primitive" | "array" | "struct";
 
 // @beta
-export interface ElementPropertiesResponse {
-    class: string;
-    id: Id64String;
-    items: {
-        [label: string]: ElementPropertiesItem;
-    };
-    label: string;
-}
-
-// @beta
-export interface ElementPropertiesResponseItemBase {
-    type: "category" | ElementPropertiesPropertyValueType;
-}
-
-// @beta
-export interface ElementPropertiesRpcRequestOptions {
+export interface ElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
     elementId: Id64String;
-    locale?: string;
-    unitSystem?: PresentationUnitSystem;
 }
+
+// @beta
+export type ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementPropertiesRequestOptions<never>>;
 
 // @beta
 export interface ElementPropertiesStructArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
@@ -1848,7 +1849,7 @@ export class PresentationRpcInterface extends RpcInterface {
     // @deprecated (undocumented)
     getDistinctValues(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
     // @beta (undocumented)
-    getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementPropertiesResponse>;
+    getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties>;
     // (undocumented)
     getFilteredNodePaths(_token: IModelRpcProps, _options: Omit<ExtendedHierarchyRpcRequestOptions, "parentKey">, _filterText: string): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
