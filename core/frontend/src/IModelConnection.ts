@@ -1030,11 +1030,16 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   }
 }
 
+/** Provide altitude information (calculated at project center)
+ * @public
+ */
 export class ProjectAltitudeProvider {
+  /** Difference between  geodetic and sea level altitude at project center */
   public get geodeticToSeaLevel() {
     return this._geodeticToSeaLevel;
   }
 
+  /** Geodetic altitude in meters at project center */
   public get projectCenterAltitude() {
     return this._projectCenterAltitude;
   }

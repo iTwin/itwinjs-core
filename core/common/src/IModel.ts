@@ -191,19 +191,10 @@ export class EcefLocation implements EcefLocationProps {
   public readonly xVector?: Vector3d;
   public readonly yVector?: Vector3d;
 
-  /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform {
-    let matrix;
-    if (this.xVector && this.yVector) {
-      const zVector = this.xVector.crossProduct(this.yVector);
-      if (zVector.normalizeInPlace())
-        matrix = Matrix3d.createColumns(this.xVector, this.yVector, zVector);
-    }
-    if (!matrix)
-      matrix = this.orientation.toMatrix3d();
+  private _transform: Transform;
 
-    return Transform.createOriginAndMatrix(this.origin, matrix);
-  }
+  /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
+  public getTransform(): Transform { return this._transform;  }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
@@ -215,6 +206,16 @@ export class EcefLocation implements EcefLocationProps {
       this.xVector = Vector3d.fromJSON(props.xVector);
       this.yVector = Vector3d.fromJSON(props.yVector);
     }
+    let matrix;
+    if (this.xVector && this.yVector) {
+      const zVector = this.xVector.crossProduct(this.yVector);
+      if (zVector.normalizeInPlace())
+        matrix = Matrix3d.createColumns(this.xVector, this.yVector, zVector);
+    }
+    if (!matrix)
+      matrix = this.orientation.toMatrix3d();
+
+    this._transform = Transform.createOriginAndMatrix(this.origin, matrix);
   }
 
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
