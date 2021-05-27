@@ -1,6 +1,32 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Tue, 18 May 2021 21:59:07 GMT and should not be manually modified.
+This log was last generated on Wed, 26 May 2021 15:55:19 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Added ability to get diagnostics data when using presentation data providers (tree, property grid, table).
+- Fix wrong colors being assigned to objects created using presentation rules
+- Fix `PresentationPropertyDataProvider` not working after Presentation re-initialization
+- Drop lodash dependency
+- Fix nested fields' enum info not being carried to PropertyRecords
+- Add `PresentationPropertyDataProvider.getPropertyRecordInstanceKeys` function to find keys of instance that is the source of given `PropertyRecord`.
+- Sort categories and fields in table and property data providers based on priority and label rather than name.
+- Release tags' review
+- Set renderer and editor for deeply nested `PropertyRecord` instances.
+- Add support for custom property category renderers.
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+_Version update only_
 
 ## 2.15.4
 Tue, 18 May 2021 21:59:07 GMT
@@ -741,7 +767,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
 - Updated to TypeScript 3.1
 - React to Tree API changes

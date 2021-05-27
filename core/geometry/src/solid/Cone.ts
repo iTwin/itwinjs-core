@@ -129,7 +129,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Cone) {
       if (this.capped !== other.capped) return false;
-      if (!this._localToWorld.isAlmostEqual(other._localToWorld)) return false;
+      if (!this._localToWorld.isAlmostEqualAllowZRotation(other._localToWorld)) return false;
       return Geometry.isSameCoordinate(this._radiusA, other._radiusA)
         && Geometry.isSameCoordinate(this._radiusB, other._radiusB);
     }

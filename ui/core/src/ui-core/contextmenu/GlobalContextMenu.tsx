@@ -78,7 +78,7 @@ export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProp
     const CtxMenu = contextMenuComponent || ContextMenu; // eslint-disable-line @typescript-eslint/naming-convention
 
     return (
-      <div ref={this._handleRefSet}>
+      <div ref={this._handleRefSet} style={{ display: "none" }}>
         {this.state.parentDocument &&
           ReactDOM.createPortal(
             <div className="core-context-menu-global" style={positioningStyle}>

@@ -20,16 +20,6 @@ exports[`MessageRenderer Anchor allows target _blank if it has a noreferrer rel 
 />
 `;
 
-exports[`MessageRenderer Anchor allows target _blank if it has proper relationships 1`] = `
-<div
-  dangerouslySetInnerHTML={
-    Object {
-      "__html": "<a rel=\\"noopener noreferrer\\" target=\\"_blank\\" href=\\"https://itwinjs.org\\"></a>",
-    }
-  }
-/>
-`;
-
 exports[`MessageRenderer Anchor allows target _blank in child nodes if they proper relationships 1`] = `
 <div
   dangerouslySetInnerHTML={
