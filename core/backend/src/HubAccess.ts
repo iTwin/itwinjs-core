@@ -10,33 +10,36 @@ import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BriefcaseDb } from "./IModelDb";
 
 export type LocalFileName = string;
 export type LocalDirName = string;
+export type ChangesetId = string;
+export type ChangesetIndex = number;
 
 /** Properties of a changeset
  * @internal
  */
 export interface ChangesetProps {
-  id: string;
-  parentId: string;
+  id: ChangesetId;
+  parentId: ChangesetId;
   changesType: number;
   description: string;
   briefcaseId?: number;
   pushDate?: string;
   userCreated?: string;
   size?: number;
-  index?: number;
+  index?: ChangesetIndex;
 }
 
 /** Properties of a changeset file
  * @internal
  */
 export interface ChangesetFileProps extends ChangesetProps {
-  pathname: string;
+  pathname: LocalFileName;
 }
 
-export type ChangesetRange = { first: string, after?: never, end?: string } | { after: string, first?: never, end?: string };
+export type ChangesetRange = { first: ChangesetId, after?: never, end?: ChangesetId } | { after: ChangesetId, first?: never, end?: ChangesetId };
 
 /**
  * The properties of an iModel server lock.
@@ -53,14 +56,19 @@ export interface IModelIdArg {
   requestContext?: AuthorizedClientRequestContext;
 }
 
+export interface BriefcaseDbArg {
+  requestContext?: AuthorizedClientRequestContext;
+  briefcase: BriefcaseDb;
+}
+
 export interface BriefcaseIdArg extends IModelIdArg {
   briefcaseId: number;
 }
 
 export interface HubAccess {
   downloadChangesets: (arg: IModelIdArg & { range?: ChangesetRange }) => Promise<ChangesetFileProps[]>;
-  downloadChangeset: (arg: IModelIdArg & { id: string }) => Promise<ChangesetFileProps>;
-  queryChangeset: (arg: IModelIdArg & { id: string }) => Promise<ChangesetProps>;
+  downloadChangeset: (arg: IModelIdArg & { id: ChangesetId }) => Promise<ChangesetFileProps>;
+  queryChangeset: (arg: IModelIdArg & { id: ChangesetId }) => Promise<ChangesetProps>;
   queryChangesets: (arg: IModelIdArg & { range?: ChangesetRange }) => Promise<ChangesetProps[]>;
   pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<void>;
   getLatestChangesetId: (arg: IModelIdArg) => Promise<string>;
@@ -68,7 +76,7 @@ export interface HubAccess {
   getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<string>;
 
   /** Get the index of the change set from its id */
-  getChangesetIndexFromId: (arg: IModelIdArg & { changeSetId: string }) => Promise<number>;
+  getChangesetIndexFromId: (arg: IModelIdArg & { changesetId: ChangesetId }) => Promise<ChangesetIndex>;
   /** Acquire a new briefcaseId for the supplied iModelId
      * @note usually there should only be one briefcase per iModel per user.
      */
@@ -78,8 +86,9 @@ export interface HubAccess {
 
   getMyBriefcaseIds: (arg: IModelIdArg) => Promise<number[]>;
 
-  getAllLocks: (arg: BriefcaseIdArg) => Promise<LockProps[]>;
-  getAllCodes: (arg: BriefcaseIdArg) => Promise<CodeProps[]>;
+  acquireLocks: (arg: BriefcaseDbArg & { locks: LockProps[] }) => Promise<void>;
+  getAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
+  getAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;
   releaseAllLocks: (arg: BriefcaseIdArg) => Promise<void>;
   releaseAllCodes: (arg: BriefcaseIdArg) => Promise<void>;
 

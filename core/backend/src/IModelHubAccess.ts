@@ -17,7 +17,7 @@ import { CodeProps, IModelError, IModelVersion } from "@bentley/imodeljs-common"
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { BriefcaseIdArg, ChangesetFileProps, ChangesetProps, ChangesetRange, IModelIdArg, LockProps } from "./HubAccess";
+import { BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, IModelIdArg, LockProps } from "./HubAccess";
 
 /** @internal */
 export class IModelHubAccess {
@@ -151,17 +151,17 @@ export class IModelHubAccess {
     return briefcase.briefcaseId!;
   }
 
-  public static async getChangesetIndexFromId(arg: IModelIdArg & { changeSetId: string }): Promise<number> {
-    if (arg.changeSetId === "")
+  public static async getChangesetIndexFromId(arg: IModelIdArg & { changesetId: ChangesetId }): Promise<number> {
+    if (arg.changesetId === "")
       return 0; // the first version
 
     const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const changeSet = (await this.iModelClient.changeSets.get(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.changeSetId)))[0];
+    const changeSet = (await this.iModelClient.changeSets.get(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.changesetId)))[0];
     requestContext.enter();
     return +changeSet.index!;
   }
 
-  public static async queryChangeSetProps(arg: IModelIdArg & { changesetId: string }): Promise<ChangesetProps> {
+  public static async queryChangeSetProps(arg: IModelIdArg & { changesetId: ChangesetId }): Promise<ChangesetProps> {
     const query = new ChangeSetQuery();
     query.byId(arg.changesetId);
 
@@ -273,31 +273,36 @@ export class IModelHubAccess {
 
   }
 
-  public static async getAllLocks(arg: BriefcaseIdArg): Promise<LockProps[]> {
+  public static async getAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]> {
     const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const heldLocks = await this.iModelClient.locks.get(requestContext, arg.iModelId, new LockQuery().byBriefcaseId(arg.briefcaseId));
+    const heldLocks = await this.iModelClient.locks.get(requestContext, arg.briefcase.iModelId, new LockQuery().byBriefcaseId(arg.briefcase.briefcaseId));
     return heldLocks.map((lock) => ({ type: lock.lockType!, objectId: lock.objectId!, level: lock.lockLevel! }));
   }
 
-  public static async getAllCodes(arg: BriefcaseIdArg): Promise<CodeProps[]> {
+  public static async getAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]> {
     const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const reservedCodes = await this.iModelClient.codes.get(requestContext, arg.iModelId, new CodeQuery().byBriefcaseId(arg.briefcaseId));
+    const reservedCodes = await this.iModelClient.codes.get(requestContext, arg.briefcase.iModelId, new CodeQuery().byBriefcaseId(arg.briefcase.briefcaseId));
     return reservedCodes.map((code) => ({ spec: code.codeSpecId!, scope: code.codeScope!, value: code.value! }));
   }
 
-  public static toHubLock(arg: BriefcaseIdArg & { changesetId?: string }, reqLock: LockProps): Lock {
+  public static toHubLock(arg: BriefcaseDbArg, reqLock: LockProps): Lock {
     const lock = new Lock();
-    lock.briefcaseId = arg.briefcaseId;
+    lock.briefcaseId = arg.briefcase.briefcaseId;
     lock.lockLevel = reqLock.level;
     lock.lockType = reqLock.type;
     lock.objectId = reqLock.objectId;
-    lock.releasedWithChangeSet = arg.changesetId;
-    lock.seedFileId = arg.iModelId;
+    lock.releasedWithChangeSet = arg.briefcase.changeSetId;
+    lock.seedFileId = arg.briefcase.iModelId;
     return lock;
   }
 
-  public static toHubLocks(arg: BriefcaseIdArg & { changesetId?: string, locks: LockProps[] }): Lock[] {
+  public static toHubLocks(arg: BriefcaseDbArg & { locks: LockProps[] }): Lock[] {
     return arg.locks.map((lock) => this.toHubLock(arg, lock));
   }
-}
 
+  public static async acquireLocks(arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
+    const hubLocks = this.toHubLocks(arg);
+    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
+    await this.iModelClient.locks.update(requestContext, arg.briefcase.iModelId, hubLocks);
+  }
+}

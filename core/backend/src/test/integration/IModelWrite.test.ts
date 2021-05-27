@@ -94,10 +94,8 @@ describe("IModelWriteTest (#integration)", () => {
     const codeSpec1 = CodeSpec.create(iModel, "MyCodeSpec1", CodeScopeSpec.Type.Model);
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
-    const locks = await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
-    assert.equal(locks.length, 1);
-    const locksRedundant = await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
-    assert.equal(locksRedundant.length, 1);
+    await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
+    await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
     assert.isTrue(iModel.concurrencyControl.locks.hasCodeSpecsLock);
     iModel.insertCodeSpec(codeSpec1);
     iModel.saveChanges();

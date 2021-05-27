@@ -49,11 +49,10 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
 
-  it.only("Transform source iModel to target iModel", async () => {
+  it("Transform source iModel to target iModel", async () => {
     // Create and push seed of source IModel
     const sourceIModelName = "TransformerSource";
     const sourceSeedFileName = join(outputDir, `${sourceIModelName}.bim`);
-    const sourceIModelId = Guid.createValue();
     if (IModelJsFs.existsSync(sourceSeedFileName))
       IModelJsFs.removeSync(sourceSeedFileName);
 
@@ -63,12 +62,11 @@ describe("IModelTransformerHub (#integration)", () => {
     sourceSeedDb.saveChanges();
     sourceSeedDb.close();
 
-    HubMock.create({ contextId: projectId, iModelId: sourceIModelId, iModelName: sourceIModelName, revision0: sourceSeedFileName });
+    const sourceIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: sourceIModelName, revision0: sourceSeedFileName });
 
     // Create and push seed of target IModel
     const targetIModelName = "TransformerTarget";
     const targetSeedFileName = join(outputDir, `${targetIModelName}.bim`);
-    const targetIModelId = Guid.createValue();
     if (IModelJsFs.existsSync(targetSeedFileName)) {
       IModelJsFs.removeSync(targetSeedFileName);
     }
@@ -78,7 +76,7 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(targetSeedDb.codeSpecs.hasName("TargetCodeSpec")); // inserted by prepareTargetDb
     targetSeedDb.saveChanges();
     targetSeedDb.close();
-    HubMock.create({ contextId: projectId, iModelId: targetIModelId, iModelName: targetIModelName, revision0: targetSeedFileName });
+    const targetIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: targetIModelName, revision0: targetSeedFileName });
 
     try {
       const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: sourceIModelId });
@@ -276,7 +274,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
 
-  it.only("Clone/upgrade test", async () => {
+  it("Clone/upgrade test", async () => {
     const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
     const sourceIModelId = await HubUtility.recreateIModel(requestContext, projectId, sourceIModelName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
@@ -358,7 +356,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
 
-  it.only("should merge changes made on a branch back to master", async () => {
+  it("should merge changes made on a branch back to master", async () => {
     // create and push master IModel
     const masterIModelName = "Master";
     const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
@@ -385,8 +383,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = "Branch1";
-    const branchIModelId1 = Guid.createValue();
-    HubMock.create({ contextId: projectId, iModelId: branchIModelId1, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, revision0: masterDb.pathName });
+    const branchIModelId1 = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, revision0: masterDb.pathName });
 
     const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId1 });
     branchDb1.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -397,8 +394,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     // create Branch2 iModel using Master as a template
     const branchIModelName2 = "Branch2";
-    const branchIModelId2 = Guid.createValue();
-    HubMock.create({ contextId: projectId, iModelId: branchIModelId2, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, revision0: masterDb.pathName });
+    const branchIModelId2 = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, revision0: masterDb.pathName });
     const branchDb2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId2 });
     branchDb2.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     assert.isTrue(branchDb2.isBriefcaseDb());
@@ -583,12 +579,11 @@ describe("IModelTransformerHub (#integration)", () => {
       branchDb1.close();
       branchDb2.close();
       replayedDb.close();
-
     } finally {
-      HubMock.destroy(masterIModelId);
-      HubMock.destroy(branchIModelId1);
-      HubMock.destroy(branchIModelId2);
-      HubMock.destroy(replayedIModelId);
+      await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: masterIModelId });
+      await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: branchIModelId1 });
+      await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: branchIModelId2 });
+      await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: replayedIModelId });
     }
   });
 

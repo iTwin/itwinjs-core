@@ -8,26 +8,23 @@
 
 import * as deepAssign from "deep-assign";
 import * as path from "path";
-import { assert, DbOpcode, DbResult, Id64, Id64String, IModelStatus, Logger, OpenMode, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { assert, DbOpcode, DbResult, Id64, Id64String, IModelStatus, OpenMode, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 import { ChannelConstraintError, CodeProps, ElementProps, IModelError, ModelProps } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Element, Subject } from "./Element";
 import { ChannelRootAspect } from "./ElementAspect";
+import { LockProps } from "./HubAccess";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
+import { IModelHubAccess } from "./IModelHubAccess";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
 import { SQLiteDb } from "./SQLiteDb";
-import { IModelHubAccess } from "./IModelHubAccess";
-import { LockProps } from "./HubAccess";
 
 // cspell:ignore rqctx req's cpid cctl stmts specid
-
-const loggerCategory: string = BackendLoggerCategory.ConcurrencyControl;
 
 /** ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
  * @internal
@@ -436,7 +433,7 @@ export class ConcurrencyControl {
 
     this.abandonRequest();
     this._cache.deleteFile();
-    const arg = { requestContext, iModelId: this.iModel.iModelId, briefcaseId: this.iModel.briefcaseId };
+    const arg = { requestContext, briefcaseId: this.iModel.briefcaseId, iModelId: this.iModel.iModelId };
     await Promise.all([IModelHost.hubAccess.releaseAllLocks(arg), IModelHost.hubAccess.releaseAllCodes(arg)]);
     requestContext.enter();
     return this.openOrCreateCache(requestContext); // re-create after we know that locks and codes were deleted.
@@ -486,44 +483,15 @@ export class ConcurrencyControl {
     this.addToPendingRequestIfNotHeld(req);
   }
 
-  /** @internal @deprecated Use concurrencyControl.locks.lockSchema */
-  public async lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
-    return this.locks.lockSchema(requestContext);
-  }
-
   /** @internal */
-  public async lockSchema0(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
-    const locks = [ConcurrencyControl.Request.getHubSchemaLock(this)];
-
+  public async lockSchema0(requestContext: AuthorizedClientRequestContext): Promise<void> {
     if (this.locks.hasSchemaLock)
-      return locks;
+      return;
 
+    const locks = [ConcurrencyControl.Request.schemaLock];
+    await IModelHost.hubAccess.acquireLocks({ requestContext, briefcase: this.iModel, locks });
     requestContext.enter();
-
-    Logger.logTrace(loggerCategory, `lockSchema`);
-    const res = await IModelHubAccess.iModelClient.locks.update(requestContext, this._iModel.iModelId, locks);
-    if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive) {
-      Logger.logError(loggerCategory, `lockSchema failed`);
-      assert(false, "update should have thrown if it could not satisfy the request.");
-    }
-
-    this._cache.insertLocks([ConcurrencyControl.Request.schemaLock]);
-    return res;
-  }
-
-  /** @internal @deprecated Use concurrencyControl.locks.hasSchemaLock */
-  public get hasSchemaLock(): boolean {
-    return this.locks.hasSchemaLock;
-  }
-
-  /** @internal @deprecated Use concurrencyControl.locks.hasCodeSpecsLock */
-  public get hasCodeSpecsLock(): boolean {
-    return this.locks.hasCodeSpecsLock;
-  }
-
-  /** @internal @deprecated Use concurrencyControl.locks.holdsLock */
-  public holdsLock(lock: LockProps): boolean {
-    return this.locks.holdsLock(lock);
+    this._cache.insertLocks(locks);
   }
 
   /** @internal */
@@ -531,51 +499,23 @@ export class ConcurrencyControl {
     return this._cache.isLockHeld(lock);
   }
 
-  /** @internal @deprecated concurrencyControl.codes.isReserved*/
-  public hasReservedCode(code: CodeProps): boolean {
-    return this.codes.isReserved(code);
-  }
-
   public hasReservedCode0(code: CodeProps): boolean {
     return this._cache.isCodeReserved(code);
   }
 
   /** @internal */
-  public async lockCodeSpecs0(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
-
-    const locks = [ConcurrencyControl.Request.getHubCodeSpecsLock(this)];
+  public async lockCodeSpecs0(requestContext: AuthorizedClientRequestContext): Promise<void> {
     if (this.locks.hasCodeSpecsLock)
-      return locks;
+      return;
 
-    requestContext.enter();
-    const res = await IModelHubAccess.iModelClient.locks.update(requestContext, this._iModel.iModelId, locks);
-    if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive) {
-      assert(false, "update should have thrown if it could not satisfy the request.");
-    }
-
-    this._cache.insertLocks([ConcurrencyControl.Request.codeSpecsLock]);
-
-    return res;
-  }
-
-  /** @internal @deprecated Use concurrencyControl.locks.getHeldLock */
-  public getHeldLock(type: LockType, objectId: Id64String): LockLevel {
-    return this.locks.getHeldLock(type, objectId);
+    const locks = [ConcurrencyControl.Request.codeSpecsLock];
+    await IModelHost.hubAccess.acquireLocks({ requestContext, briefcase: this.iModel, locks });
+    this._cache.insertLocks(locks);
   }
 
   /** @internal */
   public getHeldLock0(type: LockType, objectId: Id64String): LockLevel {
     return this._cache.getHeldLock(type, objectId);
-  }
-
-  /** @internal @deprecated Use concurrencyControl.locks.getHeldModelLock */
-  public getHeldModelLock(modelId: Id64String): LockLevel {
-    return this.locks.getHeldModelLock(modelId);
-  }
-
-  /** @internal @deprecated Use concurrencyControl.locks.getHeldElementLock */
-  public getHeldElementLock(elementId: Id64String): LockLevel {
-    return this.locks.getHeldElementLock(elementId);
   }
 
   private checkLockRestrictions(locks: LockProps[]) {
@@ -588,59 +528,12 @@ export class ConcurrencyControl {
     }
   }
 
-  private async acquireLocks(requestContext: AuthorizedClientRequestContext, locks: LockProps[]): Promise<Lock[]> {
-    requestContext.enter();
+  private async acquireLocks(requestContext: AuthorizedClientRequestContext, locks: LockProps[]): Promise<void> {
+    if (locks.length === 0 || !this.needLocks)
+      return;
 
-    if (locks.length === 0)
-      return [];
-
-    if (!this.needLocks)
-      return [];
     this.checkLockRestrictions(locks);
-
-    const hubLocks = ConcurrencyControl.Request.toHubLocks(this, locks);
-
-    const lockStates = await IModelHubAccess.iModelClient.locks.update(requestContext, this._iModel.iModelId, hubLocks);
-    requestContext.enter();
-
-    return lockStates;
-  }
-
-  /**
-   * @deprecated Use ConcurrencyControl.codes.request */
-  public async reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]> {
-    return this.reserveCodes0(requestContext, codes);
-  }
-
-  private async reserveCodes0(_requestContext: AuthorizedClientRequestContext, _codes: CodeProps[]): Promise<HubCode[]> {
-    return [];
-    // requestContext.enter();
-
-    // if (codes.length === 0)
-    //   return [];
-
-    // const hubCodes = ConcurrencyControl.Request.toHubCodes(this, codes);
-
-    // if (!this._iModel.isOpen)
-    //   throw new Error("not open");
-
-    // Logger.logTrace(loggerCategory, `reserveCodes ${JSON.stringify(hubCodes)}`);
-    // const codeStates = await IModelHubAccess.iModelClient.codes.update(requestContext, this._iModel.iModelId, hubCodes);
-    // requestContext.enter();
-    // Logger.logTrace(loggerCategory, `result = ${JSON.stringify(codeStates)}`);
-
-    // return codeStates;
-  }
-
-  /**
-   *  @deprecated Use ConcurrencyControl.codes.query or ConcurrencyControl.codes.isReserved */
-  public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
-    return this.codes.query(requestContext, specId, scopeId, value);
-  }
-
-  /**  @deprecated Use concurrencyControl.codes.areAvailable */
-  public async areCodesAvailable2(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<boolean> {
-    return this.codes.areAvailable(requestContext, codes);
+    await IModelHost.hubAccess.acquireLocks({ requestContext, briefcase: this._iModel, locks });
   }
 
   /** Abandon any *pending* requests for locks or codes.
@@ -1376,12 +1269,12 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     constructor(private _iModel: BriefcaseDb) { }
 
     /** Obtain the CodeSpec lock. This is always an immediate request, never deferred. See [LockHandler]($imodelhub-client) for details on what errors may be thrown. */
-    public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
+    public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<void> {
       return this._iModel.concurrencyControl.lockCodeSpecs0(requestContext);
     }
 
     /** Obtain the schema lock. This is always an immediate request, never deferred. See [LockHandler]($imodelhub-client) for details on what errors may be thrown. */
-    public async lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
+    public async lockSchema(requestContext: AuthorizedClientRequestContext): Promise<void> {
       return this._iModel.concurrencyControl.lockSchema0(requestContext);
     }
 
@@ -1510,9 +1403,9 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     private initializeDb() {
       const initStmts = [
-        `create table reservedCodes ( specid TEXT NOT NULL, scope TEXT NOT NULL, value TEXT NOT NULL, PRIMARY KEY (specid, scope, value) )`,
-        `create table heldLocks ( type INTEGER NOT NULL, objectId TEXT NOT NULL, level INTEGER NOT NULL, txnId TEXT, PRIMARY KEY (type, objectId, level) )`,
-        `insert into be_local (name,val) values('cctl_version','0.1')`,
+        `CREATE TABLE reservedCodes(specid TEXT NOT NULL, scope TEXT NOT NULL, value TEXT NOT NULL, PRIMARY KEY(specid, scope, value))`,
+        `CREATE TABLE heldLocks(type INTEGER NOT NULL, objectId TEXT NOT NULL, level INTEGER NOT NULL, txnId TEXT, PRIMARY KEY(type, objectId, level))`,
+        `INSERT INTO be_local(name,val) VALUES('cctl_version','0.1')`,
       ];
 
       initStmts.forEach((sql) => {
@@ -1572,15 +1465,15 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     public clear() {
       this.mustBeOpenAndWriteable();
-      this._db.executeSQL("delete from heldLocks");
-      this._db.executeSQL("delete from reservedCodes");
+      this._db.executeSQL("DELETE FROM heldLocks");
+      this._db.executeSQL("DELETE FROM reservedCodes");
       this._db.saveChanges();
     }
 
     public getHeldLock(type: LockType, objectId: string): LockLevel {
       this.mustBeOpenAndWriteable();
       let ll = LockLevel.None;
-      this._db.withPreparedSqliteStatement("select level from heldLocks where (type=?) and (objectId=?)", (stmt) => {
+      this._db.withPreparedSqliteStatement("SELECT level FROM heldLocks WHERE type=? AND objectId=?", (stmt) => {
         stmt.bindValue(1, type);
         stmt.bindValue(2, objectId);
         if (stmt.step() === DbResult.BE_SQLITE_ROW)
@@ -1596,7 +1489,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     public isCodeReserved(code: CodeProps): boolean {
       this.mustBeOpenAndWriteable();
       let isFound = false;
-      this._db.withPreparedSqliteStatement("select count(*) from reservedCodes where (specid=?) and (scope=?) and (value=?) limit 1", (stmt) => {
+      this._db.withPreparedSqliteStatement("SELECT count(*) FROM reservedCodes WHERE specid=? AND scope=? AND value=?", (stmt) => {
         stmt.bindValue(1, code.spec);
         stmt.bindValue(2, code.scope);
         stmt.bindValue(3, code.value);
@@ -1608,7 +1501,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     public insertCodes(codes: CodeProps[]) {
       this.mustBeOpenAndWriteable();
-      this._db.withPreparedSqliteStatement("insert into reservedCodes (specid,scope,value) VALUES(?,?,?)", (stmt) => {
+      this._db.withPreparedSqliteStatement("INSERT INTO reservedCodes(specid,scope,value) VALUES(?,?,?)", (stmt) => {
         for (const code of codes) {
           stmt.reset();
           stmt.clearBindings();
@@ -1624,7 +1517,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     public insertLocks(locks: LockProps[], txnId?: string) {
       this.mustBeOpenAndWriteable();
-      this._db.withPreparedSqliteStatement("insert into heldLocks (type,objectId,level,txnId) VALUES(?,?,?,?)", (stmt) => {
+      this._db.withPreparedSqliteStatement("INSERT INTO heldLocks(type,objectId,level,txnId) VALUES(?,?,?,?)", (stmt) => {
         for (const lock of locks) {
           stmt.reset();
           stmt.clearBindings();
@@ -1644,7 +1537,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
         return;
 
       this.mustBeOpenAndWriteable();
-      this._db.withPreparedSqliteStatement("delete from heldLocks where txnId=?", (stmt) => {
+      this._db.withPreparedSqliteStatement("DELETE FROM heldLocks WHERE txnId=?", (stmt) => {
         stmt.bindValue(1, txnId);
         stmt.step();
       });
@@ -1657,7 +1550,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     public async populate(requestContext: AuthorizedClientRequestContext): Promise<void> {
       this.mustHaveBriefcase();
       this.clear();
-      const arg = { requestContext, iModelId: this.concurrencyControl.iModel.iModelId, briefcaseId: this.concurrencyControl.iModel.briefcaseId };
+      const arg = { requestContext, briefcase: this.concurrencyControl.iModel };
       this.insertLocks(await IModelHost.hubAccess.getAllLocks(arg));
       this.insertCodes(await IModelHost.hubAccess.getAllCodes(arg));
       this.saveChanges();

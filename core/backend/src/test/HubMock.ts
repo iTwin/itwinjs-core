@@ -12,7 +12,8 @@ import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { CheckpointManager, DownloadRequest } from "../CheckpointManager";
 import {
-  BriefcaseIdArg, ChangesetFileProps, ChangesetProps, ChangesetRange, HubAccess, IModelIdArg, LocalDirName, LocalFileName,
+  BriefcaseDbArg,
+  BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, HubAccess, IModelIdArg, LocalDirName, LocalFileName,
   LockProps,
 } from "../HubAccess";
 import { SnapshotDb } from "../IModelDb";
@@ -72,8 +73,8 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).getLatestChangesetId();
   }
 
-  public static async getChangesetIndexFromId(arg: IModelIdArg & { changeSetId: string }): Promise<number> {
-    return this.findLocalHub(arg.iModelId).getChangesetIndex(arg.changeSetId);
+  public static async getChangesetIndexFromId(arg: IModelIdArg & { changesetId: ChangesetId }): Promise<number> {
+    return this.findLocalHub(arg.iModelId).getChangesetIndex(arg.changesetId);
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
@@ -117,12 +118,15 @@ export class HubMock {
   public static async releaseAllCodes(_arg: BriefcaseIdArg) {
   }
 
-  public static async getAllLocks(_arg: BriefcaseIdArg): Promise<LockProps[]> {
+  public static async getAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]> {
     return [];
   }
 
-  public static async getAllCodes(_arg: BriefcaseIdArg): Promise<CodeProps[]> {
+  public static async getAllCodes(_arg: BriefcaseDbArg): Promise<CodeProps[]> {
     return [];
+  }
+
+  public static async acquireLocks(_arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
   }
 
   public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {
