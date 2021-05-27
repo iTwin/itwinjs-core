@@ -503,7 +503,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** The settings that control how emphasized elements are displayed in this Viewport. The default settings apply a thick black silhouette to the emphasized elements.
-   * @see [FeatureSymbology.Appearance.emphasized].
+   * @see [[FeatureAppearance.emphasized]].
    */
   public get emphasisSettings(): Hilite.Settings { return this._emphasis; }
   public set emphasisSettings(settings: Hilite.Settings) {
