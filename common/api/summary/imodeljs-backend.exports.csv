@@ -210,9 +210,9 @@ public;InformationRecordModel
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
 beta;InstanceChange
-beta;class IpcHandler
-beta;IpcHost
-beta;IpcHostOpts
+public;class IpcHandler
+public;IpcHost
+public;IpcHostOpts
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -225,9 +225,9 @@ internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;class NativeAppAuthorizationBackend 
-beta;NativeAppStorage
-beta;NativeHost
-beta;NativeHostOpts 
+public;NativeAppStorage
+public;NativeHost
+public;NativeHostOpts 
 beta;OnAspectArg
 beta;OnAspectIdArg 
 beta;OnAspectPropsArg 
