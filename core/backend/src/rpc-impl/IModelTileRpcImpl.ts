@@ -12,6 +12,7 @@ import {
   IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse,
   TileTreeContentIds, TileVersionInfo,
 } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -100,7 +101,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 }
 
 async function getTileTreeProps(props: TileRequestProps): Promise<IModelTileTreeProps> {
-  const db = IModelDb.findByKey(props.tokenProps.key);
+  const db = await IModelDb.findOrOpen(props.requestContext as AuthorizedClientRequestContext, props.tokenProps);
   return db.tiles.requestTileTreeProps(props.requestContext, props.treeId);
 }
 
@@ -131,7 +132,7 @@ interface TileContentRequestProps extends TileRequestProps {
 }
 
 async function getTileContent(props: TileContentRequestProps): Promise<TileContent> {
-  const db = IModelDb.findByKey(props.tokenProps.key);
+  const db = await IModelDb.findOrOpen(props.requestContext as AuthorizedClientRequestContext, props.tokenProps);
   const tile = await db.tiles.requestTileContent(props.requestContext, props.treeId, props.contentId);
   return {
     content: tile.content,
@@ -184,11 +185,12 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async purgeTileTrees(tokenProps: IModelRpcProps, modelIds: Id64Array | undefined): Promise<void> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     // `undefined` gets forwarded as `null`...
     if (null === modelIds)
       modelIds = undefined;
 
-    const db = IModelDb.findByKey(tokenProps.key);
+    const db = await IModelDb.findOrOpen(requestContext, tokenProps);
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
@@ -229,14 +231,16 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   /** @internal */
   public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    const iModel = IModelDb.findByKey(rpcProps.key);
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const iModel = await IModelDb.findOrOpen(requestContext, rpcProps);
     return iModel.generateElementGraphics(request);
   }
 }
 
 /** @internal */
-export function cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): void {
-  const iModel = IModelDb.findByKey(tokenProps.key);
+export async function cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): void {
+  const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+  const iModel = await IModelDb.findOrOpen(requestContext, tokenProps);
 
   const props: TileContentRequestProps = {
     requestContext: ClientRequestContext.current,

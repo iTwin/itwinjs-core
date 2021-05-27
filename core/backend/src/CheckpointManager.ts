@@ -112,7 +112,7 @@ export class Downloads {
  * @internal
 */
 export class V2CheckpointManager {
-  private static reattachTimeouts: { [key: string]: NodeJS.Timeout } = {};
+  private static reattachDueTimestamps: { [key: string]: number } = {};
 
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
     const { requestContext, iModelId, changeSetId } = checkpoint;
@@ -161,17 +161,21 @@ export class V2CheckpointManager {
     if (sasTokenExpiry) {
       const expiresIn = Date.parse(sasTokenExpiry) - Date.now();
 
-      this.reattachTimeouts[CheckpointManager.getKey(checkpoint)] = setTimeout(async () => {
-        await this.attach(checkpoint);
-      }, expiresIn / 2);
+      this.reattachDueTimestamps[CheckpointManager.getKey(checkpoint)] = Date.now() + expiresIn / 2;
     }
 
     return BlobDaemon.getDbFileName(args);
   }
 
+  public static async reattachIfNeeded(checkpoint: CheckpointProps): Promise<void> {
+    const key = CheckpointManager.getKey(checkpoint);
+    if (this.reattachDueTimestamps.hasOwnProperty(key) && this.reattachDueTimestamps[key] <= Date.now())
+      await this.attach(checkpoint);
+  }
+
   public static detach(checkpointKey: string) {
-    if (this.reattachTimeouts.hasOwnProperty(checkpointKey))
-      clearTimeout(this.reattachTimeouts[checkpointKey]);
+    if (this.reattachDueTimestamps.hasOwnProperty(checkpointKey))
+      delete this.reattachDueTimestamps[checkpointKey];
   }
 
   private static async performDownload(job: DownloadJob): Promise<void> {

@@ -44,6 +44,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
+import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
@@ -831,6 +832,17 @@ export abstract class IModelDb extends IModel {
         return entry[1];
     }
     return undefined;
+  }
+
+  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps): Promise<IModelDb> {
+    const iModelDb = this.tryFindByKey(iModel.key);
+    if (undefined === iModelDb) {
+      return this.findByKey((await new IModelReadRpcImpl().openForRead(iModel)).key);
+    }
+    if (iModelDb.isSnapshotDb() && iModelDb.isV2Checkpoint) {
+      await V2CheckpointManager.reattachIfNeeded({ requestContext, expectV2: true, ...iModel } as CheckpointProps); // assume contextId, iModelId and changesetId are always defined
+    }
+    return iModelDb;
   }
 
   /** Find an open IModelDb by its key.
@@ -2146,6 +2158,10 @@ export class BriefcaseDb extends IModelDb {
    */
   public static readonly onOpened = new BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
 
+  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps): Promise<BriefcaseDb> {
+    return await super.findOrOpen(requestContext, iModel) as BriefcaseDb;
+  }
+
   public static findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
   }
@@ -2423,6 +2439,8 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public get isSnapshot(): boolean { return true; }
+  public get isV2Checkpoint(): boolean { return this._isV2Checkpoint; }
+  private _isV2Checkpoint: boolean;
   private _createClassViewsOnClose?: boolean;
   /** The full path to the snapshot iModel file.
    * @deprecated use pathName
@@ -2433,6 +2451,11 @@ export class SnapshotDb extends IModelDb {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
     const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId: nativeDb.getParentChangeSetId(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
+    this._isV2Checkpoint = false;
+  }
+
+  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps): Promise<SnapshotDb> {
+    return await super.findOrOpen(requestContext, iModel) as SnapshotDb;
   }
 
   public static findByKey(key: string): SnapshotDb {
@@ -2554,6 +2577,7 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
+    snapshot._isV2Checkpoint = true;
     return snapshot;
   }
 
@@ -2611,6 +2635,10 @@ export class StandaloneDb extends IModelDb {
    * @deprecated use pathName
    */
   public get filePath(): string { return this.pathName; }
+
+  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps): Promise<StandaloneDb> {
+    return await super.findOrOpen(requestContext, iModel) as StandaloneDb;
+  }
 
   public static findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;
