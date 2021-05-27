@@ -99,7 +99,6 @@ export class MapLayerSettingsService {
     } else {
       return false;
     }
-
   }
 
   public static async deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean> {

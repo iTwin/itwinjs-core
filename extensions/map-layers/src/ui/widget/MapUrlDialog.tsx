@@ -301,8 +301,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           const vp = props.activeViewport;
           void (async () => {
             if (isSettingsStorageAvailable && vp) {
-              if (!(await MapLayerSettingsService.replaceSourceInSettingsService(props.mapLayerSourceToEdit!, source, vp.iModel.contextId!, vp.iModel.iModelId!)))
+              if (!(await MapLayerSettingsService.replaceSourceInSettingsService(props.mapLayerSourceToEdit!, source, vp.iModel.contextId!, vp.iModel.iModelId!))) {
+                const errorMessage = IModelApp.i18n.translate("mapLayers:Messages.MapLayerEditError", { layerName: props.mapLayerSourceToEdit?.name });
+                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
                 return;
+              }
+
             }
           })();
           return;
