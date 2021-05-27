@@ -4,6 +4,11 @@
       "packageName": "@bentley/presentation-common",
       "comment": "Expose helper APIs to traverse presentation content.",
       "type": "none"
+    },
+    {
+      "packageName": "@bentley/presentation-backend",
+      "comment": "Add `PresentationRpcInterface.getElementProperties` and related APIs",
+      "type": "none"
     }
   ],
   "packageName": "@bentley/presentation-common",

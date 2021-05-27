@@ -9,23 +9,23 @@ import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
 } from "@bentley/presentation-common/lib/test/_helpers/Content";
 import { createTestECClassInfo, createTestECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import { buildElementPropertiesResponse } from "../presentation-backend/ElementPropertiesHelper";
+import { buildElementProperties } from "../presentation-backend/ElementPropertiesHelper";
 
-describe("buildElementPropertiesResponse", () => {
+describe("buildElementProperties", () => {
 
   it("returns undefined when given undefined content", () => {
-    expect(buildElementPropertiesResponse(undefined)).to.be.undefined;
+    expect(buildElementProperties(undefined)).to.be.undefined;
   });
 
   it("returns undefined when given content with not items", () => {
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [],
     ))).to.be.undefined;
   });
 
   it("sets class label", () => {
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [
         createTestContentItem({
@@ -38,7 +38,7 @@ describe("buildElementPropertiesResponse", () => {
   });
 
   it("sets element label", () => {
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [
         createTestContentItem({
@@ -51,7 +51,7 @@ describe("buildElementPropertiesResponse", () => {
   });
 
   it("sets invalid element id when content item has not primary keys", () => {
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [
         createTestContentItem({
@@ -64,7 +64,7 @@ describe("buildElementPropertiesResponse", () => {
   });
 
   it("sets element id", () => {
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [
         createTestContentItem({
@@ -79,7 +79,7 @@ describe("buildElementPropertiesResponse", () => {
   it("categorizes properties", () => {
     const parentCategory = createTestCategoryDescription({ name: "cat1", label: "Parent Category" });
     const childCategory = createTestCategoryDescription({ name: "cat2", label: "Child Category", parent: parentCategory });
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({
         categories: [parentCategory, childCategory],
         fields: [
@@ -123,7 +123,7 @@ describe("buildElementPropertiesResponse", () => {
 
   it("sets primitive property value to empty string when it's not set", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [
@@ -155,7 +155,7 @@ describe("buildElementPropertiesResponse", () => {
 
   it("sets property value to empty string when it's merged", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [
@@ -188,7 +188,7 @@ describe("buildElementPropertiesResponse", () => {
 
   it("handles struct properties", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [
@@ -258,7 +258,7 @@ describe("buildElementPropertiesResponse", () => {
 
   it("handles primitive array properties", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [
@@ -303,7 +303,7 @@ describe("buildElementPropertiesResponse", () => {
 
   it("handles struct array properties", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
-    expect(buildElementPropertiesResponse(new Content(
+    expect(buildElementProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [

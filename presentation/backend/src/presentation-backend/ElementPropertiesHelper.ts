@@ -8,20 +8,19 @@
 
 import { assert, Id64 } from "@bentley/bentleyjs-core";
 import {
-  CategoryDescription, Content, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem, ElementPropertiesPropertyItem,
-  ElementPropertiesResponse, ElementPropertiesStructArrayPropertyItem, IContentVisitor, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
-  ProcessPrimitiveValueProps, PropertyValueFormat, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps,
-  StartStructProps, traverseContentItem,
+  CategoryDescription, Content, ElementProperties, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem, ElementPropertiesPropertyItem,
+  ElementPropertiesStructArrayPropertyItem, IContentVisitor, ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps,
+  PropertyValueFormat, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps, StartStructProps, traverseContentItem,
 } from "@bentley/presentation-common";
 
 /** @internal */
-export const buildElementPropertiesResponse = (content: Content | undefined): ElementPropertiesResponse | undefined => {
+export const buildElementProperties = (content: Content | undefined): ElementProperties | undefined => {
   if (!content || !content.contentSet.length)
     return undefined;
 
   const descriptor = content.descriptor;
   const item = content.contentSet[0];
-  const builder = new ElementPropertiesResponseBuilder();
+  const builder = new ElementPropertiesBuilder();
   traverseContentItem(builder, descriptor, item);
   return {
     class: item.classInfo?.label ?? "",
@@ -102,7 +101,7 @@ class StructItemAppender implements IPropertiesAppender {
   }
 }
 
-class ElementPropertiesResponseBuilder implements IContentVisitor {
+class ElementPropertiesBuilder implements IContentVisitor {
   private _appendersStack: IPropertiesAppender[] = [];
   private _categoryItemAppenders: { [categoryName: string]: IPropertiesAppender } = {};
   private _rootItems: { [label: string]: ElementPropertiesItem } = {};

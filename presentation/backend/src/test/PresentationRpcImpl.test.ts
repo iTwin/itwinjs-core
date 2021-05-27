@@ -11,18 +11,14 @@ import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
 import {
-  Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentRequestOptions, ContentRpcRequestOptions,
-  DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions,
-  DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, ElementPropertiesResponse,
+  ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions, Descriptor, DescriptorJSON,
+  DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
+  DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
   ElementPropertiesRpcRequestOptions, ExtendedContentRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRequestOptions,
   ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyCompareRpcOptions,
   HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions,
   PresentationError, PresentationRpcRequestOptions, PresentationStatus, SelectionScopeRequestOptions, VariableValueTypes,
 } from "@bentley/presentation-common";
-import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import {
@@ -1445,45 +1441,7 @@ describe("PresentationRpcImpl", () => {
     describe("getElementProperties", () => {
 
       it("calls manager", async () => {
-        const managerOptions: WithClientRequestContext<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>> = {
-          requestContext: ClientRequestContext.current,
-          imodel: testData.imodelMock.object,
-          rulesetOrId: "ElementProperties",
-          descriptor: {
-            displayType: DefaultContentDisplayTypes.PropertyPane,
-            contentFlags: ContentFlags.ShowLabels,
-          },
-          keys: new KeySet([{ className: "BisCore:Element", id: "0x123" }]),
-        };
-        const managerResponse = new Content(
-          createTestContentDescriptor({
-            fields: [
-              createTestSimpleContentField({
-                name: "test",
-                label: "Test Field",
-                category: createTestCategoryDescription({ label: "Test Category" }),
-              }),
-            ],
-          }),
-          [
-            createTestContentItem({
-              label: "test label",
-              classInfo: createTestECClassInfo({ label: "Test Class" }),
-              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
-              values: {
-                test: "test value",
-              },
-              displayValues: {
-                test: "test display value",
-              },
-            }),
-          ],
-        );
-        const rpcOptions: PresentationRpcRequestOptions<ElementPropertiesRpcRequestOptions> = {
-          ...defaultRpcParams,
-          elementId: "0x123",
-        };
-        const expectedRpcResponse: ElementPropertiesResponse = {
+        const testElementProperties: ElementProperties = {
           class: "Test Class",
           id: "0x123",
           label: "test label",
@@ -1499,13 +1457,19 @@ describe("PresentationRpcImpl", () => {
             },
           },
         };
+        const managerOptions: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>> = {
+          requestContext: ClientRequestContext.current,
+          imodel: testData.imodelMock.object,
+          elementId: "0x123",
+        };
+        const managerResponse = testElementProperties;
+        const rpcOptions: PresentationRpcRequestOptions<ElementPropertiesRpcRequestOptions> = {
+          ...defaultRpcParams,
+          elementId: "0x123",
+        };
+        const expectedRpcResponse = testElementProperties;
         presentationManagerMock
-          .setup(async (x) => x.getContent(moq.It.is((opts): boolean => {
-            return opts.imodel === managerOptions.imodel
-              && opts.rulesetOrId === managerOptions.rulesetOrId
-              && deepEqual(opts.descriptor, managerOptions.descriptor)
-              && opts.keys.size === managerOptions.keys.size && opts.keys.hasAll(managerOptions.keys);
-          })))
+          .setup(async (x) => x.getElementProperties(managerOptions))
           .returns(async () => managerResponse)
           .verifiable();
         const actualResult = await impl.getElementProperties(testData.imodelToken, rpcOptions);
