@@ -5436,12 +5436,14 @@ export interface MapLayerSetting {
 // @internal (undocumented)
 export class MapLayerSettingsService {
     // (undocumented)
-    static deleteSharedSettingsByName(name: string, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+    static deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+    // (undocumented)
+    static getSettingFromUrl(requestContext: AuthorizedFrontendRequestContext, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
     static getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
     // (undocumented)
-    static readonly onCustomLayerNameRemoved: BeEvent<(name: string) => void>;
+    static readonly onLayerSourceChanged: BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource | undefined, newSource?: MapLayerSource | undefined) => void>;
     // (undocumented)
-    static readonly onNewCustomLayerSource: BeEvent<(source: MapLayerSource) => void>;
+    static replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
     // (undocumented)
     static get SourceNamespace(): string;
     static storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
@@ -5483,6 +5485,16 @@ export class MapLayerSource implements MapLayerProps {
     userName?: string | undefined;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+}
+
+// @internal (undocumented)
+export enum MapLayerSourceChangeType {
+    // (undocumented)
+    Added = 0,
+    // (undocumented)
+    Removed = 1,
+    // (undocumented)
+    Replaced = 2
 }
 
 // @internal

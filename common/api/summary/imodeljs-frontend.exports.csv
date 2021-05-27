@@ -328,6 +328,7 @@ beta;MapLayerOptions
 internal;MapLayerSetting
 internal;MapLayerSettingsService
 internal;MapLayerSource 
+internal;MapLayerSourceChangeType
 internal;MapLayerSources
 internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation
