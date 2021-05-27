@@ -292,7 +292,7 @@ export class V1CheckpointManager {
 
         // Apply change sets if necessary
         if (dbChangeSetId !== requestedCkp.changeSetId) {
-          await BriefcaseManager.processChangeSets(requestContext, db, requestedCkp.changeSetId);
+          await BriefcaseManager.processChangesets(requestContext, db, requestedCkp.changeSetId);
           requestContext.enter();
         }
       } finally {

@@ -37,7 +37,7 @@ describe("ChangedElements (#integration)", () => {
       IModelJsFs.removeSync(cacheFilePath);
 
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
-    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: testIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: testIModelId });
     assert.exists(iModel);
 
     const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
@@ -172,7 +172,7 @@ describe("ChangedElements (#integration)", () => {
       IModelJsFs.removeSync(cacheFilePath);
 
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
-    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: testIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: testIModelId });
     assert.exists(iModel);
 
     const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);

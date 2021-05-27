@@ -102,7 +102,7 @@ export class ChangedElementsDb implements IDisposable {
   public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     requestContext.enter();
     const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
-    const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
+    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
     requestContext.enter();
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
@@ -130,7 +130,7 @@ export class ChangedElementsDb implements IDisposable {
   public async processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     requestContext.enter();
     const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
-    const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
+    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
     requestContext.enter();
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();

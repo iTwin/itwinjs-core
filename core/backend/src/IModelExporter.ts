@@ -738,8 +738,8 @@ class ChangedInstanceIds {
   public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseDb, startChangeSetId: string): Promise<ChangedInstanceIds> {
     requestContext.enter();
     const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
-    // NOTE: ChangeSummaryManager.downloadChangeSets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangeSets)
-    const changeSets = await ChangeSummaryManager.downloadChangeSets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
+    // NOTE: ChangeSummaryManager.downloadChangesets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangesets)
+    const changeSets = await ChangeSummaryManager.downloadChangesets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changeSets.forEach((changeSet): void => {

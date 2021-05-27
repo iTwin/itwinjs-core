@@ -155,7 +155,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Extract ChangeSummary for single changeset", async () => {
     setupTest(readOnlyTestIModelId);
 
-    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: readOnlyTestIModelId });
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].id;
@@ -194,7 +194,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Extracting ChangeSummaries for a range of changesets", async () => {
     setupTest(readOnlyTestIModelId);
 
-    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: readOnlyTestIModelId });
     assert.isAtLeast(changeSets.length, 3);
     const startChangeSetId: string = changeSets[0].id;
     const endChangeSetId: string = changeSets[1].id;
@@ -240,7 +240,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Subsequent ChangeSummary extractions", async () => {
     setupTest(readOnlyTestIModelId);
 
-    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: readOnlyTestIModelId });
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id;

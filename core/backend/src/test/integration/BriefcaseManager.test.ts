@@ -95,7 +95,7 @@ describe("BriefcaseManager (#integration)", () => {
     // Validate that the IModelDb is readonly
     assert(iModel.isReadonly, "iModel not set to Readonly mode");
 
-    const expectedChangeSetId = await IModelHost.hubAccess.getChangeSetIdFromVersion({ version: IModelVersion.first(), requestContext, iModelId: readOnlyTestIModelId });
+    const expectedChangeSetId = await IModelHost.hubAccess.getChangesetIdFromVersion({ version: IModelVersion.first(), requestContext, iModelId: readOnlyTestIModelId });
     assert.strictEqual<string>(iModel.changeSetId!, expectedChangeSetId);
     assert.strictEqual<string>(iModel.changeSetId!, expectedChangeSetId);
 
@@ -146,7 +146,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.exists(iModelFirstVersion);
     assert.strictEqual<string>(iModelFirstVersion.changeSetId!, "");
 
-    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId: readOnlyTestIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: readOnlyTestIModelId });
 
     for (const [arrayIndex, versionName] of readOnlyTestVersions.entries()) {
       const iModelFromVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[arrayIndex + 1].id).toJSON() });
@@ -337,8 +337,8 @@ describe("BriefcaseManager (#integration)", () => {
     let revIndex: number;
     for (revIndex = readOnlyTestVersions.length - 1; revIndex >= 0; revIndex--) {
       // Stop at a schema change
-      const changeSetId = await IModelHost.hubAccess.getChangeSetIdFromNamedVersion({ versionName: readOnlyTestVersions[revIndex], requestContext, iModelId: readOnlyTestIModelId });
-      const changeSet = await IModelHost.hubAccess.queryChangeSet({ requestContext, iModelId: readOnlyTestIModelId, id: changeSetId });
+      const changeSetId = await IModelHost.hubAccess.getChangesetIdFromNamedVersion({ versionName: readOnlyTestVersions[revIndex], requestContext, iModelId: readOnlyTestIModelId });
+      const changeSet = await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: readOnlyTestIModelId, id: changeSetId });
       if (changeSet.changesType === ChangesType.Schema)
         break;
 

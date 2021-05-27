@@ -8,7 +8,7 @@ import { assert, Config, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 import { BriefcaseQuery, Version } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, ChangeSetProps, IModelHost, IModelHubAccess, IModelJsFs, NativeHost, RequestNewBriefcaseArg,
+  BriefcaseDb, BriefcaseManager, ChangesetProps, IModelHost, IModelHubAccess, IModelJsFs, NativeHost, RequestNewBriefcaseArg,
 } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -54,8 +54,8 @@ export namespace IModelHubUtils {
   }
 
   /** Call the specified function for each changeSet of the specified iModel. */
-  export async function forEachChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, func: (c: ChangeSetProps) => void): Promise<void> {
-    const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId });
+  export async function forEachChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, func: (c: ChangesetProps) => void): Promise<void> {
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
     for (const changeSet of changeSets) {
       func(changeSet);
     }

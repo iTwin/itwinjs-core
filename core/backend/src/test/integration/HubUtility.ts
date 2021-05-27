@@ -15,8 +15,11 @@ import {
 import { BriefcaseIdValue } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
-import { IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 import { IModelHubAccess } from "../../IModelHubAccess";
+import { IModelHost } from "../../IModelHost";
+import { IModelJsFs } from "../../IModelJsFs";
+import { ChangesetFileProps } from "../../HubAccess";
+import { IModelDb } from "../../IModelDb";
 
 /** DTO to work with iModelHub DeleteChangeSet API */
 @ECJsonTypeMap.classToJson("wsg", "iModelActions.DeleteChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -127,7 +130,7 @@ export class HubUtility {
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
+  private static async downloadChangesets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
     // Determine the range of changesets that remain to be downloaded
     const changeSets = await IModelHubAccess.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
     if (changeSets.length === 0)
@@ -147,7 +150,7 @@ export class HubUtility {
     const latestChangeSetId = changeSets[latestIndex].id!; // Query results include latest specified change set
     const query = earliestChangeSetId ? new ChangeSetQuery().betweenChangeSets(earliestChangeSetId, latestChangeSetId) : new ChangeSetQuery();
 
-    const perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Download ChangeSets");
+    const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download ChangeSets");
     await IModelHubAccess.iModelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
     perfLogger.dispose();
     return changeSets;
@@ -196,7 +199,7 @@ export class HubUtility {
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
-    const changeSets = await HubUtility.downloadChangeSets(requestContext, changeSetDir, projectId, iModelId);
+    const changeSets = await HubUtility.downloadChangesets(requestContext, changeSetDir, projectId, iModelId);
 
     const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
     const changeSetsJsonPathname = path.join(downloadDir, "changeSets.json");
@@ -495,8 +498,8 @@ export class HubUtility {
   }
 
   /** Reads change sets from disk and expects a standard structure of how the folder is organized */
-  public static readChangeSets(iModelDir: string): IModelJsNative.ChangeSetProps[] {
-    const tokens: IModelJsNative.ChangeSetProps[] = [];
+  public static readChangeSets(iModelDir: string): ChangesetFileProps[] {
+    const tokens: ChangesetFileProps[] = [];
 
     const changeSetJsonPathname = path.join(iModelDir, "changeSets.json");
     if (!IModelJsFs.existsSync(changeSetJsonPathname))
@@ -509,7 +512,7 @@ export class HubUtility {
       const pathname = path.join(iModelDir, "changeSets", changeSetJson.fileName);
       if (!IModelJsFs.existsSync(pathname))
         throw new Error(`Cannot find the ChangeSet file: ${pathname}`);
-      tokens.push({ id: changeSetJson.id, parentId: changeSetJson.parentId, pathname, index: + changeSetJson.index, changesType: changeSetJson.changesType });
+      tokens.push({ id: changeSetJson.id, parentId: changeSetJson.parentId, pathname, index: + changeSetJson.index, changesType: changeSetJson.changesType, description: "" });
     }
     return tokens;
   }
@@ -538,7 +541,7 @@ export class HubUtility {
   }
 
   /** Applies change sets one by one (for debugging) */
-  public static applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: IModelJsNative.ChangeSetProps[], applyOption: ChangeSetApplyOption): ChangeSetStatus {
+  public static applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: ChangesetFileProps[], applyOption: ChangeSetApplyOption): ChangeSetStatus {
     const perfLogger = new PerfLogger(`Applying change sets for operation ${ChangeSetApplyOption[applyOption]}`);
 
     // Apply change sets one by one to debug any issues
@@ -560,12 +563,12 @@ export class HubUtility {
     return ChangeSetStatus.Success;
   }
 
-  public static dumpChangeSet(iModel: IModelDb, changeSet: IModelJsNative.ChangeSetProps) {
+  public static dumpChangeSet(iModel: IModelDb, changeSet: ChangesetFileProps) {
     iModel.nativeDb.dumpChangeSet(changeSet);
   }
 
   /** Dumps change sets to the log */
-  public static dumpChangeSetsToLog(iModelDb: IModelDb, changeSets: IModelJsNative.ChangeSetProps[]) {
+  public static dumpChangeSetsToLog(iModelDb: IModelDb, changeSets: ChangesetFileProps[]) {
     let count = 0;
     changeSets.forEach((changeSet) => {
       count++;
@@ -575,7 +578,7 @@ export class HubUtility {
   }
 
   /** Dumps change sets to Db */
-  public static dumpChangeSetsToDb(changeSetDbPathname: string, changeSets: IModelJsNative.ChangeSetProps[], dumpColumns: boolean = true) {
+  public static dumpChangeSetsToDb(changeSetDbPathname: string, changeSets: ChangesetFileProps[], dumpColumns: boolean = true) {
     let count = 0;
     changeSets.forEach((changeSet) => {
       count++;

@@ -9,7 +9,7 @@ import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { Version } from "@bentley/imodelhub-client";
 import {
-  BackendLoggerCategory, BackendRequestContext, ChangeSetProps, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
+  BackendLoggerCategory, BackendRequestContext, ChangesetProps, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
 } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -142,7 +142,7 @@ void (async () => {
       }
 
       if (args.logChangeSets) {
-        await IModelHubUtils.forEachChangeSet(requestContext, sourceIModelId, (changeSet: ChangeSetProps) => {
+        await IModelHubUtils.forEachChangeSet(requestContext, sourceIModelId, (changeSet: ChangesetProps) => {
           Logger.logInfo(loggerCategory, `sourceChangeSet: id="${changeSet.id}", description="${changeSet.description}"}`);
         });
       }
@@ -197,7 +197,7 @@ void (async () => {
       Logger.logInfo(loggerCategory, `targetIModelId=${targetIModelId}`);
 
       if (args.logChangeSets) {
-        await IModelHubUtils.forEachChangeSet(requestContext, targetIModelId, (changeSet: ChangeSetProps) => {
+        await IModelHubUtils.forEachChangeSet(requestContext, targetIModelId, (changeSet: ChangesetProps) => {
           Logger.logInfo(loggerCategory, `targetChangeSet: id="${changeSet.id}", description="${changeSet.description}"`);
         });
       }

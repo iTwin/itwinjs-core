@@ -15,7 +15,7 @@ import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
-import { IModelHost } from "../imodeljs-backend";
+import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -60,7 +60,7 @@ export class RpcBriefcaseUtility {
               throw new Error(); // causes delete below
             const db = await BriefcaseDb.open(requestContext, { fileName });
             if (db.changeSetId !== tokenProps.changeSetId)
-              await BriefcaseManager.processChangeSets(requestContext, db, tokenProps.changeSetId!);
+              await BriefcaseManager.processChangesets(requestContext, db, tokenProps.changeSetId!);
             return db;
           } catch (error) {
             if (!(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen))

@@ -16,10 +16,9 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
-import { KnownLocations } from "./IModelHost";
+import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelHost } from "./imodeljs-backend";
-import { ChangeSetFileProps } from "./HubAccess";
+import { ChangesetFileProps } from "./HubAccess";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -157,7 +156,7 @@ export class ChangeSummaryManager {
     let startChangeSetId = "";
     if (options) {
       if (options.startVersion) {
-        startChangeSetId = await IModelHost.hubAccess.getChangeSetIdFromVersion({ version: options.startVersion, requestContext, iModelId: ctx.iModelId });
+        startChangeSetId = await IModelHost.hubAccess.getChangesetIdFromVersion({ version: options.startVersion, requestContext, iModelId: ctx.iModelId });
         requestContext.enter();
       } else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
@@ -169,7 +168,7 @@ export class ChangeSummaryManager {
 
     // download necessary changesets if they were not downloaded before and retrieve infos about those changesets
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download ChangeSets from Hub");
-    const changeSetInfos = await ChangeSummaryManager.downloadChangeSets(requestContext, ctx, startChangeSetId, endChangeSetId);
+    const changeSetInfos = await ChangeSummaryManager.downloadChangesets(requestContext, ctx, startChangeSetId, endChangeSetId);
     requestContext.enter();
     perfLogger.dispose();
     Logger.logTrace(loggerCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId, changeSets: changeSetInfos }));
@@ -259,10 +258,10 @@ export class ChangeSummaryManager {
     }
   }
 
-  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: string, end: string): Promise<ChangeSetFileProps[]> {
+  public static async downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: string, end: string): Promise<ChangesetFileProps[]> {
     requestContext.enter();
 
-    const changeSetInfos = await IModelHost.hubAccess.downloadChangeSets({ requestContext, iModelId: ctx.iModelId, range: { first, end } });
+    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: ctx.iModelId, range: { first, end } });
     requestContext.enter();
     assert(first === "" || first === changeSetInfos[0].id);
     assert(end === changeSetInfos[changeSetInfos.length - 1].id);

@@ -119,6 +119,7 @@ export class IModelVersion {
    * Returns an empty string if this contains the first version (before any change sets). If the
    * version was already specified as of a ChangeSet, the method simply returns
    * that Id without any validation.
+   * @deprecated use IModelHost.HubAccess.
    */
   public async evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString> {
     if (this._first)
@@ -128,7 +129,7 @@ export class IModelVersion {
       return this._afterChangeSetId;
 
     if (this._latest)
-      return IModelVersion.getLatestChangeSetId(requestContext, imodelClient, iModelId);
+      return IModelVersion.getLatestChangesetId(requestContext, imodelClient, iModelId);
 
     if (this._versionName)
       return IModelVersion.getChangeSetFromNamedVersion(requestContext, imodelClient, iModelId, this._versionName);
@@ -139,7 +140,7 @@ export class IModelVersion {
   /** Gets the last change set that was applied to the imodel
    * @internal
    */
-  public static async getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString> {
+  public static async getLatestChangesetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString> {
     const changeSets: ChangeSet[] = await imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
     return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
   }

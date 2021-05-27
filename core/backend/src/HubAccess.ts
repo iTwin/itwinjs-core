@@ -17,7 +17,7 @@ export type LocalDirName = string;
 /** Properties of a changeset
  * @internal
  */
-export interface ChangeSetProps {
+export interface ChangesetProps {
   id: string;
   parentId: string;
   changesType: number;
@@ -32,11 +32,11 @@ export interface ChangeSetProps {
 /** Properties of a changeset file
  * @internal
  */
-export interface ChangeSetFileProps extends ChangeSetProps {
+export interface ChangesetFileProps extends ChangesetProps {
   pathname: string;
 }
 
-export type ChangeSetRange = { first: string, after?: never, end?: string } | { after: string, first?: never, end?: string };
+export type ChangesetRange = { first: string, after?: never, end?: string } | { after: string, first?: never, end?: string };
 
 /**
  * The properties of an iModel server lock.
@@ -58,17 +58,17 @@ export interface BriefcaseIdArg extends IModelIdArg {
 }
 
 export interface HubAccess {
-  downloadChangeSets: (arg: IModelIdArg & { range?: ChangeSetRange }) => Promise<ChangeSetFileProps[]>;
-  downloadChangeSet: (arg: IModelIdArg & { id: string }) => Promise<ChangeSetFileProps>;
-  queryChangeSet: (arg: IModelIdArg & { id: string }) => Promise<ChangeSetProps>;
-  queryChangeSets: (arg: IModelIdArg & { range?: ChangeSetRange }) => Promise<ChangeSetProps[]>;
-  pushChangeSet: (arg: IModelIdArg & { changesetProps: ChangeSetFileProps, releaseLocks: boolean }) => Promise<void>;
-  getLatestChangeSetId: (arg: IModelIdArg) => Promise<string>;
-  getChangeSetIdFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<string>;
-  getChangeSetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<string>;
+  downloadChangesets: (arg: IModelIdArg & { range?: ChangesetRange }) => Promise<ChangesetFileProps[]>;
+  downloadChangeset: (arg: IModelIdArg & { id: string }) => Promise<ChangesetFileProps>;
+  queryChangeset: (arg: IModelIdArg & { id: string }) => Promise<ChangesetProps>;
+  queryChangesets: (arg: IModelIdArg & { range?: ChangesetRange }) => Promise<ChangesetProps[]>;
+  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<void>;
+  getLatestChangesetId: (arg: IModelIdArg) => Promise<string>;
+  getChangesetIdFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<string>;
+  getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<string>;
 
   /** Get the index of the change set from its id */
-  getChangeSetIndexFromId: (arg: IModelIdArg & { changeSetId: string }) => Promise<number>;
+  getChangesetIndexFromId: (arg: IModelIdArg & { changeSetId: string }) => Promise<number>;
   /** Acquire a new briefcaseId for the supplied iModelId
      * @note usually there should only be one briefcase per iModel per user.
      */

@@ -230,7 +230,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   assert.equal(secondCount, 11);
 
   const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, "reverseChangeTest");
-  const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId });
+  const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
   const firstChangeSetId = changeSets[0].id;
   const startTime = new Date().getTime();
   await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));// eslint-disable-line deprecation/deprecation
@@ -276,7 +276,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   assert.equal(secondCount, 11);
 
   const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-  const changeSets = await IModelHost.hubAccess.queryChangeSets({ requestContext, iModelId });
+  const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
   const firstChangeSetId = changeSets[0].id;
   await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));// eslint-disable-line deprecation/deprecation
   const reverseCount = getElementCount(rwIModel);

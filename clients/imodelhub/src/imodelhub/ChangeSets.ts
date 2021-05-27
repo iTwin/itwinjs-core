@@ -573,7 +573,7 @@ export class ChangeSetHandler {
   private async downloadChangeSetWithRetry(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, downloadPath: string, changeSetProgress?: ProgressCallback): Promise<void> {
     requestContext.enter();
     try {
-      await this.downloadChangeSet(requestContext, changeSet, downloadPath, changeSetProgress);
+      await this.downloadChangeset(requestContext, changeSet, downloadPath, changeSetProgress);
       requestContext.enter();
       return;
     } catch (error) {
@@ -592,7 +592,7 @@ export class ChangeSetHandler {
       if (refreshedChangeSets.length === 0)
         throw error;
 
-      await this.downloadChangeSet(requestContext, refreshedChangeSets[0], downloadPath, changeSetProgress);
+      await this.downloadChangeset(requestContext, refreshedChangeSets[0], downloadPath, changeSetProgress);
       requestContext.enter();
       return;
     }
@@ -605,7 +605,7 @@ export class ChangeSetHandler {
    * @param changeSetProgress Callback for tracking progress.
    * @throws [ResponseError]($itwin-client) if the download fails.
    */
-  private async downloadChangeSet(requestContext: AuthorizedClientRequestContext, changeSet: ChangeSet, downloadPath: string, changeSetProgress?: ProgressCallback): Promise<void> {
+  private async downloadChangeset(requestContext: AuthorizedClientRequestContext, changeSet: ChangeSet, downloadPath: string, changeSetProgress?: ProgressCallback): Promise<void> {
     requestContext.enter();
     try {
       await this._fileHandler!.downloadFile(requestContext, changeSet.downloadUrl!, downloadPath, changeSet.fileSizeNumber, changeSetProgress);
