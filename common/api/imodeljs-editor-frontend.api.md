@@ -6,20 +6,25 @@
 
 import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
+import { BeModifierKeys } from '@bentley/imodeljs-frontend';
+import { CurvePrimitive } from '@bentley/geometry-core';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
+import { ElementGeometryInfo } from '@bentley/imodeljs-common';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
 import { EventHandled } from '@bentley/imodeljs-frontend';
 import { FlatBufferGeometryStream } from '@bentley/imodeljs-common';
 import { GeometricElementProps } from '@bentley/imodeljs-common';
+import { GeometryParams } from '@bentley/imodeljs-common';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { HitDetail } from '@bentley/imodeljs-frontend';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { JsonGeometryStream } from '@bentley/imodeljs-common';
+import { Path } from '@bentley/geometry-core';
 import { Placement } from '@bentley/imodeljs-common';
 import { PlacementProps } from '@bentley/imodeljs-common';
 import { Point3d } from '@bentley/geometry-core';
@@ -28,10 +33,24 @@ import { PropertyDescription } from '@bentley/ui-abstract';
 import { Range3d } from '@bentley/geometry-core';
 import { RenderGraphic } from '@bentley/imodeljs-frontend';
 import { RenderGraphicOwner } from '@bentley/imodeljs-frontend';
+import { SnapDetail } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { Transform } from '@bentley/geometry-core';
+import { Vector3d } from '@bentley/geometry-core';
 import { Viewport } from '@bentley/imodeljs-frontend';
+
+// @alpha (undocumented)
+export enum ArcMethod {
+    // (undocumented)
+    CenterStart = 0,
+    // (undocumented)
+    StartCenter = 1,
+    // (undocumented)
+    StartEndMid = 3,
+    // (undocumented)
+    StartMidEnd = 2
+}
 
 // @alpha (undocumented)
 export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number;
@@ -40,14 +59,78 @@ export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius
 export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): number;
 
 // @alpha
+export class CreateArcTool extends CreateOrContinuePathTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    // (undocumented)
+    protected createConstructionCurve(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
+    // (undocumented)
+    protected get createCurvePhase(): CreateCurvePhase;
+    // (undocumented)
+    protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
+    // (undocumented)
+    protected getArcNormal(ev: BeButtonEvent): Vector3d;
+    // (undocumented)
+    protected _getMethodDescription: () => PropertyDescription;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    get method(): ArcMethod;
+    set method(method: ArcMethod);
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onRestartTool(): void;
+    parseAndRun(...inputArgs: string[]): boolean;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    get radius(): number;
+    set radius(value: number);
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    protected showConstructionGraphics(ev: BeButtonEvent, context: DynamicsContext): boolean;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    get sweep(): number;
+    set sweep(value: number);
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    get useRadius(): boolean;
+    set useRadius(value: boolean);
+    // (undocumented)
+    get useSweep(): boolean;
+    set useSweep(value: boolean);
+    }
+
+// @alpha
+export enum CreateCurvePhase {
+    DefineEnd = 1,
+    DefineOther = 2,
+    DefineStart = 0
+}
+
+// @alpha
 export abstract class CreateElementTool extends PrimitiveTool {
     protected abstract createElement(): Promise<void>;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     protected isComplete(_ev: BeButtonEvent): boolean;
+    protected get isControlDown(): boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     onPostInstall(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     onUnsuspend(): void;
     protected processDataButton(ev: BeButtonEvent): Promise<EventHandled>;
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
@@ -61,63 +144,151 @@ export abstract class CreateElementTool extends PrimitiveTool {
 }
 
 // @alpha
-export class CreateLineStringTool extends CreateElementTool {
+export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
-    // (undocumented)
-    protected clearGraphics(): void;
-    // (undocumented)
-    protected createElement(): Promise<void>;
-    // (undocumented)
-    protected createGraphics(ev: BeButtonEvent): Promise<void>;
+    protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
     // (undocumented)
-    protected getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
-    // (undocumented)
-    protected getGeometryProps(placement: PlacementProps, ev?: BeButtonEvent): JsonGeometryStream | FlatBufferGeometryStream | undefined;
-    // (undocumented)
-    protected getPlacementProps(ev?: BeButtonEvent): PlacementProps | undefined;
-    // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     // (undocumented)
-    protected _graphicsProvider?: DynamicGraphicsProvider;
+    static iconSpec: string;
     // (undocumented)
-    onCleanup(): void;
+    protected isComplete(ev: BeButtonEvent): boolean;
     // (undocumented)
-    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
-    // (undocumented)
-    onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
-    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
-    onUndoPreviousStep(): Promise<boolean>;
-    // (undocumented)
-    protected readonly _points: Point3d[];
-    // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
-    protected setupAndPromptForNextAction(): void;
-    // (undocumented)
     protected _snapGeomId?: Id64String;
-    // (undocumented)
-    protected startCommand(): Promise<string>;
-    // (undocumented)
-    protected _startedCmd?: string;
     // (undocumented)
     testDecorationHit(id: Id64String): boolean;
     // (undocumented)
     static toolId: string;
     // (undocumented)
+    protected get wantClosure(): boolean;
+}
+
+// @alpha
+export abstract class CreateOrContinuePathTool extends CreateElementTool {
+    // (undocumented)
+    protected readonly accepted: Point3d[];
+    // (undocumented)
+    protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void;
+    // (undocumented)
+    protected get allowClosure(): boolean;
+    // (undocumented)
+    protected get allowJoin(): boolean;
+    // (undocumented)
+    protected get allowSimplify(): boolean;
+    // (undocumented)
+    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected clearGraphics(): void;
+    // (undocumented)
+    protected continuationData?: {
+        props: GeometricElementProps;
+        path: Path;
+        params: GeometryParams;
+    };
+    // (undocumented)
+    protected continueExistingPath(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    protected get createCurvePhase(): CreateCurvePhase;
+    // (undocumented)
+    protected createElement(): Promise<void>;
+    // (undocumented)
+    protected createGraphics(ev: BeButtonEvent): Promise<void>;
+    // @internal
+    protected abstract createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
+    // (undocumented)
+    protected createNewPath(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
+    protected current?: CurvePrimitive;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
+    // (undocumented)
+    protected getGeometryProps(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
+    protected getPlacementProps(): PlacementProps | undefined;
+    // (undocumented)
+    protected _graphicsProvider?: DynamicGraphicsProvider;
+    // (undocumented)
+    protected isClosed: boolean;
+    // (undocumented)
+    protected isConstruction: boolean;
+    // (undocumented)
+    protected get isContinueExistingPath(): boolean;
+    // (undocumented)
+    static isPathClosurePoint(curve: CurvePrimitive, path?: Path): boolean;
+    // (undocumented)
+    static isPathEndPoint(curve: CurvePrimitive, path: Path): boolean;
+    // (undocumented)
+    static isSingleOpenPath(info: ElementGeometryInfo): {
+        path: Path;
+        params: GeometryParams;
+    } | undefined;
+    // (undocumented)
+    protected isValidForClosure(): Promise<boolean>;
+    // (undocumented)
+    protected isValidForContinue(snap: SnapDetail): Promise<{
+        props: GeometricElementProps;
+        path: Path;
+        params: GeometryParams;
+    } | undefined>;
+    // (undocumented)
+    protected isValidForJoin(): Promise<boolean>;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onUndoPreviousStep(): Promise<boolean>;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected get showClosure(): boolean;
+    // (undocumented)
+    protected showClosureIndicator(context: DecorateContext, pt: Point3d): void;
+    // (undocumented)
+    protected showConstructionGraphics(_ev: BeButtonEvent, context: DynamicsContext): boolean;
+    // (undocumented)
+    protected get showJoin(): boolean;
+    // (undocumented)
+    protected showJoinIndicator(context: DecorateContext, pt: Point3d): void;
+    // (undocumented)
+    protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
+    // (undocumented)
+    protected updateCurveAndContinuationData(ev: BeButtonEvent, isDynamics: boolean, phase: CreateCurvePhase): Promise<void>;
+    // (undocumented)
     protected get wantAccuSnap(): boolean;
     // (undocumented)
+    protected get wantClosure(): boolean;
+    // (undocumented)
     protected get wantDynamics(): boolean;
+    // (undocumented)
+    protected get wantJoin(): boolean;
+    // (undocumented)
+    protected get wantSimplify(): boolean;
+    // (undocumented)
+    protected get wantSmartRotation(): boolean;
 }
 
 // @alpha

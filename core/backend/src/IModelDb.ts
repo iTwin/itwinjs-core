@@ -18,7 +18,7 @@ import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps,
   ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps,
-  EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps,
   IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
@@ -41,12 +41,12 @@ import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { IpcHost } from "./IpcHost";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -62,8 +62,7 @@ export interface UpdateModelOptions extends ModelProps {
 }
 
 /** Options supplied to [[IModelDb.computeProjectExtents]].
- * @see [[ComputedProjectExtents]].
- * @beta
+ * @public
  */
 export interface ComputeProjectExtentsOptions {
   /** If true, the result will include `extentsWithOutliers`. */
@@ -73,8 +72,7 @@ export interface ComputeProjectExtentsOptions {
 }
 
 /** The result of [[IModelDb.computeProjectExtents]].
- * @see [[ComputeProjectExtentsOptions]].
- * @beta
+ * @public
  */
 export interface ComputedProjectExtents {
   /** The computed extents, excluding any outlier elements. */
@@ -91,6 +89,7 @@ export interface ComputedProjectExtents {
  * @public
  */
 export abstract class IModelDb extends IModel {
+  private _initialized = false;
   protected static readonly _edit = "StandaloneEdit";
   /** Keep track of open imodels to support `tryFind` for RPC purposes */
   private static readonly _openDbs = new Map<string, IModelDb>();
@@ -119,9 +118,9 @@ export abstract class IModelDb extends IModel {
     this.onChangesetApplied.raiseEvent();
   }
 
-  public readFontJson(): string { return this.nativeDb.readFontMap(); }
-  public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
-  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
+  public readFontJson(): string { return JSON.stringify(this.nativeDb.readFontMap()); }
+  public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
+  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return this.nativeDb.embedFont(prop); }
 
   /** Check if this iModel has been opened read-only or not. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
@@ -136,7 +135,7 @@ export abstract class IModelDb extends IModel {
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
    */
-  public get pathName() { return this.nativeDb.getFilePath(); }
+  public get pathName(): string { return this.nativeDb.getFilePath(); }
 
   /** @internal */
   protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openMode: OpenMode) {
@@ -186,6 +185,20 @@ export abstract class IModelDb extends IModel {
   protected initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     super.initialize(props.rootSubject.name, props);
+    if (this._initialized)
+      return;
+
+    this._initialized = true;
+    const db = this.isBriefcaseDb() || this.isStandaloneDb() ? this : undefined;
+    if (!db || !IpcHost.isValid)
+      return;
+
+    db.onNameChanged.addListener(() => IpcHost.notifyTxns(db, "notifyIModelNameChanged", db.name));
+    db.onRootSubjectChanged.addListener(() => IpcHost.notifyTxns(db, "notifyRootSubjectChanged", db.rootSubject));
+    db.onProjectExtentsChanged.addListener(() => IpcHost.notifyTxns(db, "notifyProjectExtentsChanged", db.projectExtents.toJSON()));
+    db.onGlobalOriginChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGlobalOriginChanged", db.globalOrigin.toJSON()));
+    db.onEcefLocationChanged.addListener(() => IpcHost.notifyTxns(db, "notifyEcefLocationChanged", db.ecefLocation?.toJSON()));
+    db.onGeographicCoordinateSystemChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGeographicCoordinateSystemChanged", db.geographicCoordinateSystem?.toJSON()));
   }
 
   /** Returns true if this is a BriefcaseDb
@@ -662,7 +675,6 @@ export abstract class IModelDb extends IModel {
    * @param options Specifies the level of detail desired in the return value.
    * @returns the computed extents.
    * @note This method does not modify the IModel's stored project extents. @see [[updateProjectExtents]].
-   * @beta
    */
   public computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents {
     const wantFullExtents = true === options?.reportExtentsWithOutliers;
@@ -683,7 +695,7 @@ export abstract class IModelDb extends IModel {
 
   /** Update the IModelProps of this iModel in the database. */
   public updateIModelProps(): void {
-    this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON()));
+    this.nativeDb.updateIModelProps(this.toJSON());
   }
 
   /** Commit pending changes to this iModel.
@@ -843,7 +855,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public static openDgnDb(file: { path: string, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: string): IModelJsNative.DgnDb {
+  public static openDgnDb(file: { path: string, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions): IModelJsNative.DgnDb {
     file.key = file.key ?? Guid.createValue();
     if (this.tryFindByKey(file.key))
       throw new IModelError(IModelStatus.AlreadyOpen, `key [${file.key}] for file [${file.path}] is already in use`);
@@ -852,12 +864,13 @@ export abstract class IModelDb extends IModel {
     if (isUpgradeRequested && openMode !== OpenMode.ReadWrite)
       throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db");
 
-    const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(file.path, openMode, upgradeOptions, props);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not open iModel ${file.path}`);
-
-    return nativeDb;
+    try {
+      const nativeDb = new IModelHost.platform.DgnDb();
+      nativeDb.openIModel(file.path, openMode, upgradeOptions, props);
+      return nativeDb;
+    } catch (err) {
+      throw new IModelError(err.errorNumber, `Could not open iModel [${err.message}], ${file.path}`);
+    }
   }
 
   /**
@@ -1070,31 +1083,49 @@ export abstract class IModelDb extends IModel {
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
-  public queryFilePropertyString(prop: FilePropertyProps): string | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), true) as string | undefined; }
+  public queryFilePropertyString(prop: FilePropertyProps): string | undefined {
+    return this.nativeDb.queryFileProperty(prop, true) as string | undefined;
+  }
 
   /** Query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
-  public queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as Uint8Array | undefined; }
+  public queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined {
+    return this.nativeDb.queryFileProperty(prop, false) as Uint8Array | undefined;
+  }
 
   /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @returns 0 if successful, status otherwise
    */
-  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), strValue, blobVal); }
+  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult {
+    try {
+      this.nativeDb.saveFileProperty(prop, strValue, blobVal);
+      return DbResult.BE_SQLITE_OK;
+    } catch (err) {
+      return err.errorNumber;
+    }
+  }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    * @returns 0 if successful, status otherwise
    */
-  public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined, undefined); }
+  public deleteFileProperty(prop: FilePropertyProps): DbResult {
+    try {
+      this.nativeDb.saveFileProperty(prop, undefined, undefined);
+      return DbResult.BE_SQLITE_OK;
+    } catch (err) {
+      return err.errorNumber;
+    }
+  }
 
   /** Query for the next available major id for a "file property" from this iModel.
    * @param prop the FilePropertyProps that describes the property
    * @returns the next available (that is, an unused) id for prop. If none are present, will return 0.
    */
-  public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
+  public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(prop); }
 
   public async requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     requestContext.enter();
@@ -1129,9 +1160,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Get the clip containment status for the supplied elements
-   * @beta
-   */
+  /** Get the clip containment status for the supplied elements. */
   public async getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
     requestContext.enter();
     return new Promise<GeometryContainmentResponseProps>((resolve, reject) => {
@@ -1148,9 +1177,7 @@ export abstract class IModelDb extends IModel {
     });
   }
 
-  /** Get the mass properties for the supplied elements
-   * @beta
-   */
+  /** Get the mass properties for the supplied elements. */
   public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     requestContext.enter();
     const resultString = this.nativeDb.getMassProperties(JSON.stringify(props));
@@ -1251,7 +1278,6 @@ export abstract class IModelDb extends IModel {
 
   /** Generate graphics for an element or geometry stream.
    * @see [readElementGraphics]($frontend) to convert the result to a [RenderGraphic]($frontend) for display.
-   * @beta
    */
   public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     return generateElementGraphics(request, this);
@@ -1358,14 +1384,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getModelJson
      */
     private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
-      const val = this._iModel.nativeDb.getModel(modelIdArg);
-      if (undefined !== val.error) {
-        if (IModelStatus.NotFound === val.error.status) {
-          return undefined;
-        }
-        throw new IModelError(val.error.status, `Model=${modelIdArg}`);
+      try {
+        return this._iModel.nativeDb.getModel(modelIdArg) as T;
+      } catch (err) {
+        return undefined;
       }
-      return val.result as T;
     }
 
     /** Get the sub-model of the specified Element.
@@ -1411,12 +1434,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the model.
      */
     public insertModel(props: ModelProps): Id64String {
-      const val = this._iModel.nativeDb.insertModel(props instanceof Model ? props.toJSON() : props);
-      if (val.error)
-        throw new IModelError(val.error.status, `error inserting model, class=${props.classFullName}`);
-
-      props.id = Id64.fromJSON(val.result!.id);
-      return props.id;
+      try {
+        return props.id = this._iModel.nativeDb.insertModel(props instanceof Model ? props.toJSON() : props);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
+      }
     }
 
     /** Update an existing model.
@@ -1424,19 +1446,20 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the model.
      */
     public updateModel(props: UpdateModelOptions): void {
-      const error = this._iModel.nativeDb.updateModel(props instanceof Model ? props.toJSON() : props);
-      if (error !== IModelStatus.Success)
-        throw new IModelError(error, `updating model id=${props.id}`);
+      try {
+        this._iModel.nativeDb.updateModel(props instanceof Model ? props.toJSON() : props);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
+      }
     }
-
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
      * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
+     * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws IModelError if unable to update the geometry guid.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
-     * @beta
      */
     public updateGeometryGuid(modelId: Id64String): void {
       const error = this._iModel.nativeDb.updateModelGeometryGuid(modelId);
@@ -1450,9 +1473,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public deleteModel(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
-        const error = this._iModel.nativeDb.deleteModel(id);
-        if (error !== IModelStatus.Success)
-          throw new IModelError(error, `deleting model id ${id}`);
+        try {
+          this._iModel.nativeDb.deleteModel(id);
+        } catch (err) {
+          throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
+        }
       });
     }
   }
@@ -1472,7 +1497,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @internal
      */
     public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
-      const elementProps: T | undefined = this.tryGetElementJson(elementId);
+      const elementProps = this.tryGetElementJson<T>(elementId);
       if (undefined === elementProps)
         throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
       return elementProps;
@@ -1485,13 +1510,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getElementJson
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
-      const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getElement(loadProps);
-      if (undefined !== val.error) {
-        if (IModelStatus.NotFound === val.error.status)
-          return undefined;
-        throw new IModelError(IModelStatus.NotFound, `reading element=${loadProps}`);
+      try {
+        return this._iModel.nativeDb.getElement(loadProps) as T;
+      } catch (err) {
+        return undefined;
       }
-      return val.result as T;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1612,12 +1635,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the element.
      */
     public insertElement(elProps: ElementProps): Id64String {
-      const val = this._iModel.nativeDb.insertElement(elProps instanceof Element ? elProps.toJSON() : elProps);
-      if (val.error)
-        throw new IModelError(val.error.status, `Error inserting element, class=${elProps.classFullName}`);
-
-      elProps.id = Id64.fromJSON(val.result!.id);
-      return elProps.id;
+      try {
+        return elProps.id = this._iModel.nativeDb.insertElement(elProps instanceof Element ? elProps.toJSON() : elProps);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `Error inserting element [${err.message}], class=${elProps.classFullName}`);
+      }
     }
 
     /** Update some properties of an existing element.
@@ -1628,9 +1650,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
-      const stat = this._iModel.nativeDb.updateElement(elProps instanceof Element ? elProps.toJSON() : elProps);
-      if (stat !== IModelStatus.Success)
-        throw new IModelError(stat, `Error updating element, id:${elProps.id}`);
+      try {
+        this._iModel.nativeDb.updateElement(elProps instanceof Element ? elProps.toJSON() : elProps);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `Error updating element [${err.message}], id:${elProps.id}`);
+      }
     }
 
     /** Delete one or more elements from this iModel.
@@ -1641,9 +1665,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
-        const error = iModel.nativeDb.deleteElement(id);
-        if (error !== IModelStatus.Success)
-          throw new IModelError(error, `Error deleting element, id:${id}`);
+        try {
+          iModel.nativeDb.deleteElement(id);
+        } catch (err) {
+          throw new IModelError(err.errorNumber, `Error deleting element [${err.message}], id:${id}`);
+        }
       });
     }
 
@@ -1730,9 +1756,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see [[IModelDb.Models.getSubModel]]
      */
     public hasSubModel(elementId: Id64String): boolean {
-      if (IModel.rootSubjectId === elementId) {
+      if (IModel.rootSubjectId === elementId)
         return false; // Special case since the RepositoryModel does not sub-model the root Subject
-      }
+
       // A sub-model will have the same Id value as the element it is describing
       const sql = "SELECT ECInstanceId FROM BisCore:Model WHERE ECInstanceId=:elementId";
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
@@ -1821,9 +1847,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      */
     public insertAspect(aspectProps: ElementAspectProps): void {
-      const status = this._iModel.nativeDb.insertElementAspect(aspectProps);
-      if (status !== IModelStatus.Success)
-        throw new IModelError(status, `Error inserting ElementAspect, class: ${aspectProps.classFullName}`);
+      try {
+        this._iModel.nativeDb.insertElementAspect(aspectProps);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
+      }
     }
 
     /** Update an exist ElementAspect within the iModel.
@@ -1831,9 +1859,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the ElementAspect.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
-      const status = this._iModel.nativeDb.updateElementAspect(aspectProps);
-      if (status !== IModelStatus.Success)
-        throw new IModelError(status, `Error updating ElementAspect, id: ${aspectProps.id}`);
+      try {
+        this._iModel.nativeDb.updateElementAspect(aspectProps);
+      } catch (err) {
+        throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
+      }
     }
 
     /** Delete one or more ElementAspects from this iModel.
@@ -1843,9 +1873,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public deleteAspect(aspectInstanceIds: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
-        const status = iModel.nativeDb.deleteElementAspect(aspectInstanceId);
-        if (status !== IModelStatus.Success)
-          throw new IModelError(status, `Error deleting ElementAspect, id: ${aspectInstanceId}`);
+        try {
+          iModel.nativeDb.deleteElementAspect(aspectInstanceId);
+        } catch (err) {
+          throw new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+        }
       });
     }
   }
@@ -1958,9 +1990,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return viewStateData;
     }
 
-    private getViewThumbnailArg(viewDefinitionId: Id64String): string {
-      const viewProps: FilePropertyProps = { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId };
-      return JSON.stringify(viewProps);
+    private getViewThumbnailArg(viewDefinitionId: Id64String): FilePropertyProps {
+      return { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId };
     }
 
     /** Get the thumbnail for a view.
@@ -1986,7 +2017,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
-      return this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
+      this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
+      return 0;
     }
 
     /** Set the default view property the iModel
@@ -2085,7 +2117,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
  * @public
  */
 export class BriefcaseDb extends IModelDb {
-  /** @beta */
+  /** Manages local changes to this briefcase. */
   public readonly txns = new TxnManager(this);
 
   /** override superclass method */
@@ -2422,14 +2454,8 @@ export class SnapshotDb extends IModelDb {
    */
   public static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb {
     const nativeDb = new IModelHost.platform.DgnDb();
-    const optionsString = JSON.stringify(options);
-    let status = nativeDb.createIModel(filePath, optionsString);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not create snapshot iModel ${filePath}`);
-
-    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not set briefcaseId for snapshot iModel ${filePath}`);
+    nativeDb.createIModel(filePath, options);
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
     if (options.createClassViews)
@@ -2451,21 +2477,13 @@ export class SnapshotDb extends IModelDb {
       throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel");
 
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
-    const optionsString: string | undefined = options ? JSON.stringify(options) : undefined;
-    if (options?.password) {
-      const status = IModelHost.platform.DgnDb.encryptDb(snapshotFile, optionsString!);
-      if (DbResult.BE_SQLITE_OK !== status)
-        throw new IModelError(status, "Problem encrypting snapshot iModel");
-    } else {
-      const status = IModelHost.platform.DgnDb.vacuum(snapshotFile);
-      if (DbResult.BE_SQLITE_OK !== status) {
-        throw new IModelError(status, "Error initializing snapshot iModel");
-      }
-    }
+    IModelHost.platform.DgnDb.vacuum(snapshotFile);
+
+    if (options?.password)
+      IModelHost.platform.DgnDb.encryptDb(snapshotFile, options);
+
     const nativeDb = new IModelHost.platform.DgnDb();
-    const result = nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, optionsString);
-    if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, `Could not open iModel ${snapshotFile}`);
+    nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, options);
 
     // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))
@@ -2476,7 +2494,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
-    const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue()); // WIP: clean up copied file on error?
+    const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
     if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
 
@@ -2488,7 +2506,7 @@ export class SnapshotDb extends IModelDb {
    */
   public static openForApplyChangesets(path: string, props?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: props?.key };
-    const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props ? JSON.stringify(props) : undefined);
+    const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props);
     return new SnapshotDb(nativeDb, file.key!);
   }
 
@@ -2500,7 +2518,7 @@ export class SnapshotDb extends IModelDb {
    */
   public static openFile(path: string, opts?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: opts?.key };
-    const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts ? JSON.stringify(opts) : undefined);
+    const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
     return new SnapshotDb(nativeDb, file.key!);
   }
 
@@ -2581,7 +2599,7 @@ export class SnapshotDb extends IModelDb {
  */
 export class StandaloneDb extends IModelDb {
   public get isStandalone(): boolean { return true; }
-  /** @beta */
+  /** Manages local changes to this briefcase. */
   public readonly txns: TxnManager;
   /** The full path to the standalone iModel file.
    * @deprecated use pathName
@@ -2613,20 +2631,10 @@ export class StandaloneDb extends IModelDb {
    */
   public static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
     const nativeDb = new IModelHost.platform.DgnDb();
-    const argsString = JSON.stringify(args);
-    let status = nativeDb.createIModel(filePath, argsString);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not create standalone iModel: ${filePath}`);
-
+    nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(IModelDb._edit, undefined === args.allowEdit ? "" : args.allowEdit);
     nativeDb.saveProjectGuid(Guid.empty);
-
-    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    if (DbResult.BE_SQLITE_OK !== status) {
-      nativeDb.closeIModel();
-      throw new IModelError(status, `Could not set briefcaseId for iModel:  ${filePath}`);
-    }
-
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     return new StandaloneDb(nativeDb, Guid.createValue());
   }

@@ -1,6 +1,26 @@
 # Change Log - @bentley/usage-logging-client
 
-This log was last generated on Mon, 17 May 2021 13:31:38 GMT and should not be manually modified.
+This log was last generated on Wed, 26 May 2021 15:55:19 GMT and should not be manually modified.
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+_Version update only_
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:27 GMT
+
+_Version update only_
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
 
 ## 2.15.3
 Mon, 17 May 2021 13:31:38 GMT
@@ -330,9 +350,9 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
 - react to renaming of imodeljs-clients
-- Fixed failing ulas tests. 
+- Fixed failing ulas tests.
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - create new package from imodeljs-clients
 - ; substitute current date when posting feature usage without any set start/end dates

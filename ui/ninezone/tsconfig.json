@@ -4,7 +4,13 @@
     "target": "es2017",
     "module": "commonjs",
     "outDir": "./lib",
-    "jsx": "react"
+    "jsx": "react",
+    "types": [
+      "chai-as-promised",
+      "mocha",
+      "chai-jest-snapshot",
+      "@bentley/react-scripts"
+    ]
   },
   "include": [
     "./src/**/*.ts*"

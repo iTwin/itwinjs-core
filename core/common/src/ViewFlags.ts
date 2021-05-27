@@ -522,9 +522,7 @@ export class ViewFlagOverrides {
   public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(ViewFlagPresence.RenderMode); }
   public setThematicDisplay(val: boolean) { this._values.thematicDisplay = val; this.setPresent(ViewFlagPresence.ThematicDisplay); }
 
-  /** Return whether these overrides applied to the specified ViewFlags require edges to be drawn.
-   * @beta
-   */
+  /** Return whether these overrides applied to the specified ViewFlags require edges to be drawn. */
   public edgesRequired(viewFlags: ViewFlags): boolean {
     const renderMode = this.isPresent(ViewFlagPresence.RenderMode) ? this._values.renderMode : viewFlags.renderMode;
     const visibleEdges = this.isPresent(ViewFlagPresence.VisibleEdges) ? this._values.visibleEdges : viewFlags.visibleEdges;

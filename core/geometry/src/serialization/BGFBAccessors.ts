@@ -4565,6 +4565,208 @@ static createPolyfaceAuxData(builder: flatbuffers.Builder, indicesOffset: flatbu
 /**
  * @constructor
  */
+export class TaggedNumericData {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos: number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns TaggedNumericData
+ */
+__init(i: number, bb: flatbuffers.ByteBuffer): TaggedNumericData {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+}
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param TaggedNumericData= obj
+ * @returns TaggedNumericData
+ */
+static getRootAsTaggedNumericData(bb: flatbuffers.ByteBuffer, obj?: TaggedNumericData): TaggedNumericData {
+  return (obj || new TaggedNumericData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+}
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param TaggedNumericData= obj
+ * @returns TaggedNumericData
+ */
+static getSizePrefixedRootAsTaggedNumericData(bb: flatbuffers.ByteBuffer, obj?: TaggedNumericData): TaggedNumericData {
+  bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
+  return (obj || new TaggedNumericData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+}
+
+/**
+ * @returns number
+ */
+tagA(): number {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
+/**
+ * @returns number
+ */
+tagB(): number {
+  const offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
+/**
+ * @param number index
+ * @returns number
+ */
+intData(index: number): number|null {
+  const offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
+}
+
+/**
+ * @returns number
+ */
+intDataLength(): number {
+  const offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+}
+
+/**
+ * @returns Int32Array
+ */
+intDataArray(): Int32Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+}
+
+/**
+ * @param number index
+ * @returns number
+ */
+doubleData(index: number): number|null {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
+}
+
+/**
+ * @returns number
+ */
+doubleDataLength(): number {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+}
+
+/**
+ * @returns Float64Array
+ */
+doubleDataArray(): Float64Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startTaggedNumericData(builder: flatbuffers.Builder) {
+  builder.startObject(4);
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number tagA
+ */
+static addTagA(builder: flatbuffers.Builder, tagA: number) {
+  builder.addFieldInt32(0, tagA, 0);
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number tagB
+ */
+static addTagB(builder: flatbuffers.Builder, tagB: number) {
+  builder.addFieldInt32(1, tagB, 0);
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset intDataOffset
+ */
+static addIntData(builder: flatbuffers.Builder, intDataOffset: flatbuffers.Offset) {
+  builder.addFieldOffset(2, intDataOffset, 0);
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<number> data
+ * @returns flatbuffers.Offset
+ */
+static createIntDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (let i = data.length - 1; i >= 0; i--) {
+    builder.addInt32(data[i]);
+  }
+  return builder.endVector();
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startIntDataVector(builder: flatbuffers.Builder, numElems: number) {
+  builder.startVector(4, numElems, 4);
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset doubleDataOffset
+ */
+static addDoubleData(builder: flatbuffers.Builder, doubleDataOffset: flatbuffers.Offset) {
+  builder.addFieldOffset(3, doubleDataOffset, 0);
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<number> data
+ * @returns flatbuffers.Offset
+ */
+static createDoubleDataVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset {
+  builder.startVector(8, data.length, 8);
+  for (let i = data.length - 1; i >= 0; i--) {
+    builder.addFloat64(data[i]);
+  }
+  return builder.endVector();
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startDoubleDataVector(builder: flatbuffers.Builder, numElems: number) {
+  builder.startVector(8, numElems, 8);
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endTaggedNumericData(builder: flatbuffers.Builder): flatbuffers.Offset {
+  const offset = builder.endObject();
+  return offset;
+}
+
+static createTaggedNumericData(builder: flatbuffers.Builder, tagA: number, tagB: number, intDataOffset: flatbuffers.Offset, doubleDataOffset: flatbuffers.Offset): flatbuffers.Offset {
+  TaggedNumericData.startTaggedNumericData(builder);
+  TaggedNumericData.addTagA(builder, tagA);
+  TaggedNumericData.addTagB(builder, tagB);
+  TaggedNumericData.addIntData(builder, intDataOffset);
+  TaggedNumericData.addDoubleData(builder, doubleDataOffset);
+  return TaggedNumericData.endTaggedNumericData(builder);
+}
+}
+/**
+ * @constructor
+ */
 export class Polyface {
   bb: flatbuffers.ByteBuffer|null = null;
 
@@ -4949,10 +5151,19 @@ expectedClosure(): number {
 }
 
 /**
+ * @param TaggedNumericData= obj
+ * @returns TaggedNumericData|null
+ */
+taggedNumericData(obj?: TaggedNumericData): TaggedNumericData|null {
+  const offset = this.bb!.__offset(this.bb_pos, 40);
+  return offset ? (obj || new TaggedNumericData()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+}
+
+/**
  * @param flatbuffers.Builder builder
  */
 static startPolyface(builder: flatbuffers.Builder) {
-  builder.startObject(18);
+  builder.startObject(19);
 }
 
 /**
@@ -5353,6 +5564,14 @@ static addExpectedClosure(builder: flatbuffers.Builder, expectedClosure: number)
 
 /**
  * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset taggedNumericDataOffset
+ */
+static addTaggedNumericData(builder: flatbuffers.Builder, taggedNumericDataOffset: flatbuffers.Offset) {
+  builder.addFieldOffset(18, taggedNumericDataOffset, 0);
+}
+
+/**
+ * @param flatbuffers.Builder builder
  * @returns flatbuffers.Offset
  */
 static endPolyface(builder: flatbuffers.Builder): flatbuffers.Offset {
@@ -5360,7 +5579,7 @@ static endPolyface(builder: flatbuffers.Builder): flatbuffers.Offset {
   return offset;
 }
 
-static createPolyface(builder: flatbuffers.Builder, pointOffset: flatbuffers.Offset, paramOffset: flatbuffers.Offset, normalOffset: flatbuffers.Offset, doubleColorOffset: flatbuffers.Offset, intColorOffset: flatbuffers.Offset, pointIndexOffset: flatbuffers.Offset, paramIndexOffset: flatbuffers.Offset, normalIndexOffset: flatbuffers.Offset, colorIndexOffset: flatbuffers.Offset, colorTableOffset: flatbuffers.Offset, numPerFace: number, numPerRow: number, meshStyle: number, twoSided: boolean, faceIndexOffset: flatbuffers.Offset, faceDataOffset: flatbuffers.Offset, auxDataOffset: flatbuffers.Offset, expectedClosure: number): flatbuffers.Offset {
+static createPolyface(builder: flatbuffers.Builder, pointOffset: flatbuffers.Offset, paramOffset: flatbuffers.Offset, normalOffset: flatbuffers.Offset, doubleColorOffset: flatbuffers.Offset, intColorOffset: flatbuffers.Offset, pointIndexOffset: flatbuffers.Offset, paramIndexOffset: flatbuffers.Offset, normalIndexOffset: flatbuffers.Offset, colorIndexOffset: flatbuffers.Offset, colorTableOffset: flatbuffers.Offset, numPerFace: number, numPerRow: number, meshStyle: number, twoSided: boolean, faceIndexOffset: flatbuffers.Offset, faceDataOffset: flatbuffers.Offset, auxDataOffset: flatbuffers.Offset, expectedClosure: number, taggedNumericDataOffset: flatbuffers.Offset): flatbuffers.Offset {
   Polyface.startPolyface(builder);
   Polyface.addPoint(builder, pointOffset);
   Polyface.addParam(builder, paramOffset);
@@ -5380,6 +5599,7 @@ static createPolyface(builder: flatbuffers.Builder, pointOffset: flatbuffers.Off
   Polyface.addFaceData(builder, faceDataOffset);
   Polyface.addAuxData(builder, auxDataOffset);
   Polyface.addExpectedClosure(builder, expectedClosure);
+  Polyface.addTaggedNumericData(builder, taggedNumericDataOffset);
   return Polyface.endPolyface(builder);
 }
 }
