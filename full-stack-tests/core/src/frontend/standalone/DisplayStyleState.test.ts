@@ -7,7 +7,7 @@ import { CompressedId64Set } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import {
   BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, FeatureAppearance, PlanarClipMaskMode, PlanarClipMaskSettings,
-  SpatialClassificationProps, ThematicDisplayMode,
+  SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
 } from "@bentley/imodeljs-common";
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
 
@@ -163,7 +163,7 @@ describe("DisplayStyle", () => {
 
           expect(undefined === a.classifiers).to.equal(undefined === e.classifiers);
           if (undefined !== a.classifiers && undefined !== e.classifiers)
-            expect(a.classifiers.length).to.equal(e.classifiers.length);
+            expect(a.classifiers.size).to.equal(e.classifiers.length);
 
           expect(undefined === a.planarClipMask).to.equal(undefined === e.planarClipMask);
           if (undefined !== a.planarClipMask && undefined !== e.planarClipMask)
@@ -210,10 +210,9 @@ describe("DisplayStyle", () => {
           modelId: "0x321",
           expand: 1.5,
           flags: {
-            inside: SpatialClassificationProps.Display.Dimmed,
-            outside: SpatialClassificationProps.Display.On,
+            inside: SpatialClassifierInsideDisplay.Dimmed,
+            outside: SpatialClassifierOutsideDisplay.On,
             isVolumeClassifier: false,
-            type: 0,
           },
           name: "bing",
           isActive: true,
@@ -228,10 +227,9 @@ describe("DisplayStyle", () => {
           modelId: "0x321",
           expand: 1.5,
           flags: {
-            inside: SpatialClassificationProps.Display.Dimmed,
-            outside: SpatialClassificationProps.Display.On,
+            inside: SpatialClassifierInsideDisplay.Dimmed,
+            outside: SpatialClassifierOutsideDisplay.On,
             isVolumeClassifier: false,
-            type: 0,
           },
           name: "google",
           isActive: true,
@@ -289,10 +287,9 @@ describe("DisplayStyle", () => {
           modelId: "0x123",
           expand: 0.5,
           flags: {
-            inside: SpatialClassificationProps.Display.Off,
-            outside: SpatialClassificationProps.Display.Dimmed,
+            inside: SpatialClassifierInsideDisplay.Off,
+            outside: SpatialClassifierOutsideDisplay.Dimmed,
             isVolumeClassifier: true,
-            type: 0,
           },
           name: "google",
           isActive: false,
