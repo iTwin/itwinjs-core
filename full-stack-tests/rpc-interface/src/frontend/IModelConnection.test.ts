@@ -13,6 +13,7 @@ import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, V
 import { AccessToken } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestContext } from "./setup/TestContext";
+import { AgentAuthorizationClient } from "@bentley/backend-itwin-client";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -33,9 +34,31 @@ describe("IModel Connection", () => {
 
     if (!testContext.settings.runiModelReadRpcTests)
       this.skip();
+  });
 
+  beforeEach(() => {
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+  });
+
+  it("should successfully open an IModelConnection for read with client credentials", async function () {
+    // If client credentials are not supplied, skip the test
+    if (!testContext.settings.clientConfiguration)
+      this.skip();
+
+    const agentAuthClient = new AgentAuthorizationClient(testContext.settings.clientConfiguration);
+    accessToken = await agentAuthClient.getAccessToken();
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+
+    const contextId = testContext.iModelWithChangesets!.contextId;
+    const iModelId = testContext.iModelWithChangesets!.iModelId;
+
+    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId);
+
+    expect(iModel).to.exist.and.be.not.empty;
+
+    const iModelRpcProps = iModel.getRpcProps();
+    expect(iModelRpcProps).to.exist.and.be.not.empty;
   });
 
   it("should successfully open an IModelConnection for read", async () => {
