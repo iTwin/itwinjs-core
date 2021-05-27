@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "2.17.0-dev.16",
+  "version": "2.17.0-dev.17",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",

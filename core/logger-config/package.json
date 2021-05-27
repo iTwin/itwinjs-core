@@ -1,6 +1,6 @@
 {
   "name": "@bentley/logger-config",
-  "version": "2.17.0-dev.16",
+  "version": "2.17.0-dev.17",
   "description": "Logger configuration",
   "main": "lib/logger-config.js",
   "typings": "lib/logger-config",

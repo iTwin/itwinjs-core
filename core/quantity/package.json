@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-quantity",
-  "version": "2.17.0-dev.16",
+  "version": "2.17.0-dev.17",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/imodeljs-quantity.js",
   "typings": "lib/imodeljs-quantity",
