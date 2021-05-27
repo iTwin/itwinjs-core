@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { NumberInput, Select, Slider, Toggle } from "@bentley/ui-core";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, ViewState3d } from "@bentley/imodeljs-frontend";
+import { ViewState3d } from "@bentley/imodeljs-frontend";
 import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
@@ -102,7 +102,7 @@ export function MapManagerSettings() {
   }, [updateMaskingSettings]);
 
   const handleElevationChange = React.useCallback((value: number | undefined, _stringValue: string) => {
-    if (value != undefined) {
+    if (value !== undefined) {
       updateBackgroundMap({ groundBias: value });
       setGroundBias(value);
     }
