@@ -12,7 +12,7 @@ import { IModelApp, IModelAppOptions, MapLayerSettingsService, MapLayerSource } 
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 
 chai.should();
-describe.only("MapLayerSettingsService (#integration)", () => {
+describe("MapLayerSettingsService (#integration)", () => {
   let contextId: GuidString;
   let iModelId: GuidString;
   let requestContext: AuthorizedClientRequestContext;
