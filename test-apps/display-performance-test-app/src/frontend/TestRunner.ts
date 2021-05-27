@@ -417,7 +417,7 @@ export class TestRunner {
     }
 
     if (config.backgroundMap)
-      viewport.changeBackgroundMapProps(viewport.displayStyle.settings.backgroundMap.clone(config.backgroundMap));
+      viewport.changeBackgroundMapProps(viewport.displayStyle.settings.backgroundMap.clone(config.backgroundMap).toJSON());
 
     // Apply symbology overrides
     if (view.elementOverrides)
