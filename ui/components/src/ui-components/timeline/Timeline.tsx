@@ -9,7 +9,7 @@ import { Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider"
 import { CommonProps } from "@bentley/ui-core";
 import { Milestone } from "./interfaces";
 
-// istanbul ignore next - WIP
+// istanbul ignore next
 const formatDate = (value: number) => {
   let date = new Date();
   if (value)
@@ -32,7 +32,8 @@ interface NeedleProps {
 /** @internal
  * @deprecated
  */
- function Needle({ startDate, endDate, selectedDate }: NeedleProps) {
+// istanbul ignore next
+function Needle({ startDate, endDate, selectedDate }: NeedleProps) {
   const percent = (selectedDate.getTime() - startDate.getTime()) / (endDate.getTime() - startDate.getTime()) * 100;
   return (
     <div className="needle" style={{ left: `${percent}%` }} />
@@ -45,7 +46,8 @@ interface NeedleProps {
 /** @internal
  * @deprecated
  */
- interface TooltipRailProps {
+// istanbul ignore next
+interface TooltipRailProps {
   activeHandleID: string;
   getRailProps: (props: object) => object;
   getEventData: (e: Event) => object;
@@ -59,6 +61,7 @@ interface TooltipRailState {
 /** @internal
  * @deprecated
  */
+// istanbul ignore next
 class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 
   public static defaultProps = {
@@ -126,7 +129,8 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 /** @internal
  * @deprecated
  */
- interface HandleProps {
+// istanbul ignore next
+interface HandleProps {
   key: string;
   handle: SliderItem;
   isActive: boolean;
@@ -139,14 +143,16 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 /** @internal
  * @deprecated
  */
- interface HandleState {
+// istanbul ignore next
+interface HandleState {
   mouseOver: boolean;
 }
 
 /** @internal
  * @deprecated
  */
- class Handle extends React.Component<HandleProps, HandleState> {
+// istanbul ignore next
+class Handle extends React.Component<HandleProps, HandleState> {
   public static defaultProps = {
     disabled: false,
   };
@@ -211,12 +217,15 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 /** @internal
  * @deprecated
  */
- interface TickProps {
+// istanbul ignore next
+interface TickProps {
   tick: SliderItem;
   count: number;
   index: number;
 }
 
+// istanbul ignore next
+// eslint-disable-next-line deprecation/deprecation
 function Tick({ tick, count, index }: TickProps) {
   if (index === 0) {
     return (
@@ -242,6 +251,7 @@ function Tick({ tick, count, index }: TickProps) {
  * @internal
  * @deprecated
  */
+// istanbul ignore next
 export interface TimelineProps extends CommonProps {
   startDate: Date;
   endDate: Date;
@@ -253,6 +263,7 @@ export interface TimelineProps extends CommonProps {
   onSlideStart?: () => void;
 }
 
+// istanbul ignore next
 interface TimelineState {
   ticks: number[];
 }
@@ -261,6 +272,7 @@ interface TimelineState {
  * @internal
  * @deprecated
  */
+// istanbul ignore next
 export class Timeline extends React.Component<TimelineProps, TimelineState> {
 
   constructor(props: TimelineProps) {

@@ -29,6 +29,7 @@ interface TimelineComponentProps {
   endDate?: Date;   // end date
   totalDuration: number;  // total duration in milliseconds
   initialDuration?: number;  // initial value for current duration in milliseconds
+  /* For future use. This prop will always be treated as true. */
   minimized?: boolean;  // show in minimized mode
   repeat?: boolean;  // repeat animation indefinitely
   showDuration?: boolean; // show the duration instead of time
@@ -36,6 +37,7 @@ interface TimelineComponentProps {
   onPlayPause?: (playing: boolean) => void; // callback triggered when play/pause button is pressed
   onJump?: (forward: boolean) => void; // callback triggered when backward/forward buttons are pressed
   onSettingsChange?: (arg: PlaybackSettings) => void; // callback triggered when a setting is changed
+  /* For future use. This prop will always be treated as true */
   alwaysMinimized?: boolean; // always display in miniMode with no expand menu
   componentId?: string; // must be set to use TimelineComponentEvents
 }
@@ -44,6 +46,7 @@ interface TimelineComponentProps {
 interface TimelineComponentState {
   isSettingsOpen: boolean; // settings popup is opened or closed
   isPlaying: boolean; // timeline is currently playing or paused
+  /* For future use. This will always be true */
   minimized?: boolean; // minimized mode
   currentDuration: number; // current duration in milliseconds
   totalDuration: number;  // total duration in milliseconds
@@ -69,7 +72,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     this.state = {
       isSettingsOpen: false,
       isPlaying: false,
-      minimized: this.props.alwaysMinimized ? /* istanbul ignore next */ true : this.props.minimized,
+      minimized: true,
       currentDuration: props.initialDuration ? props.initialDuration : /* istanbul ignore next */ 0,
       totalDuration: this.props.totalDuration,
       repeat: this.props.repeat ? true : false,

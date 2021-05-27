@@ -38,6 +38,7 @@ export interface Milestone {
   range?: MilestoneRange;
   /** Set to true if read only. */ // TODO can range be modified if read only?
   readonly?: boolean;
+  // eslint-disable-next-line deprecation/deprecation
   children?: Milestone[];
 }
 

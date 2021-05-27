@@ -161,7 +161,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.pointerCallbackCalled).to.be.true;
   });
 
-  it("timeline with short duration - expanded", async () => {
+  it("timeline with short duration", async () => {
     const dataProvider = new TestTimelineDataProvider();
     dataProvider.getSettings().duration = 20;  // make sure this is shorter than 40 so we get to end of animation
 
@@ -172,7 +172,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
       endDate={dataProvider.end}
       initialDuration={dataProvider.initialDuration}
       totalDuration={dataProvider.duration}
-      minimized={false}
+      minimized={true}
       showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
@@ -208,7 +208,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
       endDate={dataProvider.end}
       initialDuration={dataProvider.initialDuration}
       totalDuration={dataProvider.duration}
-      minimized={false}
+      minimized={true}
       showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
@@ -249,7 +249,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
       endDate={dataProvider.end}
       initialDuration={dataProvider.initialDuration}
       totalDuration={dataProvider.duration}
-      minimized={false}
+      minimized={true}
       showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
@@ -612,5 +612,39 @@ describe("<TimelineComponent showDuration={true} />", () => {
     const endDateItem = renderedComponent.container.querySelector(".end-date") as HTMLElement;
     expect(endDateItem).not.to.be.null;
     expect(endDateItem?.innerHTML).to.be.eq(newEndDate.toLocaleDateString());
+  });
+  it("should call onForward on forward button click", () => {
+    const dataProvider = new TestTimelineDataProvider();
+    const spyOnJump = sinon.spy();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const renderedComponent = render(<TimelineComponent
+      initialDuration={dataProvider.initialDuration}
+      totalDuration={dataProvider.duration}
+      minimized={true}
+      showDuration={true}
+      onChange={dataProvider.onAnimationFractionChanged}
+      onJump={spyOnJump}
+      onPlayPause={dataProvider.onPlayPause}
+      componentId={"TestTimeline"} />);
+    const forwardButton = renderedComponent.getAllByTestId("play-forward")[0];
+    fireEvent.click(forwardButton);
+    expect (spyOnJump).to.be.called;
+  });
+  it("should call onBackward on back button click", () => {
+    const dataProvider = new TestTimelineDataProvider();
+    const spyOnJump = sinon.spy();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const renderedComponent = render(<TimelineComponent
+      initialDuration={dataProvider.initialDuration}
+      totalDuration={dataProvider.duration}
+      minimized={true}
+      showDuration={true}
+      onChange={dataProvider.onAnimationFractionChanged}
+      onJump={spyOnJump}
+      onPlayPause={dataProvider.onPlayPause}
+      componentId={"TestTimeline"} />);
+    const backButton = renderedComponent.getAllByTestId("play-backward")[0];
+    fireEvent.click(backButton);
+    expect (spyOnJump).to.be.called;
   });
 });
