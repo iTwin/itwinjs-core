@@ -284,9 +284,6 @@ abstract class IModelDbBuilder {
 
   public async updateExistingData(): Promise<void> {
     await this._updateExistingData();
-    if (this._bridgeArgs.doDetectDeletedElements) {
-      this._bridge.synchronizer.detectDeletedElements();
-    }
 
     const options: ComputeProjectExtentsOptions = {
       reportExtentsWithOutliers: false,
@@ -426,6 +423,10 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     // WIP: need detectSpatialDataTransformChanged check?
     await this._bridge.updateExistingData();
 
+    if (this._bridgeArgs.doDetectDeletedElements) {
+      this._bridge.synchronizer.detectDeletedElements();
+    }
+
     let dataChangesDescription = "Data changes";
     if (this._bridge.getDataChangesDescription)
       dataChangesDescription = this._bridge.getDataChangesDescription();
@@ -556,6 +557,9 @@ class SnapshotDbBuilder extends IModelDbBuilder {
   protected async _updateExistingData() {
     assert(this._imodel !== undefined);
     await this._bridge.updateExistingData();
+    if (this._bridgeArgs.doDetectDeletedElements) {
+      this._bridge.synchronizer.detectDeletedElements();
+    }
     this._imodel.saveChanges();
   }
 }
