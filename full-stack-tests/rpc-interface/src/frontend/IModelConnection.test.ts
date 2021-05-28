@@ -13,7 +13,6 @@ import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, V
 import { AccessToken } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestContext } from "./setup/TestContext";
-import { AgentAuthorizationClient } from "@bentley/backend-itwin-client";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -46,9 +45,7 @@ describe("IModel Connection", () => {
     if (!testContext.settings.clientConfiguration)
       this.skip();
 
-    const agentAuthClient = new AgentAuthorizationClient(testContext.settings.clientConfiguration);
-    accessToken = await agentAuthClient.getAccessToken();
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(testContext.clientAccessToken);
 
     const contextId = testContext.iModelWithChangesets!.contextId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
