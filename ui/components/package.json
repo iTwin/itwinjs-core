@@ -39,7 +39,7 @@
     "@bentley/imodeljs-frontend": "workspace:^",
     "@bentley/imodeljs-i18n": "workspace:^",
     "@bentley/imodeljs-quantity": "workspace:^",
-    "@bentley/ui-abstract": "workspace:*",
+    "@bentley/ui-abstract": "workspace:^",
     "@bentley/ui-core": "workspace:^",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
