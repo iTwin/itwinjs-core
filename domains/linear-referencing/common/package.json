@@ -1,6 +1,6 @@
 {
   "name": "@bentley/linear-referencing-common",
-  "version": "2.17.0-dev.17",
+  "version": "2.17.0-dev.18",
   "main": "lib/linear-referencing-common.js",
   "typings": "lib/linear-referencing-common",
   "license": "MIT",

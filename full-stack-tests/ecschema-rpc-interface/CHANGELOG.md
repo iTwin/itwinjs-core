@@ -1,6 +1,13 @@
 # Change Log - @bentley/ecschema-rpcinterface-tests
 
-This log was last generated on Wed, 26 May 2021 15:55:18 GMT and should not be manually modified.
+This log was last generated on Thu, 27 May 2021 20:04:22 GMT and should not be manually modified.
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+### Updates
+
+- Changed registration-dashboard link.
 
 ## 2.16.0
 Mon, 24 May 2021 15:58:39 GMT
