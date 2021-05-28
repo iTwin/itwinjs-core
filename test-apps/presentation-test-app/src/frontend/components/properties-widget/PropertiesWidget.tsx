@@ -116,7 +116,7 @@ function PropertyGrid(props: PropertyGridProps) {
       provider.isNestedPropertyCategoryGroupingEnabled = true;
       return provider;
     }, [imodel, rulesetId, diagnostics]));
-  const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider });
+  const { isOverLimit, numSelectedElements } = usePropertyDataProviderWithUnifiedSelection({ dataProvider });
 
   const renderFavoritesActionButton = React.useCallback((buttonProps: ActionButtonRendererProps) => (<FavoritePropertyActionButton {...buttonProps} dataProvider={dataProvider} />), [dataProvider]);
   const renderCopyActionButton = React.useCallback(() => <CopyActionButton />, []);
@@ -160,8 +160,13 @@ function PropertyGrid(props: PropertyGridProps) {
     setContextMenuArgs(undefined);
   }, [onFindSimilarProp, dataProvider]);
 
-  if (isOverLimit)
-    return (<FillCentered>{IModelApp.i18n.translate("Sample:property-grid.too-many-elements-selected")}</FillCentered>);
+  if (numSelectedElements === 0) {
+    return <FillCentered>{IModelApp.i18n.translate("Sample:property-grid.no-elements-selected")}</FillCentered>;
+  }
+
+  if (isOverLimit) {
+    return <FillCentered>{IModelApp.i18n.translate("Sample:property-grid.too-many-elements-selected")}</FillCentered>;
+  }
 
   return <>
     <VirtualizedPropertyGridWithDataProvider

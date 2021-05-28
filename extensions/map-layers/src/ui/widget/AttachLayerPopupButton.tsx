@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, MapLayerSettingsService, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import * as UiCore from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
@@ -29,6 +29,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
   const [addCustomLayerToolTip] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachCustomLayer"));
   const [loadingMapSources] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.LoadingMapSources"));
   const [removeLayerDefButtonTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefButtonTitle"));
+  const [editLayerDefButtonTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.EditLayerDefButtonTitle"));
   const [removeLayerDefDialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefDialogTitle"));
   const [loading, setLoading] = React.useState(false);
   const [layerNameUnderCursor, setLayerNameUnderCursor] = React.useState<string | undefined>();
@@ -122,11 +123,10 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
                   <MapUrlDialog
                     activeViewport={activeViewport}
                     isOverlay={isOverlay}
-                    layerToEdit={mapLayerSettings.toJSON()}
+                    layerRequiringCredentials={mapLayerSettings.toJSON()}
                     onOkResult={handleModalUrlDialogOk}
                     onCancelResult={handleModalUrlDialogCancel}
-                    mapTypesOptions={mapTypesOptions}
-                    askForCredentialsOnly={true} />
+                    mapTypesOptions={mapTypesOptions} />
                 );
               }
 
@@ -159,12 +159,12 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     }
   }, [setLayerNameToAdd, layerNameToAdd, activeViewport, sources, backgroundLayers, isOverlay, overlayLayers, onLayerAttached, handleModalUrlDialogOk, mapTypesOptions, handleModalUrlDialogCancel]);
 
-  const options = React.useMemo(() => sources?.filter((source) => !styleContainsLayer(source.name)).map((value) => value.name), [sources, styleContainsLayer]);
+  const options = React.useMemo(() => sources?.filter((source) => !styleContainsLayer(source.name)), [sources, styleContainsLayer]);
   const filteredOptions = React.useMemo(() => {
     if (undefined === sourceFilterString || 0 === sourceFilterString.length) {
       return options;
     } else {
-      return options?.filter((option) => option.toLowerCase().includes(sourceFilterString?.toLowerCase()));
+      return options?.filter((option) => option.name.toLowerCase().includes(sourceFilterString?.toLowerCase()));
     }
   }, [options, sourceFilterString]);
 
@@ -196,10 +196,11 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     ModalDialogManager.closeDialog();
   }, []);
 
-  const handleYesConfirmation = React.useCallback(async (layerName: string) => {
+  const handleYesConfirmation = React.useCallback(async (source: MapLayerSource) => {
 
+    const layerName = source.name;
     if (!!contextId && !!iModelId) {
-      if (await MapLayerSettingsService.deleteSharedSettingsByName(layerName, contextId, iModelId)) {
+      if (await MapLayerSettingsService.deleteSharedSettings(source, contextId, iModelId)) {
         const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefSuccess", { layerName });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
       } else {
@@ -211,10 +212,13 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     ModalDialogManager.closeDialog();
   }, [contextId, iModelId]);
 
-  const onItemRemoveButtonClicked = React.useCallback((event) => {
+  /*
+   Handle Remove layer button clicked
+   */
+  const onItemRemoveButtonClicked = React.useCallback((source, event) => {
     event.stopPropagation();  // We don't want the owning ListBox to react on mouse click.
 
-    const layerName = event?.currentTarget?.parentNode?.dataset?.value;
+    const layerName = source.name;
 
     const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefDialogMessage", { layerName });
     ModalDialogManager.openDialog(
@@ -225,11 +229,32 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
         maxWidth={400}
         onClose={() => handleNoConfirmation(layerName)}
         onEscape={() => handleNoConfirmation(layerName)}
-        onYesResult={async () => handleYesConfirmation(layerName)}
+        onYesResult={async () => handleYesConfirmation(source)}
         onNoResult={() => handleNoConfirmation(layerName)}
       />
     );
   }, [handleNoConfirmation, handleYesConfirmation, removeLayerDefDialogTitle]);
+
+  /*
+ Handle Edit layer button clicked
+ */
+  const onItemEditButtonClicked = React.useCallback((event) => {
+    event.stopPropagation();  // We don't want the owning ListBox to react on mouse click.
+
+    const targetLayerName = event?.currentTarget?.parentNode?.dataset?.value;
+    const matchingSource = sources.find((layerSource) => layerSource.name === targetLayerName);
+
+    // we expect a single layer source matching this name
+    if (matchingSource === undefined) {
+      return;
+    }
+    ModalDialogManager.openDialog(<MapUrlDialog
+      activeViewport={activeViewport}
+      isOverlay={isOverlay}
+      mapLayerSourceToEdit={matchingSource}
+      onOkResult={handleModalUrlDialogOk}
+      mapTypesOptions={mapTypesOptions} />);
+  }, [activeViewport, handleModalUrlDialogOk, isOverlay, mapTypesOptions, sources]);
 
   return (
     <div className="map-manager-header">
@@ -250,24 +275,33 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
           onKeyPress={handleKeypressOnSourceList}
           onListboxValueChange={onListboxValueChange} >
           {
-            filteredOptions?.map((mapName) =>
+            filteredOptions?.map((source) =>
               <UiCore.ListboxItem
-                key={mapName}
+                key={source.name}
                 className="map-source-list-entry"
-                value={mapName}
-                onMouseEnter={() => setLayerNameUnderCursor(mapName)}
+                value={source.name}
+                onMouseEnter={() => setLayerNameUnderCursor(source.name)}
                 onMouseLeave={() => setLayerNameUnderCursor(undefined)}>
-                <span className="map-source-list-entry-name" title={mapName}>{mapName}</span>
+                <span className="map-source-list-entry-name" title={source.name}>{source.name}</span>
 
                 { // Display the delete icon only when the mouse over a specific item
                   // otherwise list feels cluttered.
-                  (!!contextId && !!iModelId && layerNameUnderCursor && layerNameUnderCursor === mapName) &&
-                  <UiCore.Button
-                    className="map-source-delete-button"
-                    title={removeLayerDefButtonTitle}
-                    onClick={onItemRemoveButtonClicked}>
-                    <UiCore.Icon iconSpec="icon-delete" />
-                  </UiCore.Button>}
+                  (!!contextId && !!iModelId && layerNameUnderCursor && layerNameUnderCursor === source.name) &&
+                  <>
+                    <UiCore.Button
+                      className="map-source-list-entry-button"
+                      title={editLayerDefButtonTitle}
+                      onClick={onItemEditButtonClicked}>
+                      <UiCore.Icon iconSpec="icon-edit" />
+                    </UiCore.Button>
+                    <UiCore.Button
+                      className="map-source-list-entry-button"
+                      title={removeLayerDefButtonTitle}
+                      onClick={(event) => {onItemRemoveButtonClicked(source, event);}}>
+                      <UiCore.Icon iconSpec="icon-delete" />
+                    </UiCore.Button>
+                  </>}
+
               </UiCore.ListboxItem>
             )
           }

@@ -856,7 +856,7 @@ export class ToolAdmin {
 
   /** @internal */
   public updateDynamics(ev?: BeButtonEvent, useLastData?: boolean, adjustPoint?: boolean): void {
-    if (!IModelApp.viewManager.inDynamicsMode || undefined === this.activeTool)
+    if (undefined === this.activeTool)
       return;
 
     if (undefined === ev) {
@@ -874,9 +874,28 @@ export class ToolAdmin {
     if (undefined === ev.viewport)
       return;
 
-    const context = new DynamicsContext(ev.viewport);
-    this.activeTool.onDynamicFrame(ev, context);
-    context.changeDynamics();
+    // Support tools requesting async information in onMouseMotion for use in decorate or onDynamicFrame...
+    const toolPromise = this._toolMotionPromise = this.activeTool.onMouseMotion(ev);
+    const tool = this.activeTool;
+    const vp = ev.viewport;
+    const motion = ev;
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    toolPromise.then(() => {
+      if (toolPromise !== this._toolMotionPromise)
+        return;
+
+      // Update decorations when dynamics are inactive...
+      if (!IModelApp.viewManager.inDynamicsMode) {
+        vp.invalidateDecorations();
+        return;
+      }
+
+      // Update dynamics and decorations only after motion...
+      const context = new DynamicsContext(vp);
+      tool.onDynamicFrame(motion, context);
+      context.changeDynamics();
+    });
   }
 
   public async sendEndDragEvent(ev: BeButtonEvent): Promise<any> {
@@ -993,18 +1012,7 @@ export class ToolAdmin {
         return this.onStartDrag(ev, isValidLocation ? tool : undefined);
       }
 
-      if (tool) {
-        const toolPromise = this._toolMotionPromise = tool.onMouseMotion(ev);
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        toolPromise.then(() => {
-          if (toolPromise !== this._toolMotionPromise)
-            return;
-          // Update dynamics only after motion...
-          this.updateDynamics(ev);
-        });
-      }
-
+      this.updateDynamics(ev);
       return;
     });
 
@@ -1712,8 +1720,8 @@ export class ToolAdmin {
   /** Performs default handling of mouse wheel event (zoom in/out) */
   public async processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled> {
     await WheelEventProcessor.process(ev, doUpdate);
-    this.updateDynamics(ev);
     IModelApp.viewManager.invalidateDecorationsAllViews();
+    this.updateDynamics(ev);
     return EventHandled.Yes;
   }
 

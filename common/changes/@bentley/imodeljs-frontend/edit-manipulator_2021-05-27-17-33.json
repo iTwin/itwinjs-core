@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "add method to return ecef transform for tile tree",
+      "comment": "Make EditManipulator public",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-frontend",
-  "email": "rbbentley@users.noreply.github.com"
+  "email": "65233531+bbastings@users.noreply.github.com"
 }
