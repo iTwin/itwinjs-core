@@ -21,42 +21,88 @@ export interface OrbitGtBlobProps {
   accountName: string;
 }
 
-/** JSON representation of a context reality model
- * A context reality model is one that is not directly attached to the iModel but is instead included in the display style to
- * provide context only when that display style is applied.
+/** JSON representation of a [[ContextRealityModel]].
  * @public
  */
 export interface ContextRealityModelProps {
+  /** The URL that supplies the 3d tiles for displaying the reality model. */
   tilesetUrl: string;
-  /** @alpha */
+  /** @see [[ContextRealityModel.orbitGtBlob]].
+   * @alpha
+   */
   orbitGtBlob?: OrbitGtBlobProps;
-  /** Not required to be present to display the model. It is use to elide the call to getRealityDataIdFromUrl in the widget if present. */
+  /** @see [[ContextRealityModel.realityDataId]]. */
   realityDataId?: string;
+  /** An optional, user-friendly name for the reality model suitable for display in a user interface. */
   name?: string;
+  /** An optional, user-friendly description of the reality model suitable for display in a user interface. */
   description?: string;
+  /** @see [[ContextRealityModel.classifiers]]. */
   classifiers?: SpatialClassifierProps[];
-  /** Masking to be applied to the reality model. */
+  /** @see [[ContextRealityModel.planarClipMask]]. */
   planarClipMask?: PlanarClipMaskProps;
-  /** Appearance overrides. Only the rgb, transparency, nonLocatable, and emphasized properties are applicable to reality models - the rest are ignored. */
+  /** @see [[ContextRealityModel.appearanceOverrides]]. */
   appearanceOverrides?: FeatureAppearanceProps;
 }
 
+/** @public */
+export namespace ContextRealityModelProps {
+  /** Produce a deep copy of `props`. */
+  export function clone(props: ContextRealityModelProps) {
+    props = { ...props };
+
+    // Spread operator is shallow...
+    if (props.orbitGtBlob)
+      props.orbitGtBlob = { ...props.orbitGtBlob };
+
+    if (props.appearanceOverrides) {
+      props.appearanceOverrides = { ...props.appearanceOverrides };
+      if (props.appearanceOverrides.rgb)
+        props.appearanceOverrides.rgb = { ...props.appearanceOverrides.rgb };
+    }
+
+    if (props.planarClipMask)
+      props.planarClipMask = { ...props.planarClipMask };
+
+    if (props.classifiers)
+      props.classifiers = props.classifiers.map((x) => { return { ...x, flags: { ... x.flags } } });
+
+    return props;
+  }
+}
+
+/** A reality model not associated with a [GeometricModel]($backend) but instead defined in a [DisplayStyle]($backend) or [DisplayStyleState]($frontend).
+ * Such reality models are displayed to provide context to the view and can be freely attached and detached at display time.
+ * @see [this interactive example](https://www.itwinjs.org/sample-showcase/?group=Viewer&sample=reality-data-sample)
+ * @see [[DisplayStyleSettings.contextRealityModels]] to define context reality models for a display style.
+ * @public
+ */
 export interface ContextRealityModel {
+  /** A name suitable for display in a user interface. By default, an empty string. */
   readonly name: string;
+  /** The URL that supplies the 3d tiles for displaying the reality model. */
   readonly url: string;
+  /** A description of the model suitable for display in a user interface. By default, an empty string. */
   readonly description: string;
+  /** An optional identifier that, if present, can be used to elide a request to the reality data service. */
   readonly realityDataId?: string;
+  /** A set of [[SpatialClassifier]]s, of which one at any given time can be used to classify the reality model. */
   readonly classifiers?: SpatialClassifiers;
   /** @alpha */
   readonly orbitGtBlob?: OrbitGtBlobProps;
-
+  /** Overrides applied to the appearance of the reality model. Only the rgb, transparency, nonLocatable, and emphasized properties are applicable - the rest are ignored. */
   appearanceOverrides?: FeatureAppearance;
+  /** Optionally describes how the geometry of the reality model can be masked by other models. */
   planarClipMaskSettings?: PlanarClipMaskSettings;
 
+  /** Convert this model to its JSON representation. */
   toJSON(): ContextRealityModelProps;
 }
 
-/** @internal */
+/** An implementation of [[ContextRealityModel]] used by [[DisplayStyleSettings]] to synchronize the in-memory representation with
+ * its underlying JSON representation. [DisplayStyleState]($frontend) supplies a subclass that also manages the [TileTreeReference]($frontend) used for display.
+ * @internal
+ */
 export class DisplayStyleContextRealityModel implements ContextRealityModel {
   protected readonly _props: ContextRealityModelProps;
   public readonly name: string;
@@ -107,41 +153,37 @@ export class DisplayStyleContextRealityModel implements ContextRealityModel {
   }
 
   public toJSON(): ContextRealityModelProps {
-    return cloneContextRealityModelProps(this._props);
+    return ContextRealityModelProps.clone(this._props);
   }
 }
 
-export function cloneContextRealityModelProps(props: ContextRealityModelProps) {
-  props = { ...props };
-
-  // Spread operator is shallow...
-  if (props.orbitGtBlob)
-    props.orbitGtBlob = { ...props.orbitGtBlob };
-
-  if (props.appearanceOverrides) {
-    props.appearanceOverrides = { ...props.appearanceOverrides };
-    if (props.appearanceOverrides.rgb)
-      props.appearanceOverrides.rgb = { ...props.appearanceOverrides.rgb };
-  }
-
-  if (props.planarClipMask)
-    props.planarClipMask = { ...props.planarClipMask };
-
-  if (props.classifiers)
-    props.classifiers = props.classifiers.map((x) => { return { ...x, flags: { ... x.flags } } });
-
-  return props;
-}
-
+/** An object that can store the JSON representation of a list of [[ContextRealityModel]]s.
+ * @see [[ContextRealityModels]].
+ * @see [[DisplayStyleSettingsProps.contextRealityModels]].
+ * @public
+ */
 export interface ContextRealityModelsContainer {
+  /** The list of reality models. */
   contextRealityModels?: ContextRealityModelProps[];
 }
 
-export class ContextRealityModels implements Iterable<ContextRealityModel> {
+/** A list of [[ContextRealityModel]]s attached to a [[DisplayStyleSettings]]. The list may be presented to the user with the name and description of each model.
+ * The list is automatically synchronized with the underlying JSON representation provided by the input [[ContextRealityModelsContainer]].
+ * @see [this interactive example](https://www.itwinjs.org/sample-showcase/?group=Viewer&sample=reality-data-sample)
+ * @see [[DisplayStyleSettings.contextRealityModels]].
+ * @public
+ */
+export class ContextRealityModels {
   private readonly _container: ContextRealityModelsContainer;
   private readonly _createModel: (props: ContextRealityModelProps) => ContextRealityModel;
   private readonly _models: ContextRealityModel[] = [];
 
+  /** Construct a new list of reality models from its JSON representation. THe list will be initialized from `container.classifiers` and that JSON representation
+   * will be kept in sync with changes made to the list. The caller should not directly modify `container.classifiers` or its contents as that will cause the list
+   * to become out of sync with the JSON representation.
+   * @param container The object that holds the JSON representation of the list.
+   * @param createContextRealityModel Optional function used to instantiate ContextRealityModels added to the list.
+   */
   public constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel) {
     this._container = container;
     this._createModel = createContextRealityModel ?? ((props) => new DisplayStyleContextRealityModel(props));
@@ -152,23 +194,20 @@ export class ContextRealityModels implements Iterable<ContextRealityModel> {
         this._models.push(this._createModel(model));
   }
 
-  public [Symbol.iterator](): Iterator<ContextRealityModel> {
-    return this._models[Symbol.iterator]();
+  /** The read-only list of reality models. */
+  public get models(): ReadonlyArray<ContextRealityModel> {
+    return this._models;
   }
 
-  public get size(): number {
-    return this._models.length;
-  }
-
-  public find(criterion: (model: ContextRealityModel) => boolean): ContextRealityModel | undefined {
-    return this._models.find(criterion);
-  }
-
+  /** Append a new reality model to the list.
+   * @param The JSON representation of the reality model.
+   * @returns the newly-added reality model.
+   */
   public add(props: ContextRealityModelProps): ContextRealityModel {
     if (!this._container.contextRealityModels)
       this._container.contextRealityModels = [];
 
-    props = cloneContextRealityModelProps(props);
+    props = ContextRealityModelProps.clone(props);
     this._container.contextRealityModels.push(props);
     const model = this._createModel(props);
     this._models.push(model);
@@ -176,6 +215,10 @@ export class ContextRealityModels implements Iterable<ContextRealityModel> {
     return model;
   }
 
+  /** Remove the specified reality model from the list.
+   * @param model The reality model to remove.
+   * @returns true if the model was removed, or false if the model was not present in the list.
+   */
   public delete(model: ContextRealityModel): boolean {
     const index = this._models.indexOf(model);
     if (-1 === index)
@@ -185,11 +228,27 @@ export class ContextRealityModels implements Iterable<ContextRealityModel> {
     assert(index < this._container.contextRealityModels.length);
 
     this._models.splice(index, 1);
-    this._container.contextRealityModels.splice(index, 1);
+    if (this.models.length === 0)
+      this._container.contextRealityModels = undefined;
+    else
+      this._container.contextRealityModels.splice(index, 1);
 
     return true;
   }
 
+  /** Remove all reality models from the list. */
+  public clear(): void {
+    this._container.contextRealityModels = undefined;
+    this._models.length = 0;
+  }
+
+  /** Replace a reality model in the list.
+   * @param toReplace The reality model to be replaced.
+   * @param replaceWith The JSON representation of the replacement reality model.
+   * @returns the newly-created reality model that replaced `toReplace`.
+   * @throws Error if `toReplace` is not present in the list
+   * @note The replacement occupies the same index in the list as `toReplace` did.
+   */
   public replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel {
     const index = this._models.indexOf(toReplace);
     if (-1 === index)
@@ -198,13 +257,19 @@ export class ContextRealityModels implements Iterable<ContextRealityModel> {
     assert(undefined !== this._container.contextRealityModels);
     assert(index < this._container.contextRealityModels.length);
 
-    replaceWith = cloneContextRealityModelProps(replaceWith);
+    replaceWith = ContextRealityModelProps.clone(replaceWith);
     const model = this._models[index] = this._createModel(replaceWith);
     this._container.contextRealityModels[index] = replaceWith;
 
     return model;
   }
 
+  /** Change selected properties of a reality model.
+   * @param toUpdate The reality model whose properties are to be modified.
+   * @param updateProps The properties to change.
+   * @returns The updated reality model, identical to `toUpdate` except for properties explicitly supplied by `updateProps`.
+   * @throws Error if `toUpdate` is not present in the list.
+   */
   public update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel {
     const props = {
       ...toUpdate.toJSON(),

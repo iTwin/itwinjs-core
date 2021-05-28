@@ -204,7 +204,7 @@ export class SpatialClassifier {
   }
 }
 
-/** An object that can store the JSON representation of any number of [[SpatialClassifier]]s.
+/** An object that can store the JSON representation of a list of [[SpatialClassifier]]s.
  * @see [[SpatialClassifiers]].
  * @public
  */
@@ -228,7 +228,7 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
   private _active?: SpatialClassifier;
 
   /** Construct a new set of classifiers from the JSON representation. The set will be initialized from `container.classifiers` and that JSON representation
-   * will be kept in sync with changes made to the set. The caller should not directly modify `container.classifiers` as that will cause the set to become out
+   * will be kept in sync with changes made to the set. The caller should not directly modify `container.classifiers` or its contents as that will cause the set to become out
    * of sync with the JSON representation.
    * The [[active]] classifier will be determined by the first [[SpatialClassifierProps]] whose `isActive` property is set to `true`, if any.
    */
