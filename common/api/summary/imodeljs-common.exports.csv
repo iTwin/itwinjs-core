@@ -95,7 +95,11 @@ internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvid
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
 alpha;ContentFlags
 internal;class ContentIdProvider
+public;ContextRealityModel
 public;ContextRealityModelProps
+public;ContextRealityModelProps
+public;ContextRealityModels
+public;ContextRealityModelsContainer
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
 internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps
 public;CreateIModelProps 
@@ -117,6 +121,7 @@ internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
+internal;DisplayStyleContextRealityModel 
 public;DisplayStyleLoadProps
 public;DisplayStyleModelAppearanceProps 
 public;DisplayStyleOverridesOptions

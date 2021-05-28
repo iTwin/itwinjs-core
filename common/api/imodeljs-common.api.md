@@ -1556,21 +1556,51 @@ export abstract class ContentIdProvider {
 }
 
 // @public
-export interface ContextRealityModelProps {
-    // @beta
-    appearanceOverrides?: FeatureAppearanceProps;
-    // @beta (undocumented)
-    classifiers?: SpatialClassifierProps[];
-    // (undocumented)
-    description?: string;
-    // (undocumented)
-    name?: string;
+export interface ContextRealityModel {
+    appearanceOverrides?: FeatureAppearance;
+    readonly classifiers?: SpatialClassifiers;
+    readonly description: string;
+    readonly name: string;
     // @alpha (undocumented)
+    readonly orbitGtBlob?: OrbitGtBlobProps;
+    planarClipMaskSettings?: PlanarClipMaskSettings;
+    readonly realityDataId?: string;
+    toJSON(): ContextRealityModelProps;
+    readonly url: string;
+}
+
+// @public
+export interface ContextRealityModelProps {
+    appearanceOverrides?: FeatureAppearanceProps;
+    classifiers?: SpatialClassifierProps[];
+    description?: string;
+    name?: string;
+    // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
     planarClipMask?: PlanarClipMaskProps;
     realityDataId?: string;
-    // (undocumented)
     tilesetUrl: string;
+}
+
+// @public (undocumented)
+export namespace ContextRealityModelProps {
+    export function clone(input: ContextRealityModelProps): ContextRealityModelProps;
+}
+
+// @public
+export class ContextRealityModels {
+    constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel);
+    add(props: ContextRealityModelProps): ContextRealityModel;
+    clear(): void;
+    delete(model: ContextRealityModel): boolean;
+    get models(): ReadonlyArray<ContextRealityModel>;
+    replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
+    update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel;
+}
+
+// @public
+export interface ContextRealityModelsContainer {
+    contextRealityModels?: ContextRealityModelProps[];
 }
 
 // @public
@@ -1745,6 +1775,37 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     };
     solarShadows?: SolarShadowSettingsProps;
     thematic?: ThematicDisplayProps;
+}
+
+// @internal
+export class DisplayStyleContextRealityModel implements ContextRealityModel {
+    constructor(props: ContextRealityModelProps);
+    // (undocumented)
+    get appearanceOverrides(): FeatureAppearance | undefined;
+    set appearanceOverrides(overrides: FeatureAppearance | undefined);
+    // (undocumented)
+    protected _appearanceOverrides?: FeatureAppearance;
+    // (undocumented)
+    readonly classifiers?: SpatialClassifiers;
+    // (undocumented)
+    readonly description: string;
+    // (undocumented)
+    readonly name: string;
+    // @alpha (undocumented)
+    readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
+    // (undocumented)
+    protected _planarClipMask?: PlanarClipMaskSettings;
+    // (undocumented)
+    get planarClipMaskSettings(): PlanarClipMaskSettings | undefined;
+    set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined);
+    // (undocumented)
+    protected readonly _props: ContextRealityModelProps;
+    // (undocumented)
+    readonly realityDataId?: string;
+    // (undocumented)
+    toJSON(): ContextRealityModelProps;
+    // (undocumented)
+    readonly url: string;
 }
 
 // @public
