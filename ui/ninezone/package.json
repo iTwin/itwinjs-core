@@ -36,7 +36,7 @@
     "@bentley/ui-abstract": "^2.17.0-dev.15",
     "@bentley/ui-core": "^2.17.0-dev.15",
     "@bentley/bentleyjs-core": "^2.17.0-dev.15",
-    "@itwin/itwinui-css": "^0.16.0",
+    "@itwin/itwinui-css": "^0.17.0",
     "@itwin/itwinui-react": "^1.5.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"

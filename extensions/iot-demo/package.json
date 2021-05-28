@@ -50,7 +50,7 @@
     "@bentley/ui-core": "2.16.0-dev.14",
     "@bentley/ui-framework": "2.16.0-dev.14",
     "@bentley/ui-ninezone": "2.16.0-dev.14",
-    "@itwin/itwinui-css": "^0.9.0",
+    "@itwin/itwinui-css": "^0.17.0",
     "classnames": "2.2.6",
     "react": "^16.8.0",
     "svg-sprite-loader": "4.2.1"

@@ -113,7 +113,7 @@
     "@bentley/ui-ninezone": "2.17.0-dev.15",
     "@bentley/ui-framework": "2.17.0-dev.15",
     "@bentley/map-layers": "2.17.0-dev.15",
-    "@itwin/itwinui-css": "^0.16.0",
+    "@itwin/itwinui-css": "^0.17.0",
     "@itwin/itwinui-react": "^1.5.0",
     "classnames": "^2.3.1",
     "lorem-ipsum": "^2.0.3",
