@@ -43,7 +43,6 @@ interface CommandLineArgs {
   includeSourceProvenance?: boolean;
   excludeSubCategories?: string;
   excludeCategories?: string;
-  schemaOp?: string | string[];
 }
 
 void (async () => {
@@ -90,8 +89,6 @@ void (async () => {
     Yargs.option("excludeCategories", { desc: "Exclude a categories (names with comma separators) and their elements from the target iModel", type: "string" });
     Yargs.option("noProvenance", { desc: "If true, IModelTransformer should not record its provenance.", type: "boolean", default: false });
     Yargs.option("includeSourceProvenance", { desc: "Include existing provenance from the source iModel in the target iModel", type: "boolean", default: false });
-
-    Yargs.option("schemaOp", { desc: "Add an operation to a schema with the syntax: '--schemaOp MySchema/MyRegex/My$1ubstitution/', you can use this option multiple times. The backreferences are javascript replace style ($1)" });
 
     const args = Yargs.parse() as Yargs.Arguments<CommandLineArgs>;
 
