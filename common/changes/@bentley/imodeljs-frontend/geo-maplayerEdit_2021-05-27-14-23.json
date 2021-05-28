@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "add method to return ecef transform for tile tree",
+      "comment": "Allow saved map-layer definition to be edited.",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-frontend",
-  "email": "rbbentley@users.noreply.github.com"
+  "email": "mdastous-bentley@users.noreply.github.com"
 }
