@@ -75,7 +75,7 @@ export namespace ContextRealityModelProps {
       output.planarClipMask = { ...input.planarClipMask };
 
     if (input.classifiers)
-      output.classifiers = input.classifiers.map((x) => { return { ...x, flags: { ... x.flags } } });
+      output.classifiers = input.classifiers.map((x) => { return { ...x, flags: { ... x.flags } }; });
 
     return output;
   }

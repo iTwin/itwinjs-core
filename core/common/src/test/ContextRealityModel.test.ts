@@ -141,11 +141,11 @@ describe("ContextRealityModel", () => {
     expect(clone.planarClipMask).not.to.equal(props.planarClipMask);
 
     expect(clone.appearanceOverrides).not.to.equal(props.appearanceOverrides);
-    expect(clone.appearanceOverrides!.rgb).not.to.equal(props.appearanceOverrides!.rgb);
+    expect(clone.appearanceOverrides!.rgb).not.to.equal(props.appearanceOverrides.rgb);
 
     expect(clone.classifiers).not.to.equal(props.classifiers);
-    expect(clone.classifiers![0]).not.to.equal(props.classifiers![0]);
-    expect(clone.classifiers![0].flags).not.to.equal(props.classifiers![0].flags);
+    expect(clone.classifiers![0]).not.to.equal(props.classifiers[0]);
+    expect(clone.classifiers![0].flags).not.to.equal(props.classifiers[0].flags);
   });
 });
 
@@ -240,7 +240,7 @@ describe("ContextRealityModels", () => {
     const container = { contextRealityModels: [{ tilesetUrl: "a" }, { tilesetUrl: "b" }] };
     const models = new ContextRealityModels(container);
 
-    const a = models.models[0]
+    const a = models.models[0];
     const a1 = models.replace(a, { tilesetUrl: "aa", name: "newA" });
     expect(models.models.indexOf(a)).to.equal(-1);
     expect(models.models.indexOf(a1)).to.equal(0);
@@ -261,7 +261,7 @@ describe("ContextRealityModels", () => {
 
     const a = models.models[0];
     const a1 = models.update(a, { name: "aa", description: "aaa" });
-    expect(models.models.indexOf(a)).to.equal(-1)
+    expect(models.models.indexOf(a)).to.equal(-1);
     expect(models.models.indexOf(a1)).to.equal(0);
     expectProps(container.contextRealityModels, [{tilesetUrl: "a", name: "aa", description: "aaa"}, {tilesetUrl: "b"}]);
 

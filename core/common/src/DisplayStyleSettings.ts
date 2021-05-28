@@ -27,7 +27,6 @@ import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProje
 import { RenderSchedule } from "./RenderSchedule";
 import { SkyBoxProps } from "./SkyBox";
 import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows";
-import { SpatialClassifierProps } from "./SpatialClassification";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
