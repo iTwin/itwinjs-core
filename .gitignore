@@ -25,6 +25,9 @@ package-deps.json
 *.build.error.log
 common/autoinstallers/*/.npmrc
 
+# pnpm
+.pnpm-debug.log
+
 # docs
 /public
 
