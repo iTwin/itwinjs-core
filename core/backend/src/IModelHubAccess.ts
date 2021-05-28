@@ -211,7 +211,7 @@ export class IModelHubAccess {
   public static async queryChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetProps[]> {
     const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
     const range = arg.range ?? { first: "" };
-    const after = range.after ?? (await this.queryChangeSetProps({ ...arg, changesetId: range.first })).parentId;
+    const after = range.after ?? range.first === "" ? "" : (await this.queryChangeSetProps({ ...arg, changesetId: range.first })).parentId;
     if (range.end === "" || after === range.end)
       return [];
 
@@ -238,7 +238,7 @@ export class IModelHubAccess {
   public static async downloadChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetFileProps[]> {
     const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
     const range = arg.range ?? { first: "" };
-    const after = range.after ?? (await this.queryChangeSetProps({ ...arg, changesetId: range.first })).parentId;
+    const after = range.after ?? range.first === "" ? "" : (await this.queryChangeSetProps({ ...arg, changesetId: range.first })).parentId;
     if (range.end === "" || after === range.end)
       return [];
 
