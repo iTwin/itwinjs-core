@@ -160,7 +160,7 @@ export class BlobDownloader {
       userConfig.simultaneousDownloads = defaultConfig.simultaneousDownloads;
     }
     if (Number.isInteger(userConfig.downloadRateWindowSize)) {
-      if (userConfig.downloadRateWindowSize! <= 0 || userConfig.simultaneousDownloads! >= 10)
+      if (userConfig.downloadRateWindowSize! <= 0 || userConfig.downloadRateWindowSize! >= 10)
         throw new Error("downloadRateWindowSize must be >= 1 and <= 10");
     } else {
       userConfig.downloadRateWindowSize = defaultConfig.downloadRateWindowSize;
@@ -519,12 +519,12 @@ export class BlobDownloader {
     if (bytes < kb) return `${bytes} B`;
     if (bytes < mb) return `${(bytes / kb).toFixed(1)} KB`;
     if (bytes < gb) return `${(bytes / mb).toFixed(1)} MB`;
-    return `${(bytes / mb).toFixed(1)} GB`;
+    return `${(bytes / (gb)).toFixed(1)} GB`;
   }
   public static formatRate(bytePerSec: number) {
     const kb = 1024;
     const mb = kb * kb;
-    const gb = mb * mb;
+    const gb = mb * kb;
     if (bytePerSec < kb) return `${bytePerSec} B/s`;
     if (bytePerSec < mb) return `${(bytePerSec / kb).toFixed(1)} KB/s`;
     if (bytePerSec < gb) return `${(bytePerSec / mb).toFixed(1)} MB/s`;
