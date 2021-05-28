@@ -5,15 +5,15 @@
 @import "~@bentley/ui-core/lib/ui-core/index";
 
 .maplayers-settings-container {
-    display: grid;
-    align-items: baseline;
-    padding: 4px;
-    grid-template-columns: 2fr 3fr;
-    column-gap: 8px;
-    row-gap: 8px;
-    overflow: hidden;
-  }
+  display: grid;
+  align-items: center;
+  padding: 4px;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+  row-gap: 8px;
+  overflow: hidden;
+}
 
-  .map-manager-settings-label {
-    text-align: right;
-  }
+.map-manager-settings-label {
+  text-align: right;
+}
