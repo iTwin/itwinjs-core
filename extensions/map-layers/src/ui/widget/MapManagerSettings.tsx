@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { NumberInput, Select, Slider } from "@bentley/ui-core";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, ViewState3d } from "@bentley/imodeljs-frontend";
+import { ViewState3d } from "@bentley/imodeljs-frontend";
 import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { useSourceMapContext } from "./MapLayerManager";
@@ -42,12 +42,6 @@ function getHeightOriginModeFromKey(mode: string): TerrainHeightOriginMode {
   if ("geoid" === mode)
     return TerrainHeightOriginMode.Geoid;
   return TerrainHeightOriginMode.Ground;
-}
-
-function displayElevationError(): void {
-  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error,
-    MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.InvalidElevationError"),
-    MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.InvalidElevationDetails")));
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -109,13 +103,9 @@ export function MapManagerSettings() {
   }, [updateMaskingSettings]);
 
   const handleElevationChange = React.useCallback((value: number | undefined, _stringValue: string) => {
-    if (value === null) {
-      displayElevationError();
-    } else {
-      if (value) {
-        updateBackgroundMap({ groundBias: value });
-        setGroundBias(value);
-      }
+    if (value !== undefined) {
+      updateBackgroundMap({ groundBias: value });
+      setGroundBias(value);
     }
   }, [updateBackgroundMap]);
 
