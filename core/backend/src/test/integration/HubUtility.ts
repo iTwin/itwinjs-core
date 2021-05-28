@@ -18,7 +18,7 @@ import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@ben
 import { IModelHubAccess } from "../../IModelHubAccess";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
-import { ChangesetFileProps } from "../../HubAccess";
+import { ChangesetFileProps, ChangesetProps } from "../../HubAccess";
 import { IModelDb } from "../../IModelDb";
 
 /** DTO to work with iModelHub DeleteChangeSet API */
@@ -506,13 +506,13 @@ export class HubUtility {
       return tokens;
 
     const jsonStr = IModelJsFs.readFileSync(changeSetJsonPathname) as string;
-    const changeSetsJson = JSON.parse(jsonStr);
+    const changesets = JSON.parse(jsonStr) as (ChangesetProps & { fileName: string })[];
 
-    for (const changeSetJson of changeSetsJson) {
-      const pathname = path.join(iModelDir, "changeSets", changeSetJson.fileName);
+    for (const changeset of changesets) {
+      const pathname = path.join(iModelDir, "changeSets", changeset.fileName);
       if (!IModelJsFs.existsSync(pathname))
         throw new Error(`Cannot find the ChangeSet file: ${pathname}`);
-      tokens.push({ id: changeSetJson.id, parentId: changeSetJson.parentId, pathname, index: + changeSetJson.index, changesType: changeSetJson.changesType, description: "" });
+      tokens.push({ ...changeset, pathname });
     }
     return tokens;
   }

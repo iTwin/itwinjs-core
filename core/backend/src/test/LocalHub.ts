@@ -50,7 +50,7 @@ export class LocalHub {
     const db = this._hubDb = new SQLiteDb();
     db.createDb(this.mockDbName);
     db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY,user TEXT)");
-    db.executeSQL("CREATE TABLE timeline(id TEXT PRIMARY KEY,parentId TEXT,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,FOREIGN KEY(parentId) REFERENCES timeline(id))");
+    db.executeSQL("CREATE TABLE timeline(id TEXT PRIMARY KEY,parentId TEXT,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,FOREIGN KEY(parentId) REFERENCES timeline(id))");
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY,id TEXT,FOREIGN KEY(id) REFERENCES timeline(id))");
     db.saveChanges();
@@ -127,7 +127,7 @@ export class LocalHub {
       throw new Error(`cannot read changeset file ${changeset.pathname}`);
 
     const db = this.db;
-    db.withSqliteStatement("INSERT INTO timeline(id,parentId,description,size,type,pushDate,user) VALUES (?,?,?,?,?,?,?)", (stmt) => {
+    db.withSqliteStatement("INSERT INTO timeline(id,parentId,description,size,type,pushDate,user,briefcaseId) VALUES (?,?,?,?,?,?,?,?)", (stmt) => {
       stmt.bindValue(1, changeset.id);
       stmt.bindValue(2, changeset.parentId === "" ? undefined : changeset.parentId);
       stmt.bindValue(3, changeset.description);
@@ -135,6 +135,7 @@ export class LocalHub {
       stmt.bindValue(5, changeset.changesType ?? 0);
       stmt.bindValue(6, changeset.pushDate ?? new Date().toString());
       stmt.bindValue(7, changeset.userCreated ?? "");
+      stmt.bindValue(8, changeset.briefcaseId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert changeset into mock db");
@@ -163,9 +164,9 @@ export class LocalHub {
 
   public getChangesetByIndex(index: number): ChangesetProps {
     if (index === 0)
-      return { id: "", changesType: 0, description: "revision0", parentId: "" };
+      return { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0 };
 
-    return this.db.withPreparedSqliteStatement("SELECT parentId,description,size,type,pushDate,user,id FROM timeline WHERE rowid=?", (stmt) => {
+    return this.db.withPreparedSqliteStatement("SELECT parentId,description,size,type,pushDate,user,id,briefcaseId FROM timeline WHERE rowid=?", (stmt) => {
       stmt.bindValue(1, index);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
@@ -179,6 +180,7 @@ export class LocalHub {
         pushDate: stmt.getValue(4).getString(),
         userCreated: stmt.getValue(5).getString(),
         id: stmt.getValue(6).getString(),
+        briefcaseId: stmt.getValue(7).getInteger(),
         index,
       };
     });

@@ -31,7 +31,7 @@ describe("ChangedElements (#integration)", () => {
     requestContext.enter();
   });
 
-  it("Create ChangedElements Cache and process changesets", async () => {
+  it.only("Create ChangedElements Cache and process changesets", async () => {
     const cacheFilePath = BriefcaseManager.getChangeCachePathName(testIModelId);
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);

@@ -141,7 +141,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isFalse(IModelJsFs.existsSync(pathname3));
   });
 
-  it.only("should open iModels of specific versions from the Hub", async () => {
+  it("should open iModels of specific versions from the Hub", async () => {
     const iModelFirstVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON() });
     assert.exists(iModelFirstVersion);
     assert.strictEqual<string>(iModelFirstVersion.changeSetId!, "");

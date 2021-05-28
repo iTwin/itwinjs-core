@@ -65,9 +65,9 @@ export class ChangedElementsDb implements IDisposable {
    * @throws [IModelError]($common) if the operation failed.
    */
   private _openDb(pathName: string, openMode: ECDbOpenMode = ECDbOpenMode.Readonly): void {
-    const nativeOpenMode: OpenMode = openMode === ECDbOpenMode.Readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const tryUpgrade: boolean = openMode === ECDbOpenMode.FileUpgrade;
-    const status: DbResult = this.nativeDb.openDb(pathName, nativeOpenMode, tryUpgrade);
+    const nativeOpenMode = openMode === ECDbOpenMode.Readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
+    const tryUpgrade = openMode === ECDbOpenMode.FileUpgrade;
+    const status = this.nativeDb.openDb(pathName, nativeOpenMode, tryUpgrade);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to open ECDb");
   }
@@ -78,7 +78,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns ChangedElementsDb
    */
   public static openDb(pathName: string, openMode: ECDbOpenMode = ECDbOpenMode.Readonly): ChangedElementsDb {
-    const cacheDb: ChangedElementsDb = new ChangedElementsDb();
+    const cacheDb = new ChangedElementsDb();
     cacheDb._openDb(pathName, openMode);
     return cacheDb;
   }
@@ -89,7 +89,7 @@ export class ChangedElementsDb implements IDisposable {
    * @returns The new cache db
    */
   public static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb {
-    const cacheDb: ChangedElementsDb = new ChangedElementsDb();
+    const cacheDb = new ChangedElementsDb();
     cacheDb._createDb(briefcase, pathName);
     return cacheDb;
   }
@@ -162,7 +162,7 @@ export class ChangedElementsDb implements IDisposable {
    * @throws [IModelError]($common) if the operation failed.
    */
   public getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined {
-    const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
+    const result = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error || !result.result)
       throw new IModelError(result.error ? result.error.status : -1, result.error ? result.error.message : "Problem getting changed elements");
     return (result.result.changedElements) as ChangedElements;
@@ -175,7 +175,7 @@ export class ChangedElementsDb implements IDisposable {
    * @throws [IModelError]($common) if the operation failed.
    */
   public getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined {
-    const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
+    const result = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error || !result.result)
       throw new IModelError(result.error ? result.error.status : -1, result.error ? result.error.message : "Problem getting changed models");
     return (result.result.changedModels) as ChangedModels;
@@ -188,7 +188,7 @@ export class ChangedElementsDb implements IDisposable {
    * @throws [IModelError]($common) if the operation failed.
    */
   public getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined {
-    const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
+    const result = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error)
       throw new IModelError(result.error.status, result.error.message);
     return result.result as ChangeData;

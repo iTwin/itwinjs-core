@@ -25,7 +25,7 @@ export interface ChangesetProps {
   parentId: ChangesetId;
   changesType: number;
   description: string;
-  briefcaseId?: number;
+  briefcaseId: number;
   pushDate?: string;
   userCreated?: string;
   size?: number;

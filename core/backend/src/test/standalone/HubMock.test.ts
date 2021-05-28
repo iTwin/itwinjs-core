@@ -68,7 +68,7 @@ describe.only("HubMock", () => {
     assert.deepEqual(briefcases[1], { id: 5, user: "user4" });
 
     const cs1: ChangesetFileProps = {
-      id: "changeset0", description: "first changeset", changesType: ChangesType.Regular, parentId: "",
+      id: "changeset0", description: "first changeset", changesType: ChangesType.Regular, parentId: "", briefcaseId: 100,
       userCreated: "user1", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
     };
     localHub.addChangeset(cs1);
@@ -78,13 +78,14 @@ describe.only("HubMock", () => {
     assert.equal(changesets1[0].description, cs1.description);
     assert.equal(changesets1[0].changesType, cs1.changesType);
     assert.equal(changesets1[0].index, 1);
+    assert.equal(changesets1[0].briefcaseId, 100);
     assert.isAtLeast(changesets1[0].size!, 1);
     assert.equal(changesets1[0].parentId, "");
     assert.isDefined(changesets1[0].pushDate);
     assert.equal(cs1.id, localHub.getLatestChangesetId());
 
     const cs2: ChangesetFileProps = {
-      id: "changeset1", parentId: "changeset0", description: "second changeset", changesType: ChangesType.Schema,
+      id: "changeset1", parentId: "changeset0", description: "second changeset", changesType: ChangesType.Schema, briefcaseId: 200,
       userCreated: "user2", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
     };
     localHub.addChangeset(cs2);
@@ -96,6 +97,7 @@ describe.only("HubMock", () => {
     assert.equal(changesets2[1].description, cs2.description);
     assert.equal(changesets2[1].changesType, cs2.changesType);
     assert.equal(changesets2[1].index, 2);
+    assert.equal(changesets1[0].briefcaseId, 200);
     assert.isAtLeast(changesets2[1].size!, 1);
     assert.isDefined(changesets2[1].pushDate);
     assert.equal(cs2.id, localHub.getLatestChangesetId());
@@ -116,10 +118,10 @@ describe.only("HubMock", () => {
     expect(() => localHub.findNamedVersion(version1)).throws("not found");
 
     // test for duplicate changeset id
-    const cs3 = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesType.Regular, pathname: cs1.pathname };
+    const cs3 = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesType.Regular, pathname: cs1.pathname, briefcaseId: 100 };
     expect(() => localHub.addChangeset(cs3)).throws("can't insert");
     // now test for valid changeset id, but bad parentId
-    const cs4 = { id: "changeset4", parentId: "bad", description: "fourth changeset", changesType: ChangesType.Regular, pathname: cs1.pathname };
+    const cs4 = { id: "changeset4", parentId: "bad", description: "fourth changeset", changesType: ChangesType.Regular, pathname: cs1.pathname, briefcaseId: 100 };
     expect(() => localHub.addChangeset(cs4)).throws("can't insert");
 
     cs3.id = "changeset3";

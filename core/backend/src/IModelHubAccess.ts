@@ -99,6 +99,7 @@ export class IModelHubAccess {
     changeset.changesType = changesetProps.changesType;
     changeset.fileSize = changesetProps.size!.toString();
     changeset.description = changesetProps.description;
+    changeset.briefcaseId = changesetProps.briefcaseId;
     if (changeset.description.length >= 255) {
       Logger.logWarning("imodelhub-access", `pushChanges - Truncating description to 255 characters. ${changeset.description}`);
       changeset.description = changeset.description.slice(0, 254);
@@ -108,7 +109,7 @@ export class IModelHubAccess {
     requestContext.enter();
     await this.iModelClient.changeSets.create(requestContext, arg.iModelId, changeset, changesetProps.pathname);
     if (arg.releaseLocks)
-      return this.iModelClient.locks.deleteAll(requestContext, arg.iModelId, arg.changesetProps.briefcaseId!);
+      return this.iModelClient.locks.deleteAll(requestContext, arg.iModelId, arg.changesetProps.briefcaseId);
 
   }
 
@@ -161,6 +162,18 @@ export class IModelHubAccess {
     return +changeSet.index!;
   }
 
+  public static toChangeSetProps(cs: ChangeSet): ChangesetProps {
+    return {
+      id: cs.wsgId, parentId: cs.parentId ? cs.parentId : "", briefcaseId: cs.briefcaseId!,
+      description: cs.description ?? "", changesType: cs.changesType ?? ChangesType.Regular, userCreated: cs.userCreated,
+    };
+  }
+  private static toChangeSetFileProps(cs: ChangeSet, basePath: string): ChangesetFileProps {
+    const csProps = this.toChangeSetProps(cs) as ChangesetFileProps;
+    csProps.pathname = join(basePath, cs.fileName!);
+    return csProps;
+  }
+
   public static async queryChangeSetProps(arg: IModelIdArg & { changesetId: ChangesetId }): Promise<ChangesetProps> {
     const query = new ChangeSetQuery();
     query.byId(arg.changesetId);
@@ -170,21 +183,7 @@ export class IModelHubAccess {
     if (changeSets.length === 0)
       throw new Error(`Unable to find change set ${arg.changesetId} for iModel ${arg.iModelId}`);
 
-    const cs = changeSets[0];
-    return { id: cs.id!, changesType: cs.changesType!, parentId: cs.parentId ?? "", description: cs.description ?? "", pushDate: cs.pushDate, userCreated: cs.userCreated };
-  }
-
-  private static toChangeSetProps(cs: ChangeSet): ChangesetProps {
-    return {
-      id: cs.wsgId, parentId: cs.parentId ? cs.parentId : "",
-      description: cs.description ?? "", changesType: cs.changesType ?? ChangesType.Regular, userCreated: cs.userCreated,
-    };
-  }
-
-  private static toChangeSetFileProps(cs: ChangeSet, basePath: string): ChangesetFileProps {
-    const csProps = this.toChangeSetProps(cs) as ChangesetFileProps;
-    csProps.pathname = join(basePath, cs.fileName!);
-    return csProps;
+    return this.toChangeSetProps(changeSets[0]);
   }
 
   public static async queryChangeset(arg: IModelIdArg & { id: string }): Promise<ChangesetProps> {
@@ -207,61 +206,51 @@ export class IModelHubAccess {
     return this.toChangeSetFileProps(changeSets[0], BriefcaseManager.getChangeSetsPath(arg.iModelId));
   }
 
+  private static async getQueryFromRange(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangeSetQuery | undefined> {
+    const query = new ChangeSetQuery();
+    if (!arg.range)
+      return query; // returns all changesets
+
+    const range = arg.range;
+    const after = range.after ?? (range.first === "" ? "" : (await this.queryChangeSetProps({ ...arg, changesetId: range.first })).parentId);
+    if (range.end === "" || after === range.end)
+      return undefined;
+
+    if (!range.end)
+      query.fromId(after); //
+    else
+      query.betweenChangeSets(range.end, after); // note: weird order is necessary because second arg being blank means "from start"
+
+    return query;
+  }
+
   /** queries for change sets in the specified range. */
   public static async queryChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetProps[]> {
-    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const range = arg.range ?? { first: "" };
-    const after = range.after ?? range.first === "" ? "" : (await this.queryChangeSetProps({ ...arg, changesetId: range.first })).parentId;
-    if (range.end === "" || after === range.end)
-      return [];
-
-    const query = new ChangeSetQuery();
-    query.betweenChangeSets(after, range.end);
-
-    let changeSets: ChangeSet[];
-    try {
-      changeSets = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, query);
-      requestContext.enter();
-    } catch (error) {
-      requestContext.enter();
-      throw error;
-    }
-
+    const query = await this.getQueryFromRange(arg);
     const val: ChangesetProps[] = [];
-    for (const cs of changeSets)
-      val.push(this.toChangeSetProps(cs));
+    if (query) {
+      const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
+      const changeSets = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, query);
+      requestContext.enter();
 
+      for (const cs of changeSets)
+        val.push(this.toChangeSetProps(cs));
+    }
     return val;
   }
 
   /** Downloads change sets in the specified range. */
   public static async downloadChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetFileProps[]> {
-    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const range = arg.range ?? { first: "" };
-    const after = range.after ?? range.first === "" ? "" : (await this.queryChangeSetProps({ ...arg, changesetId: range.first })).parentId;
-    if (range.end === "" || after === range.end)
-      return [];
-
-    const query = new ChangeSetQuery();
-    if (!range.end)
-      query.fromId(after);
-    else
-      query.betweenChangeSets(range.end, after);
-
-    const changeSetsPath = BriefcaseManager.getChangeSetsPath(arg.iModelId);
-    let changeSets: ChangeSet[];
-    try {
-      changeSets = await this.iModelClient.changeSets.download(requestContext, arg.iModelId, query, changeSetsPath);
-      requestContext.enter();
-    } catch (error) {
-      requestContext.enter();
-      throw error;
-    }
-
     const val: ChangesetFileProps[] = [];
-    for (const cs of changeSets)
-      val.push(this.toChangeSetFileProps(cs, changeSetsPath));
+    const query = await this.getQueryFromRange(arg);
+    if (query) {
+      const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
+      const changeSetsPath = BriefcaseManager.getChangeSetsPath(arg.iModelId);
+      const changeSets = await this.iModelClient.changeSets.download(requestContext, arg.iModelId, query, changeSetsPath);
 
+      for (const cs of changeSets)
+        val.push(this.toChangeSetFileProps(cs, changeSetsPath));
+    }
     return val;
   }
 
