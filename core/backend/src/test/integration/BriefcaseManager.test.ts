@@ -274,7 +274,7 @@ describe("BriefcaseManager (#integration)", () => {
     let checkpoint = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     let numDownloads = 0;
 
-    CheckpointManager.onDownload.addListener((_job) => numDownloads++);
+    CheckpointManager.onDownloadV1.addListener((_job) => numDownloads++);
     assert.exists(checkpoint);
     assert.equal(checkpoint.openMode, OpenMode.Readonly);
     const checkpointName = checkpoint.pathName;
@@ -337,8 +337,8 @@ describe("BriefcaseManager (#integration)", () => {
     let revIndex: number;
     for (revIndex = readOnlyTestVersions.length - 1; revIndex >= 0; revIndex--) {
       // Stop at a schema change
-      const changeSetId = await IModelHost.hubAccess.getChangesetIdFromNamedVersion({ versionName: readOnlyTestVersions[revIndex], requestContext, iModelId: readOnlyTestIModelId });
-      const changeSet = await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: readOnlyTestIModelId, id: changeSetId });
+      const changesetId = await IModelHost.hubAccess.getChangesetIdFromNamedVersion({ versionName: readOnlyTestVersions[revIndex], requestContext, iModelId: readOnlyTestIModelId });
+      const changeSet = await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: readOnlyTestIModelId, changesetId });
       if (changeSet.changesType === ChangesType.Schema)
         break;
 

@@ -35,7 +35,7 @@ describe.skip("Checkpoints (#integration)", () => {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testContextId = await HubUtility.getTestContextId(requestContext);
     testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
-    testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
+    testChangeSetId = (await HubUtility.queryLatestChangeSetId(requestContext, testIModelId));
 
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(testChangeSetId).selectContainerAccessKey();
     const checkpoints = await IModelHubAccess.iModelClient.checkpointsV2.get(requestContext, testIModelId, checkpointQuery);

@@ -10,11 +10,9 @@ import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { CheckpointManager, DownloadRequest } from "../CheckpointManager";
 import {
-  BriefcaseDbArg,
-  BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, HubAccess, IModelIdArg, LocalDirName, LocalFileName,
-  LockProps,
+  BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetIdArg, ChangesetProps, ChangesetRange, CheckPointArg, HubAccess, IModelIdArg, LocalDirName,
+  LocalFileName, LockProps,
 } from "../HubAccess";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -23,7 +21,7 @@ import { LocalHub, LocalHubProps } from "./LocalHub";
 
 /** Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changeset. */
 export class HubMock {
-  private static mockRoot: LocalDirName;
+  private static mockRoot: LocalDirName | undefined;
   private static hubs = new Map<string, LocalHub>();
   private static _saveHubAccess: HubAccess;
 
@@ -34,10 +32,6 @@ export class HubMock {
     IModelJsFs.purgeDirSync(mockRoot);
     this._saveHubAccess = IModelHost.hubAccess;
     IModelHost.hubAccess = this;
-
-    sinon.stub(CheckpointManager, "downloadCheckpoint").callsFake(async (request: DownloadRequest): Promise<void> => {
-      return this.findLocalHub(request.checkpoint.iModelId).downloadCheckpoint({ id: request.checkpoint.changeSetId, targetFile: request.localFile });
-    });
 
     sinon.stub(IModelVersion, "getLatestChangeSetId").callsFake(async (_1, _2, iModelId: GuidString): Promise<GuidString> => {
       return this.findLocalHub(iModelId).getLatestChangesetId();
@@ -92,16 +86,16 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
   }
 
-  public static async downloadChangeset(arg: IModelIdArg & { id: string }): Promise<ChangesetFileProps> {
-    return this.findLocalHub(arg.iModelId).downloadChangeset({ id: arg.id, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
+  public static async downloadChangeset(arg: ChangesetIdArg): Promise<ChangesetFileProps> {
+    return this.findLocalHub(arg.iModelId).downloadChangeset({ changesetId: arg.changesetId, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
   }
 
   public static async downloadChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetFileProps[]> {
     return this.findLocalHub(arg.iModelId).downloadChangesets({ range: arg.range, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
   }
 
-  public static async queryChangeset(arg: IModelIdArg & { id: string }): Promise<ChangesetProps> {
-    return this.findLocalHub(arg.iModelId).getChangesetById(arg.id);
+  public static async queryChangeset(arg: IModelIdArg & { changesetId: ChangesetId }): Promise<ChangesetProps> {
+    return this.findLocalHub(arg.iModelId).getChangesetById(arg.changesetId);
   }
 
   public static async queryChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetProps[]> {
@@ -110,6 +104,14 @@ export class HubMock {
 
   public static async pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }): Promise<void> {
     return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
+  }
+
+  public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
+    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changesetId: arg.checkpoint.changeSetId, targetFile: arg.localFile });
+  }
+
+  public static async downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
+    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changesetId: arg.checkpoint.changeSetId, targetFile: arg.localFile });
   }
 
   public static async releaseAllLocks(_arg: BriefcaseIdArg) {
@@ -139,10 +141,10 @@ export class HubMock {
   }
 
   public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: LocalFileName }): Promise<GuidString> {
-    const revision0 = arg.revision0 ?? join(this.mockRoot, "revision0.bim");
+    const revision0 = arg.revision0 ?? join(this.mockRoot!, "revision0.bim");
 
     const localProps = { ...arg, iModelId: Guid.createValue(), revision0 };
-    if (!arg.revision0) {
+    if (!arg.revision0) { // if they didn't supply a revision0 file, create a blank one.
       const blank = SnapshotDb.createEmpty(revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
       blank.saveChanges();
       blank.close();
@@ -160,12 +162,16 @@ export class HubMock {
   }
 
   public static shutdown() {
+    if (!this.isValid)
+      return;
+
     for (const hub of this.hubs)
       hub[1].cleanup();
 
-    IModelJsFs.purgeDirSync(this.mockRoot);
+    IModelJsFs.purgeDirSync(this.mockRoot!);
     sinon.restore();
     IModelHost.hubAccess = this._saveHubAccess;
+    this.mockRoot = undefined;
   }
 
   public static findLocalHub(iModelId: GuidString): LocalHub {

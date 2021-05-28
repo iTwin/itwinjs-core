@@ -26,7 +26,7 @@ describe("IModelOpen (#integration)", () => {
     requestContext.enter();
 
     testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
-    testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
+    testChangeSetId = await HubUtility.queryLatestChangeSetId(requestContext, testIModelId);
   });
 
   const deleteTestIModelCache = () => {
@@ -79,31 +79,5 @@ describe("IModelOpen (#integration)", () => {
     assert.isDefined(iModel);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
   });
-
-  it("should be able to handle simultaneous open calls of different versions", async () => {
-    // Clean folder to refetch briefcase
-    deleteTestIModelCache();
-
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: testIModelId });
-    const numChangeSets = changeSets.length;
-    assert.isAbove(numChangeSets, 10);
-
-    const changeSetIds = new Array<GuidString>();
-    const indices: number[] = [0, Math.floor(numChangeSets / 3), Math.floor(numChangeSets / 2), Math.floor(numChangeSets * 2 / 3), numChangeSets - 1];
-    for (const index of indices) {
-      changeSetIds.push(changeSets[index].id);
-    }
-
-    const openPromises = new Array<Promise<SnapshotDb>>();
-    for (const changeSetId of changeSetIds) {
-      const open = IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changeSetId).toJSON() });
-      openPromises.push(open);
-    }
-
-    const iModels = await Promise.all(openPromises);
-    for (const iModel of iModels) {
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-    }
-  }).timeout(1000000);
 
 });

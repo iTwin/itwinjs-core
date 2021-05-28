@@ -18,7 +18,7 @@ import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@ben
 import { IModelHubAccess } from "../../IModelHubAccess";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
-import { ChangesetFileProps, ChangesetProps } from "../../HubAccess";
+import { ChangesetFileProps, ChangesetId, ChangesetProps } from "../../HubAccess";
 import { IModelDb } from "../../IModelDb";
 
 /** DTO to work with iModelHub DeleteChangeSet API */
@@ -124,9 +124,8 @@ export class HubUtility {
   }
 
   /** Query the latest change set (id) of the specified iModel */
-  public static async queryLatestChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<ChangeSet | undefined> {
-    const changeSets = await IModelHubAccess.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
-    return (changeSets.length === 0) ? undefined : changeSets[changeSets.length - 1];
+  public static async queryLatestChangeSetId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<ChangesetId> {
+    return IModelHost.hubAccess.getLatestChangesetId({ requestContext, iModelId });
   }
 
   /** Download all change sets of the specified iModel */
@@ -227,10 +226,10 @@ export class HubUtility {
 
   /** Delete an IModel from the hub */
   public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    const contextId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, contextId, iModelName);
 
-    await IModelHubAccess.iModelClient.iModels.delete(requestContext, projectId, iModelId);
+    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId });
   }
 
   /** Get the pathname of the briefcase in the supplied directory - assumes a standard layout of the supplied directory */
@@ -424,9 +423,9 @@ export class HubUtility {
     const changeSetsJson = JSON.parse(jsonStr);
 
     // Find the last change set that was already uploaded
-    const lastUploadedChangeSet = await HubUtility.queryLatestChangeSet(requestContext, briefcase.iModelId!);
-    const lastIndex = lastUploadedChangeSet ? changeSetsJson.findIndex((changeSetJson: any) => changeSetJson.id === lastUploadedChangeSet.id) : -1;
-    const filteredChangeSetsJson = lastUploadedChangeSet ? changeSetsJson.slice(lastIndex + 1) : changeSetsJson;
+    const lastUploadedChangeSetId = await HubUtility.queryLatestChangeSetId(requestContext, briefcase.iModelId!);
+    const lastIndex = (lastUploadedChangeSetId === "") ? changeSetsJson.findIndex((changeSetJson: any) => changeSetJson.id === lastUploadedChangeSetId) : -1;
+    const filteredChangeSetsJson = (lastUploadedChangeSetId === "") ? changeSetsJson.slice(lastIndex + 1) : changeSetsJson;
 
     // Upload change sets
     const count = filteredChangeSetsJson.length;

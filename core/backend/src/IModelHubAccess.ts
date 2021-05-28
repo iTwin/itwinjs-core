@@ -10,14 +10,18 @@ import { join } from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import { BriefcaseStatus, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CodeQuery, IModelBankClient, IModelClient, IModelHubClient, IModelQuery, Lock, LockQuery,
-  VersionQuery,
+  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient, IModelHubClient, IModelQuery,
+  Lock, LockQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { CodeProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, IModelIdArg, LockProps } from "./HubAccess";
+import {
+  BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetIdArg, ChangesetProps, ChangesetRange, CheckPointArg, IModelIdArg,
+  LockProps,
+} from "./HubAccess";
+import { IModelHost } from "./IModelHost";
 
 /** @internal */
 export class IModelHubAccess {
@@ -71,12 +75,12 @@ export class IModelHubAccess {
     return this.getLatestChangesetId(arg);
   }
 
-  public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string }): Promise<GuidString> {
+  public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: string }): Promise<GuidString> {
     if (this.isUsingIModelBankClient)
       throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation");
 
     const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const hubIModel = await this.iModelClient.iModels.create(requestContext, arg.contextId, arg.iModelName, { description: arg.description });
+    const hubIModel = await this.iModelClient.iModels.create(requestContext, arg.contextId, arg.iModelName, { path: arg.revision0, description: arg.description });
     requestContext.enter();
     return hubIModel.wsgId;
   }
@@ -164,8 +168,8 @@ export class IModelHubAccess {
 
   public static toChangeSetProps(cs: ChangeSet): ChangesetProps {
     return {
-      id: cs.wsgId, parentId: cs.parentId ? cs.parentId : "", briefcaseId: cs.briefcaseId!,
-      description: cs.description ?? "", changesType: cs.changesType ?? ChangesType.Regular, userCreated: cs.userCreated,
+      id: cs.wsgId, parentId: cs.parentId ? cs.parentId : "", briefcaseId: cs.briefcaseId!, pushDate: cs.pushDate!,
+      description: cs.description ?? "", changesType: cs.changesType ?? ChangesType.Regular, userCreated: cs.userCreated!,
     };
   }
   private static toChangeSetFileProps(cs: ChangeSet, basePath: string): ChangesetFileProps {
@@ -186,22 +190,22 @@ export class IModelHubAccess {
     return this.toChangeSetProps(changeSets[0]);
   }
 
-  public static async queryChangeset(arg: IModelIdArg & { id: string }): Promise<ChangesetProps> {
+  public static async queryChangeset(arg: ChangesetIdArg): Promise<ChangesetProps> {
     const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const changeSets = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.id));
+    const changeSets = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.changesetId));
     if (undefined === changeSets)
-      throw new IModelError(IModelStatus.NotFound, `ChangeSet ${arg.id} not found`);
+      throw new IModelError(IModelStatus.NotFound, `ChangeSet ${arg.changesetId} not found`);
 
     return this.toChangeSetProps(changeSets[0]);
   }
 
-  public static async downloadChangeset(arg: IModelIdArg & { id: string }): Promise<ChangesetFileProps> {
+  public static async downloadChangeset(arg: ChangesetIdArg): Promise<ChangesetFileProps> {
     const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(arg.iModelId);
 
-    const changeSets = await this.iModelClient.changeSets.download(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.id), changeSetsPath);
+    const changeSets = await this.iModelClient.changeSets.download(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.changesetId), changeSetsPath);
     if (undefined === changeSets)
-      throw new IModelError(IModelStatus.NotFound, `ChangeSet ${arg.id} not found`);
+      throw new IModelError(IModelStatus.NotFound, `ChangeSet ${arg.changesetId} not found`);
 
     return this.toChangeSetFileProps(changeSets[0], BriefcaseManager.getChangeSetsPath(arg.iModelId));
   }
@@ -252,6 +256,71 @@ export class IModelHubAccess {
         val.push(this.toChangeSetFileProps(cs, changeSetsPath));
     }
     return val;
+  }
+
+  public static async downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
+    const checkpoint = arg.checkpoint;
+    let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
+    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeSetId);
+    const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
+    const checkpoints = await this.iModelClient.checkpoints.get(requestContext, checkpoint.iModelId, checkpointQuery);
+    if (checkpoints.length !== 1)
+      throw new IModelError(BriefcaseStatus.VersionNotFound, "no checkpoints not found");
+
+    const cancelRequest: any = {};
+    const progressCallback: ProgressCallback = (progress) => {
+      if (arg.onProgress && arg.onProgress(progress.loaded, progress.total!) !== 0)
+        cancelRequest.cancel?.();
+    };
+
+    await this.iModelClient.checkpoints.download(requestContext, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
+    return checkpoints[0].mergedChangeSetId!;
+  }
+
+  public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
+    const checkpoint = arg.checkpoint;
+    let checkpointQuery = new CheckpointV2Query();
+    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeSetId);
+    const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
+    const checkpoints = await this.iModelClient.checkpointsV2.get(requestContext, checkpoint.iModelId, checkpointQuery);
+    if (checkpoints.length !== 1)
+      throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
+
+    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
+    if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
+      throw new IModelError(IModelStatus.NotFound, "invalid V2 checkpoint");
+
+    const downloader = new IModelHost.platform.DownloadV2Checkpoint({
+      container: containerAccessKeyContainer,
+      auth: containerAccessKeySAS,
+      storageType: "azure?sas=1",
+      user: containerAccessKeyAccount,
+      dbAlias: containerAccessKeyDbName,
+      writeable: false,
+      localFile: arg.localFile,
+    });
+
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      let total = 0;
+      const onProgress = arg.onProgress;
+      if (onProgress) {
+        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
+          const progress = downloader.getProgress();
+          total = progress.total;
+          if (onProgress(progress.loaded, progress.total))
+            downloader.cancelDownload();
+        }, 250);
+      }
+      await downloader.downloadPromise;
+      onProgress?.(total, total); // make sure we call progress func one last time when download completes
+    } catch (err) {
+      throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
+    } finally {
+      if (timer)
+        clearInterval(timer);
+    }
+    return checkpoints[0].changeSetId!;
   }
 
   public static async releaseAllLocks(arg: BriefcaseIdArg) {

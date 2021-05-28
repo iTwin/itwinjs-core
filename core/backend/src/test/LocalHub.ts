@@ -7,7 +7,7 @@ import { join } from "path";
 import { DbResult, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { ChangesetFileProps, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName } from "../HubAccess";
+import { ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, CheckPointArg, LocalDirName, LocalFileName } from "../HubAccess";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
@@ -55,7 +55,7 @@ export class LocalHub {
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY,id TEXT,FOREIGN KEY(id) REFERENCES timeline(id))");
     db.saveChanges();
 
-    const path = this.addCheckpoint({ id: "", localFile: arg.revision0 });
+    const path = this.uploadCheckpoint({ changesetId: "", localFile: arg.revision0 });
     const nativeDb = IModelDb.openDgnDb({ path }, OpenMode.ReadWrite);
     try {
       nativeDb.saveProjectGuid(this.contextId);
@@ -164,7 +164,7 @@ export class LocalHub {
 
   public getChangesetByIndex(index: number): ChangesetProps {
     if (index === 0)
-      return { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0 };
+      return { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "" };
 
     return this.db.withPreparedSqliteStatement("SELECT parentId,description,size,type,pushDate,user,id,briefcaseId FROM timeline WHERE rowid=?", (stmt) => {
       stmt.bindValue(1, index);
@@ -250,12 +250,12 @@ export class LocalHub {
     });
   }
 
-  public checkpointNameFromId(id: string) {
-    return id === "" ? "0" : id;
+  public checkpointNameFromId(changesetId: ChangesetId) {
+    return changesetId === "" ? "0" : changesetId;
   }
 
-  public addCheckpoint(arg: { id: string, localFile: LocalFileName }) {
-    const index = (arg.id !== "") ? this.getChangesetIndex(arg.id) : 0;
+  public uploadCheckpoint(arg: { changesetId: ChangesetId, localFile: LocalFileName }) {
+    const index = (arg.changesetId !== "") ? this.getChangesetIndex(arg.changesetId) : 0;
     const db = this.db;
     db.withSqliteStatement("INSERT INTO checkpoints(csIndex) VALUES (?)", (stmt) => {
       stmt.bindValue(1, index);
@@ -264,7 +264,7 @@ export class LocalHub {
         throw new IModelError(res, "can't insert checkpoint into mock db");
     });
     db.saveChanges();
-    const outName = join(this.checkpointDir, this.checkpointNameFromId(arg.id));
+    const outName = join(this.checkpointDir, this.checkpointNameFromId(arg.changesetId));
     IModelJsFs.copySync(arg.localFile, outName);
     return outName;
   }
@@ -279,21 +279,23 @@ export class LocalHub {
     return checkpoints;
   }
 
-  public getPreviousCheckpoint(id: string): number {
-    if (id === "")
-      return 0;
-    const index = this.getChangesetIndex(id);
+  public queryPreviousCheckpoint(changesetId: ChangesetId): ChangesetId {
+    if (changesetId === "")
+      return "";
+    const index = this.getChangesetIndex(changesetId);
     return this.db.withSqliteStatement("SELECT max(csIndex) FROM checkpoints WHERE csIndex <= ? ", (stmt) => {
       stmt.bindValue(1, index);
       const res = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== res)
         throw new IModelError(res, "can't get previous checkpoint");
-      return stmt.getValue(0).getInteger();
+      return this.getChangesetByIndex(stmt.getValue(0).getInteger()).id;
     });
   }
 
-  public downloadCheckpoint(arg: { id: string, targetFile: LocalFileName }) {
-    IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromId(arg.id)), arg.targetFile);
+  public downloadCheckpoint(arg: { changesetId: ChangesetId, targetFile: LocalFileName }) {
+    const prev = this.queryPreviousCheckpoint(arg.changesetId);
+    IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromId(prev)), arg.targetFile);
+    return prev;
   }
 
   private copyChangeset(arg: ChangesetFileProps): ChangesetFileProps {
@@ -301,8 +303,8 @@ export class LocalHub {
     return arg;
   }
 
-  public downloadChangeset(arg: { id: string, targetDir: LocalDirName }) {
-    const cs = this.getChangesetById(arg.id);
+  public downloadChangeset(arg: { changesetId: ChangesetId, targetDir: LocalDirName }) {
+    const cs = this.getChangesetById(arg.changesetId);
     const csProps = { ...cs, pathname: join(arg.targetDir, cs.id) };
     return this.copyChangeset(csProps);
   }

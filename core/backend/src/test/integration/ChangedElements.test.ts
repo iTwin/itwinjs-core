@@ -7,9 +7,13 @@ import { DbResult, GuidString, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
+import { AuthorizedBackendRequestContext } from "../../BackendRequestContext";
+import { BriefcaseManager } from "../../BriefcaseManager";
+import { ChangedElementsDb, ProcessChangesetOptions } from "../../ChangedElementsDb";
 import { ChangedElementsManager } from "../../ChangedElementsManager";
 import { SnapshotDb } from "../../IModelDb";
-import { AuthorizedBackendRequestContext, BriefcaseManager, ChangedElementsDb, IModelHost, IModelJsFs, ProcessChangesetOptions } from "../../imodeljs-backend";
+import { IModelHost } from "../../IModelHost";
+import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -31,7 +35,7 @@ describe("ChangedElements (#integration)", () => {
     requestContext.enter();
   });
 
-  it.only("Create ChangedElements Cache and process changesets", async () => {
+  it("Create ChangedElements Cache and process changesets", async () => {
     const cacheFilePath = BriefcaseManager.getChangeCachePathName(testIModelId);
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
