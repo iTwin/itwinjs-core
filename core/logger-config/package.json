@@ -32,9 +32,10 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.17.0-dev.17",
     "bunyan": "^1.8.12",
-    "bunyan-seq": "^0.2.0",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.0"
+    "bunyan-seq": "^0.2.0"
+  },
+  "dependencies": {
+    "@bentley/itwin-client": "2.17.0-dev.17"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.17.0-dev.17",

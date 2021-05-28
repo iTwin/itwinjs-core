@@ -891,18 +891,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "request",
-      "allowedCategories": [ "backend", "internal" ]
-    },
-    {
-      "name": "request-promise",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "request-promise-native",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "require-dir",
       "allowedCategories": [ "tools" ]
     },
