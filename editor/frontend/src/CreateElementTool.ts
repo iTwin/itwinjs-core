@@ -186,9 +186,6 @@ export abstract class CreateElementTool extends PrimitiveTool {
     return super.isCompatibleViewport(vp, isSelectedViewChange);
   }
 
-  /** Convenience method to check whether control key is currently down w/o having a button event. */
-  protected get isControlDown(): boolean { return IModelApp.toolAdmin.currentInputState.isControlDown; }
-
   /** Whether [[setupAndPromptForNextAction]] should call [[AccuSnap.enableSnap]] for current tool phase.
    * @return true to enable snapping to elements.
    */
