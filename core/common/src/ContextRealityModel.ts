@@ -47,27 +47,37 @@ export interface ContextRealityModelProps {
 
 /** @public */
 export namespace ContextRealityModelProps {
-  /** Produce a deep copy of `props`. */
-  export function clone(props: ContextRealityModelProps) {
-    props = { ...props };
+  /** Produce a deep copy of `input`. */
+  export function clone(input: ContextRealityModelProps) {
+    // Spread operator is shallow, and includes `undefined` properties and empty strings.
+    // We want to make deep copies, omit undefined properties and empty strings, and require tilesetUrl to be defined.
+    const output: ContextRealityModelProps = { tilesetUrl: input.tilesetUrl ?? "" };
 
-    // Spread operator is shallow...
-    if (props.orbitGtBlob)
-      props.orbitGtBlob = { ...props.orbitGtBlob };
+    if (input.name)
+      output.name = input.name;
 
-    if (props.appearanceOverrides) {
-      props.appearanceOverrides = { ...props.appearanceOverrides };
-      if (props.appearanceOverrides.rgb)
-        props.appearanceOverrides.rgb = { ...props.appearanceOverrides.rgb };
+    if (input.realityDataId)
+      output.realityDataId = input.realityDataId;
+
+    if (input.description)
+      output.description = input.description;
+
+    if (input.orbitGtBlob)
+      output.orbitGtBlob = { ...input.orbitGtBlob };
+
+    if (input.appearanceOverrides) {
+      output.appearanceOverrides = { ...input.appearanceOverrides };
+      if (input.appearanceOverrides.rgb)
+        output.appearanceOverrides.rgb = { ...input.appearanceOverrides.rgb };
     }
 
-    if (props.planarClipMask)
-      props.planarClipMask = { ...props.planarClipMask };
+    if (input.planarClipMask)
+      output.planarClipMask = { ...input.planarClipMask };
 
-    if (props.classifiers)
-      props.classifiers = props.classifiers.map((x) => { return { ...x, flags: { ... x.flags } } });
+    if (input.classifiers)
+      output.classifiers = input.classifiers.map((x) => { return { ...x, flags: { ... x.flags } } });
 
-    return props;
+    return output;
   }
 }
 
@@ -111,21 +121,23 @@ export class DisplayStyleContextRealityModel implements ContextRealityModel {
   public readonly realityDataId?: string;
   public readonly classifiers?: SpatialClassifiers;
   /** @alpha */
-  public readonly orbitGtBlob?: OrbitGtBlobProps;
+  public readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
   protected _appearanceOverrides?: FeatureAppearance;
   protected _planarClipMask?: PlanarClipMaskSettings;
 
   public constructor(props: ContextRealityModelProps) {
     this._props = props;
     this.name = props.name ?? "";
-    this.url = props.tilesetUrl;
+    this.url = props.tilesetUrl ?? "";
     this.orbitGtBlob = props.orbitGtBlob;
     this.realityDataId = props.realityDataId;
     this.description = props.description ?? "";
-    this.classifiers = new SpatialClassifiers(props);
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
     if (props.planarClipMask && props.planarClipMask.mode !== PlanarClipMaskMode.None)
       this._planarClipMask = PlanarClipMaskSettings.fromJSON(props.planarClipMask);
+
+    if (props.classifiers)
+      this.classifiers = new SpatialClassifiers(props);
   }
 
   public get planarClipMaskSettings(): PlanarClipMaskSettings | undefined {
@@ -252,7 +264,7 @@ export class ContextRealityModels {
   public replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel {
     const index = this._models.indexOf(toReplace);
     if (-1 === index)
-      throw new Error("ContextRealityModels.replace: toReplace not found.");
+      throw new Error("ContextRealityModel not present in list.");
 
     assert(undefined !== this._container.contextRealityModels);
     assert(index < this._container.contextRealityModels.length);
@@ -275,6 +287,10 @@ export class ContextRealityModels {
       ...toUpdate.toJSON(),
       ...updateProps,
     };
+
+    // Partial<> makes it possible to pass `undefined` for tilesetUrl...preserve previous URL in that case.
+    if (undefined === props.tilesetUrl)
+      props.tilesetUrl = toUpdate.url;
 
     return this.replace(toUpdate, props);
   }
