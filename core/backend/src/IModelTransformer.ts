@@ -7,6 +7,7 @@
  */
 import * as path from "path";
 import { ClientRequestContext, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import * as ECSchemaMetaData from "@bentley/ecschema-metadata";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
@@ -27,8 +28,8 @@ import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
+import { Schema } from "./Schema";
 import * as Semver from "semver";
-import { Schema } from "@bentley/ecschema-metadata";
 import { BackendRequestContext } from "./BackendRequestContext";
 import { DOMParser, XMLSerializer } from "xmldom";
 
@@ -769,7 +770,7 @@ export class IModelTransformer extends IModelExportHandler {
     }
     const [_fullVersionMatch, versionString] = schemaVersionMatch;
     const [_fullNameMatch, schemaName] = schemaNameMatch;
-    return this.shouldExportSchemaCheck(schemaName, versionString);
+    return this.shouldExportSchemaCheck(schemaName, Schema.toSemverString(versionString));
   }
 
   /** given a schema identified just by name and the version string, check if it should be imported into the target */
@@ -783,13 +784,13 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportSchema]($backend) that is called to determine if a schema should be exported
    * @note the default behavior doesn't import schemas older than those already in the target
    */
-  protected shouldExportSchema(schema: Schema): boolean {
+  protected shouldExportSchema(schema: ECSchemaMetaData.Schema): boolean {
     const versionInSource = `${schema.readVersion}.${schema.writeVersion}.${schema.minorVersion}`;
     return this.shouldExportSchemaCheck(schema.name, versionInSource);
   }
 
   /** Override of [IModelExportHandler.onExportSchema]($backend) that imports a schema into the target iModel when it is exported from the source iModel. */
-  protected async onExportSchema(schema: Schema): Promise<void> {
+  protected async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
     const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
     const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
     const filledDoc = await schema.toXml(xmlDoc);

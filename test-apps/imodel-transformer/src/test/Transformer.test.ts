@@ -135,20 +135,24 @@ describe("imodel-transformer", () => {
   });
 
   it("should clone element struct array entries including when their class layout changes", async () => {
-    const testSchemaPath = initOutputFile("TestSchema-StructArrayClone.ecschema.xml");
-    IModelJsFs.writeFileSync(testSchemaPath, `<?xml version="1.0" encoding="UTF-8"?>
-      <ECSchema schemaName="Test" alias="test" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    const makeSchema = (version: "01.00" | "01.01") =>
+      `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="Test" alias="test" version="${version}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
           <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
           <ECStructClass typeName="TestStruct">
             <ECProperty propertyName="SomeNumber" typeName="string" />
+            ${version === "01.01" ? `<ECProperty propertyName="NewProperty" typeName="string" />` : ""}
           </ECStructClass >
           <ECEntityClass typeName="TestElement">
             <BaseClass>bis:PhysicalElement</BaseClass>
             <ECProperty propertyName="MyProp" typeName="string"/>
+            ${version === "01.01" ? `<ECProperty propertyName="MyProp2" typeName="string" />` : ""}
             <ECStructArrayProperty propertyName="MyArray" typeName="TestStruct" minOccurs="0" maxOccurs="unbounded" />
           </ECEntityClass>
-      </ECSchema>`
-    );
+      </ECSchema>`;
+
+    const testSchemaPath = initOutputFile("TestSchema-StructArrayClone.ecschema.01.00.xml");
+    IModelJsFs.writeFileSync(testSchemaPath, makeSchema("01.00"));
 
     const newSchemaSourceDbPath = initOutputFile("sourceDb-StructArrayClone.bim");
     IModelJsFs.copySync(sourceDbFileName, newSchemaSourceDbPath);
@@ -168,10 +172,7 @@ describe("imodel-transformer", () => {
       myArray: [{ someNumber: "1" }, { someNumber: "2" }],
     };
 
-    const transformedElemProps = {
-      myProp: 10,
-      myArray: [{ someNumber: 1 }, { someNumber: 2 }],
-    };
+    const transformedElemProps = elementProps;
 
     const _newElemId = newSchemaSourceDb.elements.insertElement({
       classFullName: "Test:TestElement",
@@ -187,17 +188,11 @@ describe("imodel-transformer", () => {
       ecefLocation: newSchemaSourceDb.ecefLocation,
     });
 
-    await Transformer.transformAll(requestContext, newSchemaSourceDb, targetDb, {
-      alterExportedSchema: (xmlSchema) => {
-        if (xmlSchema.documentElement.getAttribute("schemaName") === "Test") {
-          // change TestElement.MyProp type to double
-          xmlSchema.documentElement.getElementsByTagName("ECEntityClass")[0].getElementsByTagName("ECProperty")[0].setAttribute("typeName", "double");
-          // change TestStruct.SomeNumber type to integer
-          xmlSchema.documentElement.getElementsByTagName("ECStructClass")[0].getElementsByTagName("ECProperty")[0].setAttribute("typeName", "int");
-        }
-        return xmlSchema;
-      },
-    });
+    const testSchemaPathUpgrade = initOutputFile("TestSchema-StructArrayClone.01.01.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchemaPathUpgrade, makeSchema("01.01"));
+    await targetDb.importSchemas(requestContext, [testSchemaPathUpgrade]);
+
+    await Transformer.transformAll(requestContext, newSchemaSourceDb, targetDb);
 
     async function getStructInstances(db: IModelDb): Promise<typeof elementProps | {}> {
       let result: any = [{}];

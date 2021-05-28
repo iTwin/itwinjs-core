@@ -26,8 +26,6 @@ export interface TransformerOptions extends IModelTransformOptions {
   deleteUnusedGeometryParts?: boolean;
   excludeSubCategories?: string[];
   excludeCategories?: string[];
-  /** alter the xml document of the source schema before it is serialized for import to the target */
-  alterExportedSchema?: (xmlSchemaDoc: Document) => Document;
 }
 
 export class Transformer extends IModelTransformer {
@@ -37,7 +35,6 @@ export class Transformer extends IModelTransformer {
   private _numSourceRelationshipsProcessed = 0;
   private _startTime = new Date();
   private _targetPhysicalModelId = Id64.invalid; // will be valid when PhysicalModels are being combined
-  private _alterExportedSchema: TransformerOptions["alterExportedSchema"];
 
   public static async transformAll(requestContext: AuthorizedClientRequestContext | ClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
     requestContext.enter();
@@ -124,8 +121,6 @@ export class Transformer extends IModelTransformer {
     if (options?.excludeCategories) {
       this.excludeCategories(options.excludeCategories);
     }
-
-    this._alterExportedSchema = options?.alterExportedSchema;
 
     // query for and log the number of source Elements that will be processed
     this._numSourceElements = this.sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
@@ -281,16 +276,5 @@ export class Transformer extends IModelTransformer {
       }
     });
     this.targetDb.elements.deleteDefinitionElements(geometryPartIds); // will delete only if unused
-  }
-
-  public async onExportSchema(schema: Schema): Promise<void> {
-    const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
-    const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);
-    let filledDoc = await schema.toXml(xmlDoc);
-    if (this._alterExportedSchema)
-      filledDoc = this._alterExportedSchema(filledDoc);
-    const schemaText = new XMLSerializer().serializeToString(filledDoc);
-    IModelJsFs.writeFileSync(schemaPath, schemaText);
-    await this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
   }
 }
