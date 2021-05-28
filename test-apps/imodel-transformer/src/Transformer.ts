@@ -3,18 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
 import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
-  BackendRequestContext,
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
-  IModelDb, IModelJsFs, IModelTransformer, IModelTransformOptions, InformationPartitionElement, ModelSelector, PhysicalModel, PhysicalPartition,
+  IModelDb, IModelTransformer, IModelTransformOptions, InformationPartitionElement, ModelSelector, PhysicalModel, PhysicalPartition,
   Relationship, SpatialCategory, SpatialViewDefinition, SubCategory, ViewDefinition,
 } from "@bentley/imodeljs-backend";
 import { ElementProps, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { Schema } from "@bentley/ecschema-metadata";
-import { DOMParser, XMLSerializer } from "xmldom";
 
 export const loggerCategory = "imodel-transformer-Transformer";
 export const progressLoggerCategory = "Progress";

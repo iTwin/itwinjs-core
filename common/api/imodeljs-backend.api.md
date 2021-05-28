@@ -52,6 +52,7 @@ import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
+import * as ECSchemaMetaData from '@bentley/ecschema-metadata';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { EditingScopeNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
@@ -2936,7 +2937,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
-    protected onExportSchema(schema: Schema_2): Promise<void>;
+    protected onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void>;
     protected onTransformElement(sourceElement: Element): ElementProps;
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
@@ -2960,7 +2961,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected shouldExportElement(_sourceElement: Element): boolean;
     protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
     protected shouldExportRelationship(_sourceRelationship: Relationship): boolean;
-    protected shouldExportSchema(schema: Schema_2): boolean;
+    protected shouldExportSchema(schema: ECSchemaMetaData.Schema): boolean;
     protected skipElement(sourceElement: Element): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
