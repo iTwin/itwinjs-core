@@ -515,7 +515,7 @@ export class BlobDownloader {
   public static formatBytes(bytes: number) {
     const kb = 1024;
     const mb = kb * kb;
-    const gb = mb * mb;
+    const gb = mb * kb;
     if (bytes < kb) return `${bytes} B`;
     if (bytes < mb) return `${(bytes / kb).toFixed(1)} KB`;
     if (bytes < gb) return `${(bytes / mb).toFixed(1)} MB`;
