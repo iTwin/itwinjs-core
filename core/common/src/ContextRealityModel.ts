@@ -6,6 +6,7 @@
  * @module DisplayStyles
  */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
@@ -56,7 +57,7 @@ export interface ContextRealityModel {
 }
 
 /** @internal */
-export abstract class DisplayStyleContextRealityModel implements ContextRealityModel {
+export class DisplayStyleContextRealityModel implements ContextRealityModel {
   protected readonly _props: ContextRealityModelProps;
   public readonly name: string;
   public readonly url: string;
@@ -106,24 +107,110 @@ export abstract class DisplayStyleContextRealityModel implements ContextRealityM
   }
 
   public toJSON(): ContextRealityModelProps {
-    const props = { ...this._props };
+    return cloneContextRealityModelProps(this._props);
+  }
+}
 
-    // Spread operator is shallow...
-    if (props.orbitGtBlob)
-      props.orbitGtBlob = { ...props.orbitGtBlob };
+export function cloneContextRealityModelProps(props: ContextRealityModelProps) {
+  props = { ...props };
 
-    if (props.appearanceOverrides) {
-      props.appearanceOverrides = { ...props.appearanceOverrides };
-      if (props.appearanceOverrides.rgb)
-        props.appearanceOverrides.rgb = { ...props.appearanceOverrides.rgb };
-    }
+  // Spread operator is shallow...
+  if (props.orbitGtBlob)
+    props.orbitGtBlob = { ...props.orbitGtBlob };
 
-    if (props.planarClipMask)
-      props.planarClipMask = { ...props.planarClipMask };
+  if (props.appearanceOverrides) {
+    props.appearanceOverrides = { ...props.appearanceOverrides };
+    if (props.appearanceOverrides.rgb)
+      props.appearanceOverrides.rgb = { ...props.appearanceOverrides.rgb };
+  }
 
-    if (props.classifiers)
-      props.classifiers = props.classifiers.map((x) => { return { ...x, flags: { ... x.flags } } });
+  if (props.planarClipMask)
+    props.planarClipMask = { ...props.planarClipMask };
 
-    return props;
+  if (props.classifiers)
+    props.classifiers = props.classifiers.map((x) => { return { ...x, flags: { ... x.flags } } });
+
+  return props;
+}
+
+export interface ContextRealityModelsContainer {
+  contextRealityModels?: ContextRealityModelProps[];
+}
+
+export class ContextRealityModels implements Iterable<ContextRealityModel> {
+  private readonly _container: ContextRealityModelsContainer;
+  private readonly _createModel: (props: ContextRealityModelProps) => ContextRealityModel;
+  private readonly _models: ContextRealityModel[] = [];
+
+  public constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel) {
+    this._container = container;
+    this._createModel = createContextRealityModel ?? ((props) => new DisplayStyleContextRealityModel(props));
+
+    const models = container.contextRealityModels;
+    if (models)
+      for (const model of models)
+        this._models.push(this._createModel(model));
+  }
+
+  public [Symbol.iterator](): Iterator<ContextRealityModel> {
+    return this._models[Symbol.iterator]();
+  }
+
+  public get size(): number {
+    return this._models.length;
+  }
+
+  public find(criterion: (model: ContextRealityModel) => boolean): ContextRealityModel | undefined {
+    return this._models.find(criterion);
+  }
+
+  public add(props: ContextRealityModelProps): ContextRealityModel {
+    if (!this._container.contextRealityModels)
+      this._container.contextRealityModels = [];
+
+    props = cloneContextRealityModelProps(props);
+    this._container.contextRealityModels.push(props);
+    const model = this._createModel(props);
+    this._models.push(model);
+
+    return model;
+  }
+
+  public delete(model: ContextRealityModel): boolean {
+    const index = this._models.indexOf(model);
+    if (-1 === index)
+      return false;
+
+    assert(undefined !== this._container.contextRealityModels);
+    assert(index < this._container.contextRealityModels.length);
+
+    this._models.splice(index, 1);
+    this._container.contextRealityModels.splice(index, 1);
+
+    return true;
+  }
+
+  public replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel {
+    const index = this._models.indexOf(toReplace);
+    if (-1 === index)
+      throw new Error("ContextRealityModels.replace: toReplace not found.");
+
+    assert(undefined !== this._container.contextRealityModels);
+    assert(index < this._container.contextRealityModels.length);
+
+    replaceWith = cloneContextRealityModelProps(replaceWith);
+    const model = this._models[index] = this._createModel(replaceWith);
+    this._container.contextRealityModels[index] = replaceWith;
+
+    return model;
+  }
+
+  public update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel {
+    const props = {
+      ...toUpdate.toJSON(),
+      ...updateProps,
+    };
+
+    return this.replace(toUpdate, props);
   }
 }
