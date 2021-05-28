@@ -34,6 +34,7 @@ import { ViewFlagProps, ViewFlags } from "./ViewFlags";
 import { Cartographic } from "./geometry/Cartographic";
 import { IModel } from "./IModel";
 import { calculateSolarDirection } from "./SolarCalculate";
+import { ContextRealityModelProps } from "./ContextRealityModel";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -68,39 +69,6 @@ export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
 export interface EnvironmentProps {
   ground?: GroundPlaneProps;
   sky?: SkyBoxProps;
-}
-/** JSON representation of the blob properties for an OrbitGt property cloud.
- * @alpha
- */
-export interface OrbitGtBlobProps {
-  containerName: string;
-  blobFileName: string;
-  sasToken: string;
-  accountName: string;
-}
-
-/** JSON representation of a context reality model
- * A context reality model is one that is not directly attached to the iModel but is instead included in the display style to
- * provide context only when that display style is applied.
- * @public
- */
-export interface ContextRealityModelProps {
-  tilesetUrl: string;
-  /** @alpha */
-  orbitGtBlob?: OrbitGtBlobProps;
-  /** Not required to be present to display the model. It is use to elide the call to getRealityDataIdFromUrl in the widget if present. */
-  realityDataId?: string;
-  name?: string;
-  description?: string;
-  /** @beta */
-  classifiers?: SpatialClassifierProps[];
-  /** Masking to be applied to the reality model. */
-  planarClipMask?: PlanarClipMaskProps;
-  /** Appearance overrides.  Only the color, transparency, emphasized and nonLocatable properties are applicable.
-   * @beta
-   */
-  appearanceOverrides?: FeatureAppearanceProps;
-
 }
 
 /** Describes the style in which monochrome color is applied by a [[DisplayStyleSettings]].
