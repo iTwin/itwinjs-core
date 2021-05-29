@@ -1,6 +1,6 @@
 {
   "name": "@bentley/analytical-backend",
-  "version": "2.17.0-dev.18",
+  "version": "2.17.0-dev.19",
   "main": "lib/analytical-backend.js",
   "typings": "lib/analytical-backend",
   "license": "MIT",
