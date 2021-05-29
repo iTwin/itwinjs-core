@@ -184,7 +184,7 @@ describe("BriefcaseManager (#integration)", () => {
     const iModelFixed = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
     assert.exists(iModelFixed);
 
-    let rootEl: Element = iModelFixed.elements.getRootSubject();
+    let rootEl = iModelFixed.elements.getRootSubject();
     rootEl.userLabel = `${rootEl.userLabel}changed`;
     assert.throws(() => iModelFixed.elements.updateElement(rootEl));
 

@@ -209,6 +209,7 @@ export class V1CheckpointManager {
     if (db)
       return db;
     await this.performDownload(job);
+    await CheckpointManager.updateToRequestedVersion(job.request);
     return SnapshotDb.openCheckpointV1(job.request.localFile, job.request.checkpoint);
   }
 
@@ -229,6 +230,7 @@ export class CheckpointManager {
       // first see if there's a V2 checkpoint available.
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
       Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeSetId}`);
+      console.log(`Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeSetId}`);
       return changesetId;
     } catch (error) {
       if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
@@ -238,21 +240,8 @@ export class CheckpointManager {
     }
 
   }
-  /** Download a checkpoint file from iModelHub into a local file specified in the request parameters. */
-  public static async downloadCheckpoint(request: DownloadRequest): Promise<void> {
-    if (this.verifyCheckpoint(request.checkpoint, request.localFile))
-      return;
 
-    if (request.aliasFiles) {
-      for (const alias of request.aliasFiles) {
-        if (this.verifyCheckpoint(request.checkpoint, alias)) {
-          request.localFile = alias;
-          return;
-        }
-      }
-    }
-
-    const downloadedChangesetId = await this.doDownload(request);
+  public static async updateToRequestedVersion(request: DownloadRequest) {
     const checkpoint = request.checkpoint;
     const targetFile = request.localFile;
     const traceInfo = { contextId: checkpoint.contextId, iModelId: checkpoint.iModelId, changeSetId: checkpoint.changeSetId };
@@ -271,12 +260,9 @@ export class CheckpointManager {
 
       // Validate the native briefcase against the checkpoint meta-data
       try {
-        if (nativeDb.getParentChangeSetId() !== downloadedChangesetId)
-          throw new IModelError(IModelStatus.ValidationFailed, "ChangeSetId of the checkpoint is not correct");
-
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
-        if (downloadedChangesetId !== checkpoint.changeSetId)
+        if (nativeDb.getParentChangeSetId() !== checkpoint.changeSetId)
           await BriefcaseManager.processChangesets(checkpoint.requestContext, db, checkpoint.changeSetId);
       } finally {
         db.saveChanges();
@@ -293,6 +279,25 @@ export class CheckpointManager {
       }
       throw error;
     }
+
+  }
+
+  /** Download a checkpoint file from iModelHub into a local file specified in the request parameters. */
+  public static async downloadCheckpoint(request: DownloadRequest): Promise<void> {
+    if (this.verifyCheckpoint(request.checkpoint, request.localFile))
+      return;
+
+    if (request.aliasFiles) {
+      for (const alias of request.aliasFiles) {
+        if (this.verifyCheckpoint(request.checkpoint, alias)) {
+          request.localFile = alias;
+          return;
+        }
+      }
+    }
+
+    await this.doDownload(request);
+    return this.updateToRequestedVersion(request);
   }
 
   /** checks a file's dbGuid & contextId for consistency, and updates the dbGuid when possible */

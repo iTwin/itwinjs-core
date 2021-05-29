@@ -13,14 +13,11 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { LockProps } from "../../HubAccess";
 import { IModelHubAccess } from "../../IModelHubAccess";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, SpatialCategory,
-  SqliteStatement, SqliteValue, SqliteValueType,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs,
+  SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, Timer } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { join } from "path";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { HubMock } from "../HubMock";
 
 export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -59,12 +56,11 @@ function toHubLock(props: LockProps, briefcaseId: number): Lock {
   return lock;
 }
 
-describe.only("IModelWriteTest (#integration)", () => {
+describe("IModelWriteTest (#integration)", () => {
   let managerRequestContext: AuthorizedBackendRequestContext;
   let superRequestContext: AuthorizedBackendRequestContext;
   let testContextId: string;
   let readWriteTestIModelId: GuidString;
-  //   const outputDir = join(KnownTestLocations.outputDir, "IModelWriteTests");
 
   let readWriteTestIModelName: string;
 
@@ -74,8 +70,6 @@ describe.only("IModelWriteTest (#integration)", () => {
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     superRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.super);
     (superRequestContext as any).activityId = "IModelWriteTest (#integration)";
-
-    // HubMock.startup(join(outputDir, "HubMock"));
 
     testContextId = await HubUtility.getTestContextId(managerRequestContext);
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
@@ -88,7 +82,6 @@ describe.only("IModelWriteTest (#integration)", () => {
   after(async () => {
     try {
       await HubUtility.deleteIModel(managerRequestContext, "iModelJsIntegrationTest", readWriteTestIModelName);
-      HubMock.shutdown();
     } catch (err) {
       console.log(err);
     }

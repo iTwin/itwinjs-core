@@ -472,9 +472,9 @@ export class BriefcaseManager {
     if (targetChangeSetIndex === currentChangeSetIndex)
       return; // nothing to apply
 
-    // Download change sets
     const reverse = (targetChangeSetIndex < currentChangeSetIndex);
 
+    // Download change sets
     const changeSets = await IModelHost.hubAccess.downloadChangesets({
       requestContext, iModelId: db.iModelId,
       range: { after: reverse ? targetChangeSetId : currentChangeSetId, end: reverse ? currentChangeSetId : targetChangeSetId },

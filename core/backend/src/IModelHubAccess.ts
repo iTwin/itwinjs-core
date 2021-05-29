@@ -280,7 +280,7 @@ export class IModelHubAccess {
   public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
-    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeSetId);
+    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeSetId).selectContainerAccessKey();
     const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
     const checkpoints = await this.iModelClient.checkpointsV2.get(requestContext, checkpoint.iModelId, checkpointQuery);
     if (checkpoints.length !== 1)

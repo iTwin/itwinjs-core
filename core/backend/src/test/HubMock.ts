@@ -40,7 +40,45 @@ export class HubMock {
     sinon.stub(IModelVersion, "getChangeSetFromNamedVersion").callsFake(async (_1, _2, iModelId: GuidString, versionName: string): Promise<GuidString> => {
       return this.findLocalHub(iModelId).findNamedVersion(versionName);
     });
+  }
+  public static shutdown() {
+    if (!this.isValid)
+      return;
 
+    for (const hub of this.hubs)
+      hub[1].cleanup();
+
+    IModelJsFs.purgeDirSync(this.mockRoot!);
+    sinon.restore();
+    IModelHost.hubAccess = this._saveHubAccess;
+    this.mockRoot = undefined;
+  }
+
+  public static findLocalHub(iModelId: GuidString): LocalHub {
+    const hub = this.hubs.get(iModelId);
+    if (!hub)
+      throw new Error(`local hub for iModel ${iModelId} not created`);
+    return hub;
+  }
+
+  /** create a LocalHub for an iModel.
+   *  - contextId - the Guid of the context to mock
+   *  - iModelId - the Guid of the iModel to mock
+   *  - iModelName - the name of the iModel to mock
+   *  - revision0 - the local filename of the revision 0 (aka "seed") .bim file
+   */
+  public static create(arg: LocalHubProps) {
+    if (!this.mockRoot)
+      throw new Error("call startup first");
+
+    const mock = new LocalHub(join(this.mockRoot, arg.iModelId), arg);
+    this.hubs.set(arg.iModelId, mock);
+  }
+
+  public static destroy(imodelId: GuidString) {
+    const hub = this.findLocalHub(imodelId);
+    hub.cleanup();
+    this.hubs.delete(imodelId);
   }
 
   public static async getChangesetIdFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<string> {
@@ -161,44 +199,5 @@ export class HubMock {
     return this.destroy(arg.iModelId);
   }
 
-  public static shutdown() {
-    if (!this.isValid)
-      return;
-
-    for (const hub of this.hubs)
-      hub[1].cleanup();
-
-    IModelJsFs.purgeDirSync(this.mockRoot!);
-    sinon.restore();
-    IModelHost.hubAccess = this._saveHubAccess;
-    this.mockRoot = undefined;
-  }
-
-  public static findLocalHub(iModelId: GuidString): LocalHub {
-    const hub = this.hubs.get(iModelId);
-    if (!hub)
-      throw new Error(`local hub for iModel ${iModelId} not created`);
-    return hub;
-  }
-
-  /** create a LocalHub for an iModel.
-   *  - contextId - the Guid of the context to mock
-   *  - iModelId - the Guid of the iModel to mock
-   *  - iModelName - the name of the iModel to mock
-   *  - revision0 - the local filename of the revision 0 (aka "seed") .bim file
-   */
-  public static create(arg: LocalHubProps) {
-    if (!this.mockRoot)
-      throw new Error("call startup first");
-
-    const mock = new LocalHub(join(this.mockRoot, arg.iModelId), arg);
-    this.hubs.set(arg.iModelId, mock);
-  }
-
-  public static destroy(imodelId: GuidString) {
-    const hub = this.findLocalHub(imodelId);
-    hub.cleanup();
-    this.hubs.delete(imodelId);
-  }
 }
 
