@@ -83,6 +83,7 @@ describe("IModelWriteTest (#integration)", () => {
     try {
       await HubUtility.deleteIModel(managerRequestContext, "iModelJsIntegrationTest", readWriteTestIModelName);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.log(err);
     }
   });
