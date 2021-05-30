@@ -2198,19 +2198,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   private static async lockSchema(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, briefcaseId: number): Promise<void> {
-    requestContext.enter();
-    const lock = new Lock();
-    lock.briefcaseId = briefcaseId;
-    lock.lockLevel = LockLevel.Exclusive;
-    lock.lockType = LockType.Schemas;
-    lock.objectId = "0x1";
-    lock.releasedWithChangeSet = changeSetId;
-    lock.seedFileId = iModelId;
-
-    Logger.logTrace(loggerCategory, `lockSchema`);
-    const res = await IModelHubAccess.iModelClient.locks.update(requestContext, iModelId, [lock]);
-    if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive)
-      throw new IModelError(IModelStatus.UpgradeFailed, `Could not acquire schema lock: ${iModelId}, ${changeSetId}, ${briefcaseId}`);
+    await IModelHost.hubAccess.acquireLocks({ requestContext, briefcase: { iModelId, briefcaseId, changeSetId }, locks: [ConcurrencyControl.Request.schemaLock] });
   }
 
   /**

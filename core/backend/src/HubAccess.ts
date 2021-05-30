@@ -65,7 +65,11 @@ export interface IModelNameArg {
 
 export interface BriefcaseDbArg {
   requestContext?: AuthorizedClientRequestContext;
-  briefcase: BriefcaseDb;
+  briefcase: {
+    briefcaseId: number;
+    iModelId: GuidString;
+    changeSetId: ChangesetId;
+  };
 }
 
 export interface BriefcaseIdArg extends IModelIdArg {
