@@ -6,9 +6,6 @@ parameters:
     default: $(System.DefaultWorkingDirectory)
 
 steps:
-  - script: node common/scripts/install-run-rush.js check
-    displayName: rush check
-    workingDirectory: ${{ parameters.workingDir }}
   - task: PythonScript@0
     displayName: "rush change -v"
     inputs:
