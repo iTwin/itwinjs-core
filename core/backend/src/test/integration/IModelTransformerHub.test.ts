@@ -28,7 +28,7 @@ describe("IModelTransformerHub (#integration)", () => {
   const requestContext = new AuthorizedClientRequestContext(fakeAccess);
   const projectId = Guid.createValue();
 
-  before(async () => {
+  before(() => {
 
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
@@ -48,6 +48,8 @@ describe("IModelTransformerHub (#integration)", () => {
       Logger.setLevel(NativeLoggerCategory.Changeset, LogLevel.Trace);
     }
   });
+  after(() => HubMock.shutdown());
+
 
   it("Transform source iModel to target iModel", async () => {
     // Create and push seed of source IModel

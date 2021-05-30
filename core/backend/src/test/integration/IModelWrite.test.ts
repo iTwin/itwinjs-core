@@ -970,7 +970,7 @@ describe("IModelWriteTest (#integration)", () => {
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: managerRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
-      let rowCount: number = 0;
+      let rowCount = 0;
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         rowCount++;
         assert.equal(stmt.getColumnCount(), 2);
@@ -980,7 +980,7 @@ describe("IModelWriteTest (#integration)", () => {
         assert.isFalse(nameVal.isNull);
         const name: string = nameVal.getString();
 
-        const versionVal: SqliteValue = stmt.getValue(1);
+        const versionVal = stmt.getValue(1);
         assert.equal(versionVal.columnName, "StrData");
         assert.equal(versionVal.type, SqliteValueType.String);
         assert.isFalse(versionVal.isNull);

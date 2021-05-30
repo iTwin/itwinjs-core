@@ -230,7 +230,6 @@ export class CheckpointManager {
       // first see if there's a V2 checkpoint available.
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
       Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeSetId}`);
-      console.log(`Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeSetId}`);
       return changesetId;
     } catch (error) {
       if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint

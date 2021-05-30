@@ -18,8 +18,9 @@ import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { LocalHub, LocalHubProps } from "./LocalHub";
+import { IModelHubAccess } from "../IModelHubAccess";
 
-/** Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changeset. */
+/** Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc. */
 export class HubMock {
   private static mockRoot: LocalDirName | undefined;
   private static hubs = new Map<string, LocalHub>();
@@ -33,13 +34,18 @@ export class HubMock {
     this._saveHubAccess = IModelHost.hubAccess;
     IModelHost.hubAccess = this;
 
-    sinon.stub(IModelVersion, "getLatestChangeSetId").callsFake(async (_1, _2, iModelId: GuidString): Promise<GuidString> => {
-      return this.findLocalHub(iModelId).getLatestChangesetId();
+    sinon.stub(IModelVersion, "getLatestChangeSetId").callsFake(async (): Promise<GuidString> => {
+      throw new Error("this method is deprecated and cannot be used while IModelHub is mocked - use IModelHost.hubaccess.getChangesetIdFromVersion");
     });
 
-    sinon.stub(IModelVersion, "getChangeSetFromNamedVersion").callsFake(async (_1, _2, iModelId: GuidString, versionName: string): Promise<GuidString> => {
-      return this.findLocalHub(iModelId).findNamedVersion(versionName);
+    sinon.stub(IModelVersion, "getChangeSetFromNamedVersion").callsFake(async (): Promise<GuidString> => {
+      throw new Error("this method is deprecated and cannot be used while IModelHub is mocked - use IModelHost.hubaccess.getChangesetIdFromVersion");
     });
+
+    sinon.stub(IModelHubAccess, "iModelClient").get(() => {
+      throw new Error("IModelHubAccess is mocked for this test - use only IModelHost.hubaccess functions");
+    });
+
   }
   public static shutdown() {
     if (!this.isValid)
