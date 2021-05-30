@@ -87,8 +87,6 @@
     "ElevationTypeGround": "Ground",
     "Exaggeration": "Exaggeration",
     "HeightOrigin": "Height Origin",
-    "InvalidElevationError": "Invalid Elevation",
-    "InvalidElevationDetails": "Please enter a valid number for elevation.",
     "Mask": "Mask by Models",
     "ModelHeight": "Model Height (m)",
     "Settings": "Settings",
