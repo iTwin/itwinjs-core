@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-common",
-  "version": "2.17.0-dev.20",
+  "version": "2.17.0-dev.21",
   "description": "Common pieces for iModel.js presentation packages",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
@@ -43,16 +43,16 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.17.0-dev.20",
-    "@bentley/imodeljs-common": "^2.17.0-dev.20",
-    "@bentley/imodeljs-quantity": "^2.17.0-dev.20"
+    "@bentley/bentleyjs-core": "^2.17.0-dev.21",
+    "@bentley/imodeljs-common": "^2.17.0-dev.21",
+    "@bentley/imodeljs-quantity": "^2.17.0-dev.21"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.17.0-dev.20",
-    "@bentley/build-tools": "2.17.0-dev.20",
-    "@bentley/eslint-plugin": "2.17.0-dev.20",
-    "@bentley/imodeljs-common": "2.17.0-dev.20",
-    "@bentley/imodeljs-quantity": "2.17.0-dev.20",
+    "@bentley/bentleyjs-core": "2.17.0-dev.21",
+    "@bentley/build-tools": "2.17.0-dev.21",
+    "@bentley/eslint-plugin": "2.17.0-dev.21",
+    "@bentley/imodeljs-common": "2.17.0-dev.21",
+    "@bentley/imodeljs-quantity": "2.17.0-dev.21",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
