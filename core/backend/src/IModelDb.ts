@@ -839,7 +839,7 @@ export abstract class IModelDb extends IModel {
   public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
     const iModelDb = this.tryFindByKey(iModel.key);
     if (undefined === iModelDb) {
-      return RpcBriefcaseUtility.open({ requestContext, tokenProps: iModel, syncMode });
+      return RpcBriefcaseUtility.open({ requestContext, tokenProps: iModel, syncMode, timeout: 1000 });
     }
     if (iModelDb.isSnapshotDb() && iModelDb.isV2Checkpoint) {
       await V2CheckpointManager.reattachIfNeeded({ requestContext, expectV2: true, ...iModel } as CheckpointProps); // assume contextId, iModelId and changesetId are always defined
