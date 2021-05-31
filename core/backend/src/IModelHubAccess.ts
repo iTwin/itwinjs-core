@@ -22,6 +22,7 @@ import {
   LockProps,
 } from "./HubAccess";
 import { IModelHost } from "./IModelHost";
+import { IModelJsFs } from "./IModelJsFs";
 
 /** @internal */
 export class IModelHubAccess {
@@ -90,10 +91,15 @@ export class IModelHubAccess {
   }
 
   public static async deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void> {
+    const dirName = BriefcaseManager.getIModelPath(arg.iModelId);
+    if (IModelJsFs.existsSync(dirName)) {
+      IModelJsFs.purgeDirSync(dirName);
+      IModelJsFs.rmdirSync(dirName);
+    }
     return this.iModelClient.iModels.delete(await this.getRequestContext(arg), arg.contextId, arg.iModelId);
   }
+
   public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {
-    const requestContext = await this.getRequestContext(arg);
     const iModels = await this.iModelClient.iModels.get(await this.getRequestContext(arg), arg.contextId, new IModelQuery().byName(arg.iModelName));
     return iModels.length === 0 ? undefined : iModels[0].id!;
   }

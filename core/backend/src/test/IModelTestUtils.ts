@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
 import {
-  BeEvent, BentleyLoggerCategory, ChangeSetStatus, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
+  BeEvent, BentleyLoggerCategory, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
@@ -13,7 +13,7 @@ import {
   RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext, ITwinClientLoggerCategory, UserInfo } from "@bentley/itwin-client";
 import * as path from "path";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
@@ -30,6 +30,8 @@ import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { HubMock } from "./HubMock";
+import { TestUserCredentials, TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 
 const assert = chai.assert;
 chai.use(chaiAsPromised);
@@ -113,7 +115,58 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
   public static onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
 }
 
+export enum TestUserId {
+  Regular,
+  Manager,
+  Super,
+  SuperManager
+}
+
 export class IModelTestUtils {
+  private static regularInfo = { id: Guid.createValue(), profile: { firstName: "regular", lastName: "user", name: "Regular User" }, email: { id: "regular.user@test.org" } };
+  private static managerInfo = { id: Guid.createValue(), profile: { firstName: "manager", lastName: "user", name: "Manager User" }, email: { id: "manager.user@utest.org" } };
+  private static superInfo = { id: Guid.createValue(), profile: { firstName: "super", lastName: "user", name: "Super User" }, email: { id: "super.user@utest.org" } };
+  private static superManagerInfo = { id: Guid.createValue(), profile: { firstName: "superManager", lastName: "user", name: "SuperManager User" }, email: { id: "super.manager@utest.org" } };
+
+  public static async getUserContext(user: TestUserId) {
+    if (HubMock.isValid) {
+      let info: UserInfo;
+      switch (user) {
+        case TestUserId.Regular:
+          info = this.regularInfo;
+          break;
+        case TestUserId.Manager:
+          info = this.managerInfo;
+          break;
+        case TestUserId.Super:
+          info = this.superInfo;
+          break;
+
+        case TestUserId.SuperManager:
+          info = this.superManagerInfo;
+          break;
+      }
+      return new AuthorizedClientRequestContext(AccessToken.fromJson({ tokenString: "bogus", userInfo: info }));
+    }
+
+    let credentials: TestUserCredentials;
+    switch (user) {
+      case TestUserId.Regular:
+        credentials = TestUsers.regular;
+        break;
+      case TestUserId.Manager:
+        credentials = TestUsers.manager;
+        break;
+      case TestUserId.Super:
+        credentials = TestUsers.super;
+        break;
+      case TestUserId.SuperManager:
+        credentials = TestUsers.superManager;
+        break;
+    }
+    return TestUtility.getAuthorizedClientRequestContext(credentials);
+  }
+
   /** Helper to open a briefcase db directly with the BriefcaseManager API */
   public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
     const props = await BriefcaseManager.downloadBriefcase(args.requestContext, args);

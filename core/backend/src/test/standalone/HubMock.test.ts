@@ -17,10 +17,9 @@ import { ChangesetFileProps } from "../../HubAccess";
 import { IModelHost } from "../../IModelHost";
 
 describe.only("HubMock", () => {
-  const mockRoot = join(KnownTestLocations.outputDir, "HubMockTest");
-  const tmpDir = join(mockRoot, "temp");
+  const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
 
-  before(() => HubMock.startup(mockRoot));
+  before(() => HubMock.startup("HubMockTest"));
   after(() => HubMock.shutdown());
 
   it("should be able to create HubMock", async () => {

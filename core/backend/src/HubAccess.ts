@@ -11,7 +11,6 @@ import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { DownloadRequest } from "./CheckpointManager";
-import { BriefcaseDb } from "./IModelDb";
 
 export type LocalFileName = string;
 export type LocalDirName = string;

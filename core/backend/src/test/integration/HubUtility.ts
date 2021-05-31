@@ -9,17 +9,17 @@ import {
 } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, HubIModel, IModelBaseHandler, IModelHubClient,
-  IModelQuery, InitializationState, Version, VersionQuery,
+  Briefcase, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, HubIModel, IModelBaseHandler, IModelHubClient, IModelQuery,
+  InitializationState, Version, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
-import { IModelHubAccess } from "../../IModelHubAccess";
-import { IModelHost } from "../../IModelHost";
-import { IModelJsFs } from "../../IModelJsFs";
 import { ChangesetFileProps, ChangesetId, ChangesetProps } from "../../HubAccess";
 import { IModelDb } from "../../IModelDb";
+import { IModelHost } from "../../IModelHost";
+import { IModelHubAccess } from "../../IModelHubAccess";
+import { IModelJsFs } from "../../IModelJsFs";
 
 /** DTO to work with iModelHub DeleteChangeSet API */
 @ECJsonTypeMap.classToJson("wsg", "iModelActions.DeleteChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -51,10 +51,10 @@ export class HubUtility {
     readWrite: "ReadWriteTest",
   };
 
-  private static contextId: GuidString | undefined = undefined;
+  public static contextId: GuidString | undefined = undefined;
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
   public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
-    requestContext.enter();
+
     if (undefined !== HubUtility.contextId)
       return HubUtility.contextId;
     return HubUtility.queryProjectIdByName(requestContext, HubUtility.testContextName);
@@ -77,12 +77,15 @@ export class HubUtility {
     return imodelId;
   }
 
-  private static async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
+  private static async queryContextByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string | undefined> {
+    if (undefined !== HubUtility.contextId)
+      return HubUtility.contextId;
+
     const project = await getIModelProjectAbstraction().queryProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });
-    return project;
+    return project.wsgId;
   }
 
   public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString | undefined> {
@@ -103,10 +106,10 @@ export class HubUtility {
    * @throws If the project is not found, or there is more than one project with the supplied name
    */
   public static async queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
-    const project = await HubUtility.queryProjectByName(requestContext, projectName);
+    const project = await HubUtility.queryContextByName(requestContext, projectName);
     if (!project)
       throw new Error(`Project ${projectName} not found`);
-    return project.wsgId;
+    return project;
   }
 
   /**
@@ -471,14 +474,14 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcasesById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
-    const briefcases = await IModelHubAccess.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
+    const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
     if (briefcases.length > acquireThreshold) {
       if (undefined !== onReachThreshold)
         onReachThreshold();
 
-      const promises = new Array<Promise<void>>();
-      briefcases.forEach((briefcase) => {
-        promises.push(IModelHubAccess.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
+      const promises: Promise<void>[] = [];
+      briefcases.forEach((briefcaseId) => {
+        promises.push(IModelHost.hubAccess.releaseBriefcase({ requestContext, iModelId, briefcaseId }));
       });
       await Promise.all(promises);
     }

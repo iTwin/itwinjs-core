@@ -19,6 +19,8 @@ import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { LocalHub, LocalHubProps } from "./LocalHub";
 import { IModelHubAccess } from "../IModelHubAccess";
+import { HubUtility } from "./integration/HubUtility";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 /** Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc. */
 export class HubMock {
@@ -27,12 +29,14 @@ export class HubMock {
   private static _saveHubAccess: HubAccess;
 
   public static get isValid() { return undefined !== this.mockRoot; }
-  public static startup(mockRoot: LocalDirName) {
-    this.mockRoot = mockRoot;
-    IModelJsFs.recursiveMkDirSync(mockRoot);
-    IModelJsFs.purgeDirSync(mockRoot);
+  public static startup(mockName: LocalDirName) {
+    this.mockRoot = join(KnownTestLocations.outputDir, "HubMock", mockName);
+
+    IModelJsFs.recursiveMkDirSync(this.mockRoot);
+    IModelJsFs.purgeDirSync(this.mockRoot);
     this._saveHubAccess = IModelHost.hubAccess;
     IModelHost.hubAccess = this;
+    HubUtility.contextId = Guid.createValue();
 
     sinon.stub(IModelVersion, "getLatestChangeSetId").callsFake(async (): Promise<GuidString> => {
       throw new Error("this method is deprecated and cannot be used while IModelHub is mocked - use IModelHost.hubaccess.getChangesetIdFromVersion");
@@ -51,10 +55,12 @@ export class HubMock {
     if (!this.isValid)
       return;
 
+    HubUtility.contextId = undefined;
     for (const hub of this.hubs)
       hub[1].cleanup();
 
     IModelJsFs.purgeDirSync(this.mockRoot!);
+    IModelJsFs.removeSync(this.mockRoot!);
     sinon.restore();
     IModelHost.hubAccess = this._saveHubAccess;
     this.mockRoot = undefined;

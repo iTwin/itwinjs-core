@@ -6,37 +6,33 @@
 import { assert } from "chai";
 import { join } from "path";
 import * as semver from "semver";
-import { DbResult, Guid, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ChangesType } from "@bentley/imodelhub-client";
 import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   BackendLoggerCategory, BisCoreSchema, BriefcaseDb, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect,
   GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, NativeLoggerCategory, PhysicalModel,
   PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, TestUserId } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
-  const fakeAccess = AccessToken.fromJson({ tokenString: "bogus", userInfo: { id: "bu1", profile: { firstName: "bogus", lastName: "user", name: "bogus user" } } });
-  const requestContext = new AuthorizedClientRequestContext(fakeAccess);
-  const projectId = Guid.createValue();
+  let projectId: GuidString;
+  let requestContext: AuthorizedClientRequestContext;
 
-  before(() => {
+  before(async () => {
+    HubMock.startup("IModelTransformerHub");
+    IModelJsFs.recursiveMkDirSync(outputDir);
 
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
-
-    if (!IModelJsFs.existsSync(outputDir))
-      IModelJsFs.mkdirSync(outputDir);
-
-    HubMock.startup(join(outputDir, "HubMock"));
+    requestContext = await IModelTestUtils.getUserContext(TestUserId.Regular);
+    projectId = HubUtility.contextId!;
 
     // initialize logging
     if (false) {
@@ -49,7 +45,6 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
   after(() => HubMock.shutdown());
-
 
   it("Transform source iModel to target iModel", async () => {
     // Create and push seed of source IModel

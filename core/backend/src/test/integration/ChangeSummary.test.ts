@@ -7,14 +7,13 @@ import { DbResult, GuidString, Id64, Id64String, Logger, LogLevel, PerfLogger } 
 import {
   ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelVersion, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement,
   ElementOwnsChildElements, IModelHost, IModelJsFs, SpatialCategory,
 } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, TestUserId } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
@@ -78,7 +77,7 @@ describe("ChangeSummary (#integration)", () => {
     Logger.setLevel("DgnCore", LogLevel.Error);
     Logger.setLevel("BeSQLite", LogLevel.Error);
 
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await IModelTestUtils.getUserContext(TestUserId.Regular);
 
     testContextId = await HubUtility.getTestContextId(requestContext);
     requestContext.enter();
@@ -93,7 +92,7 @@ describe("ChangeSummary (#integration)", () => {
     requestContext.enter();
 
     // Purge briefcases that are close to reaching the acquire limit
-    const managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
+    const managerRequestContext = await IModelTestUtils.getUserContext(TestUserId.Manager);
     managerRequestContext.enter();
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, readOnlyTestIModelId);
     managerRequestContext.enter();
@@ -387,7 +386,7 @@ describe("ChangeSummary (#integration)", () => {
     const iModelName = HubUtility.generateUniqueName("ParentElementChangeTest");
 
     // Recreate iModel
-    const managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
+    const managerRequestContext = await IModelTestUtils.getUserContext(TestUserId.Manager);
     const projectId = await HubUtility.getTestContextId(managerRequestContext);
     const iModelId = await HubUtility.recreateIModel(managerRequestContext, projectId, iModelName);
 
@@ -465,8 +464,8 @@ describe("ChangeSummary (#integration)", () => {
   });
 
   it.skip("should be able to extract the last change summary right after applying a change set", async () => {
-    const userContext1 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    const userContext2 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
+    const userContext1 = await IModelTestUtils.getUserContext(TestUserId.Manager);
+    const userContext2 = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
 
     // User1 creates an iModel (on the Hub)
     const testUtility = new TestChangeSetUtility(userContext1, "ChangeSummaryTest");

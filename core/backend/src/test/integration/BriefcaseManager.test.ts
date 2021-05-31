@@ -11,13 +11,14 @@ import { BriefcaseStatus, Config, GuidString, IModelStatus, OpenMode, StopWatch 
 import { ChangesType } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
+import { IModelHubAccess } from "../../IModelHubAccess";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, TestUserId } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
-import { IModelHubAccess } from "../../IModelHubAccess";
+import { TestUtility } from "@bentley/oidc-signin-tool";
+import { HubMock } from "../HubMock";
 
 // Configuration needed:
 //    imjs_test_regular_user_name
@@ -56,7 +57,7 @@ describe("BriefcaseManager (#integration)", () => {
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
 
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await IModelTestUtils.getUserContext(TestUserId.Regular);
     requestContext.enter();
 
     testContextId = await HubUtility.getTestContextId(requestContext);
@@ -79,7 +80,7 @@ describe("BriefcaseManager (#integration)", () => {
     await HubUtility.purgeAcquiredBriefcasesById(requestContext, await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium));
     requestContext.enter();
 
-    managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
+    managerRequestContext = await IModelTestUtils.getUserContext(TestUserId.Manager);
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, readOnlyTestIModelId);
     requestContext.enter();
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, noVersionsTestIModelId);
@@ -421,8 +422,9 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should reuse a briefcaseId when re-opening iModels of different versions for pullAndPush and pullOnly workflows", async () => {
-    const userContext1 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    const userContext2 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
+    HubMock.startup("workflow");
+    const userContext1 = await IModelTestUtils.getUserContext(TestUserId.Manager);
+    const userContext2 = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, HubUtility.generateUniqueName("BriefcaseReuseTest"));
@@ -460,11 +462,13 @@ describe("BriefcaseManager (#integration)", () => {
 
     // Delete iModel from the Hub and disk
     await testUtility.deleteTestIModel();
+    HubMock.shutdown();
   });
 
   it("should not be able to edit PullOnly briefcases", async () => {
-    const userContext1 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager); // User1 is just used to create and update the iModel
-    const userContext2 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // User2 is used for the test
+    HubMock.startup("pullOnly");
+    const userContext1 = await IModelTestUtils.getUserContext(TestUserId.Manager); // User1 is just used to create and update the iModel
+    const userContext2 = await IModelTestUtils.getUserContext(TestUserId.SuperManager); // User2 is used for the test
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, "PullOnlyTest");
@@ -527,11 +531,13 @@ describe("BriefcaseManager (#integration)", () => {
     // Delete iModel from the Hub and disk
     await IModelTestUtils.closeAndDeleteBriefcaseDb(userContext2, iModelPullOnly);
     await testUtility.deleteTestIModel();
+    HubMock.shutdown();
   });
 
   it("should be able to edit a PullAndPush briefcase, reopen it as of a new version, and then push changes", async () => {
-    const userContext1 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager); // User1 is just used to create and update the iModel
-    const userContext2 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // User2 is used for the test
+    HubMock.startup("pullPush");
+    const userContext1 = await IModelTestUtils.getUserContext(TestUserId.Manager); // User1 is just used to create and update the iModel
+    const userContext2 = await IModelTestUtils.getUserContext(TestUserId.SuperManager); // User2 is used for the test
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, "PullAndPushTest");
@@ -593,6 +599,7 @@ describe("BriefcaseManager (#integration)", () => {
     // Delete iModel from the Hub and disk
     await IModelTestUtils.closeAndDeleteBriefcaseDb(userContext2, iModelPullAndPush);
     await testUtility.deleteTestIModel();
+    HubMock.shutdown();
   });
 
   it("should be able to show progress when downloading a briefcase (#integration)", async () => {
@@ -727,3 +734,6 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.deleteTestIModel();
   });
 });
+
+describe("BriefcaseManager - HubMocked (#integration)", () => {
+}); t
