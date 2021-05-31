@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, DbResult, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
+import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelHost } from "../../imodeljs-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { BlobDaemon } from "@bentley/imodeljs-native";
 
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
@@ -149,4 +150,57 @@ describe("Checkpoint Manager", () => {
     assert.isUndefined(db);
   });
 
+});
+
+describe("V2 Checkpoint Manager", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  describe("reattachIfNeeded", () => {
+    afterEach(() => {
+      (V2CheckpointManager as any).reattachDueTimestamps = {};
+    });
+
+    it("should reattach if SAS key is almost expired", async () => {
+      const clock = sinon.useFakeTimers();
+      clock.setSystemTime(Date.parse("2021-01-01T00:00:00Z"));
+      sinon.stub(V2CheckpointManager as any, "getCommandArgs").resolves({ daemonDir: "fakeDir", auth: "testUrl?a=1&se=2021-01-01T01:00:00Z&b=2" });
+      sinon.stub(BlobDaemon, "command").resolves({ result: DbResult.BE_SQLITE_OK, errMsg: "" });
+      sinon.stub(CheckpointManager, "getKey").returns("fakeKey");
+      sinon.stub(BlobDaemon, "getDbFileName").returns("fakeFileName");
+
+      const attachResult = await V2CheckpointManager.attach({} as any);
+
+      assert.equal(attachResult, "fakeFileName");
+
+      const attachStub = sinon.stub(V2CheckpointManager, "attach");
+      clock.setSystemTime(Date.parse("2021-01-01T00:30:01Z")); // 1 second past half the expiry time
+
+      await V2CheckpointManager.reattachIfNeeded("fakeCheckpointProps" as any);
+
+      expect(attachStub.getCalls().length).to.equal(1);
+      expect(attachStub.firstCall.firstArg).to.equal("fakeCheckpointProps");
+    });
+
+    it("should not reattach if SAS key is fresh", async () => {
+      const clock = sinon.useFakeTimers();
+      clock.setSystemTime(Date.parse("2021-01-01T00:00:00Z"));
+      sinon.stub(V2CheckpointManager as any, "getCommandArgs").resolves({ daemonDir: "fakeDir", auth: "testUrl?a=1&se=2021-01-01T01:00:00Z&b=2" });
+      sinon.stub(BlobDaemon, "command").resolves({ result: DbResult.BE_SQLITE_OK, errMsg: "" });
+      sinon.stub(CheckpointManager, "getKey").returns("fakeKey");
+      sinon.stub(BlobDaemon, "getDbFileName").returns("fakeFileName");
+
+      const attachResult = await V2CheckpointManager.attach({} as any);
+
+      assert.equal(attachResult, "fakeFileName");
+
+      const attachStub = sinon.stub(V2CheckpointManager, "attach");
+      clock.setSystemTime(Date.parse("2021-01-01T00:29:59Z")); // 1 second before half the expiry time
+
+      await V2CheckpointManager.reattachIfNeeded("fakeCheckpointProps" as any);
+
+      expect(attachStub.getCalls()).to.be.empty;
+    });
+  });
 });
