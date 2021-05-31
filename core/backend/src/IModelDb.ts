@@ -23,6 +23,7 @@ import {
   IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
   SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
+  SyncMode,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -45,6 +46,7 @@ import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
+import { RpcBriefcaseUtility } from "./rpc-impl/RpcBriefcaseUtility";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
@@ -834,10 +836,10 @@ export abstract class IModelDb extends IModel {
     return undefined;
   }
 
-  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps): Promise<IModelDb> {
+  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
     const iModelDb = this.tryFindByKey(iModel.key);
     if (undefined === iModelDb) {
-      return this.findByKey((await new IModelReadRpcImpl().openForRead(iModel)).key);
+      return RpcBriefcaseUtility.open({ requestContext, tokenProps: iModel, syncMode });
     }
     if (iModelDb.isSnapshotDb() && iModelDb.isV2Checkpoint) {
       await V2CheckpointManager.reattachIfNeeded({ requestContext, expectV2: true, ...iModel } as CheckpointProps); // assume contextId, iModelId and changesetId are always defined
@@ -2158,8 +2160,8 @@ export class BriefcaseDb extends IModelDb {
    */
   public static readonly onOpened = new BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
 
-  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps): Promise<BriefcaseDb> {
-    return await super.findOrOpen(requestContext, iModel) as BriefcaseDb;
+  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<BriefcaseDb> {
+    return await super.findOrOpen(requestContext, iModel, syncMode) as BriefcaseDb;
   }
 
   public static findByKey(key: string): BriefcaseDb {
@@ -2454,8 +2456,8 @@ export class SnapshotDb extends IModelDb {
     this._isV2Checkpoint = false;
   }
 
-  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps): Promise<SnapshotDb> {
-    return await super.findOrOpen(requestContext, iModel) as SnapshotDb;
+  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<SnapshotDb> {
+    return await super.findOrOpen(requestContext, iModel, syncMode) as SnapshotDb;
   }
 
   public static findByKey(key: string): SnapshotDb {
@@ -2636,8 +2638,8 @@ export class StandaloneDb extends IModelDb {
    */
   public get filePath(): string { return this.pathName; }
 
-  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps): Promise<StandaloneDb> {
-    return await super.findOrOpen(requestContext, iModel) as StandaloneDb;
+  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<StandaloneDb> {
+    return await super.findOrOpen(requestContext, iModel, syncMode) as StandaloneDb;
   }
 
   public static findByKey(key: string): StandaloneDb {
