@@ -294,7 +294,7 @@ interface ToolEvent {
   vp?: ScreenViewport; // Viewport is optional - keyboard events aren't associated with a Viewport.
 }
 
-/** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool.
+/** Controls the operation of [[Tool]]s, administering the current [[ViewTool]], [[PrimitiveTool]], and [[IdleTool]] and forwarding events to the appropriate tool.
  * @public
  */
 export class ToolAdmin {
@@ -322,18 +322,26 @@ export class ToolAdmin {
    */
   public readonly activeSettings = new ToolAdmin.ActiveSettings();
 
-  /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select".
-   * @see [[startDefaultTool]]
-   * @internal
+  /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select", referring to [[SelectionTool]].
+   * @see [[startDefaultTool]] to activate the default tool.
+   * @see [[defaultToolArgs]] to supply arguments when starting the tool.
    */
-  public get defaultToolId(): string { return this._defaultToolId; }
-  public set defaultToolId(toolId: string) { this._defaultToolId = toolId; }
-  /** Return the default arguments to pass in when starting the default tool, if any.
-   * @see [[startDefaultTool]]
-   * @internal
+  public get defaultToolId(): string {
+    return this._defaultToolId;
+  }
+  public set defaultToolId(toolId: string) {
+    this._defaultToolId = toolId;
+  }
+
+  /** The arguments supplied to the default [[Tool]]'s [[Tool.run]] method from [[startDefaultTool]].
+   * @see [[defaultToolId]] to configure the default tool.
    */
-  public get defaultToolArgs(): any[] | undefined { return this._defaultToolArgs; }
-  public set defaultToolArgs(args: any[] | undefined) { this._defaultToolArgs = args; }
+  public get defaultToolArgs(): any[] | undefined {
+    return this._defaultToolArgs;
+  }
+  public set defaultToolArgs(args: any[] | undefined) {
+    this._defaultToolArgs = args;
+  }
 
   /** Apply operations such as transform, copy or delete to all members of an assembly. */
   public assemblyLock = false;
@@ -344,28 +352,26 @@ export class ToolAdmin {
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
 
-  /** Options for how uncaught exceptions should be handled.
-   * @beta
-   */
+  /** Options for how uncaught exceptions should be handled by [[ToolAdmin.exceptionHandler]]. */
   public static exceptionOptions = {
-    /** log exception to Logger */
+    /** Log exception to Logger. */
     log: true,
-    /** Show an alert box explaining that a problem happened */
+    /** Show an alert box explaining that a problem happened. */
     alertBox: true,
-    /** include the "gory details" (e.g. stack trace) */
+    /** Include the "gory details" (e.g. stack trace) in the alert box. */
     details: true,
     /** break into debugger (only works if debugger is already opened) */
     launchDebugger: true,
   };
 
-  /** A function that catches exceptions occurring inside ToolAdmin.eventLoop.
-   * @note If you wish to entirely replace this method, you can just assign to your own function, e.g.:
+  /** A function that catches otherwise-uncaught exceptions occurring inside ToolAdmin.eventLoop.
+   * To customize the behavior of this function, modify [[ToolAdmin.exceptionOptions]].
+   * To replace it within your own handler, simply assign to it, e.g.:
    * ```ts
    * ToolAdmin.exceptionHandler = (exception: any): Promise<any> => {
    *  ... your implementation here
    * }
    * ```
-   * @beta
    */
   public static async exceptionHandler(exception: any): Promise<any> {
     const opts = ToolAdmin.exceptionOptions;
@@ -455,6 +461,7 @@ export class ToolAdmin {
 
   /** @internal */
   public onShutDown() {
+    this.clearMotionPromises();
     this._idleTool = undefined;
     IconSprites.emptyAll(); // clear cache of icon sprites
     ToolAdmin._removals.forEach((remove) => remove());
@@ -468,6 +475,9 @@ export class ToolAdmin {
    * @internal
    */
   public forgetViewport(vp: ScreenViewport): void {
+    // Ignore pending motion promises on fulfillment.
+    this.clearMotionPromises();
+
     // make sure tools don't think the cursor is still in this viewport.
     this.onMouseLeave(vp);
 
@@ -778,6 +788,7 @@ export class ToolAdmin {
 
   /** The idleTool handles events that are not otherwise processed. */
   public get idleTool(): IdleTool { return this._idleTool!; }
+  public set idleTool(idleTool: IdleTool) { this._idleTool = idleTool; }
 
   /** Return true to filter (ignore) events to the given viewport */
   protected filterViewport(vp: ScreenViewport) {
@@ -845,7 +856,7 @@ export class ToolAdmin {
 
   /** @internal */
   public updateDynamics(ev?: BeButtonEvent, useLastData?: boolean, adjustPoint?: boolean): void {
-    if (!IModelApp.viewManager.inDynamicsMode || undefined === this.activeTool)
+    if (undefined === this.activeTool)
       return;
 
     if (undefined === ev) {
@@ -863,9 +874,28 @@ export class ToolAdmin {
     if (undefined === ev.viewport)
       return;
 
-    const context = new DynamicsContext(ev.viewport);
-    this.activeTool.onDynamicFrame(ev, context);
-    context.changeDynamics();
+    // Support tools requesting async information in onMouseMotion for use in decorate or onDynamicFrame...
+    const toolPromise = this._toolMotionPromise = this.activeTool.onMouseMotion(ev);
+    const tool = this.activeTool;
+    const vp = ev.viewport;
+    const motion = ev;
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    toolPromise.then(() => {
+      if (toolPromise !== this._toolMotionPromise)
+        return;
+
+      // Update decorations when dynamics are inactive...
+      if (!IModelApp.viewManager.inDynamicsMode) {
+        vp.invalidateDecorations();
+        return;
+      }
+
+      // Update dynamics and decorations only after motion...
+      const context = new DynamicsContext(vp);
+      tool.onDynamicFrame(motion, context);
+      context.changeDynamics();
+    });
   }
 
   public async sendEndDragEvent(ev: BeButtonEvent): Promise<any> {
@@ -905,6 +935,34 @@ export class ToolAdmin {
     return decoration;
   }
 
+  /** Current request for locate/snap */
+  private _snapMotionPromise?: Promise<boolean>;
+  /** Current request for active tool motion event */
+  private _toolMotionPromise?: Promise<void>;
+
+  private clearMotionPromises(): void {
+    this._snapMotionPromise = this._toolMotionPromise = undefined;
+  }
+
+  private async onMotionSnap(ev: BeButtonEvent): Promise<boolean> {
+    try {
+      await IModelApp.accuSnap.onMotion(ev);
+      return true;
+    } catch (error) {
+      if (error instanceof AbandonedError)
+        return false; // expected, not a problem. Just ignore this motion and return.
+      throw error; // unknown error
+    }
+  }
+
+  private async onStartDrag(ev: BeButtonEvent, tool?: InteractiveTool): Promise<EventHandled> {
+    if (undefined !== tool && EventHandled.Yes === await tool.onMouseStartDrag(ev))
+      return EventHandled.Yes;
+
+    // Pass start drag event to idle tool if active tool doesn't explicitly handle it
+    return this.idleTool.onMouseStartDrag(ev);
+  }
+
   private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false, movement?: XAndY): Promise<any> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
@@ -922,44 +980,41 @@ export class ToolAdmin {
     if (undefined !== overlayHit) {
       if (overlayHit.onMouseMove)
         overlayHit.onMouseMove(ev);
-      return;   // we're inside a pickable decoration, don't send event to tool
+      return; // we're inside a pickable decoration, don't send event to tool
     }
 
-    try {
-      await IModelApp.accuSnap.onMotion(ev); // wait for AccuSnap before calling fromButton
-    } catch (error) {
-      if (error instanceof AbandonedError) return; // expected, not a problem. Just ignore this motion and return.
-      throw error; // unknown error
-    }
+    const snapPromise = this._snapMotionPromise = this.onMotionSnap(ev);
 
-    current.fromButton(vp, pt2d, inputSource, true);
-    current.toEvent(ev, true);
-    ev.movement = movement;
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    snapPromise.then((snapOk) => {
+      if (!snapOk || snapPromise !== this._snapMotionPromise)
+        return;
 
-    IModelApp.accuDraw.onMotion(ev);
+      // Update event to account for AccuSnap adjustments...
+      current.fromButton(vp, pt2d, inputSource, true);
+      current.toEvent(ev, true);
+      ev.movement = movement;
 
-    const tool = this.activeTool;
-    const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
-    this.setIncompatibleViewportCursor(isValidLocation);
+      IModelApp.accuDraw.onMotion(ev);
 
-    if (forceStartDrag || current.isStartDrag(ev.button)) {
-      current.onStartDrag(ev.button);
-      current.changeButtonToDownPoint(ev);
-      ev.isDragging = true;
+      const tool = this.activeTool;
+      const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
+      this.setIncompatibleViewportCursor(isValidLocation);
 
-      if (undefined !== tool && isValidLocation)
-        tool.receivedDownEvent = true;
+      if (forceStartDrag || current.isStartDrag(ev.button)) {
+        current.onStartDrag(ev.button);
+        current.changeButtonToDownPoint(ev);
+        ev.isDragging = true;
 
-      // Pass start drag event to idle tool if active tool doesn't explicitly handle it
-      if (undefined === tool || !isValidLocation || EventHandled.Yes !== await tool.onMouseStartDrag(ev))
-        return this.idleTool.onMouseStartDrag(ev);
-      return;
-    }
+        if (undefined !== tool && isValidLocation)
+          tool.receivedDownEvent = true;
 
-    if (tool) {
-      tool.onMouseMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+        return this.onStartDrag(ev, isValidLocation ? tool : undefined);
+      }
+
       this.updateDynamics(ev);
-    }
+      return;
+    });
 
     if (this.isLocateCircleOn)
       vp.invalidateDecorations();
@@ -1304,13 +1359,18 @@ export class ToolAdmin {
     return true;
   }
 
+  private onActiveToolChanged(tool: Tool, start: StartOrResume): void {
+    this.clearMotionPromises();
+    this.activeToolChanged.raiseEvent(tool, start);
+  }
+
   private onUnsuspendTool() {
     const tool = this.activeTool;
     if (tool === undefined)
       return;
 
     tool.onUnsuspend();
-    this.activeToolChanged.raiseEvent(tool, StartOrResume.Resume);
+    this.onActiveToolChanged(tool, StartOrResume.Resume);
   }
 
   /** @internal */
@@ -1361,7 +1421,7 @@ export class ToolAdmin {
 
     this.setInputCollector(newTool);
     // it is important to raise event after setInputCollector is called
-    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
+    this.onActiveToolChanged(newTool, StartOrResume.Start);
   }
 
   /** @internal */
@@ -1419,7 +1479,7 @@ export class ToolAdmin {
     this.setCursor(IModelApp.viewManager.crossHairCursor);
     this.setViewTool(newTool);
     // it is important to raise event after setViewTool is called
-    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
+    this.onActiveToolChanged(newTool, StartOrResume.Start);
   }
 
   /** @internal */
@@ -1457,7 +1517,7 @@ export class ToolAdmin {
       this.setPrimitiveTool(newTool);
     }
     // it is important to raise event after setPrimitiveTool is called
-    this.activeToolChanged.raiseEvent(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
+    this.onActiveToolChanged(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
   }
 
   /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.
@@ -1525,10 +1585,11 @@ export class ToolAdmin {
   }
 
   /**
-   * Starts the default tool, if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
+   * Starts the default [[Tool]], if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
    * @note The default tool is expected to be a subclass of [[PrimitiveTool]]. A call to startDefaultTool is required to terminate
    * an active [[ViewTool]] or [[InputCollector]] and replace or clear the current [[PrimitiveTool]].
-   * @internal
+   * The tool's [[Tool.run]] method is invoked with arguments specified by [[defaultToolArgs]].
+   * @see [[defaultToolId]] to configure the default tool.
    */
   public startDefaultTool() {
     if (!IModelApp.tools.run(this.defaultToolId, this.defaultToolArgs))
@@ -1659,8 +1720,8 @@ export class ToolAdmin {
   /** Performs default handling of mouse wheel event (zoom in/out) */
   public async processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled> {
     await WheelEventProcessor.process(ev, doUpdate);
-    this.updateDynamics(ev);
     IModelApp.viewManager.invalidateDecorationsAllViews();
+    this.updateDynamics(ev);
     return EventHandled.Yes;
   }
 

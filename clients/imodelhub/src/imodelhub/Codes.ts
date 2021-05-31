@@ -499,8 +499,8 @@ export class CodeHandler {
    * @param codes Codes to update. Requires briefcaseId, state, codeSpecId, codeScope and value to be set on every instance. briefcaseId must be the same for every Code. Set queryOnly to true to just check if a Code can be reserved.
    * @param updateOptions Options for the update request. You can set this to change how conflicts are handled or to handle different amount of Codes per request.
    * @returns The code that was just obtained from the server.
-   * @throws [[ConflictingCodesError]] when [[CodeUpdateOptions.deniedCodes]] is set and conflicts occured. See [Handling Conflicts]($docs/learning/iModelHub/CodesAndLocksConflicts.md) for more information.
-   * @throws [[AggregateResponseError]] when multiple requests where sent and more than 1 of the following errors occured.
+   * @throws [[ConflictingCodesError]] when [[CodeUpdateOptions.deniedCodes]] is set and conflicts occurred. See [Handling Conflicts]($docs/learning/iModelHub/CodesAndLocksConflicts.md) for more information.
+   * @throws [[AggregateResponseError]] when multiple requests where sent and more than 1 of the following errors occurred.
    * @throws [[IModelHubError]] with status indicating a conflict. See [Handling Conflicts]($docs/learning/iModelHub/CodesAndLocksConflicts.md) section for more information.
    * @throws [[IModelHubError]] with [IModelHubStatus.InvalidBriefcase]($bentley) when including Codes with different briefcaseId values in the request.
    * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical Codes in the request.
@@ -589,7 +589,7 @@ export class CodeHandler {
   /** Delete all [Code]($common)s owned by the specified [[Briefcase]].
    * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param briefcaseId Id of the Briefcacase.
+   * @param briefcaseId Id of the Briefcase.
    * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExist]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a Briefcase id yet, or Briefcase with that id was already deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)

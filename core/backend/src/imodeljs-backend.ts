@@ -10,6 +10,7 @@ export * from "./ClassRegistry";
 export * from "./CodeSpecs";
 export * from "./ConcurrencyControl";
 export * from "./Deprecated";
+export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
@@ -115,6 +116,10 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description ECDb
  * Classes for working with ECDb.
+ */
+/**
+ * @docs-group-description SQLiteDb
+ * Classes for working with SQLiteDb.
  */
 /**
  * @docs-group-description NativeApp

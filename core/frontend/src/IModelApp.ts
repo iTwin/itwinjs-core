@@ -92,9 +92,7 @@ export interface IModelAppOptions {
    * @beta
   */
   mapLayerOptions?: MapLayerOptions;
-  /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session.
-   * @beta
-   */
+  /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
   /** If present, supplies the [[NotificationManager]] for this session. */
   notifications?: NotificationManager;
@@ -217,9 +215,7 @@ export class IModelApp {
 
   /** The [[NotificationManager]] for this session. */
   public static get notifications(): NotificationManager { return this._notifications; }
-  /** The [[TileAdmin]] for this session.
-   * @alpha
-   */
+  /** The [[TileAdmin]] for this session. */
   public static get tileAdmin(): TileAdmin { return this._tileAdmin; }
   /** The [[QuantityFormatter]] for this session.
    * @alpha
@@ -300,7 +296,6 @@ export class IModelApp {
    * Obtain WebGL rendering compatibility information for the client system.  This information describes whether the client meets the
    * minimum rendering capabilities.  It also describes whether the system lacks any optional capabilities that could improve quality
    * and/or performance.
-   * @beta
    */
   public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
     if (undefined === System.instance || undefined === System.instance.options.useWebGL2)
@@ -447,6 +442,7 @@ export class IModelApp {
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this._renderSystem = dispose(this._renderSystem);
     this._entityClasses.clear();
+    this.authorizationClient = undefined;
     this._initialized = false;
   }
 

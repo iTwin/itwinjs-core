@@ -85,6 +85,13 @@ export interface CellItem {
 
   /** Style properties for the contents of the cell */
   style?: ItemStyle;
+
+  /**
+   * Property to specify how many cells were merged to create this cell.
+   * Default value is 1.
+   * @alpha
+   */
+  mergedCellsCount?: number;
 }
 
 /**

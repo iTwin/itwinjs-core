@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, DbResult, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb,
-  TxnChangedEntities, TxnManager,
+  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
@@ -21,17 +20,14 @@ describe("TxnManager", () => {
   let testFileName: string;
   const requestContext = new BackendRequestContext();
 
-  const performUpgrade = (pathname: string): DbResult => {
+  const performUpgrade = (pathname: string) => {
     const nativeDb = new IModelHost.platform.DgnDb();
     const upgradeOptions: UpgradeOptions = {
       domain: DomainOptions.Upgrade,
     };
-    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
-    if (DbResult.BE_SQLITE_OK === res) {
-      nativeDb.deleteAllTxns();
-      nativeDb.closeIModel();
-    }
-    return res;
+    nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
+    nativeDb.deleteAllTxns();
+    nativeDb.closeIModel();
   };
 
   before(async () => {
@@ -41,7 +37,7 @@ describe("TxnManager", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
-    assert.equal(performUpgrade(testFileName), 0);
+    performUpgrade(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
 
@@ -720,73 +716,6 @@ describe("TxnManager", () => {
       imodel.elements.deleteElement(elemId3);
       imodel.elements.insertElement(props);
     });
-  });
-
-  // Sam Wilson to fix.
-  it.skip("Element drives element events", async () => {
-    assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
-
-    const elements = imodel.elements;
-    const el1 = elements.insertElement(props);
-    const el2 = elements.insertElement(props);
-    const ede = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, el1, el2);
-    ede.property1 = "test ede";
-    ede.insert();
-
-    const removals: VoidFunction[] = [];
-    let beforeOutputsHandled = 0;
-    let allInputsHandled = 0;
-    let rootChanged = 0;
-    let deletedDependency = 0;
-    let commits = 0;
-    let committed = 0;
-    removals.push(TestElementDrivesElement.deletedDependency.addListener((evProps) => {
-      assert.equal(evProps.sourceId, el1);
-      assert.equal(evProps.targetId, el2);
-      ++deletedDependency;
-    }));
-    removals.push(TestElementDrivesElement.rootChanged.addListener((evProps, im) => {
-      const ede2 = im.relationships.getInstance<TestElementDrivesElement>(evProps.classFullName, evProps.id!);
-      assert.equal(ede2.property1, ede.property1);
-      assert.equal(evProps.sourceId, el1);
-      assert.equal(evProps.targetId, el2);
-      ++rootChanged;
-    }));
-    removals.push(TestPhysicalObject.beforeOutputsHandled.addListener((id) => {
-      assert.equal(id, el1);
-      ++beforeOutputsHandled;
-    }));
-    removals.push(TestPhysicalObject.allInputsHandled.addListener((id) => {
-      assert.equal(id, el2);
-      ++allInputsHandled;
-    }));
-
-    removals.push(imodel.txns.onCommit.addListener(() => commits++));
-    removals.push(imodel.txns.onCommitted.addListener(() => committed++));
-
-    imodel.saveChanges("step 1");
-    assert.equal(commits, 1);
-    assert.equal(committed, 1);
-    assert.equal(beforeOutputsHandled, 1);
-    assert.equal(allInputsHandled, 1);
-    assert.equal(rootChanged, 1);
-    assert.equal(deletedDependency, 0);
-
-    await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
-
-    const element2 = elements.getElement<TestPhysicalObject>(el2);
-    // make sure we actually change something in the element table. Otherwise update does nothing unless we wait long enough for last-mod-time to be updated.
-    element2.userLabel = "new value";
-    element2.update();
-    imodel.saveChanges("step 2");
-    assert.equal(commits, 2);
-    assert.equal(committed, 2);
-
-    assert.equal(allInputsHandled, 2, "allInputsHandled not called for update");
-    assert.equal(beforeOutputsHandled, 2, "beforeOutputsHandled not called for update");
-    assert.equal(rootChanged, 2, "rootChanged not called for update");
-    assert.equal(deletedDependency, 0, "deleteDependency shouldn't be called for update");
-    removals.forEach((drop) => drop());
   });
 
   it("change propagation should leave txn empty", async () => {

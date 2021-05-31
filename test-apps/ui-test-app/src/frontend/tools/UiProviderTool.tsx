@@ -6,19 +6,27 @@
  * @module Tools
  */
 
+// cSpell: ignore popout
+
 import * as React from "react";
-import { Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
-  ConditionalStringValue, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  ActionCreatorsObject, ActionsUnion, createAction, ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
+  ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, createAction, ModelSelectorWidget,
+  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
+import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
+import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
+import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";
+import { PopupTestPanel } from "./PopupTestPanel";
+import { PopupTestView } from "./PopupTestView";
 
 // Simulate redux state being added via a extension
 interface SampleExtensionState {
@@ -191,3 +199,140 @@ export class UiProviderTool extends Tool {
     return true;
   }
 }
+
+export class OpenWidgetPopoutTool extends Tool {
+  public static toolId = "openChildWindow";
+  public static iconSpec = IconSpecUtilities.createSvgIconSpec(toolIconSvg);
+
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 0; }
+
+  public run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
+    const location: ChildWindowLocationProps = {
+      width: 300,
+      height: 600,
+      left: 0,
+      top: 0,
+    };
+    const connection = UiFramework.getIModelConnection();
+    if (connection)
+      UiFramework.childWindowManager.openChildWindow("VisibilityTreeWidget", "VisibilityTreeWidget", <ModelSelectorWidget iModelConnection={connection} />, location, UiFramework.useDefaultPopoutUrl);
+  }
+
+  public static get flyover(): string {
+    return "open widget popout";
+  }
+
+  // if supporting localized key-ins return a localized string
+  public static get keyin(): string {
+    return "open popout";
+  }
+
+  public static get englishKeyin(): string {
+    return "open popout";
+  }
+
+  public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
+    const overrides = {
+      groupPriority,
+    };
+    return ToolbarItemUtilities.createActionButton(OpenWidgetPopoutTool.toolId, itemPriority, OpenWidgetPopoutTool.iconSpec, OpenWidgetPopoutTool.flyover,
+      () => { IModelApp.tools.run(OpenWidgetPopoutTool.toolId); }, overrides);
+  }
+}
+export class OpenCustomPopoutTool extends Tool {
+  public static toolId = "OpenCustomPopout";
+  public static iconSpec = IconSpecUtilities.createSvgIconSpec(tool2IconSvg);
+
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 0; }
+
+  public run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
+    const location: ChildWindowLocationProps = {
+      width: 800,
+      height: 600,
+      left: 0,
+      top: 0,
+    };
+    UiFramework.childWindowManager.openChildWindow("CustomPopout", "Custom Popout", <PopupTestPanel />, location /* , UiFramework.useDefaultPopoutUrl*/);
+  }
+
+  public static get flyover(): string {
+    return "open custom popout";
+  }
+
+  // if supporting localized key-ins return a localized string
+  public static get keyin(): string {
+    return "open custom popout";
+  }
+
+  public static get englishKeyin(): string {
+    return "open custom popout";
+  }
+
+  public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
+    const overrides = {
+      groupPriority,
+    };
+    return ToolbarItemUtilities.createActionButton(OpenCustomPopoutTool.toolId, itemPriority, OpenCustomPopoutTool.iconSpec, OpenCustomPopoutTool.flyover,
+      () => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); }, overrides);
+  }
+}
+
+export class OpenViewPopoutTool extends Tool {
+  public static toolId = "OpenViewPopout";
+  public static iconSpec = IconSpecUtilities.createSvgIconSpec(tool3IconSvg);
+
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 0; }
+
+  public run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
+    const location: ChildWindowLocationProps = {
+      width: 800,
+      height: 600,
+      left: 0,
+      top: 0,
+    };
+    UiFramework.childWindowManager.openChildWindow("ViewPopout", "View Popout", <PopupTestView />, location);
+  }
+
+  public static get flyover(): string {
+    return "open view popout";
+  }
+
+  // if supporting localized key-ins return a localized string
+  public static get keyin(): string {
+    return "open view popout";
+  }
+
+  public static get englishKeyin(): string {
+    return "open view popout";
+  }
+
+  public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
+    const overrides = {
+      groupPriority,
+    };
+    return ToolbarItemUtilities.createActionButton(OpenViewPopoutTool.toolId, itemPriority, OpenViewPopoutTool.iconSpec, OpenViewPopoutTool.flyover,
+      () => { IModelApp.tools.run(OpenViewPopoutTool.toolId); }, overrides);
+  }
+}
+

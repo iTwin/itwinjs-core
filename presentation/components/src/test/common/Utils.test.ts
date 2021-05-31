@@ -22,26 +22,6 @@ class TestComponent extends React.Component {
 
 describe("Utils", () => {
 
-  describe("priorityAndNameSortFunction", () => {
-
-    it("sorts by priority and name", () => {
-      const arr = [
-        { priority: 2, name: "d" },
-        { priority: 3, name: "c" },
-        { priority: 3, name: "b" },
-        { priority: 1, name: "a" },
-      ];
-      arr.sort(utils.priorityAndNameSortFunction);
-      expect(arr).to.deep.eq([
-        { priority: 3, name: "b" },
-        { priority: 3, name: "c" },
-        { priority: 2, name: "d" },
-        { priority: 1, name: "a" },
-      ]);
-    });
-
-  });
-
   describe("getDisplayName", () => {
 
     beforeEach(() => {

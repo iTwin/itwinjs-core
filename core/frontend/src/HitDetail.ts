@@ -97,7 +97,7 @@ export enum HitDetailType {
  */
 export class HitDetail {
   private readonly _iModel?: IModelConnection;
-  /** @alpha */
+  /** @internal chiefly for debugging. */
   public readonly tileId?: string;
   /** @alpha */
   public readonly isClassifier: boolean;
@@ -145,7 +145,7 @@ export class HitDetail {
     return this.modelId === this.sourceId;
   }
   // return whether the hit point is from map.
-  public get isMapHit(): boolean { return undefined !== this.viewport.displayStyle.mapLayerFromHit(this); }
+  public get isMapHit(): boolean { return undefined !== this.viewport.mapLayerFromHit(this); }
 
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
@@ -164,14 +164,14 @@ export class HitDetail {
     return toolTipPromise;
   }
 
-  /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport.
+  /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport -
+   * for example, if a [[TiledGraphicsProvider]] is used to display graphics from a different iModel in the viewport.
    * This HitDetail's element, subcategory, and model Ids are defined in the context of this IModelConnection.
-   * @alpha
    */
   public get iModel(): IModelConnection { return undefined !== this._iModel ? this._iModel : this.viewport.iModel; }
 
-  /** Returns true if this hit originated from an IModelConnection other than the one associated with the viewport.
-   * @alpha
+  /** Returns true if this hit originated from an [[IModelConnection]] other than the one associated with the [[Viewport]].
+   * @see [[iModel]].
    */
   public get isExternalIModelHit(): boolean { return this.iModel !== this.viewport.iModel; }
 }

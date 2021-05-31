@@ -317,6 +317,17 @@ export interface DisplayStyleLoadProps {
   compressExcludedElementIds?: boolean;
 }
 
+/** Options controlling which properties are included or excluded when querying [[RenderTimelineProps]].
+ * @see [[ElementLoadOptions.renderTimeline]].
+ * @public
+ */
+export interface RenderTimelineLoadProps {
+  /** If true, the lists of element Ids in the schedule script will be empty.
+   * The element Ids can be extremely numerous and are not required on the frontend for display, so they are omitted by default by [DisplayStyleState.load]($frontend).
+   */
+  omitScriptElementIds?: boolean;
+}
+
 /** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
  * [IModelDb.Elements.getElementProps]($backend) and [IModelConnection.Elements.loadProps]($frontend).
  * @public
@@ -333,6 +344,8 @@ export interface ElementLoadOptions {
   wantBRepData?: boolean;
   /** Options controlling which properties of [[DisplayStyleProps]] to include or exclude. */
   displayStyle?: DisplayStyleLoadProps;
+  /** Options controlling which properties of [[RenderTimelineProps]] to include or exclude. */
+  renderTimeline?: RenderTimelineLoadProps;
 }
 
 /** Parameters to specify what element to load for functions like [IModelDb.Elements.getElementProps]($backend).
@@ -370,6 +383,7 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   checksum?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   jsonProperties?: any;
+  /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   source?: RelatedElementProps;
 }
 
@@ -480,4 +494,16 @@ export interface RepositoryLinkProps extends UrlLinkProps {
  */
 export interface SynchronizationConfigLinkProps extends UrlLinkProps {
   lastSuccessfulRun?: string;
+}
+
+/** Wire format describing a [RenderTimeline]($backend).
+ * @public
+ */
+export interface RenderTimelineProps extends ElementProps {
+  /** An optional human-readable description of the timeline. */
+  description?: string;
+  /** The stringified JSON representation of the instructions for visualizing change over time.
+   * @see [[RenderSchedule.ScriptProps]] for the JSON interface.
+   */
+  script: string;
 }

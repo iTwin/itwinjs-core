@@ -74,6 +74,7 @@ public;BlankConnectionProps
 public;BriefcaseConnection 
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
+internal;BuilderOptions = GraphicBuilderOptions &
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -126,8 +127,8 @@ public;DisplayStyle2dState
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
 internal;disposeTileTreesForGeometricModels(modelIds: Set
-beta;DownloadBriefcaseId =
-beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
+public;DownloadBriefcaseId =
+public;DownloadBriefcaseOptions = DownloadBriefcaseId &
 internal;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -137,7 +138,7 @@ alpha;EditingFunctions
 deprecated;EditingFunctions
 alpha;EditingFunctions
 deprecated;EditingFunctions
-internal;EditManipulator
+public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
 public;ElementLocateManager
@@ -184,6 +185,8 @@ internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
 internal;FrameRenderData
+alpha;FrameStats
+internal;FrameStatsCollector
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
@@ -220,17 +223,31 @@ internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
 public;GpuMemoryLimits
 public;GraphicalEditingScope 
+public;GraphicArc
+public;GraphicArc2d
 public;GraphicBranch 
 internal;GraphicBranchFrustum
 public;GraphicBranchOptions
 public;class GraphicBuilder
+public;GraphicBuilderOptions
+public;GraphicLineString
+public;GraphicLineString2d 
 public;GraphicList = RenderGraphic[]
+public;GraphicLoop
+public;GraphicPath
+public;GraphicPointString
+public;GraphicPointString2d 
+public;GraphicPolyface
+public;GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface
+public;GraphicPrimitive2d
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
+public;GraphicShape
+public;GraphicShape2d 
 public;GraphicType
 alpha;GroupMark
 internal;Hilites
-beta;HiliteSet
+public;HiliteSet
 public;HitDetail
 public;HitDetailType
 public;HitGeomType
@@ -274,8 +291,8 @@ internal;InstancedGraphicParams
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
-beta;IpcApp
-beta;IpcAppOptions
+public;IpcApp
+public;IpcAppOptions
 beta;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
 beta;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
 beta;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
@@ -295,7 +312,7 @@ public;LocateOptions
 public;LocateResponse
 internal;LockedStates
 internal;loggerCategory = "imodeljs-frontend.Extension"
-beta;LookAndMoveTool 
+public;LookAndMoveTool 
 public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode
@@ -311,6 +328,7 @@ beta;MapLayerOptions
 internal;MapLayerSetting
 internal;MapLayerSettingsService
 internal;MapLayerSource 
+internal;MapLayerSourceChangeType
 internal;MapLayerSources
 internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation
@@ -347,10 +365,10 @@ public;ModelSelectorState
 public;ModelState 
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
-beta;NativeApp
-beta;NativeAppAuthorization
+public;NativeApp
+public;NativeAppAuthorization
 internal;NativeAppLogger
-beta;NativeAppOpts 
+public;NativeAppOpts 
 internal;NoRenderApp
 public;class NotificationHandler
 public;NotificationManager
@@ -358,9 +376,11 @@ public;NotifyMessageDetails
 internal;NullRenderSystem 
 internal;NullTarget 
 internal;OffScreenTarget 
-internal;OffScreenViewport 
+public;OffScreenViewport 
+public;OffScreenViewportOptions
 beta;OidcBrowserClient 
 deprecated;OidcBrowserClient 
+alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
@@ -383,8 +403,9 @@ public;ParticleCollectionBuilderParams
 public;ParticleProps 
 beta;PendingExtension
 internal;PerformanceMetrics
-beta;PerModelCategoryVisibility
+public;PerModelCategoryVisibility
 public;PhysicalModelState 
+public;PickableGraphicOptions 
 internal;PingTestResult
 public;Pixel
 internal;PlanarClassifierMap = Map
@@ -405,7 +426,12 @@ beta;QuantityTypeArg = QuantityType | string
 beta;QuantityTypeDefinition
 beta;QuantityTypeKey = string
 public;queryRealityData(criteria: RealityDataQueryCriteria): Promise
+beta;QueryScreenFeaturesOptions
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
+beta;QueryTileFeaturesOptions
+internal;queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void
+beta;QueryVisibleFeaturesCallback = (features: Iterable
+beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
@@ -432,7 +458,7 @@ internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;class RenderRealityMeshGeometry 
-internal;RenderScheduleState
+internal;RenderScheduleState 
 public;class RenderSystem 
 public;RenderSystem
 beta;RenderSystemDebugControl
@@ -469,7 +495,7 @@ public;SelectionTool
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
-alpha;SetupCameraTool 
+public;SetupCameraTool 
 public;SetupWalkCameraTool 
 public;SheetModelState 
 public;SheetViewState 
@@ -499,7 +525,7 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-beta;Storage
+public;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
@@ -524,6 +550,9 @@ internal;TileAvailability
 public;TileBoundingBoxes
 public;TileContent
 public;TiledGraphicsProvider
+public;TiledGraphicsProvider
+internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): void
+internal;isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean
 public;TileDrawArgParams
 public;TileDrawArgs
 public;TileGraphicType
@@ -629,6 +658,7 @@ public;ViewToggleCameraTool
 public;class ViewTool 
 public;ViewUndoEvent
 public;ViewUndoTool 
+beta;VisibleFeature
 public;WalkViewTool 
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 

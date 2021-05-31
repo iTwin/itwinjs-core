@@ -39,9 +39,7 @@ export interface ViewStateProps {
   sheetProps?: SheetProps;
   /** The Ids of the [ViewAttachment]($backend)s contained within the [SheetModel]($backend), if this is a sheet view. */
   sheetAttachments?: Id64Array;
-  /** For drawing views, the extents of the drawing model.
-   * @alpha
-   */
+  /** For a [DrawingViewState]($frontend), the extents of the [DrawingModel]($backend), used for determining the upper limits of the view's extents. */
   modelExtents?: Range3dProps;
   /** Information about the [SectionDrawing]($backend) relevant to displaying a drawing view. */
   sectionDrawing?: SectionDrawingViewProps;

@@ -1,6 +1,70 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 22 Apr 2021 21:07:34 GMT and should not be manually modified.
+This log was last generated on Thu, 27 May 2021 20:04:22 GMT and should not be manually modified.
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+_Version update only_
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Add support for child popup windows.
+- Add ability to not render array/struct property label in virtualized property grid
+- Add support for custom property category renderers.
+- Improved Multi-Value column filtering in the Table component
+- Move `VirtualizedPropertyGrid` related types from @alpha to @beta.
+- Fixed getting distinct values when Table rows are updated
+- Update to latest classnames package 
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+### Updates
+
+- Fixed getting distinct values when Table rows are updated
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Update to use UiSettingsStorage.
+- Fix color picker hue display in DR by removing webkit prefix. Adjust max slider value.
+- 'TreeModel': Fixed 'changeNodeId' to set new id on TreeModelNode
+- 'TreeNodeLoader': Changed nodes loading to avoid removing subtrees of existing expanded nodes
+- Added ability to track rendered nodes in ControlledTree
+- Fix number editor so it can process Enter key and call OnCommit processing.
+- Fix compatibility issue when multiple versions of `rxjs` are in use.
+- Fix a crash when clicking on a `ControlledTree` node when the tree contains placeholder nodes and using `SelectionMode.Multiple`
 
 ## 2.14.4
 Thu, 22 Apr 2021 21:07:33 GMT

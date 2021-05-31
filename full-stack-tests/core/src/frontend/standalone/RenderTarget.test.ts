@@ -648,7 +648,7 @@ describe("RenderTarget", () => {
       vp.viewFlags = vf;
 
       await vp.waitForAllTilesToRender();
-      const mapTreeRef = vp.displayStyle.backgroundMap;
+      const mapTreeRef = vp.backgroundMap!;
       const mapTree = mapTreeRef.treeOwner.tileTree!;
       expect(mapTree).not.to.be.undefined;
     });

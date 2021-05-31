@@ -78,16 +78,17 @@ export class FrameworkUiAdmin extends UiAdmin {
    */
   public showContextMenu(items: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean {
     let position = location;
-
+    let childWindowId: string | undefined;
     if (htmlElement) {
       const anchorOffset = htmlElement.getBoundingClientRect();
       position = { x: anchorOffset.left + location.x, y: anchorOffset.top + location.y };
+      childWindowId = UiFramework.childWindowManager.findChildWindowId(htmlElement.ownerDocument.defaultView);
     }
 
     const offset = -8;
     position = { x: position.x + offset, y: position.y + offset };
 
-    const cursorMenu: CursorMenuData = { position, items };
+    const cursorMenu: CursorMenuData = { position, items, childWindowId };
     UiFramework.openCursorMenu(cursorMenu);
 
     return true;
@@ -96,11 +97,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   /** Resolve location and parent element */
   private resolveHtmlElement(location: XAndY, htmlElement?: HTMLElement): { position: XAndY, el: HTMLElement } {
     const position = location;
-    let el = htmlElement!;
-
-    if (!htmlElement)
-      el = ConfigurableUiManager.getWrapperElement();
-
+    const el = htmlElement ?? ConfigurableUiManager.getWrapperElement();
     return { position, el };
   }
 

@@ -549,7 +549,7 @@ class OrthographicAttachment {
   public constructor(view: ViewState, props: ViewAttachmentProps, sheetView: SheetViewState) {
     this.symbologyOverrides = new FeatureSymbology.Overrides(view);
     const target = new AttachmentTarget(this);
-    this._viewport = OffScreenViewport.create(view, this._viewRect, true, target);
+    this._viewport = OffScreenViewport.createViewport(view, target, true);
 
     this._props = props;
     this._sheetModelId = sheetView.baseModelId;
@@ -869,7 +869,7 @@ class RasterAttachment {
   }
 
   public get areAllTileTreesLoaded() {
-    return this._viewport?.view.areAllTileTreesLoaded ?? true;
+    return this._viewport?.areAllTileTreesLoaded ?? true;
   }
 
   public addToScene(context: SceneContext): void {

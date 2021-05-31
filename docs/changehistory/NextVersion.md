@@ -3,65 +3,52 @@ publish: false
 ---
 # NextVersion
 
-## Obtaining element geometry on the frontend
+## New IModel events
 
-Until now, an element's [GeometryStreamProps]($common) was only available on the backend - [IModelConnection.Elements.getProps]($frontend) always omits the geometry. [IModelConnection.Elements.loadProps]($frontend) has been introduced to provide greater control over which properties are returned. It accepts the Id, federation Guid, or [Code]($common) of the element of interest, and optionally an [ElementLoadOptions]($common) specifying which properties to include or exclude. For example, the following code queries for and iterates over the geometry of a [GeometricElement3d]($backend):
+[IModel]($common)s now emit events when their properties change.
 
-```ts
-  function printGeometryStream(elementId: Id64String, iModel: IModelConnection): void {
-    const props = await iModel.elements.loadProps(elementId, { wantGeometry: true }) as GeometricElement3dProps;
-    assert(undefined !== props, `Element ${elementId} does not exist`);
-    const iterator = GeometryStreamIterator.fromGeometricElement3d(props);
-    for (const entry of iterator)
-      console.log(JSON.stringify(entry));
-  }
-```
+* [IModel.onProjectExtentsChanged]($common)
+* [IModel.onGlobalOriginChanged]($common)
+* [IModel.onEcefLocationChanged]($common)
+* [IModel.onGeographicCoordinateSystemChanged]($common)
+* [IModel.onRootSubjectChanged]($common)
+* [IModel.onNameChanged]($common)
 
-Keep in mind that geometry streams can be extremely large. They may also contain data like [BRepEntity.DataProps]($common) that cannot be interpreted on the frontend; for this reason BRep data is omitted from the geometry stream, unless explicitly requested via [ElementLoadOptions.wantBRepData]($common).
-
-## Clipping enhancements
-
-The contents of a [ViewState]($frontend) can be clipped by applying a [ClipVector]($geometry-core) to the view via [ViewState.setViewClip]($frontend). Several enhancements have been made to this feature:
-
-### Colorization
-
-[ClipStyle.insideColor]($common) and [ClipStyle.outsideColor]($common) can be used to colorize geometry based on whether it is inside or outside of the clip volume. If the outside color is defined, then that geometry will be drawn in the specified color instead of being clipped. These properties replace the beta [Viewport]($frontend) methods `setInsideColor` and `setOutsideColor` and are saved in the [DisplayStyle]($backend).
-
-### Model clip groups
-
-[ModelClipGroups]($common) can be used to apply additional clip volumes to groups of models. Try it out with an [interactive demo](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=swiping-viewport-sample). Note that [ViewFlags.clipVolume]($common) applies **only** to the view clip - model clips apply regardless of view flags.
-
-### Nested clip volumes
-
-Clip volumes now nest. For example, if you define a view clip, a model clip group, and a schedule script that applies its own clip volume, then geometry will be clipped by the **intersection** of all three clip volumes. Previously, only one clip volume could be active at a time.
-
-## Grid display enhancements
-
-The planar grid that is displayed when [ViewFlags.grid]($common) is now displayed with a shader rather than as explicit geometry.  This improved the overall appearance and efficiency of the grid display and corrects several anomalies when grid display was unstable at the horizon of a perspective view.  The view frustum is now expanded as necessary when grids are displayed to avoid truncating the grid to the displayed geometry.
+Within [IpcApp]($frontend)-based applications, [BriefcaseConnection]($frontend)s now automatically synchronize their properties in response to such events produced by changes on the backend. For example, if [BriefcaseDb.projectExtents]($backend) is modified, [BriefcaseConnection.projectExtents]($frontend) will be updated to match and both the BriefcaseDb and BriefcaseConnection will emit an `onProjectExtentsChanged` event.
 
 ## Promoted APIs
 
-The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
+The following previously `alpha` or `beta` APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of the package.
 
-### [@bentley/webgl-compatibility](https://www.itwinjs.org/reference/webgl-compatibility/)
+### [@bentley/bentleyjs-core](https://www.itwinjs.org/reference/bentleyjs-core/)
 
-* [queryRenderCompatibility]($webgl-compatibility) for querying the client system's compatibility with the iTwin.js rendering system.
-* [WebGLRenderCompatibilityInfo]($webgl-compatibility) for summarizing the client system's compatibility.
-* [WebGLFeature]($webgl-compatibility) for enumerating the required and optionals features used by the iTwin.js rendering system.
-* [WebGLRenderCompatibilityStatus]($webgl-compatibility) for describing a general compatiblity rating of a client system.
-* [GraphicsDriverBugs]($webgl-compatibility) for describing any known graphics driver bugs for which iTwin.js will apply workarounds.
-* [ContextCreator]($webgl-compatibility) for describing a function that creates and returns a WebGLContext for [queryRenderCompatibility]($webgl-compatibility).
-## Breaking API changes
+* [ReadonlySortedArray.findEquivalent]($bentleyjs-core) and [ReadonlySortedArray.indexOfEquivalent]($bentleyjs-core) for locating an element based on a custom criterion.
 
-### @bentley/imodeljs-backend package
+### [@bentley/imodeljs-common](https://www.itwinjs.org/reference/imodeljs-common/)
 
-The arguments for the @beta protected static methods called during modifications have been changed to be more consistent and extensible:
+* [RenderSchedule]($common) for defining scripts to visualize changes in an iModel over time.
+* [DisplayStyleSettings.renderTimeline]($common) for associating a [RenderTimeline]($backend) with a [DisplayStyle]($backend).
+* [DisplayStyleSettings.timePoint]($common) for specifying the currently-simulated point along a view's [RenderSchedule.Script]($common).
+* [ElementGraphicsRequestProps]($common) for generating [RenderGraphic]($frontend)s from [GeometricElement]($backend)s or arbitrary geometry streams.
 
-* [Element]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
-* [Model]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
-* [ElementAspect]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
+### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
 
-In addition, new protected static methods were added:
+* [LookAndMoveTool]($frontend) for using videogame-like mouse and keyboard controls to navigate a 3d view.
+* [SetupCameraTool]($frontend) for defining the camera for a [SpatialViewState]($frontend).
+* [IModelApp.queryRenderCompatibility]($frontend) for determining the set of WebGL features supported by your browser and device.
+* [ToolAdmin.exceptionHandler]($frontend) and [ToolAdmin.exceptionOptions]($frontend) for customizing how your app reacts to unhandled exceptions.
+* [Viewport.antialiasSamples]($frontend) and [ViewManager.setAntialiasingAllViews]($frontend) for applying [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) to make viewport images appear smoother.
 
-* [Element]($backend) `[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]`
-* [Model]($backend) `[onInsertElement, onInsertedElement, onUpdateElement, onUpdatedElement, onDeleteElement, onDeletedElement]`
+### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
+
+* [TxnManager]($backend) for managing local changes to a [BriefcaseDb]($backend).
+* [IModelDb.computeProjectExtents]($backend) for computing default project extents based on the ranges of spatial elements.
+* [IModelDb.generateElementGraphics]($backend) for generating [RenderGraphic]($frontend)s from [GeometricElement]($backend)s or arbitrary geometry streams.
+* [IModelDb.getGeometryContainment]($backend) for computing the containment of a set of [GeometricElement]($backend)s within a [ClipVector]($geometry-core).
+* [IModelDb.getMassProperties]($backend) for computing [GeometricElement]($backend) properties like area and volume.
+* [RenderTimeline]($backend) element for persisting a [RenderSchedule.Script]($common).
+* [SectionDrawingLocation]($backend) element identifying the location of a [SectionDrawing]($backend) in the context of a [SpatialModel]($backend).
+
+## Popout Widgets
+
+IModelApps, that use AppUi version "2", can now specify if a Widget can support being "popped-out" to a child popup window. The child window runs in the same javascript context as the parent application window. See [Child Window Manager]($docs/learning/ui/framework/ChildWindows.md) for more details.

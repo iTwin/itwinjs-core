@@ -9,12 +9,13 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { TransformProps } from "@bentley/geometry-core";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
+import { ElementGeometryDataEntry } from "../geometry/ElementGeometry";
 import { GeometryStreamProps } from "../geometry/GeometryStream";
 import { ContentFlags, TreeFlags } from "../tile/TileMetadata";
 
 /** Wire format describing properties common to [[PersistentGraphicsRequestProps]] and [[DynamicGraphicsRequestProps]].
- * @see [[ElementGraphicsRequestProps]].
- * @beta
+ * @see [[ElementGraphicsRequestProps]] for more details.
+ * @public
  */
 export interface GraphicsRequestProps {
   /** Uniquely identifies this request among all [[ElementGraphicsRequestProps]] for a given [[IModel]]. */
@@ -40,21 +41,41 @@ export interface GraphicsRequestProps {
 
 /** Wire format describing a request to produce graphics in "iMdl" format for a single element.
  * @see [[ElementGraphicsRequestProps]] for more details.
- * @beta
+ * @public
  */
 export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
   /** The element whose geometry is to be used to generate the graphics. */
   readonly elementId: Id64String;
 }
 
+/** As part of a [[DynamicGraphicsRequestProps]], specifies the geometry from which to generate the graphics in JSON format.
+ * @public
+ */
+export interface JsonGeometryStream {
+  /** Discriminator for [[DynamicGraphicsRequestProps.geometry]]. */
+  format: "json";
+  /** The geometry stream in JSON format. */
+  data: GeometryStreamProps;
+}
+
+/** As part of a [[DynamicGraphicsRequestProps]], specifies the geometry from which to generate the graphics in binary flatbuffer-encoded format.
+ * @public
+ */
+export interface FlatBufferGeometryStream {
+  /** Discriminator for [[DynamicGraphicsRequestProps.geometry]]. */
+  format: "flatbuffer";
+  /** The geometry stream in flatbuffer format. */
+  data: ElementGeometryDataEntry[];
+}
+
 /** Wire format describing a request to produce graphics in "iMdl" format for a single geometry stream.
  * @see [[DynamicGraphicsRequest2dProps]] and [[DynamicGraphicsRequest3dProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.
- * @beta
+ * @public
  */
 export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
   /** The geometry from which to generate the graphics. */
-  readonly geometry: GeometryStreamProps;
+  readonly geometry: JsonGeometryStream | FlatBufferGeometryStream;
   /** The category to which the geometry belongs. This is required to identify a persistent [SpatialCategory]($backend) for 3d geometry or
    * [DrawingCategory]($backend) for 2d geometry.
    */
@@ -70,19 +91,23 @@ export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
 
 /** Wire format describing a request to produce graphics in "iMdl" format for a 2d geometry stream.
  * @see [[ElementGraphicsRequestProps]] for more details.
- * @beta
+ * @public
  */
 export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
+  /** Specifies the geometry is 2d. */
   readonly type: "2d";
+  /** The origin and rotation of the geometry. */
   readonly placement: Omit<Placement2dProps, "bbox">;
 }
 
 /** Wire format describing a request to produce graphics in "iMdl" format for a 3d geometry stream.
  * @see [[ElementGraphicsRequestProps]] for more details.
- * @beta
+ * @public
  */
 export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
+  /** Specifies the geometry is 3d. */
   readonly type: "3d";
+  /** The origin and rotation of the geometry. */
   readonly placement: Omit<Placement3dProps, "bbox">;
 }
 
@@ -90,6 +115,6 @@ export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestPro
  * @note Every request must have an `id` that is unique amongst all extant requests for a given [[IModel]].
  * @see [TileAdmin.requestElementGraphics]($frontend) and [IModelDb.generateElementGraphics]($backend) to fulfill such a request.
  * @see [readElementGraphics]($frontend) to convert the result of a request to a [RenderGraphic]($frontend) for display.
- * @beta
+ * @public
  */
 export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps;

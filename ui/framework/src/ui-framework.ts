@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin itemsarbiter
+// cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin itemsarbiter Popout
 
 export * from "./ui-framework/UiFramework";  // Please ensure that this line comes before all other exports.
 
@@ -123,6 +123,8 @@ export * from "./ui-framework/oidc/SignOut";
 export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
+
+export * from "./ui-framework/childwindow/ChildWindowManager";
 
 export * from "./ui-framework/popup/KeyinPalettePanel";
 export * from "./ui-framework/popup/KeyinPalettePopup";
@@ -341,6 +343,10 @@ export * from "./ui-framework/zones/ZoneDef";
 /**
  * @docs-group-description OIDC
  * Classes for working with the OpenID Connect (OIDC) protocol
+ */
+/**
+ * @docs-group-description ChildWindowManager
+ * Classes for working with child windows.
  */
 /**
  * @docs-group-description Picker

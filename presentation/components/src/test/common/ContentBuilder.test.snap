@@ -59,7 +59,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "SimpleField",
-      "typename": "myarray[]",
+      "typename": "MyArray[]",
     },
     "value": Object {
       "items": Array [
@@ -124,7 +124,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "root-field$nested-array-field",
-      "typename": "myarray[][]",
+      "typename": "MyArray[][]",
     },
     "value": Object {
       "items": Array [
@@ -221,7 +221,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "SimpleField",
-      "typename": "myarray[]",
+      "typename": "MyArray[]",
     },
     "value": Object {
       "displayValue": "",
@@ -232,7 +232,96 @@ Object {
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record with for nested content value without child records 1`] = `
+exports[`ContentBuilder createPropertyRecord with nested content creates record for a single deeply nested content value 1`] = `
+Object {
+  "field": "deeply-nested-field",
+  "record": PropertyRecord {
+    "extendedData": Object {
+      "test": "extended-data",
+    },
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "editor": Object {
+        "name": "test-editor",
+        "params": Array [],
+      },
+      "name": "root-field$nested-field$deeply-nested-field",
+      "renderer": Object {
+        "name": "test-renderer",
+      },
+      "typename": "string[]",
+    },
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "description": "some display value",
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "editor": Object {
+              "name": "test-editor",
+              "params": Array [],
+            },
+            "enum": Object {
+              "choices": Array [
+                Object {
+                  "label": "One",
+                  "value": 1,
+                },
+              ],
+              "isStrict": true,
+            },
+            "name": "root-field$nested-field$deeply-nested-field",
+            "renderer": Object {
+              "name": "test-renderer",
+            },
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "some display value",
+            "value": "some value",
+            "valueFormat": 0,
+          },
+        },
+      ],
+      "itemsTypeName": "string",
+      "valueFormat": 1,
+    },
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord with nested content creates record for empty nested content value 1`] = `
+Object {
+  "field": "nested-field",
+  "record": PropertyRecord {
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Nested Content",
+      "name": "root-field$nested-field",
+      "typename": "NestedContentFieldType[]",
+    },
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "property": Object {
+            "displayLabel": "Nested Content",
+            "name": "root-field$nested-field",
+            "typename": "NestedContentFieldType",
+          },
+          "value": Object {
+            "members": Object {},
+            "valueFormat": 2,
+          },
+        },
+      ],
+      "itemsTypeName": "NestedContentFieldType",
+      "valueFormat": 1,
+    },
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord with nested content creates record for empty root nested content value 1`] = `
 Object {
   "field": "root-field",
   "record": PropertyRecord {
@@ -289,7 +378,7 @@ Object {
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record with merged nesting content value 1`] = `
+exports[`ContentBuilder createPropertyRecord with nested content creates record for merged nesting content value 1`] = `
 Object {
   "field": "root-field",
   "record": PropertyRecord {
@@ -309,7 +398,91 @@ Object {
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record with multiple nested content values 1`] = `
+exports[`ContentBuilder createPropertyRecord with nested content creates record for multiple nested content values 1`] = `
+Object {
+  "field": "nested-field",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "editor": Object {
+        "name": "test-editor",
+        "params": Array [],
+      },
+      "name": "root-field$nested-field",
+      "renderer": Object {
+        "name": "test-renderer",
+      },
+      "typename": "string[]",
+    },
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "description": "some display value 1",
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "editor": Object {
+              "name": "test-editor",
+              "params": Array [],
+            },
+            "enum": Object {
+              "choices": Array [
+                Object {
+                  "label": "One",
+                  "value": 1,
+                },
+              ],
+              "isStrict": true,
+            },
+            "name": "root-field$nested-field",
+            "renderer": Object {
+              "name": "test-renderer",
+            },
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "some display value 1",
+            "value": "some value 1",
+            "valueFormat": 0,
+          },
+        },
+        PropertyRecord {
+          "description": "some display value 2",
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "editor": Object {
+              "name": "test-editor",
+              "params": Array [],
+            },
+            "enum": Object {
+              "choices": Array [
+                Object {
+                  "label": "One",
+                  "value": 1,
+                },
+              ],
+              "isStrict": true,
+            },
+            "name": "root-field$nested-field",
+            "renderer": Object {
+              "name": "test-renderer",
+            },
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "some display value 2",
+            "value": "some value 2",
+            "valueFormat": 0,
+          },
+        },
+      ],
+      "itemsTypeName": "string",
+      "valueFormat": 1,
+    },
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord with nested content creates record for nested content value with multiple nested content values 1`] = `
 Object {
   "field": "root-field",
   "record": PropertyRecord {
@@ -333,7 +506,23 @@ Object {
                 "description": "some display value 1",
                 "property": Object {
                   "displayLabel": "Simple Field",
+                  "editor": Object {
+                    "name": "test-editor",
+                    "params": Array [],
+                  },
+                  "enum": Object {
+                    "choices": Array [
+                      Object {
+                        "label": "One",
+                        "value": 1,
+                      },
+                    ],
+                    "isStrict": true,
+                  },
                   "name": "root-field$nested-field",
+                  "renderer": Object {
+                    "name": "test-renderer",
+                  },
                   "typename": "string",
                 },
                 "value": Object {
@@ -358,7 +547,23 @@ Object {
                 "description": "some display value 2",
                 "property": Object {
                   "displayLabel": "Simple Field",
+                  "editor": Object {
+                    "name": "test-editor",
+                    "params": Array [],
+                  },
+                  "enum": Object {
+                    "choices": Array [
+                      Object {
+                        "label": "One",
+                        "value": 1,
+                      },
+                    ],
+                    "isStrict": true,
+                  },
                   "name": "root-field$nested-field",
+                  "renderer": Object {
+                    "name": "test-renderer",
+                  },
                   "typename": "string",
                 },
                 "value": Object {
@@ -379,7 +584,7 @@ Object {
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record with single deeply nested content value 1`] = `
+exports[`ContentBuilder createPropertyRecord with nested content creates record for nested content value with single deeply nested content value 1`] = `
 Object {
   "field": "root-field",
   "record": PropertyRecord {
@@ -426,7 +631,23 @@ Object {
                             "description": "some display value",
                             "property": Object {
                               "displayLabel": "Simple Field",
+                              "editor": Object {
+                                "name": "test-editor",
+                                "params": Array [],
+                              },
+                              "enum": Object {
+                                "choices": Array [
+                                  Object {
+                                    "label": "One",
+                                    "value": 1,
+                                  },
+                                ],
+                                "isStrict": true,
+                              },
                               "name": "root-field$nested-field$deeply-nested-field",
+                              "renderer": Object {
+                                "name": "test-renderer",
+                              },
                               "typename": "string",
                             },
                             "value": Object {
@@ -667,7 +888,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "root-field$nested-struct-field",
-      "typename": "mystruct[][]",
+      "typename": "MyStruct[][]",
     },
     "value": Object {
       "items": Array [
@@ -736,7 +957,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "SimpleField",
-      "typename": "mystruct[]",
+      "typename": "MyStruct[]",
     },
     "value": Object {
       "members": Object {
@@ -767,7 +988,7 @@ Object {
     "property": Object {
       "displayLabel": "Simple Field",
       "name": "SimpleField",
-      "typename": "mystruct[]",
+      "typename": "MyStruct[]",
     },
     "value": Object {
       "displayValue": "",

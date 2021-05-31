@@ -20,6 +20,11 @@ export interface PropertyCategory {
 
   /** @beta */
   childCategories?: PropertyCategory[];
+
+  /** @beta */
+  renderer?: {
+    name: string;
+  };
 }
 
 /**

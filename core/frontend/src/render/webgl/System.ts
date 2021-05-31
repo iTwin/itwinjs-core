@@ -17,10 +17,9 @@ import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
-import { Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
-import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
+import { BatchOptions, GraphicBuilder, GraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
@@ -31,7 +30,7 @@ import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import {
-  BatchOptions, DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, TerrainTexture,
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
@@ -503,8 +502,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new OffScreenTarget(rect);
   }
 
-  public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder {
-    return new PrimitiveBuilder(this, type, viewport, placement, pickableId);
+  public createGraphic(options: GraphicBuilderOptions): GraphicBuilder {
+    return new PrimitiveBuilder(this, options);
   }
 
   public createMesh(params: MeshParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {

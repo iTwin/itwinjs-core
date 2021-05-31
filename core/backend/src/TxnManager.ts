@@ -6,8 +6,9 @@
  * @module iModels
  */
 
-import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, Logger, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { ChangedEntities, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
@@ -19,7 +20,8 @@ import { SqliteStatement } from "./SqliteStatement";
 export type TxnIdString = string;
 
 /** An error generated during dependency validation.
- * @beta
+ * @see [[TxnManager.validationErrors]].
+ * @public
  */
 export interface ValidationError {
   /** If true, txn is aborted. */
@@ -30,12 +32,16 @@ export interface ValidationError {
   message?: string;
 }
 
-/**
- * @beta
+/** Describes a set of [[Element]]s or [[Model]]s that changed as part of a transaction.
+ * @see [[TxnManager.onElementsChanged]] and [[TxnManager.onModelsChanged]].
+ * @public
  */
 export interface TxnChangedEntities {
+  /** Ids of entities that were inserted by the transaction. */
   inserted: OrderedId64Array;
+  /** Ids of entities that were deleted by the transaction. */
   deleted: OrderedId64Array;
+  /** Ids of elements that were modified by the transaction. */
   updated: OrderedId64Array;
 }
 
@@ -111,18 +117,14 @@ class ChangedEntitiesProc implements TxnChangedEntities {
       });
 
       changes.sendEvent(iModel, changedEvent, evtName);
-    } catch (_) {
-      // Presumably, the temp txn tables don't exist, because the native TxnManager is not tracking changes.
-      // This occurs when the application is using a "pull-only" briefcase - they open the briefcase as read-write temporarily,
-      // apply some pulled changesets, and then reopen in read-only mode.
-      // During the read-write phase, we're not tracking changes, and the application isn't interested in the events we'd otherwise generate here.
+    } catch (err) {
+      Logger.logError(BackendLoggerCategory.IModelDb, err.message);
     }
   }
 }
 
-/**
- * Manages local changes to an iModel via [Txns]($docs/learning/InteractiveEditing.md)
- * @beta
+/** Manages local changes to a [[BriefcaseDb]] or [[StandaloneDb]] via [Txns]($docs/learning/InteractiveEditing.md)
+ * @public
  */
 export class TxnManager {
   /** @internal */

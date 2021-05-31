@@ -920,6 +920,33 @@ export interface ChangeSetInfo {
     userCreated?: string;
 }
 
+// @beta (undocumented)
+export interface ChildWindowLocationProps {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    left: number;
+    // (undocumented)
+    top: number;
+    // (undocumented)
+    width: number;
+}
+
+// @beta
+export class ChildWindowManager {
+    closeAllChildWindows(): void;
+    // (undocumented)
+    closeChildWindow: (childWindowId: string, processWindowClose?: boolean) => boolean;
+    // (undocumented)
+    findChildWindow(childWindowId: string | undefined): OpenChildWindowInfo | undefined;
+    // (undocumented)
+    findChildWindowId(contentWindow: Window | undefined | null): string | undefined;
+    // (undocumented)
+    openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean): boolean;
+    // (undocumented)
+    get openChildWindows(): OpenChildWindowInfo[];
+    }
+
 // @beta
 export enum ClassGroupingOption {
     No = 0,
@@ -1465,6 +1492,8 @@ export class CursorInformation {
 // @public
 export interface CursorMenuData {
     // (undocumented)
+    childWindowId?: string;
+    // (undocumented)
     items: MenuItemProps[];
     // (undocumented)
     position: XAndY;
@@ -1714,6 +1743,8 @@ export interface DialogInfo {
     // (undocumented)
     id: string;
     // (undocumented)
+    parentDocument: Document;
+    // (undocumented)
     reactNode: React.ReactNode;
 }
 
@@ -1734,8 +1765,7 @@ export class DialogManagerBase {
     emitDialogChangedEvent(): void;
     // (undocumented)
     get onDialogChangedEvent(): DialogChangedEvent;
-    // (undocumented)
-    openDialog(dialog: React.ReactNode, id?: string): void;
+    openDialog(dialog: React.ReactNode, id?: string, parentDocument?: Document): void;
     // (undocumented)
     pushDialog(dialogInfo: DialogInfo): void;
     // (undocumented)
@@ -1745,13 +1775,15 @@ export class DialogManagerBase {
 }
 
 // @internal
-export class DialogRendererBase extends React.PureComponent<DialogRendererProps> {
+export class DialogRendererBase extends React.PureComponent<DialogRendererProps, DialogRendererState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
+    // (undocumented)
+    readonly state: DialogRendererState;
 }
 
 // @internal
@@ -1932,6 +1964,25 @@ export const expandWidget: (base: {
         };
         readonly allIds: readonly string[];
     };
+    readonly popoutWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: PanelSide;
+                };
+            };
+        };
+        readonly allIds: readonly string[];
+    };
     readonly panels: {
         readonly bottom: {
             readonly span: boolean;
@@ -1992,8 +2043,15 @@ export const expandWidget: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPopoutWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+                readonly x: number;
+                readonly y: number;
+            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -2305,6 +2363,9 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     render(): React.ReactNode;
     }
 
+// @internal (undocumented)
+export const FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings";
+
 // @public
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> {
 }
@@ -2413,6 +2474,8 @@ export class FrontstageDef {
     get defaultLayoutId(): string;
     // (undocumented)
     get defaultTool(): ToolItemDef | undefined;
+    // @internal
+    dockPopoutWidgetContainer(widgetContainerId: string): void;
     // @beta
     dockWidgetContainer(widgetId: string): void;
     findWidgetDef(id: string): WidgetDef | undefined;
@@ -2429,9 +2492,15 @@ export class FrontstageDef {
     initializeFromProps(props: FrontstageProps): void;
     initializeFromProvider(frontstageProvider: FrontstageProvider): void;
     // (undocumented)
+    get isApplicationClosing(): boolean;
+    // (undocumented)
     isFloatingWidget(widgetId: string): boolean;
     // (undocumented)
     get isInFooterMode(): boolean;
+    // (undocumented)
+    isPopoutWidget(widgetId: string): boolean;
+    // (undocumented)
+    get isStageClosing(): boolean;
     // @beta (undocumented)
     get leftPanel(): StagePanelDef | undefined;
     // @internal (undocumented)
@@ -2446,16 +2515,24 @@ export class FrontstageDef {
     protected _onDeactivated(): void;
     onFrontstageReady(): void;
     protected _onFrontstageReady(): void;
+    // @internal
+    openPopoutWidgetContainer(state: NineZoneState, widgetContainerId: string): void;
     // @beta
     get panelDefs(): StagePanelDef[];
+    // @beta
+    popoutWidget(widgetId: string, point?: PointProps, size?: SizeProps): void;
     // @beta (undocumented)
     restoreLayout(): void;
     // @beta (undocumented)
     get rightPanel(): StagePanelDef | undefined;
+    // @internal (undocumented)
+    saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window): Promise<void>;
     setActiveContent(): boolean;
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
     setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
+    // @internal (undocumented)
+    setIsApplicationClosing(value: boolean): void;
     startDefaultTool(): void;
     // @internal (undocumented)
     get timeTracker(): TimeTracker;
@@ -2733,6 +2810,9 @@ export const getFloatingZoneStyle: (props: ZoneManagerProps) => {
     zIndex: number;
     position: "relative";
 } | undefined;
+
+// @internal (undocumented)
+export function getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]): string;
 
 // @beta
 export function getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue;
@@ -3738,7 +3818,7 @@ export class ModalDialogManager {
     static readonly dialogManager: DialogManagerBase;
     static get dialogs(): import("./DialogManagerBase").DialogInfo[];
     static readonly onModalDialogChangedEvent: ModalDialogChangedEvent;
-    static openDialog(dialog: React.ReactNode, id?: string): void;
+    static openDialog(dialog: React.ReactNode, id?: string, parentDocument?: Document): void;
     static update(): void;
 }
 
@@ -3841,7 +3921,7 @@ export class ModelessDialogManager {
     static handlePointerDownEvent(_event: React.PointerEvent, id: string, updateFunc: () => void): void;
     static initialize(): void;
     static readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
-    static openDialog(dialog: React.ReactNode, id: string): void;
+    static openDialog(dialog: React.ReactNode, id: string, parentDocument?: Document): void;
     static update(): void;
 }
 
@@ -3849,6 +3929,8 @@ export class ModelessDialogManager {
 export interface ModelessDialogProps extends DialogProps {
     // (undocumented)
     dialogId: string;
+    // (undocumented)
+    movable?: boolean;
 }
 
 // @public
@@ -4094,6 +4176,16 @@ export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessage
 // @public
 export type NotifyMessageType = MessageType;
 
+// @beta (undocumented)
+export interface OpenChildWindowInfo {
+    // (undocumented)
+    childWindowId: string;
+    // (undocumented)
+    parentWindow: Window;
+    // (undocumented)
+    window: Window;
+}
+
 // @public
 export class OpenMessageCenterEvent extends UiEvent<{}> {
 }
@@ -4220,6 +4312,8 @@ export interface PopupInfo {
     component: React.ReactNode;
     // (undocumented)
     id: string;
+    // (undocumented)
+    parentDocument: Document;
     // (undocumented)
     pt: XAndY;
 }
@@ -4543,6 +4637,9 @@ export interface SavedViewProps extends ViewStateProps {
     emphasizeElementsProps?: EmphasizeElementsProps;
 }
 
+// @internal (undocumented)
+export function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window): Promise<NineZoneState>;
+
 // @alpha
 export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
@@ -4742,6 +4839,25 @@ export const setPanelSize: (base: {
         };
         readonly allIds: readonly string[];
     };
+    readonly popoutWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: PanelSide;
+                };
+            };
+        };
+        readonly allIds: readonly string[];
+    };
     readonly panels: {
         readonly bottom: {
             readonly span: boolean;
@@ -4802,8 +4918,15 @@ export const setPanelSize: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPopoutWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+                readonly x: number;
+                readonly y: number;
+            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -4880,104 +5003,7 @@ export const setWidgetLabel: (base: {
         };
         readonly allIds: readonly string[];
     };
-    readonly panels: {
-        readonly bottom: {
-            readonly span: boolean;
-            readonly side: import("@bentley/ui-ninezone").HorizontalPanelSide;
-            readonly collapseOffset: number;
-            readonly collapsed: boolean;
-            readonly maxSize: number;
-            readonly minSize: number;
-            readonly pinned: boolean;
-            readonly resizable: boolean;
-            readonly size: number | undefined;
-            readonly widgets: readonly string[];
-            readonly maxWidgetCount: number;
-        };
-        readonly left: {
-            readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
-            readonly collapseOffset: number;
-            readonly collapsed: boolean;
-            readonly maxSize: number;
-            readonly minSize: number;
-            readonly pinned: boolean;
-            readonly resizable: boolean;
-            readonly size: number | undefined;
-            readonly widgets: readonly string[];
-            readonly maxWidgetCount: number;
-        };
-        readonly right: {
-            readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
-            readonly collapseOffset: number;
-            readonly collapsed: boolean;
-            readonly maxSize: number;
-            readonly minSize: number;
-            readonly pinned: boolean;
-            readonly resizable: boolean;
-            readonly size: number | undefined;
-            readonly widgets: readonly string[];
-            readonly maxWidgetCount: number;
-        };
-        readonly top: {
-            readonly span: boolean;
-            readonly side: import("@bentley/ui-ninezone").HorizontalPanelSide;
-            readonly collapseOffset: number;
-            readonly collapsed: boolean;
-            readonly maxSize: number;
-            readonly minSize: number;
-            readonly pinned: boolean;
-            readonly resizable: boolean;
-            readonly size: number | undefined;
-            readonly widgets: readonly string[];
-            readonly maxWidgetCount: number;
-        };
-    };
-    readonly tabs: {
-        readonly [x: string]: {
-            readonly id: string;
-            readonly label: string;
-            readonly preferredFloatingWidgetSize?: {
-                readonly width: number;
-                readonly height: number;
-            } | undefined;
-            readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
-        };
-    };
-    readonly toolSettings: {
-        readonly type: "docked";
-    } | {
-        readonly type: "widget";
-    };
-    readonly widgets: {
-        readonly [x: string]: {
-            readonly activeTabId: string;
-            readonly id: string;
-            readonly minimized: boolean;
-            readonly tabs: readonly string[];
-        };
-    };
-    readonly size: {
-        readonly width: number;
-        readonly height: number;
-    };
-}, id: string, label: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
-
-// @internal (undocumented)
-export const setWidgetState: (base: {
-    readonly draggedTab: {
-        readonly tabId: string;
-        readonly position: {
-            readonly x: number;
-            readonly y: number;
-        };
-        readonly home: {
-            readonly widgetIndex: number;
-            readonly widgetId: string | undefined;
-            readonly side: PanelSide;
-        };
-    } | undefined;
-    readonly floatingWidgets: {
+    readonly popoutWidgets: {
         readonly byId: {
             readonly [x: string]: {
                 readonly bounds: {
@@ -5056,8 +5082,157 @@ export const setWidgetState: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPopoutWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+                readonly x: number;
+                readonly y: number;
+            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly canPopout?: boolean | undefined;
+        };
+    };
+    readonly toolSettings: {
+        readonly type: "docked";
+    } | {
+        readonly type: "widget";
+    };
+    readonly widgets: {
+        readonly [x: string]: {
+            readonly activeTabId: string;
+            readonly id: string;
+            readonly minimized: boolean;
+            readonly tabs: readonly string[];
+        };
+    };
+    readonly size: {
+        readonly width: number;
+        readonly height: number;
+    };
+}, id: string, label: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
+
+// @internal (undocumented)
+export const setWidgetState: (base: {
+    readonly draggedTab: {
+        readonly tabId: string;
+        readonly position: {
+            readonly x: number;
+            readonly y: number;
+        };
+        readonly home: {
+            readonly widgetIndex: number;
+            readonly widgetId: string | undefined;
+            readonly side: PanelSide;
+        };
+    } | undefined;
+    readonly floatingWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: PanelSide;
+                };
+            };
+        };
+        readonly allIds: readonly string[];
+    };
+    readonly popoutWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: PanelSide;
+                };
+            };
+        };
+        readonly allIds: readonly string[];
+    };
+    readonly panels: {
+        readonly bottom: {
+            readonly span: boolean;
+            readonly side: import("@bentley/ui-ninezone").HorizontalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly resizable: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
+        };
+        readonly left: {
+            readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly resizable: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
+        };
+        readonly right: {
+            readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly resizable: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
+        };
+        readonly top: {
+            readonly span: boolean;
+            readonly side: import("@bentley/ui-ninezone").HorizontalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly resizable: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
+        };
+    };
+    readonly tabs: {
+        readonly [x: string]: {
+            readonly id: string;
+            readonly label: string;
+            readonly preferredFloatingWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
+            readonly preferredPopoutWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+                readonly x: number;
+                readonly y: number;
+            } | undefined;
+            readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5176,6 +5351,25 @@ export const showWidget: (base: {
         };
         readonly allIds: readonly string[];
     };
+    readonly popoutWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: PanelSide;
+                };
+            };
+        };
+        readonly allIds: readonly string[];
+    };
     readonly panels: {
         readonly bottom: {
             readonly span: boolean;
@@ -5236,8 +5430,15 @@ export const showWidget: (base: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPopoutWidgetSize?: {
+                readonly width: number;
+                readonly height: number;
+                readonly x: number;
+                readonly y: number;
+            } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly canPopout?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -6399,6 +6600,8 @@ export class UiFramework {
     // @beta (undocumented)
     static get backstageManager(): BackstageManager;
     // @beta (undocumented)
+    static get childWindowManager(): ChildWindowManager;
+    // @beta (undocumented)
     static closeCursorMenu(): void;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
@@ -6503,6 +6706,8 @@ export class UiFramework {
     static translate(key: string | string[]): string;
     // @beta
     static get uiVersion(): string;
+    // (undocumented)
+    static useDefaultPopoutUrl: boolean;
     // (undocumented)
     static get useDragInteraction(): boolean;
     // @alpha (undocumented)
@@ -7034,6 +7239,8 @@ export class WidgetDef {
     // (undocumented)
     canOpen(): boolean;
     // (undocumented)
+    get canPopout(): boolean | undefined;
+    // (undocumented)
     get classId(): string | ConfigurableUiControlConstructor | undefined;
     // (undocumented)
     static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps;
@@ -7082,6 +7289,8 @@ export class WidgetDef {
     set reactNode(node: React.ReactNode);
     restoreTransientState(): boolean;
     saveTransientState(): void;
+    // (undocumented)
+    setCanPopout(value: boolean | undefined): void;
     setLabel(v: string | ConditionalStringValue | StringGetter): void;
     setTooltip(v: string | ConditionalStringValue | StringGetter): void;
     // (undocumented)
@@ -7437,7 +7646,7 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "targetRef" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
 
 // @alpha
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {

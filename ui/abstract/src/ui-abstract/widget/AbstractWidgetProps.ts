@@ -13,7 +13,7 @@ import { WidgetState } from "./WidgetState";
 
 /** Properties for a Widget.
  * @public
- */
+ */
 export interface AbstractWidgetProps extends ProvidedItem {
   /** Gets the widget content */
   readonly getWidgetContent: () => any;
@@ -41,6 +41,8 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly isStatusBar?: boolean;
   /** Indicates whether this Widget should fill the available space in the Zone. */
   readonly fillZone?: boolean;
+  /** Indicates if widget can be popped out to a child window. @beta */
+  readonly canPopout?: boolean;
   /** Indicates if widget can be in floating state. */
   readonly isFloatingStateSupported?: boolean;
   /** Indicates if floating widget is resizable. */

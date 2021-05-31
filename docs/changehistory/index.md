@@ -1,154 +1,145 @@
-# 2.14.0 Change Notes
+# 2.16.0 Change Notes
 
-## New Settings UI Features
+Overview:
 
-The @bentley/ui-core package has added the [SettingsManager]($ui-core) class that allows any number of `SettingsProvider` classes to be registered. These providers provide [SettingsTabEntry]($ui-core) definitions used to populate the [SettingsContainer]($ui-core) UI component with setting pages used to manage application settings. These new classes are marked as beta in this release and are subject to minor modifications in future releases.
+- [Promoted APIs](#promoted-apis)
+- Breaking Changes:
+  - [Breaking API changes](#breaking-api-changes)
+- [Obtaining element geometry on the frontend](#obtaining-element-geometry-on-the-frontend)
+- Visualization
+  - [Clipping enhancements](#clipping-enhancements)
+    - [Colorization](#colorization)
+    - [Model clip groups](#model-clip-groups)
+    - [Nested clip volumes](#nested-clip-volumes)
+  - [Grid display enhancements](#grid-display-enhancements)
+  - [Schedule script enhancements](#schedule-script-enhancements)
+  - [Querying visible elements](#querying-visible-elements)
+  - [Creating graphics](#creating-graphics)
+  - [Map tile trees refactoring](#map-tile-trees-refactoring)
+- [Presentation](#presentation-changes)
+  - [InstanceLabelOverride enhancements](#instancelabeloverride-enhancements)
+  - [Custom category renderers](#custom-category-renderers)
+  - [Custom category nesting](#custom-category-nesting)
+  - [Presentation rule schema requirements](#presentation-rule-schema-requirements)
 
-### Add Settings Page to set Quantity Formatting Overrides
+## Obtaining element geometry on the frontend
 
-The `QuantityFormatSettingsPanel` component has been added to the @bentley/ui-framework package to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This panel can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core). Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
-
-```ts
-// Sample settings provider that dynamically adds settings into the setting stage
-export class AppSettingsProvider implements SettingsProvider {
-  public readonly id = "AppSettingsProvider";
-
-  public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
-    return [
-      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
-    ];
-  }
-
-  public static initializeAppSettingProvider() {
-    UiFramework.settingsManager.addSettingsProvider(new AppSettingsProvider());
-  }
-}
-
-```
-
-The `QuantityFormatSettingsPanel` is marked as alpha in this release and is subject to minor modifications in future releases.
-
-## Breaking Api Changes
-
-### @bentley/ui-abstract package
-
-Property `onClick` in [LinkElementsInfo]($ui-abstract) was changed to be mandatory. Also, the first [PropertyRecord]($ui-abstract) argument was removed from the method. Suggested ways to resolve:
-
-- If you have a function `myFunction(record: PropertyRecord, text: string)` and use the first argument, the issue can be resolved with a lambda:
-
-  ```ts
-  record.links = {
-    onClick: (text) => myFunction(record, text),
-  };
-  ```
-
-- If you were omitting the `onClick` method to get the default behavior, it can still be achieved by not setting `PropertyRecord.links` at all. It's only valid to expect default click behavior when default matcher is used, but if a custom matcher is used, then the click handled can be as simple as this:
-
-  ```ts
-  record.links = {
-    onClick: (text) => { window.open(text, "_blank"); },
-  };
-  ```
-
-### @bentley/imodeljs-frontend package
-
-#### Initializing TileAdmin
-
-The previously-`alpha` [IModelAppOptions.tileAdmin]($frontend) property has been promoted to `beta` and its type has changed from [TileAdmin]($frontend) to [TileAdmin.Props]($frontend). [TileAdmin.create]($frontend) has become `async`. Replace code like the following:
+Until now, an element's [GeometryStreamProps]($common) was only available on the backend - [IModelConnection.Elements.getProps]($frontend) always omits the geometry. [IModelConnection.Elements.loadProps]($frontend) has been introduced to provide greater control over which properties are returned. It accepts the Id, federation Guid, or [Code]($common) of the element of interest, and optionally an [ElementLoadOptions]($common) specifying which properties to include or exclude. For example, the following code queries for and iterates over the geometry of a [GeometricElement3d]($backend):
 
 ```ts
-  IModelApp.startup({ tileAdmin: TileAdmin.create(props) });
-```
-
-with:
-
-```ts
-  IModelApp.startup({ tileAdmin: props });
-```
-
-#### Tile request channels
-
-[Tile]($frontend)s are now required to report the [TileRequestChannel]($frontend) via which requests for their content should be executed, by implementing the new abstract [Tile.channel]($frontend) property. The channel needs to specify a name and a concurrency. The name must be unique among all registered channels, so choose something unlikely to conflict. The concurrency specifies the maximum number of requests that can be simultaneously active on the channel. For example, when using HTTP 1.1 modern browsers allow no more than 6 simultaneous connections to a given hostname, so 6 is a good concurrency for HTTP 1.1-based channels and the hostname is a decent choice for the channel's name.
-
-Typically all tiles in the same [TileTree]($frontend) use the same channel. Your implementation of `Tile.channel` will depend on the mechanism by which the content is obtained. If it uses HTTP, it's easy:
-
-```ts
-  public get channel() { return IModelApp.tileAdmin.getForHttp("my-unique-channel-name"); }
-```
-
-If your tile never requests content, you can implement like so:
-
-```ts
-  public get channel() { throw new Error("This tile never has content so this property should never be invoked"); }
-```
-
-If your tile uses the `alpha` `TileAdmin.requestElementGraphics` API, use the dedicated channel for such requests:
-
-```ts
-  public get channel() { return IModelApp.tileAdmin.channels.elementGraphicsRpc; }
-```
-
-Otherwise, you must register a channel ahead of time. Choose an appropriate concurrency:
-
-- If the tile requests content from some custom [RpcInterface]($common), use `IModelApp.tileAdmin.channels.rpcConcurrency`.
-- Otherwise, choose a reasonably small limit to prevent too much work from being done at one time. Remember that tile requests are frequently canceled shortly after they are enqueued as the user navigates the view. A concurrency somewhere around 6-10 is probably reasonable.
-
-To register a channel at startup:
-
-```ts
-  await IModelApp.startup();
-  const channel = new TileRequestChannel("my-unique-channel-name", IModelApp.tileAdmin.rpcConcurrency);
-  IModelApp.tileAdmin.channels.add(channel);
-```
-
-If you store `channel` from the above snippet in a global variable, you can implement your `channel` property to return it directly; otherwise you must look it up:
-
-```ts
-  public get channel() {
-    const channel = IModelApp.tileAdmin.channels.get("my-unique-channel-name");
-    assert(undefined !== channel);
-    return channel;
+  function printGeometryStream(elementId: Id64String, iModel: IModelConnection): void {
+    const props = await iModel.elements.loadProps(elementId, { wantGeometry: true }) as GeometricElement3dProps;
+    assert(undefined !== props, `Element ${elementId} does not exist`);
+    const iterator = GeometryStreamIterator.fromGeometricElement3d(props);
+    for (const entry of iterator)
+      console.log(JSON.stringify(entry));
   }
 ```
 
-### Authentication changes for Electron and Mobile apps
+Keep in mind that geometry streams can be extremely large. They may also contain data like [BRepEntity.DataProps]($common) that cannot be interpreted on the frontend; for this reason BRep data is omitted from the geometry stream, unless explicitly requested via [ElementLoadOptions.wantBRepData]($common).
 
-For desktop and mobile applications, all authentication happens on the backend. The frontend process merely initiates the login process and waits for notification that it succeeds. Previously the steps required to set up the process were somewhat complicated.
+## Clipping enhancements
 
-Now, to configure your electron or mobile application for authorization, pass the `authConfig` option to `ElectronApp.startup` or `IOSApp.startup` to specify your authorization configuration.
+The contents of a [ViewState]($frontend) can be clipped by applying a [ClipVector]($geometry-core) to the view via [ViewState.setViewClip]($frontend). Several enhancements have been made to this feature:
 
-Then, if you want a method that can be awaited for the user to sign in, use something like:
+### Colorization
 
-```ts
-// returns `true` after successful login.
-async function signIn(): Promise<boolean> {
-  const auth = IModelApp.authorizationClient!;
-  if (auth.isAuthorized)
-    return true; // make sure not already signed in
+[ClipStyle.insideColor]($common) and [ClipStyle.outsideColor]($common) can be used to colorize geometry based on whether it is inside or outside of the clip volume. If the outside color is defined, then that geometry will be drawn in the specified color instead of being clipped. These properties replace the beta [Viewport]($frontend) methods `setInsideColor` and `setOutsideColor` and are saved in the [DisplayStyle]($backend).
 
-  return new Promise<boolean>((resolve, reject) => {
-    auth.onUserStateChanged.addOnce((token?: AccessToken) => resolve(token !== undefined)); // resolve Promise with `onUserStateChanged` event
-    auth.signIn().catch((err) => reject(err)); // initiate the sign in process (forwarded to the backend)
-  });
-}
-```
+### Model clip groups
 
-### @bentley/imodeljs-quantity package
+[ModelClipGroups]($common) can be used to apply additional clip volumes to groups of models. Try it out with an [interactive demo](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=swiping-viewport-sample). Note that [ViewFlags.clipVolume]($common) applies **only** to the view clip - model clips apply regardless of view flags.
 
-#### UnitProps property name change
+### Nested clip volumes
 
-The interface [UnitProps]($quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.
+Clip volumes now nest. For example, if you define a view clip, a model clip group, and a schedule script that applies its own clip volume, then geometry will be clipped by the **intersection** of all three clip volumes. Previously, only one clip volume could be active at a time.
 
-## Enhancements to exportGraphics
+## Grid display enhancements
 
-[IModelDb.exportGraphics]($imodeljs-backend) and [IModelDb.exportPartGraphics]($imodeljs-backend) have new options that provide more control
-over the amount of detail in their output. See `decimationTol` and `minLineStyleComponentSize` in [ExportGraphicsOptions]($imodeljs-backend)
-for details.
+The planar grid that is displayed when [ViewFlags.grid]($common) is now displayed with a shader rather than as explicit geometry.  This improved the overall appearance and efficiency of the grid display and corrects several anomalies when grid display was unstable at the horizon of a perspective view.  The view frustum is now expanded as necessary when grids are displayed to avoid truncating the grid to the displayed geometry.
 
-## Deprecation and removal of @bentley/forms-data-management-client
+## Schedule script enhancements
 
-The current @bentley/forms-data-management-client package is being deprecated and immediately removed from the source. While this is technically a breaking change outside of the major release cycle, no one is able to use this client due to the required OIDC scopes not being published.
+The [RenderSchedule]($common) API for defining how to animate the contents of a view over time has been cleaned up and expanded. A new [RenderTimeline]($backend) element class has been introduced with version 1.0.13 of the BisCore ECSchema, to host a [RenderSchedule.Script]($common). `DisplayStyleSettings.scheduleScriptProps` has been deprecated in favor of [DisplayStyleSettings.renderTimeline]($common) specifying the Id of the RenderTimeline element hosting the script to be applied to the display style. A [DisplayStyleState]($frontend)'s schedule script is now loaded asynchronously via [DisplayStyleState.load]($frontend) - this is done automatically by [ViewState.load]($frontend) but must be done manually for display styles obtained through other means.
 
-## @bentley/imodeljs-quantity package
+Sometimes it is useful to make the elements animated by the script more visible by de-emphasizing elements unaffected by the script. The appearance of non-animated elements can now be controlled by [EmphasizeElements.unanimatedAppearance]($frontend).
 
-The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
+## Querying visible elements
+
+The new `@beta` API [Viewport.queryVisibleFeatures]($frontend) can be used to determine the set of [Feature]($common)s - typically, elements - that are currently visible in the viewport. The API offers a choice between two criteria that can be used to determine visibility:
+
+- The feature lit up at least one pixel on the screen. Pixels drawn behind other, transparent pixels are not included in this criterion. Pixel-based queries can be constrained to a sub-region of the viewport.
+- The feature is included in at least one [Tile]($frontend) currently being displayed by the viewport. By this criterion, if a [ClipVector]($geometry-core) is clipping the contents of the viewport, a feature contained in a tile that intersects the clip volume is considered visible even if the feature's geometry would be completely clipped out.
+
+## Creating graphics
+
+The new [GraphicBuilderOptions]($frontend) makes it easier to create a [GraphicBuilder]($frontend) and enables some additional features. [DecorateContext.createGraphic]($frontend) and [RenderSystem.createGraphic]($frontend) have been added, superseding [DecorateContext.createGraphicBuilder]($frontend) and [RenderSystem.createGraphicBuilder]($frontend). Each accepts a GraphicBuilderOptions specifying only those aspects of the GraphicBuilder that the caller wishes to customize. In particular, the behavior of pickable decorations can be customized using [GraphicBuilderOptions.pickable]($frontend):
+
+- [PickableGraphicOptions.noHilite]($frontend) and [PickableGraphicOptions.noFlash]($frontend) can prevent pickable graphics from being flashed and/or hilited by tools.
+- [PickableGraphicOptions.locateOnly]($frontend) allows a pickable graphic to be located by tools but not drawn to the screen.
+
+## Map tile trees refactoring
+
+The map tile trees have been moved from [DisplayStyleState]($frontend) to [Viewport]($frontend).  This enables the maps to be maintained correctly when viewports are synchronized.  This will primarily not affect applications except calls to [ViewState.areAllTileTreesLoaded]($frontend) should replaced with [Viewport.areAllTileTreesLoaded]($frontend) if the map tile trees should be tested.
+
+## Presentation changes
+
+### InstanceLabelOverride enhancements
+
+The [InstanceLabelOverride]($presentation-common) rule was enhanced with abilities to compose label using related instance values:
+
+- A `propertySource` attribute was added to [InstanceLabelOverridePropertyValueSpecification]($presentation-common) to allow picking a
+property value from a related instance.
+
+- A new [InstanceLabelOverrideRelatedInstanceLabelSpecification]($presentation-common) was added to allow taking label of a related
+instance. The related instance, possibly being a of a different ECClass, might have some different label overrides of its own.
+
+### Custom category renderers
+
+[VirtualizedPropertyGrid]($ui-components) now allows developers to fully customize displayed category contents, if the category is assigned a custom renderer via Presentation Rules. You can read more about that in our [Category customization learning page](../learning/presentation/Customization/PropertyCategoryRenderers.md).
+
+### Custom category nesting
+
+A new `parentId` attribute was added to [PropertyCategorySpecification]($presentation-common) to provide nesting abilities. See more details in our [property categorization page](../learning/presentation/Content/PropertyCategorization.md#category-nesting).
+
+### Presentation rule schema requirements
+
+A new `requiredSchemas` attribute was added to [Ruleset]($presentation-common), [Rule]($presentation-common) and [SubCondition]($presentation-common) definitions. The attribute allows specifying ECSchema requirements for rules and avoid using them when requirements are not met. See the [schema requirements page](../learning/presentation/SchemaRequirements.md) for more details.
+
+## Promoted APIs
+
+The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
+
+### [@bentley/webgl-compatibility](https://www.itwinjs.org/reference/webgl-compatibility/)
+
+- [queryRenderCompatibility]($webgl-compatibility) for querying the client system's compatibility with the iTwin.js rendering system.
+- [WebGLRenderCompatibilityInfo]($webgl-compatibility) for summarizing the client system's compatibility.
+- [WebGLFeature]($webgl-compatibility) for enumerating the required and optionals features used by the iTwin.js rendering system.
+- [WebGLRenderCompatibilityStatus]($webgl-compatibility) for describing a general compatibility rating of a client system.
+- [GraphicsDriverBugs]($webgl-compatibility) for describing any known graphics driver bugs for which iTwin.js will apply workarounds.
+- [ContextCreator]($webgl-compatibility) for describing a function that creates and returns a WebGLContext for [queryRenderCompatibility]($webgl-compatibility).
+
+## Breaking API changes
+
+### @bentley/imodeljs-backend package
+
+The arguments for the @beta protected static methods called during modifications have been changed to be more consistent and extensible:
+
+- [Element]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
+- [Model]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
+- [ElementAspect]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
+
+In addition, new protected static methods were added:
+
+- [Element]($backend) `[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]`
+- [Model]($backend) `[onInsertElement, onInsertedElement, onUpdateElement, onUpdatedElement, onDeleteElement, onDeletedElement]`
+
+The following method is now `async` to make it easier to integrate with asynchronous status and health reporting services:
+
+- [IModelExportHandler.onProgress]($backend)
+
+### @bentley/ecschema-metadata package
+
+Properties getter in @beta [ECClass]($ecschema-metadata) has been changed to return an iterator of properties instead of an array of properties.
+Array indexing and properties like .length will no longer work with the returned iterator, so you may need to create an array from the iterator or use its .next() method. Iterating with for...of loop works the same with iterator as before with an array.\
+This change is made because internally properties are now stored in a map instead of an array, and it is more efficient to return an iterator for the properties to be generated on demand than to create them on the getter.

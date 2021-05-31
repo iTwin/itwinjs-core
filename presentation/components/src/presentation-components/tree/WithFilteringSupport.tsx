@@ -7,7 +7,7 @@
  */
 
 import "./WithFilteringSupport.scss";
-import { isEqual } from "lodash";
+import isEqual from "fast-deep-equal";
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
