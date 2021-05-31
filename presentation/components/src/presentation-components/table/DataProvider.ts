@@ -12,7 +12,8 @@ import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   Content, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item, NestedContentValue,
-  PresentationError, PresentationStatus, RelationshipMeaning, Ruleset, SortDirection, StartItemProps, traverseContentItem, Value, ValuesDictionary,
+  PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, RelationshipMeaning, Ruleset, SortDirection, StartItemProps,
+  traverseContentItem, Value, ValuesDictionary,
 } from "@bentley/presentation-common";
 import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
 import { HorizontalAlignment, SortDirection as UiSortDirection } from "@bentley/ui-core";
@@ -428,6 +429,20 @@ class CellsBuilder extends PropertyRecordsBuilder {
     return this._cells;
   }
 
+  public processFieldHierarchies(props: ProcessFieldHierarchiesProps): void {
+    props.hierarchies.forEach((hierarchy) => {
+      const mergedCellsCount = this._mergedCellCounts[hierarchy.field.name];
+      if (mergedCellsCount) {
+        // if the field wants to be merged with subsequent fields, instead of rendering value of
+        // the field itself, we want to render the NestedContentField that this field originated from,
+        // but keep the name as-is, because columns are being created using original hierarchy.
+        const expandedNestedContentField = this._sameInstanceFields[hierarchy.field.name];
+        expandedNestedContentField.name = hierarchy.field.name;
+        hierarchy.field = expandedNestedContentField;
+      }
+    });
+  }
+
   protected createRootPropertiesAppender() {
     return {
       append: (record: FieldHierarchyRecord) => {
@@ -437,11 +452,6 @@ class CellsBuilder extends PropertyRecordsBuilder {
         if (mergedCellsCount) {
           itemProps.mergedCellsCount = mergedCellsCount;
           itemProps.alignment = HorizontalAlignment.Center;
-
-          // FIXME: what is this for? all tests pass with it commented-out
-          // const nestedField = this._sameInstanceFields[record.fieldHierarchy.field.name];
-          // nestedField.name = record.fieldHierarchy.field.name;
-          // record.fieldHierarchy.field = nestedField;
         }
         this._cells.push({
           key: record.fieldHierarchy.field.name,
