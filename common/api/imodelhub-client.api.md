@@ -453,15 +453,6 @@ export interface ContextManagerClient {
 }
 
 // @internal
-export class ContextPermissions extends WsgInstance {
-    delete?: string;
-    manage?: string;
-    read?: string;
-    webView?: string;
-    write?: string;
-}
-
-// @internal
 export class DefaultCodeUpdateOptionsProvider {
     constructor();
     assignOptions(options: CodeUpdateOptions): Promise<void>;
@@ -1062,7 +1053,6 @@ export function ParseGlobalEvent(response: Response, handler?: IModelBaseHandler
 // @internal
 export class PermissionHandler {
     constructor(handler: IModelBaseHandler);
-    getContextPermissions(requestContext: AuthorizedClientRequestContext, contextId: GuidString): Promise<ContextPermissions>;
     getiModelPermissions(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<IModelPermissions>;
     }
 

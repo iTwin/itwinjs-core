@@ -47,7 +47,6 @@ internal;ConflictingCodesError
 internal;ConflictingLocksError 
 internal;constructorFromEventType(type: IModelHubEventType): EventConstructor
 internal;ContextManagerClient
-internal;ContextPermissions 
 internal;DefaultCodeUpdateOptionsProvider
 internal;DefaultIModelCreateOptionsProvider
 internal;DefaultLockUpdateOptionsProvider
