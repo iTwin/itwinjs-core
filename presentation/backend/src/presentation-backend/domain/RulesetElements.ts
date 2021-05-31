@@ -29,7 +29,7 @@ export class Ruleset extends DefinitionElement {
   public static createRulesetCode(iModelDb: IModelDb, modelId: Id64String, ruleset: PresentationRuleset) {
     let codeValue = ruleset.id;
     if (ruleset.version)
-      codeValue += `.${normalizeVersion(ruleset.version)}`;
+      codeValue += `@${normalizeVersion(ruleset.version)}`;
 
     return new Code({
       spec: iModelDb.codeSpecs.getByName(PresentationRules.CodeSpec.Ruleset).id,
