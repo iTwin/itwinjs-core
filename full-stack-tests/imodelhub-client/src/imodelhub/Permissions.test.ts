@@ -4,32 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as fs from "fs";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
-import { ContextPermissions, IModelClient, IModelPermissions } from "@bentley/imodelhub-client";
+import { GuidString } from "@bentley/bentleyjs-core";
+import { IModelClient, IModelPermissions } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 import { RequestType, ResponseBuilder } from "../ResponseBuilder";
 import { workDir } from "./TestConstants";
-
-function mockGetContextPermissions(contextId: string, webView: boolean, read: boolean, write: boolean, manage: boolean, deleteiModel: boolean) {
-  if (!TestConfig.enableMocks) {
-    return;
-  }
-
-  contextId = contextId || Guid.createValue();
-  const requestPath: string = `/sv1.1/Repositories/Context--${contextId}/ContextScope/Permission`;
-  const requestResponse = ResponseBuilder.generateGetResponse<ContextPermissions>(ResponseBuilder.generateObject<ContextPermissions>(ContextPermissions,
-    new Map<string, any>([
-      ["webView", webView],
-      ["read", read],
-      ["write", write],
-      ["manage", manage],
-      ["delete", deleteiModel],
-    ])));
-  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
-}
 
 function mockGetiModelPermissions(imodelId: string, webView: boolean, read: boolean, write: boolean, manage: boolean) {
   if (!TestConfig.enableMocks) {
@@ -78,14 +60,6 @@ describe("iModelHub PermissionsManager", () => {
     if (TestConfig.enableIModelBank) {
       await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
     }
-  });
-
-  it("should get Context permissions (#unit)", async () => {
-    mockGetContextPermissions(projectId, true, true, true, true, false);
-
-    const contextPermissions: ContextPermissions = await imodelClient.permissions!.getContextPermissions(requestContext, projectId);
-    chai.assert.isTrue(contextPermissions.webView && contextPermissions.read && contextPermissions.write && contextPermissions.manage);
-    chai.assert.isFalse(contextPermissions.delete);
   });
 
   it("should get iModel permissions (#unit)", async () => {

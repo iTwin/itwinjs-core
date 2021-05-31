@@ -14,37 +14,6 @@ import { IModelBaseHandler } from "./BaseHandler";
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /**
- * iModelHub Context Permissions
- * @internal
- */
-@ECJsonTypeMap.classToJson("wsg", "ContextScope.Permission", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class ContextPermissions extends WsgInstance {
-  /** Allows to view iModel in web browser, but does not allow to get its local copy. */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.WebView")
-  public webView?: string;
-
-  /** Allows to open and view an iModel only in read-only state. */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.Read")
-  public read?: string;
-
-  /** Allows to make changes to an iModel and create/modify named versions. */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.Write")
-  public write?: string;
-
-  /**
-   * Allows to create an iModel.
-   * Allows to configure access per iModel.
-   * Allows to manage locks, codes or local copies for the entire iModel.
-   */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.Manage")
-  public manage?: string;
-
-  /** Allows to delete an iModel. */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.Delete")
-  public delete?: string;
-}
-
-/**
  * iModelHub iModel Permissions
  * @internal
  */
@@ -84,21 +53,7 @@ export class PermissionHandler {
   }
 
   /**
-   * Get user permissions of a specified CONNECT context. Use it only to check CONNECT context level permissions (Manage, Delete).
-   * Use [[PermissionHandler.getiModelPermissions]] to check iModel level permissions.
-   * @param requestContext The client request context.
-   * @param contextId Id of the specified CONNECT context.
-   */
-  public async getContextPermissions(requestContext: AuthorizedClientRequestContext, contextId: GuidString): Promise<ContextPermissions> {
-    requestContext.enter();
-    Logger.logInfo(loggerCategory, "Querying permissions for Context", () => ({ contextId }));
-
-    const permissions: ContextPermissions[] = await this._handler.getInstances<ContextPermissions>(requestContext, ContextPermissions, `/Repositories/Context--${contextId}/ContextScope/Permission`);
-    return permissions[0];
-  }
-
-  /**
-   * Get user permissions of an specified iModel. Use it only to check iModel level permissions (WebView, Read, Write, Manage).
+   * Get user permissions of an specified iModel.
    * Use [[PermissionHandler.getContextPermissions]] to check CONNECT context level permissions.
    * @param requestContext The client request context.
    * @param imodelId Id of the specified iModel.
