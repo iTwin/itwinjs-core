@@ -261,7 +261,7 @@ describe("RulesetEmbedder", () => {
         elementId: rulesetElementId,
       }]);
 
-      const insertId = await embedder.insertRuleset(ruleset, { skip: "same-id-and-version" });
+      const insertId = await embedder.insertRuleset(ruleset, { skip: "same-id-and-version-eq" });
       expect(insertId).to.eq(rulesetElementId);
       elementsMock.verify((x) => x.insertElement(createRulesetElementProps(ruleset)), moq.Times.never());
     });
@@ -277,8 +277,42 @@ describe("RulesetEmbedder", () => {
       }]);
       elementsMock.setup((x) => x.insertElement(createRulesetElementProps(ruleset))).returns(() => rulesetElementId);
 
-      const insertId = await embedder.insertRuleset(ruleset, { skip: "same-id-and-version" });
+      const insertId = await embedder.insertRuleset(ruleset, { skip: "same-id-and-version-eq" });
       expect(insertId).to.eq(rulesetElementId);
+    });
+
+    it("skips inserting ruleset with same id and lower version", async () => {
+      const ruleset: Ruleset = { id: "test", version: "1.2.3", rules: [] };
+
+      setupMocksForGettingRulesetModel();
+      setupMocksForQueryingExistingRulesets("test", [{
+        ruleset: { id: "test", version: "1.2.3", rules: [] },
+        elementId: "0x123",
+      }, {
+        ruleset: { id: "test", version: "4.5.6", rules: [] },
+        elementId: "0x456",
+      }, {
+        ruleset: { id: "test", version: "7.8.9", rules: [] },
+        elementId: "0x789",
+      }]);
+
+      const insertId = await embedder.insertRuleset(ruleset, { skip: "same-id-and-version-gte" });
+      expect(insertId).to.eq("0x789");
+      elementsMock.verify((x) => x.insertElement(createRulesetElementProps(ruleset)), moq.Times.never());
+    });
+
+    it("doesn't skip inserting ruleset with same id and higher version", async () => {
+      const ruleset: Ruleset = { id: "test", version: "4.5.6", rules: [] };
+
+      setupMocksForGettingRulesetModel();
+      setupMocksForQueryingExistingRulesets("test", [{
+        ruleset: { id: "test", version: "1.2.3", rules: [] },
+        elementId: "0x123",
+      }]);
+      elementsMock.setup((x) => x.insertElement(createRulesetElementProps(ruleset))).returns(() => "0x456");
+
+      const insertId = await embedder.insertRuleset(ruleset, { skip: "same-id-and-version-gte" });
+      expect(insertId).to.eq("0x456");
     });
 
     it("[deprecated] updates a duplicate ruleset with same id and version", async () => {

@@ -7,7 +7,7 @@
  */
 
 import * as path from "path";
-import { gt as versionGt, lt as versionLt } from "semver";
+import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
 import { assert, ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import {
   DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject,
@@ -41,11 +41,13 @@ export interface RulesetInsertOptions {
   /**
    * When should insertion be skipped:
    * - `same-id` - if iModel already contains a ruleset with the same id and **any** version
-   * - `same-id-and-version` - if iModel already contains a ruleset with same if and version
+   * - `same-id-and-version-eq` - if iModel already contains a ruleset with same id and version
+   * - `same-id-and-version-gte` - if iModel already contains a ruleset with same id and
+   * version equal to greater than of the inserted ruleset.
    *
    * Defaults to `same-id-and-version`.
    */
-  skip?: "never" | "same-id" | "same-id-and-version";
+  skip?: "never" | "same-id" | "same-id-and-version-eq" | "same-id-and-version-gte";
 
   /**
    * Which existing rulesets should be replaced when we insert a new one.
@@ -126,7 +128,8 @@ export class RulesetEmbedder {
 
     // check if we need to do anything at all
     const shouldSkip = normalizedOptions.skip === "same-id" && rulesetsWithSameId.length > 0
-      || normalizedOptions.skip === "same-id-and-version" && rulesetsWithSameId.some((entry) => entry.normalizedVersion === rulesetVersion);
+      || normalizedOptions.skip === "same-id-and-version-eq" && rulesetsWithSameId.some((entry) => entry.normalizedVersion === rulesetVersion)
+      || normalizedOptions.skip === "same-id-and-version-gte" && rulesetsWithSameId.some((entry) => versionGte(entry.normalizedVersion, rulesetVersion));
     if (shouldSkip) {
       // we're not inserting anything - return ID of the ruleset element with the highest version
       const rulesetEntryWithHighestVersion = rulesetsWithSameId.reduce((highest, curr) => {
@@ -311,7 +314,7 @@ export class RulesetEmbedder {
 /* eslint-disable deprecation/deprecation */
 function normalizeRulesetInsertOptions(options?: RulesetInsertOptions | DuplicateRulesetHandlingStrategy): Required<RulesetInsertOptions> {
   if (options === undefined)
-    return { skip: "same-id-and-version", replace: "same-id-and-version" };
+    return { skip: "same-id-and-version-eq", replace: "same-id-and-version" };
 
   if (isEnum(DuplicateRulesetHandlingStrategy, options)) {
     if (options === DuplicateRulesetHandlingStrategy.Replace)
@@ -320,7 +323,7 @@ function normalizeRulesetInsertOptions(options?: RulesetInsertOptions | Duplicat
   }
 
   return {
-    skip: options.skip ?? "same-id-and-version",
+    skip: options.skip ?? "same-id-and-version-eq",
     replace: options.replace ?? "same-id-and-version",
   };
 }
