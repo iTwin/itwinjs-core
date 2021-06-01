@@ -79,6 +79,7 @@ export interface ProgressData {
 export class BlobDownloader {
   private static downloads = new Map<string, SessionData>();
   private static resumeDataVer = 1;
+  private static keepAliveAgent?: HttpsAgent;
   private static mutex = new AsyncMutex();
   private static pipeline = util.promisify(stream.pipeline);
   private static allocateFile(fileName: string, size: number) {
@@ -96,7 +97,7 @@ export class BlobDownloader {
     return hash.read() as string;
   }
   private static async readHeader(downloadUrl: string) {
-    const response = await got(downloadUrl, { method: "HEAD", retry: 3, throwHttpErrors: true});
+    const response = await got(downloadUrl, { method: "HEAD", retry: 3, throwHttpErrors: true });
     const findHeader = (header: string) => {
       return response.rawHeaders.find((v: string) => {
         return v.toLowerCase() === header.toLowerCase();
@@ -388,13 +389,14 @@ export class BlobDownloader {
       }
     }
   }
-  private static getHttpsAgent(parallelDownloadRequestCount: number) {
-    return new HttpsAgent({
-      maxSockets: parallelDownloadRequestCount,
-      maxFreeSockets: parallelDownloadRequestCount,
-      timeout: 60 * 1000, // active socket keepalive for 60 seconds
-      freeSocketTimeout: 30 * 1000, // free socket keepalive for 30 seconds
-    });
+  private static getHttpsAgent(): HttpsAgent {
+    if (!this.keepAliveAgent)
+      this.keepAliveAgent = new HttpsAgent({
+        timeout: 60 * 1000, // active socket keepalive for 60 seconds
+        freeSocketTimeout: 30 * 1000, // free socket keepalive for 30 seconds
+      });
+
+    return this.keepAliveAgent;
   }
   private static async downloadBlocks(session: SessionData, agent: HttpsAgent) {
     let blockId = this.nextBlockId(session.resumeData);
@@ -417,7 +419,7 @@ export class BlobDownloader {
     let blocksPending = 0;
     let blocksDownloading = 0;
     let blocksDownloaded = 0;
-    const bytesDone =  sessionData.bytesDownloadedInPreviousSession + sessionData.bytesDownloaded;
+    const bytesDone = sessionData.bytesDownloadedInPreviousSession + sessionData.bytesDownloaded;
     const bytesTotal = resumeData.blobSize;
     resumeData.blocks.forEach((blockState, _blockId) => {
       if (blockState === BlockState.Downloaded) {
@@ -456,7 +458,7 @@ export class BlobDownloader {
   private static stopProgress(session: SessionData) {
     if (session.progressTimer) {
       clearInterval(session.progressTimer);
-      if (!session.cancelled  && (session.lastReportedBytes !== session.bytesDownloaded || session.lastReportedBytes < 0))
+      if (!session.cancelled && (session.lastReportedBytes !== session.bytesDownloaded || session.lastReportedBytes < 0))
         session.progress.raiseEvent(this.getProgress(session));
     }
   }
@@ -564,7 +566,7 @@ export class BlobDownloader {
           if (this.hasPendingBlocks(session.resumeData)) {
             this.startProgress(session);
             const simTask = Math.min(session.config.simultaneousDownloads!, session.resumeData.blocks.length);
-            const httpsAgent = this.getHttpsAgent(simTask);
+            const httpsAgent = this.getHttpsAgent();
             const worker = Array(simTask).fill(undefined).map(async () => this.downloadBlocks(session, httpsAgent));
             await Promise.all(worker);
             this.stopProgress(session);
