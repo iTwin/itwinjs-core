@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, BeEvent } from "@bentley/bentleyjs-core";
 import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
@@ -103,7 +103,14 @@ export class ContextRealityModel {
   public readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
   protected _appearanceOverrides?: FeatureAppearance;
   protected _planarClipMask?: PlanarClipMaskSettings;
+  /** Event dispatched just before assignment to [[planarClipMaskSettings]]. */
+  public readonly onPlanarClipMaskChanged = new BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>();
+  /** Event dispatched just before assignment to [[appearanceOverrides]]. */
+  public readonly onAppearanceOverridesChanged = new BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>();
 
+  /** Construct a new context reality model.
+   * @param props JSON representation of the reality model, which will be kept in sync with changes made via the ContextRealityModel's methods.
+   */
   public constructor(props: ContextRealityModelProps) {
     this._props = props;
     this.name = props.name ?? "";
@@ -124,6 +131,7 @@ export class ContextRealityModel {
     return this._planarClipMask;
   }
   public set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined) {
+    this.onPlanarClipMaskChanged.raiseEvent(settings, this);
     if (!settings)
       delete this._props.planarClipMask;
     else
@@ -137,6 +145,7 @@ export class ContextRealityModel {
     return this._appearanceOverrides;
   }
   public set appearanceOverrides(overrides: FeatureAppearance | undefined) {
+    this.onAppearanceOverridesChanged.raiseEvent(overrides, this);
     if (!overrides)
       delete this._props.appearanceOverrides;
     else
@@ -171,6 +180,12 @@ export class ContextRealityModels {
   private readonly _container: ContextRealityModelsContainer;
   private readonly _createModel: (props: ContextRealityModelProps) => ContextRealityModel;
   private readonly _models: ContextRealityModel[] = [];
+  /** Event dispatched just before [[ContextRealityModel.planarClipMaskSettings]] is modified for one of the reality models. */
+  public readonly onPlanarClipMaskChanged = new BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>();
+  /** Event dispatched just before [[ContextRealityModel.appearanceOverrides]] is modified for one of the reality models. */
+  public readonly onAppearanceOverridesChanged = new BeEvent<(model: ContextRealityModel, newOverrides: FeatureAppearance | undefined) => void>();
+  /** Event dispatched when a model is [[add]]ed, [[delete]]d, [[replace]]d, or [[update]]d. */
+  public readonly onChanged = new BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>();
 
   /** Construct a new list of reality models from its JSON representation. THe list will be initialized from `container.classifiers` and that JSON representation
    * will be kept in sync with changes made to the list. The caller should not directly modify `container.classifiers` or its contents as that will cause the list
@@ -185,7 +200,7 @@ export class ContextRealityModels {
     const models = container.contextRealityModels;
     if (models)
       for (const model of models)
-        this._models.push(this._createModel(model));
+        this._models.push(this.createModel(model));
   }
 
   /** The read-only list of reality models. */
@@ -202,9 +217,12 @@ export class ContextRealityModels {
       this._container.contextRealityModels = [];
 
     props = ContextRealityModelProps.clone(props);
-    this._container.contextRealityModels.push(props);
-    const model = this._createModel(props);
+    const model = this.createModel(props);
+
+    this.onChanged.raiseEvent(undefined, model);
+
     this._models.push(model);
+    this._container.contextRealityModels.push(props);
 
     return model;
   }
@@ -221,6 +239,9 @@ export class ContextRealityModels {
     assert(undefined !== this._container.contextRealityModels);
     assert(index < this._container.contextRealityModels.length);
 
+    this.dropEventListeners(model);
+    this.onChanged.raiseEvent(model, undefined);
+
     this._models.splice(index, 1);
     if (this.models.length === 0)
       this._container.contextRealityModels = undefined;
@@ -232,6 +253,11 @@ export class ContextRealityModels {
 
   /** Remove all reality models from the list. */
   public clear(): void {
+    for (const model of this.models) {
+      this.dropEventListeners(model);
+      this.onChanged.raiseEvent(model, undefined);
+    }
+
     this._container.contextRealityModels = undefined;
     this._models.length = 0;
   }
@@ -252,7 +278,12 @@ export class ContextRealityModels {
     assert(index < this._container.contextRealityModels.length);
 
     replaceWith = ContextRealityModelProps.clone(replaceWith);
-    const model = this._models[index] = this._createModel(replaceWith);
+    const model = this.createModel(replaceWith);
+
+    this.onChanged.raiseEvent(toReplace, model);
+    this.dropEventListeners(toReplace);
+
+    this._models[index] = model;
     this._container.contextRealityModels[index] = replaceWith;
 
     return model;
@@ -275,5 +306,25 @@ export class ContextRealityModels {
       props.tilesetUrl = toUpdate.url;
 
     return this.replace(toUpdate, props);
+  }
+
+  private createModel(props: ContextRealityModelProps): ContextRealityModel {
+    const model = this._createModel(props);
+    model.onPlanarClipMaskChanged.addListener(this.handlePlanarClipMaskChanged, this);
+    model.onAppearanceOverridesChanged.addListener(this.handleAppearanceOverridesChanged, this);
+    return model;
+  }
+
+  private dropEventListeners(model: ContextRealityModel): void {
+    model.onPlanarClipMaskChanged.removeListener(this.handlePlanarClipMaskChanged, this);
+    model.onAppearanceOverridesChanged.removeListener(this.handleAppearanceOverridesChanged, this);
+  }
+
+  private handlePlanarClipMaskChanged(mask: PlanarClipMaskSettings | undefined, model: ContextRealityModel): void {
+    this.onPlanarClipMaskChanged.raiseEvent(model, mask);
+  }
+
+  private handleAppearanceOverridesChanged(app: FeatureAppearance | undefined, model: ContextRealityModel): void {
+    this.onAppearanceOverridesChanged.raiseEvent(model, app);
   }
 }

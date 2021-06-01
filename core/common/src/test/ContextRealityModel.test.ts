@@ -147,6 +147,31 @@ describe("ContextRealityModel", () => {
     expect(clone.classifiers![0]).not.to.equal(props.classifiers[0]);
     expect(clone.classifiers![0].flags).not.to.equal(props.classifiers[0].flags);
   });
+
+  it("dispatches events", () => {
+    let mask: PlanarClipMaskSettings | undefined;
+    let app: FeatureAppearance | undefined;
+
+    const model = makeModel({ tilesetUrl: "a" });
+    model.onPlanarClipMaskChanged.addListener((x, m) => { expect(m).to.equal(model); mask = x; });
+    model.onAppearanceOverridesChanged.addListener((x, m) => { expect(m).to.equal(model); app = x; });
+
+    const newMask = model.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(1234);
+    expect(mask).to.equal(newMask);
+    expect(model.planarClipMaskSettings).to.equal(newMask);
+
+    model.planarClipMaskSettings = undefined;
+    expect(mask).to.be.undefined;
+    expect(model.planarClipMaskSettings).to.be.undefined;
+
+    const newApp = model.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 2 });
+    expect(app).to.equal(newApp);
+    expect(model.appearanceOverrides).to.equal(newApp);
+
+    model.appearanceOverrides = undefined;
+    expect(app).to.be.undefined;
+    expect(model.appearanceOverrides).to.be.undefined;
+  });
 });
 
 describe("ContextRealityModels", () => {
@@ -301,5 +326,104 @@ describe("ContextRealityModels", () => {
       expect(model instanceof ContextRealityModel).to.be.true;
       expect(model instanceof MyRealityModel).to.be.true;
     }
+  });
+
+  describe("onChanged events", () => {
+    it("are dispatched when list changes", () => {
+      type ModelEvent = [string, "add" | "delete" | "update"];
+      const events: ModelEvent[] = [];
+
+      const models = new ContextRealityModels({ contextRealityModels: [{tilesetUrl: "a"}] });
+      models.onChanged.addListener((prev, cur) => {
+        expect(undefined !== prev || undefined !== cur).to.be.true;
+        if (prev)
+          expect(models.models.indexOf(prev)).not.to.equal(-1);
+
+        if (cur)
+          expect(models.models.indexOf(cur)).to.equal(-1);
+
+        const model = prev ?? cur!;
+        events.push([model.url, prev ? (cur ? "update" : "delete") : "add"]);
+      });
+
+      models.add({tilesetUrl: "b"});
+      models.update(models.models[0], {name: "aa"});
+      models.replace(models.models[1], {tilesetUrl: "bb"});
+      models.delete(models.models[0]);
+      models.clear();
+
+      expect(events).to.deep.equal([
+        ["b", "add"],
+        ["a", "update"],
+        ["b", "update"],
+        ["a", "delete"],
+        ["bb", "delete"],
+      ]);
+    });
+  });
+
+  describe("model changed events", () => {
+    type ModelChangeEvent = [string, "mask" | "appearance"];
+    const events: ModelChangeEvent[] = [];
+    let models: ContextRealityModels;
+
+    beforeEach(() => {
+      events.length = 0;
+      models = new ContextRealityModels({ contextRealityModels: [{tilesetUrl: "a"}, {tilesetUrl: "b"}] });
+      models.onPlanarClipMaskChanged.addListener((model) => events.push([model.url, "mask"]));
+      models.onAppearanceOverridesChanged.addListener((model) => events.push([model.url, "appearance"]));
+    });
+
+    function expectEvents(expected: ModelChangeEvent[]): void {
+      expect(events).to.deep.equal(expected);
+      events.length = 0;
+    }
+
+    it("are dispatched when clip mask or appearance is changed", () => {
+      models.models[0].planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(1);
+      models.models[1].appearanceOverrides = FeatureAppearance.fromJSON({ weight: 1 });
+      models.models[1].planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(2);
+      models.models[0].appearanceOverrides = undefined;
+
+      expectEvents([
+        [ "a", "mask" ],
+        [ "b", "appearance" ],
+        [ "b", "mask" ],
+        [ "a", "appearance" ],
+      ]);
+    });
+
+    it("are not dispatched after delete or clear", () => {
+      const m0 = models.models[0];
+      const m1 = models.models[1];
+
+      m0.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(1);
+      models.delete(m0);
+      m0.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(2);
+
+      m1.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 1 });
+      models.clear();
+      m1.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 2 });
+
+      expectEvents([
+        [ "a", "mask" ],
+        [ "b", "appearance" ],
+      ]);
+    });
+
+    it("are dispatched for newly-added models", () => {
+      const m0 = models.replace(models.models[0], { tilesetUrl: "aa" });
+      const m1 = models.update(models.models[1], { name: "bb" });
+      const m2 = models.add({ tilesetUrl: "c" });
+
+      m0.appearanceOverrides = undefined;
+      m1.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 3 });
+      m2.planarClipMaskSettings = undefined;
+      expectEvents([
+        [ "aa", "appearance" ],
+        [ "b", "appearance", ],
+        [ "c", "mask" ],
+      ]);
+    });
   });
 });
