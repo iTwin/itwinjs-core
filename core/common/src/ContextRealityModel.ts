@@ -87,38 +87,17 @@ export namespace ContextRealityModelProps {
  * @see [[DisplayStyleSettings.contextRealityModels]] to define context reality models for a display style.
  * @public
  */
-export interface ContextRealityModel {
-  /** A name suitable for display in a user interface. By default, an empty string. */
-  readonly name: string;
-  /** The URL that supplies the 3d tiles for displaying the reality model. */
-  readonly url: string;
-  /** A description of the model suitable for display in a user interface. By default, an empty string. */
-  readonly description: string;
-  /** An optional identifier that, if present, can be used to elide a request to the reality data service. */
-  readonly realityDataId?: string;
-  /** A set of [[SpatialClassifier]]s, of which one at any given time can be used to classify the reality model. */
-  readonly classifiers?: SpatialClassifiers;
-  /** @alpha */
-  readonly orbitGtBlob?: OrbitGtBlobProps;
-  /** Overrides applied to the appearance of the reality model. Only the rgb, transparency, nonLocatable, and emphasized properties are applicable - the rest are ignored. */
-  appearanceOverrides?: FeatureAppearance;
-  /** Optionally describes how the geometry of the reality model can be masked by other models. */
-  planarClipMaskSettings?: PlanarClipMaskSettings;
-
-  /** Convert this model to its JSON representation. */
-  toJSON(): ContextRealityModelProps;
-}
-
-/** An implementation of [[ContextRealityModel]] used by [[DisplayStyleSettings]] to synchronize the in-memory representation with
- * its underlying JSON representation. [DisplayStyleState]($frontend) supplies a subclass that also manages the [TileTreeReference]($frontend) used for display.
- * @internal
- */
-export class DisplayStyleContextRealityModel implements ContextRealityModel {
+export class ContextRealityModel {
   protected readonly _props: ContextRealityModelProps;
+  /** A name suitable for display in a user interface. By default, an empty string. */
   public readonly name: string;
+  /** The URL that supplies the 3d tiles for displaying the reality model. */
   public readonly url: string;
+  /** A description of the model suitable for display in a user interface. By default, an empty string. */
   public readonly description: string;
+  /** An optional identifier that, if present, can be used to elide a request to the reality data service. */
   public readonly realityDataId?: string;
+  /** A set of [[SpatialClassifier]]s, of which one at any given time can be used to classify the reality model. */
   public readonly classifiers?: SpatialClassifiers;
   /** @alpha */
   public readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
@@ -140,6 +119,7 @@ export class DisplayStyleContextRealityModel implements ContextRealityModel {
       this.classifiers = new SpatialClassifiers(props);
   }
 
+  /** Optionally describes how the geometry of the reality model can be masked by other models. */
   public get planarClipMaskSettings(): PlanarClipMaskSettings | undefined {
     return this._planarClipMask;
   }
@@ -152,6 +132,7 @@ export class DisplayStyleContextRealityModel implements ContextRealityModel {
     this._planarClipMask = settings;
   }
 
+  /** Overrides applied to the appearance of the reality model. Only the rgb, transparency, nonLocatable, and emphasized properties are applicable - the rest are ignored. */
   public get appearanceOverrides(): FeatureAppearance | undefined {
     return this._appearanceOverrides;
   }
@@ -164,6 +145,7 @@ export class DisplayStyleContextRealityModel implements ContextRealityModel {
     this._appearanceOverrides = overrides;
   }
 
+  /** Convert this model to its JSON representation. */
   public toJSON(): ContextRealityModelProps {
     return ContextRealityModelProps.clone(this._props);
   }
@@ -198,7 +180,7 @@ export class ContextRealityModels {
    */
   public constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel) {
     this._container = container;
-    this._createModel = createContextRealityModel ?? ((props) => new DisplayStyleContextRealityModel(props));
+    this._createModel = createContextRealityModel ?? ((props) => new ContextRealityModel(props));
 
     const models = container.contextRealityModels;
     if (models)

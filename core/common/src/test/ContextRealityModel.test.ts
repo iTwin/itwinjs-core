@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import {
-  ContextRealityModel, ContextRealityModelProps, ContextRealityModels, ContextRealityModelsContainer, DisplayStyleContextRealityModel,
+  ContextRealityModel, ContextRealityModelProps, ContextRealityModels, ContextRealityModelsContainer,
 } from "../ContextRealityModel";
 import { SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
@@ -13,7 +13,7 @@ import { FeatureAppearance } from "../FeatureSymbology";
 
 describe("ContextRealityModel", () => {
   function makeModel(props: ContextRealityModelProps): ContextRealityModel {
-    return new DisplayStyleContextRealityModel(props);
+    return new ContextRealityModel(props);
   }
 
   function expectProps(actual: ContextRealityModelProps, expected: ContextRealityModelProps): void {
@@ -198,7 +198,7 @@ describe("ContextRealityModels", () => {
 
     const models = new ContextRealityModels(container);
     expect(models.models.length).to.equal(3);
-    const model = new DisplayStyleContextRealityModel({ tilesetUrl: "a" });
+    const model = new ContextRealityModel({ tilesetUrl: "a" });
     expect(models.delete(model)).to.be.false;
     expect(models.models.length).to.equal(3);
 
@@ -279,13 +279,13 @@ describe("ContextRealityModels", () => {
   });
 
   it("instantiates correct type", () => {
-    class MyRealityModel extends DisplayStyleContextRealityModel { }
+    class MyRealityModel extends ContextRealityModel { }
 
     const container = { contextRealityModels: [{ tilesetUrl: "a" }] };
     let models = new ContextRealityModels(container);
     expect(models.models.length).to.equal(1);
     for (const model of models.models) {
-      expect(model instanceof DisplayStyleContextRealityModel).to.be.true;
+      expect(model instanceof ContextRealityModel).to.be.true;
       expect(model instanceof MyRealityModel).to.be.false;
     }
 
@@ -298,7 +298,7 @@ describe("ContextRealityModels", () => {
 
     expect(models.models.length).to.equal(4);
     for (const model of models.models) {
-      expect(model instanceof DisplayStyleContextRealityModel).to.be.true;
+      expect(model instanceof ContextRealityModel).to.be.true;
       expect(model instanceof MyRealityModel).to.be.true;
     }
   });
