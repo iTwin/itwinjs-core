@@ -4301,7 +4301,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
 }
 
 // @public
-export interface InformationPartitionElementProps extends DefinitionElementProps {
+export interface InformationPartitionElementProps extends ElementProps {
     // (undocumented)
     description?: string;
 }
