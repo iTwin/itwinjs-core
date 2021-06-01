@@ -25,6 +25,7 @@ export * from "./FeatureOverrideProvider";
 export * from "./FeatureTrackingManager";
 export * from "./FrontendLoggerCategory";
 export * from "./FrontendRequestContext";
+export * from "./FrontendHubAccess";
 export * from "./Frustum2d";
 export * from "./FrustumAnimator";
 export * from "./FuzzySearch";

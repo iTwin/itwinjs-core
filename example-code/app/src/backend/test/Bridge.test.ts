@@ -10,7 +10,7 @@ import { ContextRegistryClient, Project } from "@bentley/context-registry-client
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, IModelHubAccess, ModelSelector,
+  BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, IModelHubBackend, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
 } from "@bentley/imodeljs-backend";
 import { ColorByName, IModel } from "@bentley/imodeljs-common";
@@ -69,7 +69,7 @@ async function createIModel(requestContext: AuthorizedClientRequestContext, cont
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
-  const imodelRepository: HubIModel = await IModelHubAccess.iModelClient.iModels.create(requestContext, contextId, iModelName, { path: seedFile });
+  const imodelRepository: HubIModel = await IModelHubBackend.iModelClient.iModels.create(requestContext, contextId, iModelName, { path: seedFile });
   // __PUBLISH_EXTRACT_END__
   return imodelRepository;
 }

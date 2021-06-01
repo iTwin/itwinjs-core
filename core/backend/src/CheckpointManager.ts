@@ -16,10 +16,10 @@ import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imode
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { ChangesetId } from "./HubAccess";
+import { ChangesetId } from "./BackendHubAccess";
 import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
-import { IModelHubAccess } from "./IModelHubAccess";
+import { IModelHubBackend } from "./IModelHubBackend";
 import { IModelJsFs } from "./IModelJsFs";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
@@ -118,7 +118,7 @@ export class V2CheckpointManager {
     try {
       requestContext.enter();
       const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
-      const checkpoints = await IModelHubAccess.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
+      const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
       requestContext.enter();
       if (checkpoints.length < 1)
         throw new Error("no checkpoint");

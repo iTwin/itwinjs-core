@@ -15,10 +15,10 @@ import {
 import { BriefcaseIdValue } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
-import { ChangesetFileProps, ChangesetId, ChangesetProps } from "../../HubAccess";
+import { ChangesetFileProps, ChangesetId, ChangesetProps } from "../../BackendHubAccess";
 import { IModelDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
-import { IModelHubAccess } from "../../IModelHubAccess";
+import { IModelHubBackend } from "../../IModelHubBackend";
 import { IModelJsFs } from "../../IModelJsFs";
 
 /** DTO to work with iModelHub DeleteChangeSet API */
@@ -134,7 +134,7 @@ export class HubUtility {
   /** Download all change sets of the specified iModel */
   private static async downloadChangesets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
     // Determine the range of changesets that remain to be downloaded
-    const changeSets = await IModelHubAccess.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
+    const changeSets = await IModelHubBackend.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
     if (changeSets.length === 0)
       return changeSets;
     const latestIndex = changeSets.length - 1;
@@ -153,7 +153,7 @@ export class HubUtility {
     const query = earliestChangeSetId ? new ChangeSetQuery().betweenChangeSets(earliestChangeSetId, latestChangeSetId) : new ChangeSetQuery();
 
     const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download ChangeSets");
-    await IModelHubAccess.iModelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
+    await IModelHubBackend.iModelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
     perfLogger.dispose();
     return changeSets;
   }
@@ -164,7 +164,7 @@ export class HubUtility {
     query.orderBy("createdDate");
 
     const perfLogger = new PerfLogger("HubUtility.downloadNamedVersions -> Get Version Infos");
-    const versions = await IModelHubAccess.iModelClient.versions.get(requestContext, iModelId, query);
+    const versions = await IModelHubBackend.iModelClient.versions.get(requestContext, iModelId, query);
     perfLogger.dispose();
     if (versions.length === 0)
       return new Array<ChangeSet>();
@@ -195,7 +195,7 @@ export class HubUtility {
     const seedPathname = path.join(downloadDir, "seed", iModel.name!.concat(".bim"));
     if (!IModelJsFs.existsSync(seedPathname)) {
       const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
-      await IModelHubAccess.iModelClient.iModels.download(requestContext, iModelId, seedPathname);
+      await IModelHubBackend.iModelClient.iModels.download(requestContext, iModelId, seedPathname);
       perfLogger.dispose();
     }
 
@@ -402,11 +402,11 @@ export class HubUtility {
     const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname, iModelName, overwrite);
 
     let briefcase: Briefcase;
-    const hubBriefcases = await IModelHubAccess.iModelClient.briefcases.get(requestContext, iModelId);
+    const hubBriefcases = await IModelHubBackend.iModelClient.briefcases.get(requestContext, iModelId);
     if (hubBriefcases.length > 0)
       briefcase = hubBriefcases[0];
     else
-      briefcase = await IModelHubAccess.iModelClient.briefcases.create(requestContext, iModelId);
+      briefcase = await IModelHubBackend.iModelClient.briefcases.create(requestContext, iModelId);
     if (!briefcase) {
       throw new Error(`Could not acquire a briefcase for the iModel ${iModelId}`);
     }
@@ -446,7 +446,7 @@ export class HubUtility {
       changeSet.changesType = changeSetJson.changesType;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
-      await IModelHubAccess.iModelClient.changeSets.create(requestContext, briefcase.iModelId!, changeSet, changeSetPathname);
+      await IModelHubBackend.iModelClient.changeSets.create(requestContext, briefcase.iModelId!, changeSet, changeSetPathname);
       ii++;
       Logger.logInfo(HubUtility.logCategory, `Uploaded Change Set ${ii} of ${count}`, () => ({ ...changeSet }));
     }
@@ -463,10 +463,10 @@ export class HubUtility {
     for (const namedVersionJson of namedVersionsJson) {
       const query = (new VersionQuery()).byChangeSet(namedVersionJson.changeSetId);
 
-      const versions = await IModelHubAccess.iModelClient.versions.get(requestContext, briefcase.iModelId!, query);
+      const versions = await IModelHubBackend.iModelClient.versions.get(requestContext, briefcase.iModelId!, query);
       if (versions.length > 0 && !overwrite)
         continue;
-      await IModelHubAccess.iModelClient.versions.create(requestContext, briefcase.iModelId!, namedVersionJson.changeSetId, namedVersionJson.name, namedVersionJson.description);
+      await IModelHubBackend.iModelClient.versions.create(requestContext, briefcase.iModelId!, namedVersionJson.changeSetId, namedVersionJson.name, namedVersionJson.description);
     }
   }
 
@@ -622,7 +622,7 @@ export class HubUtility {
 
   /** Delete a changeSet with a specific index */
   public static async deleteChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetIndex: number): Promise<DeleteChangeSetAction> {
-    const invalidChangeSet = (await IModelHubAccess.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().filter(`Index+eq+${changeSetIndex}`)))[0];
+    const invalidChangeSet = (await IModelHubBackend.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().filter(`Index+eq+${changeSetIndex}`)))[0];
     const deleteChangeSetActionInstance = new DeleteChangeSetAction();
     deleteChangeSetActionInstance.changeSetId = invalidChangeSet.id;
 
@@ -643,7 +643,7 @@ export class HubUtility {
   /** Wait until the checkpoint for the specified changeSet fails to generate */
   public static async waitforCheckpointGenerationFailure(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString): Promise<void> {
     return HubUtility.waitForEntityToReachState(
-      async () => (await IModelHubAccess.iModelClient.checkpoints.get(requestContext, iModelId, new CheckpointQuery().byChangeSetId(changeSetId)))[0],
+      async () => (await IModelHubBackend.iModelClient.checkpoints.get(requestContext, iModelId, new CheckpointQuery().byChangeSetId(changeSetId)))[0],
       (checkpoint: Checkpoint) => checkpoint.state === InitializationState.Failed);
   }
 
@@ -669,7 +669,7 @@ class TestIModelHubProject {
   public terminate(): void { }
 
   public get iModelHubClient(): IModelHubClient {
-    return IModelHubAccess.iModelClient as IModelHubClient;
+    return IModelHubBackend.iModelClient as IModelHubClient;
   }
 
   private static _contextRegistryClient?: ContextRegistryClient;

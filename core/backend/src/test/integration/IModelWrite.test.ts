@@ -9,7 +9,7 @@ import { DbOpcode, DbResult, GuidString, Id64String, IModelHubStatus } from "@be
 import { CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery } from "@bentley/imodelhub-client";
 import { CodeScopeSpec, CodeSpec, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { WsgError } from "@bentley/itwin-client";
-import { IModelHubAccess } from "../../IModelHubAccess";
+import { IModelHubBackend } from "../../IModelHubBackend";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps,
   SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
@@ -134,17 +134,17 @@ describe("IModelWriteTest (#integration)", () => {
 
   it.skip("should verify that briefcase A can acquire Schema lock while briefcase B holds an element lock", async () => {
 
-    const bcA = await IModelHubAccess.iModelClient.briefcases.create(managerRequestContext, readWriteTestIModelId);
-    const bcB = await IModelHubAccess.iModelClient.briefcases.create(managerRequestContext, readWriteTestIModelId);
+    const bcA = await IModelHubBackend.iModelClient.briefcases.create(managerRequestContext, readWriteTestIModelId);
+    const bcB = await IModelHubBackend.iModelClient.briefcases.create(managerRequestContext, readWriteTestIModelId);
     assert.notEqual(bcA.briefcaseId, bcB.briefcaseId);
     assert.isTrue(bcA.briefcaseId !== undefined);
     assert.isTrue(bcB.briefcaseId !== undefined);
     const bcALockReq = toHubLock(ConcurrencyControl.Request.schemaLock, bcA.briefcaseId!);
     const bcBLockReq = toHubLock(ConcurrencyControl.Request.getElementLock("0x1", LockLevel.Exclusive), bcB.briefcaseId!);
     // First, B acquires element lock
-    const bcBLocksAcquired = await IModelHubAccess.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
+    const bcBLocksAcquired = await IModelHubBackend.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
     // Next, A acquires schema lock
-    const bcALocksAcquired = await IModelHubAccess.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcALockReq]);
+    const bcALocksAcquired = await IModelHubBackend.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcALockReq]);
 
     assert.isTrue(bcALocksAcquired.length !== 0);
     assert.equal(bcALocksAcquired[0].briefcaseId, bcA.briefcaseId);
@@ -154,18 +154,18 @@ describe("IModelWriteTest (#integration)", () => {
     assert.equal(bcBLocksAcquired[0].briefcaseId, bcB.briefcaseId);
     assert.equal(bcBLocksAcquired[0].lockType, bcBLockReq.lockType);
 
-    const bcALocksQueryResults = await IModelHubAccess.iModelClient.locks.get(managerRequestContext, readWriteTestIModelId, new LockQuery().byBriefcaseId(bcA.briefcaseId!));
-    const bcBLocksQueryResults = await IModelHubAccess.iModelClient.locks.get(managerRequestContext, readWriteTestIModelId, new LockQuery().byBriefcaseId(bcB.briefcaseId!));
+    const bcALocksQueryResults = await IModelHubBackend.iModelClient.locks.get(managerRequestContext, readWriteTestIModelId, new LockQuery().byBriefcaseId(bcA.briefcaseId!));
+    const bcBLocksQueryResults = await IModelHubBackend.iModelClient.locks.get(managerRequestContext, readWriteTestIModelId, new LockQuery().byBriefcaseId(bcB.briefcaseId!));
     assert.deepEqual(bcALocksAcquired, bcALocksQueryResults);
     assert.deepEqual(bcBLocksAcquired, bcBLocksQueryResults);
 
     bcBLockReq.lockLevel = LockLevel.None;
-    await IModelHubAccess.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
+    await IModelHubBackend.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
     bcALockReq.lockLevel = LockLevel.None;
-    await IModelHubAccess.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcALockReq]);
+    await IModelHubBackend.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcALockReq]);
 
-    await IModelHubAccess.iModelClient.briefcases.delete(managerRequestContext, readWriteTestIModelId, bcA.briefcaseId!);
-    await IModelHubAccess.iModelClient.briefcases.delete(managerRequestContext, readWriteTestIModelId, bcB.briefcaseId!);
+    await IModelHubBackend.iModelClient.briefcases.delete(managerRequestContext, readWriteTestIModelId, bcA.briefcaseId!);
+    await IModelHubBackend.iModelClient.briefcases.delete(managerRequestContext, readWriteTestIModelId, bcB.briefcaseId!);
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
@@ -346,9 +346,9 @@ describe("IModelWriteTest (#integration)", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
-    const iModels = await IModelHubAccess.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
+    const iModels = await IModelHubBackend.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
+      await IModelHubBackend.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
     }
     timer.end();
 
@@ -360,7 +360,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const initialCodes = await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId);
+    const initialCodes = await IModelHubBackend.iModelClient.codes.get(adminRequestContext, rwIModelId);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -386,7 +386,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId);
+    const codes = await IModelHubBackend.iModelClient.codes.get(adminRequestContext, rwIModelId);
     timer.end();
     expect(codes.length > initialCodes.length);
     assert.isTrue(codes.some((hcode) => (hcode.value === code.value) && (hcode.state === CodeState.Used)), "verify that I got the code that I reserved and used");
@@ -400,7 +400,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.equal(postPushChangeSetId, rwIModel.changeSetId), "no changeset created or pushed";
     assert.isFalse(rwIModel.concurrencyControl.codes.isReserved(code2), "I released my reservation of the code anotherCode");
 
-    const codesAfter = await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId);
+    const codesAfter = await IModelHubBackend.iModelClient.codes.get(adminRequestContext, rwIModelId);
     assert.deepEqual(codesAfter, codes, "The code that used above is still marked as used");
   });
 
@@ -454,19 +454,19 @@ describe("IModelWriteTest (#integration)", () => {
     const bcId = rwIModel.concurrencyControl.iModel.briefcaseId;
     const iModelId = rwIModel.concurrencyControl.iModel.iModelId;
 
-    let heldLocks = await IModelHubAccess.iModelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
+    let heldLocks = await IModelHubBackend.iModelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
     assert.isTrue(heldLocks.length !== 0);
 
     await expect(rwIModel.concurrencyControl.abandonResources(adminRequestContext)).to.be.rejectedWith(IModelError, "");
 
     await rwIModel.pushChanges(adminRequestContext, "");
 
-    heldLocks = await IModelHubAccess.iModelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
+    heldLocks = await IModelHubBackend.iModelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
     assert.isTrue(heldLocks.length === 0);
 
     await rwIModel.concurrencyControl.abandonResources(adminRequestContext); // should do nothing and be harmless
 
-    await IModelHubAccess.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelId);
+    await IModelHubBackend.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelId);
   });
 
   it("should handle undo/redo (#integration)", async () => {
@@ -727,9 +727,9 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    const otherBriefcase = await IModelHubAccess.iModelClient.briefcases.create(adminRequestContext, rwIModelId);
+    const otherBriefcase = await IModelHubBackend.iModelClient.briefcases.create(adminRequestContext, rwIModelId);
 
-    let codesReserved = (await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId)).filter((c) => c.state === CodeState.Reserved);
+    let codesReserved = (await IModelHubBackend.iModelClient.codes.get(adminRequestContext, rwIModelId)).filter((c) => c.state === CodeState.Reserved);
     assert.equal(codesReserved.length, 0);
 
     const hubCode = new HubCode();
@@ -738,13 +738,13 @@ describe("IModelWriteTest (#integration)", () => {
     hubCode.codeScope = code.scope;
     hubCode.briefcaseId = otherBriefcase.briefcaseId;
     hubCode.state = CodeState.Reserved;
-    await IModelHubAccess.iModelClient.codes.update(adminRequestContext, rwIModelId, [hubCode]);
+    await IModelHubBackend.iModelClient.codes.update(adminRequestContext, rwIModelId, [hubCode]);
     adminRequestContext.enter();
     await rwIModel.concurrencyControl.syncCache(adminRequestContext); // I must tell ConcurrencyControl whenever I make changes to locks/codes in iModelHub by using the lower-level API directly.
     adminRequestContext.enter();
 
     timer = new Timer("querying codes");
-    codesReserved = (await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId)).filter((c) => c.state === CodeState.Reserved);
+    codesReserved = (await IModelHubBackend.iModelClient.codes.get(adminRequestContext, rwIModelId)).filter((c) => c.state === CodeState.Reserved);
     timer.end();
     assert.equal(codesReserved.length, 1);
     assert.equal(codesReserved[0].value, hubCode.value);

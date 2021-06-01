@@ -7,7 +7,7 @@ import { join } from "path";
 import { DbResult, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName } from "../HubAccess";
+import { ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName } from "../BackendHubAccess";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";

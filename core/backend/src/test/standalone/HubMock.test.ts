@@ -13,7 +13,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangesetFileProps } from "../../HubAccess";
+import { ChangesetFileProps } from "../../BackendHubAccess";
 import { IModelHost } from "../../IModelHost";
 
 describe("HubMock", () => {

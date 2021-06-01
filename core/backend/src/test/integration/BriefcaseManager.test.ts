@@ -12,7 +12,7 @@ import { ChangesType } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
-import { IModelHubAccess } from "../../IModelHubAccess";
+import { IModelHubBackend } from "../../IModelHubBackend";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 import { IModelTestUtils, TestUserId } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -677,7 +677,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.pushTestChangeSet();
 
     // Push an invalid changeSet
-    const fileHandler = IModelHubAccess.iModelClient.fileHandler!;
+    const fileHandler = IModelHubBackend.iModelClient.fileHandler!;
     const oldUploadFunc = fileHandler.uploadFile.bind(fileHandler);
     try {
       const newUploadFunc =
@@ -700,10 +700,10 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.pushTestChangeSet();
 
     // Ensure that DoNotScheduleRenderThumbnailJob option is disabled
-    assert.isFalse(IModelHubAccess.iModelClient.requestOptions.isSet);
+    assert.isFalse(IModelHubBackend.iModelClient.requestOptions.isSet);
     // Create version to trigger checkpoint generation
     const lastChangeSetId = iModel.nativeDb.getParentChangeSetId();
-    await IModelHubAccess.iModelClient.versions.create(userContext, iModel.iModelId, lastChangeSetId, "Version 1");
+    await IModelHubBackend.iModelClient.versions.create(userContext, iModel.iModelId, lastChangeSetId, "Version 1");
 
     // Wait until the scheduled checkpoint job fails
     await HubUtility.waitforCheckpointGenerationFailure(userContext, iModel.iModelId, lastChangeSetId);
@@ -728,7 +728,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.pushTestChangeSet();
 
     // Assert the final number of changeSets
-    assert.equal(4, (await IModelHubAccess.iModelClient.changeSets.get(userContext, iModel.iModelId)).length);
+    assert.equal(4, (await IModelHubBackend.iModelClient.changeSets.get(userContext, iModel.iModelId)).length);
 
     // Delete the test iModel
     await testUtility.deleteTestIModel();

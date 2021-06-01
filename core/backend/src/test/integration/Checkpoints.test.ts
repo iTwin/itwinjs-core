@@ -11,7 +11,7 @@ import { GuidString } from "@bentley/bentleyjs-core";
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { IModelHubAccess } from "../../IModelHubAccess";
+import { IModelHubBackend } from "../../IModelHubBackend";
 import { AuthorizedBackendRequestContext, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
@@ -38,7 +38,7 @@ describe.skip("Checkpoints (#integration)", () => {
     testChangeSetId = (await HubUtility.queryLatestChangeSetId(requestContext, testIModelId));
 
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(testChangeSetId).selectContainerAccessKey();
-    const checkpoints = await IModelHubAccess.iModelClient.checkpointsV2.get(requestContext, testIModelId, checkpointQuery);
+    const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(requestContext, testIModelId, checkpointQuery);
     assert.equal(checkpoints.length, 1, "checkpoint missing");
     assert.isDefined(checkpoints[0].containerAccessKeyAccount, "checkpoint storage account is invalid");
 

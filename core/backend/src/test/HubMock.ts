@@ -8,25 +8,25 @@ import * as sinon from "sinon";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import {
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetIdArg, ChangesetProps, ChangesetRange, CheckPointArg,
+  IModelIdArg, LocalDirName, LocalFileName, LockProps,
+} from "../BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { BriefcaseManager } from "../BriefcaseManager";
-import {
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetIdArg, ChangesetProps, ChangesetRange, CheckPointArg, HubAccess, IModelIdArg, LocalDirName,
-  LocalFileName, LockProps,
-} from "../HubAccess";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
+import { IModelHubBackend } from "../IModelHubBackend";
 import { IModelJsFs } from "../IModelJsFs";
-import { LocalHub, LocalHubProps } from "./LocalHub";
-import { IModelHubAccess } from "../IModelHubAccess";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { LocalHub, LocalHubProps } from "./LocalHub";
 
 /** Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc. */
 export class HubMock {
   private static mockRoot: LocalDirName | undefined;
   private static hubs = new Map<string, LocalHub>();
-  private static _saveHubAccess: HubAccess;
+  private static _saveHubAccess: BackendHubAccess;
 
   public static get isValid() { return undefined !== this.mockRoot; }
   public static startup(mockName: LocalDirName) {
@@ -35,7 +35,8 @@ export class HubMock {
     IModelJsFs.recursiveMkDirSync(this.mockRoot);
     IModelJsFs.purgeDirSync(this.mockRoot);
     this._saveHubAccess = IModelHost.hubAccess;
-    IModelHost.hubAccess = this;
+    IModelHost.setHubAccess(this);
+
     HubUtility.contextId = Guid.createValue();
 
     sinon.stub(IModelVersion, "getLatestChangeSetId").callsFake(async (): Promise<GuidString> => {
@@ -46,7 +47,7 @@ export class HubMock {
       throw new Error("this method is deprecated and cannot be used while IModelHub is mocked - use IModelHost.hubaccess.getChangesetIdFromVersion");
     });
 
-    sinon.stub(IModelHubAccess, "iModelClient").get(() => {
+    sinon.stub(IModelHubBackend, "iModelClient").get(() => {
       throw new Error("IModelHubAccess is mocked for this test - use only IModelHost.hubaccess functions");
     });
 
@@ -62,7 +63,7 @@ export class HubMock {
     IModelJsFs.purgeDirSync(this.mockRoot!);
     IModelJsFs.removeSync(this.mockRoot!);
     sinon.restore();
-    IModelHost.hubAccess = this._saveHubAccess;
+    IModelHost.setHubAccess(this._saveHubAccess);
     this.mockRoot = undefined;
   }
 

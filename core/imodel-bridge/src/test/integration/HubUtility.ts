@@ -5,7 +5,7 @@
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { BriefcaseQuery, HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { IModelHubAccess } from "@bentley/imodeljs-backend";
+import { IModelHubBackend } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 export class HubUtility {
@@ -59,13 +59,13 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcasesById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, onReachThreshold: () => void, acquireThreshold: number = 16): Promise<void> {
-    const briefcases = await IModelHubAccess.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
+    const briefcases = await IModelHubBackend.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > acquireThreshold) {
       onReachThreshold();
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase) => {
-        promises.push(IModelHubAccess.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
+        promises.push(IModelHubBackend.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);
     }
@@ -87,12 +87,12 @@ export class HubUtility {
     // Delete any existing iModel
     try {
       const deleteIModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-      await IModelHubAccess.iModelClient.iModels.delete(requestContext, projectId, deleteIModelId);
+      await IModelHubBackend.iModelClient.iModels.delete(requestContext, projectId, deleteIModelId);
     } catch (err) {
     }
 
     // Create a new iModel
-    const iModel: HubIModel = await IModelHubAccess.iModelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for ${iModelName}` });
+    const iModel: HubIModel = await IModelHubBackend.iModelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for ${iModelName}` });
     return iModel.wsgId;
   }
 }
@@ -110,7 +110,7 @@ class TestIModelHubProject {
   }
 
   public get iModelHubClient(): IModelHubClient {
-    return IModelHubAccess.iModelClient as IModelHubClient;
+    return IModelHubBackend.iModelClient as IModelHubClient;
   }
 
   public async queryProject(requestContext: AuthorizedClientRequestContext, query: any | undefined): Promise<Project> {

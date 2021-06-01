@@ -15,10 +15,10 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Element, Subject } from "./Element";
 import { ChannelRootAspect } from "./ElementAspect";
-import { LockProps } from "./HubAccess";
+import { LockProps } from "./BackendHubAccess";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
-import { IModelHubAccess } from "./IModelHubAccess";
+import { IModelHubBackend } from "./IModelHubBackend";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
@@ -564,7 +564,7 @@ export class ConcurrencyControl {
 
     const hubCodes = ConcurrencyControl.Request.toHubCodes(this, req.codes);
 
-    const codesHandler = IModelHubAccess.iModelClient.codes;
+    const codesHandler = IModelHubBackend.iModelClient.codes;
     const chunkSize = 100;
     for (let i = 0; i < hubCodes.length; i += chunkSize) {
       const query = new CodeQuery().byCodes(hubCodes.slice(i, i + chunkSize));
@@ -602,7 +602,7 @@ export class ConcurrencyControl {
 
     const briefcaseId = this.iModel.getBriefcaseId();
 
-    const locksHandler = IModelHubAccess.iModelClient.locks;
+    const locksHandler = IModelHubBackend.iModelClient.locks;
     const chunkSize = 100;
     for (let i = 0; i < hubLocks.length; i += chunkSize) {
       const query = new LockQuery().byLocks(hubLocks.slice(i, i + chunkSize));
@@ -1232,7 +1232,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
         query.byCodeSpecId(specId).byCodeScope(scopeId);
       }
 
-      return IModelHubAccess.iModelClient.codes.get(requestContext, this._iModel.iModelId, query);
+      return IModelHubBackend.iModelClient.codes.get(requestContext, this._iModel.iModelId, query);
     }
 
     /** Returns `true` if the specified code has been reserved by this briefcase.

@@ -18,7 +18,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { ChangesetFileProps } from "./HubAccess";
+import { ChangesetFileProps } from "./BackendHubAccess";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 

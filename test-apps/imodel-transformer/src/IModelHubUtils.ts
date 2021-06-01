@@ -8,7 +8,7 @@ import { assert, Config, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 import { BriefcaseQuery, Version } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, ChangesetProps, IModelHost, IModelHubAccess, IModelJsFs, NativeHost, RequestNewBriefcaseArg,
+  BriefcaseDb, BriefcaseManager, ChangesetProps, IModelHost, IModelHubBackend, IModelJsFs, NativeHost, RequestNewBriefcaseArg,
 } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -63,7 +63,7 @@ export namespace IModelHubUtils {
 
   /** Call the specified function for each (named) Version of the specified iModel. */
   export async function forEachNamedVersion(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, func: (v: Version) => void): Promise<void> {
-    const namedVersions = await IModelHubAccess.iModelClient.versions.get(requestContext, iModelId);
+    const namedVersions = await IModelHubBackend.iModelClient.versions.get(requestContext, iModelId);
     for (const namedVersion of namedVersions) {
       func(namedVersion);
     }
@@ -74,7 +74,7 @@ export namespace IModelHubUtils {
     if (briefcaseArg.briefcaseId) {
       briefcaseQuery = briefcaseQuery.filter(`BriefcaseId+eq+${briefcaseArg.briefcaseId}`);
     }
-    const briefcases = await IModelHubAccess.iModelClient.briefcases.get(requestContext, briefcaseArg.iModelId, briefcaseQuery);
+    const briefcases = await IModelHubBackend.iModelClient.briefcases.get(requestContext, briefcaseArg.iModelId, briefcaseQuery);
     if (0 === briefcases.length) {
       const briefcaseProps = await BriefcaseManager.downloadBriefcase(requestContext, briefcaseArg);
       return BriefcaseDb.open(requestContext, {

@@ -71,27 +71,19 @@ describe("V1 Checkpoint Manager", () => {
     snapshot.saveChanges();
 
     assert.notEqual(iModelId, snapshot.nativeDb.getDbGuid()); // Ensure the Snapshot dbGuid and iModelId are different
-
     snapshot.close();
-
-    const mockCheckpoint = {
-      wsgId: "INVALID",
-      ecId: "INVALID",
-      changeSetId,
-      downloadUrl: `INVALID`,
-      mergedChangeSetId: changeSetId,
-    };
 
     sinon.stub(V2CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
       IModelJsFs.copySync(dbPath, arg.localFile);
-      return mockCheckpoint.changeSetId;
+      return changeSetId;
     });
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const downloadedDbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
-    const request = { localFile: downloadedDbPath, checkpoint: { requestContext: ctx, contextId, iModelId, changeSetId } };
+    const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
+
+    const request = { localFile, checkpoint: { requestContext: ctx, contextId, iModelId, changeSetId } };
     await CheckpointManager.downloadCheckpoint(request);
-    const db = SnapshotDb.openCheckpointV1(downloadedDbPath, { requestContext: ctx, contextId, iModelId, changeSetId });
+    const db = SnapshotDb.openCheckpointV1(localFile, request.checkpoint);
     assert.equal(iModelId, db.nativeDb.getDbGuid(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
   });
 });

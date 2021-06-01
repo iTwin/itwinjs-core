@@ -23,13 +23,13 @@ import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client"
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
-import { ChangesetFileProps, ChangesetId, ChangesetIndex } from "./HubAccess";
+import { ChangesetFileProps, ChangesetId, ChangesetIndex } from "./BackendHubAccess";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 
-const loggerCategory: string = BackendLoggerCategory.IModelDb;
+const loggerCategory = BackendLoggerCategory.IModelDb;
 
 /** The Id assigned to a briefcase by iModelHub, or a [[BriefcaseIdValue]] that identify special kinds of iModels.
  * @public

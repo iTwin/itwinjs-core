@@ -20,12 +20,12 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import {
   BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetIdArg, ChangesetProps, ChangesetRange, CheckPointArg, IModelIdArg,
   LockProps,
-} from "./HubAccess";
+} from "./BackendHubAccess";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
 /** @internal */
-export class IModelHubAccess {
+export class IModelHubBackend {
 
   private static _imodelClient?: IModelClient;
   private static _isIModelBankClient = false;

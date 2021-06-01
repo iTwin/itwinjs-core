@@ -119,7 +119,7 @@ export class IModelVersion {
    * Returns an empty string if this contains the first version (before any change sets). If the
    * version was already specified as of a ChangeSet, the method simply returns
    * that Id without any validation.
-   * @deprecated use IModelHost.hubAccess.getChangesetIdFromVersion
+   * @deprecated use IModelHost/IModelApp hubAccess.getChangesetIdFromVersion
    */
   public async evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString> {
     if (this._first)

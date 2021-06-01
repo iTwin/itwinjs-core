@@ -85,9 +85,10 @@ export interface ChangesetRangeArg extends IModelIdArg {
 
 export type CheckPointArg = DownloadRequest;
 
-export interface HubAccess {
-  /** Downloads change sets in the specified range. */
+export interface BackendHubAccess {
+  /** Download change sets in the specified range. */
   downloadChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetFileProps[]>;
+  /** Download a single change set. */
   downloadChangeset: (arg: ChangesetIdArg) => Promise<ChangesetFileProps>;
   queryChangeset: (arg: ChangesetIdArg) => Promise<ChangesetProps>;
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;

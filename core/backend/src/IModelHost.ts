@@ -29,8 +29,8 @@ import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, 
 import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
-import { HubAccess } from "./HubAccess";
-import { IModelHubAccess } from "./IModelHubAccess";
+import { BackendHubAccess } from "./BackendHubAccess";
+import { IModelHubBackend } from "./IModelHubBackend";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -330,15 +330,20 @@ export class IModelHost {
   /** @internal */
   public static tileUploader: CloudStorageTileUploader;
 
-  public static hubAccess: HubAccess;
+  private static _hubAccess: BackendHubAccess;
+  /** @internal */
+  public static setHubAccess(hubAccess: BackendHubAccess) { this._hubAccess = hubAccess; }
 
-  /** @deprecated */
+  /** Provides access to the IModelHub implementation for this IModelHost */
+  public static get hubAccess(): BackendHubAccess { return this._hubAccess; }
+
+  /** @deprecated use [[hubAccess]] */
   // public static get iModelClient(): IModelClient {
   //   return IModelHubAccess.iModelClient;
   // }
-  /** @deprecated */
+  /** @deprecated use hubAccess */
   public static get isUsingIModelBankClient(): boolean {
-    return IModelHubAccess.isUsingIModelBankClient;
+    return IModelHubBackend.isUsingIModelBankClient;
   }
 
   private static _isValid = false;
@@ -403,7 +408,7 @@ export class IModelHost {
     }
 
     this.setupCacheDirs(configuration);
-    IModelHubAccess.setIModelClient(configuration.imodelClient);
+    IModelHubBackend.setIModelClient(configuration.imodelClient);
     BriefcaseManager.initialize(this._briefcaseCacheDir, path.join(this._cacheDir, "bc", "v4_0"));
 
     IModelHost.setupRpcRequestContext();
@@ -423,7 +428,7 @@ export class IModelHost {
       FunctionalSchema,
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
-    IModelHost.hubAccess = IModelHubAccess;
+    IModelHost._hubAccess = IModelHubBackend;
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
 
@@ -436,7 +441,7 @@ export class IModelHost {
       this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
     }
 
-    if (!IModelHubAccess.isUsingIModelBankClient && configuration.applicationType !== IModelJsNative.ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
+    if (!IModelHubBackend.isUsingIModelBankClient && configuration.applicationType !== IModelJsNative.ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
       const usageLoggingClient = new BackendFeatureUsageTelemetryClient({ backendApplicationId: this.applicationId, backendApplicationVersion: this.applicationVersion, backendMachineName: os.hostname(), clientAuthManager: this._clientAuthIntrospectionManager });
       this.telemetry.addClient(usageLoggingClient);
     }
