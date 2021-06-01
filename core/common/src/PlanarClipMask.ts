@@ -91,6 +91,11 @@ export class PlanarClipMaskSettings {
   private readonly _modelIds?: CompressedId64Set;
   private readonly _subCategoryOrElementIds?: CompressedId64Set;
 
+  /** The compressed representation of [[modelIds]]. */
+  public get compressedModelIds(): CompressedId64Set | undefined {
+    return this._modelIds;
+  }
+
   /** Create a new [[PlanarClipMaskSettings]] object from its JSON representation. */
   public static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings {
     if (!json || undefined === json.mode)
@@ -188,4 +193,3 @@ export class PlanarClipMaskSettings {
   /** A default PlanarClipMask which masks nothing. */
   public static defaults = new PlanarClipMaskSettings(PlanarClipMaskMode.None);
 }
-

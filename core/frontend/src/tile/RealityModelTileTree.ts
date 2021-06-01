@@ -474,7 +474,7 @@ export namespace RealityModelTileTree {
     public get modelId() { return this._modelId; }
     public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
-    public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
+    // public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
     public get planarClipMaskPriority(): number {
       if (this._planarClipMask?.settings.priority !== undefined)
         return this._planarClipMask.settings.priority;
@@ -483,7 +483,7 @@ export namespace RealityModelTileTree {
     }
 
     protected get maskModelIds(): string | undefined {
-      return this._planarClipMask?.modelIds;
+      return this._planarClipMask?.settings.compressedModelIds;
     }
 
     public constructor(props: RealityModelTileTree.ReferenceBaseProps) {
@@ -498,8 +498,10 @@ export namespace RealityModelTileTree {
 
         this._transform = transform;
       }
+
       this._iModel = props.iModel;
-      this._planarClipMask = props.planarClipMask && PlanarClipMaskMode.None !== props.planarClipMask.mode ? props.planarClipMask : undefined;
+      if (props.planarClipMask)
+        this._planarClipMask = PlanarClipMaskState.create(props.planarClipMask);
 
       if (undefined !== props.classifiers)
         this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
@@ -532,7 +534,7 @@ export namespace RealityModelTileTree {
     protected addPlanarClassifierOrMaskToScene(context: SceneContext) {
       // A planarClassifier is required if there is a classification tree OR planar masking is required.
       const classifierTree = this.planarClassifierTreeRef;
-      const planarClipMask = this._planarClipMask ? this._planarClipMask : context.viewport.displayStyle.getRealityModelPlanarClipMask(this.modelId);
+      const planarClipMask = this._planarClipMask ?? context.viewport.displayStyle.getPlanarClipMaskState(this.modelId);
       if (!classifierTree && !planarClipMask)
         return;
 

@@ -167,7 +167,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @beta
    */
   public forEachRealityModel(func: (model: ContextRealityModelState) => void): void {
-    for (const model of this.settings.contextRealityModels) {
+    for (const model of this.settings.contextRealityModels.models) {
       assert(model instanceof ContextRealityModelState);
       func(model);
     }
@@ -279,7 +279,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const url = getCesiumOSMBuildingsUrl();
     let model = this.settings.contextRealityModels.models.find((x) => x.url === url);
     if (options.onOff === false)
-      return undefined !== model && this.settings.contextRealityModels.models.delete(model);
+      return undefined !== model && this.settings.contextRealityModels.delete(model);
 
     if (!model) {
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
@@ -643,7 +643,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @beta
    */
   public get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState> {
-    return this.settings.contextRealityModels.models as ContextRealityModel[];
+    return this.settings.contextRealityModels.models as ContextRealityModelState[];
   }
 
   /** @internal */
@@ -731,6 +731,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState {
     return new ContextRealityModelState(props, this.iModel, this);
+  }
+
+  /** @internal */
+  public getPlanarClipMaskState(modelId: Id64String): PlanarClipMaskState | undefined {
+    // ###TODO clean this up?
+    const model = this.iModel.models.getLoaded(modelId)?.asSpatialModel;
+    return (model && model.isRealityModel) ? this._attachedRealityModelPlanarClipMasks.get(modelId) : undefined;
   }
 }
 

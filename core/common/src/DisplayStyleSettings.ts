@@ -1047,8 +1047,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     return true;
   }
 
-  public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }) {
-    super(jsonProperties);
+  public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }, options?: DisplayStyleSettingsOptions) {
+    super(jsonProperties, options);
     this._thematic = ThematicDisplay.fromJSON(this._json3d.thematic);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
