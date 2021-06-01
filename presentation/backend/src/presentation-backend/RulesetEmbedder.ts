@@ -57,7 +57,7 @@ export interface RulesetInsertOptions {
    *
    * Defaults to `exact`.
    */
-  replaceVersion?: "all" | "all-lower" | "exact";
+  replaceVersions?: "all" | "all-lower" | "exact";
 }
 
 /**
@@ -147,7 +147,7 @@ export class RulesetEmbedder {
     // if requested, delete existing rulesets
     const rulesetsToRemove: Id64String[] = [];
     const shouldRemove = (_: Ruleset, normalizedVersion: string): boolean => {
-      switch (normalizedOptions.replaceVersion) {
+      switch (normalizedOptions.replaceVersions) {
         case "all":
           return normalizedVersion !== rulesetVersion;
         case "all-lower":
@@ -318,17 +318,17 @@ export class RulesetEmbedder {
 /* eslint-disable deprecation/deprecation */
 function normalizeRulesetInsertOptions(options?: RulesetInsertOptions | DuplicateRulesetHandlingStrategy): Required<RulesetInsertOptions> {
   if (options === undefined)
-    return { skip: "same-id-and-version-eq", replaceVersion: "exact" };
+    return { skip: "same-id-and-version-eq", replaceVersions: "exact" };
 
   if (isEnum(DuplicateRulesetHandlingStrategy, options)) {
     if (options === DuplicateRulesetHandlingStrategy.Replace)
-      return { skip: "never", replaceVersion: "exact" };
-    return { skip: "same-id", replaceVersion: "exact" };
+      return { skip: "never", replaceVersions: "exact" };
+    return { skip: "same-id", replaceVersions: "exact" };
   }
 
   return {
     skip: options.skip ?? "same-id-and-version-eq",
-    replaceVersion: options.replaceVersion ?? "exact",
+    replaceVersions: options.replaceVersions ?? "exact",
   };
 }
 /* eslint-enable deprecation/deprecation */

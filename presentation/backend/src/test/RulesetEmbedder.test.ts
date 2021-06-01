@@ -348,7 +348,7 @@ describe("RulesetEmbedder", () => {
       rulesetElementMock.setup((x) => x.id).returns(() => rulesetElementId);
       elementsMock.setup((x) => x.tryGetElement(rulesetElementId)).returns(() => rulesetElementMock.object);
 
-      const insertId = await embedder.insertRuleset(ruleset, { skip: "never", replaceVersion: "exact" });
+      const insertId = await embedder.insertRuleset(ruleset, { skip: "never", replaceVersions: "exact" });
       expect(insertId).to.eq(rulesetElementId);
       rulesetElementMock.verify((x) => x.update(), moq.Times.once());
     });
@@ -368,7 +368,7 @@ describe("RulesetEmbedder", () => {
 
       elementsMock.setup((x) => x.insertElement(createRulesetElementProps(ruleset))).returns(() => rulesetElementId);
 
-      const insertId = await embedder.insertRuleset(ruleset, { replaceVersion: "all" });
+      const insertId = await embedder.insertRuleset(ruleset, { replaceVersions: "all" });
       expect(insertId).to.eq(rulesetElementId);
       elementsMock.verify((x) => x.deleteElement(["0x456", "0x789"]), moq.Times.once());
     });
@@ -388,7 +388,7 @@ describe("RulesetEmbedder", () => {
 
       elementsMock.setup((x) => x.insertElement(createRulesetElementProps(ruleset))).returns(() => rulesetElementId);
 
-      const insertId = await embedder.insertRuleset(ruleset, { replaceVersion: "all-lower" });
+      const insertId = await embedder.insertRuleset(ruleset, { replaceVersions: "all-lower" });
       expect(insertId).to.eq(rulesetElementId);
       elementsMock.verify((x) => x.deleteElement(["0x123"]), moq.Times.once());
     });

@@ -299,7 +299,7 @@ export interface RulesetEmbedderProps {
 
 // @beta
 export interface RulesetInsertOptions {
-    replaceVersion?: "all" | "all-lower" | "exact";
+    replaceVersions?: "all" | "all-lower" | "exact";
     skip?: "never" | "same-id" | "same-id-and-version-eq" | "same-id-and-version-gte";
 }
 

@@ -242,7 +242,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId2)).to.be.true;
 
     const ruleset3: Ruleset = { id: "test", version: "2.0.0", rules: [] };
-    const insertId3 = await embedder.insertRuleset(ruleset3, { replaceVersion: "all" });
+    const insertId3 = await embedder.insertRuleset(ruleset3, { replaceVersions: "all" });
     expect(insertId3).to.not.be.oneOf([insertId1, insertId2]);
 
     const rulesets = await embedder.getRulesets();
@@ -260,7 +260,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId2)).to.be.true;
 
     const ruleset3: Ruleset = { id: "test", version: "2.0.0", rules: [] };
-    const insertId3 = await embedder.insertRuleset(ruleset3, { replaceVersion: "all-lower" });
+    const insertId3 = await embedder.insertRuleset(ruleset3, { replaceVersions: "all-lower" });
     expect(insertId3).to.not.be.oneOf([insertId1, insertId2]);
 
     const rulesets = await embedder.getRulesets();
@@ -279,7 +279,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId2)).to.be.true;
 
     const ruleset3: Ruleset = { id: "test", version: "3.0.0", rules: [{ ruleType: RuleTypes.RootNodes, specifications: [] }] };
-    const insertId3 = await embedder.insertRuleset(ruleset3, { skip: "never", replaceVersion: "exact" });
+    const insertId3 = await embedder.insertRuleset(ruleset3, { skip: "never", replaceVersions: "exact" });
     expect(insertId3).to.eq(insertId2).not.eq(insertId1);
 
     const rulesets = await embedder.getRulesets();
