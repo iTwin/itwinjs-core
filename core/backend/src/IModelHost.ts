@@ -337,11 +337,15 @@ export class IModelHost {
   /** Provides access to the IModelHub implementation for this IModelHost */
   public static get hubAccess(): BackendHubAccess { return this._hubAccess; }
 
-  /** @deprecated use [[hubAccess]] */
-  // public static get iModelClient(): IModelClient {
-  //   return IModelHubAccess.iModelClient;
-  // }
-  /** @deprecated use hubAccess */
+  /**
+   *  @deprecated access to IModelHub should generally be through the [[hubAccess]]] api.
+   * If you really need to call the IModelClient api directly, use [[IModelHubBackend.iModelClient]]
+   */
+  public static get iModelClient(): IModelClient {
+    return IModelHubBackend.iModelClient;
+  }
+
+  /** @deprecated use [[hubAccess]] api */
   public static get isUsingIModelBankClient(): boolean {
     return IModelHubBackend.isUsingIModelBankClient;
   }

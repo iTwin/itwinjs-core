@@ -244,8 +244,11 @@ export class IModelApp {
   /** @internal */
   public static get initialized() { return this._initialized; }
 
-  // /** @deprecated  use [[hubaccess]] */
-  // public static get iModelClient(): IModelClient { return this._imodelClient; }
+  /**
+   * @deprecated access to IModelHub should generally be through the [[hubAccess]]] api.
+   * If you really need to call the IModelClient api directly, use [[IModelHubFrontend.iModelClient]]
+   */
+  public static get iModelClient(): IModelClient { return IModelHubFrontend.iModelClient; }
 
   public static get hubAccess(): FrontendHubAccess { return this._hubAccess; }
 
