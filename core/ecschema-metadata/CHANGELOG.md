@@ -1,6 +1,11 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+This log was last generated on Thu, 27 May 2021 20:04:22 GMT and should not be manually modified.
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+_Version update only_
 
 ## 2.16.0
 Mon, 24 May 2021 15:58:39 GMT
@@ -10,6 +15,11 @@ Mon, 24 May 2021 15:58:39 GMT
 - ECSchema Rpc Interface changes
 - Changed class properties to use map and added corresponding performance tests
 - Added additional testing for checking cyclic schema reference during deserialization
+
+## 2.15.6
+Wed, 26 May 2021 15:55:18 GMT
+
+_Version update only_
 
 ## 2.15.5
 Thu, 20 May 2021 15:06:26 GMT

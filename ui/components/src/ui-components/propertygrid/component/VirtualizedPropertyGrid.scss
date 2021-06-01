@@ -12,13 +12,8 @@
   top: calc(50% - 24px);
 }
 
-.components-property-grid {
-  @include uicore-expandable-blocks-list;
-
-  padding-top: 6px;
-  padding-bottom: 6px;
-  display: grid;
-  grid-row-gap: 6px;
+.components-virtualized-property-grid {
+  padding: 0;
   user-select: none;
   color: $buic-foreground-body;
 
