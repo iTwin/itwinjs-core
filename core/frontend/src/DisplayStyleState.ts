@@ -311,51 +311,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return undefined !== this.settings.contextRealityModels.models.find((x) => x.matchesNameAndUrl(name, url));
   }
 
-  /** The overrides applied by this style.
-   * @beta
-   */
-  public get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> {
-    return this.settings.modelAppearanceOverrides;
-  }
-
-  /** Customize the way a [[Model]]  is drawn by this display style.
-   * @param modelId The ID of the [[model]] whose appearance is to be overridden.
-   * @param ovr The overrides to apply to the [[Model]].
-   * @see [[dropModelAppearanceOverride]]
-   * @beta
-   */
-  public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance) {
-    this.settings.overrideModelAppearance(modelId, ovr);
-  }
-
-  /** Remove any appearance overrides applied to a [[Model]] by this style.
-   * @param modelId The ID of the [[Model]].
-   * @param ovr The overrides to apply to the [[Model]].
-   * @see [[overrideModelAppearance]]
-   * @beta
-   */
-  public dropModelAppearanceOverride(modelId: Id64String) {
-    this.settings.dropModelAppearanceOverride(modelId);
-  }
-
-  /** Returns true if model appearance overrides are defined by this style.
-   * @beta
-   */
-
-  public get hasModelAppearanceOverride() {
-    return this.settings.hasModelAppearanceOverride;
-  }
-
-  /** Obtain the override applied to a [[Model]] by this style.
-   * @param id The ID of the [[Model]].
-   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
-   * @see [[overrideModelAppearance]]
-   * @beta
-   */
-  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
-    return this.settings.getModelAppearanceOverride(id);
-  }
-
   /** @internal */
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
 

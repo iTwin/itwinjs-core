@@ -621,18 +621,18 @@ export abstract class Viewport implements IDisposable {
   /** Override the appearance of a model when rendered within this viewport.
    * @param id The Id of the model.
    * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
-   * @see [[dropModelAppearanceOverride]]
+   * @see [DisplayStyleSettings.overrideModelAppearance]($common)
    */
   public overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void {
-    this.view.displayStyle.overrideModelAppearance(id, ovr);
+    this.view.displayStyle.settings.overrideModelAppearance(id, ovr);
   }
 
   /** Remove any model appearance override for the specified model.
    * @param id The Id of the model.
-   * @see [[overrideModelAppearance]]
+   * @see [DisplayStyleSettings.dropModelAppearanceOverride]($common)
    */
   public dropModelAppearanceOverride(id: Id64String): void {
-    this.view.displayStyle.dropModelAppearanceOverride(id);
+    this.view.displayStyle.settings.dropModelAppearanceOverride(id);
   }
 
   /** Some changes may or may not require us to invalidate the scene.
