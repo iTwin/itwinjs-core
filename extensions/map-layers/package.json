@@ -100,7 +100,7 @@
     "@bentley/ui-framework": "2.17.0-dev.18",
     "@bentley/ui-ninezone": "2.17.0-dev.18",
     "@itwin/itwinui-css": "^0.17.0",
-    "@itwin/itwinui-react": "^1.5.0",
+    "@itwin/itwinui-react": "^1.6.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
