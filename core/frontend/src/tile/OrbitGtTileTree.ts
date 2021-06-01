@@ -367,7 +367,7 @@ export namespace OrbitGtTileTree {
       const pointCloudToEcef = transformFromOrbitGt(CRSManager.createTransform(pointCloudCRS, new OrbitGtCoordinate(pointCloudCenter.x, pointCloudCenter.y, pointCloudCenter.z), wgs84CRS));
       const pointCloudCenterToEcef = pointCloudToEcef.multiplyTransformTransform(addCloudCenter);
 
-      let ecefToDb = iModel.backgroundMapLocation.getMapEcefToDb(0);
+      let ecefToDb = iModel.getMapEcefToDb(0);
       // In initial publishing version the iModel ecef Transform was used to locate the reality model.
       // This would work well only for tilesets published from that iModel but for iModels the ecef transform is calculated
       // at the center of the project extents and the reality model location may differ greatly, and the curvature of the earth
