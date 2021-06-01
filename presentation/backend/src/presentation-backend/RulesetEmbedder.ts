@@ -50,10 +50,14 @@ export interface RulesetInsertOptions {
   skip?: "never" | "same-id" | "same-id-and-version-eq" | "same-id-and-version-gte";
 
   /**
-   * Which existing rulesets should be replaced when we insert a new one.
-   * Defaults to `same-id-and-version`.
+   * Which existing versions of rulesets with same id should be replaced when we insert a new one:
+   * - `all` - replace all rulesets with same id.
+   * - `all-lower` - replace rulesets with same id an version lower than the version of inserted ruleset.
+   * - `exact` - replace only the ruleset whose id and version matches the inserted ruleset.
+   *
+   * Defaults to `exact`.
    */
-  replace?: "same-id" | "same-id-older" | "same-id-and-version";
+  replaceVersion?: "all" | "all-lower" | "exact";
 }
 
 /**
@@ -143,10 +147,10 @@ export class RulesetEmbedder {
     // if requested, delete existing rulesets
     const rulesetsToRemove: Id64String[] = [];
     const shouldRemove = (_: Ruleset, normalizedVersion: string): boolean => {
-      switch (normalizedOptions.replace) {
-        case "same-id":
+      switch (normalizedOptions.replaceVersion) {
+        case "all":
           return normalizedVersion !== rulesetVersion;
-        case "same-id-older":
+        case "all-lower":
           return normalizedVersion !== rulesetVersion && versionLt(normalizedVersion, rulesetVersion);
       }
       return false;
@@ -314,17 +318,17 @@ export class RulesetEmbedder {
 /* eslint-disable deprecation/deprecation */
 function normalizeRulesetInsertOptions(options?: RulesetInsertOptions | DuplicateRulesetHandlingStrategy): Required<RulesetInsertOptions> {
   if (options === undefined)
-    return { skip: "same-id-and-version-eq", replace: "same-id-and-version" };
+    return { skip: "same-id-and-version-eq", replaceVersion: "exact" };
 
   if (isEnum(DuplicateRulesetHandlingStrategy, options)) {
     if (options === DuplicateRulesetHandlingStrategy.Replace)
-      return { skip: "never", replace: "same-id-and-version" };
-    return { skip: "same-id", replace: "same-id-and-version" };
+      return { skip: "never", replaceVersion: "exact" };
+    return { skip: "same-id", replaceVersion: "exact" };
   }
 
   return {
     skip: options.skip ?? "same-id-and-version-eq",
-    replace: options.replace ?? "same-id-and-version",
+    replaceVersion: options.replaceVersion ?? "exact",
   };
 }
 /* eslint-enable deprecation/deprecation */

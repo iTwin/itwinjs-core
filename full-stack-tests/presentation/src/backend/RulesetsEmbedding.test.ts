@@ -189,7 +189,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId1)).to.be.true;
 
     const ruleset2: Ruleset = { id: "test", version: "1.2.3", rules: [] };
-    const insertId2 = await embedder.insertRuleset(ruleset2, { skip: "same-id-and-version" });
+    const insertId2 = await embedder.insertRuleset(ruleset2, { skip: "same-id-and-version-eq" });
     expect(insertId2).to.eq(insertId1);
 
     const rulesets = await embedder.getRulesets();
@@ -203,7 +203,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId1)).to.be.true;
 
     const ruleset2: Ruleset = { id: "test", version: "4.5.6", rules: [] };
-    const insertId2 = await embedder.insertRuleset(ruleset2, { skip: "same-id-and-version" });
+    const insertId2 = await embedder.insertRuleset(ruleset2, { skip: "same-id-and-version-eq" });
     expect(insertId2).to.not.eq(insertId1);
 
     const rulesets = await embedder.getRulesets();
@@ -242,7 +242,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId2)).to.be.true;
 
     const ruleset3: Ruleset = { id: "test", version: "2.0.0", rules: [] };
-    const insertId3 = await embedder.insertRuleset(ruleset3, { replace: "same-id" });
+    const insertId3 = await embedder.insertRuleset(ruleset3, { replaceVersion: "all" });
     expect(insertId3).to.not.be.oneOf([insertId1, insertId2]);
 
     const rulesets = await embedder.getRulesets();
@@ -260,7 +260,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId2)).to.be.true;
 
     const ruleset3: Ruleset = { id: "test", version: "2.0.0", rules: [] };
-    const insertId3 = await embedder.insertRuleset(ruleset3, { replace: "same-id-older" });
+    const insertId3 = await embedder.insertRuleset(ruleset3, { replaceVersion: "all-lower" });
     expect(insertId3).to.not.be.oneOf([insertId1, insertId2]);
 
     const rulesets = await embedder.getRulesets();
@@ -279,7 +279,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId2)).to.be.true;
 
     const ruleset3: Ruleset = { id: "test", version: "3.0.0", rules: [{ ruleType: RuleTypes.RootNodes, specifications: [] }] };
-    const insertId3 = await embedder.insertRuleset(ruleset3, { skip: "never", replace: "same-id-and-version" });
+    const insertId3 = await embedder.insertRuleset(ruleset3, { skip: "never", replaceVersion: "exact" });
     expect(insertId3).to.eq(insertId2).not.eq(insertId1);
 
     const rulesets = await embedder.getRulesets();
