@@ -223,7 +223,7 @@ abstract class IModelDbBuilder {
   public abstract acquire(): Promise<void>;
 
   protected abstract _updateExistingData(): Promise<void>;
-  protected abstract _detectDeletedElements(): Promise<void>;
+  protected abstract _finalizeChanges(): Promise<void>;
   protected abstract _initDomainSchema(): Promise<void>;
   protected abstract _importDefinitions(): Promise<void>;
 
@@ -283,9 +283,13 @@ abstract class IModelDbBuilder {
 
   protected abstract _enterChannel(channelRootId: Id64String, lockRoot?: boolean): Promise<void>;
 
-  public async updateExistingData(): Promise<void> {
-    await this._updateExistingData();
+  protected detectDeletedElements() {
+    if (this._bridgeArgs.doDetectDeletedElements) {
+      this._bridge.synchronizer.detectDeletedElements();
+    }
+  }
 
+  protected updateProjectExtents() {
     const options: ComputeProjectExtentsOptions = {
       reportExtentsWithOutliers: false,
       reportOutliers: false,
@@ -304,7 +308,8 @@ abstract class IModelDbBuilder {
   public async updateExistingIModel() {
     await this._initDomainSchema();
     await this._importDefinitions();
-    return this.updateExistingData();
+    await this._updateExistingData();
+    await this._finalizeChanges();
   }
 
   public get imodel() {
@@ -431,7 +436,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     return this._saveAndPushChanges(dataChangesDescription, ChangesType.Regular);
   }
 
-  protected async _detectDeletedElements(): Promise<void> {
+  protected async _finalizeChanges(): Promise<void> {
     assert(this._requestContext !== undefined);
     assert(this._imodel instanceof BriefcaseDb);
     assert(!this._imodel.concurrencyControl.locks.hasSchemaLock);
@@ -440,11 +445,10 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     await this.enterBridgeChannel();
     assert(this._imodel.concurrencyControl.channel.isChannelRootLocked);
 
-    if (this._bridgeArgs.doDetectDeletedElements) {
-      this._bridge.synchronizer.detectDeletedElements();
-    }
+    this.detectDeletedElements();
+    this.updateProjectExtents();
 
-    let dataChangesDescription = "Finalization changes";
+    let dataChangesDescription = "Finalizing changes";
     if (this._bridge.getDataChangesDescription)
       dataChangesDescription = this._bridge.getDataChangesDescription();
 
@@ -577,11 +581,10 @@ class SnapshotDbBuilder extends IModelDbBuilder {
     this._imodel.saveChanges();
   }
 
-  protected async _detectDeletedElements() {
+  protected async _finalizeChanges() {
     assert(this._imodel !== undefined);
-    if (this._bridgeArgs.doDetectDeletedElements) {
-      this._bridge.synchronizer.detectDeletedElements();
-    }
+    this.detectDeletedElements();
+    this.updateProjectExtents();
     this._imodel.saveChanges();
   }
 }
