@@ -245,11 +245,15 @@ export class IModelApp {
   public static get initialized() { return this._initialized; }
 
   /**
-   * @deprecated access to IModelHub should generally be through the [[hubAccess]]] api.
+   * @deprecated access to IModelHub should generally be through the higher level apis.
+   * For internal methods, use [[hubAccess]].
    * If you really need to call the IModelClient api directly, use [[IModelHubFrontend.iModelClient]]
    */
   public static get iModelClient(): IModelClient { return IModelHubFrontend.iModelClient; }
 
+  /** Provides access to the IModelHub implementation for this IModelApp.
+   * @internal
+   */
   public static get hubAccess(): FrontendHubAccess { return this._hubAccess; }
 
   /** @internal */

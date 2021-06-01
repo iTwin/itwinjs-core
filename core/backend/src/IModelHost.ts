@@ -334,11 +334,14 @@ export class IModelHost {
   /** @internal */
   public static setHubAccess(hubAccess: BackendHubAccess) { this._hubAccess = hubAccess; }
 
-  /** Provides access to the IModelHub implementation for this IModelHost */
+  /** Provides access to the IModelHub implementation for this IModelHost
+   * @internal
+   */
   public static get hubAccess(): BackendHubAccess { return this._hubAccess; }
 
   /**
-   *  @deprecated access to IModelHub should generally be through the [[hubAccess]]] api.
+   *  @deprecated access to IModelHub should generally be through other higher level apis.
+   * For internal methods, use [[hubAccess]]] api.
    * If you really need to call the IModelClient api directly, use [[IModelHubBackend.iModelClient]]
    */
   public static get iModelClient(): IModelClient {

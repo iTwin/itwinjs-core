@@ -12,13 +12,21 @@ import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { DownloadRequest } from "./CheckpointManager";
 
+/** @internal */
 export type LocalFileName = string;
+/** @internal */
 export type LocalDirName = string;
+
+/** A string that identifies a changeset.
+ * @note this string is *not* a Guid. It is generated internally based on the content of the changeset.
+ */
 export type ChangesetId = string;
+
+/** @internal */
 export type ChangesetIndex = number;
 
 /** Properties of a changeset
- * @beta
+ * @internal
  */
 export interface ChangesetProps {
   id: ChangesetId;
@@ -33,14 +41,14 @@ export interface ChangesetProps {
 }
 
 /** Properties of a changeset file
- * @beta
+ * @internal
  */
 export interface ChangesetFileProps extends ChangesetProps {
   pathname: LocalFileName;
 }
 
 /** Properties that specify a range of changesetIds.
- * @beta
+ * @internal
  */
 export type ChangesetRange =
   { first: ChangesetId, after?: never, end?: ChangesetId } |
@@ -48,7 +56,7 @@ export type ChangesetRange =
 
 /**
  * The properties of an iModel server lock.
- * @beta
+ * @internal
  */
 export interface LockProps {
   type: LockType;
@@ -56,20 +64,26 @@ export interface LockProps {
   level: LockLevel;
 }
 
-/** Argument for methods that must supply an IModelId */
+/** Argument for methods that must supply an IModelId
+ * @internal
+ */
 export interface IModelIdArg {
   iModelId: GuidString;
   requestContext?: AuthorizedClientRequestContext;
 }
 
-/** Argument for methods that must supply an IModel name and ContextId */
+/** Argument for methods that must supply an IModel name and ContextId
+ * @internal
+ */
 export interface IModelNameArg {
   requestContext?: AuthorizedClientRequestContext;
   contextId: GuidString;
   iModelName: string;
 }
 
-/** Argument for methods that must supply briefcase properties */
+/** Argument for methods that must supply briefcase properties
+ * @internal
+ */
 export interface BriefcaseDbArg {
   requestContext?: AuthorizedClientRequestContext;
   briefcase: {
@@ -79,17 +93,23 @@ export interface BriefcaseDbArg {
   };
 }
 
-/** Argument for methods that must supply an IModelId and a BriefcaseId  */
+/** Argument for methods that must supply an IModelId and a BriefcaseId
+ * @internal
+ */
 export interface BriefcaseIdArg extends IModelIdArg {
   briefcaseId: number;
 }
 
-/** Argument for methods that must supply an IModelId and a ChangesetId  */
+/** Argument for methods that must supply an IModelId and a ChangesetId
+ * @internal
+ */
 export interface ChangesetIdArg extends IModelIdArg {
   changesetId: ChangesetId;
 }
 
-/** Argument for methods that must supply an IModelId and a range of ChangesetIds  */
+/** Argument for methods that must supply an IModelId and a range of ChangesetIds
+ * @internal
+ */
 export interface ChangesetRangeArg extends IModelIdArg {
   range?: ChangesetRange;
 }
@@ -98,16 +118,18 @@ export type CheckPointArg = DownloadRequest;
 
 /** Methods for accessing services of IModelHub from the backend.
  * @note these methods may be mocked for tests
- * @beta
+ * @internal
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
   downloadChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetFileProps[]>;
   /** Download a single changeset. */
   downloadChangeset: (arg: ChangesetIdArg) => Promise<ChangesetFileProps>;
-
+  /** Query the changeset properties given a ChangesetId  */
   queryChangeset: (arg: ChangesetIdArg) => Promise<ChangesetProps>;
+  /** Query an array of changeset properties given a range of ChangesetIds  */
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
+  /** Query an array of changeset properties given a range of ChangesetIds  */
   pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<void>;
   getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangesetId>;
   getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetId>;
