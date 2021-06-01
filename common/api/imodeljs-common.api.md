@@ -2064,6 +2064,9 @@ export class EcefLocation implements EcefLocationProps {
     readonly origin: Point3d;
     // (undocumented)
     toJSON(): EcefLocationProps;
+    readonly xVector?: Vector3d;
+    // (undocumented)
+    readonly yVector?: Vector3d;
 }
 
 // @public
@@ -2071,6 +2074,9 @@ export interface EcefLocationProps {
     cartographicOrigin?: LatLongAndHeight;
     orientation: YawPitchRollProps;
     origin: XYZProps;
+    xVector?: XYZProps;
+    // (undocumented)
+    yVector?: XYZProps;
 }
 
 // @public

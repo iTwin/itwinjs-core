@@ -54,7 +54,6 @@ public;class AuxCoordSystemState
 internal;AzureMapsLayerImageryProvider 
 internal;B3dmReader 
 internal;BackgroundMapGeometry
-internal;BackgroundMapLocation
 beta;class BaseUnitFormattingSettingsProvider 
 internal;BatchedTileIdMap
 public;BatchOptions
@@ -424,6 +423,7 @@ alpha;PlanarGridTransparency
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
+public;ProjectAltitudeProvider
 public;PromiseReturnType
 internal;QuadId
 beta;QuantityFormatOverridesChangedArgs
