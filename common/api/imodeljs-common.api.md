@@ -4345,7 +4345,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
 }
 
 // @public
-export interface InformationPartitionElementProps extends DefinitionElementProps {
+export interface InformationPartitionElementProps extends ElementProps {
     // (undocumented)
     description?: string;
 }
@@ -4441,22 +4441,22 @@ export type IpcInvokeReturn = {
     };
 };
 
-// @beta
+// @public
 export type IpcListener = (evt: Event, ...args: any[]) => void;
 
-// @beta
+// @public
 export interface IpcSocket {
     addListener: (channel: string, listener: IpcListener) => RemoveFunction;
     removeListener: (channel: string, listener: IpcListener) => void;
     send: (channel: string, ...data: any[]) => void;
 }
 
-// @beta
+// @public
 export interface IpcSocketBackend extends IpcSocket {
     handle: (channel: string, handler: (...args: any[]) => Promise<any>) => RemoveFunction;
 }
 
-// @beta
+// @public
 export interface IpcSocketFrontend extends IpcSocket {
     invoke: (channel: string, ...args: any[]) => Promise<any>;
 }
@@ -4545,7 +4545,7 @@ export function isPowerOfTwo(num: number): boolean;
 // @internal (undocumented)
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
-// @beta
+// @internal
 export const iTwinChannel: (channel: string) => string;
 
 // @public

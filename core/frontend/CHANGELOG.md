@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+This log was last generated on Thu, 27 May 2021 20:04:22 GMT and should not be manually modified.
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+### Updates
+
+- add method to return ecef transform for tile tree
 
 ## 2.16.0
 Mon, 24 May 2021 15:58:39 GMT
@@ -46,6 +53,11 @@ Mon, 24 May 2021 15:58:39 GMT
 - Revert to using older GPU timer extension in webgl2 if the newer extension isn't supported
 - ViewCreator APIs tagged as public
 - View Creator API - comments updated.
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
 
 ## 2.15.5
 Thu, 20 May 2021 15:06:26 GMT
