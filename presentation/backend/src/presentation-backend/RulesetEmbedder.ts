@@ -45,14 +45,14 @@ export interface RulesetInsertOptions {
    * - `same-id-and-version-gte` - if iModel already contains a ruleset with same id and
    * version equal to greater than of the inserted ruleset.
    *
-   * Defaults to `same-id-and-version`.
+   * Defaults to `same-id-and-version-eq`.
    */
   skip?: "never" | "same-id" | "same-id-and-version-eq" | "same-id-and-version-gte";
 
   /**
    * Which existing versions of rulesets with same id should be replaced when we insert a new one:
    * - `all` - replace all rulesets with same id.
-   * - `all-lower` - replace rulesets with same id an version lower than the version of inserted ruleset.
+   * - `all-lower` - replace rulesets with same id and version lower than the version of inserted ruleset.
    * - `exact` - replace only the ruleset whose id and version matches the inserted ruleset.
    *
    * Defaults to `exact`.
