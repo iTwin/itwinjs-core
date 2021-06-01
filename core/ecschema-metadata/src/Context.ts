@@ -10,9 +10,9 @@ import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 interface SchemaInfo {
-  schema: Schema,
-  loadSchema?: () => Promise<Schema>,
-  loadPromise?: Promise<Schema>,
+  schema: Schema;
+  loadSchema?: () => Promise<Schema>;
+  loadPromise?: Promise<Schema>;
 }
 
 /**
@@ -119,7 +119,7 @@ export class SchemaCache implements ISchemaLocater {
 
     return new Promise<T>((resolve) => {
       resolve(foundSchemaInfo.schema as T);
-    })
+    });
   }
 
   /**
@@ -132,7 +132,7 @@ export class SchemaCache implements ISchemaLocater {
       return undefined;
 
     const findFunc = (schemaInfo: SchemaInfo) => {
-      return schemaInfo.schema.schemaKey.matches(schemaKey, matchType)
+      return schemaInfo.schema.schemaKey.matches(schemaKey, matchType);
     };
 
     const foundSchemaInfo = this._schema.find(findFunc);
@@ -204,7 +204,6 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
     for (const locater of this._locaters) {
       const schema = await locater.getSchema<T>(schemaKey, matchType, this);
-      console.log("Context.getSchema", schemaKey.name);
 
       if (undefined !== schema)
         return schema;

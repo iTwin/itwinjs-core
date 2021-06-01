@@ -73,42 +73,41 @@ export class SchemaReadHelper<T = unknown> {
     this._schema = schema;
 
     // Need to add this schema to the context to be able to locate schemaItems within the context.
-    await this._context.addSchema(schema, () => this.loadSchema(schema));
+    await this._context.addSchema(schema, async () => this.loadSchema(schema));
     await this._context.getSchema(schema.schemaKey);
 
     return schema;
   }
 
   public async loadSchema<U extends Schema>(schema: U): Promise<U> {
-    console.log(`Loading schema ${schema.fullName}`);
-      // Load schema references first
-      // Need to figure out if other schemas are present.
-      for (const reference of this._parser.getReferences()) {
-        await this.loadSchemaReference(reference);
+    // Load schema references first
+    // Need to figure out if other schemas are present.
+    for (const reference of this._parser.getReferences()) {
+      await this.loadSchemaReference(reference);
+    }
+
+    if (this._visitorHelper)
+      await this._visitorHelper.visitSchema(schema, false);
+
+    // Load all schema items
+    for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
+      // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
+      // which would be found when adding to the context.
+      if (await schema.getItem(itemName) !== undefined)
+        continue;
+
+      const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
+      if (loadedItem && this._visitorHelper) {
+        await this._visitorHelper.visitSchemaPart(loadedItem);
       }
+    }
 
-      if (this._visitorHelper)
-        await this._visitorHelper.visitSchema(schema, false);
+    await this.loadCustomAttributes(schema, this._parser.getSchemaCustomAttributeProviders());
 
-        // Load all schema items
-      for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
-        // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
-        // which would be found when adding to the context.
-        if (await schema.getItem(itemName) !== undefined)
-          continue;
+    if (this._visitorHelper)
+      await this._visitorHelper.visitSchema(schema);
 
-        const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
-        if (loadedItem && this._visitorHelper) {
-          await this._visitorHelper.visitSchemaPart(loadedItem);
-        }
-      }
-
-      await this.loadCustomAttributes(schema, this._parser.getSchemaCustomAttributeProviders());
-
-      if (this._visitorHelper)
-        await this._visitorHelper.visitSchema(schema);
-
-      return schema;
+    return schema;
   }
 
   /**
@@ -163,10 +162,9 @@ export class SchemaReadHelper<T = unknown> {
    */
   private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-    console.log("Got here 1");
     let refSchema = await this._context.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
+    // sometimes refSchema isn't the most up to date here, so have to repeat getSchema again
     refSchema = await this._context.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
-    console.log("Got here 2", refSchema?.fullName);
     if (undefined === refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
@@ -414,7 +412,7 @@ export class SchemaReadHelper<T = unknown> {
     }
 
     if (isInThisSchema)
-      return await this._schema!.getItem(itemName);
+      return this._schema!.getItem(itemName);
 
     schemaItem = await this._context.getSchemaItem(new SchemaItemKey(itemName, new SchemaKey(schemaName)));
     if (undefined === schemaItem)
@@ -830,25 +828,25 @@ export class SchemaReadHelper<T = unknown> {
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
         await loadTypeName(primPropertyProps.typeName);
         const primProp = await (classObj as MutableClass).createPrimitiveProperty(propName, primPropertyProps.typeName);
-        return await this.loadProperty(primProp, primPropertyProps, rawProperty);
+        return this.loadProperty(primProp, primPropertyProps, rawProperty);
 
       case "structproperty":
         const structPropertyProps = this._parser.parseStructProperty(rawProperty);
         await loadTypeName(structPropertyProps.typeName);
         const structProp = await (classObj as MutableClass).createStructProperty(propName, structPropertyProps.typeName);
-        return await this.loadProperty(structProp, structPropertyProps, rawProperty);
+        return this.loadProperty(structProp, structPropertyProps, rawProperty);
 
       case "primitivearrayproperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
         await loadTypeName(primArrPropertyProps.typeName);
         const primArrProp = await (classObj as MutableClass).createPrimitiveArrayProperty(propName, primArrPropertyProps.typeName);
-        return await this.loadProperty(primArrProp, primArrPropertyProps, rawProperty);
+        return this.loadProperty(primArrProp, primArrPropertyProps, rawProperty);
 
       case "structarrayproperty":
         const structArrPropertyProps = this._parser.parseStructArrayProperty(rawProperty);
         await loadTypeName(structArrPropertyProps.typeName);
         const structArrProp = await (classObj as MutableClass).createStructArrayProperty(propName, structArrPropertyProps.typeName);
-        return await this.loadProperty(structArrProp, structArrPropertyProps, rawProperty);
+        return this.loadProperty(structArrProp, structArrPropertyProps, rawProperty);
 
       case "navigationproperty":
         if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
@@ -857,7 +855,7 @@ export class SchemaReadHelper<T = unknown> {
         const navPropertyProps = this._parser.parseNavigationProperty(rawProperty);
         await this.findSchemaItem(navPropertyProps.relationshipName);
         const navProp = await (classObj as MutableEntityClass).createNavigationProperty(propName, navPropertyProps.relationshipName, navPropertyProps.direction);
-        return await this.loadProperty(navProp, navPropertyProps, rawProperty);
+        return this.loadProperty(navProp, navPropertyProps, rawProperty);
     }
   }
 
