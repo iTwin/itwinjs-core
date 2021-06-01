@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
-import deepEqual from "deep-equal";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
