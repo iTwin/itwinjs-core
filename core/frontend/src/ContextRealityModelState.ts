@@ -8,7 +8,9 @@
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
-import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps, SpatialClassifiers } from "@bentley/imodeljs-common";
+import {
+  CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps, SpatialClassifiers,
+} from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -36,72 +38,40 @@ async function getAccessToken(): Promise<AccessToken | undefined> {
  * Contrast with a persistent [[GeometricModelState]] which may contain a URL pointing to a [[TileTree]] hosted on a reality data service.
  * @beta
  */
-export class ContextRealityModelState {
+export class ContextRealityModelState extends ContextRealityModel {
   private readonly _treeRef: RealityModelTileTree.Reference;
-  public readonly name: string;
-  public readonly url: string;
-  public readonly orbitGtBlob?: OrbitGtBlobProps;
-  /** Not required to be present to display the model. It is use to elide the call to getRealityDataIdFromUrl in the widget if present. */
-  public readonly realityDataId?: string;
-  public readonly description: string;
   public readonly iModel: IModelConnection;
-  private _appearanceOverrides?: FeatureAppearance;
-  private _isGlobal?: boolean;
 
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
-    this.url = props.tilesetUrl;
-    this.orbitGtBlob = props.orbitGtBlob;
-    this.realityDataId = props.realityDataId;
-    this.name = undefined !== props.name ? props.name : "";
-    this.description = undefined !== props.description ? props.description : "";
+    super(props);
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
-    const classifiers = new SpatialClassifiers(props);
     this._treeRef = (undefined === props.orbitGtBlob) ?
       createRealityTileTreeReference({
         iModel,
         source: displayStyle,
         url: props.tilesetUrl,
         name: props.name,
-        classifiers,
-        planarMask: props.planarClipMask,
+        classifiers: this.classifiers,
+        planarClipMask: this.planarClipMaskSettings,
       }) :
       createOrbitGtTileTreeReference({
         iModel,
         orbitGtBlob: props.orbitGtBlob,
         name: props.name,
-        classifiers,
+        classifiers: this.classifiers,
         source: displayStyle,
       });
   }
 
   public get treeRef(): TileTreeReference { return this._treeRef; }
-  public get classifiers(): SpatialClassifiers | undefined { return this._treeRef.classifiers; }
-  public get appearanceOverrides(): FeatureAppearance | undefined { return this._appearanceOverrides; }
-  public set appearanceOverrides(overrides: FeatureAppearance | undefined) { this._appearanceOverrides = overrides; }
-  public get modelId(): Id64String | undefined { return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined; }
+  public get modelId(): Id64String | undefined {
+    return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined;
+  }
+
   /** Return true if the model spans the entire globe ellipsoid in 3D */
-  public get isGlobal(): boolean { return this.treeRef.isGlobal; }
-  public get planarClipMask(): PlanarClipMaskState | undefined { return this._treeRef.planarClipMask; }
-  public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._treeRef.planarClipMask = planarClipMask; }
-
-  public toJSON(): ContextRealityModelProps {
-    return {
-      tilesetUrl: this.url,
-      orbitGtBlob: this.orbitGtBlob,
-      realityDataId: this.realityDataId,
-      name: 0 > this.name.length ? this.name : undefined,
-      description: 0 > this.description.length ? this.description : undefined,
-      appearanceOverrides: this.appearanceOverrides,
-    };
-  }
-
-  public matches(other: ContextRealityModelState): boolean {
-    return this.matchesNameAndUrl(other.name, other.url);
-  }
-
-  public matchesNameAndUrl(name: string, url: string): boolean {
-    return this.name === name && this.url === url;
+  public get isGlobal(): boolean {
+    return this.treeRef.isGlobal;
   }
 }
 

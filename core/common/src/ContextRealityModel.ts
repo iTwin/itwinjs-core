@@ -158,6 +158,11 @@ export class ContextRealityModel {
   public toJSON(): ContextRealityModelProps {
     return ContextRealityModelProps.clone(this._props);
   }
+
+  /** Returns true if [[name]] and [[url]] match the specified name and url. */
+  public matchesNameAndUrl(name: string, url: string): boolean {
+    return this.name === name && this.url === url;
+  }
 }
 
 /** An object that can store the JSON representation of a list of [[ContextRealityModel]]s.

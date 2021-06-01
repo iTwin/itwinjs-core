@@ -39,7 +39,6 @@ export class TerrainDisplayOverrides {
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
   public static get className() { return "DisplayStyle"; }
-  private readonly _contextRealityModels: ContextRealityModelState[] = [];
   private _scheduleState?: RenderScheduleState;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
@@ -65,10 +64,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this._scheduleState = source._scheduleState;
 
     if (styles) {
-      if (styles.contextRealityModels)
-        for (const contextRealityModel of styles.contextRealityModels)
-          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
-
+      // ###TODO Use DisplayStyleSettings.planarClipMasks
       if (styles.planarClipOvr)
         for (const planarClipOvr of styles.planarClipOvr)
           if (Id64.isValid(planarClipOvr.modelId))
@@ -166,13 +162,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
-  /** @beta
-   * call function for each reality model attached to this display style.
-   * @see [[ContextRealityModelProps]].
+  /** Call a function for each reality model attached to this display style.
+   * @see [DisplayStyleSettings.contextRealityModels]($common).
+   * @beta
    */
   public forEachRealityModel(func: (model: ContextRealityModelState) => void): void {
-    for (const model of this._contextRealityModels)
+    for (const model of this.settings.contextRealityModels) {
+      assert(model instanceof ContextRealityModelState);
       func(model);
+    }
   }
 
   /** @internal */
@@ -248,40 +246,25 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return this.scheduleState?.getAnimationBranches(scheduleTime);
   }
 
-  /**
-   * Attach a context reality model
-   * @see [[ContextRealityModelProps]].
-   * @beta
-   * */
-  public attachRealityModel(props: ContextRealityModelProps): void {
-    // ###TODO check if url+name already present...or do we allow same to be attached multiple times?
-    if (undefined === this.jsonProperties.styles)
-      this.jsonProperties.styles = {};
-
-    if (undefined === this.jsonProperties.styles.contextRealityModels)
-      this.jsonProperties.styles.contextRealityModels = [];
-
-    this.jsonProperties.styles.contextRealityModels.push(props);
-    this._contextRealityModels.push(new ContextRealityModelState(props, this.iModel, this));
-  }
-
-  /**
-   * Detach a context reality model from its name and url.
-   * @see [[ContextRealityModelProps]].
+  /** Attach a [ContextRealityModel]($common) to this display style.
+   * @see [DisplayStyleSettings.contextRealityModels]($common).
+   * @see [ContextRealityModels.add]($common)
    * @beta
    */
-  public detachRealityModelByNameAndUrl(name: string, url: string): void {
-    const index = this._contextRealityModels.findIndex((x) => x.matchesNameAndUrl(name, url));
-    if (- 1 !== index)
-      this.detachRealityModelByIndex(index);
+  public attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState {
+    const model = this.settings.contextRealityModels.add(props);
+    assert(model instanceof ContextRealityModelState);
+    return model;
   }
 
-  /** @beta
-   * Return the index for the OpenStreetMap world building layer or -1 if it is not enabled for this display stye.
+  /** Detach the first [ContextRealityModel]($common) that matches the specified name and url.
+   * @see [DisplayStyleSettings.contextRealityModels]($common)
+   * @see [ContextRealityModels.delete]($common)
+   * @beta
    */
-  public getOSMBuildingDisplayIndex(): number {
-    const tilesetUrl = getCesiumOSMBuildingsUrl();
-    return this._contextRealityModels.findIndex((x) => x.url === tilesetUrl);
+  public detachRealityModelByNameAndUrl(name: string, url: string): boolean {
+    const model = this.settings.contextRealityModels.models.find((x) => x.matchesNameAndUrl(name, url));
+    return undefined !== model && this.settings.contextRealityModels.delete(model);
   }
 
   /** Set the display of the OpenStreetMap worldwide building layer in this display style by attaching or detaching the reality model displaying the buildings.
@@ -293,54 +276,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)  // The OSM tile tree is ellipsoidal.
       return false;
 
-    let currentIndex = this.getOSMBuildingDisplayIndex();
-    if (options.onOff === false && currentIndex >= 0) {
-      this.detachRealityModelByIndex(currentIndex);
-      return true;
-    }
+    const url = getCesiumOSMBuildingsUrl();
+    let model = this.settings.contextRealityModels.models.find((x) => x.url === url);
+    if (options.onOff === false)
+      return undefined !== model && this.settings.contextRealityModels.models.delete(model);
 
-    if (options.onOff === true && currentIndex < 0) {
-      const tilesetUrl = getCesiumOSMBuildingsUrl();
+    if (!model) {
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
-      currentIndex = this._contextRealityModels.length;
-      this.attachRealityModel({ tilesetUrl, name, planarClipMask: { mode: PlanarClipMaskMode.None }});
+      model = this.attachRealityModel({ tilesetUrl: url, name });
     }
 
     if (options.appearanceOverrides)
-      this.overrideRealityModelAppearance(currentIndex, options.appearanceOverrides);
+      model.appearanceOverrides = options.appearanceOverrides;
 
     return true;
-  }
-
-  /** Find index of a reality model.
-   * @param accept Method that returns true to indicate that the model index should be returned.
-   * @returns the index for the reality model that was accepted. -1 if none are accepted.
-   * @beta
-   */
-  public findRealityModelIndex(accept: (model: ContextRealityModelState) => boolean): number {
-    return this._contextRealityModels.findIndex((model) => accept(model));
-  }
-
-  /**
-   * Detach a context reality model from its index.
-   * @see [[ContextRealityModelProps]].
-   * @param index The reality model index or -1 to detach all models.
-   * @beta
-   * */
-  public detachRealityModelByIndex(index: number): void {
-    const styles = this.jsonProperties.styles;
-    const props = undefined !== styles ? styles.contextRealityModels : undefined;
-    if (!Array.isArray(props) || index >= this._contextRealityModels.length || index >= props.length)
-      return;
-
-    if (index < 0) {
-      props.splice(0, props.length);
-      this._contextRealityModels.splice(0, this._contextRealityModels.length);
-    } else {
-      assert(this._contextRealityModels[index].url === props[index].tilesetUrl);
-      props.splice(index, 1);
-      this._contextRealityModels.splice(index, 1);
-    }
   }
 
   /**
@@ -349,7 +298,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @beta
    * */
   public hasAttachedRealityModel(name: string, url: string): boolean {
-    return -1 !== this._contextRealityModels.findIndex((x) => x.matchesNameAndUrl(name, url));
+    return undefined !== this.settings.contextRealityModels.models.find((x) => x.matchesNameAndUrl(name, url));
   }
 
   /** The overrides applied by this style.
@@ -395,141 +344,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
     return this.settings.getModelAppearanceOverride(id);
-  }
-
-  private applyToRealityModel(index: number, func: (index: number, jsonContextRealityModels: any[]) => boolean): boolean {
-    if (undefined === this.jsonProperties.styles)
-      this.jsonProperties.styles = {};
-
-    const styles = this.jsonProperties.styles;
-    const jsonContextRealityModels = styles.contextRealityModels;
-    if (!Array.isArray(jsonContextRealityModels) || jsonContextRealityModels.length !== this._contextRealityModels.length)
-      return false;     // No context reality models.
-
-    let changed = false;
-    if (index < 0) {
-      for (let i = 0; i < jsonContextRealityModels.length; i++)
-        changed = func(i, jsonContextRealityModels) || changed;
-    } else {
-      changed = func(index, jsonContextRealityModels);
-    }
-    return changed;
-  }
-
-  /** Change the appearance overrides for a context reality model displayed by this style.
-   * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
-   * @param index The reality model index or -1 to apply to all models.
-   * @returns true if overrides are successfully applied.
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideRealityModelAppearance]] to ensure
-   * the changes are promptly visible on the screen.
-   * @beta
-   */
-
-  public overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean {
-    return this.applyToRealityModel(index, (changeIndex: number, jsonContextRealityModels: any[]) => {
-      jsonContextRealityModels[changeIndex].appearanceOverrides = overrides.toJSON();
-      this._contextRealityModels[changeIndex].appearanceOverrides = overrides;
-      return true;
-    });
-  }
-
-  /** Drop the appearance overrides for a context reality model displayed by this style.
- * @param index The reality model index or -1 to drop overrides from all reality models.
- * @returns true if overrides are successfully dropped.
- * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropRealityModelAppearanceOverride]] to ensure
- * the changes are promptly visible on the screen.
- * @beta
- */
-  public dropRealityModelAppearanceOverride(index: number): boolean {
-    return this.applyToRealityModel(index, (changeIndex: number, jsonContextRealityModels: any[]) => {
-      jsonContextRealityModels[changeIndex].appearanceOverrides = this._contextRealityModels[changeIndex].appearanceOverrides = undefined;
-      return true;
-    });
-  }
-  /** Obtain the override applied to a context reality model displayed by this style.
-   * @param index The reality model index
-   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
-   * @see [[overrideRealityModelAppearance]]
-   * @beta
-   */
-  public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
-    return index >= 0 && index < this._contextRealityModels.length ? this._contextRealityModels[index]?.appearanceOverrides : undefined;
-  }
-
-  /** Return the "contextual" reality model index for a transient model ID or -1 if none found
-   * @beta
-   */
-  public getRealityModelIndexFromTransientId(id: Id64String): number {
-    for (let i = 0; i < this._contextRealityModels.length; i++) {
-      const treeRef = this._contextRealityModels[i].treeRef;
-      if (treeRef instanceof RealityModelTileTree.Reference && treeRef.modelId === id)
-        return i;
-    }
-    return -1;
-  }
-
-  /** Override the planar clip mask for a reality model.
-   * @param modelIdOrIndex The ID of the [[model]] if the attached to the view or the index if it is a context model displayed by this style.
-   * @param planarClipMask The planar clip mask to apply to the [[Model]].
-   * @see [[dropRealityModelPlanarClipMask]
-   * @beta
-   */
-  public overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, mask: PlanarClipMaskSettings): boolean {
-    const maskState = PlanarClipMaskState.create(mask);
-    if (typeof modelIdOrIndex === "string") {
-      const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
-      if (model?.isRealityModel) {
-        this.settings.planarClipMasks.set(modelIdOrIndex, mask);
-        return true;
-      } else
-        return false;
-    } else {
-      return this.applyToRealityModel(modelIdOrIndex, (changeIndex: number, jsonContextRealityModels: any[]) => {
-        jsonContextRealityModels[changeIndex].planarClipMask = mask;
-        this._contextRealityModels[changeIndex].planarClipMask = maskState;
-        // ###TODO? this.settings.raiseRealityModelPlanarClipMaskChangedEvent(changeIndex, mask);
-        return true;
-      });
-    }
-  }
-
-  /** Drop the planar clip mask for a reality model.
-   * @param modelIdOrIndex The ID of the [[model]] if the attached to the view or the index if it is a context model displayed by this style.
-   * @returns true if overrides are successfully dropped.
-   * @beta
-   */
-  public dropRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): boolean {
-    if (typeof modelIdOrIndex === "string") {
-      const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
-      if (model && model.isRealityModel) {
-        this._attachedRealityModelPlanarClipMasks.delete(modelIdOrIndex);
-        this.settings.planarClipMasks.delete(modelIdOrIndex);
-        return true;
-      } else
-        return false;
-    } else {
-      return this.applyToRealityModel(modelIdOrIndex, (changeIndex: number, jsonContextRealityModels: any[]) => {
-        jsonContextRealityModels[changeIndex].planarClipMask = undefined;
-        this._contextRealityModels[changeIndex].planarClipMask = undefined;
-        // ###TODO? this.settings.raiseRealityModelPlanarClipMaskChangedEvent(changeIndex, undefined);
-        return true;
-      });
-    }
-  }
-
-  /** Obtain the planar clip  applied to a context reality model
-   * @param modelIdOrIndex The ID of the [[model]] if the attached to the view or the index if it is a context model displayed by this style.
-   * @returns The corresponding PlanarClipMask, or undefined if the Model's appearance is not overridden.
-   * @see [[overrideRealityModelPlanarClipMask]]
-   * @beta
-   */
-  public getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMaskState | undefined {
-    if (typeof modelIdOrIndex === "string") {
-      const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
-      return (model && model.isRealityModel) ? this._attachedRealityModelPlanarClipMasks.get(modelIdOrIndex) : undefined;
-    } else {
-      return modelIdOrIndex >= 0 && modelIdOrIndex < this._contextRealityModels.length ? this._contextRealityModels[modelIdOrIndex]?.planarClipMask : undefined;
-    }
   }
 
   /** @internal */
@@ -824,12 +638,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return this._backgroundMapGeometry.geometry;
   }
 
+  /** [[ContextRealityModelState]]s attached to this display style.
+   * @see [DisplayStyleSettings.contextRealityModels]($common).
+   * @beta
+   */
+  public get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState> {
+    return this.settings.contextRealityModels.models as ContextRealityModel[];
+  }
+
   /** @internal */
   public getGlobalGeometryAndHeightRange(): { geometry: BackgroundMapGeometry, heightRange: Range1d } | undefined {
     let geometry = this.getIsBackgroundMapVisible() ? this.getBackgroundMapGeometry() : undefined;
     const terrainRange = ApproximateTerrainHeights.instance.globalHeightRange;
     let heightRange = this.displayTerrain ? terrainRange : Range1d.createXX(-1, 1);
-    if (this.globeMode === GlobeMode.Ellipsoid && this._contextRealityModels.find((model) => model.isGlobal)) {
+    if (this.globeMode === GlobeMode.Ellipsoid && this.contextRealityModelStates.find((model) => model.isGlobal)) {
       if (!geometry) {
         if (!this._ellipsoidMapGeometry)
           this._ellipsoidMapGeometry = new BackgroundMapGeometry(0, GlobeMode.Ellipsoid, this.iModel);
@@ -905,15 +727,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       else
         this._attachedRealityModelPlanarClipMasks.delete(id);
     });
+  }
 
-    // ###TODO contextRealityModels are a bit of a mess.
-    this.settings.onApplyOverrides.addListener((overrides) => {
-      if (overrides.contextRealityModels) {
-        this._contextRealityModels.length = 0;
-        for (const contextRealityModel of overrides.contextRealityModels)
-          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
-      }
-    });
+  protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState {
+    return new ContextRealityModelState(props, this.iModel, this);
   }
 }
 
@@ -932,7 +749,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
-    this._settings = new DisplayStyleSettings(this.jsonProperties);
+    this._settings = new DisplayStyleSettings(this.jsonProperties, { createContextRealityModel: (props) => this.createRealityModel(props) });
     this.registerSettingsEventListeners();
   }
 }
@@ -1280,7 +1097,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
       this._skyBoxParamsLoaded = source._skyBoxParamsLoaded;
     }
 
-    this._settings = new DisplayStyle3dSettings(this.jsonProperties);
+    this._settings = new DisplayStyle3dSettings(this.jsonProperties, { createContextRealityModel: (props) => this.createRealityModel(props) });
     this.registerSettingsEventListeners();
   }
 

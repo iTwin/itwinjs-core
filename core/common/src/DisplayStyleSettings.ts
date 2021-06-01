@@ -991,8 +991,11 @@ export class DisplayStyleSettings {
     if (undefined !== overrides.timePoint)
       this.timePoint = overrides.timePoint;
 
-    if (overrides.contextRealityModels)
-      this._json.contextRealityModels = [...overrides.contextRealityModels];
+    if (overrides.contextRealityModels) {
+      this.contextRealityModels.clear();
+      for (const props of overrides.contextRealityModels)
+        this.contextRealityModels.add(props);
+    }
 
     if (overrides.analysisStyle)
       this.analysisStyle = AnalysisStyle.fromJSON(overrides.analysisStyle);
