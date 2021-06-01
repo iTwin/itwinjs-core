@@ -52,11 +52,9 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     mode: HierarchyCacheMode.Disk;
 }
 
-// @beta
+// @beta @deprecated
 export enum DuplicateRulesetHandlingStrategy {
-    // (undocumented)
     Replace = 1,
-    // (undocumented)
     Skip = 0
 }
 
@@ -86,11 +84,17 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
     mode: HierarchyCacheMode.Hybrid;
 }
 
+// @internal (undocumented)
+export function isEnum<TEnum>(e: TEnum, arg: any): arg is TEnum[keyof TEnum];
+
 // @beta
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
     // (undocumented)
     mode: HierarchyCacheMode.Memory;
 }
+
+// @internal (undocumented)
+export function normalizeVersion(version?: string): string;
 
 // @public
 export class Presentation {
@@ -283,12 +287,20 @@ export interface PresentationPropsNew extends PresentationManagerProps {
 export class RulesetEmbedder {
     constructor(props: RulesetEmbedderProps);
     getRulesets(): Promise<Ruleset[]>;
-    insertRuleset(ruleset: Ruleset, duplicateHandlingStrategy?: DuplicateRulesetHandlingStrategy): Promise<Id64String>;
+    // @deprecated
+    insertRuleset(ruleset: Ruleset, duplicateHandlingStrategy: DuplicateRulesetHandlingStrategy): Promise<Id64String>;
+    insertRuleset(ruleset: Ruleset, options?: RulesetInsertOptions): Promise<Id64String>;
     }
 
 // @public
 export interface RulesetEmbedderProps {
     imodel: IModelDb;
+}
+
+// @beta
+export interface RulesetInsertOptions {
+    replaceVersions?: "all" | "all-lower" | "exact";
+    skip?: "never" | "same-id" | "same-id-and-version-eq" | "same-id-and-version-gte";
 }
 
 // @public
