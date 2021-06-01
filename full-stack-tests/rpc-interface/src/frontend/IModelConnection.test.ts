@@ -33,29 +33,9 @@ describe("IModel Connection", () => {
 
     if (!testContext.settings.runiModelReadRpcTests)
       this.skip();
-  });
 
-  beforeEach(() => {
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-  });
-
-  it("should successfully open an IModelConnection for read with client credentials", async function () {
-    // If client credentials are not supplied, skip the test
-    if (!testContext.settings.clientConfiguration)
-      this.skip();
-
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(testContext.clientAccessToken);
-
-    const contextId = testContext.iModelWithChangesets!.contextId;
-    const iModelId = testContext.iModelWithChangesets!.iModelId;
-
-    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId);
-
-    expect(iModel).to.exist.and.be.not.empty;
-
-    const iModelRpcProps = iModel.getRpcProps();
-    expect(iModelRpcProps).to.exist.and.be.not.empty;
   });
 
   it("should successfully open an IModelConnection for read", async () => {
@@ -77,6 +57,34 @@ describe("IModel Connection", () => {
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
+  });
+});
+
+describe("IModel Connection with client credentials", () => {
+  let accessToken: AccessToken;
+  let testContext: TestContext;
+
+  before(async function () {
+    testContext = await TestContext.instance();
+
+    // If client credentials are not supplied or imodel read rpc tests are disabled skip test suite
+    if (!testContext.settings.clientConfiguration || !testContext.settings.runiModelReadRpcTests)
+      this.skip();
+
+    accessToken = testContext.clientAccessToken!;
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+  });
+
+  it("should successfully open an IModelConnection for read with client credentials", async () => {
+    const contextId = testContext.iModelWithChangesets!.contextId;
+    const iModelId = testContext.iModelWithChangesets!.iModelId;
+
+    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId);
+
+    expect(iModel).to.exist.and.be.not.empty;
+
+    const iModelRpcProps = iModel.getRpcProps();
+    expect(iModelRpcProps).to.exist.and.be.not.empty;
   });
 });
 
