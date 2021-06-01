@@ -43,7 +43,7 @@ export interface RulesetInsertOptions {
    * - `same-id` - if iModel already contains a ruleset with the same id and **any** version
    * - `same-id-and-version-eq` - if iModel already contains a ruleset with same id and version
    * - `same-id-and-version-gte` - if iModel already contains a ruleset with same id and
-   * version equal to greater than of the inserted ruleset.
+   * version greater or equal to version of the inserted ruleset.
    *
    * Defaults to `same-id-and-version-eq`.
    */
