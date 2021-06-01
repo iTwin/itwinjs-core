@@ -223,6 +223,7 @@ abstract class IModelDbBuilder {
   public abstract acquire(): Promise<void>;
 
   protected abstract _updateExistingData(): Promise<void>;
+  protected abstract _detectDeletedElements(): Promise<void>;
   protected abstract _initDomainSchema(): Promise<void>;
   protected abstract _importDefinitions(): Promise<void>;
 
@@ -423,11 +424,27 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     // WIP: need detectSpatialDataTransformChanged check?
     await this._bridge.updateExistingData();
 
+    let dataChangesDescription = "Data changes";
+    if (this._bridge.getDataChangesDescription)
+      dataChangesDescription = this._bridge.getDataChangesDescription();
+
+    return this._saveAndPushChanges(dataChangesDescription, ChangesType.Regular);
+  }
+
+  protected async _detectDeletedElements(): Promise<void> {
+    assert(this._requestContext !== undefined);
+    assert(this._imodel instanceof BriefcaseDb);
+    assert(!this._imodel.concurrencyControl.locks.hasSchemaLock);
+    assert(this._imodel.concurrencyControl.isBulkMode);
+
+    await this.enterBridgeChannel();
+    assert(this._imodel.concurrencyControl.channel.isChannelRootLocked);
+
     if (this._bridgeArgs.doDetectDeletedElements) {
       this._bridge.synchronizer.detectDeletedElements();
     }
 
-    let dataChangesDescription = "Data changes";
+    let dataChangesDescription = "Finalization changes";
     if (this._bridge.getDataChangesDescription)
       dataChangesDescription = this._bridge.getDataChangesDescription();
 
@@ -557,6 +574,11 @@ class SnapshotDbBuilder extends IModelDbBuilder {
   protected async _updateExistingData() {
     assert(this._imodel !== undefined);
     await this._bridge.updateExistingData();
+    this._imodel.saveChanges();
+  }
+
+  protected async _detectDeletedElements() {
+    assert(this._imodel !== undefined);
     if (this._bridgeArgs.doDetectDeletedElements) {
       this._bridge.synchronizer.detectDeletedElements();
     }
