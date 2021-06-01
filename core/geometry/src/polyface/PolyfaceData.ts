@@ -18,6 +18,7 @@ import { Transform } from "../geometry3d/Transform";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { PolyfaceAuxData } from "./AuxData";
 import { FacetFaceData } from "./FacetFaceData";
+import { TaggedNumericData } from "./TaggedNumericData";
 
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
@@ -65,11 +66,17 @@ export class PolyfaceData {
   public face: FacetFaceData[];
   /** Auxiliary data */
   public auxData: PolyfaceAuxData | undefined;
+  /** Tagged geometry data */
+  public taggedNumericData: TaggedNumericData | undefined;
   private _twoSided: boolean;
   /** boolean tag indicating if the facets are viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
   public set twoSided(value: boolean) { this._twoSided = value; }
 
+  /** set the `taggedNumericData` member */
+  public setTaggedNumericData(data: TaggedNumericData | undefined) {
+    this.taggedNumericData = data;
+  }
   private _expectedClosure: number;
   /** boolean tag indicating if the facets are viewable from the back */
   public get expectedClosure(): number { return this._expectedClosure; }
@@ -113,6 +120,9 @@ export class PolyfaceData {
       result.colorIndex = this.colorIndex.slice();
     if (this.auxData)
       result.auxData = this.auxData.clone();
+    if (this.taggedNumericData){
+      result.taggedNumericData = this.taggedNumericData.clone();
+    }
     return result;
   }
   /** Test for equal indices and nearly equal coordinates */
@@ -139,7 +149,8 @@ export class PolyfaceData {
 
     if (this.expectedClosure !== other.expectedClosure)
       return false;
-
+    if (!TaggedNumericData.areAlmostEqual(this.taggedNumericData, other.taggedNumericData))
+      return false;
     return true;
   }
   /** Ask if normals are required in this mesh. */

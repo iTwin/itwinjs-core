@@ -6,6 +6,8 @@
 
 import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { ElementGeometryDataEntry } from '@bentley/imodeljs-common';
+import { ElementGeometryInfo } from '@bentley/imodeljs-common';
+import { ElementGeometryOpcode } from '@bentley/imodeljs-common';
 import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { Id64String } from '@bentley/bentleyjs-core';
@@ -17,12 +19,14 @@ import { TransformProps } from '@bentley/geometry-core';
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
     // (undocumented)
     deleteElements: (ids: CompressedId64Set) => Promise<IModelStatus>;
-    insertGeometricElement(props: GeometricElementProps, data?: InsertGeometricElementData): Promise<Id64String>;
-    insertGeometryPart(props: GeometryPartProps, data?: InsertGeometryPartData): Promise<Id64String>;
+    insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String>;
+    insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String>;
+    requestElementGeometry(id: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
     rotatePlacement: (ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean) => Promise<IModelStatus>;
     // (undocumented)
     transformPlacement: (ids: CompressedId64Set, transform: TransformProps) => Promise<IModelStatus>;
+    updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void>;
 }
 
 // @alpha (undocumented)
@@ -52,14 +56,26 @@ export interface EditorIpc {
 }
 
 // @alpha (undocumented)
-export interface InsertGeometricElementData {
+export interface FlatBufferGeometricElementData {
     entryArray: ElementGeometryDataEntry[];
     isWorld?: boolean;
     viewIndependent?: boolean;
 }
 
 // @alpha (undocumented)
-export interface InsertGeometryPartData {
+export interface FlatBufferGeometryFilter {
+    accept?: ElementGeometryOpcode[];
+    geometry?: {
+        curves: boolean;
+        surfaces: boolean;
+        solids: boolean;
+    };
+    maxDisplayable?: number;
+    reject?: ElementGeometryOpcode[];
+}
+
+// @alpha (undocumented)
+export interface FlatBufferGeometryPartData {
     entryArray: ElementGeometryDataEntry[];
     is2dPart?: boolean;
 }

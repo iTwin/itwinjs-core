@@ -6,7 +6,7 @@
  * @module HyperModeling
  */
 
-import { assert, BeEvent } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
 import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import {
@@ -190,5 +190,14 @@ export class SectionMarkerSet extends MarkerSet<SectionMarker> {
   /** @internal */
   protected getClusterMarker(cluster: Cluster<SectionMarker>): Marker {
     return SectionMarkerCluster.makeFrom(cluster.markers[0], cluster, cluster.markers[0].image);
+  }
+
+  /** Find the SectionMarker corresponding to the specified [SectionDrawingLocation]($backend) Id. */
+  public findMarkerById(sectionDrawingLocationId: Id64String): SectionMarker | undefined {
+    for (const marker of this.markers)
+      if (marker.state.id === sectionDrawingLocationId)
+        return marker;
+
+    return undefined;
   }
 }

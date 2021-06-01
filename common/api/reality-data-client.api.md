@@ -68,6 +68,7 @@ export class RealityData extends WsgInstance {
     footprint?: string;
     getBlobStringUrl(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<string>;
     getBlobUrl(requestContext: AuthorizedClientRequestContext, writeAccess?: boolean): Promise<URL>;
+    // @deprecated
     getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
     getRootDocumentJson(requestContext: AuthorizedClientRequestContext): Promise<any>;
     getTileContent(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
