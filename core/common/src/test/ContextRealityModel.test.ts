@@ -421,7 +421,7 @@ describe("ContextRealityModels", () => {
       m2.planarClipMaskSettings = undefined;
       expectEvents([
         [ "aa", "appearance" ],
-        [ "b", "appearance", ],
+        [ "b", "appearance" ],
         [ "c", "mask" ],
       ]);
     });

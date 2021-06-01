@@ -315,13 +315,17 @@ export class ContextRealityModels {
 
   private createModel(props: ContextRealityModelProps): ContextRealityModel {
     const model = this._createModel(props);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onPlanarClipMaskChanged.addListener(this.handlePlanarClipMaskChanged, this);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onAppearanceOverridesChanged.addListener(this.handleAppearanceOverridesChanged, this);
     return model;
   }
 
   private dropEventListeners(model: ContextRealityModel): void {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onPlanarClipMaskChanged.removeListener(this.handlePlanarClipMaskChanged, this);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onAppearanceOverridesChanged.removeListener(this.handleAppearanceOverridesChanged, this);
   }
 

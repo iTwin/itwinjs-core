@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { CompressedId64Set } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, FeatureAppearance, PlanarClipMaskMode, PlanarClipMaskSettings,
+  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, PlanarClipMaskMode, PlanarClipMaskSettings,
   SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
 } from "@bentley/imodeljs-common";
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
@@ -139,10 +139,13 @@ describe("DisplayStyle", () => {
     }
 
     function compareScheduleScripts(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
-      if (undefined !== style3d.scheduleScript)
+      if (undefined !== style3d.scheduleScript) {
+        // eslint-disable-next-line deprecation/deprecation
         expect(JSON.stringify(style3d.scheduleScript.toJSON())).to.equal(JSON.stringify(expected.scheduleScript));
-      else
+      } else {
+        // eslint-disable-next-line deprecation/deprecation
         expect(expected.scheduleScript).to.be.undefined;
+      }
     }
 
     // Note that each test adds some new settings to our display style. This allows us to test that settings not specified in overrides retain their previous values.
