@@ -271,6 +271,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return undefined !== model && this.settings.contextRealityModels.delete(model);
   }
 
+  /** Get the [[ContextRealityModelState]] that displays the OpenStreetMap worldwide building layer, if enabled.
+   * @see [[setOSMBuildingDisplay]]
+   * @beta
+   */
+  public getOSMBuildingRealityModel(): ContextRealityModelState | undefined {
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)  // The OSM tile tree is ellipsoidal.
+      return undefined;
+
+    const url = getCesiumOSMBuildingsUrl();
+    return this.contextRealityModelStates.find((x) => x.url === url);
+  }
+
   /** Set the display of the OpenStreetMap worldwide building layer in this display style by attaching or detaching the reality model displaying the buildings.
    * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
    * The options [[OsmBuildingDisplayOptions]] control the display and appearance overrides.
