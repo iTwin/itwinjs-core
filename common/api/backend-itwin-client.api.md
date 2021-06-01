@@ -41,7 +41,7 @@ export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientCo
 
 // @internal
 export class AzureFileHandler implements FileHandler {
-    constructor(useDownloadBuffer?: boolean, threshold?: number);
+    constructor(useDownloadBuffer?: boolean, threshold?: number, config?: ConfigData);
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
