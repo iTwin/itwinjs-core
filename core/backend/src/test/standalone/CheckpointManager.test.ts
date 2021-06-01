@@ -95,7 +95,9 @@ describe("V1 Checkpoint Manager", () => {
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const downloadedDbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
-    await V1CheckpointManager.downloadCheckpoint({ localFile: downloadedDbPath, checkpoint: { requestContext: ctx, contextId, iModelId, changeSetId } });
+    const request = { localFile: downloadedDbPath, checkpoint: { requestContext: ctx, contextId, iModelId, changeSetId } }
+    await V1CheckpointManager.downloadCheckpoint(request);
+    CheckpointManager.updateToRequestedVersion(request);
     const db = SnapshotDb.openCheckpointV1(downloadedDbPath, { requestContext: ctx, contextId, iModelId, changeSetId });
     assert.equal(iModelId, db.nativeDb.getDbGuid(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
   });

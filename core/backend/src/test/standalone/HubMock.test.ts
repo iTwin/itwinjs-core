@@ -16,7 +16,7 @@ import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-clie
 import { ChangesetFileProps } from "../../HubAccess";
 import { IModelHost } from "../../IModelHost";
 
-describe.only("HubMock", () => {
+describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
 
   before(() => HubMock.startup("HubMockTest"));
@@ -96,7 +96,7 @@ describe.only("HubMock", () => {
     assert.equal(changesets2[1].description, cs2.description);
     assert.equal(changesets2[1].changesType, cs2.changesType);
     assert.equal(changesets2[1].index, 2);
-    assert.equal(changesets1[0].briefcaseId, 200);
+    assert.equal(changesets2[1].briefcaseId, 200);
     assert.isAtLeast(changesets2[1].size!, 1);
     assert.isDefined(changesets2[1].pushDate);
     assert.equal(cs2.id, localHub.getLatestChangesetId());

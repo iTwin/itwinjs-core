@@ -22,7 +22,7 @@ import { IModelHost } from "./IModelHost";
 import { IModelHubAccess } from "./IModelHubAccess";
 import { IModelJsFs } from "./IModelJsFs";
 
-const loggerCategory: string = BackendLoggerCategory.IModelDb;
+const loggerCategory = BackendLoggerCategory.IModelDb;
 
 /**
  * Properties of a checkpoint

@@ -734,6 +734,3 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.deleteTestIModel();
   });
 });
-
-describe("BriefcaseManager - HubMocked (#integration)", () => {
-}); t
