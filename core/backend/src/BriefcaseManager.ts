@@ -8,22 +8,22 @@
 
 // cspell:ignore cset csets ecchanges
 
+import * as os from "os";
+import * as path from "path";
 import {
-  assert, BeDuration, BentleyError, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus,
-  IModelStatus, Logger, OpenMode, PerfLogger,
+  assert, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus, IModelStatus, Logger, OpenMode,
+  PerfLogger, WSStatus,
 } from "@bentley/bentleyjs-core";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
-  BriefcaseIdValue,
-  BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
+  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps,
+  RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
-import * as os from "os";
-import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
@@ -47,13 +47,6 @@ export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
    */
   onProgress?: ProgressFunction;
 };
-
-/** A token that represents a ChangeSet
- * @internal
- */
-export class ChangeSetToken {
-  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public changeType: ChangesType, public pushDate?: string) { }
-}
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
  * @public
@@ -261,9 +254,11 @@ export class BriefcaseManager {
 
     // now open the downloaded checkpoint and reset its BriefcaseId
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(fileName, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not open downloaded briefcase for write access: ${fileName}, err=${new BentleyError(status).name}`);
+    try {
+      nativeDb.openIModel(fileName, OpenMode.ReadWrite);
+    } catch (err) {
+      throw new IModelError(err.errorNumber, `Could not open downloaded briefcase for write access: ${fileName}, err=${err.message}`);
+    }
     try {
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getParentChangeSetId() !== args.checkpoint.changeSetId)
@@ -309,10 +304,10 @@ export class BriefcaseManager {
 
   /**
    * Delete and clean up a briefcase and all of its associated files. First, this method opens the supplied filename to determine its briefcaseId.
-   * Then, if a requestContenxt is supplied, it releases a BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
+   * Then, if a requestContext is supplied, it releases a BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
    * associated files (that is, all files in the same directory that start with the briefcase name).
    * @param filePath the full file name of the Briefcase to delete
-   * @param requestContext context to delete
+   * @param requestContext context for releasing the briefcaseId
    */
   public static async deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void> {
     try {
@@ -543,6 +538,10 @@ export class BriefcaseManager {
     }
   }
 
+  private static async applySingleChangeSet(db: IModelDb, changeSet: IModelJsNative.ChangeSetProps, processOption: ChangeSetApplyOption) {
+    return db.nativeDb.applyChangeSet(changeSet, processOption);
+  }
+
   private static async applyChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
     requestContext.enter();
 
@@ -559,92 +558,19 @@ export class BriefcaseManager {
     if (reverse)
       changeSets.reverse();
 
-    // Gather the changeset tokens
-    const changeSetTokens = new Array<ChangeSetToken>();
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(db.iModelId);
-    let maxFileSize: number = 0;
-    let containsSchemaChanges = false;
-    changeSets.forEach((changeSet: ChangeSet) => {
-      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      assert(IModelJsFs.existsSync(changeSetPathname), `Change set file ${changeSetPathname} does not exist`);
-      const changeSetToken = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!);
-      changeSetTokens.push(changeSetToken);
-      if (+changeSet.fileSize! > maxFileSize)
-        maxFileSize = +changeSet.fileSize!;
-      if (changeSet.changesType === ChangesType.Schema)
-        containsSchemaChanges = true;
-    });
 
-    /* Apply change sets
-     * If any of the change sets contain schema changes, or are otherwise too large, we process them asynchronously
-     * to avoid blocking the main-thread/event-loop and keep the backend responsive. However, this will be an invasive
-     * operation that will force the Db to be closed and reopened.
-     * If the change sets are processed synchronously, they are applied one-by-one to avoid blocking the main
-     * thread and the event loop. Even so, if any single change set too long to process that will again cause the
-     * cause the event loop to be blocked. Also if any of the change sets contain schema changes, that will cause
-     * the Db to be closed and reopened.
-     */
-    const perfLogger = new PerfLogger("Applying change sets", () => ({ ...db.getRpcProps() }));
-    let status: ChangeSetStatus;
-    if (containsSchemaChanges || maxFileSize > 1024 * 1024) {
-      status = await this.applyChangeSetsToNativeDbAsync(requestContext, db, changeSetTokens, processOption);
-      requestContext.enter();
-    } else {
-      status = await this.applyChangeSetsToNativeDbSync(db, changeSetTokens, processOption);
+    for (const changeSet of changeSets) {
+      await this.applySingleChangeSet(db, {
+        id: changeSet.wsgId,
+        parentId: changeSet.parentId!,
+        pathname: path.join(changeSetsPath, changeSet.fileName!),
+        changesType: changeSet.changesType,
+      }, processOption);
     }
-    perfLogger.dispose();
-
-    if (ChangeSetStatus.Success !== status)
-      throw new IModelError(status, "Error applying changesets");
 
     // notify listeners
     db.notifyChangesetApplied();
-  }
-
-  /** Apply change sets synchronously
-   * - change sets are applied one-by-one to avoid blocking the main thread
-   * - must NOT be called if some of the change sets are too large since that will also block the main thread and leave the backend unresponsive
-   * - may cause the Db to close and reopen *if* the change sets contain schema changes
-   */
-  private static async applyChangeSetsToNativeDbSync(db: IModelDb, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): Promise<ChangeSetStatus> {
-    // Apply the changes (one by one to avoid blocking the event loop)
-    for (const changeSetToken of changeSetTokens) {
-      const tempChangeSetTokens = new Array<ChangeSetToken>(changeSetToken);
-      const status = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(db.nativeDb, JSON.stringify(tempChangeSetTokens), processOption);
-      if (ChangeSetStatus.Success !== status)
-        return status;
-      await BeDuration.wait(0); // Just turns this operation asynchronous to avoid blocking the event loop
-    }
-    return ChangeSetStatus.Success;
-  }
-
-  /** Apply change sets asynchronously
-   * - invasive operation that closes/reopens the Db
-   * - must be called if some of the change sets are too large and the synchronous call will leave the backend unresponsive
-   */
-  private static async applyChangeSetsToNativeDbAsync(requestContext: AuthorizedClientRequestContext, db: IModelDb, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): Promise<ChangeSetStatus> {
-    requestContext.enter();
-
-    const applyRequest = new IModelHost.platform.ApplyChangeSetsRequest(db.nativeDb);
-
-    let status: ChangeSetStatus = applyRequest.readChangeSets(JSON.stringify(changeSetTokens));
-    if (status !== ChangeSetStatus.Success)
-      return status;
-
-    db.clearCaches();
-    applyRequest.closeBriefcase();
-
-    const doApply = new Promise<ChangeSetStatus>((resolve, _reject) => {
-      applyRequest.doApplyAsync(resolve, processOption);
-    });
-    status = await doApply;
-    requestContext.enter();
-
-    const result = applyRequest.reopenBriefcase(db.openMode);
-    if (result !== DbResult.BE_SQLITE_OK)
-      status = ChangeSetStatus.ApplyError;
-
-    return status;
   }
 
   /**
@@ -696,8 +622,19 @@ export class BriefcaseManager {
     requestContext.enter();
 
     const { changeSetId: targetChangeSetId, changeSetIndex: targetChangeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, mergeToVersion, db.iModelId);
-    const currentChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, db.changeSetId);
-    requestContext.enter();
+
+    let currentChangeSetIndex: number;
+    try {
+      currentChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, db.changeSetId);
+      requestContext.enter();
+    } catch (error) {
+      requestContext.enter();
+      if (error instanceof WsgError && error.errorNumber === WSStatus.InstanceNotFound)
+        throw new IModelError(BriefcaseStatus.ContainsDeletedChangeSets, "Briefcase contains changeSets that were deleted", Logger.logError, loggerCategory, () => db.changeSetId);
+
+      throw error;
+    }
+
     if (targetChangeSetIndex < currentChangeSetIndex)
       throw new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge");
 
@@ -707,11 +644,8 @@ export class BriefcaseManager {
     return BriefcaseManager.processChangeSets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
   }
 
-  private static startCreateChangeSet(db: BriefcaseDb): ChangeSetToken {
-    const res = db.nativeDb.startCreateChangeSet();
-    if (res.error)
-      throw new IModelError(res.error.status, "Error in startCreateChangeSet");
-    return JSON.parse(res.result!);
+  private static startCreateChangeSet(db: BriefcaseDb): IModelJsNative.ChangeSetProps {
+    return db.nativeDb.startCreateChangeSet();
   }
 
   private static finishCreateChangeSet(db: BriefcaseDb) {
@@ -764,7 +698,7 @@ export class BriefcaseManager {
 
     for (const changeSet of changeSets) {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      const token = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!);
+      const token = { id: changeSet.wsgId, parentId: changeSet.parentId!, pathname: changeSetPathname, changesType: changeSet.changesType };
       try {
         const codes = BriefcaseManager.extractCodesFromFile(db, [token]);
         await IModelHost.iModelClient.codes.update(requestContext, db.iModelId, codes, { deniedCodes: true, continueOnConflict: true });
@@ -804,8 +738,8 @@ export class BriefcaseManager {
   }
 
   /** Extracts codes from ChangeSet file */
-  private static extractCodesFromFile(db: BriefcaseDb, changeSetTokens: ChangeSetToken[]): HubCode[] {
-    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = db.nativeDb.extractCodesFromFile(JSON.stringify(changeSetTokens));
+  private static extractCodesFromFile(db: BriefcaseDb, changeSets: IModelJsNative.ChangeSetProps[]): HubCode[] {
+    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = db.nativeDb.extractCodesFromFile(changeSets);
     if (res.error)
       throw new IModelError(res.error.status, "Error in extractCodesFromFile");
     return BriefcaseManager.parseCodesFromJson(db, res.result!);
@@ -854,13 +788,13 @@ export class BriefcaseManager {
   private static async pushChangeSet(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesType, relinquishCodesLocks: boolean): Promise<void> {
     requestContext.enter();
 
-    const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(db);
+    const changeSetProps = BriefcaseManager.startCreateChangeSet(db);
     const changeSet = new ChangeSet();
     changeSet.briefcaseId = db.briefcaseId;
-    changeSet.id = changeSetToken.id;
-    changeSet.parentId = changeSetToken.parentId;
-    changeSet.changesType = changeSetToken.changeType === ChangesType.Schema ? ChangesType.Schema : changeType;
-    changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
+    changeSet.id = changeSetProps.id;
+    changeSet.parentId = changeSetProps.parentId;
+    changeSet.changesType = changeSetProps.changesType === ChangesType.Schema ? ChangesType.Schema : changeType;
+    changeSet.fileSize = IModelJsFs.lstatSync(changeSetProps.pathname)!.size.toString();
     changeSet.description = description;
     if (changeSet.description.length >= 255) {
       Logger.logWarning(loggerCategory, `pushChanges - Truncating description to 255 characters. ${changeSet.description}`, () => db.getRpcProps());
@@ -868,7 +802,7 @@ export class BriefcaseManager {
     }
 
     try {
-      await IModelHost.iModelClient.changeSets.create(requestContext, db.iModelId, changeSet, changeSetToken.pathname);
+      await IModelHost.iModelClient.changeSets.create(requestContext, db.iModelId, changeSet, changeSetProps.pathname);
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
@@ -922,7 +856,9 @@ export class BriefcaseManager {
    */
   public static async pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesType = ChangesType.Regular, relinquishCodesLocks: boolean = true): Promise<void> {
     requestContext.enter();
-    for (let i = 0; i < 5; ++i) {
+
+    const retryCount = 5;
+    for (let currentIteration = 0; currentIteration < retryCount; ++currentIteration) {
       let pushed = false;
       let error: any;
       try {
@@ -936,7 +872,7 @@ export class BriefcaseManager {
       if (pushed)
         return;
 
-      if (!BriefcaseManager.shouldRetryPush(error)) {
+      if (!BriefcaseManager.shouldRetryPush(error) || currentIteration === retryCount - 1) {
         throw error;
       }
       const delay = Math.floor(Math.random() * 4800) + 200;

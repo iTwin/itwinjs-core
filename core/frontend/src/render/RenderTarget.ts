@@ -27,6 +27,7 @@ import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
 import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
+import { FrameStatsCollector } from "./FrameStats";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].
@@ -97,6 +98,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
 
   public get antialiasSamples(): number { return 1; }
   public set antialiasSamples(_numSamples: number) { }
+
+  public assignFrameStatsCollector(_collector: FrameStatsCollector) { }
 
   /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
   public updateSolarShadows(_context: SceneContext | undefined): void { }

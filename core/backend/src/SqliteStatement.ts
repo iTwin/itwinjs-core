@@ -55,16 +55,14 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param sql The SQL statement string to prepare
-   * @throws [IModelError]($common) if the SQL statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist.
+   * @throws if the SQL statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    */
-  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb): void {
+  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb): void {
     if (this.isPrepared)
       throw new Error("SqliteStatement is already prepared");
     this._stmt = new IModelHost.platform.SqliteStatement();
-    const stat = this._stmt.prepare(db, this._sql);
-    if (stat.status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat.status, stat.message);
+    this._stmt.prepare(db, this._sql);
   }
 
   /** Indicates whether the prepared statement makes no **direct* changes to the content of the file

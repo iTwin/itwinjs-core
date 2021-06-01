@@ -31,6 +31,25 @@
         "Center": "Center"
       }
     },
+    "CreateArc": {
+      "keyin": "editor create arc",
+      "flyover": "Create Arc",
+      "Label": {
+        "Method": "Method",
+        "Radius": "Radius",
+        "Sweep": "Sweep"
+      },
+      "Method": {
+        "CenterStart": "Center, Start",
+        "StartCenter": "Start, Center",
+        "StartMidEnd": "Start, Mid, End",
+        "StartEndMid": "Start, End, Mid"
+      },
+      "Prompts": {
+        "CenterPoint": "Define arc center",
+        "MidPoint": "Define arc midpoint"
+      }
+    },
     "CreateLineString": {
       "keyin": "editor create linestring",
       "flyover": "Create Linestring"

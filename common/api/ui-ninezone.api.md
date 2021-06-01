@@ -29,6 +29,9 @@ export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState[
 export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial<WidgetState>): NineZoneState;
 
 // @internal (undocumented)
+export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"], tabs: WidgetState["tabs"], popoutWidgetArgs?: Partial<PopoutWidgetState>, widgetArgs?: Partial<WidgetState>): NineZoneState;
+
+// @internal (undocumented)
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState;
 
 // @alpha
@@ -198,6 +201,15 @@ export const ContentNodeContext: React.Context<React.ReactNode>;
 // @internal
 export type ContentZoneId = 5;
 
+// @internal
+export function convertAllPopupWidgetContainersToFloating(state: NineZoneState): NineZoneState;
+
+// @internal (undocumented)
+export function convertFloatingWidgetContainerToPopout(state: NineZoneState, widgetContainerId: string): NineZoneState;
+
+// @internal (undocumented)
+export function convertPopoutWidgetContainerToFloating(state: NineZoneState, widgetContainerId: string): NineZoneState;
+
 // @internal (undocumented)
 export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial<DraggedTabState>): DraggedTabState;
 
@@ -226,6 +238,9 @@ export function createPanelState(side: PanelSide): {
     widgets: never[];
     maxWidgetCount: number;
 };
+
+// @internal (undocumented)
+export function createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Partial<PopoutWidgetState>): PopoutWidgetState;
 
 // @internal (undocumented)
 export function createTabsState(args?: Partial<TabsState>): TabsState;
@@ -367,7 +382,7 @@ export interface DockedToolSettingsState {
 }
 
 // @internal (undocumented)
-export function dockWidgetContainer(state: NineZoneState, widgetTabId: string): NineZoneState | undefined;
+export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean): NineZoneState | undefined;
 
 // @internal (undocumented)
 export const DraggedPanelSideContext: React.Context<"left" | "right" | "top" | "bottom" | undefined>;
@@ -954,7 +969,13 @@ export interface HorizontalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
+export function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPositionProps | undefined>>(obj: T, key: K, inValue: SizeAndPositionProps): void;
+
+// @internal (undocumented)
 export function isFloatingLocation(location: TabLocation): location is FloatingLocation;
+
+// @internal (undocumented)
+export function isFloatingWidgetLocation(location: WidgetLocation): location is FloatingLocation;
 
 // @internal (undocumented)
 export const isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide;
@@ -964,6 +985,12 @@ export function isHorizontalPanelState(state: PanelState): state is HorizontalPa
 
 // @internal (undocumented)
 export function isPanelLocation(location: TabLocation): location is PanelLocation;
+
+// @internal (undocumented)
+export function isPopoutLocation(location: TabLocation): location is PopoutLocation;
+
+// @internal (undocumented)
+export function isPopoutWidgetLocation(location: WidgetLocation): location is PopoutLocation;
 
 // @internal (undocumented)
 export function isTabTarget(target: DragTarget): target is TabTarget;
@@ -1192,7 +1219,7 @@ export interface NestedToolSettingsProps extends CommonProps {
 export function NineZone(props: NineZoneProps): JSX.Element;
 
 // @internal
-export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
+export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
 
 // @internal (undocumented)
 export const NineZoneContext: React.Context<NineZoneState>;
@@ -1213,6 +1240,8 @@ export interface NineZoneLabels {
     moreWidgetsTitle?: string;
     // (undocumented)
     pinPanelTitle?: string;
+    // (undocumented)
+    popoutActiveTab?: string;
     // (undocumented)
     resizeGripTitle?: string;
     // (undocumented)
@@ -1415,6 +1444,8 @@ export interface NineZoneState {
     readonly floatingWidgets: FloatingWidgetsState;
     // (undocumented)
     readonly panels: PanelsState;
+    // (undocumented)
+    readonly popoutWidgets: PopoutWidgetsState;
     // (undocumented)
     readonly size: SizeProps;
     // (undocumented)
@@ -1677,6 +1708,40 @@ export interface PointerCaptorProps extends CommonProps {
     onPointerMove?: (e: PointerEvent) => void;
     onPointerUp?: (e: PointerEvent) => void;
 }
+
+// @internal (undocumented)
+export const PopoutToggle: React.NamedExoticComponent<object>;
+
+// @internal
+export interface PopoutWidgetSendBackAction {
+    // (undocumented)
+    readonly id: PopoutWidgetState["id"];
+    // (undocumented)
+    readonly type: "POPOUT_WIDGET_SEND_BACK";
+}
+
+// @internal
+export interface PopoutWidgetsState {
+    // (undocumented)
+    readonly allIds: ReadonlyArray<PopoutWidgetState["id"]>;
+    // (undocumented)
+    readonly byId: {
+        readonly [id: string]: PopoutWidgetState;
+    };
+}
+
+// @internal
+export interface PopoutWidgetState {
+    // (undocumented)
+    readonly bounds: RectangleProps;
+    // (undocumented)
+    readonly home: FloatingWidgetHomeState;
+    // (undocumented)
+    readonly id: WidgetState["id"];
+}
+
+// @internal (undocumented)
+export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState | undefined;
 
 // @beta
 export interface ProgressProps extends CommonProps, NoChildrenProps {
@@ -1964,6 +2029,10 @@ export abstract class ShrinkVerticalStrategy extends ShrinkStrategy {
 
 // @internal (undocumented)
 export function sideToCursorType(side: PanelSide): CursorType;
+
+// @internal
+export interface SizeAndPositionProps extends SizeProps, PointProps {
+}
 
 // @beta
 export class Snap extends React.PureComponent<SnapProps> {
@@ -2329,6 +2398,8 @@ export interface TabState {
     // (undocumented)
     readonly allowedPanelTargets?: PanelSide[];
     // (undocumented)
+    readonly canPopout?: boolean;
+    // (undocumented)
     readonly id: string;
     // (undocumented)
     readonly label: string;
@@ -2336,6 +2407,8 @@ export interface TabState {
     readonly preferredFloatingWidgetSize?: SizeProps;
     // (undocumented)
     readonly preferredPanelWidgetSize?: "fit-content";
+    // (undocumented)
+    readonly preferredPopoutWidgetSize?: SizeAndPositionProps;
 }
 
 // @internal (undocumented)
@@ -2777,6 +2850,9 @@ export class UpdateWindowResizeSettings implements ResizeStrategy {
     // (undocumented)
     tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
 }
+
+// @internal (undocumented)
+export function useActiveTab(): TabState | undefined;
 
 // @internal (undocumented)
 export function useAllowedPanelTarget(): boolean;
@@ -3352,6 +3428,14 @@ export interface WidgetTabDragStartArguments {
     readonly tabIndex: number;
     readonly widgetBounds: RectangleProps;
     readonly widgetId: WidgetZoneId;
+}
+
+// @internal
+export interface WidgetTabPopoutAction {
+    // (undocumented)
+    readonly id: WidgetState["activeTabId"];
+    // (undocumented)
+    readonly type: "WIDGET_TAB_POPOUT";
 }
 
 // @internal

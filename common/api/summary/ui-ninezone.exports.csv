@@ -3,6 +3,7 @@ Release Tag;API Item
 internal;ActiveTabIdContext: React.Context
 internal;addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], tabs: WidgetState["tabs"], floatingWidgetArgs?: Partial
 internal;addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial
+internal;addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"], tabs: WidgetState["tabs"], popoutWidgetArgs?: Partial
 internal;addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial
 alpha;AppButton 
 alpha;AppButtonProps 
@@ -31,12 +32,16 @@ alpha;containHorizontally: (componentBounds: RectangleProps, containerBounds: Re
 alpha;containVertically: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
 internal;ContentNodeContext: React.Context
 internal;ContentZoneId = 5
+internal;convertAllPopupWidgetContainersToFloating(state: NineZoneState): NineZoneState
+internal;convertFloatingWidgetContainerToPopout(state: NineZoneState, widgetContainerId: string): NineZoneState
+internal;convertPopoutWidgetContainerToFloating(state: NineZoneState, widgetContainerId: string): NineZoneState
 internal;createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial
 internal;createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial
 internal;createHorizontalPanelState(side: HorizontalPanelSide, args?: Partial
 internal;createNineZoneState(args?: Partial
 internal;createPanelsState(args?: Partial
 internal;createPanelState(side: PanelSide):
+internal;createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Partial
 internal;createTabsState(args?: Partial
 internal;createTabState(id: TabState["id"], args?: Partial
 internal;createVerticalPanelState(side: VerticalPanelSide, args?: Partial
@@ -60,7 +65,7 @@ internal;DockedToolSettingsOverflow: React.MemoExoticComponent
 internal;DockedToolSettingsOverflowProps 
 internal;DockedToolSettingsProps 
 internal;DockedToolSettingsState
-internal;dockWidgetContainer(state: NineZoneState, widgetTabId: string): NineZoneState | undefined
+internal;dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean): NineZoneState | undefined
 internal;DraggedPanelSideContext: React.Context
 internal;DraggedResizeHandleContext: React.Context
 internal;DraggedTabContext: React.Context
@@ -162,10 +167,14 @@ beta;HorizontalAnchor
 internal;HorizontalAnchorHelpers
 internal;HorizontalPanelSide = TopPanelSide | BottomPanelSide
 internal;HorizontalPanelState 
+internal;initSizeAndPositionProps
 internal;isFloatingLocation(location: TabLocation): location is FloatingLocation
+internal;isFloatingWidgetLocation(location: WidgetLocation): location is FloatingLocation
 internal;isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide
 internal;isHorizontalPanelState(state: PanelState): state is HorizontalPanelState
 internal;isPanelLocation(location: TabLocation): location is PanelLocation
+internal;isPopoutLocation(location: TabLocation): location is PopoutLocation
+internal;isPopoutWidgetLocation(location: WidgetLocation): location is PopoutLocation
 internal;isTabTarget(target: DragTarget): target is TabTarget
 beta;Item 
 beta;ItemProps 
@@ -202,7 +211,7 @@ beta;NestedStagePanelsManagerProps
 beta;NestedToolSettings 
 beta;NestedToolSettingsProps 
 internal;NineZone(props: NineZoneProps): JSX.Element
-internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction | ToolSettingsDockAction
+internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction
 internal;NineZoneContext: React.Context
 internal;NineZoneDispatch = (action: NineZoneActionTypes) => void
 internal;NineZoneDispatchContext: React.Context
@@ -261,6 +270,11 @@ internal;PointerCaptor
 internal;PointerCaptorArgs
 internal;PointerCaptorEvent = MouseEvent | TouchEvent
 internal;PointerCaptorProps 
+internal;PopoutToggle: React.NamedExoticComponent
+internal;PopoutWidgetSendBackAction
+internal;PopoutWidgetsState
+internal;PopoutWidgetState
+internal;popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState | undefined
 beta;ProgressProps 
 internal;RECTANGULAR_DEFAULT_MIN_HEIGHT = 220
 internal;RECTANGULAR_DEFAULT_MIN_WIDTH = 296
@@ -292,6 +306,7 @@ internal;class ShrinkStrategy
 internal;ShrinkTop 
 internal;class ShrinkVerticalStrategy 
 internal;sideToCursorType(side: PanelSide): CursorType
+internal;SizeAndPositionProps 
 beta;Snap 
 beta;SnapMode 
 beta;SnapModePanel 
@@ -399,6 +414,7 @@ beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
 internal;TopPanelSide = "top"
 internal;UpdateWindowResizeSettings 
+internal;useActiveTab(): TabState | undefined
 internal;useAllowedPanelTarget(): boolean
 internal;useAnimatePanelWidgets():
 internal;useBorders(widgetId: WidgetState["id"]):
@@ -493,6 +509,7 @@ internal;WidgetTabDragAction
 internal;WidgetTabDragEndAction
 internal;WidgetTabDragStartAction
 alpha;WidgetTabDragStartArguments
+internal;WidgetTabPopoutAction
 internal;WidgetTabProps 
 internal;WidgetTabProvider({ tab, first, firstInactive, last }: WidgetTabProviderProps): JSX.Element
 internal;WidgetTabProviderProps 

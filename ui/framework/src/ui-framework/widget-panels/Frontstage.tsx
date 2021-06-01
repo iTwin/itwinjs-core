@@ -6,15 +6,18 @@
 /** @packageDocumentation
  * @module Frontstage
  */
+
+// cSpell:ignore popout
+
 import "./Frontstage.scss";
 import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
-import { assert, Logger } from "@bentley/bentleyjs-core";
+import { assert, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, floatingWidgetBringToFront,
-  FloatingWidgets, getUniqueId, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
+  addPanelWidget, addTab, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, findWidget, floatingWidgetBringToFront,
+  FloatingWidgets, getUniqueId, isFloatingLocation, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
@@ -68,7 +71,7 @@ export function useNineZoneState(frontstageDef: FrontstageDef) {
   }, [frontstageDef]);
   React.useEffect(() => {
     const listener = (args: FrontstageNineZoneStateChangedEventArgs) => {
-      if (args.frontstageDef !== frontstageDef)
+      if (args.frontstageDef !== frontstageDef || frontstageDef.isStageClosing || frontstageDef.isApplicationClosing)
         return;
       setNineZone(args.state);
     };
@@ -148,6 +151,11 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       UiFramework.postTelemetry("Tool Settings Docking to Settings Bar", "BEDE684B-B3DB-4637-B3AF-DC3CBA223F94");
     }
+    if (action.type === "WIDGET_TAB_POPOUT") {
+      const tabId = action.id;
+      frontstageDef.popoutWidget(tabId);
+      return;
+    }
     const nineZoneState = frontstageDef.nineZoneState;
     if (!nineZoneState)
       return;
@@ -159,6 +167,20 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
 /** @internal */
 export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const frontstageDef = useActiveFrontstageDef();
+
+  React.useEffect(() => {
+    const triggerWidowCloseProcessing = () => {
+      frontstageDef && frontstageDef.setIsApplicationClosing(true);
+    };
+
+    frontstageDef && frontstageDef.setIsApplicationClosing(false);
+
+    window.addEventListener("beforeunload", triggerWidowCloseProcessing);
+    return () => {
+      window.removeEventListener("beforeunload", triggerWidowCloseProcessing);
+    };
+  }, [frontstageDef]);
+
   if (!frontstageDef)
     return null;
   return (
@@ -213,6 +235,7 @@ export function useLabels() {
     sendWidgetHomeTitle: UiFramework.translate("widget.tooltips.sendHome"),
     toolSettingsHandleTitle: UiFramework.translate("widget.tooltips.toolSettingsHandle"),
     unpinPanelTitle: UiFramework.translate("widget.tooltips.unpinPanel"),
+    popoutActiveTab: UiFramework.translate("widget.tooltips.popoutActiveTab"),
   }), []);
 }
 
@@ -227,6 +250,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
     state = addTab(state, widget.id, {
       label,
       preferredPanelWidgetSize: widget.preferredPanelSize,
+      canPopout: widget.canPopout,
     });
     tabs.push(widget.id);
   }
@@ -254,6 +278,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
     state = addTab(state, widgetDef.id, {
       label,
       preferredPanelWidgetSize: widgetDef.preferredPanelSize,
+      canPopout: widgetDef.canPopout,
     });
     tabs.push(widgetDef.id);
   }
@@ -278,6 +303,24 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
   }
 
   return state;
+}
+
+function processPopoutWidgets(initialState: NineZoneState, frontstageDef: FrontstageDef): NineZoneState {
+  // istanbul ignore next
+  if (!initialState.popoutWidgets)
+    return initialState;
+
+  // istanbul ignore next - not unit testing electron case that reopens popout windows
+  if (initialState.popoutWidgets && ProcessDetector.isElectronAppFrontend) {
+    if (initialState.popoutWidgets.allIds.length && ProcessDetector.isElectronAppFrontend) {
+      for (const widgetContainerId of initialState.popoutWidgets.allIds) {
+        frontstageDef.openPopoutWidgetContainer(initialState, widgetContainerId);
+      }
+    }
+    return initialState;
+  }
+
+  return convertAllPopupWidgetContainersToFloating(initialState);
 }
 
 /** Adds frontstageDef widgets that are missing in NineZoneState.
@@ -595,6 +638,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
       draft.tabs[tab.id] = {
         ...tab,
         label: getWidgetLabel(widgetDef.label),
+        canPopout: widgetDef.canPopout,
       };
     }
     return;
@@ -628,6 +672,7 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
       draft.tabs[tab.id] = {
         id: tab.id,
         preferredFloatingWidgetSize: tab.preferredFloatingWidgetSize,
+        preferredPopoutWidgetSize: tab.preferredPopoutWidgetSize,
         allowedPanelTargets: tab.allowedPanelTargets,
       };
     }
@@ -652,8 +697,8 @@ export interface WidgetPanelsFrontstageState {
   stateVersion: number;
 }
 
-// We don't save tab labels.
-type SavedTabState = Omit<TabState, "label">;
+// We don't save tab labels or if widget is allowed to "pop-out".
+type SavedTabState = Omit<TabState, "label" | "canPopout">;
 
 interface SavedTabsState {
   readonly [id: string]: SavedTabState;
@@ -666,6 +711,7 @@ interface SavedNineZoneState extends Omit<NineZoneState, "tabs"> {
 function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
   const newTab = createTabState(widgetDef.id, {
     label: getWidgetLabel(widgetDef.label),
+    canPopout: widgetDef.canPopout,
     preferredPanelWidgetSize: widgetDef.preferredPanelSize,
   });
   nineZone.tabs[newTab.id] = newTab;
@@ -761,7 +807,7 @@ export const showWidget = produce((nineZone: Draft<NineZoneState>, id: TabState[
   }
   widget.activeTabId = id;
   widget.minimized = false;
-  floatingWidgetBringToFront(nineZone, location.floatingWidgetId);
+  isFloatingLocation(location) && floatingWidgetBringToFront(nineZone, location.floatingWidgetId);
 });
 
 /** @internal */
@@ -801,8 +847,10 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
   }, [uiSettingsStorage]);
   React.useEffect(() => {
     async function fetchFrontstageState() {
-      if (frontstageDef.nineZoneState)
+      if (frontstageDef.nineZoneState) {
+        frontstageDef.nineZoneState = processPopoutWidgets(frontstageDef.nineZoneState, frontstageDef);
         return;
+      }
       const id = frontstageDef.id;
       const version = frontstageDef.version;
       const settingsResult = await uiSettingsRef.current.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id));
@@ -811,7 +859,8 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
         settingsResult.setting.stateVersion >= stateVersion
       ) {
         const restored = restoreNineZoneState(frontstageDef, settingsResult.setting.nineZone);
-        const state = addMissingWidgets(frontstageDef, restored);
+        let state = addMissingWidgets(frontstageDef, restored);
+        state = processPopoutWidgets(state, frontstageDef);
         frontstageDef.nineZoneState = state;
         return;
       }
@@ -846,9 +895,11 @@ export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   }, [frontstageDef, nineZone, saveSetting]);
 }
 
-const FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings";
+/** @internal */
+export const FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings";
 
-function getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]) {
+/** @internal */
+export function getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]) {
   return `frontstageState[${frontstageId}]`;
 }
 
@@ -1003,4 +1054,35 @@ export function useSyncDefinitions(frontstageDef: FrontstageDef) {
       }
     }
   }, [nineZone, frontstageDef]);
+}
+
+/** @internal */
+export async function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window) {
+  const location = findWidget(state, childWindowId);
+  // istanbul ignore else
+  if (location) {
+    const adjustmentWidth = ProcessDetector.isElectronAppFrontend ? 16 : 0;
+    const adjustmentHeight = ProcessDetector.isElectronAppFrontend ? 39 : 0;
+    const newState = produce(state, (draft) => {
+      const widget = draft.widgets[childWindowId];
+      const tab = draft.tabs[widget.activeTabId];
+      tab.preferredPopoutWidgetSize = {
+        x: childWindow.screenX,
+        y: childWindow.screenY,
+        width: childWindow.innerWidth + adjustmentWidth,
+        height: childWindow.innerHeight + adjustmentHeight,
+      };
+    });
+
+    const setting: WidgetPanelsFrontstageState = {
+      id: stageId,
+      nineZone: packNineZoneState(newState),
+      stateVersion,
+      version: stageVersion,
+    };
+    await UiFramework.getUiSettingsStorage().saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(stageId), setting);
+    return newState;
+  }
+  // istanbul ignore next
+  return state;
 }

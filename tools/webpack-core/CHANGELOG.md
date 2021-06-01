@@ -1,6 +1,38 @@
 # Change Log - @bentley/webpack-tools-core
 
-This log was last generated on Wed, 12 May 2021 18:08:13 GMT and should not be manually modified.
+This log was last generated on Thu, 27 May 2021 20:04:22 GMT and should not be manually modified.
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+### Updates
+
+- Add new plugin to copy and deliver all static assets required from bentley and itwin scopes. Will work with the webpack dev server"
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+_Version update only_
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:27 GMT
+
+_Version update only_
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
 
 ## 2.15.2
 Wed, 12 May 2021 18:08:13 GMT

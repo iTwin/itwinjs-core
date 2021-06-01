@@ -1,5 +1,9 @@
 sep=;
 Release Tag;API Item
+public;AdditionalTransform 
+public;AdditionalTransformProps
+public;AffineTransform 
+public;AffineTransformProps
 public;AmbientLight
 public;AmbientLightProps
 public;AmbientOcclusion
@@ -52,13 +56,15 @@ public;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boo
 public;CalloutProps 
 public;Camera 
 public;CameraProps
+public;Carto2DDegrees 
+public;Carto2DDegreesProps
 public;Cartographic 
 public;CartographicRange
 public;CategoryProps 
 public;CategorySelectorProps 
 internal;ChangeData
-internal;ChangedElements
-beta;ChangedEntities
+public;ChangedElements
+public;ChangedEntities
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
@@ -101,6 +107,7 @@ internal;CurrentImdlVersion
 beta;CustomAttribute
 public;CutStyle
 public;CutStyleProps
+public;DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm"
 internal;DecorationGeometryProps
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
@@ -119,9 +126,9 @@ public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
-beta;DynamicGraphicsRequest2dProps 
-beta;DynamicGraphicsRequest3dProps 
-beta;DynamicGraphicsRequestProps 
+public;DynamicGraphicsRequest2dProps 
+public;DynamicGraphicsRequest3dProps 
+public;DynamicGraphicsRequestProps 
 public;Easing:
 public;EasingFunction = (k: number) => number
 public;EcefLocation 
@@ -137,13 +144,13 @@ public;ElementAspectProps
 alpha;ElementGeometry
 public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 public;ElementGeometryChange
-alpha;ElementGeometryDataEntry
+public;ElementGeometryDataEntry
 alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
 alpha;ElementGeometryInfo
-alpha;ElementGeometryOpcode
+public;ElementGeometryOpcode
 alpha;ElementGeometryRequest
 alpha;ElementGeometryUpdate
-beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
+public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
 public;ElementLoadProps 
@@ -173,7 +180,7 @@ internal;FeatureTableHeader
 public;FilePropertyProps
 public;FillDisplay
 public;FillFlags
-beta;FlatBufferGeometryStream
+public;FlatBufferGeometryStream
 public;FontMap
 public;FontMapProps
 public;FontProps
@@ -184,9 +191,20 @@ internal;FrustumPlanes
 internal;FrustumPlanes
 public;FunctionalElementProps 
 internal;GateValue = number | boolean | string | undefined
+public;GeocentricTransform 
+public;GeocentricTransformProps
 beta;GeoCoordinatesRequestProps
 beta;GeoCoordinatesResponseProps
 public;GeoCoordStatus
+public;GeodeticDatum 
+public;GeodeticDatumProps
+public;GeodeticEllipsoid 
+public;GeodeticEllipsoidProps
+public;GeodeticTransform 
+public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
+public;GeodeticTransformProps
+public;GeographicCRS 
+public;GeographicCRSProps
 public;GeometricElement2dProps 
 public;GeometricElement3dProps 
 public;GeometricElementProps 
@@ -225,14 +243,27 @@ internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
 public;GraphicParams
-beta;GraphicsRequestProps
+public;GraphicsRequestProps
+public;GridFileDefinition 
+public;GridFileDefinitionProps
+public;GridFileDirection = "Direct" | "Inverse"
+public;GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN"
+public;GridFileTransform 
+public;GridFileTransformProps
 public;GridOrientationType
 public;GroundPlane
 public;GroundPlaneProps
+public;Helmert2DWithZOffset 
+public;Helmert2DWithZOffsetProps
+public;HemisphereEnum = "South" | "North"
 public;HemisphereLights
 public;HemisphereLightsProps
 public;HiddenLine
 public;Hilite
+public;HorizontalCRS 
+public;HorizontalCRSExtent 
+public;HorizontalCRSExtentProps
+public;HorizontalCRSProps
 public;HSLColor
 public;HSVColor
 public;HSVConstants
@@ -279,10 +310,10 @@ internal;IpcAppChannel
 internal;IpcAppFunctions
 internal;IpcAppNotifications
 internal;IpcInvokeReturn =
-beta;IpcListener = (evt: Event, ...args: any[]) => void
-beta;IpcSocket
-beta;IpcSocketBackend 
-beta;IpcSocketFrontend 
+public;IpcListener = (evt: Event, ...args: any[]) => void
+public;IpcSocket
+public;IpcSocketBackend 
+public;IpcSocketFrontend 
 internal;class IpcWebSocket 
 internal;IpcWebSocketBackend 
 internal;IpcWebSocketFrontend 
@@ -294,8 +325,8 @@ public;isPlacement2dProps(props: PlacementProps): props is Placement2dProps
 public;isPlacement3dProps(props: PlacementProps): props is Placement3dProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
-beta;iTwinChannel: (channel: string) => string
-beta;JsonGeometryStream
+internal;iTwinChannel: (channel: string) => string
+public;JsonGeometryStream
 public;LatAndLong
 public;LatLongAndHeight 
 internal;LightLocationProps 
@@ -330,7 +361,7 @@ public;ModelClipGroups
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
-beta;ModelIdAndGeometryGuid
+public;ModelIdAndGeometryGuid
 public;ModelLoadProps
 public;ModelProps 
 public;ModelQueryParams 
@@ -374,7 +405,7 @@ beta;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PartReference
-beta;PersistentGraphicsRequestProps 
+public;PersistentGraphicsRequestProps 
 public;PhysicalElementProps 
 public;PhysicalTypeProps 
 public;Placement = Placement2d | Placement3d
@@ -397,9 +428,14 @@ internal;PolylineData
 internal;PolylineEdgeArgs
 internal;PolylineFlags
 internal;PolylineTypeFlags
+public;PositionalVectorTransform 
+public;PositionalVectorTransformProps
 internal;PrimaryTileTreeId
 beta;PrimitiveTypeCode
 beta;ProfileOptions
+public;Projection 
+public;ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransverseMercator" | "TransverseMercatorWisconsin" | "TransverseMercatorMinnesota" | "TransverseMercatorAffine" | "MercatorStandardParallel" | "Mercator" | "UniversalTransverseMercator" | "LambertConformalConicTwoParallels" | "LambertConformalConicBelgium" | "LambertConformalConicAffine" | "LambertConformalConicWisconsin" | "LambertConformalConicMinnesota" | "LambertConformalConicMichigan" | "LambertConformalConicOneParallel" | "AlbersEqualArea" | "NewZealandNationalGrid" | "ObliqueMercator1" | "ObliqueMercator2" | "TransverseMercatorOSTN97" | "TransverseMercatorOSTN02" | "TransverseMercatorOSTN15" | "Krovak" | "KrovakModified" | "ObliqueCylindricalSwiss" | "TransverseMercatorDenmarkSystem34" | "TransverseMercatorDenmarkSystem3499" | "TransverseMercatorDenmarkSystem3401" | "Cassini" | "Sinusoidal" | "VanDerGrinten" | "Bonne" | "Mollweide" | "EckertIV" | "EckertVI" | "GoodeHomolosine" | "Robinson" | "PlateCarree" | "MillerCylindrical" | "WinkelTripel" | "AzimuthalEqualArea" | "ObliqueStereographic" | "RectifiedSkewOrthomorphicCentered" | "RectifiedSkewOrthomorphicOrigin" | "ObliqueCylindricalHungary" | "Orthographic" | "AmericanPolyconic" | "LambertEquidistantAzimuthal" | "ObliqueMercatorMinnesota"
+public;ProjectionProps
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataProps
@@ -431,12 +467,12 @@ public;RenderMaterial
 public;RenderMaterialAssetProps
 public;RenderMaterialProps 
 public;RenderMode
-beta;RenderSchedule
+public;RenderSchedule
 internal;Interval
 public;class RenderTexture 
 public;RenderTexture
-beta;RenderTimelineLoadProps
-beta;RenderTimelineProps 
+public;RenderTimelineLoadProps
+public;RenderTimelineProps 
 public;RepositoryLinkProps 
 public;RequestNewBriefcaseProps
 public;ResponseLike 
@@ -563,8 +599,8 @@ public;ThematicGradientColorScheme
 public;ThematicGradientMode
 public;ThematicGradientSettings
 public;ThematicGradientSettingsProps
-alpha;ThumbnailFormatProps
-alpha;ThumbnailProps 
+public;ThumbnailFormatProps
+public;ThumbnailProps 
 internal;TileContentDescription 
 beta;TileContentIdentifier
 internal;TileContentMetadata
@@ -580,7 +616,7 @@ internal;TileReadStatus
 internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
-alpha;TileVersionInfo
+public;TileVersionInfo
 alpha;TreeFlags
 public;Tween
 public;TweenCallback = (obj: any) => void
@@ -589,10 +625,13 @@ public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
-internal;TypeOfChange
+public;TypeOfChange
+public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void
 beta;UpgradeOptions
 public;UrlLinkProps 
+public;VerticalCRS 
+public;VerticalCRSProps
 public;ViewAttachmentLabelProps 
 public;ViewAttachmentProps 
 public;ViewDefinition2dProps 
@@ -614,3 +653,5 @@ internal;WEB_RPC_CONSTANTS:
 public;class WebAppRpcProtocol 
 public;WebAppRpcRequest 
 internal;class WipRpcInterface 
+public;XyzRotation 
+public;XyzRotationProps
