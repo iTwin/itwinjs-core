@@ -1,0 +1,17 @@
+name: Run probot
+
+on:
+  issues:
+    types:
+      - opened
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  runProbot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: probot/exmaple-github-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
