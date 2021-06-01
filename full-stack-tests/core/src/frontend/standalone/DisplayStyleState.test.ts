@@ -67,48 +67,6 @@ describe("DisplayStyle", () => {
     expect(style.sunDirection.z).to.equal(sunDir.z);
   });
 
-  it("Should override model appearance correctly", () => {
-    const style = new DisplayStyle3dState(styleProps, imodel);
-    const appearanceOverride = FeatureAppearance.fromJSON({
-      rgb: { r: 0, g: 255, b: 0 },
-      transparency: 0.5,
-      nonLocatable: true,
-      emphasized: true,
-    });
-
-    let index = 0;
-    style.forEachRealityModel((_realityModel) => {
-      style.overrideRealityModelAppearance(index, appearanceOverride);
-
-      expect(appearanceOverride).to.deep.equal(style.getRealityModelAppearanceOverride(index));
-      index++;
-    });
-
-    const modelId = "0x001f";
-    style.overrideModelAppearance(modelId, appearanceOverride);
-    expect(appearanceOverride).to.deep.equal(style.getModelAppearanceOverride(modelId));
-  });
-
-  it("Should override reality model planar clip masks correctly", () => {
-    const style = new DisplayStyle3dState(styleProps, imodel);
-    const compressedModelIds = CompressedId64Set.compressArray([ "0x001", "0x002", "0x003"]);
-    const compressedElementIds =  CompressedId64Set.compressArray([ "0x004", "0x004", "0x006"]);
-    const planarClipMask = PlanarClipMaskSettings.fromJSON({
-      mode: PlanarClipMaskMode.IncludeElements,
-      modelIds: compressedModelIds,
-      subCategoryOrElementIds: compressedElementIds,
-      priority: 0,
-    });
-
-    let index = 0;
-    style.forEachRealityModel((_realityModel) => {
-      style.overrideRealityModelPlanarClipMask(index, planarClipMask);
-
-      expect(planarClipMask).to.deep.equal(style.getRealityModelPlanarClipMask(index));
-      index++;
-    });
-  });
-
   it("should use iModel extents for thematic height range if unspecified", () => {
     const style = new DisplayStyle3dState(styleProps, imodel);
     style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height, range: [1, 100] } });
@@ -165,15 +123,15 @@ describe("DisplayStyle", () => {
           if (undefined !== a.classifiers && undefined !== e.classifiers)
             expect(a.classifiers.size).to.equal(e.classifiers.length);
 
-          expect(undefined === a.planarClipMask).to.equal(undefined === e.planarClipMask);
-          if (undefined !== a.planarClipMask && undefined !== e.planarClipMask)
-            expect(a.planarClipMask.settings.equals(PlanarClipMaskSettings.fromJSON(e.planarClipMask)));
+          expect(undefined === a.planarClipMaskSettings).to.equal(undefined === e.planarClipMaskSettings);
+          if (undefined !== a.planarClipMaskSettings && undefined !== e.planarClipMaskSettings)
+            expect(a.planarClipMaskSettings.equals(PlanarClipMaskSettings.fromJSON(e.planarClipMaskSettings)));
 
-          const foundIndex = style3d.findRealityModelIndex((accept) => { return accept.url === a.url; });
-          expect(i === foundIndex);
+          const foundIndex = style3d.settings.contextRealityModels.models.findIndex((x) => x.url === a.url);
+          expect(foundIndex).to.equal(i);
         }
         // Detach all.
-        style3d.detachRealityModelByIndex(-1);
+        style3d.settings.contextRealityModels.clear();
         style3d.forEachRealityModel((_model) => expect(false));
       } else {
         expect(models.length).to.equal(0);
