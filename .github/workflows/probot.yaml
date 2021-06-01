@@ -12,6 +12,6 @@ jobs:
   runProbot:
     runs-on: ubuntu-latest
     steps:
-      - uses: probot/exmaple-github-action@v1
+      - uses: SaemJeon/apps
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
