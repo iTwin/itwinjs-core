@@ -104,7 +104,7 @@ describe("DisplayStyle", () => {
         compareScheduleScripts(style, expected);
     };
 
-    function compareRealityModels(style3d: DisplayStyle3dState, expected: any): void {
+    function compareRealityModels(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
       const models: ContextRealityModelState[] = [];
       style3d.forEachRealityModel((model) => models.push(model));
       if (undefined !== expected.contextRealityModels) {
@@ -123,9 +123,9 @@ describe("DisplayStyle", () => {
           if (undefined !== a.classifiers && undefined !== e.classifiers)
             expect(a.classifiers.size).to.equal(e.classifiers.length);
 
-          expect(undefined === a.planarClipMaskSettings).to.equal(undefined === e.planarClipMaskSettings);
-          if (undefined !== a.planarClipMaskSettings && undefined !== e.planarClipMaskSettings)
-            expect(a.planarClipMaskSettings.equals(PlanarClipMaskSettings.fromJSON(e.planarClipMaskSettings)));
+          expect(undefined === a.planarClipMaskSettings).to.equal(undefined === e.planarClipMask);
+          if (undefined !== a.planarClipMaskSettings && undefined !== e.planarClipMask)
+            expect(a.planarClipMaskSettings.equals(PlanarClipMaskSettings.fromJSON(e.planarClipMask)));
 
           const foundIndex = style3d.settings.contextRealityModels.models.findIndex((x) => x.url === a.url);
           expect(foundIndex).to.equal(i);
@@ -138,7 +138,7 @@ describe("DisplayStyle", () => {
       }
     }
 
-    function compareScheduleScripts(style3d: DisplayStyle3dState, expected: any): void {
+    function compareScheduleScripts(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
       if (undefined !== style3d.scheduleScript)
         expect(JSON.stringify(style3d.scheduleScript.toJSON())).to.equal(JSON.stringify(expected.scheduleScript));
       else
