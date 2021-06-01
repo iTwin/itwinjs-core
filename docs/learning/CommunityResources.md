@@ -10,11 +10,11 @@ The iTwin.js development team closely monitors our GitHub:
 - [Enhancement Requests](https://github.com/imodeljs/imodeljs/labels/enhancement)
 - [Bug Reports](https://github.com/imodeljs/imodeljs/labels/bug)
 
-See the CONTRIBUTING.md file in the root of the imodeljs repository for additional instructions.
+See the [CONTRIBUTING.md](https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md) in the root of the imodeljs repository for additional instructions.
 
 ### Questions and Advice
 
-Programming questions and requests for programming advice are best asked on [Stack Overflow](https://stackoverflow.com/tags/bentley-itwin).
+Programming questions and requests for programming advice are best asked on [GitHub Discussions](https://github.com/imodeljs/imodeljs/discussions).
 
 ### Guidance
 
