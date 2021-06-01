@@ -8,7 +8,7 @@ import * as Yargs from "yargs";
 import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ChangeSet, Version } from "@bentley/imodelhub-client";
-import { BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
+import { BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";
@@ -215,14 +215,18 @@ void (async () => {
       assert(undefined !== args.targetFile);
       // target is a local snapshot file
       const targetFile = args.targetFile ? path.normalize(args.targetFile) : "";
-      // clean target output file before continuing (regardless of args.clean value)
-      if (IModelJsFs.existsSync(targetFile)) {
-        IModelJsFs.removeSync(targetFile);
+      if (processChanges) {
+        targetDb = StandaloneDb.openFile(targetFile);
+      } else {
+        // clean target output file before continuing (regardless of args.clean value)
+        if (IModelJsFs.existsSync(targetFile)) {
+          IModelJsFs.removeSync(targetFile);
+        }
+        targetDb = StandaloneDb.createEmpty(targetFile, {
+          rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
+          ecefLocation: sourceDb.ecefLocation,
+        });
       }
-      targetDb = SnapshotDb.createEmpty(targetFile, {
-        rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
-        ecefLocation: sourceDb.ecefLocation,
-      });
     }
 
     if (args.logProvenanceScopes) {
