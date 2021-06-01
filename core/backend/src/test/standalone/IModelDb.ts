@@ -2,27 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, SyncMode } from "@bentley/imodeljs-common";
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import * as sinon from "sinon";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import { IModelDb } from "../../IModelDb";
-import { IModelReadRpcImpl } from "../../rpc-impl/IModelReadRpcImpl";
 import { RpcBriefcaseUtility } from "../../rpc-impl/RpcBriefcaseUtility";
-
-describe("IModelReadRpcImpl", () => {
-  afterEach(() => {
-    sinon.restore();
-  });
-
-  it("should call IModelDb.findOrOpen", async () => {
-    sinon.stub(ClientRequestContext, "current").returns("fakeRequestContext");
-    const findOrOpenStub = sinon.stub(IModelDb, "findOrOpen").callsFake(async () => ({} as IModelDb));
-    await new IModelReadRpcImpl().getModelProps("fake" as any, []);
-    assert.isTrue(findOrOpenStub.calledOnceWith("fakeRequestContext" as any, "fake" as any, SyncMode.FixedVersion));
-  });
-});
 
 describe("IModelDb.findOrOpen", () => {
   afterEach(() => {
