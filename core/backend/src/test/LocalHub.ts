@@ -14,11 +14,13 @@ import { SQLiteDb } from "../SQLiteDb";
 
 // cspell:ignore rowid
 
+/** @internal */
 export interface MockBriefcaseIdProps {
   id: number;
   user: string;
 }
 
+/** @internal */
 export interface LocalHubProps {
   readonly contextId: GuidString;
   readonly iModelId: GuidString;
@@ -27,6 +29,10 @@ export interface LocalHubProps {
   readonly revision0: string;
 }
 
+/**
+ * A "local" mock for access to a single iModel. Used by HubMock.
+ * @internal
+ */
 export class LocalHub {
   public readonly contextId: GuidString;
   public readonly iModelId: GuidString;

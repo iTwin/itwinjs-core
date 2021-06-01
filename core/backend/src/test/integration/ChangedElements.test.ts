@@ -1,8 +1,8 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { DbResult, GuidString, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
@@ -24,15 +24,11 @@ describe("ChangedElements (#integration)", () => {
 
   before(async () => {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-
     testContextId = await HubUtility.getTestContextId(requestContext);
-    requestContext.enter();
     testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
-    requestContext.enter();
 
     // Purge briefcases that are close to reaching the acquire limit
     await HubUtility.purgeAcquiredBriefcasesById(requestContext, testIModelId);
-    requestContext.enter();
   });
 
   it("Create ChangedElements Cache and process changesets", async () => {

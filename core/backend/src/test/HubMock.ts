@@ -22,22 +22,56 @@ import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { LocalHub, LocalHubProps } from "./LocalHub";
 
-/** Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc. */
+/**
+ * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.
+ *
+ * Generally, tests for apis that *create or modify* iModels can and should be mocked. Otherwise they:
+ * - create tremendous load on the test servers when they run on programmer's desktops and in CI jobs
+ * - waste network and data center resources (i.e. $$$s),
+ * - interfere with other tests running on the same or other systems, and
+ * - (far worse) are the source of test flakiness outside of the api being tested.
+ *
+ * This class can be used to create tests that do not require authentication, are synchronous,
+ * are guaranteed to be self-contained (i.e. do not interfere with other tests running at the same time or later), and do not fail for reasons outside
+ * of the control of the test itself. As a bonus, in addition to making tests more reliable, mocking IModelHub generally makes tests run *much* faster.
+ *
+ * On the other hand, tests that expect to find an existing iModels, checkpoints, changesets, etc. in IModelHub cannot be mocked. In that case, those tests
+ * should be careful to NOT modify the data, since doing so causes interference with other tests running simultaneously. These tests should be limited to
+ * low level testing of the core apis only.
+ *
+ * To initialize HubMock, call [[startup]] at the beginning of your test, usually in `describe.before`. Thereafter, all access to iModelHub for an iModel will be
+ * directed to a [[LocalHub]] - your test code does not change. After the test(s) complete, call [[shutdown]] (usually in `describe.after`) to stop mocking IModelHub and clean
+ * up any resources used by the test(s). If you want to mock a single test, call [[startup]] as the first line and [[shutdown]] as the last. If you wish to run the
+ * test against a "real" IModelHub, you can simply comment off the call [[startup]], though in that case you should make sure the name of your
+ * iModel is unique so your test won't collide with other tests (iModel name uniqueness is not necessary for mocked tests.)
+ *
+ * Mocked tests must always start by creating a new iModel via [[IModelHost.hubAccess.createIModel]] with a `revision0` iModel.
+ * They use mock (aka "bogus") credentials for `AccessTokens`, which is fine since [[HubMock]] never accesses resources outside the current
+ * computer. The mock `AccessTokens` are obtained by calling [[IModelTestUtils.getUserContext]]. There are 4 user profiles (Regular, Manager,
+ * Super, SuperManager) for simulating different users/roles.
+ *
+ * @internal
+ */
 export class HubMock {
   private static mockRoot: LocalDirName | undefined;
   private static hubs = new Map<string, LocalHub>();
   private static _saveHubAccess: BackendHubAccess;
 
+  /** Determine whether a test us currently being run under HubMock */
   public static get isValid() { return undefined !== this.mockRoot; }
+
+  /**
+   * Begin mocking IModelHub access. After this call, all access to IModelHub will be directed to a [[LocalHub]].
+   * @param mockName a unique name (e.g. "MyTest") for this HubMock to disambiguate tests when more than one is simultaneously active.
+   * It is used to create a private directory used by the HubMock for a test. That directory is removed when [[shutdown]] is called.
+   */
   public static startup(mockName: LocalDirName) {
     this.mockRoot = join(KnownTestLocations.outputDir, "HubMock", mockName);
-
     IModelJsFs.recursiveMkDirSync(this.mockRoot);
     IModelJsFs.purgeDirSync(this.mockRoot);
     this._saveHubAccess = IModelHost.hubAccess;
     IModelHost.setHubAccess(this);
-
-    HubUtility.contextId = Guid.createValue();
+    HubUtility.contextId = Guid.createValue(); // all iModels for this test get the same "contextId"
 
     sinon.stub(IModelVersion, "getLatestChangeSetId").callsFake(async (): Promise<GuidString> => {
       throw new Error("this method is deprecated and cannot be used while IModelHub is mocked - use IModelHost.hubaccess.getChangesetIdFromVersion");
@@ -52,6 +86,10 @@ export class HubMock {
     });
 
   }
+
+  /** Stop a HubMock that was previously started with [[startup]]
+   * @note this function throws an exception if any of the iModels used during the tests are left open.
+   */
   public static shutdown() {
     if (!this.isValid)
       return;
@@ -74,12 +112,7 @@ export class HubMock {
     return hub;
   }
 
-  /** create a LocalHub for an iModel.
-   *  - contextId - the Guid of the context to mock
-   *  - iModelId - the Guid of the iModel to mock
-   *  - iModelName - the name of the iModel to mock
-   *  - revision0 - the local filename of the revision 0 (aka "seed") .bim file
-   */
+  /** create a [[LocalHub]] for an iModel.  */
   public static create(arg: LocalHubProps) {
     if (!this.mockRoot)
       throw new Error("call startup first");
@@ -88,11 +121,14 @@ export class HubMock {
     this.hubs.set(arg.iModelId, mock);
   }
 
-  public static destroy(imodelId: GuidString) {
-    const hub = this.findLocalHub(imodelId);
+  /** remove the [[LocalHub]] for an iModel */
+  public static destroy(iModelId: GuidString) {
+    const hub = this.findLocalHub(iModelId);
     hub.cleanup();
-    this.hubs.delete(imodelId);
+    this.hubs.delete(iModelId);
   }
+
+  /** All methods below are mocks of the [[BackendHubAccess]] interface */
 
   public static async getChangesetIdFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<string> {
     return this.findLocalHub(arg.iModelId).findNamedVersion(arg.versionName);

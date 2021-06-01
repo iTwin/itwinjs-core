@@ -18,7 +18,7 @@ export type ChangesetId = string;
 export type ChangesetIndex = number;
 
 /** Properties of a changeset
- * @internal
+ * @beta
  */
 export interface ChangesetProps {
   id: ChangesetId;
@@ -33,12 +33,15 @@ export interface ChangesetProps {
 }
 
 /** Properties of a changeset file
- * @internal
+ * @beta
  */
 export interface ChangesetFileProps extends ChangesetProps {
   pathname: LocalFileName;
 }
 
+/** Properties of a changeset file
+ * @beta
+ */
 export type ChangesetRange = { first: ChangesetId, after?: never, end?: ChangesetId } | { after: ChangesetId, first?: never, end?: ChangesetId };
 
 /**

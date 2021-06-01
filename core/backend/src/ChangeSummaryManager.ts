@@ -215,12 +215,12 @@ export class ChangeSummaryManager {
           Logger.logTrace(loggerCategory, `Moved iModel to changeset #${i + 1} to extract summary from.`, () => ({ iModelId: ctx.iModelId, changeSetId: currentChangeSetId }));
         }
 
-        const changeSetFilePath: string = currentChangeSetInfo.pathname;
+        const changeSetFilePath = currentChangeSetInfo.pathname;
         if (!IModelJsFs.existsSync(changeSetFilePath))
           throw new IModelError(IModelStatus.FileNotFound, `Failed to extract change summary: ChangeSet file "${changeSetFilePath}" does not exist.`);
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Extract ChangeSummary");
-        const stat: IModelJsNative.ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
+        const stat = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
         perfLogger.dispose();
         if (stat.error && stat.error.status !== DbResult.BE_SQLITE_OK)
           throw new IModelError(stat.error.status, stat.error.message);
@@ -228,7 +228,7 @@ export class ChangeSummaryManager {
         Logger.logTrace(loggerCategory, `Actual Change summary extraction done for changeset #${i + 1}.`, () => ({ iModelId: ctx.iModelId, changeSetId: currentChangeSetId }));
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
-        const changeSummaryId: Id64String = stat.result!;
+        const changeSummaryId = stat.result!;
         summaries.push(changeSummaryId);
         ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, currentChangeSetInfo.parentId, currentChangeSetInfo.description, currentChangeSetInfo.pushDate, currentChangeSetInfo.userCreated);
         perfLogger.dispose();
@@ -273,7 +273,7 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadArg, "Invalid iModel handle. iModel must be open.");
 
     const changesFile = new ECDb();
-    const changeCacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModel.iModelId);
+    const changeCacheFilePath = BriefcaseManager.getChangeCachePathName(iModel.iModelId);
     if (IModelJsFs.existsSync(changeCacheFilePath)) {
       ChangeSummaryManager.openChangeCacheFile(changesFile, changeCacheFilePath);
       return changesFile;
