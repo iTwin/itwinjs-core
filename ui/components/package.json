@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-components",
-  "version": "2.17.0-dev.19",
+  "version": "2.17.0-dev.22",
   "description": "iModel.js UI complex components",
   "main": "lib/ui-components.js",
   "typings": "lib/ui-components",

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/hypermodeling-frontend",
-  "version": "2.17.0-dev.19",
+  "version": "2.17.0-dev.22",
   "description": "iModel.js hypermodeling package",
   "main": "lib/hypermodeling-frontend.js",
   "typings": "lib/hypermodeling-frontend",
