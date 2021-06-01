@@ -33,7 +33,7 @@ import { ViewFlagProps, ViewFlags } from "./ViewFlags";
 import { Cartographic } from "./geometry/Cartographic";
 import { IModel } from "./IModel";
 import { calculateSolarDirection } from "./SolarCalculate";
-import { ContextRealityModelProps } from "./ContextRealityModel";
+import { ContextRealityModel, ContextRealityModels, ContextRealityModelProps } from "./ContextRealityModel";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -128,7 +128,7 @@ export interface DisplayStyleSettingsProps {
 
   /** Settings controlling display of map within views of geolocated models. */
   backgroundMap?: BackgroundMapProps;
-  /** Contextual Reality Models */
+  /** @see [[DisplayStyleSettings.contextRealityModels]]. */
   contextRealityModels?: ContextRealityModelProps[];
   /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large. */
   excludedElements?: Id64Array | CompressedId64Set;
@@ -428,6 +428,14 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
   }
 }
 
+/** Options supplied when constructing a [[DisplayStyleSettings]].
+ * @public
+ */
+export interface DisplayStyleSettingsOptions {
+  /** A function that instantiates a [[ContextRealityModel]] to be stored in [[DisplayStyleSettings.contextRealityModels]]. */
+  createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+}
+
 /** Provides access to the settings defined by a [[DisplayStyle]] or [[DisplayStyleState]], and ensures that
  * the style's JSON properties are kept in sync.
  * @public
@@ -446,6 +454,7 @@ export class DisplayStyleSettings {
   private _mapImagery: MapImagerySettings;
   private _analysisStyle?: AnalysisStyle;
   private _clipStyle: ClipStyle;
+  private readonly _contextRealityModels: ContextRealityModels;
 
   public is3d(): this is DisplayStyle3dSettings {
     return false;
@@ -456,6 +465,11 @@ export class DisplayStyleSettings {
    */
   public get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings> {
     return this._planarClipMasks;
+  }
+
+  /** Reality models to be displayed in the view. */
+  public get contextRealityModels(): ContextRealityModels {
+    return this._contextRealityModels;
   }
 
   /** Event raised by [[applyOverrides]] just before the overrides are applied. */
@@ -521,11 +535,12 @@ export class DisplayStyleSettings {
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
+   * @param options Options for customizing the display style settings.
    * @note When the `DisplayStyleSetting`'s properties are modified by public setters, the `jsonProperties`'s `styles` object will be updated to reflect the change.
    * @note If `jsonProperties` contains no `styles` member, one will be added as an empty object.
    * @note Generally there is no reason to create an object of this type directly; a [[DisplayStyle]] or [[DisplayStyleState]] constructs one as part of its own construction.
    */
-  public constructor(jsonProperties: { styles?: DisplayStyleSettingsProps }) {
+  public constructor(jsonProperties: { styles?: DisplayStyleSettingsProps }, options?: DisplayStyleSettingsOptions) {
     if (undefined === jsonProperties.styles)
       jsonProperties.styles = {};
 
@@ -569,6 +584,8 @@ export class DisplayStyleSettings {
         const settings = PlanarClipMaskSettings.fromJSON(props);
         return settings.isValid ? settings : undefined;
       });
+
+    this._contextRealityModels = new ContextRealityModels(this._json, options?.createContextRealityModel);
   }
 
   /** Flags controlling various aspects of the display style. To change the style's view flags, do something like:
