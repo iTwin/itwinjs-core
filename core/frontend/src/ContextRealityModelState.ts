@@ -62,6 +62,10 @@ export class ContextRealityModelState extends ContextRealityModel {
         classifiers: this.classifiers,
         source: displayStyle,
       });
+
+    this.onPlanarClipMaskChanged.addListener((newSettings) => {
+      this._treeRef.planarClipMask = newSettings ? PlanarClipMaskState.create(newSettings) : undefined;
+    });
   }
 
   public get treeRef(): TileTreeReference { return this._treeRef; }

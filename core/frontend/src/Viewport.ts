@@ -1004,7 +1004,14 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
     removals.push(settings.onPlanarClipMaskChanged.addListener(displayStyleChanged));
-    // ###TODO event for ContextRealityModelState.planarClipMask change needed?
+    removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
+
+    removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
+      displayStyleChanged();
+      this.synchWithView(false); // May change frustum depth.
+    }));
 
     const analysisChanged = () => {
       this._changeFlags.setDisplayStyle();

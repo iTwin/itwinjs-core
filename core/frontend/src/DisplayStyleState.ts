@@ -44,6 +44,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
   /** Event raised just before the [[scheduleScriptReference]] property is changed. */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+  /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings.
+   * @beta
+   */
+  public readonly onOSMBuildingDisplayChanged = new BeEvent<(osmBuildingDisplayEnabled: boolean) => void>();
 
   /** The container for this display style's settings. */
   public abstract get settings(): DisplayStyleSettings;
@@ -278,12 +282,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     const url = getCesiumOSMBuildingsUrl();
     let model = this.settings.contextRealityModels.models.find((x) => x.url === url);
-    if (options.onOff === false)
-      return undefined !== model && this.settings.contextRealityModels.delete(model);
+    if (options.onOff === false) {
+      const turnedOff = undefined !== model && this.settings.contextRealityModels.delete(model);
+      if (turnedOff)
+        this.onOSMBuildingDisplayChanged.raiseEvent(false);
+
+      return turnedOff;
+    }
 
     if (!model) {
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
       model = this.attachRealityModel({ tilesetUrl: url, name });
+      this.onOSMBuildingDisplayChanged.raiseEvent(true);
     }
 
     if (options.appearanceOverrides)
