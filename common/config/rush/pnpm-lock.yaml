@@ -2768,6 +2768,7 @@ importers:
 
   ../../full-stack-tests/rpc-interface:
     specifiers:
+      '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
@@ -2812,6 +2813,7 @@ importers:
       webpack: 4.42.0
       webpack-cli: ^3.1.0
     dependencies:
+      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
