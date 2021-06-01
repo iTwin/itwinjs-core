@@ -1556,14 +1556,26 @@ export abstract class ContentIdProvider {
 }
 
 // @public
-export interface ContextRealityModel {
-    appearanceOverrides?: FeatureAppearance;
+export class ContextRealityModel {
+    constructor(props: ContextRealityModelProps);
+    get appearanceOverrides(): FeatureAppearance | undefined;
+    set appearanceOverrides(overrides: FeatureAppearance | undefined);
+    // (undocumented)
+    protected _appearanceOverrides?: FeatureAppearance;
     readonly classifiers?: SpatialClassifiers;
     readonly description: string;
+    matchesNameAndUrl(name: string, url: string): boolean;
     readonly name: string;
+    readonly onAppearanceOverridesChanged: BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>;
+    readonly onPlanarClipMaskChanged: BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>;
     // @alpha (undocumented)
-    readonly orbitGtBlob?: OrbitGtBlobProps;
-    planarClipMaskSettings?: PlanarClipMaskSettings;
+    readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
+    // (undocumented)
+    protected _planarClipMask?: PlanarClipMaskSettings;
+    get planarClipMaskSettings(): PlanarClipMaskSettings | undefined;
+    set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined);
+    // (undocumented)
+    protected readonly _props: ContextRealityModelProps;
     readonly realityDataId?: string;
     toJSON(): ContextRealityModelProps;
     readonly url: string;
@@ -1594,6 +1606,9 @@ export class ContextRealityModels {
     clear(): void;
     delete(model: ContextRealityModel): boolean;
     get models(): ReadonlyArray<ContextRealityModel>;
+    readonly onAppearanceOverridesChanged: BeEvent<(model: ContextRealityModel, newOverrides: FeatureAppearance | undefined) => void>;
+    readonly onChanged: BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>;
+    readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
     update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel;
 }
@@ -1729,7 +1744,7 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyle3dSettingsProps;
-    });
+    }, options?: DisplayStyleSettingsOptions);
     get ambientOcclusionSettings(): AmbientOcclusion.Settings;
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     // @internal
@@ -1777,37 +1792,6 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     thematic?: ThematicDisplayProps;
 }
 
-// @internal
-export class DisplayStyleContextRealityModel implements ContextRealityModel {
-    constructor(props: ContextRealityModelProps);
-    // (undocumented)
-    get appearanceOverrides(): FeatureAppearance | undefined;
-    set appearanceOverrides(overrides: FeatureAppearance | undefined);
-    // (undocumented)
-    protected _appearanceOverrides?: FeatureAppearance;
-    // (undocumented)
-    readonly classifiers?: SpatialClassifiers;
-    // (undocumented)
-    readonly description: string;
-    // (undocumented)
-    readonly name: string;
-    // @alpha (undocumented)
-    readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
-    // (undocumented)
-    protected _planarClipMask?: PlanarClipMaskSettings;
-    // (undocumented)
-    get planarClipMaskSettings(): PlanarClipMaskSettings | undefined;
-    set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined);
-    // (undocumented)
-    protected readonly _props: ContextRealityModelProps;
-    // (undocumented)
-    readonly realityDataId?: string;
-    // (undocumented)
-    toJSON(): ContextRealityModelProps;
-    // (undocumented)
-    readonly url: string;
-}
-
 // @public
 export interface DisplayStyleLoadProps {
     compressExcludedElementIds?: boolean;
@@ -1844,7 +1828,7 @@ export interface DisplayStyleProps extends DefinitionElementProps {
 export class DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyleSettingsProps;
-    });
+    }, options?: DisplayStyleSettingsOptions);
     addExcludedElements(id: Id64String | Iterable<Id64String>): void;
     // @alpha (undocumented)
     get analysisFraction(): number;
@@ -1864,6 +1848,7 @@ export class DisplayStyleSettings {
     set clipStyle(style: ClipStyle);
     // @internal (undocumented)
     get compressedExcludedElementIds(): CompressedId64Set;
+    get contextRealityModels(): ContextRealityModels;
     dropExcludedElement(id: Id64String): void;
     dropExcludedElements(id: Id64String | Iterable<Id64String>): void;
     dropModelAppearanceOverride(id: Id64String): void;
@@ -1935,6 +1920,11 @@ export class DisplayStyleSettings {
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
     }
+
+// @public
+export interface DisplayStyleSettingsOptions {
+    createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+}
 
 // @public
 export interface DisplayStyleSettingsProps {
@@ -5554,6 +5544,7 @@ export interface PlanarClipMaskProps {
 // @public
 export class PlanarClipMaskSettings {
     clone(changedProps?: PlanarClipMaskProps): PlanarClipMaskSettings;
+    get compressedModelIds(): CompressedId64Set | undefined;
     static createByPriority(priority: number, transparency?: number): PlanarClipMaskSettings;
     static createForElementsOrSubCategories(mode: PlanarClipMaskMode.IncludeElements | PlanarClipMaskMode.ExcludeElements | PlanarClipMaskMode.IncludeSubCategories, elementOrSubCategoryIds: Iterable<Id64String>, modelIds?: Iterable<Id64String>, transparency?: number): PlanarClipMaskSettings;
     static createForModels(modelIds: Iterable<Id64String> | undefined, transparency?: number): PlanarClipMaskSettings;

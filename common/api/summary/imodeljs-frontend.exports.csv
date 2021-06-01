@@ -92,7 +92,7 @@ public;ClipEventType
 public;Cluster
 internal;CompassMode
 internal;ContextMode
-beta;ContextRealityModelState
+beta;ContextRealityModelState 
 public;ContextRotationId
 public;CoordinateLockOverrides
 public;CoordSource
@@ -511,8 +511,6 @@ public;SnapHeat
 public;SnapMode
 public;SnapshotConnection 
 public;SnapStatus
-beta;SpatialClassifiers
-internal;SpatialClassifiersContainer
 internal;class SpatialClassifierTileTreeReference 
 public;SpatialLocationModelState 
 public;SpatialModelState 

@@ -706,6 +706,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     });
   }
 
+  /** @internal */
   protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState {
     return new ContextRealityModelState(props, this.iModel, this);
   }

@@ -9,6 +9,7 @@ import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
+import { ContextRealityModelState } from '@bentley/imodeljs-frontend';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { Decorator } from '@bentley/imodeljs-frontend';
 import { EmphasizeElements } from '@bentley/imodeljs-frontend';
@@ -1380,9 +1381,11 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
+    protected setRealityModelMask(vp: ScreenViewport, mask: PlanarClipMaskSettings): void;
+    // (undocumented)
     protected abstract showPrompt(): void;
     // (undocumented)
-    protected _targetMaskModelId?: Id64String | number;
+    protected _targetMaskModel?: Id64String | ContextRealityModelState;
     // (undocumented)
     protected targetModelRequired(): boolean;
     // (undocumented)

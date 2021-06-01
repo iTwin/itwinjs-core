@@ -121,13 +121,13 @@ internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
-internal;DisplayStyleContextRealityModel 
 public;DisplayStyleLoadProps
 public;DisplayStyleModelAppearanceProps 
 public;DisplayStyleOverridesOptions
 public;DisplayStylePlanarClipMaskProps 
 public;DisplayStyleProps 
 public;DisplayStyleSettings
+public;DisplayStyleSettingsOptions
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
