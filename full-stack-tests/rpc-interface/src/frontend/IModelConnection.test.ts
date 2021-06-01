@@ -75,7 +75,7 @@ describe("IModel Connection with client credentials", () => {
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
-  it("should successfully open an IModelConnection for read with client credentials", async () => {
+  it("should successfully open an IModelConnection for read", async () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
 
