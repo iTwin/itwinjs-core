@@ -167,3 +167,7 @@ export * from "./IModelDb"; // must be last
  * @docs-group-description Tiles
  * APIs for working with tile graphics.
  */
+/**
+ * @docs-group-description HubAccess
+ * APIs for working with IModelHub
+ */

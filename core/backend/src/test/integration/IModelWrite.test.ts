@@ -15,7 +15,7 @@ import {
   SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
-import { IModelTestUtils, TestUserId, Timer } from "../IModelTestUtils";
+import { IModelTestUtils, TestUserType, Timer } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
 export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb, parent?: Id64String) {
@@ -67,8 +67,8 @@ describe("IModelWriteTest (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
     HubMock.startup("IModelWriteTest");
 
-    managerRequestContext = await IModelTestUtils.getUserContext(TestUserId.Manager);
-    superRequestContext = await IModelTestUtils.getUserContext(TestUserId.Super);
+    managerRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
+    superRequestContext = await IModelTestUtils.getUserContext(TestUserType.Super);
     (superRequestContext as any).activityId = "IModelWriteTest (#integration)";
 
     testContextId = await HubUtility.getTestContextId(managerRequestContext);
@@ -169,10 +169,10 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
-    const firstUserRequestContext = await IModelTestUtils.getUserContext(TestUserId.Super);
+    const firstUserRequestContext = await IModelTestUtils.getUserContext(TestUserType.Super);
     (firstUserRequestContext as any).activityId = "test change-merging scenarios in optimistic concurrency mode (#integration)";
-    const secondUserRequestContext = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
-    const neutralObserverUserRequestContext = await IModelTestUtils.getUserContext(TestUserId.Manager);
+    const secondUserRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
+    const neutralObserverUserRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
 
     const firstIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: firstUserRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
     const secondIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: secondUserRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
@@ -342,7 +342,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it.skip("should push changes with codes (#integration)", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
+    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
@@ -405,7 +405,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it.skip("should defer locks and codes in bulk mode (#integration)", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
+    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = HubUtility.generateUniqueName("ConcurrencyControlBulkModeTest");
     const deleteIModel = await HubUtility.queryIModelByName(adminRequestContext, testContextId, iModelName);
@@ -470,7 +470,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should handle undo/redo (#integration)", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
+    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
@@ -539,7 +539,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should not push changes with lock conflicts (#integration)", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
+    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     let timer = new Timer("delete iModels");
     const iModelName = "LocksConflictTest";
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext: adminRequestContext, contextId: testContextId, iModelName });
@@ -655,7 +655,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it.skip("Locks conflict test II (#integration)", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
+    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     let timer = new Timer("delete iModels");
     const iModelName = "LocksConflictTestII";
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext: adminRequestContext, contextId: testContextId, iModelName });
@@ -711,7 +711,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it.skip("should not push changes with code conflicts (#integration)", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
+    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     let timer = new Timer("delete iModels");
     const iModelName = "CodesConflictTest";
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext: adminRequestContext, contextId: testContextId, iModelName });
@@ -761,7 +761,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should write to briefcase with optimistic concurrency (#integration)", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
+    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
     const iModelName = HubUtility.generateUniqueName("OptimisticConcurrencyTest");
 

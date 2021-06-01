@@ -16,7 +16,7 @@ import {
   PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
-import { IModelTestUtils, TestUserId } from "../IModelTestUtils";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
@@ -31,7 +31,7 @@ describe("IModelTransformerHub (#integration)", () => {
     HubMock.startup("IModelTransformerHub");
     IModelJsFs.recursiveMkDirSync(outputDir);
 
-    requestContext = await IModelTestUtils.getUserContext(TestUserId.Regular);
+    requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
     projectId = HubUtility.contextId!;
 
     // initialize logging

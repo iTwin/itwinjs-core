@@ -9,7 +9,7 @@ import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedBackendRequestContext, IModelHost, PhysicalElement } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
-import { IModelTestUtils, TestUserId } from "../IModelTestUtils";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
@@ -28,7 +28,7 @@ describe("Schema XML Import Tests (#integration)", () => {
 
   before(async () => {
     HubMock.startup("schemaImport");
-    requestContext = await IModelTestUtils.getUserContext(TestUserId.Manager);
+    requestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
     testContextId = await HubUtility.getTestContextId(requestContext);
     readWriteTestIModelId = await HubUtility.recreateIModel(requestContext, testContextId, HubUtility.generateUniqueName("ReadWriteTest"));
   });

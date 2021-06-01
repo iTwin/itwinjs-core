@@ -14,7 +14,7 @@ import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } 
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
-import { IModelTestUtils, TestUserId } from "../IModelTestUtils";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 import { TestUtility } from "@bentley/oidc-signin-tool";
@@ -57,7 +57,7 @@ describe("BriefcaseManager (#integration)", () => {
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
 
-    requestContext = await IModelTestUtils.getUserContext(TestUserId.Regular);
+    requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
     requestContext.enter();
 
     testContextId = await HubUtility.getTestContextId(requestContext);
@@ -80,7 +80,7 @@ describe("BriefcaseManager (#integration)", () => {
     await HubUtility.purgeAcquiredBriefcasesById(requestContext, await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium));
     requestContext.enter();
 
-    managerRequestContext = await IModelTestUtils.getUserContext(TestUserId.Manager);
+    managerRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, readOnlyTestIModelId);
     requestContext.enter();
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, noVersionsTestIModelId);
@@ -423,8 +423,8 @@ describe("BriefcaseManager (#integration)", () => {
 
   it("should reuse a briefcaseId when re-opening iModels of different versions for pullAndPush and pullOnly workflows", async () => {
     HubMock.startup("workflow");
-    const userContext1 = await IModelTestUtils.getUserContext(TestUserId.Manager);
-    const userContext2 = await IModelTestUtils.getUserContext(TestUserId.SuperManager);
+    const userContext1 = await IModelTestUtils.getUserContext(TestUserType.Manager);
+    const userContext2 = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, HubUtility.generateUniqueName("BriefcaseReuseTest"));
@@ -467,8 +467,8 @@ describe("BriefcaseManager (#integration)", () => {
 
   it("should not be able to edit PullOnly briefcases", async () => {
     HubMock.startup("pullOnly");
-    const userContext1 = await IModelTestUtils.getUserContext(TestUserId.Manager); // User1 is just used to create and update the iModel
-    const userContext2 = await IModelTestUtils.getUserContext(TestUserId.SuperManager); // User2 is used for the test
+    const userContext1 = await IModelTestUtils.getUserContext(TestUserType.Manager); // User1 is just used to create and update the iModel
+    const userContext2 = await IModelTestUtils.getUserContext(TestUserType.SuperManager); // User2 is used for the test
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, "PullOnlyTest");
@@ -536,8 +536,8 @@ describe("BriefcaseManager (#integration)", () => {
 
   it("should be able to edit a PullAndPush briefcase, reopen it as of a new version, and then push changes", async () => {
     HubMock.startup("pullPush");
-    const userContext1 = await IModelTestUtils.getUserContext(TestUserId.Manager); // User1 is just used to create and update the iModel
-    const userContext2 = await IModelTestUtils.getUserContext(TestUserId.SuperManager); // User2 is used for the test
+    const userContext1 = await IModelTestUtils.getUserContext(TestUserType.Manager); // User1 is just used to create and update the iModel
+    const userContext2 = await IModelTestUtils.getUserContext(TestUserType.SuperManager); // User2 is used for the test
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, "PullAndPushTest");

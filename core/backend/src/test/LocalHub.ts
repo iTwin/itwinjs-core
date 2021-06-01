@@ -30,7 +30,7 @@ export interface LocalHubProps {
 }
 
 /**
- * A "local" mock for access to a single iModel. Used by HubMock.
+ * A "local" mock for IModelHub to provide access to a single iModel. Used by HubMock.
  * @internal
  */
 export class LocalHub {
@@ -79,6 +79,7 @@ export class LocalHub {
   public get checkpointDir() { return join(this.rootDir, "checkpoints"); }
   public get mockDbName() { return join(this.rootDir, "localHub.db"); }
 
+  /** Acquire the next available briefcaseId and assign it to the supplied user */
   public acquireNewBriefcaseId(user: string): number {
     const db = this.db;
     const newId = this._nextBriefcaseId++;
@@ -93,6 +94,7 @@ export class LocalHub {
     return newId;
   }
 
+  /** Release a briefcaseId */
   public releaseBriefcaseId(id: number) {
     const db = this.db;
     db.withSqliteStatement("DELETE FROM briefcases WHERE id=?", (stmt) => {
@@ -104,6 +106,7 @@ export class LocalHub {
     db.saveChanges();
   }
 
+  /** Get an array of all of the currently assigned Briefcases */
   public getBriefcases(): MockBriefcaseIdProps[] {
     const briefcases: MockBriefcaseIdProps[] = [];
     this.db.withSqliteStatement("SELECT id,user FROM briefcases", (stmt) => {
@@ -117,6 +120,7 @@ export class LocalHub {
     return briefcases;
   }
 
+  /** Get an array of all of the currently assigned BriefcaseIds*/
   public getBriefcaseIds(user: string): number[] {
     const briefcases: number[] = [];
     this.db.withSqliteStatement("SELECT id FROM briefcases WHERE user=?", (stmt) => {
@@ -127,6 +131,7 @@ export class LocalHub {
     return briefcases;
   }
 
+  /** Add a changeset to the timeline */
   public addChangeset(changeset: ChangesetFileProps) {
     const stats = IModelJsFs.lstatSync(changeset.pathname);
     if (!stats)
@@ -150,7 +155,8 @@ export class LocalHub {
     IModelJsFs.copySync(changeset.pathname, join(this.changesetDir, changeset.id));
   }
 
-  public getChangesetIndex(id: string): number {
+  /** Get the index of a changeset by its Id */
+  public getChangesetIndex(id: ChangesetId): number {
     if (id === "")
       return 0;
 
@@ -164,10 +170,12 @@ export class LocalHub {
     });
   }
 
-  public getChangesetById(id: string): ChangesetProps {
+  /** Get the properties of a changeset by its Id */
+  public getChangesetById(id: ChangesetId): ChangesetProps {
     return this.getChangesetByIndex(this.getChangesetIndex(id));
   }
 
+  /** Get the properties of a changeset by its index */
   public getChangesetByIndex(index: number): ChangesetProps {
     if (index === 0)
       return { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "" };
@@ -192,6 +200,7 @@ export class LocalHub {
     });
   }
 
+  /** Get an array of changesets starting with first to last, by index */
   public getChangesets(first?: number, last?: number): ChangesetProps[] {
     const changesets: ChangesetProps[] = [];
     if (undefined === first)
@@ -212,6 +221,7 @@ export class LocalHub {
     return changesets;
   }
 
+  /** Get the index of the latest changeset. 0=no changesets have been added. */
   public getLatestChangesetIndex(): number {
     return this.db.withSqliteStatement("SELECT max(rowid) FROM timeline", (stmt) => {
       stmt.step();
@@ -219,11 +229,13 @@ export class LocalHub {
     });
   }
 
-  public getLatestChangesetId(): string {
+  /** Get the ChangesetId of the latest changeset */
+  public getLatestChangesetId(): ChangesetId {
     return this.getChangesetByIndex(this.getLatestChangesetIndex()).id;
   }
 
-  public addNamedVersion(arg: { versionName: string, id: string }) {
+  /** Name a version */
+  public addNamedVersion(arg: { versionName: string, id: ChangesetId }) {
     const db = this.db;
     db.withSqliteStatement("INSERT INTO versions(name,id) VALUES (?,?)", (stmt) => {
       stmt.bindValue(1, arg.versionName);
@@ -235,6 +247,7 @@ export class LocalHub {
     db.saveChanges();
   }
 
+  /** Delete a named version */
   public deleteNamedVersion(versionName: string) {
     const db = this.db;
     db.withSqliteStatement("DELETE FROM versions WHERE name=?", (stmt) => {
@@ -246,7 +259,8 @@ export class LocalHub {
     db.saveChanges();
   }
 
-  public findNamedVersion(versionName: string): string {
+  /** find the ChangesetId of a named version */
+  public findNamedVersion(versionName: string): ChangesetId {
     return this.db.withSqliteStatement("SELECT id FROM versions WHERE name=?", (stmt) => {
       stmt.bindValue(1, versionName);
       const rc = stmt.step();
@@ -260,6 +274,7 @@ export class LocalHub {
     return changesetId === "" ? "0" : changesetId;
   }
 
+  /** "upload" a checkpoint */
   public uploadCheckpoint(arg: { changesetId: ChangesetId, localFile: LocalFileName }) {
     const index = (arg.changesetId !== "") ? this.getChangesetIndex(arg.changesetId) : 0;
     const db = this.db;
@@ -275,6 +290,7 @@ export class LocalHub {
     return outName;
   }
 
+  /** Get an array of the changeset index for all checkpoints */
   public getCheckpoints(): number[] {
     const checkpoints: number[] = [];
     this.db.withSqliteStatement("SELECT csIndex FROM checkpoints", (stmt) => {
@@ -285,6 +301,7 @@ export class LocalHub {
     return checkpoints;
   }
 
+  /** Find the checkpoint that is no newer than a changesetId */
   public queryPreviousCheckpoint(changesetId: ChangesetId): ChangesetId {
     if (changesetId === "")
       return "";
@@ -298,6 +315,7 @@ export class LocalHub {
     });
   }
 
+  /** "download" a checkpoint */
   public downloadCheckpoint(arg: { changesetId: ChangesetId, targetFile: LocalFileName }) {
     const prev = this.queryPreviousCheckpoint(arg.changesetId);
     IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromId(prev)), arg.targetFile);
@@ -309,12 +327,14 @@ export class LocalHub {
     return arg;
   }
 
+  /** "download" a changeset */
   public downloadChangeset(arg: { changesetId: ChangesetId, targetDir: LocalDirName }) {
     const cs = this.getChangesetById(arg.changesetId);
     const csProps = { ...cs, pathname: join(arg.targetDir, cs.id) };
     return this.copyChangeset(csProps);
   }
 
+  /** Get the ChangesetProps for all changesets in a given range */
   public queryChangesets(range?: ChangesetRange): ChangesetProps[] {
     range = range ?? { first: "" };
     const startId = (undefined !== range.after) ? range.after : range.first;
@@ -333,6 +353,7 @@ export class LocalHub {
     return changesets;
   }
 
+  /** "download" all the changesets in a given range */
   public downloadChangesets(arg: { range?: ChangesetRange, targetDir: LocalDirName }): ChangesetFileProps[] {
     const cSets = this.queryChangesets(arg.range) as ChangesetFileProps[];
     for (const cs of cSets) {

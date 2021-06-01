@@ -13,7 +13,7 @@ import {
   RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { AccessToken, AuthorizedClientRequestContext, ITwinClientLoggerCategory, UserInfo } from "@bentley/itwin-client";
+import { AccessToken, AccessTokenProps, AuthorizedClientRequestContext, ITwinClientLoggerCategory, UserInfo } from "@bentley/itwin-client";
 import * as path from "path";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
@@ -115,7 +115,10 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
   public static onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
 }
 
-export enum TestUserId {
+/** the types of users available for tests
+ * @beta
+ */
+export enum TestUserType {
   Regular,
   Manager,
   Super,
@@ -123,44 +126,49 @@ export enum TestUserId {
 }
 
 export class IModelTestUtils {
-  private static regularInfo = { id: Guid.createValue(), profile: { firstName: "regular", lastName: "user", name: "Regular User" }, email: { id: "regular.user@test.org" } };
-  private static managerInfo = { id: Guid.createValue(), profile: { firstName: "manager", lastName: "user", name: "Manager User" }, email: { id: "manager.user@utest.org" } };
-  private static superInfo = { id: Guid.createValue(), profile: { firstName: "super", lastName: "user", name: "Super User" }, email: { id: "super.user@utest.org" } };
-  private static superManagerInfo = { id: Guid.createValue(), profile: { firstName: "superManager", lastName: "user", name: "SuperManager User" }, email: { id: "super.manager@utest.org" } };
-
-  public static async getUserContext(user: TestUserId) {
+  private static testOrg = {
+    name: "Test Organization",
+    id: Guid.createValue(),
+  };
+  /** get an AuthorizedClientRequestContext for a [[TestUserType]].
+     * @note if the current test is using [[HubMock]], calling this method multiple times with the same type will return users from the same organization,
+     * but with different credentials. This can be useful for simulating more than one user of the same type on the same project.
+     * However, if a real IModelHub is used, the credentials are supplied externally and will always return the same value (because otherwise they would be valid.)
+     */
+  public static async getUserContext(user: TestUserType): Promise<AuthorizedClientRequestContext> {
     if (HubMock.isValid) {
-      let info: UserInfo;
-      switch (user) {
-        case TestUserId.Regular:
-          info = this.regularInfo;
-          break;
-        case TestUserId.Manager:
-          info = this.managerInfo;
-          break;
-        case TestUserId.Super:
-          info = this.superInfo;
-          break;
-
-        case TestUserId.SuperManager:
-          info = this.superManagerInfo;
-          break;
-      }
-      return new AuthorizedClientRequestContext(AccessToken.fromJson({ tokenString: "bogus", userInfo: info }));
+      const firstName = TestUserType[user];
+      const lastName = "User";
+      const props: AccessTokenProps = {
+        tokenString: "bogus",
+        userInfo: {
+          id: Guid.createValue(),
+          email: {
+            id: `${firstName}.user@test.org`,
+          },
+          profile: {
+            firstName,
+            lastName,
+            name: `${firstName} ${lastName}`,
+          },
+          organization: this.testOrg,
+        },
+      };
+      return new AuthorizedClientRequestContext(AccessToken.fromJson(props));
     }
 
     let credentials: TestUserCredentials;
     switch (user) {
-      case TestUserId.Regular:
+      case TestUserType.Regular:
         credentials = TestUsers.regular;
         break;
-      case TestUserId.Manager:
+      case TestUserType.Manager:
         credentials = TestUsers.manager;
         break;
-      case TestUserId.Super:
+      case TestUserType.Super:
         credentials = TestUsers.super;
         break;
-      case TestUserId.SuperManager:
+      case TestUserType.SuperManager:
         credentials = TestUsers.superManager;
         break;
     }

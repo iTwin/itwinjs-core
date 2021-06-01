@@ -39,10 +39,12 @@ export interface ChangesetFileProps extends ChangesetProps {
   pathname: LocalFileName;
 }
 
-/** Properties of a changeset file
+/** Properties that specify a range of changesetIds.
  * @beta
  */
-export type ChangesetRange = { first: ChangesetId, after?: never, end?: ChangesetId } | { after: ChangesetId, first?: never, end?: ChangesetId };
+export type ChangesetRange =
+  { first: ChangesetId, after?: never, end?: ChangesetId } |
+  { after: ChangesetId, first?: never, end?: ChangesetId };
 
 /**
  * The properties of an iModel server lock.
@@ -54,17 +56,20 @@ export interface LockProps {
   level: LockLevel;
 }
 
+/** Argument for methods that must supply an IModelId */
 export interface IModelIdArg {
   iModelId: GuidString;
   requestContext?: AuthorizedClientRequestContext;
 }
 
+/** Argument for methods that must supply an IModel name and ContextId */
 export interface IModelNameArg {
   requestContext?: AuthorizedClientRequestContext;
   contextId: GuidString;
   iModelName: string;
 }
 
+/** Argument for methods that must supply briefcase properties */
 export interface BriefcaseDbArg {
   requestContext?: AuthorizedClientRequestContext;
   briefcase: {
@@ -74,25 +79,33 @@ export interface BriefcaseDbArg {
   };
 }
 
+/** Argument for methods that must supply an IModelId and a BriefcaseId  */
 export interface BriefcaseIdArg extends IModelIdArg {
   briefcaseId: number;
 }
 
+/** Argument for methods that must supply an IModelId and a ChangesetId  */
 export interface ChangesetIdArg extends IModelIdArg {
   changesetId: ChangesetId;
 }
 
+/** Argument for methods that must supply an IModelId and a range of ChangesetIds  */
 export interface ChangesetRangeArg extends IModelIdArg {
   range?: ChangesetRange;
 }
 
 export type CheckPointArg = DownloadRequest;
 
+/** Methods for accessing services of IModelHub from the backend.
+ * @note these methods may be mocked for tests
+ * @beta
+ */
 export interface BackendHubAccess {
-  /** Download change sets in the specified range. */
+  /** Download all the changesets in the specified range. */
   downloadChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-  /** Download a single change set. */
+  /** Download a single changeset. */
   downloadChangeset: (arg: ChangesetIdArg) => Promise<ChangesetFileProps>;
+
   queryChangeset: (arg: ChangesetIdArg) => Promise<ChangesetProps>;
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
   pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<void>;

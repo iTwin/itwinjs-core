@@ -238,3 +238,7 @@ export * from "./LocalhostIpcApp";
  * @docs-group-description MapLayerFormatRegistry
  * Class for working with supported map layer formats.
  */
+/**
+ * @docs-group-description HubAccess
+ * APIs for working with IModelHub
+ */
