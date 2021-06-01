@@ -17,7 +17,7 @@ import { DisplayStyleState } from "./DisplayStyleState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { PlanarClipMaskState } from "./imodeljs-frontend";
+import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { SpatialModelState } from "./ModelState";
 import {
   createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference,
