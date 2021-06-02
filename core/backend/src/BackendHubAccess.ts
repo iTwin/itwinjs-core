@@ -150,9 +150,14 @@ export interface BackendHubAccess {
   downloadV2Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
 
   acquireLocks: (arg: BriefcaseDbArg & { locks: LockProps[] }) => Promise<void>;
-  getAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
-  getAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;
+  acquireSchemaLock: (arg: BriefcaseDbArg) => Promise<void>;
+
+  querySchemaLock: (arg: BriefcaseDbArg) => Promise<boolean>;
+  queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
+
   releaseAllLocks: (arg: BriefcaseIdArg) => Promise<void>;
+
+  queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;
   releaseAllCodes: (arg: BriefcaseIdArg) => Promise<void>;
 
   queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;

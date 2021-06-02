@@ -11,7 +11,7 @@ import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import { BriefcaseStatus, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient, IModelHubClient, IModelQuery,
-  Lock, LockQuery, VersionQuery,
+  Lock, LockLevel, LockQuery, LockType, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { CodeProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
@@ -23,6 +23,7 @@ import {
 } from "./BackendHubAccess";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { ConcurrencyControl } from "./ConcurrencyControl";
 
 /** @internal */
 export class IModelHubBackend {
@@ -343,13 +344,13 @@ export class IModelHubBackend {
 
   }
 
-  public static async getAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]> {
+  public static async queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]> {
     const requestContext = await this.getRequestContext(arg);
     const heldLocks = await this.iModelClient.locks.get(requestContext, arg.briefcase.iModelId, new LockQuery().byBriefcaseId(arg.briefcase.briefcaseId));
     return heldLocks.map((lock) => ({ type: lock.lockType!, objectId: lock.objectId!, level: lock.lockLevel! }));
   }
 
-  public static async getAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]> {
+  public static async queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]> {
     const requestContext = await this.getRequestContext(arg);
     const reservedCodes = await this.iModelClient.codes.get(requestContext, arg.briefcase.iModelId, new CodeQuery().byBriefcaseId(arg.briefcase.briefcaseId));
     return reservedCodes.map((code) => ({ spec: code.codeSpecId!, scope: code.codeScope!, value: code.value! }));
@@ -373,5 +374,14 @@ export class IModelHubBackend {
   public static async acquireLocks(arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
     const hubLocks = this.toHubLocks(arg);
     await this.iModelClient.locks.update(await this.getRequestContext(arg), arg.briefcase.iModelId, hubLocks);
+  }
+
+  public static async acquireSchemaLock(arg: BriefcaseDbArg): Promise<void> {
+    await this.acquireLocks({ ...arg, locks: [ConcurrencyControl.Request.schemaLock] });
+  }
+
+  public static async querySchemaLock(arg: BriefcaseDbArg): Promise<boolean> {
+    const locks = await this.iModelClient.locks.get(await this.getRequestContext(arg), arg.briefcase.iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
+    return locks.length > 0;
   }
 }

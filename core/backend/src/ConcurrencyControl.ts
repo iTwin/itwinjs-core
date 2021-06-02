@@ -1551,8 +1551,8 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       this.mustHaveBriefcase();
       this.clear();
       const arg = { requestContext, briefcase: this.concurrencyControl.iModel };
-      this.insertLocks(await IModelHost.hubAccess.getAllLocks(arg));
-      this.insertCodes(await IModelHost.hubAccess.getAllCodes(arg));
+      this.insertLocks(await IModelHost.hubAccess.queryAllLocks(arg));
+      this.insertCodes(await IModelHost.hubAccess.queryAllCodes(arg));
       this.saveChanges();
     }
   }

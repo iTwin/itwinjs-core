@@ -2196,60 +2196,43 @@ export class BriefcaseDb extends IModelDb {
     super.saveChanges(description);
   }
 
-  private static async lockSchema(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, briefcaseId: number): Promise<void> {
-    await IModelHost.hubAccess.acquireLocks({ requestContext, briefcase: { iModelId, briefcaseId, changeSetId }, locks: [ConcurrencyControl.Request.schemaLock] });
-  }
-
   /**
    * Upgrades the profile or domain schemas and returns the new change set id
    */
-  private static async upgradeProfileOrDomainSchemas(requestContext: AuthorizedClientRequestContext, briefcaseProps: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, changeSetDescription: string): Promise<GuidString> {
-    requestContext.enter();
-    const { briefcaseId, iModelId } = briefcaseProps;
-
+  private static async upgradeProfileOrDomainSchemas(arg: { requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, description: string }): Promise<void> {
+    const lockArg = { ...arg, ...arg.briefcase };
+    const requestContext = arg.requestContext;
     // Lock schemas
-    await this.lockSchema(requestContext, iModelId, briefcaseProps.changeSetId, briefcaseId);
-    requestContext.enter();
+    await IModelHost.hubAccess.acquireSchemaLock(lockArg);
 
     // Upgrade and validate
     try {
       // openDgnDb performs the upgrade
-      const nativeDb = this.openDgnDb({ path: briefcaseProps.fileName, key: briefcaseProps.key }, OpenMode.ReadWrite, upgradeOptions);
+      const nativeDb = this.openDgnDb({ path: arg.briefcase.fileName, key: arg.briefcase.key }, OpenMode.ReadWrite, arg.upgradeOptions);
 
-      // Validate
       try {
-        assert(!nativeDb.hasUnsavedChanges(), "Expected schema upgrade to have saved any changes made");
-        assert(nativeDb.getReversedChangeSetId() === undefined, "Expected schema upgrade to have failed if there were reversed changes in the briefcase");
-        const localBriefcaseProps = {
-          iModelId: nativeDb.getDbGuid(),
-          contextId: nativeDb.queryProjectGuid(),
-          changeSetId: nativeDb.getParentChangeSetId(),
-        };
-        if (localBriefcaseProps.iModelId !== iModelId || localBriefcaseProps.contextId !== briefcaseProps.contextId || localBriefcaseProps.changeSetId !== briefcaseProps.changeSetId)
-          throw new IModelError(BentleyStatus.ERROR, "Local briefcase does not match the briefcase properties passed in to upgrade");
-        if (!nativeDb.hasPendingTxns()) {
-          await IModelHost.iModelClient.locks.deleteAll(requestContext, briefcaseProps.iModelId, briefcaseProps.briefcaseId);
-          return briefcaseProps.changeSetId; // No changes made due to the upgrade
+        if (!nativeDb.hasPendingTxns()) { // the upgrade did not cause any changes
+          await IModelHost.hubAccess.releaseAllLocks(lockArg);
+          return; // No changes made due to the upgrade
         }
       } finally {
         nativeDb.closeIModel();
       }
     } catch (err) {
-      await IModelHost.hubAccess.releaseAllLocks({ requestContext, briefcaseId, iModelId });
+      await IModelHost.hubAccess.releaseAllLocks(lockArg);
       throw err;
     }
 
     // Push changes
-    const briefcaseDb = await BriefcaseDb.open(requestContext, { ...briefcaseProps, readonly: false });
+    const briefcaseDb = await BriefcaseDb.open(requestContext, { ...arg.briefcase, readonly: false });
     try {
       // Sync the concurrencyControl cache so that it includes the schema lock we requested before the open
       await briefcaseDb.concurrencyControl.syncCache(requestContext);
-
-      await briefcaseDb.pushChanges(requestContext, changeSetDescription, ChangesType.Schema);
-      requestContext.enter();
-      return briefcaseDb.changeSetId;
+      await briefcaseDb.pushChanges(requestContext, arg.description, ChangesType.Schema);
+      arg.briefcase.changeSetId = briefcaseDb.changeSetId;
     } finally {
       briefcaseDb.close();
+      requestContext.enter();
     }
   }
 
@@ -2265,17 +2248,12 @@ export class BriefcaseDb extends IModelDb {
    * @see [[BriefcaseDb.validateSchemas]]
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
   */
-  public static async upgradeSchemas(requestContext: AuthorizedClientRequestContext, briefcaseProps: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void> {
-    requestContext.enter();
-
+  public static async upgradeSchemas(requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void> {
     // Note: For admins we do not care about translations and keep description consistent, but we do need to enhance this to
     // include more information on versions
-    const profileUpgradeDescription: string = "Upgraded profile";
-    const changeSetId = await this.upgradeProfileOrDomainSchemas(requestContext, briefcaseProps, { profile: ProfileOptions.Upgrade }, profileUpgradeDescription);
-    requestContext.enter();
-
-    const domainSchemaUpgradeDescription = "Upgraded domain schemas";
-    await this.upgradeProfileOrDomainSchemas(requestContext, { ...briefcaseProps, changeSetId }, { domain: DomainOptions.Upgrade }, domainSchemaUpgradeDescription);
+    const upgradeArg = { requestContext, briefcase };
+    await this.upgradeProfileOrDomainSchemas({ ...upgradeArg, upgradeOptions: { profile: ProfileOptions.Upgrade }, description: "Upgraded profile" });
+    await this.upgradeProfileOrDomainSchemas({ ...upgradeArg, upgradeOptions: { domain: DomainOptions.Upgrade }, description: "Upgraded domain schemas" });
     requestContext.enter();
   }
 

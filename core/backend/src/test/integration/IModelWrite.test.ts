@@ -983,7 +983,7 @@ describe("IModelWriteTest (#integration)", () => {
     iModel.close();
   });
 
-  it("should be able to upgrade a briefcase with an older schema", async () => {
+  it.only("should be able to upgrade a briefcase with an older schema", async () => {
     const projectId = await HubUtility.getTestContextId(managerRequestContext);
 
     /**
@@ -1022,9 +1022,8 @@ describe("IModelWriteTest (#integration)", () => {
     await BriefcaseDb.upgradeSchemas(managerRequestContext, managerBriefcaseProps);
 
     // Validate state after upgrade
-    let schemaLocks = await IModelHost.iModelClient.locks.get(managerRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
-    managerRequestContext.enter();
-    assert.isTrue(schemaLocks.length === 0); // Validate no schema locks held by the hub
+    let schemaLock = await IModelHost.hubAccess.querySchemaLock({ requestContext: managerRequestContext, briefcase: managerBriefcaseProps });
+    assert.isFalse(schemaLock); // Validate no schema locks held by the hub
     iModel = await BriefcaseDb.open(managerRequestContext, { fileName: managerBriefcaseProps.fileName });
     managerRequestContext.enter();
     const afterVersion = iModel.querySchemaVersion("BisCore");
@@ -1069,9 +1068,8 @@ describe("IModelWriteTest (#integration)", () => {
     superRequestContext.enter();
 
     // Ensure there are no schema locks
-    schemaLocks = await IModelHost.iModelClient.locks.get(superRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
-    superRequestContext.enter();
-    assert.isTrue(schemaLocks.length === 0); // Validate no schema locks held by the hub
+    schemaLock = await IModelHost.hubAccess.querySchemaLock({ requestContext: superRequestContext, briefcase: superBriefcaseProps });
+    assert.isFalse(schemaLock); // Validate no schema locks held by the hub
 
     /* Cleanup after test */
     await BriefcaseManager.deleteBriefcaseFiles(iModelFilename, managerRequestContext); // delete from local disk

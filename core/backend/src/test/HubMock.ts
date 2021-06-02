@@ -202,20 +202,27 @@ export class HubMock {
   }
 
   public static async releaseAllLocks(_arg: BriefcaseIdArg) {
-
   }
+
   public static async releaseAllCodes(_arg: BriefcaseIdArg) {
   }
 
-  public static async getAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]> {
+  public static async queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]> {
     return [];
   }
 
-  public static async getAllCodes(_arg: BriefcaseDbArg): Promise<CodeProps[]> {
+  public static async queryAllCodes(_arg: BriefcaseDbArg): Promise<CodeProps[]> {
     return [];
   }
 
   public static async acquireLocks(_arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
+  }
+
+  public static async acquireSchemaLock(_arg: BriefcaseDbArg): Promise<void> {
+  }
+
+  public static async querySchemaLock(_arg: BriefcaseDbArg): Promise<boolean> {
+    return false;
   }
 
   public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {
