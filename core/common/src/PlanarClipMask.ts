@@ -45,7 +45,7 @@ export enum PlanarClipMaskPriority {
 }
 
 /** JSON representation of a [[PlanarClipMaskSettings]].
- * @see [[DisplayStyleSettingsProps.planarClipOvr and [[ContextRealityModelProps.planarClipMask]].
+ * @see [[DisplayStyleSettingsProps.planarClipOvr]] and [[ContextRealityModelProps.planarClipMask]].
  * @public
  */
 export interface  PlanarClipMaskProps {
