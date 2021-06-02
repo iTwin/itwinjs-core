@@ -119,7 +119,7 @@ export class CopyStaticAssetsPlugin {
         context: `node_modules/${scope}`,
         noErrorOnMissing: true,
         to({ absoluteFilename }: { absoluteFilename: string }) {
-          const regex = new RegExp(`(${fromTo}\\\\)(.*)`);
+          const regex = new RegExp(`(${fromTo}(?:\\\\|\/))(.*)`);
           return regex.exec(absoluteFilename)![2];
         },
       });
