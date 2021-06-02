@@ -131,8 +131,11 @@ export interface BackendHubAccess {
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
   /** Query an array of changeset properties given a range of ChangesetIds  */
   pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<void>;
+  /** Get the changesetId of the most recent changeset */
   getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangesetId>;
+  /** Get the changesetId for an IModelVersion */
   getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetId>;
+  /** Get the changesetId for a named version */
   getChangesetIdFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetId>;
 
   /** Get the index of the change set from its id */
@@ -144,24 +147,37 @@ export interface BackendHubAccess {
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 
+  /** get an array of the briefcases assigned to the current user. */
   getMyBriefcaseIds: (arg: IModelIdArg) => Promise<number[]>;
 
+  /** download a v1 checkpoint */
   downloadV1Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
+  /** download a v2 checkpoint */
   downloadV2Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
 
+  /** acquire a list of locks. Throws if unsuccessful */
   acquireLocks: (arg: BriefcaseDbArg & { locks: LockProps[] }) => Promise<void>;
+  /** acquire the schema lock. Throws if unsuccessful */
   acquireSchemaLock: (arg: BriefcaseDbArg) => Promise<void>;
 
+  /** determine whether the schema lock is currently held */
   querySchemaLock: (arg: BriefcaseDbArg) => Promise<boolean>;
+  /** get the full list of held locks for a briefcase */
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
+  /** release all currently held locks */
   releaseAllLocks: (arg: BriefcaseIdArg) => Promise<void>;
 
+  /** Query codes */
   queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;
+  /** release codes */
   releaseAllCodes: (arg: BriefcaseIdArg) => Promise<void>;
 
+  /** get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
+  /** create a new iModel. Returns the Guid of the newly created iModel */
   createIModel: (arg: IModelNameArg & { description?: string, revision0?: LocalFileName }) => Promise<GuidString>;
+  /** delete an iModel  */
   deleteIModel: (arg: IModelIdArg & { contextId: GuidString }) => Promise<void>;
 }
 
