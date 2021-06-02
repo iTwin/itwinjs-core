@@ -1925,15 +1925,13 @@ export enum ContextMode {
     ZAxis = 3
 }
 
-// @beta
+// @public
 export class ContextRealityModelState extends ContextRealityModel {
+    // @internal
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
-    // (undocumented)
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
-    // (undocumented)
     get modelId(): Id64String | undefined;
-    // (undocumented)
     get treeRef(): TileTreeReference;
     }
 
@@ -2345,7 +2343,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex?: number): void;
     // @internal (undocumented)
     attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex?: number): void;
-    // @beta
     attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
@@ -2373,7 +2370,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
-    // @beta
     get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
     // @internal (undocumented)
     protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
@@ -2381,7 +2377,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     detachMapLayerByIndex(index: number, isOverlay: boolean): void;
     // @internal (undocumented)
     detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void;
-    // @beta
     detachRealityModelByNameAndUrl(name: string, url: string): boolean;
     // @internal (undocumented)
     get displayTerrain(): boolean;
@@ -2389,7 +2384,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     equalState(other: DisplayStyleState): boolean;
     // @internal (undocumented)
     findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean): number;
-    // @beta
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
     // @internal (undocumented)
     forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void;
@@ -2410,7 +2404,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
-    // @beta
     getOSMBuildingRealityModel(): ContextRealityModelState | undefined;
     // @internal (undocumented)
     getPlanarClipMaskState(modelId: Id64String): PlanarClipMaskState | undefined;
@@ -2419,7 +2412,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get globeMode(): GlobeMode;
     // @internal (undocumented)
     hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean;
-    // @beta
     hasAttachedRealityModel(name: string, url: string): boolean;
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
@@ -2435,7 +2427,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal
     moveMapLayerToTop(index: number, isOverlay: boolean): void;
     get name(): string;
-    // @beta
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
     readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
     // @internal (undocumented)
@@ -2449,7 +2440,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     // @internal (undocumented)
     get scheduleState(): RenderScheduleState | undefined;
-    // @beta
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
     // @internal
     setScheduleState(state: RenderScheduleState | undefined): void;

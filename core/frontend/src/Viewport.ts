@@ -158,18 +158,6 @@ export interface ChangeViewedModel2dOptions {
  */
 export enum ViewUndoEvent { Undo = 0, Redo = 1 }
 
-/** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
- * @see [[Viewport.setOSMBuildingDisplay=]].
-   * @public
- */
-export interface OsmBuildingDisplayOptions {
-  /**  If defined will turn the display of the OpenStreetMap buildings on or off by attaching or detaching the OSM reality model. */
-  /** If `true`, enables display of OpenStreetMap buildings within the viewport. */
-  onOff?: boolean;
-  /** If defined, overrides aspects of the appearance of the OpenStreetMap building meshes. */
-  appearanceOverrides?: FeatureAppearance;
-}
-
 /** @internal */
 export const ELEMENT_MARKED_FOR_REMOVAL = Symbol.for("@bentley/imodeljs/Viewport/__element_marked_for_removal__");
 

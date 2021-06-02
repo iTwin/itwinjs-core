@@ -9,7 +9,7 @@ import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs
 import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
   BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
+  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -25,12 +25,22 @@ import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
-import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
+import { ScreenViewport, Viewport } from "./Viewport";
 
 /** @internal */
 export class TerrainDisplayOverrides {
   public wantSkirts?: boolean;
   public wantNormals?: boolean;
+}
+/** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
+ * @see [[DisplayStyleState.setOSMBuildingDisplay]].
+ * @public
+ */
+export interface OsmBuildingDisplayOptions {
+  /** If defined, enables or disables display of the buildings by attaching or detaching the OpenStreetMap Buildings reality model. */
+  onOff?: boolean;
+  /** If defined, overrides aspects of the appearance of the OpenStreetMap building meshes. */
+  appearanceOverrides?: FeatureAppearance;
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]].
@@ -44,9 +54,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
   /** Event raised just before the [[scheduleScriptReference]] property is changed. */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
-  /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings.
-   * @beta
-   */
+  /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */
   public readonly onOSMBuildingDisplayChanged = new BeEvent<(osmBuildingDisplayEnabled: boolean) => void>();
 
   /** The container for this display style's settings. */
@@ -168,7 +176,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Call a function for each reality model attached to this display style.
    * @see [DisplayStyleSettings.contextRealityModels]($common).
-   * @beta
    */
   public forEachRealityModel(func: (model: ContextRealityModelState) => void): void {
     for (const model of this.settings.contextRealityModels.models) {
@@ -253,7 +260,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Attach a [ContextRealityModel]($common) to this display style.
    * @see [DisplayStyleSettings.contextRealityModels]($common).
    * @see [ContextRealityModels.add]($common)
-   * @beta
    */
   public attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState {
     const model = this.settings.contextRealityModels.add(props);
@@ -264,7 +270,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Detach the first [ContextRealityModel]($common) that matches the specified name and url.
    * @see [DisplayStyleSettings.contextRealityModels]($common)
    * @see [ContextRealityModels.delete]($common)
-   * @beta
    */
   public detachRealityModelByNameAndUrl(name: string, url: string): boolean {
     const model = this.settings.contextRealityModels.models.find((x) => x.matchesNameAndUrl(name, url));
@@ -273,7 +278,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Get the [[ContextRealityModelState]] that displays the OpenStreetMap worldwide building layer, if enabled.
    * @see [[setOSMBuildingDisplay]]
-   * @beta
    */
   public getOSMBuildingRealityModel(): ContextRealityModelState | undefined {
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)  // The OSM tile tree is ellipsoidal.
@@ -286,7 +290,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Set the display of the OpenStreetMap worldwide building layer in this display style by attaching or detaching the reality model displaying the buildings.
    * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
    * The options [[OsmBuildingDisplayOptions]] control the display and appearance overrides.
-   * @beta
    */
   public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean {
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)  // The OSM tile tree is ellipsoidal.
@@ -317,7 +320,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /**
    * Return if a context reality model is attached.
    * @see [[ContextRealityModelProps]].
-   * @beta
    * */
   public hasAttachedRealityModel(name: string, url: string): boolean {
     return undefined !== this.settings.contextRealityModels.models.find((x) => x.matchesNameAndUrl(name, url));
@@ -617,7 +619,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** [[ContextRealityModelState]]s attached to this display style.
    * @see [DisplayStyleSettings.contextRealityModels]($common).
-   * @beta
    */
   public get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState> {
     return this.settings.contextRealityModels.models as ContextRealityModelState[];

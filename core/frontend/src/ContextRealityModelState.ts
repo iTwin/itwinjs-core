@@ -34,14 +34,19 @@ async function getAccessToken(): Promise<AccessToken | undefined> {
   }
 }
 
-/** A reference to a [[TileTree]] obtained from a reality data service and associated to a [[ViewState]] by way of its [[DisplayStyleState]].
- * Contrast with a persistent [[GeometricModelState]] which may contain a URL pointing to a [[TileTree]] hosted on a reality data service.
- * @beta
+/** A [ContextRealityModel]($common) attached to a [[DisplayStyleState]] supplying a [[TileTreeReference]] used to draw the
+ * reality model in a [[Viewport]].
+ * @see [DisplayStyleSettings.contextRealityModels]($common).
+ * @see [[DisplayStyleState.contextRealityModelStates]].
+ * @see [[DisplayStyleState.attachRealityModel]].
+ * @public
  */
 export class ContextRealityModelState extends ContextRealityModel {
   private readonly _treeRef: RealityModelTileTree.Reference;
+  /** The iModel with which the reality model is associated. */
   public readonly iModel: IModelConnection;
 
+  /** @internal */
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
     super(props);
     this.iModel = iModel;
@@ -68,12 +73,15 @@ export class ContextRealityModelState extends ContextRealityModel {
     });
   }
 
+  /** The tile tree reference responsible for drawing the reality model into a [[Viewport]]. */
   public get treeRef(): TileTreeReference { return this._treeRef; }
+
+  /** The transient Id assigned to this reality model at run-time. */
   public get modelId(): Id64String | undefined {
     return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined;
   }
 
-  /** Return true if the model spans the entire globe ellipsoid in 3D */
+  /** Whether the reality model spans the entire globe ellipsoid. */
   public get isGlobal(): boolean {
     return this.treeRef.isGlobal;
   }
