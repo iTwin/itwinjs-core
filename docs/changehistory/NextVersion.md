@@ -24,7 +24,7 @@ Several APIs relating to reality models have been introduced, in some cases repl
 
 The set of [ContextRealityModels]($common) attached to a display style can be accessed and modified via [DisplayStyleSettings.contextRealityModels]($common).
 
-Spatial classification can be applied to a reality model via [ContextRealityModel.classifiers]($common) or [SpatialModelState.classifiers]($frontend). The [SpatialClassifier]($common) APIs replace the previous `beta` APIs in the `SpatialClassificationProps` namespace.
+Spatial classification can be applied to a reality model using [ContextRealityModel.classifiers]($common) or [SpatialModelState.classifiers]($frontend). The [SpatialClassifier]($common) APIs replace the previous `beta` APIs in the `SpatialClassificationProps` namespace.
 
 Portions of a reality model can be masked by other models using [ContextRealityModel.planarClipMaskSettings]($common) or, for persistent models, [DisplayStyleSettings.planarClipMasks]($common).
 
