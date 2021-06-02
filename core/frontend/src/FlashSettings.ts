@@ -20,6 +20,10 @@ export enum FlashMode {
   Brighten,
 }
 
+/** Options used to construct or clone a [[FlashSettings]]. All properties are mutable and optional; those left undefined receive their default
+ * values.
+ * @public
+ */
 export type FlashSettingsOptions = Mutable<Partial<FlashSettings>>;
 
 /** Settings that control how geometry is "flashed" when hovered over in a [[Viewport]].
