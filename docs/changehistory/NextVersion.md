@@ -24,11 +24,11 @@ Several APIs relating to reality models have been introduced, in some cases repl
 
 The set of [ContextRealityModels]($common) attached to a display style can be accessed and modified via [DisplayStyleSettings.contextRealityModels]($common).
 
-Spatial classification can be applied to a reality model via [ContextRealityModel.spatialClassifiers]($common) or [SpatialModelState.classifiers]($frontend). The [SpatialClassifier]($common) APIs replace the previous `beta` APIs in the `SpatialClassificationProps` namespace.
+Spatial classification can be applied to a reality model via [ContextRealityModel.classifiers]($common) or [SpatialModelState.classifiers]($frontend). The [SpatialClassifier]($common) APIs replace the previous `beta` APIs in the `SpatialClassificationProps` namespace.
 
 Portions of a reality model can be masked by other models using [ContextRealityModel.planarClipMaskSettings]($common) or, for persistent models, [DisplayStyleSettings.planarClipMasks]($common).
 
-The color, transparency, locatability, and "emphasized" state of a reality model can be overridden using [ContextRealityModel.apperanceOverrides]($common) or, for persistent models, [DisplayStyleSettings.modelAppearanceOverrides]($common).
+The color, transparency, locatability, and "emphasized" state of a reality model can be overridden using [ContextRealityModel.appearanceOverrides]($common) or, for persistent models, [DisplayStyleSettings.modelAppearanceOverrides]($common).
 
 A reality model displaying simple building meshes for locations all over the world obtained from [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/) can be enabled via [DisplayStyleState.setOSMBuildingDisplay]($frontend).
 
@@ -89,7 +89,7 @@ The following APIs have been replaced:
 * The [SpatialClassifiers]($common) class has moved to imodeljs-common.
 * `Viewport.setOSMBuildingDisplay` has been replaced by [DisplayStyleState.setOSMBuildingDisplay]($frontend).
 * The following [DisplayStyleState]($frontend) APIs have been replaced:
-  * Methods identifying [ContextRealityModel]($common)s by array index have been replaced with APIs that take a [ContextRealityModel]($common) object. If your existing code has an array index, you can use it to index into the arrays exposed by [DisplayStyleStates.contextRealityModelStates]($frontend) and the `models` property of [DisplayStyleSettings.contextRealityModels]($common).
+  * Methods identifying [ContextRealityModel]($common)s by array index have been replaced with APIs that take a [ContextRealityModel]($common) object. If your existing code has an array index, you can use it to index into the arrays exposed by [DisplayStyleState.contextRealityModelStates]($frontend) and the `models` property of [DisplayStyleSettings.contextRealityModels]($common).
   * `getModelAppearanceOverride`, `overrideModelAppearance`, `dropModelAppearanceOverride`: use the `get`, `set`, and `delete` methods of [DisplayStyleSettings.modelAppearanceOverrides]($common).
   * `getRealityModelAppearanceOverride`, `overrideRealityModelAppearance`, `dropRealityModelAppearanceOverride`: use [ContextRealityModel.appearanceOverrides]($common).
   * `modelAppearanceOverrides`: use [DisplayStyleSettings.modelAppearanceOverrides]($common).

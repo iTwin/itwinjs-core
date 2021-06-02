@@ -460,7 +460,7 @@ export class DisplayStyleSettings {
     return false;
   }
 
-  /** Planar clip masks to be applied to persistent reality models (@see [GeometricModelState.isRealityModel]($frontend).
+  /** Planar clip masks to be applied to persistent reality models (@see [SpatialModelState.isRealityModel]($frontend).
    * The key for each entry is the Id of the model to which the mask settings apply.
    */
   public get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings> {
