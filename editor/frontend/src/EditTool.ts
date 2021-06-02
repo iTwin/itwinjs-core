@@ -63,10 +63,10 @@ export class EditTools {
     this._initialized = true;
 
     const i18n = IModelApp.i18n.registerNamespace(this.namespace);
-    const registerAllTools = undefined !== options?.registerAllTools;
+    const registerAllTools = options?.registerAllTools;
 
     // Register requested tools...
-    if (registerAllTools || undefined !== options?.registerUndoRedoTools) {
+    if (registerAllTools || options?.registerUndoRedoTools) {
       const tools = [
         UndoAllTool,
         UndoTool,
@@ -77,7 +77,7 @@ export class EditTools {
         tool.register(i18n);
     }
 
-    if (registerAllTools || undefined !== options?.registerProjectLocationTools) {
+    if (registerAllTools || options?.registerProjectLocationTools) {
       const tools = [
         ProjectLocationShowTool,
         ProjectLocationHideTool,
@@ -92,7 +92,7 @@ export class EditTools {
         tool.register(i18n);
     }
 
-    if (registerAllTools || undefined !== options?.registerBasicManipulationTools) {
+    if (registerAllTools || options?.registerBasicManipulationTools) {
       const tools = [
         DeleteElementsTool,
         MoveElementsTool,
@@ -103,7 +103,7 @@ export class EditTools {
         tool.register(i18n);
     }
 
-    if (registerAllTools || undefined !== options?.registerSketchTools) {
+    if (registerAllTools || options?.registerSketchTools) {
       const tools = [
         CreateArcTool,
         CreateLineStringTool,
