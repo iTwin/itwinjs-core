@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Add FrameStats API.",
+      "comment": "",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-frontend",
-  "email": "47000437+markschlosseratbentley@users.noreply.github.com"
+  "email": "38971167+saemjeon@users.noreply.github.com"
 }

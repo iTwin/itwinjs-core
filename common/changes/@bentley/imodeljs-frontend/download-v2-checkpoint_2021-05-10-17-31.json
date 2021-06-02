@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Return empty symbology overrides for maps to avoid inheriting from view",
+      "comment": "",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-frontend",
-  "email": "rbbentley@users.noreply.github.com"
+  "email": "33296803+kabentley@users.noreply.github.com"
 }

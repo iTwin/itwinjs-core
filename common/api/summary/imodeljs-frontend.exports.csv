@@ -127,8 +127,8 @@ public;DisplayStyle2dState
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
 internal;disposeTileTreesForGeometricModels(modelIds: Set
-beta;DownloadBriefcaseId =
-beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
+public;DownloadBriefcaseId =
+public;DownloadBriefcaseOptions = DownloadBriefcaseId &
 internal;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -138,7 +138,7 @@ alpha;EditingFunctions
 deprecated;EditingFunctions
 alpha;EditingFunctions
 deprecated;EditingFunctions
-internal;EditManipulator
+public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
 public;ElementLocateManager
@@ -247,7 +247,7 @@ public;GraphicShape2d
 public;GraphicType
 alpha;GroupMark
 internal;Hilites
-beta;HiliteSet
+public;HiliteSet
 public;HitDetail
 public;HitDetailType
 public;HitGeomType
@@ -291,8 +291,8 @@ internal;InstancedGraphicParams
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
-beta;IpcApp
-beta;IpcAppOptions
+public;IpcApp
+public;IpcAppOptions
 beta;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
 beta;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
 beta;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
@@ -312,7 +312,7 @@ public;LocateOptions
 public;LocateResponse
 internal;LockedStates
 internal;loggerCategory = "imodeljs-frontend.Extension"
-beta;LookAndMoveTool 
+public;LookAndMoveTool 
 public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode
@@ -328,6 +328,7 @@ beta;MapLayerOptions
 internal;MapLayerSetting
 internal;MapLayerSettingsService
 internal;MapLayerSource 
+internal;MapLayerSourceChangeType
 internal;MapLayerSources
 internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation
@@ -364,10 +365,10 @@ public;ModelSelectorState
 public;ModelState 
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
-beta;NativeApp
-beta;NativeAppAuthorization
+public;NativeApp
+public;NativeAppAuthorization
 internal;NativeAppLogger
-beta;NativeAppOpts 
+public;NativeAppOpts 
 internal;NoRenderApp
 public;class NotificationHandler
 public;NotificationManager
@@ -375,7 +376,8 @@ public;NotifyMessageDetails
 internal;NullRenderSystem 
 internal;NullTarget 
 internal;OffScreenTarget 
-internal;OffScreenViewport 
+public;OffScreenViewport 
+public;OffScreenViewportOptions
 beta;OidcBrowserClient 
 deprecated;OidcBrowserClient 
 alpha;OnFrameStatsReadyEvent = BeEvent
@@ -401,7 +403,7 @@ public;ParticleCollectionBuilderParams
 public;ParticleProps 
 beta;PendingExtension
 internal;PerformanceMetrics
-beta;PerModelCategoryVisibility
+public;PerModelCategoryVisibility
 public;PhysicalModelState 
 public;PickableGraphicOptions 
 internal;PingTestResult
@@ -493,7 +495,7 @@ public;SelectionTool
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
-alpha;SetupCameraTool 
+public;SetupCameraTool 
 public;SetupWalkCameraTool 
 public;SheetModelState 
 public;SheetViewState 
@@ -523,7 +525,7 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-beta;Storage
+public;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
@@ -548,6 +550,9 @@ internal;TileAvailability
 public;TileBoundingBoxes
 public;TileContent
 public;TiledGraphicsProvider
+public;TiledGraphicsProvider
+internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): void
+internal;isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean
 public;TileDrawArgParams
 public;TileDrawArgs
 public;TileGraphicType

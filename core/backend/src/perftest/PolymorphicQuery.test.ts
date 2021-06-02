@@ -135,8 +135,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
           spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-        const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-        assert.equal(DbResult.BE_SQLITE_OK, result);
+        seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
         // create base class elements
         for (let i = 0; i < flatSeedCount; ++i) {
@@ -173,8 +172,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel2, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
         spatialCategoryId = SpatialCategory.insert(seedIModel2, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-      const result: DbResult = seedIModel2.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-      assert.equal(DbResult.BE_SQLITE_OK, result);
+      seedIModel2.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
       assert.isDefined(seedIModel2.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
       // create base class elements
       for (let i = 0; i < multiSeedCount; ++i) {
