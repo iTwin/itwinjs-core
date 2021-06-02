@@ -37,17 +37,14 @@ export class Transformer extends IModelTransformer {
     // might need to inject RequestContext for schemaExport.
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
-    targetDb.saveChanges("processSchemas");
     await transformer.processSchemas(requestContext);
-    targetDb.saveChanges("processAll");
+    targetDb.saveChanges("processSchemas");
     await transformer.processAll();
-    requestContext.enter();
     targetDb.saveChanges("processAll");
     if (options?.deleteUnusedGeometryParts) {
       transformer.deleteUnusedGeometryParts();
       targetDb.saveChanges("deleteUnusedGeometryParts");
     }
-    requestContext.enter();
     transformer.dispose();
     transformer.logElapsedTime();
   }

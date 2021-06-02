@@ -298,9 +298,9 @@ export class IModelExporter {
    * @note This must be called separately from [[exportAll]] or [[exportChanges]].
    */
   public async exportSchemas(): Promise<void> {
-    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
     const sql = "SELECT Name, VersionMajor, VersionWrite, VersionMinor FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
     let readyToExport: boolean = this.wantSystemSchemas ? true : false;
+    const schemaNamesToExport: string[] = [];
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const schemaName = statement.getValue(0).getString();
@@ -312,12 +312,20 @@ export class IModelExporter {
         }
         const schemaKey = new SchemaKey(schemaName, new ECVersion(versionMajor, versionWrite, versionMinor));
         if (readyToExport && this.handler.callProtected.shouldExportSchema(schemaKey)) {
-          const schema = schemaLoader.getSchema(schemaName);
-          Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
-          this.handler.callProtected.onExportSchema(schema);
+          schemaNamesToExport.push(schemaName);
         }
       }
     });
+
+    if (schemaNamesToExport.length === 0)
+      return;
+
+    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+    await Promise.all(schemaNamesToExport.map(async (schemaName) => {
+      const schema = schemaLoader.getSchema(schemaName);
+      Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
+      return this.handler.callProtected.onExportSchema(schema);
+    }));
   }
 
   /** For logging, indicate the change type if known. */
