@@ -8,28 +8,7 @@
 
 import { Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { Cartographic, ColorDef, EcefLocation, EcefLocationProps } from "@bentley/imodeljs-common";
-import {
-  BeButton,
-  BeButtonEvent,
-  CoreTools,
-  DecorateContext,
-  EditManipulator,
-  EventHandled,
-  GraphicType,
-  HitDetail,
-  IModelApp,
-  IModelConnection,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  QuantityType,
-  ScreenViewport,
-  Tool,
-  ViewClipControlArrow,
-  ViewClipDecorationProvider,
-  ViewClipShapeModifyTool,
-  ViewClipTool,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
+import { BeButton, BeButtonEvent, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport, Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport } from "@bentley/imodeljs-frontend";
 import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
 import { EditTools } from "../EditTool";
@@ -342,27 +321,28 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    const quantityFormatter = IModelApp.quantityFormatter;
     const toolTip = document.createElement("div");
     let toolTipHtml = "";
 
     if (hit.sourceId === this._monumentId) {
       toolTipHtml += `${translateMessage("ModifyGeolocation")}<br>`;
 
-      const coordFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
+      const coordFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
       if (undefined !== coordFormatterSpec) {
         const pointAdjusted = this._monumentPoint!.minus(this.iModel.globalOrigin);
-        const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
-        const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
-        const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
+        const formattedPointX = quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
+        const formattedPointY = quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
+        const formattedPointZ = quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
         toolTipHtml += `${translateCoreMeasureBold("Coordinate")+formattedPointX}, ${formattedPointY}, ${formattedPointZ}<br>`;
       }
 
-      const latLongFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
+      const latLongFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
       if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec && this.iModel.isGeoLocated) {
         const cartographic = this.iModel.spatialToCartographicFromEcef(this._monumentPoint!);
-        const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
-        const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
-        const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
+        const formattedLat = quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
+        const formattedLong = quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
+        const formattedHeight = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
         const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
         const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
         toolTipHtml += `${translateCoreMeasureBold("LatLong")+formattedLat+latDir}, ${formattedLong}${longDir}<br>`;
@@ -372,9 +352,9 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     } else if (hit.sourceId === this._northId) {
       toolTipHtml += `${translateMessage("ModifyNorthDirection")}<br>`;
 
-      const angleFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
+      const angleFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
       if (undefined !== angleFormatterSpec) {
-        const formattedAngle = IModelApp.quantityFormatter.formatQuantity(this.getClockwiseAngleToNorth().radians, angleFormatterSpec);
+        const formattedAngle = quantityFormatter.formatQuantity(this.getClockwiseAngleToNorth().radians, angleFormatterSpec);
         toolTipHtml += `${translateMessageBold("Angle")+formattedAngle}<br>`;
       }
 
@@ -382,11 +362,11 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       const extentsValid = (this._extentsLengthValid && this._extentsWidthValid && this._extentsHeightValid);
       toolTipHtml += `${translateMessage(extentsValid ? "ProjectExtents" : "LargeProjectExtents")}<br>`;
 
-      const distanceFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+      const distanceFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
       if (undefined !== distanceFormatterSpec && undefined !== this._clipRange) {
-        const formattedLength = IModelApp.quantityFormatter.formatQuantity(this._clipRange.xLength(), distanceFormatterSpec);
-        const formattedWidth = IModelApp.quantityFormatter.formatQuantity(this._clipRange.yLength(), distanceFormatterSpec);
-        const formattedHeight = IModelApp.quantityFormatter.formatQuantity(this._clipRange.zLength(), distanceFormatterSpec);
+        const formattedLength = quantityFormatter.formatQuantity(this._clipRange.xLength(), distanceFormatterSpec);
+        const formattedWidth = quantityFormatter.formatQuantity(this._clipRange.yLength(), distanceFormatterSpec);
+        const formattedHeight = quantityFormatter.formatQuantity(this._clipRange.zLength(), distanceFormatterSpec);
         toolTipHtml += `${translateMessageBold("Length")+formattedLength}<br>`;
         toolTipHtml += `${translateMessageBold("Width")+formattedWidth}<br>`;
         toolTipHtml += `${translateMessageBold("Height")+formattedHeight}<br>`;
@@ -397,7 +377,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       if (-1 !== arrowIndex) {
         toolTipHtml += `${translateMessage("ModifyProjectExtents")}<br>`;
 
-        const distanceFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+        const distanceFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
         if (undefined !== distanceFormatterSpec && undefined !== this._clipRange) {
           const arrowControl = this._controls[arrowIndex];
 
@@ -421,20 +401,20 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
             if (!this._extentsHeightValid)
               arrowLengthMax = this.maxExtentHeight;
 
-            const coordFormatterSpec = (this.iModel.isGeoLocated ? IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate) : undefined);
+            const coordFormatterSpec = (this.iModel.isGeoLocated ? quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate) : undefined);
             if (undefined !== coordFormatterSpec) {
               const heightPt = ("zLow" === arrowControl.name ? this._clipRange.low : this._clipRange.high);
               const cartographic = this.iModel.spatialToCartographicFromEcef(heightPt);
-              const formattedAltitude = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
+              const formattedAltitude = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
               toolTipHtml += `${translateCoreMeasureBold("Altitude")+formattedAltitude}<br>`;
             }
           }
 
-          const formattedLength = IModelApp.quantityFormatter.formatQuantity(arrowLength, distanceFormatterSpec);
+          const formattedLength = quantityFormatter.formatQuantity(arrowLength, distanceFormatterSpec);
           toolTipHtml += `${translateMessageBold(arrowLabel)+formattedLength}<br>`;
 
           if (0.0 !== arrowLengthMax) {
-            const formattedMaxLength = IModelApp.quantityFormatter.formatQuantity(arrowLengthMax, distanceFormatterSpec);
+            const formattedMaxLength = quantityFormatter.formatQuantity(arrowLengthMax, distanceFormatterSpec);
             toolTipHtml += `${translateMessageBold("MaxExtent")+formattedMaxLength}<br>`;
           }
         }
