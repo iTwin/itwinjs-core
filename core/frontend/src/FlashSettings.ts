@@ -71,7 +71,7 @@ export class FlashSettings {
       if (ms !== duration.milliseconds)
         duration = BeDuration.fromMilliseconds(ms);
     } else {
-      duration = BeDuration.fromMilliseconds(0.25);
+      duration = BeDuration.fromSeconds(0.25);
     }
 
     this.duration = duration;
