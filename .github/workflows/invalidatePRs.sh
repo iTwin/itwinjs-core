@@ -24,7 +24,7 @@ fi
 oauth=$token
 shouldDebug=false
 
-if [[ "" != $debug ]]; then
+if [[ "" != $INPUT_DEBUG ]]; then
   shouldDebug=true
   echo Initializing debug log level
 fi
