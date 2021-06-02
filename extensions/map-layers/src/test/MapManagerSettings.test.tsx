@@ -12,7 +12,7 @@ import { TestUtils } from "./TestUtils";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
-  PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings
+  PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings,
 } from "@bentley/imodeljs-common";
 import { MapManagerSettings } from "../ui/widget/MapManagerSettings";
 import { SourceMapContext } from "../ui/widget/MapLayerManager";
