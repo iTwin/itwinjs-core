@@ -16,6 +16,10 @@ publish: false
 
 Within [IpcApp]($frontend)-based applications, [BriefcaseConnection]($frontend)s now automatically synchronize their properties in response to such events produced by changes on the backend. For example, if [BriefcaseDb.projectExtents]($backend) is modified, [BriefcaseConnection.projectExtents]($frontend) will be updated to match and both the BriefcaseDb and BriefcaseConnection will emit an `onProjectExtentsChanged` event.
 
+## Customizable flash settings
+
+When the user hovers over an element in a [Viewport]($frontend), the element is "flashed" to indicate that it can be interacted with. Previously this effect was not configurable. Now, an application can supply a [FlashSettings]($common) to [Viewport.flashSettings]($common) to customize the intensity and duration of the effect, as well as the way in which lit geometry is flashed - either by brightening it, or by mixing it with the viewport's hilite color.
+
 ## Promoted APIs
 
 The following previously `alpha` or `beta` APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of the package.
