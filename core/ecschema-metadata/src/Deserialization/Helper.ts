@@ -72,14 +72,17 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    // Need to add this schema to the context to be able to locate schemaItems within the context.
-    await this._context.addSchema(schema, async () => this.loadSchema(schema));
+    if (!await this._context.getCachedSchema(schema.schemaKey)) {
+      // Need to add this schema to the context to be able to locate schemaItems within the context.
+      await this._context.addSchema(schema, async () => this.loadSchema(schema));
+    }
+
     await this._context.getSchema(schema.schemaKey);
 
     return schema;
   }
 
-  public async loadSchema<U extends Schema>(schema: U): Promise<U> {
+  private async loadSchema<U extends Schema>(schema: U): Promise<U> {
     // Load schema references first
     // Need to figure out if other schemas are present.
     for (const reference of this._parser.getReferences()) {

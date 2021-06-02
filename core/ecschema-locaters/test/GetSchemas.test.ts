@@ -6,23 +6,24 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import  * as path from "path";
-import { ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
+import { ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
 import { SchemaJsonFileLocater } from "../src/SchemaJsonFileLocater";
 
-
-/* eslint-disable @typescript-eslint/naming-convention */
-
 describe("Concurrent schema accesses", () => {
-  const asyncContext = new SchemaContext();
-  const syncContext = new SchemaContext();
-  const schemaKeys: SchemaKey[] = [];
+  let context1: SchemaContext;
+  let context2: SchemaContext;
+  let schemaKeys: SchemaKey[];
 
-  before(() => {
+  beforeEach(() => {
+    context1 = new SchemaContext();
+    context2 = new SchemaContext();
+    schemaKeys = [];
     const schemaFolder = path.join(__dirname, "assets", "JSON");
     const locater = new SchemaJsonFileLocater();
+
     locater.addSchemaSearchPath(schemaFolder);
-    asyncContext.addLocater(locater as unknown as ISchemaLocater);
-    syncContext.addLocater(locater as unknown as ISchemaLocater);
+    context1.addLocater(locater);
+    context2.addLocater(locater);
 
     const schemaFiles = fs.readdirSync(schemaFolder);
     schemaFiles.forEach((fileName) => {
@@ -42,7 +43,7 @@ describe("Concurrent schema accesses", () => {
     await Promise.all(schemaKeys.map( async (key) => {
       if (!key)
         return;
-      const schema = await asyncContext.getSchema(key, SchemaMatchType.Latest);
+      const schema = await context1.getSchema(key, SchemaMatchType.Latest);
       if (!schema)
         return;
       asyncSchemas.push(schema);
@@ -55,31 +56,13 @@ describe("Concurrent schema accesses", () => {
     schemaKeys.forEach((key) => {
       if (!key)
         return;
-      const schema = syncContext.getSchemaSync(key, SchemaMatchType.Latest);
+      const schema = context2.getSchemaSync(key, SchemaMatchType.Latest);
       if (!schema)
         return;
       syncSchemas.push(schema);
       return;
     });
     expect(syncSchemas.length).to.equal(schemaKeys.length);
-
-    // Serialized async
-    // const asyncSchemas: Schema[] = [];
-    // const getSchema = async (key: SchemaKey) => {
-    //   if (!key)
-    //     return;
-    //   console.log(`Starting retrieval of ${key.name}`);
-    //   const schema = await asyncContext.getSchema(key, SchemaMatchType.Latest);
-    //   if (!schema)
-    //     return;
-    //   console.log(`Retrieval of ${key.name} complete`);
-    //   asyncSchemas.push(schema);
-    //   return;
-    // }
-    // for (let i = 0; i < schemaKeys.length; i++) {
-    //   await getSchema(schemaKeys[i]);
-    // }
-    // expect(asyncSchemas.length).to.equal(schemaKeys.length);
 
     for (let i = 0; i < schemaKeys.length; i++) {
       const syncSchema = syncSchemas[i];
@@ -90,5 +73,42 @@ describe("Concurrent schema accesses", () => {
       const asyncSerialized = asyncSchema!.toJSON();
       expect(asyncSerialized).to.deep.equal(syncSerialized);
     }
+  });
+
+  /* eslint-disable no-console */
+  it.skip("should measure concurrent performance", async () => {
+    // Asynchronous
+    const startTime1 = new Date().getTime();
+    const asyncSchemas: Schema[] = [];
+    await Promise.all(schemaKeys.map( async (key) => {
+      if (!key)
+        return;
+      const schema = await context1.getSchema(key, SchemaMatchType.Latest);
+      if (!schema)
+        return;
+      asyncSchemas.push(schema);
+      return;
+    }));
+    expect(asyncSchemas.length).to.equal(schemaKeys.length);
+    const endTime1 = new Date().getTime();
+    console.log(`Concurrent async deserialization took ~ ${endTime1 - startTime1}`);
+
+    const startTime2 = new Date().getTime();
+    const syncSchemas: Schema[] =  [];
+    const getSchema = async (key: SchemaKey) => {
+      if (!key)
+        return;
+      const schema = await context2.getSchema(key, SchemaMatchType.Latest);
+      if (!schema)
+        return;
+      syncSchemas.push(schema);
+      return;
+    };
+    for (let i = 0; i < schemaKeys.length; i++) {
+      await getSchema(schemaKeys[i]);
+    }
+    expect(syncSchemas.length).to.equal(schemaKeys.length);
+    const endTime2 = new Date().getTime();
+    console.log(`Async deserialization took ~ ${endTime2 - startTime2}`);
   });
 });
