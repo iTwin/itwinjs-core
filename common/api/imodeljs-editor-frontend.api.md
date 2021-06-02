@@ -453,6 +453,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     protected hasValidGCS(): boolean;
     // (undocumented)
     static hide(): void;
+    // (undocumented)
+    protected init(): boolean;
     protected get maxExtentHeight(): number;
     protected get maxExtentLength(): number;
     // (undocumented)
@@ -494,6 +496,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     suspendGeolocationDecorations: boolean;
     // (undocumented)
     testDecorationHit(id: string): boolean;
+    // (undocumented)
+    static update(): void;
     // (undocumented)
     protected updateDecorationListener(_add: boolean): void;
     // (undocumented)

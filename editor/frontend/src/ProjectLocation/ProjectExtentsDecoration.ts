@@ -47,6 +47,12 @@ function clearViewClip(vp: ScreenViewport): boolean {
   return true;
 }
 
+function clipToProjectExtents(vp: ScreenViewport): boolean {
+  clearViewClip(vp); // Clear any existing view clip and send clear event...
+  ViewClipTool.enableClipVolume(vp);
+  return ViewClipTool.doClipToRange(vp, vp.iModel.projectExtents, Transform.createIdentity());
+}
+
 function enableBackgroundMap(viewport: Viewport, onOff: boolean): boolean {
   if (onOff === viewport.viewFlags.backgroundMap)
     return false;
@@ -116,14 +122,14 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
   public constructor(public viewport: ScreenViewport) {
     super(viewport.iModel);
-    if (!this.getClipData())
+
+    if (!this.init())
       return;
-    this._ecefLocation = this.iModel.ecefLocation;
-    this._monumentPoint = this.getMonumentPoint();
-    this._northDirection = this.getNorthDirection();
+
     this._monumentId = this.iModel.transientIds.next;
     this._northId = this.iModel.transientIds.next;
     this._clipId = this.iModel.transientIds.next;
+
     this.start();
   }
 
@@ -143,6 +149,17 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       this._removeViewCloseListener();
       this._removeViewCloseListener = undefined;
     }
+  }
+
+  protected init(): boolean {
+    if (!this.getClipData())
+      return false;
+
+    this._ecefLocation = this.iModel.ecefLocation;
+    this._monumentPoint = this.getMonumentPoint();
+    this._northDirection = this.getNorthDirection();
+
+    return true;
   }
 
   public onViewClose(vp: ScreenViewport): void {
@@ -840,9 +857,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       ProjectExtentsClipDecoration.clear();
     }
 
-    clearViewClip(vp); // Clear any existing view clip and send clear event...
-    ViewClipTool.enableClipVolume(vp);
-    if (!ViewClipTool.doClipToRange(vp, vp.iModel.projectExtents, Transform.createIdentity()))
+    if (!clipToProjectExtents(vp))
       return false;
 
     ProjectExtentsClipDecoration._decorator = new ProjectExtentsClipDecoration(vp);
@@ -870,6 +885,18 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       ProjectExtentsClipDecoration._decorator.resetGeolocation(); // Restore modified geolocation back to create state...
     ProjectExtentsClipDecoration._decorator.stop();
     ProjectExtentsClipDecoration._decorator = undefined;
+  }
+
+  public static update(): void {
+    const deco = ProjectExtentsClipDecoration._decorator;
+    if (undefined === deco)
+      return;
+
+    clipToProjectExtents(deco.viewport);
+    deco.init();
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    deco.updateControls();
   }
 }
 
@@ -942,11 +969,8 @@ export class ProjectLocationSaveTool extends Tool {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
 
-    const vp = deco.viewport;
-    ProjectExtentsClipDecoration.clear(false, false); // Don't restore GCS...
     deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Save);
-
-    ProjectExtentsClipDecoration.show(vp, false); // Create with updated information...
+    ProjectExtentsClipDecoration.update();
     IModelApp.toolAdmin.startDefaultTool();
   }
 
