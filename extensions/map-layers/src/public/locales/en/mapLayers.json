@@ -96,7 +96,7 @@
     "ShowMapLayers": "Show Map Layers",
     "Terrain": "Terrain",
     "Transparency": "Transparency",
-    "UseDepthBuffer": "Use Depth Buffer",
+    "UseDepthBuffer": "Allow Model Under Map",
     "Locatable": "Locatable"
   },
   "SubLayers": {
