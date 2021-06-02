@@ -26,3 +26,5 @@ To disable external textures, pass a `TileAdmin` to [IModelApp.startup]($fronten
   const tileAdmin = TileAdmin.create(tileAdminProps);
   IModelApp.startup({ tileAdmin });
 ```
+
+Disabling this feature will incur a performance penalty. The option to disable this feature will likely be removed in the future.

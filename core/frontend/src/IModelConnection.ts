@@ -444,7 +444,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** Request a named texture image from the backend.
-   * @param textureLoadProps The texture load properties which must contain a name property (a valid 64-bit integer identifier) and the maximum texture size supported by the client.
+   * @param textureLoadProps The texture load properties which must contain a name property (a valid 64-bit integer identifier). It optionally can contain the maximum texture size supported by the client.
    * @see [[Id64]]
    * @public
    */

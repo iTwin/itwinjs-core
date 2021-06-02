@@ -32,6 +32,6 @@ export interface TextureProps extends DefinitionElementProps {
 export interface TextureLoadProps {
   /** A valid Id64 string identifying the texture */
   name: Id64String;
-  /** Maximum texture size supported by the client. The texture will be downsampled so both of its dimensions adhere to this size. */
-  maxTextureSize: number;
+  /** Maximum texture size supported by the client. If specified, the texture will be downsampled so both of its dimensions adhere to this size. */
+  maxTextureSize?: number;
 }
