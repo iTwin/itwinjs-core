@@ -9,7 +9,7 @@
 import { editorChannel } from "@bentley/imodeljs-editor-common";
 import { IModelApp, IpcApp } from "@bentley/imodeljs-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
-import { CreateLineStringTool } from "./SketchTools";
+import { CreateArcTool, CreateLineStringTool } from "./SketchTools";
 import { MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
@@ -83,6 +83,7 @@ export class EditTools {
 
     if (undefined !== options?.registerSketchTools) {
       const tools = [
+        CreateArcTool,
         CreateLineStringTool,
       ];
 

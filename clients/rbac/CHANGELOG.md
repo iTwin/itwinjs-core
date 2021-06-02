@@ -1,9 +1,19 @@
 # Change Log - @bentley/rbac-client
 
-This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+This log was last generated on Thu, 27 May 2021 20:04:22 GMT and should not be manually modified.
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+_Version update only_
 
 ## 2.16.0
 Mon, 24 May 2021 15:58:39 GMT
+
+_Version update only_
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
 
 _Version update only_
 

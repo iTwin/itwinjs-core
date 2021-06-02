@@ -2,6 +2,12 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "2.16.1",
+      "tag": "@bentley/presentation-backend_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.0",
       "tag": "@bentley/presentation-backend_v2.16.0",
       "date": "Mon, 24 May 2021 15:58:39 GMT",
@@ -27,6 +33,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@bentley/presentation-backend_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {}
     },
     {
       "version": "2.15.5",

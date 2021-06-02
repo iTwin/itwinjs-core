@@ -12,6 +12,7 @@ import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
+import { ElementGeometryInfo } from '@bentley/imodeljs-common';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
 import { EventHandled } from '@bentley/imodeljs-frontend';
 import { FlatBufferGeometryStream } from '@bentley/imodeljs-common';
@@ -36,13 +37,87 @@ import { SnapDetail } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { Transform } from '@bentley/geometry-core';
+import { Vector3d } from '@bentley/geometry-core';
 import { Viewport } from '@bentley/imodeljs-frontend';
+
+// @alpha (undocumented)
+export enum ArcMethod {
+    // (undocumented)
+    CenterStart = 0,
+    // (undocumented)
+    StartCenter = 1,
+    // (undocumented)
+    StartEndMid = 3,
+    // (undocumented)
+    StartMidEnd = 2
+}
 
 // @alpha (undocumented)
 export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number;
 
 // @alpha (undocumented)
 export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): number;
+
+// @alpha
+export class CreateArcTool extends CreateOrContinuePathTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    // (undocumented)
+    protected createConstructionCurve(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
+    // (undocumented)
+    protected get createCurvePhase(): CreateCurvePhase;
+    // (undocumented)
+    protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
+    // (undocumented)
+    protected getArcNormal(ev: BeButtonEvent): Vector3d;
+    // (undocumented)
+    protected _getMethodDescription: () => PropertyDescription;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    get method(): ArcMethod;
+    set method(method: ArcMethod);
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onRestartTool(): void;
+    parseAndRun(...inputArgs: string[]): boolean;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    get radius(): number;
+    set radius(value: number);
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    protected showConstructionGraphics(ev: BeButtonEvent, context: DynamicsContext): boolean;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    get sweep(): number;
+    set sweep(value: number);
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    get useRadius(): boolean;
+    set useRadius(value: boolean);
+    // (undocumented)
+    get useSweep(): boolean;
+    set useSweep(value: boolean);
+    }
+
+// @alpha
+export enum CreateCurvePhase {
+    DefineEnd = 1,
+    DefineOther = 2,
+    DefineStart = 0
+}
 
 // @alpha
 export abstract class CreateElementTool extends PrimitiveTool {
@@ -53,6 +128,8 @@ export abstract class CreateElementTool extends PrimitiveTool {
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     onPostInstall(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     onUnsuspend(): void;
     protected processDataButton(ev: BeButtonEvent): Promise<EventHandled>;
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
@@ -68,7 +145,7 @@ export abstract class CreateElementTool extends PrimitiveTool {
 // @alpha
 export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
-    protected createNewCurvePrimitive(ev?: BeButtonEvent): CurvePrimitive | undefined;
+    protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
@@ -76,9 +153,11 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     // (undocumented)
-    protected isComplete(_ev: BeButtonEvent): boolean;
+    static iconSpec: string;
     // (undocumented)
-    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    protected isComplete(ev: BeButtonEvent): boolean;
+    // (undocumented)
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
@@ -100,6 +179,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
+    protected addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void;
+    // (undocumented)
     protected get allowClosure(): boolean;
     // (undocumented)
     protected get allowJoin(): boolean;
@@ -117,12 +198,13 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     };
     // (undocumented)
     protected continueExistingPath(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
     protected createElement(): Promise<void>;
     // (undocumented)
     protected createGraphics(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
-    protected abstract createNewCurvePrimitive(_ev?: BeButtonEvent): CurvePrimitive | undefined;
+    // @internal
+    protected abstract createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
     protected createNewPath(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
     // (undocumented)
@@ -134,20 +216,26 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     protected getGeometryProps(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
     // (undocumented)
-    protected getPlacementProps(_ev?: BeButtonEvent): PlacementProps | undefined;
+    protected getPlacementProps(): PlacementProps | undefined;
     // (undocumented)
     protected _graphicsProvider?: DynamicGraphicsProvider;
     // (undocumented)
     protected isClosed: boolean;
     // (undocumented)
+    protected isConstruction: boolean;
+    // (undocumented)
     protected get isContinueExistingPath(): boolean;
-    protected get isControlDown(): boolean;
     // (undocumented)
-    protected isPathClosurePoint(): boolean;
+    static isPathClosurePoint(curve: CurvePrimitive, path?: Path): boolean;
     // (undocumented)
-    protected isPathEndPoint(): boolean;
+    static isPathEndPoint(curve: CurvePrimitive, path: Path): boolean;
     // (undocumented)
-    protected isValidForClosure(): boolean;
+    static isSingleOpenPath(info: ElementGeometryInfo): {
+        path: Path;
+        params: GeometryParams;
+    } | undefined;
+    // (undocumented)
+    protected isValidForClosure(): Promise<boolean>;
     // (undocumented)
     protected isValidForContinue(snap: SnapDetail): Promise<{
         props: GeometricElementProps;
@@ -161,7 +249,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
     // (undocumented)
     onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
@@ -169,11 +257,15 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
     // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
     protected get showClosure(): boolean;
     // (undocumented)
     protected showClosureIndicator(context: DecorateContext, pt: Point3d): void;
+    // (undocumented)
+    protected showConstructionGraphics(_ev: BeButtonEvent, context: DynamicsContext): boolean;
     // (undocumented)
     protected get showJoin(): boolean;
     // (undocumented)
@@ -182,6 +274,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     protected startCommand(): Promise<string>;
     // (undocumented)
     protected _startedCmd?: string;
+    // (undocumented)
+    protected updateCurveAndContinuationData(ev: BeButtonEvent, isDynamics: boolean, phase: CreateCurvePhase): Promise<void>;
     // (undocumented)
     protected get wantAccuSnap(): boolean;
     // (undocumented)
