@@ -132,7 +132,7 @@ Now we can see the building correctly adjusted for the terrain.
 
 To abandon changes to the project extents or geolocation currently being previewed, run the `editor project location cancel` command.
 
-To turn off the display of decorations while preserving unsaved changes, run the `editor project location hide` command.
+To turn off the display of decorations while preserving unsaved changes, run the `editor project location hide` command. Use `editor project location show` to restore preview of unsaved changes.
 
 To save the changes being previewed, run the `editor project location save` command.
 
