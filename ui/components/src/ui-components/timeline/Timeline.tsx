@@ -18,7 +18,7 @@ const formatDate = (value: number) => {
 };
 
 // *******************************************************
-// NEEDLE
+// NEEDLE -- deprecated
 // *******************************************************
 /** @internal
  * @deprecated
@@ -41,7 +41,7 @@ function Needle({ startDate, endDate, selectedDate }: NeedleProps) {
 }
 
 // *******************************************************
-// TOOLTIP RAIL
+// TOOLTIP RAIL -- deprecated
 // *******************************************************
 /** @internal
  * @deprecated
