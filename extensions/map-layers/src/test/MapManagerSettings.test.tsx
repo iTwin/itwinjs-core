@@ -10,8 +10,10 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { TestUtils } from "./TestUtils";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
-  PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings } from "@bentley/imodeljs-common";
+import {
+  BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
+  PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings
+} from "@bentley/imodeljs-common";
 import { MapManagerSettings } from "../ui/widget/MapManagerSettings";
 import { SourceMapContext } from "../ui/widget/MapLayerManager";
 import { NumberInput, Select, Toggle } from "@bentley/ui-core";
@@ -32,10 +34,10 @@ describe("MapManagerSettings", () => {
   // this and will need to be revisited.
   const getToggleIndex = (toggleName: string) => {
     switch (toggleName) {
-      case "locatable" : return 0;
-      case "mask" : return 1;
-      case "depthBuffer" : return 2;
-      case "terrain" : return 3;
+      case "locatable": return 0;
+      case "mask": return 1;
+      case "depthBuffer": return 2;
+      case "terrain": return 3;
     }
     assert.fail("invalid name provided.");
     return 0;
@@ -43,9 +45,9 @@ describe("MapManagerSettings", () => {
 
   const getNumericInputIndex = (name: string) => {
     switch (name) {
-      case "groundBias" : return 0;
-      case "terrainOrigin" : return 1;
-      case "exaggeration" : return 2;
+      case "groundBias": return 0;
+      case "terrainOrigin": return 1;
+      case "exaggeration": return 2;
     }
     assert.fail("invalid name provided.");
     return 0;
@@ -85,8 +87,8 @@ describe("MapManagerSettings", () => {
     displayStyleSettingsMock.reset();
     displayStyleSettingsMock.setup((styleSettings) => styleSettings.backgroundMap).returns(() => backgroundMapSettingsMock.object);
     displayStyleMock.reset();
-    displayStyleMock.setup((ds) => ds.attachMapLayerSettings( moq.It.isAny(),  moq.It.isAny(),  moq.It.isAny()) );
-    displayStyleMock.setup((style) => style.attachMapLayerSettings( moq.It.isAny(),  moq.It.isAny(),  moq.It.isAny()) );
+    displayStyleMock.setup((ds) => ds.attachMapLayerSettings(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()));
+    displayStyleMock.setup((style) => style.attachMapLayerSettings(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()));
     displayStyleMock.setup((style) => style.settings).returns(() => displayStyleSettingsMock.object);
     viewMock.reset();
     viewMock.setup((view) => view.iModel).returns(() => imodelMock.object);
@@ -94,8 +96,8 @@ describe("MapManagerSettings", () => {
 
     viewportMock.reset();
     viewportMock.setup((viewport) => viewport.view).returns(() => viewMock.object);
-    viewportMock.setup((viewport) => viewport.changeBackgroundMapProps(moq.It.isAny() ));
-    viewportMock.setup((viewport) => viewport.invalidateRenderPlan( ));
+    viewportMock.setup((viewport) => viewport.changeBackgroundMapProps(moq.It.isAny()));
+    viewportMock.setup((viewport) => viewport.invalidateRenderPlan());
   });
   const refreshFromStyle = sinon.spy();
 
@@ -112,7 +114,7 @@ describe("MapManagerSettings", () => {
       </SourceMapContext.Provider>);
   };
 
-  it("renders",  () => {
+  it("renders", () => {
     const wrapper = mountComponent();
     wrapper.unmount();
   });
@@ -168,7 +170,8 @@ describe("MapManagerSettings", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
     const component = mountComponent();
     component.find(".core-slider-handle").simulate("keydown", { key: SpecialKey.ArrowUp });
-    viewportMock.verify((x) => x.changeBackgroundMapProps({transparency:0.01}), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ transparency: 0.01 }), moq.Times.once());
+    component.unmount();
   });
 
   it("Locatable toggle", () => {
@@ -180,7 +183,8 @@ describe("MapManagerSettings", () => {
     component.update();
 
     // 'changeBackgroundMapProps' should have been called once now
-    viewportMock.verify((x) => x.changeBackgroundMapProps({nonLocatable:true}), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ nonLocatable: true }), moq.Times.once());
+    component.unmount();
   });
 
   it("Mask toggle", () => {
@@ -195,12 +199,13 @@ describe("MapManagerSettings", () => {
     component.update();
 
     // 'changeBackgroundMapProps' should have been called once now
-    viewportMock.verify((x) => x.changeBackgroundMapProps({planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap } }), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap } }), moq.Times.once());
 
     toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
     component.update();
 
-    viewportMock.verify((x) => x.changeBackgroundMapProps({planarClipMask: { mode: PlanarClipMaskMode.None } }), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } }), moq.Times.once());
+    component.unmount();
   });
 
   it("ground bias", () => {
@@ -209,7 +214,8 @@ describe("MapManagerSettings", () => {
 
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
     changeNumericInputValue(numericInputs.at(getNumericInputIndex("groundBias")), 1);
-    viewportMock.verify((x) => x.changeBackgroundMapProps({groundBias: 1 }), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ groundBias: 1 }), moq.Times.once());
+    component.unmount();
   });
 
   it("terrainOrigin", () => {
@@ -222,7 +228,8 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", { checked: true });
     changeNumericInputValue(numericInputs.at(getNumericInputIndex("terrainOrigin")), 1);
 
-    viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: {heightOrigin: 1 } } ), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOrigin: 1 } }), moq.Times.once());
+    component.unmount();
   });
 
   it("exaggeration", () => {
@@ -236,7 +243,8 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", { checked: true });
     changeNumericInputValue(numericInputs.at(getNumericInputIndex("exaggeration")), 1);
 
-    viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: {exaggeration: 1 } } ), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { exaggeration: 1 } }), moq.Times.once());
+    component.unmount();
   });
 
   it("heightOriginMode geoid", () => {
@@ -250,7 +258,8 @@ describe("MapManagerSettings", () => {
 
     const select = component.find(Select);
     select.props().onChange!({ target: { value: "geoid" } } as any);
-    viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } } ), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }), moq.Times.once());
+    component.unmount();
   });
 
   it("heightOriginMode geodetic", () => {
@@ -264,8 +273,8 @@ describe("MapManagerSettings", () => {
 
     const select = component.find(Select);
     select.props().onChange!({ target: { value: "geodetic" } } as any);
-    viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geodetic } } ), moq.Times.once());
-
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geodetic } }), moq.Times.once());
+    component.unmount();
   });
 
   it("heightOriginMode ground", () => {
@@ -279,6 +288,7 @@ describe("MapManagerSettings", () => {
 
     const select = component.find(Select);
     select.props().onChange!({ target: { value: "ground" } } as any);
-    viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } } ), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }), moq.Times.once());
+    component.unmount();
   });
 });
