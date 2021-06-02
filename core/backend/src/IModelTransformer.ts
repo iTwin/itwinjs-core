@@ -30,6 +30,7 @@ import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 import * as Semver from "semver";
 import { BackendRequestContext } from "./BackendRequestContext";
+import { Schema } from "./Schema";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
@@ -750,19 +751,14 @@ export class IModelTransformer extends IModelExportHandler {
   /** The directory where schemas will be exported, a random temporary directory */
   protected _schemaExportDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
 
-  /** given a schema identified just by name and the version string, check if it should be imported into the target */
-  private shouldExportSchemaCheck(schemaName: string, versionInSource: string): boolean {
-    const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
-    if (versionInTarget === undefined)
-      return true;
-    return Semver.gt(versionInSource, versionInTarget);
-  }
-
   /** Override of [IModelExportHandler.shouldExportSchema]($backend) that is called to determine if a schema should be exported
    * @note the default behavior doesn't import schemas older than those already in the target
    */
   protected shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean {
-    return this.shouldExportSchemaCheck(schemaKey.name, schemaKey.version.toString());
+    const versionInTarget = this.targetDb.querySchemaVersion(schemaKey.name);
+    if (versionInTarget === undefined)
+      return true;
+    return Semver.gt(`${schemaKey.version.read}.${schemaKey.version.write}.${schemaKey.version.minor}`, Schema.toSemverString(versionInTarget));
   }
 
   /** Override of [IModelExportHandler.onExportSchema]($backend) that serializes a schema to disk for [[processSchemas]] to import into
@@ -787,7 +783,7 @@ export class IModelTransformer extends IModelExportHandler {
       if (exportedSchemaFiles.length === 0)
         return;
       const schemaFullPaths = exportedSchemaFiles.map((s) => path.join(this._schemaExportDir, s));
-      await this.targetDb.importSchemas(requestContext, schemaFullPaths);
+      return this.targetDb.importSchemas(requestContext, schemaFullPaths);
     } finally {
       requestContext.enter();
       IModelJsFs.removeSync(this._schemaExportDir);

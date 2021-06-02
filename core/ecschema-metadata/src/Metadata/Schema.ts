@@ -31,6 +31,7 @@ import { RelationshipClass } from "./RelationshipClass";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
+import { DOMParser, XMLSerializer } from "xmldom";
 
 const SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
