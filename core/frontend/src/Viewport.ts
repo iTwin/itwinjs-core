@@ -353,23 +353,20 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public readonly subcategories = new SubCategoriesCache.Queue();
 
-  /** Time the current flash started.
-   * @internal
-   */
-  public flashUpdateTime?: BeTimePoint;
-  /** Current flash intensity from [0..1]
-   * @internal
-   */
-  public flashIntensity = 0;
-  /** The length of time that the flash intensity will increase (in seconds)
-   * @internal
-   */
-  public flashDuration = 0;
-  private _flashedElem?: string;         // id of currently flashed element
-  /** Id of last flashed element.
-   * @internal
-   */
-  public lastFlashedElem?: string;
+  /** Time the current flash started. */
+  private _flashUpdateTime?: BeTimePoint;
+  /** Current flash intensity from [0..1] */
+  private _flashIntensity = 0;
+  /** The length of time that the flash intensity will increase (in seconds) */
+  private _flashDuration = 0;
+  /** Id of the currently flashed element. */
+  private _flashedElem?: string;
+  /** Id of last flashed element. */
+  private _lastFlashedElem?: string;
+  /** The Id of the most recently flashed element, if any. */
+  public get lastFlashedElementId(): Id64String | undefined {
+    return this._lastFlashedElem;
+  }
 
   private _wantViewAttachments = true;
   /** For debug purposes, controls whether or not view attachments are displayed in sheet views.
@@ -1506,10 +1503,10 @@ export abstract class Viewport implements IDisposable {
    */
   public setFlashed(id: string | undefined, duration: number): void {
     if (id !== this._flashedElem) {
-      this.lastFlashedElem = this._flashedElem;
+      this._lastFlashedElem = this._flashedElem;
       this._flashedElem = id;
     }
-    this.flashDuration = duration;
+    this._flashDuration = duration;
   }
 
   public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
@@ -2184,17 +2181,17 @@ export abstract class Viewport implements IDisposable {
   private processFlash(): boolean {
     let needsFlashUpdate = false;
 
-    if (this._flashedElem !== this.lastFlashedElem) {
-      this.flashIntensity = 0.0;
-      this.flashUpdateTime = BeTimePoint.now();
-      this.lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
+    if (this._flashedElem !== this._lastFlashedElem) {
+      this._flashIntensity = 0.0;
+      this._flashUpdateTime = BeTimePoint.now();
+      this._lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
       needsFlashUpdate = this._flashedElem === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
     }
 
-    if (this._flashedElem !== undefined && this.flashIntensity < 1.0) {
-      const flashDuration = BeDuration.fromSeconds(this.flashDuration);
-      const flashElapsed = BeTimePoint.now().milliseconds - this.flashUpdateTime!.milliseconds;
-      this.flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds; // how intense do we want the flash effect to be from [0..1]?
+    if (this._flashedElem !== undefined && this._flashIntensity < 1.0) {
+      const flashDuration = BeDuration.fromSeconds(this._flashDuration);
+      const flashElapsed = BeTimePoint.now().milliseconds - this._flashUpdateTime!.milliseconds;
+      this._flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds; // how intense do we want the flash effect to be from [0..1]?
       needsFlashUpdate = true;
     }
 
@@ -2335,7 +2332,7 @@ export abstract class Viewport implements IDisposable {
 
     let requestNextAnimation = false;
     if (this.processFlash()) {
-      target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this.flashIntensity);
+      target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this._flashIntensity);
       isRedrawNeeded = true;
       requestNextAnimation = undefined !== this._flashedElem;
     }
