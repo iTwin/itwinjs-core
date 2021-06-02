@@ -35,7 +35,7 @@ export interface FloatingWidgetProps {
 /** @internal */
 export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const { id, bounds } = props.floatingWidget;
-  const { minimized } = props.widget;
+  const { minimized } = props.widget ?? false;
   const style = React.useMemo(() => {
     const boundsRect = Rectangle.create(bounds);
     const { height, width } = boundsRect.getSize();
