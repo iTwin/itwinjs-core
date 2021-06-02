@@ -714,7 +714,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   public getPlanarClipMaskState(modelId: Id64String): PlanarClipMaskState | undefined {
-    // ###TODO clean this up?
     const model = this.iModel.models.getLoaded(modelId)?.asSpatialModel;
     return (model && model.isRealityModel) ? this._attachedRealityModelPlanarClipMasks.get(modelId) : undefined;
   }
