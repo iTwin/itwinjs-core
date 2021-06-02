@@ -86,7 +86,7 @@ describe("RulesetVariable", () => {
       });
     });
 
-    it("returns non Id64[] variables as is", () => {
+    it("returns non CompressedId64Set variables as is", () => {
       const boolVariable: BooleanRulesetVariableJSON = {
         type: VariableValueTypes.Bool,
         id: "test",
@@ -114,6 +114,13 @@ describe("RulesetVariable", () => {
         value: "0x123",
       };
       expect(RulesetVariable.fromJSON(id64Variable)).to.eq(id64Variable);
+
+      const id64ArrayVariable: Id64sRulesetVariableJSON = {
+        type: VariableValueTypes.Id64Array,
+        id: "test",
+        value: ["0x123", "0x456"],
+      };
+      expect(RulesetVariable.fromJSON(id64ArrayVariable)).to.eq(id64ArrayVariable);
 
       const stringVariable: StringRulesetVariableJSON = {
         type: VariableValueTypes.String,

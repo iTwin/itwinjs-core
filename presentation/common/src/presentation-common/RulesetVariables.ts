@@ -42,7 +42,7 @@ export type VariableValue = boolean | string | number | number[] | Id64String | 
  * JSON representation of [[VariableValue]]
  * @public
  */
-export type VariableValueJSON = boolean | string | number | number[] | Id64String | CompressedId64Set;
+export type VariableValueJSON = boolean | string | number | number[] | Id64String | Id64String[] | CompressedId64Set;
 
 /**
  * Base data structure for representing ruleset variables.
@@ -162,7 +162,7 @@ export interface Id64RulesetVariableJSON extends RulesetVariableBaseJSON {
  */
 export interface Id64sRulesetVariableJSON extends RulesetVariableBaseJSON {
   type: VariableValueTypes.Id64Array;
-  value: CompressedId64Set;
+  value: Id64String[] | CompressedId64Set;
 }
 /**
  * JSON representation of [[RulesetVariable]].
@@ -182,8 +182,11 @@ export namespace RulesetVariable {
 
   /** Deserialize [[RulesetVariable]] from JSON. */
   export function fromJSON(json: RulesetVariableJSON): RulesetVariable {
-    if (json.type === VariableValueTypes.Id64Array)
-      return { ...json, value: CompressedId64Set.decompressArray(json.value) };
+    if (json.type === VariableValueTypes.Id64Array) {
+      if (typeof json.value === "string")
+        return { ...json, value: CompressedId64Set.decompressArray(json.value) };
+      return json as any; // for some reason TS doesn't understand that `json.value` is always an array here
+    }
     return json;
   }
 }
