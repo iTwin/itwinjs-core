@@ -12,7 +12,7 @@ export * from "./UrlFileHandler";
 export * from "./StorageServiceFileHandler";
 
 /** @docs-package-description
- *
+ * Barrel for backend itwin clients
  */
 /**
  * @docs-group-description Authentication
