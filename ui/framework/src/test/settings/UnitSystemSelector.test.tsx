@@ -29,8 +29,8 @@ describe("UnitSystemSelector", () => {
     // expect(wrapper.container.querySelectorAll("option").length).to.eq(4);
     const selectButton = wrapper.getByTestId("unitSystemSelector");
     // fireEvent.change(selectButton, { target: { value: "usCustomary" } });
-    selectTestOptionCount(selectButton, "unitSystemSelector-menu", 4, handleError);
-    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.USCustomary", handleError);
+    selectTestOptionCount(selectButton, 4, handleError);
+    selectChangeValueByText(selectButton, "presentationUnitSystem.USCustomary", handleError);
     onChangedSpy.calledOnce.should.true;
     wrapper.unmount();
   });
@@ -44,8 +44,8 @@ describe("UnitSystemSelector", () => {
     // expect(wrapper.container.querySelectorAll("option").length).to.eq(3);
     const selectButton = wrapper.getByTestId("unitSystemSelector");
     // fireEvent.change(selectButton, { target: { value: "usSurvey" } });
-    selectTestOptionCount(selectButton, "unitSystemSelector-menu", 3, handleError);
-    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.USSurvey", handleError);
+    selectTestOptionCount(selectButton, 3, handleError);
+    selectChangeValueByText(selectButton, "presentationUnitSystem.USSurvey", handleError);
     onChangedSpy.calledOnce.should.true;
     wrapper.unmount();
   });

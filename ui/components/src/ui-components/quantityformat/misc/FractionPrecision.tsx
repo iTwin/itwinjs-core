@@ -41,6 +41,6 @@ export function FractionPrecisionSelector(props: FractionPrecisionSelectorProps)
   }, [onChange]);
 
   return (
-    <Select options={options.current} value={precision} onChange={handleOnChange} menuClassName="fraction-precision-selector-menu" {...otherProps} />
+    <Select options={options.current} value={precision} onChange={handleOnChange} {...otherProps} />
   );
 }

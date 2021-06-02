@@ -66,10 +66,10 @@ describe("UiSettingsPage", () => {
     // expect(themeSelect!.value).to.be.eq("light");
 
     const selectButton = wrapper.getByTestId("select-theme");
-    selectChangeValueByText(selectButton, "select-theme-menu", "settings.uiSettingsPage.dark", handleError);
+    selectChangeValueByText(selectButton, "settings.uiSettingsPage.dark", handleError);
     await TestUtils.flushAsyncOperations();
     expect(UiFramework.getColorTheme()).to.eq(ColorTheme.Dark);
-    selectChangeValueByText(selectButton, "select-theme-menu", "settings.uiSettingsPage.light", handleError);
+    selectChangeValueByText(selectButton, "settings.uiSettingsPage.light", handleError);
     await TestUtils.flushAsyncOperations();
     expect(UiFramework.getColorTheme()).to.eq(ColorTheme.Light);
 

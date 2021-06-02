@@ -55,7 +55,7 @@ describe("FormatUnits", () => {
     await TestUtils.flushAsyncOperations();
     // fireEvent.change(renderedComponent.getByTestId("unit-Units.M"), {target: { value: "Units.IN:in" }});
     const unitsSelector = renderedComponent.getByTestId("unit-Units.M");
-    selectChangeValueByText(unitsSelector, "unit-Units.M-menu".replace(".", "-"), "IN", handleError);
+    selectChangeValueByText(unitsSelector, "IN", handleError);
     await TestUtils.flushAsyncOperations();
     expect(onChangeFuncCalled).to.be.true;
   });
@@ -86,7 +86,7 @@ describe("FormatUnits", () => {
     await TestUtils.flushAsyncOperations();
     // fireEvent.change(renderedComponent.getByTestId("unit-Units.IN"), { target: { value: "REMOVEUNIT" } });
     const unitsSelector = renderedComponent.getByTestId("unit-Units.IN");
-    selectChangeValueByText(unitsSelector, "unit-Units.IN-menu".replace(".", "-"), "Remove", handleError);
+    selectChangeValueByText(unitsSelector, "Remove", handleError);
     expect(onChangeFuncCalled).to.be.true;
   });
 

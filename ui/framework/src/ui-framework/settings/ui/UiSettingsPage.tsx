@@ -136,7 +136,7 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
               value={currentTheme}
               onChange={onThemeChange}
               options={themeOptions}
-              data-testid="select-theme" menuClassName="select-theme-menu"
+              data-testid="select-theme"
             />
           </div>
         }

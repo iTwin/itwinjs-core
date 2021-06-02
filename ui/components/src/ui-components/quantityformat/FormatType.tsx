@@ -37,7 +37,7 @@ function FormatTypeSelector(props: FormatTypeSelectorProps) {
   }, [onChange]);
 
   return (
-    <Select options={formatOptions.current} value={type} onChange={handleOnChange} menuClassName="format-type-selector-menu" {...otherProps} />
+    <Select options={formatOptions.current} value={type} onChange={handleOnChange} {...otherProps} />
   );
 }
 

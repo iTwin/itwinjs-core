@@ -36,6 +36,6 @@ export function ScientificTypeSelector(props: ScientificTypeSelectorProps) {
   }, [onChange]);
 
   return (
-    <Select options={formatOptions.current} value={type} onChange={handleOnChange} menuClassName="scientific-type-selector-menu" {...otherProps} />
+    <Select options={formatOptions.current} value={type} onChange={handleOnChange} {...otherProps} />
   );
 }

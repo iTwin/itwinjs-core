@@ -47,7 +47,6 @@ export function StationSeparatorSelector(props: StationSeparatorSelectorProps) {
   }, [separator]);
 
   return (
-    <Select options={separatorOptions} disabled={disabled} value={separator} onChange={handleOnChange}
-      menuClassName="station-separator-selector-menu" {...otherProps} />
+    <Select options={separatorOptions} disabled={disabled} value={separator} onChange={handleOnChange} {...otherProps} />
   );
 }

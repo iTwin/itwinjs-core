@@ -317,19 +317,15 @@ export function getButtonWithText(container: HTMLElement, label: string, onError
 /**
  * Select component pick value using index
  */
-export const selectChangeValueByIndex = (select: HTMLElement, menuId: string, index: number, onError?: (msg: string) => void): void => {
+export const selectChangeValueByIndex = (select: HTMLElement, index: number, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
 
-  const selector = `.iui-menu.${menuId}`;
-  const menu = document.querySelector(selector) as HTMLUListElement;
+  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
-    onError && onError(`Couldn't find '${selector}'`);
+    onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
 
   const menuItem = menu.querySelectorAll("li");
-  expect(menuItem).to.exist;
-  if (!menuItem)
-    onError && onError(`Couldn't find any 'li' menu items`);
   if (menuItem[index] === undefined)
     onError && onError(`Couldn't find menu item ${index}`);
   expect(menuItem[index]).to.not.be.undefined;
@@ -340,24 +336,22 @@ export const selectChangeValueByIndex = (select: HTMLElement, menuId: string, in
 /**
  * Select component change value using text of menu item to find item
  */
-export const selectChangeValueByText = (select: HTMLElement, menuId: string, label: string, onError?: (msg: string) => void): void => {
+export const selectChangeValueByText = (select: HTMLElement, label: string, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
 
-  let selector = `.iui-menu.${menuId}`;
-  const menu = document.querySelector(selector) as HTMLUListElement;
+  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
-    onError && onError(`Couldn't find '${selector}'`);
+    onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
 
-  selector = "li span.iui-content";
-  const menuItems = menu.querySelectorAll(selector);
+  const menuItems = menu.querySelectorAll("li span.iui-content");
   if (menuItems.length <= 0)
-    onError && onError(`Couldn't find any '${selector}' menu items`);
+    onError && onError("Couldn't find any menu items");
   expect(menuItems.length).to.be.greaterThan(0);
 
   const menuItem = [...menuItems].find((span) => span.textContent === label);
   if (!menuItem)
-    onError && onError(`No menu items found`);
+    onError && onError(`Couldn't find menu item with '${label}' label`);
   expect(menuItem).to.not.be.undefined;
 
   fireEvent.click(menuItem!);
@@ -366,19 +360,17 @@ export const selectChangeValueByText = (select: HTMLElement, menuId: string, lab
 /**
  * Select component test number of options
  */
-export const selectTestOptionCount = (select: HTMLElement, menuId: string, expectedCount: number, onError?: (msg: string) => void): void => {
+export const selectTestOptionCount = (select: HTMLElement, expectedCount: number, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
 
-  let selector = `.iui-menu.${menuId}`;
-  const menu = document.querySelector(selector) as HTMLUListElement;
+  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
-    onError && onError(`Couldn't find '${selector}'`);
+    onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
 
-  selector = "li span.iui-content";
-  const menuItems = menu.querySelectorAll(selector);
+  const menuItems = menu.querySelectorAll("li span.iui-content");
   if (menuItems.length <= 0)
-    onError && onError(`Couldn't find any '${selector}' menu items`);
+    onError && onError(`Couldn't find any menu items`);
 
   expect(menuItems.length).to.eq(expectedCount);
 

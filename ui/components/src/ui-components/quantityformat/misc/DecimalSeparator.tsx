@@ -35,6 +35,6 @@ export function DecimalSeparatorSelector(props: DecimalSeparatorSelectorProps) {
   }, [onChange]);
 
   return (
-    <Select options={options.current} value={separator} onChange={handleOnChange} menuClassName="decimal-separator-selector-menu" {...otherProps} />
+    <Select options={options.current} value={separator} onChange={handleOnChange} {...otherProps} />
   );
 }

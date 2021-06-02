@@ -82,7 +82,7 @@ describe("QuantityInput", () => {
     // change from default none to space
     const uomSeparatorSelect = renderedComponent.getByTestId("uom-separator-select");
     // fireEvent.change(renderedComponent.getByTestId("uom-separator-select"), { target: { value: " " } });
-    selectChangeValueByText(uomSeparatorSelect, "uom-separator-select-menu", "QuantityFormat.space", handleError);
+    selectChangeValueByText(uomSeparatorSelect, "QuantityFormat.space", handleError);
     expect(spy).to.be.called;
     spy.resetHistory();
     await TestUtils.flushAsyncOperations();
@@ -90,7 +90,7 @@ describe("QuantityInput", () => {
 
     // change from default none to space
     // fireEvent.change(renderedComponent.getByTestId("uom-separator-select"), { target: { value: "" } });
-    selectChangeValueByText(uomSeparatorSelect, "uom-separator-select-menu", "QuantityFormat.none", handleError);
+    selectChangeValueByText(uomSeparatorSelect, "QuantityFormat.none", handleError);
     expect(spy).to.be.called;
     spy.resetHistory();
     await TestUtils.flushAsyncOperations();
@@ -149,7 +149,7 @@ describe("QuantityInput", () => {
       FormatType.Fractional.toString(),
     ].forEach((_selectValue, index) => {
       // fireEvent.change(typeSelector, { target: { value: selectValue } });
-      selectChangeValueByIndex(typeSelector, "format-type-selector-menu", index, handleError);
+      selectChangeValueByIndex(typeSelector, index, handleError);
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -171,7 +171,7 @@ describe("QuantityInput", () => {
       FormatType.Station.toString(),
     ].forEach(async (_selectValue, index) => {
       // fireEvent.change(typeSelector, { target: { value: selectValue } });
-      selectChangeValueByIndex(typeSelector, "format-type-selector-menu", index, handleError);
+      selectChangeValueByIndex(typeSelector, index, handleError);
       expect(spy).to.be.called;
       await TestUtils.flushAsyncOperations();
       spy.resetHistory();
@@ -200,7 +200,7 @@ describe("QuantityInput", () => {
       FormatType.Station.toString(),
     ].forEach(async (_selectValue, index) => {
       // fireEvent.change(typeSelector, { target: { value: selectValue } });
-      selectChangeValueByIndex(typeSelector, "format-type-selector-menu", index, handleError);
+      selectChangeValueByIndex(typeSelector, index, handleError);
       expect(spy).to.be.called;
       await TestUtils.flushAsyncOperations();
       spy.resetHistory();
@@ -239,7 +239,7 @@ describe("QuantityInput", () => {
 
     ["1", "2", "4", "8", "16", "32", "64", "128", "256"].forEach((_selectValue, index) => {
       // fireEvent.change(precisionSelector, { target: { value: selectValue } });
-      selectChangeValueByIndex(precisionSelector, "fraction-precision-selector-menu", index, handleError);
+      selectChangeValueByIndex(precisionSelector, index, handleError);
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -251,7 +251,7 @@ describe("QuantityInput", () => {
 
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
     // fireEvent.change(typeSelector, { target: { value: FormatType.Decimal.toString() } });
-    selectChangeValueByText(typeSelector, "format-type-selector-menu", "QuantityFormat.decimal", handleError);
+    selectChangeValueByText(typeSelector, "QuantityFormat.decimal", handleError);
     expect(spy).to.be.called;
     spy.resetHistory();
 
@@ -259,7 +259,7 @@ describe("QuantityInput", () => {
 
     ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"].forEach((_selectValue, index) => {
       // fireEvent.change(precisionSelector, { target: { value: selectValue } });
-      selectChangeValueByIndex(precisionSelector, "decimal-precision-selector-menu", index, handleError);
+      selectChangeValueByIndex(precisionSelector, index, handleError);
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -292,7 +292,7 @@ describe("QuantityInput", () => {
       ShowSignOption.NoSign.toString(),
     ].forEach((_selectValue, index) => {
       // fireEvent.change(signOptionSelector, { target: { value: selectValue } });
-      selectChangeValueByIndex(signOptionSelector, "sign-option-selector-menu", index, handleError);
+      selectChangeValueByIndex(signOptionSelector, index, handleError);
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -305,14 +305,14 @@ describe("QuantityInput", () => {
     // set to Station Type so selector is enabled
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
     // fireEvent.change(typeSelector, { target: { value: FormatType.Station.toString() } });
-    selectChangeValueByText(typeSelector, "format-type-selector-menu", "QuantityFormat.station", handleError);
+    selectChangeValueByText(typeSelector, "QuantityFormat.station", handleError);
     expect(spy).to.be.called;
     spy.resetHistory();
 
     const sizeOptionSelector = renderedComponent.getByTestId("station-size-selector");
     ["3", "2"].forEach((_selectValue, index) => {
       // fireEvent.change(sizeOptionSelector, { target: { value: selectValue } });
-      selectChangeValueByIndex(sizeOptionSelector, "station-size-selector-menu", index, handleError);
+      selectChangeValueByIndex(sizeOptionSelector, index, handleError);
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -320,7 +320,7 @@ describe("QuantityInput", () => {
     const separatorSelector = renderedComponent.getByTestId("station-separator-selector");
     ["-", " ", "^", "+"].forEach((_selectValue, index) => {
       // fireEvent.change(separatorSelector, { target: { value: selectValue } });
-      selectChangeValueByIndex(separatorSelector, "station-separator-selector-menu", index, handleError);
+      selectChangeValueByIndex(separatorSelector, index, handleError);
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -339,7 +339,7 @@ describe("QuantityInput", () => {
 
     const separatorSelector = renderedComponent.getByTestId("thousands-separator-selector");
     // fireEvent.change(separatorSelector, { target: { value: "." } });
-    selectChangeValueByText(separatorSelector, "thousands-separator-selector-menu", "QuantityFormat.thousand_separator.point", handleError);
+    selectChangeValueByText(separatorSelector, "QuantityFormat.thousand_separator.point", handleError);
     await TestUtils.flushAsyncOperations();
 
     /* turn off */
@@ -356,7 +356,7 @@ describe("QuantityInput", () => {
     renderedComponent.getByText(`40.504'-2"`);
 
     // fireEvent.change(separatorSelector, { target: { value: "," } });
-    selectChangeValueByText(separatorSelector, "thousands-separator-selector-menu", "QuantityFormat.thousand_separator.comma", handleError);
+    selectChangeValueByText(separatorSelector, "QuantityFormat.thousand_separator.comma", handleError);
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
@@ -370,7 +370,7 @@ describe("QuantityInput", () => {
 
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
     // fireEvent.change(typeSelector, { target: { value: FormatType.Decimal.toString() } });
-    selectChangeValueByText(typeSelector, "format-type-selector-menu", "QuantityFormat.decimal", handleError);
+    selectChangeValueByText(typeSelector, "QuantityFormat.decimal", handleError);
     await TestUtils.flushAsyncOperations();
 
     expect(spy).to.be.called;
@@ -384,13 +384,13 @@ describe("QuantityInput", () => {
 
     const separatorSelector = renderedComponent.getByTestId("decimal-separator-selector");
     // fireEvent.change(separatorSelector, { target: { value: "," } });
-    selectChangeValueByText(separatorSelector, "decimal-separator-selector-menu", "QuantityFormat.decimal_separator.comma", handleError);
+    selectChangeValueByText(separatorSelector, "QuantityFormat.decimal_separator.comma", handleError);
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
 
     // fireEvent.change(separatorSelector, { target: { value: "." } });
-    selectChangeValueByText(separatorSelector, "decimal-separator-selector-menu", "QuantityFormat.decimal_separator.point", handleError);
+    selectChangeValueByText(separatorSelector, "QuantityFormat.decimal_separator.point", handleError);
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
@@ -407,7 +407,7 @@ describe("QuantityInput", () => {
 
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
     // fireEvent.change(typeSelector, { target: { value: FormatType.Decimal.toString() } });
-    selectChangeValueByText(typeSelector, "format-type-selector-menu", "QuantityFormat.decimal", handleError);
+    selectChangeValueByText(typeSelector, "QuantityFormat.decimal", handleError);
     expect(spy).to.be.called;
     spy.resetHistory();
 
@@ -428,14 +428,14 @@ describe("QuantityInput", () => {
     spy.resetHistory();
 
     // fireEvent.change(typeSelector, { target: { value: FormatType.Scientific.toString() } });
-    selectChangeValueByText(typeSelector, "format-type-selector-menu", "QuantityFormat.scientific", handleError);
+    selectChangeValueByText(typeSelector, "QuantityFormat.scientific", handleError);
     expect(spy).to.be.called;
     spy.resetHistory();
 
     const scientificTypeSelector = renderedComponent.getByTestId("scientific-type-selector");
     ["QuantityFormat.scientific-type.zero-normalized", "QuantityFormat.scientific-type.normalized"].forEach((selectValue) => {
       // fireEvent.change(scientificTypeSelector, { target: { value: selectValue } });
-      selectChangeValueByText(scientificTypeSelector, "scientific-type-selector-menu", selectValue, handleError);
+      selectChangeValueByText(scientificTypeSelector, selectValue, handleError);
       expect(spy).to.be.called;
       spy.resetHistory();
     });
@@ -448,7 +448,7 @@ describe("QuantityInput", () => {
 
     const secondaryUnitsSelector = renderedComponent.getByTestId("unit-Units.IN");
     // fireEvent.change(secondaryUnitsSelector, { target: { value: "REMOVEUNIT" } });
-    selectChangeValueByText(secondaryUnitsSelector, "unit-Units.IN-menu".replace(".", "-"), "Remove", handleError);
+    selectChangeValueByText(secondaryUnitsSelector, "Remove", handleError);
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
@@ -461,7 +461,7 @@ describe("QuantityInput", () => {
 
     const primaryUnitSelector = renderedComponent.getByTestId("unit-Units.FT");
     // fireEvent.change(primaryUnitSelector, { target: { value: "Units.IN:in" } });
-    selectChangeValueByText(primaryUnitSelector, "unit-Units.FT-menu".replace(".", "-"), "IN", handleError);
+    selectChangeValueByText(primaryUnitSelector, "IN", handleError);
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
@@ -474,7 +474,7 @@ describe("QuantityInput", () => {
 
     const primaryUnitSelector = renderedComponent.getByTestId("unit-Units.FT");
     // fireEvent.change(primaryUnitSelector, { target: { value: "ADDSUBUNIT:Units.IN:in" } });
-    selectChangeValueByText(primaryUnitSelector, "unit-Units.FT-menu".replace(".", "-"), "Add sub-unit", handleError);
+    selectChangeValueByText(primaryUnitSelector, "Add sub-unit", handleError);
     // "Add sub-unit"
     await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;

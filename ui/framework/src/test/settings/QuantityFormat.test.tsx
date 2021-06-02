@@ -63,29 +63,29 @@ describe("QuantityFormatSettingsPage", () => {
 
     // initial unit system value should be imperial so no change expected for initial change.
     // fireEvent.change(selectButton, { target: { value: "imperial" } });
-    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.BritishImperial", handleError);
+    selectChangeValueByText(selectButton, "presentationUnitSystem.BritishImperial", handleError);
     expect(unitSystemSpy.calledOnce).to.be.false;
 
     // fireEvent.change(selectButton, { target: { value: "metric" } });
-    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.Metric", handleError);
+    selectChangeValueByText(selectButton, "presentationUnitSystem.Metric", handleError);
     expect(unitSystemSpy.calledOnce).to.be.true;
     unitSystemSpy.resetHistory();
     await TestUtils.flushAsyncOperations();
 
     // fireEvent.change(selectButton, { target: { value: "usCustomary" } });
-    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.USCustomary", handleError);
+    selectChangeValueByText(selectButton, "presentationUnitSystem.USCustomary", handleError);
     expect(unitSystemSpy.calledOnce).to.be.true;
     unitSystemSpy.resetHistory();
     await TestUtils.flushAsyncOperations();
 
     // fireEvent.change(selectButton, { target: { value: "usSurvey" } });
-    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.USSurvey", handleError);
+    selectChangeValueByText(selectButton, "presentationUnitSystem.USSurvey", handleError);
     expect(unitSystemSpy.calledOnce).to.be.true;
     unitSystemSpy.resetHistory();
     await TestUtils.flushAsyncOperations();
 
     // fireEvent.change(selectButton, { target: { value: "imperial" } });
-    selectChangeValueByText(selectButton, "unitSystemSelector-menu", "presentationUnitSystem.BritishImperial", handleError);
+    selectChangeValueByText(selectButton, "presentationUnitSystem.BritishImperial", handleError);
     expect(unitSystemSpy.calledOnce).to.be.true;
     await TestUtils.flushAsyncOperations();
 

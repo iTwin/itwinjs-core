@@ -42,7 +42,7 @@ function UomSeparatorSelector(props: UomSeparatorSelectorProps) {
   }, [separator]);
 
   return (
-    <Select options={separatorOptions} value={separator} onChange={handleOnChange} menuClassName="uom-separator-select-menu" {...otherProps} />
+    <Select options={separatorOptions} value={separator} onChange={handleOnChange} {...otherProps} />
   );
 }
 
