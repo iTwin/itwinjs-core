@@ -314,7 +314,7 @@ export class IModelExporter {
         if (readyToExport && this.handler.callProtected.shouldExportSchema(schemaKey)) {
           const schema = schemaLoader.getSchema(schemaName);
           Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
-          return this.handler.callProtected.onExportSchema(schema);
+          this.handler.callProtected.onExportSchema(schema);
         }
       }
     });
