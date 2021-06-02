@@ -9120,11 +9120,9 @@ export class SpatialModelState extends GeometricModel3dState {
     constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState);
     // @internal (undocumented)
     get asSpatialModel(): SpatialModelState;
-    // @beta
     readonly classifiers?: SpatialClassifiers;
     // @internal (undocumented)
     static get className(): string;
-    // @beta
     get isRealityModel(): boolean;
 }
 
