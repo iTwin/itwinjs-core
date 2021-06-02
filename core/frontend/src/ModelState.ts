@@ -213,9 +213,7 @@ export class SheetModelState extends GeometricModel2dState {
  * @public
  */
 export class SpatialModelState extends GeometricModel3dState {
-  /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it.
-   * @beta
-   */
+  /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it. */
   public readonly classifiers?: SpatialClassifiers;
 
   /** @internal */
@@ -228,9 +226,7 @@ export class SpatialModelState extends GeometricModel3dState {
     if (this.isRealityModel)
       this.classifiers = new SpatialClassifiers(this.jsonProperties);
   }
-  /** Return true if this is a reality model (represented by a 3d tile set)
-   * @beta
-   */
+  /** Return true if this is a reality model (represented by a 3d tile set). */
   public get isRealityModel(): boolean {
     return undefined !== this.jsonProperties.tilesetUrl;
   }
