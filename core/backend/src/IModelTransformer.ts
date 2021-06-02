@@ -31,7 +31,6 @@ import { ElementRefersToElements, Relationship, RelationshipProps } from "./Rela
 import { Schema } from "./Schema";
 import * as Semver from "semver";
 import { BackendRequestContext } from "./BackendRequestContext";
-import { DOMParser, XMLSerializer } from "xmldom";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
@@ -752,27 +751,6 @@ export class IModelTransformer extends IModelExportHandler {
   /** The directory where schemas will be exported, a random temporary directory */
   protected _schemaExportDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
 
-  /** Export a schema that was deserialized to a given path */
-  private shouldExportDeserializedSchema(schemaPath: string): boolean {
-    let schemaSrc: string;
-    try {
-      schemaSrc = IModelJsFs.readFileSync(schemaPath).toString("utf8");
-    } catch(err) {
-      Logger.logError(loggerCategory, `error reading xml schema file at '${schemaPath}`);
-      return true;
-    }
-    // ad-hoc fast xml parsing
-    const schemaVersionMatch = /<ECSchema .*?version="([0-9.]+)"/.exec(schemaSrc);
-    const schemaNameMatch = /<ECSchema .*?schemaName="([^"]+)"/.exec(schemaSrc);
-    if (schemaVersionMatch == null || schemaNameMatch == null) {
-      Logger.logError(loggerCategory, `failed to parse schema name or version, first 200 chars: '${schemaSrc.slice(0, 200)}'`);
-      return true;
-    }
-    const [_fullVersionMatch, versionString] = schemaVersionMatch;
-    const [_fullNameMatch, schemaName] = schemaNameMatch;
-    return this.shouldExportSchemaCheck(schemaName, Schema.toSemverString(versionString));
-  }
-
   /** given a schema identified just by name and the version string, check if it should be imported into the target */
   private shouldExportSchemaCheck(schemaName: string, versionInSource: string): boolean {
     const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
@@ -784,24 +762,19 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportSchema]($backend) that is called to determine if a schema should be exported
    * @note the default behavior doesn't import schemas older than those already in the target
    */
-  protected shouldExportSchema(schema: ECSchemaMetaData.Schema): boolean {
-    const versionInSource = `${schema.readVersion}.${schema.writeVersion}.${schema.minorVersion}`;
-    return this.shouldExportSchemaCheck(schema.name, versionInSource);
+  protected shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean {
+    return this.shouldExportSchemaCheck(schemaKey.name, schemaKey.version.toString());
   }
 
-  /** Override of [IModelExportHandler.onExportSchema]($backend) that imports a schema into the target iModel when it is exported from the source iModel. */
+  /** Override of [IModelExportHandler.onExportSchema]($backend) that serializes a schema to disk for [[processSchemas]] to import into
+   * the target iModel when it is exported from the source iModel. */
   protected async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
     const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
-    const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
-    const filledDoc = await schema.toXml(xmlDoc);
-    const schemaText = new XMLSerializer().serializeToString(filledDoc);
-    IModelJsFs.writeFileSync(schemaPath, schemaText);
+    IModelJsFs.writeFileSync(schemaPath, schema.toXmlString());
     await this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
   }
 
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
-   * @note `processSchemas` ignores existing onExportSchema and shouldExportSchema overrides because they have some xml parsing overhead,
-   * if you override those methods, call [IModelExporter.exportSchemas]($backend) on [IModelTransformer.exporter]($backend) instead of `processSchemas`.
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
    */
@@ -809,12 +782,13 @@ export class IModelTransformer extends IModelExportHandler {
     try {
       requestContext.enter();
       IModelJsFs.mkdirSync(this._schemaExportDir);
-      this.sourceDb.nativeDb.exportSchemas(this._schemaExportDir);
-      const schemaFiles: string[] = IModelJsFs.readdirSync(this._schemaExportDir);
-      const schemaFullPaths = schemaFiles.map((s) => path.join(this._schemaExportDir, s));
-      const schemasWeShouldImport = schemaFullPaths.filter(this.shouldExportDeserializedSchema.bind(this));
-      if (schemasWeShouldImport.length > 0)
-        await this.targetDb.importSchemas(requestContext, schemasWeShouldImport);
+      await this.exporter.exportSchemas();
+      requestContext.enter();
+      const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
+      if (exportedSchemaFiles.length === 0)
+        return;
+      const schemaFullPaths = exportedSchemaFiles.map((s) => path.join(this._schemaExportDir, s));
+      await this.targetDb.importSchemas(requestContext, schemaFullPaths);
     } finally {
       requestContext.enter();
       IModelJsFs.removeSync(this._schemaExportDir);

@@ -484,6 +484,17 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   /**
+   * Serializes the schema to a string of XML
+   * @alpha
+   */
+  public async toXmlString() {
+    const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
+    const filledDoc = await this.toXml(xmlDoc);
+    const schemaText = new XMLSerializer().serializeToString(filledDoc);
+    return schemaText;
+  }
+
+  /**
    * Converts the schema to a DOM XML Document.
    * @param schemaXml An empty DOM document to which the schema will be written
    */

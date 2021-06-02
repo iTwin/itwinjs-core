@@ -82,7 +82,6 @@ In addition, new protected static methods were added:
 
 ### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
 
-To make it easier to use async APIs while exporting a schema, [IModelExportHandler.onExportSchema]($backend) has been made async and must return a promise.  For example, serialization APIs can be async, and previously to have custom schema serialization safely, one would have to manually synchronize around their call to [IModelExportHandler.exportSchemas]($backend).
+To make it easier to use async APIs while exporting a schema, [IModelExportHandler.onExportSchema]($backend) has been made async and must return a promise.  For example, serialization APIs can be async, and previously to have custom async schema serialization, one would have to manually synchronize around their call to [IModelExportHandler.exportSchemas]($backend).
 
-[IModelTransformer.shouldExportSchema]($backend) now only gets a schema name string as argument, instead of a full [Schema]($ecschema-metadata). This puts the burden on the caller for loading a full schema if they need it, but
-makes most use cases for `shouldExportSchema` checks cheaper.
+[IModelTransformer.shouldExportSchema]($backend) now gets a [SchemaKey]($ecschema-metadata) schema key as argument, instead of a full [Schema]($ecschema-metadata). This puts the burden on the caller for loading a full schema if they need it, but makes most use cases for `shouldExportSchema` checks more performant.

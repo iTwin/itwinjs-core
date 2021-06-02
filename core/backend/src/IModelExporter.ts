@@ -7,7 +7,7 @@
  */
 import * as path from "path";
 import { assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { Schema } from "@bentley/ecschema-metadata";
+import { ECVersion, Schema, SchemaKey } from "@bentley/ecschema-metadata";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -111,7 +111,7 @@ export abstract class IModelExportHandler {
   /** If `true` is returned, then the schema will be exported.
    * @note This method can optionally be overridden to exclude an individual schema from the export. The base implementation always returns `true`.
    */
-  protected shouldExportSchema(_schema: Schema): boolean { return true; }
+  protected shouldExportSchema(_schemaKey: SchemaKey): boolean { return true; }
 
   /** Called when an schema should be exported.
    * @param schema The schema to export
@@ -298,24 +298,32 @@ export class IModelExporter {
    * @note This must be called separately from [[exportAll]] or [[exportChanges]].
    */
   public async exportSchemas(): Promise<void> {
-    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
-    const sql = "SELECT Name FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
+    const sql = "SELECT Name, VersionMajor, VersionWrite, VersionMinor FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
     let readyToExport: boolean = this.wantSystemSchemas ? true : false;
-    const schemasToExport: Schema[] = [];
+    const schemaNamesToExport: string[] = [];
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const schemaName: string = statement.getValue(0).getString();
-        const schema: Schema = schemaLoader.getSchema(schemaName);
+        const schemaName = statement.getValue(0).getString();
+        const versionMajor = statement.getValue(1).getInteger();
+        const versionWrite = statement.getValue(2).getInteger();
+        const versionMinor = statement.getValue(3).getInteger();
         if (!readyToExport) {
-          readyToExport = schema.fullName === BisCoreSchema.schemaName; // schemas prior to BisCore are considered *system* schemas
+          readyToExport = schemaName === BisCoreSchema.schemaName; // schemas prior to BisCore are considered *system* schemas
         }
-        if (readyToExport && this.handler.callProtected.shouldExportSchema(schema)) {
-          schemasToExport.push(schema);
+        const schemaKey = new SchemaKey(schemaName, new ECVersion(versionMajor, versionWrite, versionMinor));
+        if (readyToExport && this.handler.callProtected.shouldExportSchema(schemaKey)) {
+          schemaNamesToExport.push(schemaName);
         }
       }
     });
-    await Promise.all(schemasToExport.map(async (schema) => {
-      Logger.logTrace(loggerCategory, `exportSchema(${schema.fullName})`);
+
+    if (schemaNamesToExport.length === 0)
+      return;
+
+    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+    await Promise.all(schemaNamesToExport.map(async (schemaName) => {
+      const schema = schemaLoader.getSchema(schemaName);
+      Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
       return this.handler.callProtected.onExportSchema(schema);
     }));
   }
