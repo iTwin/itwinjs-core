@@ -98,20 +98,19 @@
         }
       },
       "Prompts": {
-        "IdentifyHandle": "Identify project extents or handle",
         "IdentifyRefPoint": "Identify reference point",
         "DefineAngle": "Enter point to define angle",
         "DefineOffset": "Enter point to define offset",
-        "IdentifyKnownLocation": "Identify location of known coordinate",
-        "ConfirmCoordinates": "Confirm coordinates",
-        "SpecifyCoordinates": "Specify coordinates then accept"
+        "IdentifyKnownLocation": "Identify location of known latitude and longitude",
+        "ConfirmCoordinates": "Confirm latitude and longitude",
+        "SpecifyCoordinates": "Specify latitude and longitude then accept"
       },
       "Inputs": {
         "AcceptHandle": "Accept project extents or handle"
       },
       "Message": {
-        "NotActive": "Geolocation tool is not enabled for a spatial view",
-        "NotAllowed": "A valid projected coordinate system already exists",
+        "NotActive": "Enable geolocation tools with 'editor project location show' first",
+        "NotAllowed": "A valid geographic coordinate reference system already exists",
         "NotGeolocated": "Not geolocated",
         "NoChanges": "No changes to project extents or geolocation to save",
         "ProjectExtents": "Project Extents",
