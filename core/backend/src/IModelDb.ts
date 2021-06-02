@@ -886,7 +886,7 @@ export abstract class IModelDb extends IModel {
   public static validateSchemas(filePath: string, forReadWrite: boolean): SchemaState {
     const openMode = forReadWrite ? OpenMode.ReadWrite : OpenMode.Readonly;
     const file = { path: filePath };
-    let result: DbResult = DbResult.BE_SQLITE_OK;
+    let result = DbResult.BE_SQLITE_OK;
     try {
       const upgradeOptions: UpgradeOptions = {
         domain: DomainOptions.CheckRecommendedUpgrades,

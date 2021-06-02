@@ -998,10 +998,7 @@ describe("IModelWriteTest (#integration)", () => {
     const iModelId = await HubUtility.pushIModel(managerRequestContext, projectId, pathname, hubName, true);
 
     // Download two copies of the briefcase - manager and super
-    const args: RequestNewBriefcaseProps = {
-      contextId: projectId,
-      iModelId,
-    };
+    const args: RequestNewBriefcaseProps = { contextId: projectId, iModelId };
     const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase(managerRequestContext, args);
     const superBriefcaseProps = await BriefcaseManager.downloadBriefcase(superRequestContext, args);
 
@@ -1041,12 +1038,12 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
     // Upgrade the schemas - should fail, since user hasn't pulled changes done by manager
-    // let result: IModelHubStatus = IModelHubStatus.Success;
-    try {
-      await BriefcaseDb.upgradeSchemas(superRequestContext, superBriefcaseProps);
-    } catch (err) {
-      // result = err.errorNumber;
-    }
+    // // let result: IModelHubStatus = IModelHubStatus.Success;
+    // try {
+    //   await BriefcaseDb.upgradeSchemas(superRequestContext, superBriefcaseProps);
+    // } catch (err) {
+    //   // result = err.errorNumber;
+    // }
     // assert.strictEqual(result, IModelHubStatus.PullIsRequired);
 
     // Open briefcase and pull change sets to upgrade
