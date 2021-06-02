@@ -2979,6 +2979,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     static clearOverrideModels(vp: Viewport): void;
     static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
     static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
+    static getCategoryOverrides(vp: Viewport): Set<string> | undefined;
+    static getModelOverrides(vp: Viewport): Set<string> | undefined;
     static hideCommand(vp: Viewport): Promise<void>;
     static hideSelected(vp: Viewport): void;
     static hideSelectedElementsCategory(vp: Viewport): Promise<void>;
@@ -3002,7 +3004,9 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     processIsolateSelected(): Promise<void>;
     processIsolateSelectedElementsCategory(): Promise<void>;
     processIsolateSelectedElementsModel(): Promise<void>;
-    }
+    static updateCategoryOverride(vp: Viewport, ids: string[]): void;
+    static updateModelOverride(vp: Viewport, ids: string[]): void;
+}
 
 // @alpha
 export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
