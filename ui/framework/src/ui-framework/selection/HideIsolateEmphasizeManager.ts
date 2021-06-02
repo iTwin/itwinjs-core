@@ -798,7 +798,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   /**
    * Add category ids to the category override cache (hidden or isolated categories)
    */
-  private static updateCategoryOverride(vp: Viewport, ids: string[]) {
+  public static updateCategoryOverride(vp: Viewport, ids: string[]) {
     const prevIds = this._overrideCategoryIds.get(vp);
     const newIds = [...(prevIds || []), ...ids];
     this._overrideCategoryIds.set (vp, new Set(newIds));
@@ -807,10 +807,24 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   /**
    * Add model ids to the model override cache (hidden or isolated models)
    */
-  private static updateModelOverride(vp: Viewport, ids: string[]) {
+  public static updateModelOverride(vp: Viewport, ids: string[]) {
     const prevIds = this._overrideModelIds.get(vp);
     const newIds = [...(prevIds || []), ...ids];
     this._overrideModelIds.set (vp, new Set(newIds));
+  }
+
+  /**
+   * Return the list of category overrides (hidden or isolated categories)
+   */
+  public static getCategoryOverrides(vp: Viewport) {
+    return this._overrideCategoryIds.get(vp);
+  }
+
+  /**
+   * Return the list of model overrides (hidden or isolated models)
+   */
+  public static getModelOverrides(vp: Viewport) {
+    return this._overrideModelIds.get(vp);
   }
 
   /**
