@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
@@ -15,7 +15,7 @@ import {
   isDisplayLabelRequestOptions, isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet,
   LabelDefinition, LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
   PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo,
-  UpdateInfo, UpdateInfoJSON,
+  UpdateInfo, UpdateInfoJSON, VariableValueTypes,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
@@ -297,7 +297,15 @@ export class PresentationManager implements IDisposable {
       foundRulesetOrId = foundRuleset ? foundRuleset.toJSON() : rulesetOrId;
     }
     const rulesetId = (typeof foundRulesetOrId === "object") ? foundRulesetOrId.id : foundRulesetOrId;
-    const variables = [...(rulesetVariables || [])];
+
+    // All Id64Array variable values must be sorted for serialization to JSON to work. RulesetVariablesManager
+    // sorts them before storing, so that part is taken care of, but we need to ensure that variables coming from
+    // request options are also sorted.
+    const variables = (rulesetVariables ?? []).map((variable) => {
+      if (variable.type === VariableValueTypes.Id64Array)
+        return { ...variable, value: OrderedId64Iterable.sortArray(variable.value) };
+      return variable;
+    });
     if (!this._ipcRequestsHandler) {
       // only need to add variables from variables manager if there's no IPC
       // handler - if there is one, the variables are already known by the backend

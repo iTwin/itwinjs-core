@@ -173,7 +173,10 @@ export type RulesetVariableJSON = BooleanRulesetVariableJSON | StringRulesetVari
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace RulesetVariable {
-  /** Serialize given RulesetVariable to JSON */
+  /**
+   * Serialize given RulesetVariable to JSON.
+   * Note: In case of [[Id64sRulesetVariable]], this method expects IDs are sorted. See [[OrderedId64Iterable.sortArray]].
+   */
   export function toJSON(variable: RulesetVariable): RulesetVariableJSON {
     if (variable.type === VariableValueTypes.Id64Array)
       return { ...variable, value: CompressedId64Set.compressArray(variable.value) };

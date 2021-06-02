@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
-import { BeDuration, BeEvent, Logger, using } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@bentley/imodeljs-common";
 import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -287,7 +287,7 @@ describe("PresentationManager", () => {
     });
 
     it("injects ruleset variables into request options", async () => {
-      await manager.getNodesCount({  // eslint-disable-line deprecation/deprecation
+      await manager.getNodesCount({
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
       });
@@ -295,6 +295,27 @@ describe("PresentationManager", () => {
         imodel: testData.imodelToken,
         rulesetOrId: testData.rulesetId,
         rulesetVariables: [{ id: variableId, value: variableValue, type: VariableValueTypes.String }],
+        parentKey: undefined,
+      }), moq.Times.once());
+    });
+
+    it("orders Id64[] ruleset variables before injecting into request options", async () => {
+      await manager.getNodesCount({
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        rulesetVariables: [{
+          type: VariableValueTypes.Id64Array,
+          id: "order-id64[]",
+          value: ["0x2", "0x1"],
+        }],
+      });
+      rpcRequestsHandlerMock.verify(async (x) => x.getNodesCount({
+        imodel: testData.imodelToken,
+        rulesetOrId: testData.rulesetId,
+        rulesetVariables: [
+          { id: "order-id64[]", value: CompressedId64Set.compressArray(["0x1", "0x2"]), type: VariableValueTypes.Id64Array },
+          { id: variableId, value: variableValue, type: VariableValueTypes.String },
+        ],
         parentKey: undefined,
       }), moq.Times.once());
     });
