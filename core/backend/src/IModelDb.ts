@@ -2211,7 +2211,7 @@ export class BriefcaseDb extends IModelDb {
       const nativeDb = this.openDgnDb({ path: arg.briefcase.fileName, key: arg.briefcase.key }, OpenMode.ReadWrite, arg.upgradeOptions);
 
       try {
-        if (!nativeDb.hasPendingTxns()) { // the upgrade did not cause any changes
+        if (!nativeDb.hasPendingTxns()) {
           await IModelHost.hubAccess.releaseAllLocks(lockArg);
           return; // No changes made due to the upgrade
         }
