@@ -28,7 +28,6 @@ import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
-import { Schema } from "./Schema";
 import * as Semver from "semver";
 import { BackendRequestContext } from "./BackendRequestContext";
 
@@ -770,7 +769,7 @@ export class IModelTransformer extends IModelExportHandler {
    * the target iModel when it is exported from the source iModel. */
   protected async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
     const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
-    IModelJsFs.writeFileSync(schemaPath, schema.toXmlString());
+    IModelJsFs.writeFileSync(schemaPath, await schema.toXmlString());
     await this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
   }
 
