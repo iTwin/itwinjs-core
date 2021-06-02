@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
     },
     {
       "name": "@bentley/ecschema-rpcinterface-common",
@@ -1116,7 +1116,7 @@
     },
     {
       "name": "xmldom",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "xmlhttprequest",
