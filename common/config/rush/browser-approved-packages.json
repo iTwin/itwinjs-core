@@ -411,6 +411,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "copy-webpack-plugin",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "cpx",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -655,12 +659,20 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "jsonpath",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "jsonwebtoken",
       "allowedCategories": [ "backend" ]
     },
     {
       "name": "linkify-it",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "lint-staged",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "lodash",
@@ -892,7 +904,7 @@
     },
     {
       "name": "request-promise",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "request-promise-native",

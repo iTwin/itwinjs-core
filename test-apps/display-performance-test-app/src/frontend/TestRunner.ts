@@ -13,9 +13,10 @@ import {
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
+import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
-  defaultEmphasis, defaultHilite, ElementOverrideProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
+  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 
@@ -349,7 +350,30 @@ export class TestRunner {
     if (!view)
       return undefined;
 
-    const viewport = this.openViewport(view.view); // ###TODO make sure this gets disposed.
+    const viewport = this.openViewport(view.view);
+
+    // Apply hypermodeling
+    const hyperModeling = this.curConfig.hyperModeling;
+    if (hyperModeling) {
+      try {
+        const decorator = await HyperModeling.start(viewport);
+        const marker = decorator?.markers.findMarkerById(hyperModeling.sectionDrawingLocationId);
+        if (!decorator) {
+          await this.logError("Failed to start hypermodeling.");
+        } else if (!marker) {
+          await this.logError(`SectionDrawingLocation ${hyperModeling.sectionDrawingLocationId} not found.`);
+        } else {
+          if (hyperModeling.applySpatialView) {
+            await decorator.toggleSection(marker, true);
+          } else {
+            decorator.toggleClipVolume(marker, true);
+            await decorator.toggleAttachment(marker, true);
+          }
+        }
+      } catch (err) {
+        await this.logError(err.toString());
+      }
+    }
 
     // Apply emphasis and hilite settings.
     const config = this.curConfig;
@@ -422,7 +446,7 @@ export class TestRunner {
 
       // The scene is ready when (1) all required TileTrees have been created and (2) all required tiles have finished loading.
       const context = viewport.createSceneContext();
-      viewport.view.createScene(context);
+      viewport.createScene(context);
       context.requestMissingTiles();
 
       haveNewTiles = !viewport.areAllTileTreesLoaded || context.hasMissingTiles || 0 < context.missingTiles.size;
@@ -687,6 +711,10 @@ export class TestRunner {
     if (map)
       testName += `_${map}`;
 
+    const hyper = getHyperModelingProps(configs.hyperModeling);
+    if (hyper)
+      testName += `_${hyper}`;
+
     const other = getOtherProps(test.viewport);
     if (other)
       testName += `_${other}`;
@@ -732,6 +760,7 @@ export class TestRunner {
     const tileProps = configs.tileProps ? getTileProps(configs.tileProps) : "";
     rowData.set("Tile Props", "" !== tileProps ? ` ${tileProps}` : "");
     rowData.set("Bkg Map Props", getBackgroundMapProps(test.viewport) !== "" ? ` ${getBackgroundMapProps(test.viewport)}` : "");
+    rowData.set("HyperModeling", getHyperModelingProps(configs.hyperModeling) ?? "");
 
     const other = getOtherProps(test.viewport);
     if ("" !== other)
@@ -1095,6 +1124,14 @@ function hiliteSettingsStr(settings: Hilite.Settings): string {
   let hsStr = (settings.color.colors.r * 256 * 256 + settings.color.colors.g * 256 + settings.color.colors.b).toString(36).padStart(5, "0");
   hsStr += (settings.silhouette * 256 * 256 + Math.round(settings.visibleRatio * 255) * 256 + Math.round(settings.hiddenRatio * 255)).toString(36).padStart(4, "0");
   return hsStr.toUpperCase();
+}
+
+function getHyperModelingProps(props: HyperModelingProps | undefined): string | undefined {
+  if (!props)
+    return undefined;
+
+  const hm = `+hm${props.sectionDrawingLocationId}`;
+  return props.applySpatialView ? `${hm}+a` : hm;
 }
 
 function getOtherProps(vp: ScreenViewport): string {
