@@ -2290,6 +2290,8 @@ export interface Ruleset {
     // @deprecated
     supportedSchemas?: SchemasSpecification;
     vars?: VariablesGroup[];
+    // @beta
+    version?: string;
 }
 
 // @public

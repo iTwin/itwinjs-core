@@ -65,7 +65,6 @@ import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleSettingsProps } from '@bentley/imodeljs-common';
 import { EasingFunction } from '@bentley/imodeljs-common';
-import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
 import { EditingScopeNotifications } from '@bentley/imodeljs-common';
@@ -1365,20 +1364,6 @@ export class BackgroundMapGeometry {
     readonly maxGeometryChordHeight: number;
     }
 
-// @internal (undocumented)
-export class BackgroundMapLocation {
-    // (undocumented)
-    get geodeticToSeaLevel(): number;
-    // (undocumented)
-    getMapEcefToDb(bimElevationBias: number): Transform;
-    // (undocumented)
-    initialize(iModel: IModelConnection): Promise<void>;
-    // (undocumented)
-    onEcefChanged(ecefLocation: EcefLocation): void;
-    // (undocumented)
-    get projectCenterAltitude(): number;
-    }
-
 // @beta
 export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
     constructor(_quantityFormatter: QuantityFormatter, _maintainOverridesPerIModel?: boolean | undefined);
@@ -2355,8 +2340,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     set backgroundColor(val: ColorDef);
     // @internal (undocumented)
     get backgroundMapBase(): BaseLayerSettings | undefined;
-    // (undocumented)
-    get backgroundMapElevationBias(): number;
+    // @internal (undocumented)
+    get backgroundMapElevationBias(): number | undefined;
     // @internal (undocumented)
     get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
@@ -4583,8 +4568,7 @@ export interface IModelAppOptions {
 export abstract class IModelConnection extends IModel {
     // @internal
     protected constructor(iModelProps: IModelConnectionProps);
-    // @internal
-    backgroundMapLocation: BackgroundMapLocation;
+    readonly altitudeProvider: ProjectAltitudeProvider;
     // @internal
     protected beforeClose(): void;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
@@ -4607,6 +4591,8 @@ export abstract class IModelConnection extends IModel {
     readonly geoServices: GeoServices;
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string>;
+    // @internal (undocumented)
+    getMapEcefToDb(bimElevationBias: number): Transform;
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
@@ -7261,6 +7247,13 @@ export enum PrimitiveVisibility {
     Instanced = 1,
     Uninstanced = 2
 }
+
+// @public
+export class ProjectAltitudeProvider {
+    constructor(iModel: IModelConnection);
+    get geodeticToSeaLevel(): number | undefined;
+    get projectCenterAltitude(): number | undefined;
+    }
 
 // @public
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
