@@ -13,13 +13,14 @@ on:
     paths:
     - '.github/workflows/**'
 
-inputs:
-  debug:
-    description: "Enable debug logging"
-    require: flase
+# inputs:
+#   debug:
+#     description: "Enable debug logging"
+#     require: flase
 
 env:
   token: ${{ secrets.GITHUBTOKEN }}
+  debug: false
 
 jobs:
   validate:
@@ -30,5 +31,3 @@ jobs:
           fetch-depth: 1
       - name: Run Invalidate PR Script
         run: .github/workflows/invalidatePRs.sh
-        with:
-          debug: ${{ inputs.debug }}
