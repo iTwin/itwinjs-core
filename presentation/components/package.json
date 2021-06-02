@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-components",
-  "version": "2.17.0-dev.22",
+  "version": "2.17.0-dev.23",
   "description": "React components based on iModel.js Presentation library",
   "main": "lib/presentation-components.js",
   "typings": "lib/presentation-components",
@@ -49,15 +49,15 @@
     "rxjs": "^6.6.2"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^",
-    "@bentley/imodeljs-common": "workspace:^",
-    "@bentley/imodeljs-frontend": "workspace:^",
-    "@bentley/imodeljs-i18n": "workspace:^",
-    "@bentley/presentation-common": "workspace:^",
-    "@bentley/presentation-frontend": "workspace:^",
-    "@bentley/ui-abstract": "workspace:^",
-    "@bentley/ui-components": "workspace:^",
-    "@bentley/ui-core": "workspace:^",
+    "@bentley/bentleyjs-core": "workspace:^2.17.0-dev.23",
+    "@bentley/imodeljs-common": "workspace:^2.17.0-dev.23",
+    "@bentley/imodeljs-frontend": "workspace:^2.17.0-dev.23",
+    "@bentley/imodeljs-i18n": "workspace:^2.17.0-dev.23",
+    "@bentley/presentation-common": "workspace:^2.17.0-dev.23",
+    "@bentley/presentation-frontend": "workspace:^2.17.0-dev.23",
+    "@bentley/ui-abstract": "workspace:^2.17.0-dev.23",
+    "@bentley/ui-components": "workspace:^2.17.0-dev.23",
+    "@bentley/ui-core": "workspace:^2.17.0-dev.23",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
