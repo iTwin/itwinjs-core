@@ -117,6 +117,7 @@ describe("external texture requests (#integration)", () => {
       let image = await imageElementFromImageSource(imageSource);
       expect(image.width).to.be.lessThanOrEqual(maxTextureSize);
       expect(image.height).to.be.lessThanOrEqual(maxTextureSize);
+      expect(image.width === maxTextureSize || image.height === maxTextureSize).to.be.true;
 
       // check that requests textures are not downsampled when not requested.
       texBytes = await imodel.getTextureImage({ name });
