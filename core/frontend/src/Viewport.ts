@@ -356,10 +356,8 @@ export abstract class Viewport implements IDisposable {
 
   /** Time the current flash started. */
   private _flashUpdateTime?: BeTimePoint;
-  /** Current flash intensity from [0..1] */
+  /** Current flash intensity from [0..this.flashSettings.maxIntensity] */
   private _flashIntensity = 0;
-  /** The length of time that the flash intensity will increase (in seconds) */
-  private _flashDuration = 0;
   /** Id of the currently flashed element. */
   private _flashedElem?: string;
   /** Id of last flashed element. */
@@ -516,8 +514,7 @@ export abstract class Viewport implements IDisposable {
   }
   public set flashSettings(settings: FlashSettings) {
     this._flash = settings;
-    this.invalidateRenderPlan;
-    // ###TODO invalidate flashDuration/Intensity/etc...
+    this.invalidateRenderPlan();
   }
 
   /** Determine whether the Grid display is currently enabled in this Viewport.
@@ -1511,14 +1508,13 @@ export abstract class Viewport implements IDisposable {
   /** Set or clear the currently *flashed* element.
    * @note This method is not typically invoked directly - [[ToolAdmin]] will invoke it for you when the user hovers over an element.
    * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element.
-   * @param duration The amount of time, in seconds, the flash intensity will increase (see [[flashDuration]]).
+   * @param _duration Ignored - the duration from [[Viewport.flashSettings]] is used.
    */
-  public setFlashed(id: string | undefined, duration: number): void {
+  public setFlashed(id: string | undefined, _duration?: number): void {
     if (id !== this._flashedElem) {
       this._lastFlashedElem = this._flashedElem;
       this._flashedElem = id;
     }
-    this._flashDuration = duration;
   }
 
   public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
@@ -2200,10 +2196,14 @@ export abstract class Viewport implements IDisposable {
       needsFlashUpdate = this._flashedElem === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
     }
 
-    if (this._flashedElem !== undefined && this._flashIntensity < 1.0) {
-      const flashDuration = BeDuration.fromSeconds(this._flashDuration);
-      const flashElapsed = BeTimePoint.now().milliseconds - this._flashUpdateTime!.milliseconds;
-      this._flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds; // how intense do we want the flash effect to be from [0..1]?
+    if (this._flashedElem !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
+      assert(undefined !== this._flashUpdateTime);
+
+      const flashDuration = this.flashSettings.duration;
+      const flashElapsed = BeTimePoint.now().milliseconds - this._flashUpdateTime.milliseconds;
+      this._flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds;
+      this._flashIntensity = Math.min(this._flashIntensity, this.flashSettings.maxIntensity);
+
       needsFlashUpdate = true;
     }
 

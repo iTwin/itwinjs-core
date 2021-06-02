@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration, Mutable } from "@bentley/bentleyjs-core";
 
 /** As part of [[FlashSettings]], describes how geometry is flashed.
  * @public
@@ -20,7 +20,7 @@ export enum FlashMode {
   Brighten,
 }
 
-export type FlashSettingsOptions = Partial<FlashSettings>;
+export type FlashSettingsOptions = Mutable<Partial<FlashSettings>>;
 
 /** Settings that control how geometry is "flashed" when hovered over in a [[Viewport]].
  * When the user hovers the mouse cursor over an element (or other piece of geometry, like a reality mesh), a [[Tool]] visually indicates
@@ -75,5 +75,17 @@ export class FlashSettings {
     }
 
     this.duration = duration;
+  }
+
+  /** Create a copy of these settings identical except for properties explicitly specified by `options`.
+   * @param options Overrides selected properties of these settings. Any property not supplied will retain its current value. Any property
+   * explicitly set to `undefined` will receive its default value.
+   * @returns A copy of these settings identical except as specified by `options`.
+   */
+  public clone(options?: FlashSettingsOptions): FlashSettings {
+    if (!options)
+      return this;
+
+    return new FlashSettings({ ...this, ...options });
   }
 }
