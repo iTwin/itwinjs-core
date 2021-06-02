@@ -983,7 +983,7 @@ describe("IModelWriteTest (#integration)", () => {
     iModel.close();
   });
 
-  it.only("should be able to upgrade a briefcase with an older schema", async () => {
+  it("should be able to upgrade a briefcase with an older schema", async () => {
     const projectId = await HubUtility.getTestContextId(managerRequestContext);
 
     /**
@@ -1028,7 +1028,6 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
     assert.isFalse(iModel.concurrencyControl.locks.hasSchemaLock);
     assert.isFalse(iModel.nativeDb.hasUnsavedChanges());
-    const iModelFilename = iModel.pathName;
     iModel.close();
 
     /* User "super" can get the upgrade "manager" made */
@@ -1037,6 +1036,7 @@ describe("IModelWriteTest (#integration)", () => {
     schemaState = BriefcaseDb.validateSchemas(superBriefcaseProps.fileName, true);
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
+    // SKIPPED FOR NOW - locking not mocked yet
     // Upgrade the schemas - should fail, since user hasn't pulled changes done by manager
     // // let result: IModelHubStatus = IModelHubStatus.Success;
     // try {
@@ -1053,7 +1053,6 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
     assert.isFalse(superIModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made
     assert.isFalse(superIModel.nativeDb.hasPendingTxns()); // Validate no changes were made
-    const superFilename = superIModel.pathName;
     superIModel.close();
 
     // Validate that there are no upgrades required
@@ -1069,9 +1068,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(schemaLock); // Validate no schema locks held by the hub
 
     /* Cleanup after test */
-    await BriefcaseManager.deleteBriefcaseFiles(iModelFilename, managerRequestContext); // delete from local disk
-    await BriefcaseManager.deleteBriefcaseFiles(superFilename, superRequestContext); // delete from local disk
-    await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, contextId: projectId, iModelId }); // delete from hub
+    await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, contextId: projectId, iModelId });
   });
 
 });
