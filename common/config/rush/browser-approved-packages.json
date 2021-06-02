@@ -683,6 +683,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "lint-staged",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "lodash",
       "allowedCategories": [ "frontend", "tools" ]
     },

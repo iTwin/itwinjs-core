@@ -3003,8 +3003,9 @@ export abstract class InformationPartitionElement extends InformationContentElem
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code;
-    // (undocumented)
     description?: string;
+    // @internal (undocumented)
+    toJSON(): InformationPartitionElementProps;
 }
 
 // @public
