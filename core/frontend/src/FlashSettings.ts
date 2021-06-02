@@ -12,12 +12,12 @@ import { BeDuration } from "@bentley/bentleyjs-core";
  * @public
  */
 export enum FlashMode {
+  /** The color of the geometry is mixed with the hilite color. */
+  Hilite,
   /** The color of the geometry is brightened. Applicable only to lit geometry - i.e., meshes displayed in a view with [RenderMode.SmoothShade]($common)
    * and lighting enabled.
    */
   Brighten,
-  /** The color of the geometry is mixed with the hilite color. */
-  Hilite,
 }
 
 export type FlashSettingsOptions = Partial<FlashSettings>;

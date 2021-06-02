@@ -62,6 +62,7 @@ import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
+import { FlashSettings } from "./FlashSettings";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -421,6 +422,7 @@ export abstract class Viewport implements IDisposable {
   private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+  private _flash = new FlashSettings();
 
   /** @see [DisplayStyle3dSettings.lights]($common) */
   public get lightSettings(): LightSettings | undefined {
@@ -506,6 +508,16 @@ export abstract class Viewport implements IDisposable {
   public set emphasisSettings(settings: Hilite.Settings) {
     this._emphasis = settings;
     this.invalidateRenderPlan();
+  }
+
+  /** The settings that control how elements are flashed in this viewport. */
+  public get flashSettings(): FlashSettings {
+    return this._flash;
+  }
+  public set flashSettings(settings: FlashSettings) {
+    this._flash = settings;
+    this.invalidateRenderPlan;
+    // ###TODO invalidate flashDuration/Intensity/etc...
   }
 
   /** Determine whether the Grid display is currently enabled in this Viewport.
