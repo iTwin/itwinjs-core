@@ -12,7 +12,10 @@ export * from "./UrlFileHandler";
 export * from "./StorageServiceFileHandler";
 
 /** @docs-package-description
- * Barrel for backend itwin clients
+ *
+ */
+/** @docs-package-description iModelHub
+ * Classes for accessing iModelHub
  */
 /**
  * @docs-group-description Authentication
