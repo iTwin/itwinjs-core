@@ -163,6 +163,7 @@ import { RenderTimelineProps } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { RequestNewBriefcaseProps } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
+import { SchemaKey as SchemaKey_2 } from '@bentley/ecschema-metadata';
 import { SchemaState } from '@bentley/imodeljs-common';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
@@ -2718,7 +2719,7 @@ export abstract class IModelExportHandler {
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
     protected shouldExportRelationship(_relationship: Relationship): boolean;
-    protected shouldExportSchema(_schema: Schema_2): boolean;
+    protected shouldExportSchema(_schemaKey: SchemaKey_2): boolean;
 }
 
 // @public
@@ -2961,7 +2962,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected shouldExportElement(_sourceElement: Element): boolean;
     protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
     protected shouldExportRelationship(_sourceRelationship: Relationship): boolean;
-    protected shouldExportSchema(schema: ECSchemaMetaData.Schema): boolean;
+    protected shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
     protected skipElement(sourceElement: Element): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;

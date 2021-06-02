@@ -594,7 +594,6 @@ importers:
       '@types/semver': ^5.5.0
       '@types/sinon': ^9.0.0
       '@types/ws': ^6.0.4
-      '@types/xmldom': ^0.1.30
       azurite: ^3.8.0
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -622,7 +621,6 @@ importers:
       typescript: ~4.1.0
       webpack: 4.42.0
       ws: ^7.2.0
-      xmldom: ^0.5.0
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
@@ -636,7 +634,6 @@ importers:
       multiparty: 4.2.2
       semver: 5.7.1
       ws: 7.4.6
-      xmldom: 0.5.0
     devDependencies:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
@@ -666,7 +663,6 @@ importers:
       '@types/semver': 5.5.0
       '@types/sinon': 9.0.11
       '@types/ws': 6.0.4
-      '@types/xmldom': 0.1.30
       azurite: 3.12.0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
