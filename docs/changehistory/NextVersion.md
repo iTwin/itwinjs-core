@@ -18,7 +18,7 @@ Within [IpcApp]($frontend)-based applications, [BriefcaseConnection]($frontend)s
 
 ## Customizable flash settings
 
-When the user hovers over an element in a [Viewport]($frontend), the element is "flashed" to indicate that it can be interacted with. Previously this effect was not configurable. Now, an application can supply a [FlashSettings]($common) to [Viewport.flashSettings]($common) to customize the intensity and duration of the effect, as well as the way in which lit geometry is flashed - either by brightening it, or by mixing it with the viewport's hilite color.
+When the user hovers over an element in a [Viewport]($frontend), the element is "flashed" to indicate that it can be interacted with. Previously this effect was not configurable. Now, an application can supply a [FlashSettings]($frontend) to [Viewport.flashSettings]($frontend) to customize the intensity and duration of the effect, as well as the way in which lit geometry is flashed - either by brightening it, or by mixing it with the viewport's hilite color.
 
 ## Promoted APIs
 
