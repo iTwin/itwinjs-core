@@ -219,6 +219,7 @@ export class MapLayerSettings {
       props.transparentBackground = this.transparentBackground;
     if (this.isBase === true)
       props.isBase = this.isBase;
+    props.visible = this.visible;
     return props;
   }
 
