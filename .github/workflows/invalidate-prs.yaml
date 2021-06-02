@@ -5,6 +5,10 @@ name: "Invalidate PRs after 3 hours"
 
 on:
   workflow_dispatch:
+    inputs:
+        debug:
+          description: "Enable debug logging"
+          required: false
   schedule:
     # * is a special character in YAML so you have to quote this string
     # It runs every 15 minutes
@@ -15,7 +19,7 @@ on:
 
 env:
   token: ${{ secrets.GITHUBTOKEN }}
-  debug: ""
+  debug: ${{ github.event.inputs.debug  }}
 
 jobs:
   validate:
