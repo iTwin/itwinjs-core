@@ -263,7 +263,7 @@ describe("AzureFileHandler", async () => {
     try {
       await promise;
     } catch (error) {
-      assert.equal(error.code, "EPERM");
+      assert.oneOf(error.code, ["EPERM", "ENOENT"]);
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
       return;
     }
