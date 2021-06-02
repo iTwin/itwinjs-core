@@ -13,14 +13,9 @@ on:
     paths:
     - '.github/workflows/**'
 
-# inputs:
-#   debug:
-#     description: "Enable debug logging"
-#     require: flase
-
 env:
   token: ${{ secrets.GITHUBTOKEN }}
-  debug: false
+  debug: ""
 
 jobs:
   validate:
