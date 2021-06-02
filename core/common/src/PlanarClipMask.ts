@@ -67,7 +67,7 @@ export interface  PlanarClipMaskProps {
  * of a reality model that intersect a design model.
  * @note Currently reality models (including background maps and terrain) can be masked, but design models can only produce masks.
  * @see [[DisplayStyleSettings.planarClipMasks]] to define clip masks for a [DisplayStyle]($backend).
- * @see [ContextRealityModel.planarClipMaskSettings]($frontend) to apply a clip mask to a context reality model.
+ * @see [[ContextRealityModel.planarClipMaskSettings]] to apply a clip mask to a context reality model.
  * @public
  */
 export class PlanarClipMaskSettings {
