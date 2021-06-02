@@ -42,7 +42,6 @@ import { SelectionScope } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
 import { UpdateInfoJSON } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
-import { VariableValueJSON } from '@bentley/presentation-common';
 import { VariableValueTypes } from '@bentley/presentation-common';
 
 // @beta
@@ -350,7 +349,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     // (undocumented)
     getValue(variableId: string, type: VariableValueTypes): VariableValue;
     // (undocumented)
-    getValueJSON(variableId: string, type: VariableValueTypes): VariableValueJSON;
+    getValueInternal(variableId: string, type: VariableValueTypes): VariableValue;
     setBool(variableId: string, value: boolean): void;
     setId64(variableId: string, value: Id64String): void;
     setId64s(variableId: string, value: Id64String[]): void;
@@ -360,7 +359,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     // (undocumented)
     setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
     // (undocumented)
-    setValueJSON(variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
+    setValueInternal(variableId: string, type: VariableValueTypes, value: VariableValue): void;
 }
 
 // @alpha

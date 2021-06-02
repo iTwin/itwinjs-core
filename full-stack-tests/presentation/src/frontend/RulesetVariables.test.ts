@@ -351,7 +351,9 @@ describe("Ruleset Variables", async () => {
 
       // https://www.sqlite.org/limits.html#max_variable_number
       const maxNumberOfSupportedBindParams = 32766;
-      const ids = [...Array(maxNumberOfSupportedBindParams + 1).keys()].map(() => "0x61");
+      const largestECInstanceIdInTestDataset = 117;
+      const ids = [...Array(maxNumberOfSupportedBindParams).keys()].map((key) => Id64.fromUint32Pair(key + largestECInstanceIdInTestDataset + 1, 0));
+      ids.push("0x61");
 
       await Presentation.presentation.vars(ruleset.id).setId64s("ids", ids);
       content = await Presentation.presentation.getContent({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} });
