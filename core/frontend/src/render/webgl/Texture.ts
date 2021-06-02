@@ -555,10 +555,8 @@ export class ExternalTextureLoader { /* currently exported for tests only */
         const maxTextureSize = System.instance.capabilities.maxTextureSize;
         const texBytes = await req.imodel.getTextureImage({ name: req.name, maxTextureSize });
         if (undefined !== texBytes) {
-          console.log(`texBytes.byteLength = ${  texBytes.byteLength}`);
           const imageSource = new ImageSource(texBytes, req.format);
           const image = await imageElementFromImageSource(imageSource);
-          console.log(`loaded external texture: name=${  req.name  }, width=${  image.naturalWidth  }, height=${  image.naturalHeight}`);
           if (!req.imodel.isClosed) {
             req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
             IModelApp.tileAdmin.invalidateAllScenes();
@@ -567,7 +565,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
           }
         }
       }
-    } catch (_e) { console.log(`external texture exception: ${  _e}`); }
+    } catch (_e) { }
 
     return this._nextRequest(req);
   }
@@ -588,8 +586,6 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     const req = { handle, name, imodel, type, format, onLoaded };
     if (this._requestExists(req))
       return;
-
-    console.log(`loading external texture: name=${  name}`);
 
     if (this._activeRequests.length + 1 > this._maxActiveRequests) {
       this._pendingRequests.push(req);
