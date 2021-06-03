@@ -2239,8 +2239,10 @@ export class BriefcaseDb extends IModelDb {
         };
         if (localBriefcaseProps.iModelId !== briefcaseProps.iModelId || localBriefcaseProps.contextId !== briefcaseProps.contextId || localBriefcaseProps.changeSetId !== briefcaseProps.changeSetId)
           throw new IModelError(BentleyStatus.ERROR, "Local briefcase does not match the briefcase properties passed in to upgrade");
-        if (!nativeDb.hasPendingTxns())
+        if (!nativeDb.hasPendingTxns()) {
+          await IModelHost.iModelClient.locks.deleteAll(requestContext, briefcaseProps.iModelId, briefcaseProps.briefcaseId);
           return briefcaseProps.changeSetId; // No changes made due to the upgrade
+        }
       } finally {
         nativeDb.closeIModel();
       }

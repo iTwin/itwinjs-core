@@ -177,6 +177,7 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
+import { Mutable } from '@bentley/bentleyjs-core';
 import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { NativeAppFunctions } from '@bentley/imodeljs-common';
 import { ObservableSet } from '@bentley/bentleyjs-core';
@@ -3256,6 +3257,24 @@ export class Flags {
 }
 
 // @public
+export enum FlashMode {
+    Brighten = 1,
+    Hilite = 0
+}
+
+// @public
+export class FlashSettings {
+    constructor(options?: FlashSettingsOptions);
+    clone(options?: FlashSettingsOptions): FlashSettings;
+    readonly duration: BeDuration;
+    readonly litMode: FlashMode;
+    readonly maxIntensity: number;
+}
+
+// @public
+export type FlashSettingsOptions = Mutable<Partial<FlashSettings>>;
+
+// @public
 export class FlyViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
     // (undocumented)
@@ -5407,12 +5426,14 @@ export interface MapLayerSetting {
 // @internal (undocumented)
 export class MapLayerSettingsService {
     // (undocumented)
-    static deleteSharedSettingsByName(name: string, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+    static deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+    // (undocumented)
+    static getSettingFromUrl(requestContext: AuthorizedFrontendRequestContext, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
     static getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
     // (undocumented)
-    static readonly onCustomLayerNameRemoved: BeEvent<(name: string) => void>;
+    static readonly onLayerSourceChanged: BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource | undefined, newSource?: MapLayerSource | undefined) => void>;
     // (undocumented)
-    static readonly onNewCustomLayerSource: BeEvent<(source: MapLayerSource) => void>;
+    static replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
     // (undocumented)
     static get SourceNamespace(): string;
     static storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
@@ -5454,6 +5475,16 @@ export class MapLayerSource implements MapLayerProps {
     userName?: string | undefined;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+}
+
+// @internal (undocumented)
+export enum MapLayerSourceChangeType {
+    // (undocumented)
+    Added = 0,
+    // (undocumented)
+    Removed = 1,
+    // (undocumented)
+    Replaced = 2
 }
 
 // @internal
@@ -8010,6 +8041,8 @@ export interface RenderPlan {
     readonly clipStyle: ClipStyle;
     // (undocumented)
     readonly emphasisSettings: Hilite.Settings;
+    // (undocumented)
+    readonly flashSettings: FlashSettings;
     // (undocumented)
     readonly fraction: number;
     // (undocumented)
@@ -12129,12 +12162,8 @@ export abstract class Viewport implements IDisposable {
     set featureOverrideProvider(provider: FeatureOverrideProvider | undefined);
     findFeatureOverrideProvider(predicate: (provider: FeatureOverrideProvider) => boolean): FeatureOverrideProvider | undefined;
     findFeatureOverrideProviderOfType<T>(type: Constructor<T>): T | undefined;
-    // @internal
-    flashDuration: number;
-    // @internal
-    flashIntensity: number;
-    // @internal
-    flashUpdateTime?: BeTimePoint;
+    get flashSettings(): FlashSettings;
+    set flashSettings(settings: FlashSettings);
     // @internal (undocumented)
     forEachMapTreeRef(func: (ref: TileTreeReference) => void): void;
     // @internal (undocumented)
@@ -12208,8 +12237,7 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     get isSnapAdjustmentRequired(): boolean;
     isSubCategoryVisible(id: Id64String): boolean;
-    // @internal
-    lastFlashedElem?: string;
+    get lastFlashedElementId(): Id64String | undefined;
     get lightSettings(): LightSettings | undefined;
     // @internal (undocumented)
     mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined;
@@ -12283,7 +12311,7 @@ export abstract class Viewport implements IDisposable {
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     setAnimator(animator?: Animator): void;
     setFeatureOverrideProviderChanged(): void;
-    setFlashed(id: string | undefined, duration: number): void;
+    setFlashed(id: string | undefined, _duration?: number): void;
     // (undocumented)
     setLightSettings(settings: LightSettings): void;
     // @internal
