@@ -41,10 +41,14 @@ To disable external textures, pass a `TileAdmin` to [IModelApp.startup]($fronten
 ```
 
 Disabling this feature will incur a performance penalty. The option to disable this feature will likely be removed in the future.
+
 ### Custom category nesting
+
 A new `requiredSchemas` attribute was added to [Ruleset]($presentation-common), [Rule]($presentation-common) and [SubCondition]($presentation-common) definitions. The attribute allows specifying ECSchema requirements for rules and avoid using them when requirements are not met. See the [schema requirements page](../learning/presentation/SchemaRequirements.md) for more details.
 The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
+
 ### [@bentley/webgl-compatibility](https://www.itwinjs.org/reference/webgl-compatibility/)
+
 * [ReadonlySortedArray.findEquivalent]($bentleyjs-core) and [ReadonlySortedArray.indexOfEquivalent]($bentleyjs-core) for locating an element based on a custom criterion.
 
 ### [@bentley/imodeljs-common](https://www.itwinjs.org/reference/imodeljs-common/)
@@ -61,7 +65,9 @@ The following APIs have been promoted to `public`. Public APIs are guaranteed to
 * [GraphicsDriverBugs]($webgl-compatibility) for describing any known graphics driver bugs for which iTwin.js will apply workarounds.
 * [ContextCreator]($webgl-compatibility) for describing a function that creates and returns a WebGLContext for [queryRenderCompatibility]($webgl-compatibility).
 * [Viewport.antialiasSamples]($frontend) and [ViewManager.setAntialiasingAllViews]($frontend) for applying [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) to make viewport images appear smoother.
+
 ### @bentley/imodeljs-backend package
+
 * [TxnManager]($backend) for managing local changes to a [BriefcaseDb]($backend).
 The arguments for the @beta protected static methods called during modifications have been changed to be more consistent and extensible:
 * [IModelDb.generateElementGraphics]($backend) for generating [RenderGraphic]($frontend)s from [GeometricElement]($backend)s or arbitrary geometry streams.
@@ -71,3 +77,13 @@ The arguments for the @beta protected static methods called during modifications
 * [ElementAspect]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
 In addition, new protected static methods were added:
 * [Element]($backend) `[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]`
+
+## Breaking API changes
+
+### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
+
+To make it easier to use async APIs while exporting a schema, [IModelExportHandler.onExportSchema]($backend) has been made async and must return a promise.  For example, serialization APIs can be async, and previously to have custom async schema serialization, one would have to manually synchronize around their call to [IModelExportHandler.exportSchemas]($backend).
+
+[IModelTransformer.shouldExportSchema]($backend) now gets a [SchemaKey]($ecschema-metadata) schema key as argument, instead of a full [Schema]($ecschema-metadata). If you
+need to check the full schema, return `true` in shouldExportSchema and in [IModelExportHandler.onExportSchema]($backend), you can use the schema object to check and then
+return early.
