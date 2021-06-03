@@ -230,6 +230,10 @@ export abstract class IModelConnection extends IModel {
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
+    this.onEcefLocationChanged.addListener(() => {
+      this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
+    });
+
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
       this.expandDisplayedExtents(this._extentsExpansion);
@@ -553,9 +557,6 @@ export abstract class IModelConnection extends IModel {
       if (vp.view.isSpatialView() && vp.iModel === this)
         vp.invalidateController();
     }
-  }
-    if (this.backgroundMapLocation && this.ecefLocation)
-      this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
   }
 }
 
