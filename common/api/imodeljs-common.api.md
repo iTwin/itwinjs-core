@@ -227,11 +227,8 @@ export interface AnalysisStyleProps {
 
 // @public
 export interface AppearanceOverrideProps {
-    // (undocumented)
     color?: ColorDefProps;
-    // (undocumented)
     ids?: Id64Array;
-    // (undocumented)
     overrideType?: FeatureOverrideType;
 }
 
@@ -2338,21 +2335,13 @@ export interface ElementProps extends EntityProps {
 
 // @public
 export interface EmphasizeElementsProps {
-    // (undocumented)
     alwaysDrawn?: Id64Array;
-    // (undocumented)
     alwaysDrawnExclusiveEmphasized?: Id64Array;
-    // (undocumented)
     appearanceOverride?: AppearanceOverrideProps[];
-    // (undocumented)
     defaultAppearance?: FeatureAppearanceProps;
-    // (undocumented)
     isAlwaysDrawnExclusive?: boolean;
-    // (undocumented)
     neverDrawn?: Id64Array;
-    // (undocumented)
     unanimatedAppearance?: FeatureAppearanceProps;
-    // (undocumented)
     wantEmphasis?: boolean;
 }
 
