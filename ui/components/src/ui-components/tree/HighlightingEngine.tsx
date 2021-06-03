@@ -11,7 +11,8 @@ import * as React from "react";
 import { HighlightedText } from "../common/HighlightedText";
 
 /**
- * Active match info for highlightable [[Tree]]
+ * Properties for identifying an active highlight on a node in a tree.
+ * @see [[HighlightableTreeProps.activeMatch]]
  * @public
  */
 export interface ActiveMatchInfo {
