@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/rpcinterface-full-stack-tests",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/rpcinterface-full-stack-tests",
+<<<<<<< HEAD:common/changes/@bentley/rpcinterface-full-stack-tests/update-rush_2021-05-24-15-45.json
+  "email": "38971167+saemjeon@users.noreply.github.com"
+=======
+  "email": "33296803+kabentley@users.noreply.github.com"
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/rpcinterface-full-stack-tests/nativeapp-tests_2021-05-05-12-19.json
+}

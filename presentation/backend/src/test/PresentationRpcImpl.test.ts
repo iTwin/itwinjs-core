@@ -653,14 +653,14 @@ describe("PresentationRpcImpl", () => {
 
     describe("loadHierarchy", () => {
 
-      it("returns error status", async () => {
+      it("returns success status", async () => {
         const rpcOptions: PresentationRpcRequestOptions<HierarchyRequestOptions<never, RulesetVariableJSON>> = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
         };
         // eslint-disable-next-line deprecation/deprecation
         const actualResult = await impl.loadHierarchy(testData.imodelToken, rpcOptions);
-        expect(actualResult.statusCode).to.equal(PresentationStatus.Error);
+        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
       });
 
     });

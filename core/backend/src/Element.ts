@@ -702,7 +702,7 @@ export class VolumeElement extends SpatialLocationElement {
 
 /** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]].
  * @note The associated ECClass was added to the BisCore schema in version 1.0.11.
- * @beta
+ * @public
  */
 export class SectionDrawingLocation extends SpatialLocationElement {
   /** The Id of the [[ViewDefinition]] to which this location refers. */
@@ -1309,10 +1309,14 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
   /** @internal */
   public static get className(): string { return "InformationPartitionElement"; }
+  /** A human-readable string describing the intent of the partition. */
   public description?: string;
   /** @internal */
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
-
+  /** @internal */
+  public toJSON(): InformationPartitionElementProps { // This override only specializes the return type
+    return super.toJSON() as InformationPartitionElementProps; // Entity.toJSON takes care of auto-handled properties
+  }
   /** Create a code that can be used for any subclass of InformationPartitionElement.
    * @param iModelDb The IModelDb
    * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child InformationPartitionElements.
@@ -1566,7 +1570,7 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
 
 /** Describes how to animate a view of a [[GeometricModel]] to show change over time using a [RenderSchedule.Script]($common).
  * @note This class was introduced in version 01.00.13 of the BisCore ECSchema. It should only be used with [[IModelDb]]s containing that version or newer.
- * @beta
+ * @public
  */
 export class RenderTimeline extends InformationRecordElement {
   /** @internal */

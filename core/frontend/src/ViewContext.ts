@@ -73,7 +73,7 @@ export class RenderContext {
     return this._createGraphicBuilder({ type: GraphicType.Scene, placement: transform });
   }
 
-  /** @internal */
+  /** Create a graphic from a [[GraphicBranch]]. */
   public createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic {
     return this.target.renderSystem.createGraphicBranch(branch, location, opts);
   }
@@ -359,7 +359,7 @@ export class SceneContext extends RenderContext {
   /** @internal */
   public get graphicType() { return this._graphicType; }
 
-  /** @internal */
+  /** Add the specified graphic to the scene. */
   public outputGraphic(graphic: RenderGraphic): void {
     switch (this._graphicType) {
       case TileGraphicType.BackgroundMap:

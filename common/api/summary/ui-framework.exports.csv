@@ -93,8 +93,13 @@ alpha;CardSelectedEventArgs
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
 internal;ChangeSetInfo
+<<<<<<< HEAD
+beta;ChildWindowLocationProps
+beta;ChildWindowManager
+=======
 alpha;ChildWindowLocationProps
 alpha;ChildWindowManager
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff
 beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 internal;clearKeyinPaletteHistory(): void
@@ -230,6 +235,7 @@ internal;FrameworkVersionSwitchProps
 internal;FrameworkZone 
 internal;FrameworkZoneProps 
 public;Frontstage 
+internal;FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings"
 public;FrontstageActivatedEvent 
 public;FrontstageActivatedEventArgs
 public;FrontstageComposer 
@@ -259,6 +265,7 @@ internal;getFirstItem: (groupItemDef: GroupItemDef) => AnyItemDef | undefined
 internal;getFirstItemId: (groupItemDef: GroupItemDef) => string
 internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
+internal;getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]): string
 beta;getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
@@ -415,7 +422,11 @@ public;NestedFrontstage
 public;NineZoneChangeHandler
 public;NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessageDetails
 public;NotifyMessageType = MessageType
+<<<<<<< HEAD
+beta;OpenChildWindowInfo
+=======
 alpha;OpenChildWindowInfo
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff
 public;OpenMessageCenterEvent 
 internal;packNineZoneState(state: NineZoneState): SavedNineZoneState
 internal;PanelSizeChangedEvent 
@@ -480,6 +491,7 @@ public;SavedView
 public;SavedViewLayout
 public;SavedViewLayoutProps
 public;SavedViewProps 
+internal;saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window): Promise
 alpha;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element
 beta;SectionsStatusFieldProps 

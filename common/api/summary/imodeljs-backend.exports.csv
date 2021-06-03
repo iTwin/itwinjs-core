@@ -41,8 +41,8 @@ beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
-beta;ComputedProjectExtents
-beta;ComputeProjectExtentsOptions
+public;ComputedProjectExtents
+public;ComputeProjectExtentsOptions
 beta;ConcurrencyControl
 beta;ConcurrencyControl
 alpha;Channel
@@ -210,9 +210,9 @@ public;InformationRecordModel
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
 beta;InstanceChange
-beta;class IpcHandler
-beta;IpcHost
-beta;IpcHostOpts
+public;class IpcHandler
+public;IpcHost
+public;IpcHostOpts
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -225,9 +225,9 @@ internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;class NativeAppAuthorizationBackend 
-beta;NativeAppStorage
-beta;NativeHost
-beta;NativeHostOpts 
+public;NativeAppStorage
+public;NativeHost
+public;NativeHostOpts 
 beta;OnAspectArg
 beta;OnAspectIdArg 
 beta;OnAspectPropsArg 
@@ -266,7 +266,7 @@ public;Relationships
 public;RenderMaterialElement 
 public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
-beta;RenderTimeline 
+public;RenderTimeline 
 public;RepositoryLink 
 public;RepositoryModel 
 public;RequestNewBriefcaseArg = RequestNewBriefcaseProps &
@@ -278,7 +278,7 @@ internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas
 public;SectionCallout 
 public;SectionDrawing 
-beta;SectionDrawingLocation 
+public;SectionDrawingLocation 
 public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
 public;Sheet 
@@ -322,9 +322,9 @@ internal;TextureCreateProps
 public;TitleText 
 public;TxnAction
 deprecated;TxnAction
-beta;TxnChangedEntities
+public;TxnChangedEntities
 public;TxnIdString = string
-beta;TxnManager
+public;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
 public;UrlLink 
@@ -332,7 +332,7 @@ internal;UsageLoggingUtilities
 internal;UsageLoggingUtilitiesOptions
 internal;V1CheckpointManager
 internal;V2CheckpointManager
-beta;ValidationError
+public;ValidationError
 public;ViewAttachment 
 public;ViewAttachmentLabel 
 public;class ViewDefinition 

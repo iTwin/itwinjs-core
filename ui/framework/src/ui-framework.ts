@@ -350,6 +350,10 @@ export * from "./ui-framework/zones/ZoneDef";
  * Classes for working with child windows.
  */
 /**
+ * @docs-group-description ChildWindowManager
+ * Classes for working with child windows.
+ */
+/**
  * @docs-group-description Picker
  * Classes for working with various pickers
  */

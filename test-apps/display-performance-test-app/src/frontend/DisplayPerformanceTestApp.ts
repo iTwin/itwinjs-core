@@ -11,8 +11,15 @@ import {
 import { FrontendRequestContext, IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
+import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+
+/** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
+class MarkerHandler extends SectionMarkerHandler {
+  public isMarkerVisible(_marker: SectionMarker) {
+    return false;
+  }
+}
 
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
@@ -25,7 +32,7 @@ export class DisplayPerfTestApp {
     else
       await IModelApp.startup(iModelApp);
 
-    await HyperModeling.initialize();
+    await HyperModeling.initialize({ markerHandler: new MarkerHandler() });
 
     IModelApp.animationInterval = undefined;
   }

@@ -6,15 +6,19 @@
 
 import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
 import { CompressedId64Set } from '@bentley/bentleyjs-core';
+import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EditCommandIpc } from '@bentley/imodeljs-editor-common';
+import { ElementGeometryInfo } from '@bentley/imodeljs-common';
+import { FlatBufferGeometricElementData } from '@bentley/imodeljs-editor-common';
+import { FlatBufferGeometryFilter } from '@bentley/imodeljs-editor-common';
+import { FlatBufferGeometryPartData } from '@bentley/imodeljs-editor-common';
 import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelDb } from '@bentley/imodeljs-backend';
 import { IModelStatus } from '@bentley/bentleyjs-core';
-import { InsertGeometricElementData } from '@bentley/imodeljs-editor-common';
-import { InsertGeometryPartData } from '@bentley/imodeljs-editor-common';
 import { Matrix3dProps } from '@bentley/geometry-core';
+import { Range3dProps } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 
 // @alpha (undocumented)
@@ -25,15 +29,23 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
     // (undocumented)
-    insertGeometricElement(props: GeometricElementProps, data?: InsertGeometricElementData): Promise<Id64String>;
+    insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String>;
     // (undocumented)
-    insertGeometryPart(props: GeometryPartProps, data?: InsertGeometryPartData): Promise<Id64String>;
+    insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String>;
+    // (undocumented)
+    requestElementGeometry(elementId: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
     rotatePlacement(ids: CompressedId64Set, matrixProps: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
     // (undocumented)
     protected _str: string;
     // (undocumented)
     transformPlacement(ids: CompressedId64Set, transProps: TransformProps): Promise<IModelStatus>;
+    // (undocumented)
+    updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void>;
+    // (undocumented)
+    updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void>;
+    // (undocumented)
+    updateProjectExtents(extents: Range3dProps): Promise<void>;
 }
 
 // @alpha

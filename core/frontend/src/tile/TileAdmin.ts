@@ -11,7 +11,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import {
   CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface,
-  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError,
+  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileVersionInfo,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
@@ -101,6 +101,7 @@ export interface GpuMemoryLimits {
  * @public
  */
 export class TileAdmin {
+  private _versionInfo?: TileVersionInfo;
   public readonly channels: TileRequestChannels;
   private readonly _viewports = new Set<Viewport>();
   private readonly _requestsPerViewport = new Map<Viewport, Set<Tile>>();
@@ -608,6 +609,16 @@ export class TileAdmin {
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
     return intfc.requestElementGraphics(iModel.getRpcProps(), requestProps);
+  }
+
+  /** Obtain information about the version/format of the tiles supplied by the backend. */
+  public async queryVersionInfo(): Promise<Readonly<TileVersionInfo>> {
+    if (!this._versionInfo) {
+      this.initializeRpc();
+      this._versionInfo = await IModelTileRpcInterface.getClient().queryVersionInfo();
+    }
+
+    return this._versionInfo;
   }
 
   /** @internal */
