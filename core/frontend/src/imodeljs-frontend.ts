@@ -27,6 +27,7 @@ export * from "./FeatureTrackingManager";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
 export * from "./FrontendRequestContext";
+export * from "./FrontendHubAccess";
 export * from "./Frustum2d";
 export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
@@ -238,4 +239,8 @@ export * from "./LocalhostIpcApp";
 /**
  * @docs-group-description MapLayerFormatRegistry
  * Class for working with supported map layer formats.
+ */
+/**
+ * @docs-group-description HubAccess
+ * APIs for working with IModelHub
  */
