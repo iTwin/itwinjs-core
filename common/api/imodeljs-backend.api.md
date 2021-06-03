@@ -52,6 +52,7 @@ import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
+import * as ECSchemaMetaData from '@bentley/ecschema-metadata';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { EditingScopeNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
@@ -162,6 +163,7 @@ import { RenderTimelineProps } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { RequestNewBriefcaseProps } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
+import { SchemaKey as SchemaKey_2 } from '@bentley/ecschema-metadata';
 import { SchemaState } from '@bentley/imodeljs-common';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
@@ -2788,13 +2790,13 @@ export abstract class IModelExportHandler {
     protected onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
-    protected onExportSchema(_schema: Schema_2): void;
+    protected onExportSchema(_schema: Schema_2): Promise<void>;
     protected onProgress(): Promise<void>;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
     protected shouldExportRelationship(_relationship: Relationship): boolean;
-    protected shouldExportSchema(_schema: Schema_2): boolean;
+    protected shouldExportSchema(_schemaKey: SchemaKey_2): boolean;
 }
 
 // @public
@@ -3136,6 +3138,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
+    protected onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void>;
     protected onTransformElement(sourceElement: Element): ElementProps;
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
@@ -3154,10 +3157,12 @@ export class IModelTransformer extends IModelExportHandler {
     processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
     get provenanceDb(): IModelDb;
+    protected _schemaExportDir: string;
     protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     protected shouldExportElement(_sourceElement: Element): boolean;
     protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
     protected shouldExportRelationship(_sourceRelationship: Relationship): boolean;
+    protected shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
     protected skipElement(sourceElement: Element): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
