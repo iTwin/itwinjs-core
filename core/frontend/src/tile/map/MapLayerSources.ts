@@ -25,7 +25,7 @@ export enum MapLayerSourceStatus {
   RequireAuth,
 }
 
-/** A source for map layers.  These may be catalogued for convenient use by users or applications.
+/** JSON representation of a map layer source.
  * @internal
  */
 interface MapLayerSourceProps extends MapLayerProps
@@ -37,6 +37,10 @@ interface MapLayerSourceProps extends MapLayerProps
   /** Password */
   password?: string;
 }
+
+/** A source for map layers.  These may be catalogued for convenient use by users or applications.
+ * @internal
+ */
 export class MapLayerSource implements MapLayerProps {
   public subLayers?: MapSubLayerProps[];
 
