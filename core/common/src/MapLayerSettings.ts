@@ -125,8 +125,6 @@ export interface MapLayerProps {
   transparency?: number;
   /** True to indicate background is transparent.  If omitted, defaults to 'true' in MapLayerSettings.fromJSON() */
   transparentBackground?: boolean;
-  /** Maximum zoom level */
-  maxZoom?: number;
   /** Is a base layer.  If omitted, defaults to 'false' in MapLayerSettings.fromJSON() */
   isBase?: boolean;
   /** Access Key for the Layer, like a subscription key or access token */

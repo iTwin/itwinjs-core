@@ -40,7 +40,7 @@ interface MapLayerSourceProps extends MapLayerProps
 export class MapLayerSource implements MapLayerProps {
   public subLayers?: MapSubLayerProps[];
 
-  private constructor(public formatId: string, public name: string, public url: string, public baseMap = false, public transparentBackground?: boolean, public maxZoom?: number, public userName?: string, public password?: string) { }
+  private constructor(public formatId: string, public name: string, public url: string, public baseMap = false, public transparentBackground?: boolean, public userName?: string, public password?: string) { }
 
   public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
     if (json === undefined || json.url === undefined || undefined === json.name || undefined === json.formatId)
@@ -51,8 +51,7 @@ export class MapLayerSource implements MapLayerProps {
       json.name,
       json.url,
       baseMap, json.transparentBackground === undefined ? true : json.transparentBackground,
-      json.maxZoom, json.userName,
-      json.password);
+      json.userName, json.password);
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
@@ -71,7 +70,7 @@ export class MapLayerSource implements MapLayerProps {
     return undefined;
   }
   public toJSON() {
-    return { url: this.url, name: this.name, formatId: this.formatId, maxZoom: this.maxZoom, transparentBackground: this.transparentBackground };
+    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
   }
 
   public toLayerSettings(): MapLayerSettings | undefined {

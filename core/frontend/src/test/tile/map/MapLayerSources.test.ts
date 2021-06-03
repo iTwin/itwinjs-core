@@ -17,7 +17,6 @@ describe("MapLayerSources", () => {
       userName: "testUser",
       password: "testPassword",
       transparentBackground: false,
-      maxZoom: 10,
       baseMap: true,
     };
 
@@ -28,7 +27,6 @@ describe("MapLayerSources", () => {
     expect(sampleSource!.url).to.equals(sampleSourceJson.url);
     expect(sampleSource!.userName).to.equals(sampleSourceJson.userName);
     expect(sampleSource!.password).to.equals(sampleSourceJson.password);
-    expect(sampleSource!.maxZoom).to.equals(sampleSourceJson.maxZoom);
     expect(sampleSource!.transparentBackground).to.equals(sampleSourceJson.transparentBackground);
     expect(sampleSource!.baseMap).to.equals(sampleSourceJson.baseMap);
 
