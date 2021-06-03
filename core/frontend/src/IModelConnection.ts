@@ -23,6 +23,7 @@ import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
+import { BingElevationProvider } from "./tile/internal";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
 import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
@@ -61,15 +62,11 @@ export abstract class IModelConnection extends IModel {
   public readonly codeSpecs: IModelConnection.CodeSpecs;
   /** The [[ViewState]]s in this IModelConnection. */
   public readonly views: IModelConnection.Views;
-  /** The set of currently hilited elements for this IModelConnection.
-   * @beta
-   */
+  /** The set of currently hilited elements for this IModelConnection. */
   public readonly hilited: HiliteSet;
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
-  /** The set of Tiles for this IModelConnection.
-   * @beta
-   */
+  /** The set of Tiles for this IModelConnection. */
   public readonly tiles: Tiles;
   /** A cache of information about SubCategories chiefly used for rendering.
    * @internal
@@ -91,10 +88,12 @@ export abstract class IModelConnection extends IModel {
   public get noGcsDefined(): boolean { return this._gcsDisabled || undefined === this.geographicCoordinateSystem; }
   /** @internal */
   public disableGCS(disable: boolean): void { this._gcsDisabled = disable; }
-  /** @internal The displayed extents. Union of the the project extents and all displayed reality models.
-   * Don't modify this directly - use [[expandDisplayedExtents]].
+  /** The displayed extents of this iModel, initialized to [IModel.projectExtents]($common). The displayed extents can be made larger via
+   * [[expandDisplayedExtents]], but never smaller, to accomodate data sources like reality models that may exceed the project extents.
+   * @note Do not modify these extents directly - use [[expandDisplayedExtents]] only.
    */
   public readonly displayedExtents: AxisAlignedBox3d;
+  private readonly _extentsExpansion = Range3d.createNull();
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
 
@@ -230,6 +229,11 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
+
+    this.onProjectExtentsChanged.addListener(() => {
+      // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
+      this.expandDisplayedExtents(this._extentsExpansion);
+    });
   }
 
   /** Called prior to connection closing. Raises close events and calls tiles.dispose.
@@ -536,25 +540,20 @@ export abstract class IModelConnection extends IModel {
     return (this.noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
   }
 
-  /** Expand this iModel's [[displayedExtents]] with the specified range.
-   * @internal
+  /** Expand this iModel's [[displayedExtents]] to include the specified range.
+   * This is done automatically when reality models are added to a spatial view. In some cases a [[TiledGraphicsProvider]] may wish to expand
+   * the extents explicitly to include its geometry.
    */
   public expandDisplayedExtents(range: Range3d): void {
-    this.displayedExtents.extendRange(range);
+    this._extentsExpansion.extendRange(range);
+    this.displayedExtents.setFrom(this.projectExtents);
+    this.displayedExtents.extendRange(this._extentsExpansion);
+
     for (const vp of IModelApp.viewManager) {
       if (vp.view.isSpatialView() && vp.iModel === this)
         vp.invalidateController();
     }
   }
-
-  /** @internal */
-  public setEcefLocation(ecef: EcefLocationProps): void {
-    super.setEcefLocation(ecef);
-
-    // setEcefLocation is invoked from IModel constructor...
-    if (this.tiles)
-      this.tiles.onEcefChanged();
-
     if (this.backgroundMapLocation && this.ecefLocation)
       this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
   }

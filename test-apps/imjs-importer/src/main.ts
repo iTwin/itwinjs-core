@@ -11,6 +11,8 @@ import { ImportIMJS } from "./ImportIMJS";
 IModelHost.startup().then(async () => {
   console.log("start ..");
   for (const directoryTail of [
+    "TaggedGeometryData",
+    /*
     "AlternatingConvexClipTree",
     "Angle",
     "Arc3d",
@@ -63,6 +65,7 @@ IModelHost.startup().then(async () => {
     "Triangulation",
     "ViewWidget",
     "XYPointBuckets",
+    */
   ]) {
     console.log(`input from${directoryTail}`);
     const importer = ImportIMJS.create(`d:\\bfiles\\importIMJS\\${directoryTail}.bim`,

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Fix array and struct property contents not being rendered in property grid when the properties have `hideCompositePropertyLabel` flag.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

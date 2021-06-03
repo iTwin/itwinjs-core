@@ -10,6 +10,22 @@
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
 
+const syntaxKindFriendlyNames = {
+  [ts.SyntaxKind.ClassDeclaration]: "class",
+  [ts.SyntaxKind.EnumDeclaration]: "enum",
+  [ts.SyntaxKind.InterfaceDeclaration]: "interface",
+  [ts.SyntaxKind.ModuleDeclaration]: "module",
+  [ts.SyntaxKind.MethodDeclaration]: "method",
+  [ts.SyntaxKind.MethodSignature]: "method",
+  [ts.SyntaxKind.FunctionDeclaration]: "function",
+  [ts.SyntaxKind.GetAccessor]: "getter",
+  [ts.SyntaxKind.SetAccessor]: "setter",
+  [ts.SyntaxKind.PropertyDeclaration]: "property",
+  [ts.SyntaxKind.PropertySignature]: "property",
+  [ts.SyntaxKind.Constructor]: "constructor",
+  [ts.SyntaxKind.EnumMember]: "enum member",
+}
+
 /**
  * This rule prevents the use of APIs with specific release tags.
  */
@@ -21,7 +37,7 @@ module.exports = {
       category: "TypeScript",
     },
     messages: {
-      forbidden: `"{{name}}" is {{tag}}.`,
+      forbidden: `{{kind}} "{{name}}" is {{tag}}.`,
     },
     schema: [
       {
@@ -46,27 +62,64 @@ module.exports = {
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
-    function checkJsDoc(declaration, node, name) {
+    function getFileName(parent) {
+      let currentParent = parent;
+      while (currentParent) {
+        if (currentParent.fileName !== undefined)
+          return currentParent.fileName;
+        currentParent = currentParent.parent;
+      }
+      return undefined;
+    }
+
+    function isLocalFile(declaration) {
+      if (declaration) {
+        const fileName = getFileName(declaration.parent);
+        if (fileName && typeof fileName === "string" && !fileName.includes("node_modules"))
+          return true;
+      }
+      return false;
+    }
+
+    function getParentSymbolName(declaration) {
+      if (declaration.parent && declaration.parent.symbol && !declaration.parent.symbol.escapedName.startsWith('"'))
+        return declaration.parent.symbol.escapedName;
+      return undefined;
+    }
+
+    function checkJsDoc(declaration, node) {
       if (!declaration || !declaration.jsDoc)
         return undefined;
 
       for (const jsDoc of declaration.jsDoc)
         if (jsDoc.tags)
-          for (const tag of jsDoc.tags)
-            if (bannedTags.includes(tag.tagName.escapedText)) {
+          for (const tag of jsDoc.tags) {
+            if (bannedTags.includes(tag.tagName.escapedText) && !isLocalFile(declaration)) {
+              let name;
+              if (declaration.kind === ts.SyntaxKind.Constructor)
+                name = declaration.parent.symbol.escapedName;
+              else {
+                name = declaration.symbol.escapedName;
+                const parentSymbol = getParentSymbolName(declaration);
+                if (parentSymbol)
+                  name = `${parentSymbol}.${name}`;
+              }
+
               context.report({
                 node,
                 messageId: "forbidden",
                 data: {
-                  name: name || declaration.symbol.escapedName,
+                  kind: syntaxKindFriendlyNames.hasOwnProperty(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object type " + declaration.kind,
+                  name,
                   tag: tag.tagName.escapedText,
                 }
               });
             }
+          }
     }
 
     function checkWithParent(declaration, node) {
-      if(!declaration)
+      if (!declaration)
         return;
       checkJsDoc(declaration, node);
       if (declaration.parent && [
@@ -90,7 +143,7 @@ module.exports = {
         checkWithParent(resolved.declaration, node);
 
         const resolvedSymbol = typeChecker.getSymbolAtLocation(tsCall.expression);
-        if(resolvedSymbol)
+        if (resolvedSymbol)
           checkWithParent(resolvedSymbol.valueDeclaration, node);
       },
 
@@ -105,7 +158,7 @@ module.exports = {
 
         const resolvedConstructor = typeChecker.getResolvedSignature(tsCall);
         if (resolvedConstructor)
-          checkJsDoc(resolvedConstructor.declaration, node, `${resolvedClass.symbol.escapedName} constructor`);
+          checkJsDoc(resolvedConstructor.declaration, node);
       },
 
       MemberExpression(node) {
@@ -140,7 +193,7 @@ module.exports = {
           return;
         if (resolved.resolvedReturnType && resolved.resolvedReturnType.symbol)
           checkJsDoc(resolved.resolvedReturnType.symbol.valueDeclaration, node); // class
-        if(resolved.declaration)
+        if (resolved.declaration)
           checkJsDoc(resolved.declaration, node); // constructor
       },
 

@@ -41,7 +41,11 @@ export class Settings {
   public logLevel?: number;
   public users: TestUserCredentials[] = [];
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public get Backend(): Backend { return this._backend; }
   public get user(): TestUserCredentials { return this.users[0]; }
+
+  public iModel: IModelData = {} as IModelData;
 
   constructor(env: NodeJS.ProcessEnv) {
     const isFrontend = (typeof (process) === "undefined");
@@ -93,6 +97,14 @@ export class Settings {
 
     if (undefined === process.env.IMODEL_IMODELID)
       throw new Error("Missing the 'IMODEL_IMODELID' setting.");
+
+    this.iModel = {
+      projectId: process.env.IMODEL_PROJECTID,
+      id: process.env.IMODEL_IMODELID,
+      // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.
+      name: process.env.IMODEL_IMODELNAME,
+      changeSetId: process.env.IMODEL_CHANGESETID,
+    };
 
     // Parse logging level
     if (undefined !== process.env.LOG_LEVEL) {

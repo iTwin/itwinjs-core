@@ -62,8 +62,7 @@ export interface UpdateModelOptions extends ModelProps {
 }
 
 /** Options supplied to [[IModelDb.computeProjectExtents]].
- * @see [[ComputedProjectExtents]].
- * @beta
+ * @public
  */
 export interface ComputeProjectExtentsOptions {
   /** If true, the result will include `extentsWithOutliers`. */
@@ -73,8 +72,7 @@ export interface ComputeProjectExtentsOptions {
 }
 
 /** The result of [[IModelDb.computeProjectExtents]].
- * @see [[ComputeProjectExtentsOptions]].
- * @beta
+ * @public
  */
 export interface ComputedProjectExtents {
   /** The computed extents, excluding any outlier elements. */
@@ -91,6 +89,7 @@ export interface ComputedProjectExtents {
  * @public
  */
 export abstract class IModelDb extends IModel {
+  private _initialized = false;
   protected static readonly _edit = "StandaloneEdit";
   /** Keep track of open imodels to support `tryFind` for RPC purposes */
   private static readonly _openDbs = new Map<string, IModelDb>();
@@ -186,6 +185,20 @@ export abstract class IModelDb extends IModel {
   protected initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     super.initialize(props.rootSubject.name, props);
+    if (this._initialized)
+      return;
+
+    this._initialized = true;
+    const db = this.isBriefcaseDb() || this.isStandaloneDb() ? this : undefined;
+    if (!db || !IpcHost.isValid)
+      return;
+
+    db.onNameChanged.addListener(() => IpcHost.notifyTxns(db, "notifyIModelNameChanged", db.name));
+    db.onRootSubjectChanged.addListener(() => IpcHost.notifyTxns(db, "notifyRootSubjectChanged", db.rootSubject));
+    db.onProjectExtentsChanged.addListener(() => IpcHost.notifyTxns(db, "notifyProjectExtentsChanged", db.projectExtents.toJSON()));
+    db.onGlobalOriginChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGlobalOriginChanged", db.globalOrigin.toJSON()));
+    db.onEcefLocationChanged.addListener(() => IpcHost.notifyTxns(db, "notifyEcefLocationChanged", db.ecefLocation?.toJSON()));
+    db.onGeographicCoordinateSystemChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGeographicCoordinateSystemChanged", db.geographicCoordinateSystem?.toJSON()));
   }
 
   /** Returns true if this is a BriefcaseDb
@@ -662,7 +675,6 @@ export abstract class IModelDb extends IModel {
    * @param options Specifies the level of detail desired in the return value.
    * @returns the computed extents.
    * @note This method does not modify the IModel's stored project extents. @see [[updateProjectExtents]].
-   * @beta
    */
   public computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents {
     const wantFullExtents = true === options?.reportExtentsWithOutliers;
@@ -1148,9 +1160,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Get the clip containment status for the supplied elements
-   * @beta
-   */
+  /** Get the clip containment status for the supplied elements. */
   public async getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
     requestContext.enter();
     return new Promise<GeometryContainmentResponseProps>((resolve, reject) => {
@@ -1167,9 +1177,7 @@ export abstract class IModelDb extends IModel {
     });
   }
 
-  /** Get the mass properties for the supplied elements
-   * @beta
-   */
+  /** Get the mass properties for the supplied elements. */
   public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     requestContext.enter();
     const resultString = this.nativeDb.getMassProperties(JSON.stringify(props));
@@ -1270,7 +1278,6 @@ export abstract class IModelDb extends IModel {
 
   /** Generate graphics for an element or geometry stream.
    * @see [readElementGraphics]($frontend) to convert the result to a [RenderGraphic]($frontend) for display.
-   * @beta
    */
   public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     return generateElementGraphics(request, this);
@@ -1449,10 +1456,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
      * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
+     * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws IModelError if unable to update the geometry guid.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
-     * @beta
      */
     public updateGeometryGuid(modelId: Id64String): void {
       const error = this._iModel.nativeDb.updateModelGeometryGuid(modelId);
@@ -2110,7 +2117,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
  * @public
  */
 export class BriefcaseDb extends IModelDb {
-  /** @beta */
+  /** Manages local changes to this briefcase. */
   public readonly txns = new TxnManager(this);
 
   /** override superclass method */
@@ -2232,8 +2239,10 @@ export class BriefcaseDb extends IModelDb {
         };
         if (localBriefcaseProps.iModelId !== briefcaseProps.iModelId || localBriefcaseProps.contextId !== briefcaseProps.contextId || localBriefcaseProps.changeSetId !== briefcaseProps.changeSetId)
           throw new IModelError(BentleyStatus.ERROR, "Local briefcase does not match the briefcase properties passed in to upgrade");
-        if (!nativeDb.hasPendingTxns())
+        if (!nativeDb.hasPendingTxns()) {
+          await IModelHost.iModelClient.locks.deleteAll(requestContext, briefcaseProps.iModelId, briefcaseProps.briefcaseId);
           return briefcaseProps.changeSetId; // No changes made due to the upgrade
+        }
       } finally {
         nativeDb.closeIModel();
       }
@@ -2592,7 +2601,7 @@ export class SnapshotDb extends IModelDb {
  */
 export class StandaloneDb extends IModelDb {
   public get isStandalone(): boolean { return true; }
-  /** @beta */
+  /** Manages local changes to this briefcase. */
   public readonly txns: TxnManager;
   /** The full path to the standalone iModel file.
    * @deprecated use pathName

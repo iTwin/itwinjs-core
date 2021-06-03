@@ -320,6 +320,20 @@ export class OPCReader extends PointCloudReader {
             }
             /* Fill the point data buffer */
             PointReader.readTilePointsRaw(this.getFileReader(), readRequest, attributeMask, tileIndex, tileBuffer, pointData, fileContents);
+            /* Missing color channel after data load? */
+            if (fileContents.isAvailable() && (pointData.colors == null)) {
+                /* Define the default RGB color (0xE6C60D) */
+                let defaultR: int32 = 230;
+                let defaultG: int32 = 198;
+                let defaultB: int32 = 13;
+                /* Create a default color buffer (BGR sample sequence) */
+                pointData.colors = Uint8Buffer.wrap(new ABuffer(3 * tileIndex.pointCount));
+                for (let i: number = 0; i < tileIndex.pointCount; i++) {
+                    pointData.colors.set(3 * i + 0, defaultB);
+                    pointData.colors.set(3 * i + 1, defaultG);
+                    pointData.colors.set(3 * i + 2, defaultR);
+                }
+            }
             return pointData;
         }
         /* Unknown format */

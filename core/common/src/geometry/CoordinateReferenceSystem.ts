@@ -217,15 +217,25 @@ export class HorizontalCRS implements HorizontalCRSProps {
     data.description = this.description;
     data.source = this.source;
     /* We prefer to use the default undef instead of false value for deprecated in Json */
-    data.deprecated = (this.deprecated === false ? undefined : true);
+    if (this.deprecated)
+      data.deprecated = true;
+
     data.epsg = this.epsg;
     data.datumId = this.datumId;
-    data.datum = this.datum ? this.datum.toJSON() : undefined;
+    if (this.datum)
+      data.datum = this.datum.toJSON();
+
     data.ellipsoidId = this.ellipsoidId;
-    data.ellipsoid = this.ellipsoid ? this.ellipsoid.toJSON() : undefined;
+    if (this.ellipsoid)
+      data.ellipsoid = this.ellipsoid.toJSON();
+
     data.unit = this.unit;
-    data.projection = this.projection ? this.projection.toJSON() : undefined;
-    data.extent = this.extent ? this.extent.toJSON() : undefined;
+    if (this.projection)
+      data.projection = this.projection.toJSON();
+
+    if (this.extent)
+      data.extent = this.extent.toJSON();
+
     return data;
   }
 
@@ -381,16 +391,24 @@ export class GeographicCRS implements GeographicCRSProps {
    * @public */
   public toJSON(): GeographicCRSProps {
     const data: GeographicCRSProps = {};
-    data.horizontalCRS = this.horizontalCRS ? this.horizontalCRS.toJSON() : undefined;
-    data.verticalCRS = this.verticalCRS ? this.verticalCRS.toJSON() : undefined;
-    data.additionalTransform = this.additionalTransform ? this.additionalTransform.toJSON() : undefined;
+    if (this.horizontalCRS)
+      data.horizontalCRS = this.horizontalCRS.toJSON();
+
+    if (this.verticalCRS)
+      data.verticalCRS = this.verticalCRS.toJSON();
+
+    if (this.additionalTransform)
+      data.additionalTransform = this.additionalTransform.toJSON();
+
     return data;
   }
 
   /** Compares two Geographic CRS. It is a strict compare operation not an equivalence test.
    * It takes into account descriptive properties not only mathematical definition properties.
    * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two Geographic CRS for exact equality, comparing both mathematical and descriptive properties.
+   * @public
+   */
   public equals(other: GeographicCRS): boolean {
     if ((this.horizontalCRS === undefined) !== (other.horizontalCRS === undefined))
       return false;

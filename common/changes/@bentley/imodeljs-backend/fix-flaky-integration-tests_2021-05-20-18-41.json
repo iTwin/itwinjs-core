@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+<<<<<<< HEAD:common/changes/@bentley/imodeljs-backend/fix-flaky-integration-tests_2021-05-20-18-41.json
+  "email": "38971167+saemjeon@users.noreply.github.com"
+=======
+  "email": "36768600+scsewall@users.noreply.github.com"
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/imodeljs-backend/imodel-transformer-export-view_2021-05-17-16-44.json
+}
