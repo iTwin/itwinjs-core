@@ -4732,7 +4732,6 @@ export interface MapLayerProps {
     accessKey?: MapLayerKey;
     formatId?: string;
     isBase?: boolean;
-    maxZoom?: number;
     name?: string;
     subLayers?: MapSubLayerProps[];
     transparency?: number;
