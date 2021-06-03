@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Promote various APIs to public.",
+      "comment": "Promote various APIs to public. Add GraphicBuilder.addPrimitive accepting any type of primitive.",
       "type": "none"
     }
   ],
