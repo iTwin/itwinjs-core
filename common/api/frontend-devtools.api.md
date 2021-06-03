@@ -13,6 +13,7 @@ import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { Decorator } from '@bentley/imodeljs-frontend';
 import { EmphasizeElements } from '@bentley/imodeljs-frontend';
 import { EventHandled } from '@bentley/imodeljs-frontend';
+import { FlashSettings } from '@bentley/imodeljs-frontend';
 import { GeometrySummaryOptions } from '@bentley/imodeljs-common';
 import { GpuMemoryLimit } from '@bentley/imodeljs-frontend';
 import { Hilite } from '@bentley/imodeljs-common';
@@ -236,6 +237,20 @@ export class ChangeEmphasisSettingsTool extends ChangeHiliteTool {
     protected apply(vp: Viewport, settings?: Hilite.Settings): void;
     // (undocumented)
     protected getCurrentSettings(vp: Viewport): Hilite.Settings;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ChangeFlashSettingsTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...inputArgs: string[]): boolean;
+    // (undocumented)
+    run(settings?: FlashSettings): boolean;
     // (undocumented)
     static toolId: string;
 }

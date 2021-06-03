@@ -1143,6 +1143,11 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
 }
 
 // @public
+export type Mutable<T> = {
+    -readonly [K in keyof T]: T[K];
+};
+
+// @public
 export class MutableCompressedId64Set implements OrderedId64Iterable {
     [Symbol.iterator](): Iterator<string, any, undefined>;
     constructor(ids?: CompressedId64Set);
