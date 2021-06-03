@@ -177,6 +177,9 @@ internal;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IM
 deprecated;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
 public;FitViewTool 
 internal;Flags
+public;FlashMode
+public;FlashSettings
+public;FlashSettingsOptions = Mutable
 public;FlyViewTool 
 beta;class FormattedQuantityDescription 
 beta;FormatterParserSpecsProvider
