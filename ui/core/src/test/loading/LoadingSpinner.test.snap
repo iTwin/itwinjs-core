@@ -4,7 +4,9 @@ exports[`<LoadingSpinner /> renders correctly 1`] = `
 <div
   className="core-ls"
 >
-  <Spinner />
+  <ProgressRadial
+    indeterminate={true}
+  />
 </div>
 `;
 
@@ -17,7 +19,9 @@ exports[`<LoadingSpinner /> renders with message and position correctly 1`] = `
   >
     test
   </span>
-  <Spinner />
+  <ProgressRadial
+    indeterminate={true}
+  />
 </div>
 `;
 
@@ -25,7 +29,9 @@ exports[`<LoadingSpinner /> renders with message correctly 1`] = `
 <div
   className="core-ls"
 >
-  <Spinner />
+  <ProgressRadial
+    indeterminate={true}
+  />
   <span
     className="ls-message-bottom"
   >

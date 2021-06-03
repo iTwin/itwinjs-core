@@ -258,7 +258,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 
   return (
     <div className="map-manager-header">
-      {(loading || loadingSources) && <UiCore.LoadingSpinner size={UiCore.SpinnerSize.Medium} message={loadingMapSources} />}
+      {(loading || loadingSources) && <UiCore.LoadingSpinner message={loadingMapSources} />}
       <div className="map-manager-source-listbox-header">
         <Input type="text" className="map-manager-source-list-filter"
           placeholder={placeholderLabel}
@@ -297,7 +297,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
                     <UiCore.Button
                       className="map-source-list-entry-button"
                       title={removeLayerDefButtonTitle}
-                      onClick={(event) => {onItemRemoveButtonClicked(source, event);}}>
+                      onClick={(event) => { onItemRemoveButtonClicked(source, event); }}>
                       <UiCore.Icon iconSpec="icon-delete" />
                     </UiCore.Button>
                   </>}

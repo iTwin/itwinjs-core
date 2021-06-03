@@ -293,8 +293,11 @@ public;SmallText(props: TextProps): JSX.Element
 deprecated;SmallText(props: TextProps): JSX.Element
 public;SortDirection
 public;Spinner 
+deprecated;Spinner 
 public;SpinnerProps
+deprecated;SpinnerProps
 public;SpinnerSize
+deprecated;SpinnerSize
 public;SplitButton 
 internal;SplitButtonActionType
 public;SplitButtonProps 

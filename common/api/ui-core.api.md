@@ -24,6 +24,7 @@ import { InputActionMeta } from 'react-select/src/types';
 import { InputProps as InputProps_2 } from '@itwin/itwinui-react';
 import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
+import { ProgressRadialProps } from '@itwin/itwinui-react';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import * as ReactAutosuggest from 'react-autosuggest';
@@ -1264,7 +1265,7 @@ export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
 }
 
 // @public
-export interface LoadingSpinnerProps extends SpinnerProps {
+export interface LoadingSpinnerProps extends ProgressRadialProps {
     message?: string;
     messageOnTop?: boolean;
 }
@@ -2098,19 +2099,19 @@ export enum SortDirection {
     NoSort = 0
 }
 
-// @public
+// @public @deprecated
 export class Spinner extends React.PureComponent<SpinnerProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface SpinnerProps {
     size?: SpinnerSize;
     sizeClass?: string;
 }
 
-// @public
+// @public @deprecated
 export enum SpinnerSize {
     Large = 2,
     Medium = 1,

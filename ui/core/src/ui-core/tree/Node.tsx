@@ -9,9 +9,8 @@
 import "./Node.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Checkbox, CheckboxProps } from "@itwin/itwinui-react";
+import { Checkbox, CheckboxProps, ProgressRadial } from "@itwin/itwinui-react";
 import { CheckBoxState } from "../enums/CheckBoxState";
-import { Spinner, SpinnerSize } from "../loading/Spinner";
 import { CommonProps } from "../utils/Props";
 import { Omit } from "../utils/typeUtils";
 import { ExpansionToggle } from "./ExpansionToggle";
@@ -98,7 +97,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
     if (!this.props.isLoading && this.props.isLeaf)
       offset += EXPANSION_TOGGLE_WIDTH; // Add expansion toggle/loader width if they're not rendered
 
-    const loader = this.props.isLoading ? (<div className="loader"><Spinner size={SpinnerSize.Small} /></div>) : undefined;
+    const loader = this.props.isLoading ? (<div className="loader"><ProgressRadial size="x-small" indeterminate /></div>) : undefined;
 
     let checkbox: React.ReactNode;
     if (this.props.checkboxProps) {

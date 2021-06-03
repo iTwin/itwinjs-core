@@ -14,7 +14,7 @@ import { NodeKey } from "@bentley/presentation-common";
 import { DEPRECATED_treeWithFilteringSupport } from "@bentley/presentation-components";
 import { DEPRECATED_Tree, FilteringInput, SelectionMode, TreeNodeItem } from "@bentley/ui-components";
 import {
-  CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, SpinnerSize, UiCore,
+  CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, UiCore,
 } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ListItem, ListItemType } from "../ListPicker";
@@ -474,7 +474,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   };
 
   private _getSpinner() {
-    return <LoadingSpinner size={SpinnerSize.Large} />;
+    return <LoadingSpinner size="large" />;
   }
 
   private _getTree() {

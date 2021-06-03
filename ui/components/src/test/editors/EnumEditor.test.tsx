@@ -152,4 +152,21 @@ describe("<EnumEditor />", () => {
     PropertyEditorManager.deregisterDataController("myData");
   });
 
+  it("keyDown should propagate up", async () => {
+    const propertyRecord = TestUtils.createEnumProperty("Test", 0);
+    const spyParent = sinon.spy();
+    const wrapper = render(
+      <div onKeyDown={spyParent} role="presentation">
+        <EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />
+      </div>
+    );
+    await TestUtils.flushAsyncOperations();
+    const selectNode = wrapper.getByTestId("components-select-editor");
+    expect(selectNode).not.to.be.null;
+
+    fireEvent.keyDown(selectNode, { key: SpecialKey.PageDown });
+    await TestUtils.flushAsyncOperations();
+    expect(spyParent.called).to.be.true;
+  });
+
 });

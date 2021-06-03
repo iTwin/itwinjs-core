@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Spinner, SpinnerSize } from "@bentley/ui-core";
+import { ProgressRadial } from "@itwin/itwinui-react";
 
 /**
  * Props for [[DelayedSpinner]] component.
@@ -16,7 +16,7 @@ import { Spinner, SpinnerSize } from "@bentley/ui-core";
 export interface DelayedSpinnerProps {
   loadStart?: Date;
   delay?: number;
-  size?: SpinnerSize;
+  size?: "" | "x-small" | "small" | "large";
 }
 
 /**
@@ -41,7 +41,7 @@ export function DelayedSpinner(props: DelayedSpinnerProps) {
   if (diff < delay)
     return null;
 
-  return (<Spinner size={props.size ?? SpinnerSize.Large} />);
+  return (<ProgressRadial indeterminate size={props.size ?? "large"} />);
 }
 
 const useForceUpdate = () => {

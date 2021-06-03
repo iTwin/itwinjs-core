@@ -8,12 +8,12 @@
 
 import "./LoadingSpinner.scss";
 import * as React from "react";
-import { Spinner, SpinnerProps } from "./Spinner";
+import { ProgressRadial, ProgressRadialProps } from "@itwin/itwinui-react";
 
 /** Properties for [[LoadingSpinner]] component
  * @public
  */
-export interface LoadingSpinnerProps extends SpinnerProps {
+export interface LoadingSpinnerProps extends ProgressRadialProps {
   /** Message (text) displayed */
   message?: string;
   /** Position the message above or below the spinner (defaults to bottom) */
@@ -30,11 +30,12 @@ export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
   };
 
   public render() {
+    const { message, messageOnTop, ...rest } = this.props;
     return (
       <div className="core-ls">
-        {(this.props.message && this.props.messageOnTop) && <span className="ls-message-top">{this.props.message}</span>}
-        <Spinner size={this.props.size} sizeClass={this.props.sizeClass} />
-        {(this.props.message && !this.props.messageOnTop) && <span className="ls-message-bottom">{this.props.message}</span>}
+        {(message && messageOnTop) && <span className="ls-message-top">{message}</span>}
+        <ProgressRadial {...rest} indeterminate />
+        {(message && !messageOnTop) && <span className="ls-message-bottom">{message}</span>}
       </div>
     );
   }

@@ -765,14 +765,18 @@ export class ComponentExamplesProvider {
     return {
       title: "Loading",
       examples: [
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("Small Spinner", undefined, <Spinner size={SpinnerSize.Small} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("Medium Spinner", undefined, <Spinner size={SpinnerSize.Medium} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("Large Spinner", undefined, <Spinner size={SpinnerSize.Large} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("XLarge Spinner", undefined, <Spinner size={SpinnerSize.XLarge} />),
-        createComponentExample("Small LoadingSpinner", undefined, <LoadingSpinner size={SpinnerSize.Small} message="This is a Small LoadingSpinner" />),
-        createComponentExample("Medium LoadingSpinner", undefined, <LoadingSpinner size={SpinnerSize.Medium} message="This is a Medium LoadingSpinner" />),
-        createComponentExample("Large LoadingSpinner", undefined, <LoadingSpinner size={SpinnerSize.Large} message="This is a Large LoadingSpinner" />),
-        createComponentExample("XLarge LoadingSpinner", undefined, <LoadingSpinner size={SpinnerSize.XLarge} message="This is a XLarge LoadingSpinner" />),
+        createComponentExample("X-Small LoadingSpinner", undefined, <LoadingSpinner size="x-small" message="This is a X-Small LoadingSpinner" />),
+        createComponentExample("Small LoadingSpinner", undefined, <LoadingSpinner size="small" message="This is a Small LoadingSpinner" />),
+        createComponentExample("Medium LoadingSpinner", undefined, <LoadingSpinner size="" message="This is a Medium LoadingSpinner" />),
+        createComponentExample("Large LoadingSpinner", undefined, <LoadingSpinner size="large" message="This is a Large LoadingSpinner" />),
         createComponentExample("LoadingStatus", undefined, <LoadingStatus message="Loading status..." percent={50} />),
         createComponentExample("Basic LoadingPrompt", undefined, <LoadingPrompt title="Title" />),
         createComponentExample("LoadingPrompt with message", undefined, <LoadingPrompt title="Title" message="This is the message" />),
@@ -865,9 +869,13 @@ export class ComponentExamplesProvider {
         createComponentExample("Success ProgressSpinner", "success prop", <ProgressSpinner success />),
         createComponentExample("Error ProgressSpinner", "error prop", <ProgressSpinner error />),
         createComponentExample("ProgressSpinner with value", "display value of 63", <ProgressSpinner value={63}>63</ProgressSpinner>),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("ProgressSpinner Small", "width/height of 16", <ProgressSpinner indeterminate size={SpinnerSize.Small} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("ProgressSpinner Medium", "width/height of 32", <ProgressSpinner indeterminate size={SpinnerSize.Medium} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("ProgressSpinner Large", "width/height of 64", <ProgressSpinner indeterminate size={SpinnerSize.Large} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("ProgressSpinner XLarge", "width/height of 96", <ProgressSpinner indeterminate size={SpinnerSize.XLarge} />),
         createComponentExample("ProgressSpinner with style", "width/height of 120",
           <div><ProgressSpinner indeterminate style={{ display: "inline-block", width: 120, height: 120 }} />... Loading</div>),

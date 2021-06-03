@@ -16,7 +16,7 @@ import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedLi
 // bentley imports
 import { Guid, using } from "@bentley/bentleyjs-core";
 import {
-  CheckBoxInfo, CheckBoxState, CommonProps, NodeCheckboxRenderer, shallowDiffers, Spinner, SpinnerSize, Tree as TreeBase, TreeNodePlaceholder,
+  CheckBoxInfo, CheckBoxState, CommonProps, NodeCheckboxRenderer, shallowDiffers, Tree as TreeBase, TreeNodePlaceholder,
 } from "@bentley/ui-core";
 import { getPropertyRecordAsString } from "../../../common/getPropertyRecordAsString";
 import {
@@ -41,6 +41,7 @@ import {
   BeInspireTree, BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNode, toNodes,
 } from "./BeInspireTree";
 import { TreeNode, TreeNodeProps } from "./Node";
+import { ProgressRadial } from "@itwin/itwinui-react";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -882,7 +883,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     if (!this.state.modelReady) {
       return (
         <div className="components-tree-loader">
-          <Spinner size={SpinnerSize.Large} />
+          <ProgressRadial size="large" indeterminate />
         </div>
       );
     }

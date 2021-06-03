@@ -6213,12 +6213,12 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
 }
 
 // @internal
-export class Toolbar extends React.Component<ToolbarProps, State_2> {
+export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     constructor(props: ToolbarProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentDidUpdate(prevProps: ToolbarProps, _prevState: State_2): void;
+    componentDidUpdate(prevProps: ToolbarProps, _prevState: ToolbarState): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
