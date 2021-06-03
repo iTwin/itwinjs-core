@@ -25,14 +25,14 @@ export interface WidgetProviderProps {
 
 /** @internal */
 export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetProvider(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  return (props.widget ?
+  return (
     <WidgetStateContext.Provider value={props.widget}>
       <WidgetIdContext.Provider value={props.widget.id}>
         <ActiveTabIdContext.Provider value={props.widget.activeTabId}>
           {props.children}
         </ActiveTabIdContext.Provider>
       </WidgetIdContext.Provider>
-    </WidgetStateContext.Provider> : null
+    </WidgetStateContext.Provider>
   );
 });
 
