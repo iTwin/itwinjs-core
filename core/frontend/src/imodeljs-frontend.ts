@@ -19,6 +19,7 @@ export * from "./DrawingViewState";
 export * from "./EditingFunctions";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
+export * from "./EmphasizeElementsProps";
 export * from "./EntityState";
 export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
@@ -26,6 +27,7 @@ export * from "./FeatureTrackingManager";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
 export * from "./FrontendRequestContext";
+export * from "./FrontendHubAccess";
 export * from "./Frustum2d";
 export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
@@ -237,4 +239,8 @@ export * from "./LocalhostIpcApp";
 /**
  * @docs-group-description MapLayerFormatRegistry
  * Class for working with supported map layer formats.
+ */
+/**
+ * @docs-group-description HubAccess
+ * APIs for working with IModelHub
  */
