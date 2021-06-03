@@ -1004,7 +1004,7 @@ export interface Id64sRulesetVariableJSON extends RulesetVariableBaseJSON {
     // (undocumented)
     type: VariableValueTypes.Id64Array;
     // (undocumented)
-    value: CompressedId64Set;
+    value: Id64String[] | CompressedId64Set;
 }
 
 // @public
@@ -2750,7 +2750,7 @@ export interface VariablesGroup {
 export type VariableValue = boolean | string | number | number[] | Id64String | Id64String[];
 
 // @public
-export type VariableValueJSON = boolean | string | number | number[] | Id64String | CompressedId64Set;
+export type VariableValueJSON = boolean | string | number | number[] | Id64String | Id64String[] | CompressedId64Set;
 
 // @public
 export enum VariableValueType {

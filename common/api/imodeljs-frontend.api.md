@@ -1728,11 +1728,6 @@ export type BuilderOptions = GraphicBuilderOptions & {
 };
 
 // @internal (undocumented)
-export type BuilderOptions = GraphicBuilderOptions & {
-    placement: Transform;
-};
-
-// @internal (undocumented)
 export type CachedDecoration = {
     type: "graphic";
     graphicType: GraphicType;
@@ -3391,7 +3386,6 @@ export interface FrameStats {
     onRenderOpaqueTime: number;
     opaqueTime: number;
     overlaysTime: number;
-    sceneTime: number;
     screenspaceEffectsTime: number;
     setupViewTime: number;
     shadowsTime: number;
@@ -3412,9 +3406,6 @@ export class FrameStatsCollector {
     endFrame(wasFrameDrawn?: boolean): void;
     // (undocumented)
     endTime(entry: keyof FrameStats): void;
-    set onFrameStatsReady(ev: OnFrameStatsReadyEvent | undefined);
-    // (undocumented)
-    get onFrameStatsReady(): OnFrameStatsReadyEvent | undefined;
     }
 
 // @public
@@ -6837,9 +6828,6 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
 // @alpha
 export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
 
-// @alpha
-export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
-
 // @internal
 export class OnScreenTarget extends Target {
     constructor(canvas: HTMLCanvasElement);
@@ -6889,7 +6877,7 @@ export class OrbitGtTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
-    getEcefTranform(): Promise<Transform | undefined>;
+    getEcefTransform(): Promise<Transform | undefined>;
     // (undocumented)
     get is3d(): boolean;
     // (undocumented)
@@ -7128,11 +7116,6 @@ export namespace PerModelCategoryVisibility {
 export class PhysicalModelState extends SpatialModelState {
     // @internal (undocumented)
     static get className(): string;
-}
-
-// @public
-export interface PickableGraphicOptions extends BatchOptions {
-    id: Id64String;
 }
 
 // @public
@@ -8141,7 +8124,6 @@ export abstract class RenderSystem implements IDisposable {
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
-    abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     // @internal
@@ -8330,8 +8312,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
     setHiliteSet(_hilited: HiliteSet): void;
-    // (undocumented)
-    setOnFrameStats(_event: OnFrameStatsReadyEvent): void;
     setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
@@ -9703,8 +9683,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
     setHiliteSet(hilite: HiliteSet): void;
-    // (undocumented)
-    setOnFrameStats(event: OnFrameStatsReadyEvent): void;
     // (undocumented)
     get shadowFrustum(): Frustum | undefined;
     // (undocumented)
@@ -12188,8 +12166,6 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     forEachMapTreeRef(func: (ref: TileTreeReference) => void): void;
     // @internal (undocumented)
-    forEachMapTreeRef(func: (ref: TileTreeReference) => void): void;
-    // @internal (undocumented)
     forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
     // @internal (undocumented)
     protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void;
@@ -12267,10 +12243,6 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // @internal (undocumented)
-    mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined;
-    // @internal (undocumented)
-    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
-    // @internal (undocumented)
     markSelectionSetDirty(): void;
     get neverDrawn(): Id64Set | undefined;
     npcToView(pt: Point3d, out?: Point3d): Point3d;
@@ -12297,8 +12269,6 @@ export abstract class Viewport implements IDisposable {
     readonly onViewedModelsChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewportChanged: BeEvent<(vp: Viewport, changed: ChangeFlags) => void>;
     readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
-    // @internal (undocumented)
-    get overlayMap(): MapTileTreeReference | undefined;
     // @internal (undocumented)
     get overlayMap(): MapTileTreeReference | undefined;
     overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;

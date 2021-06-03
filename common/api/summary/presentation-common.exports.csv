@@ -372,6 +372,6 @@ public;ValuesMapJSON
 public;Variable
 public;VariablesGroup
 public;VariableValue = boolean | string | number | number[] | Id64String | Id64String[]
-public;VariableValueJSON = boolean | string | number | number[] | Id64String | CompressedId64Set
+public;VariableValueJSON = boolean | string | number | number[] | Id64String | Id64String[] | CompressedId64Set
 public;VariableValueType
 public;VariableValueTypes

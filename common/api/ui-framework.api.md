@@ -6599,8 +6599,6 @@ export interface UiDataProvidedDialogProps {
 export class UiFramework {
     // @beta (undocumented)
     static get backstageManager(): BackstageManager;
-    // @alpha (undocumented)
-    static get ChildWindowManager(): ChildWindowManager;
     // @beta (undocumented)
     static get childWindowManager(): ChildWindowManager;
     // @beta (undocumented)
