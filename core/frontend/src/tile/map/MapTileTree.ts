@@ -491,7 +491,7 @@ class MapTreeSupplier implements TileTreeSupplier {
     if (undefined === terrainProvider)
       return undefined;
     const loader = new MapTileLoader(iModel, modelId, bimElevationBias, terrainProvider);
-    const ecefToDb = iModel.getMapEcefToDb(bimElevationBias);
+    const ecefToDb = iModel.backgroundMapLocation.getMapEcefToDb(bimElevationBias);
 
     if (undefined === loader) {
       assert(false, "Invalid Terrain Provider");

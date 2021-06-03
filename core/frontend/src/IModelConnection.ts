@@ -9,7 +9,7 @@
 import {
   assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@bentley/geometry-core";
+import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
@@ -17,15 +17,15 @@ import {
   ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
   SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
+import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
-import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
-import { BingElevationProvider } from "./tile/internal";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
+import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tiles } from "./Tiles";
@@ -73,12 +73,14 @@ export abstract class IModelConnection extends IModel {
   public readonly subcategories: SubCategoriesCache;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
+  /** The map location.
+   * @internal
+   */
+  public readonly backgroundMapLocation = new BackgroundMapLocation();
   /** The Geographic location services available for this iModelConnection
    * @internal
    */
   public readonly geoServices: GeoServices;
-  /** Provider for altitude data (calculated at center of project) */
-  public readonly altitudeProvider: ProjectAltitudeProvider;
   /** @internal Whether GCS has been disabled for this iModelConnection. */
   protected _gcsDisabled = false;
   /** @internal Return true if a GCS is not defined for this iModelConnection; also returns true if GCS is defined but disabled. */
@@ -226,7 +228,10 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
-    this.altitudeProvider = new ProjectAltitudeProvider(this);
+
+    this.onEcefLocationChanged.addListener(() => {
+      this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
+    });
 
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
@@ -551,20 +556,6 @@ export abstract class IModelConnection extends IModel {
       if (vp.view.isSpatialView() && vp.iModel === this)
         vp.invalidateController();
     }
-  }
-  /** @internal */
-  public getMapEcefToDb(bimElevationBias: number): Transform {
-    if (!this.ecefLocation)
-      return Transform.createIdentity();
-
-    const mapEcefToDb = this.ecefLocation.getTransform().inverse();
-    if (!mapEcefToDb) {
-      assert(false);
-      return Transform.createIdentity();
-    }
-    mapEcefToDb.origin.z += bimElevationBias;
-
-    return mapEcefToDb;
   }
 }
 
@@ -988,6 +979,8 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       if (undefined === ctor)
         throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps);
 
+      await this._iModel.backgroundMapLocation.initialize(this._iModel);
+
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
 
@@ -1023,34 +1016,6 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       new Uint32Array(val.buffer, 16, 2).set([low32, high32]); // viewId is 8 bytes starting at offset 16
       val.set(thumbnail.image, 24); // image data at offset 24
       return IModelWriteRpcInterface.getClientForRouting(this._iModel.routingContext.token).saveThumbnail(this._iModel.getRpcProps(), val);
-    }
-  }
-}
-
-/** Provide altitude information (calculated at project center)
- * @public
- */
-export class ProjectAltitudeProvider {
-  /** Difference between  geodetic and sea level altitude at project center */
-  public get geodeticToSeaLevel() {
-    return this._geodeticToSeaLevel;
-  }
-
-  /** Geodetic altitude in meters at project center */
-  public get projectCenterAltitude() {
-    return this._projectCenterAltitude;
-  }
-
-  private _geodeticToSeaLevel: number | undefined;
-  private _projectCenterAltitude: number | undefined;
-
-  constructor(iModel: IModelConnection) {
-    if (iModel.isGeoLocated) {
-      const elevationProvider = new BingElevationProvider();
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      elevationProvider.getHeightValue(iModel.projectExtents.center, iModel, true).then((elevation) => this._projectCenterAltitude = elevation);
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel).then((geodeticToSeaLevel) => this._geodeticToSeaLevel = geodeticToSeaLevel);
     }
   }
 }

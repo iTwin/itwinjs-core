@@ -126,15 +126,9 @@ public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
-<<<<<<< HEAD
 public;DynamicGraphicsRequest2dProps 
 public;DynamicGraphicsRequest3dProps 
 public;DynamicGraphicsRequestProps 
-=======
-beta;DynamicGraphicsRequest2dProps 
-beta;DynamicGraphicsRequest3dProps 
-beta;DynamicGraphicsRequestProps 
->>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff
 public;Easing:
 public;EasingFunction = (k: number) => number
 public;EcefLocation 
@@ -249,11 +243,7 @@ internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
 public;GraphicParams
-<<<<<<< HEAD
 public;GraphicsRequestProps
-=======
-beta;GraphicsRequestProps
->>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff
 public;GridFileDefinition 
 public;GridFileDefinitionProps
 public;GridFileDirection = "Direct" | "Inverse"
@@ -481,13 +471,8 @@ public;RenderSchedule
 internal;Interval
 public;class RenderTexture 
 public;RenderTexture
-<<<<<<< HEAD
 public;RenderTimelineLoadProps
 public;RenderTimelineProps 
-=======
-beta;RenderTimelineLoadProps
-beta;RenderTimelineProps 
->>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff
 public;RepositoryLinkProps 
 public;RequestNewBriefcaseProps
 public;ResponseLike 
@@ -597,11 +582,7 @@ internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
 public;TextStringProps
-<<<<<<< HEAD
-alpha;TextureLoadProps
-=======
 public;TextureLoadProps
->>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff
 public;TextureMapping
 public;TextureMapping
 public;TextureMapProps
@@ -644,11 +625,7 @@ public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
-<<<<<<< HEAD
 public;TypeOfChange
-=======
-internal;TypeOfChange
->>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff
 public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void
 beta;UpgradeOptions

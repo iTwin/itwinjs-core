@@ -1606,8 +1606,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1507328,
-    Major = 23,
+    Combined = 1572864,
+    Major = 24,
     Minor = 0
 }
 
@@ -2021,7 +2021,6 @@ export class EcefLocation implements EcefLocationProps {
     isAlmostEqual(other: EcefLocation): boolean;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
-    readonly xVector?: Vector3d;
     // (undocumented)
     toJSON(): EcefLocationProps;
 }
@@ -2031,9 +2030,6 @@ export interface EcefLocationProps {
     cartographicOrigin?: LatLongAndHeight;
     orientation: YawPitchRollProps;
     origin: XYZProps;
-    xVector?: XYZProps;
-    // (undocumented)
-    yVector?: XYZProps;
 }
 
 // @public
@@ -2987,7 +2983,6 @@ export interface GeodeticTransformProps {
 export class GeographicCRS implements GeographicCRSProps {
     constructor(data?: GeographicCRSProps);
     readonly additionalTransform?: AdditionalTransform;
-    // @internal
     equals(other: GeographicCRS): boolean;
     static fromJSON(data: GeographicCRSProps): GeographicCRS;
     readonly horizontalCRS?: HorizontalCRS;
@@ -3510,48 +3505,6 @@ export interface GraphicsRequestProps {
     readonly toleranceLog10: number;
     // @alpha
     readonly treeFlags?: TreeFlags;
-}
-
-// @public
-export class GridFileDefinition implements GridFileDefinitionProps {
-    constructor(data?: GridFileDefinitionProps);
-    readonly direction: GridFileDirection;
-    // @internal
-    equals(other: GridFileDefinition): boolean;
-    readonly fileName: string;
-    readonly format: GridFileFormat;
-    static fromJSON(data: GridFileDefinitionProps): GridFileDefinition;
-    toJSON(): GridFileDefinitionProps;
-}
-
-// @public
-export interface GridFileDefinitionProps {
-    direction: GridFileDirection;
-    fileName: string;
-    format: GridFileFormat;
-}
-
-// @public
-export type GridFileDirection = "Direct" | "Inverse";
-
-// @public
-export type GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN";
-
-// @public
-export class GridFileTransform implements GridFileTransformProps {
-    constructor(data?: GridFileTransformProps);
-    // @internal
-    equals(other: GridFileTransform): boolean;
-    readonly fallback?: PositionalVectorTransform;
-    readonly files: GridFileDefinition[];
-    static fromJSON(data: GridFileTransformProps): GridFileTransform;
-    toJSON(): GridFileTransformProps;
-}
-
-// @public
-export interface GridFileTransformProps {
-    fallback?: PositionalVectorTransformProps;
-    files: GridFileDefinitionProps[];
 }
 
 // @public
@@ -8347,9 +8300,6 @@ export enum TypeOfChange {
     Placement = 4,
     Property = 1
 }
-
-// @public
-export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 // @public
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
