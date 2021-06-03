@@ -8,24 +8,29 @@
 
 import * as React from "react";
 import { SendBack } from "./SendBack";
-import { ActiveTabIdContext, WidgetIdContext } from "./Widget";
+import { ActiveTabIdContext, useActiveTab, WidgetIdContext } from "./Widget";
 import { toolSettingsTabId } from "../base/NineZoneState";
 import { Dock } from "./Dock";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel";
 import { PinToggle } from "./PinToggle";
+import { PopoutToggle } from "./PopoutToggle";
 
 /** @internal */
 export const TabBarButtons = React.memo(function TabBarButtons() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const isToolSettings = useIsToolSettingsTab();
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   const isMainPanelWidget = useIsMainPanelWidget();
+  const activeTab = useActiveTab();
+  // istanbul ignore next
+  const canPopout = activeTab?.canPopout ?? false;
   return (
-    <>
+    <div className="nz-widget-tabBarButtons">
+      {canPopout && <PopoutToggle />}
       {floatingWidgetId && !isToolSettings && <SendBack />}
       {isToolSettings && <Dock />}
       {isMainPanelWidget && <PinToggle />}
-    </>
+    </div>
   );
 });
 

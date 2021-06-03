@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-authorization-client",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+<<<<<<< HEAD:common/changes/@bentley/backend-itwin-client/oidc-timeout_2021-04-02-09-33.json
+  "packageName": "@bentley/backend-itwin-client",
+  "email": "66480813+paulius-valiunas@users.noreply.github.com"
+=======
+  "packageName": "@bentley/frontend-authorization-client",
+  "email": "33296803+kabentley@users.noreply.github.com"
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/frontend-authorization-client/promote-BriefcaseManager_2021-05-13-16-40.json
+}

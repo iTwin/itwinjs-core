@@ -548,9 +548,11 @@ export class ViewManager implements Iterable<ScreenViewport> {
       vp.refreshForModifiedModels(modelIds);
   }
 
-  /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.
-   * Setting numSamples to 1 turns it off, setting numSamples > 1 turns it on with that many samples.
-   * @beta
+  /** The number of [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) samples to be used when rendering the contents of all viewports
+   * registered with the ViewManager.
+   * Must be an integer greater than zero. A value of 1 means antialiasing is disabled. A higher number of samples correlates generally to a higher quality image but
+   * is also more demanding on the graphics hardware.
+   * This setting will also be applied to subsequently-registered viewports.
    */
   public setAntialiasingAllViews(numSamples: number): void {
     for (const vp of this)

@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+<<<<<<< HEAD:common/changes/@bentley/imodeljs-common/imodelprops-changed-event_2021-05-21-13-25.json
+      "comment": "Add events for changes to IModel properties.",
+=======
+      "comment": "Add RenderSchedule.ScriptBuilder for assembling a new schedule script.",
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/imodeljs-common/schedule-script-api_2021-05-10-18-35.json
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "22944042+pmconne@users.noreply.github.com"
+}

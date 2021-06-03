@@ -81,7 +81,7 @@ describe("usePresentationNodeLoader", () => {
     expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
   });
 
-  it("creates new nodeLoader when rulesetId changes", () => {
+  it("creates new nodeLoader when ruleset changes", () => {
     const { result, rerender } = renderHook(
       (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
       { initialProps },
@@ -281,6 +281,30 @@ describe("usePresentationNodeLoader", () => {
       onIModelHierarchyChanged.raiseEvent({ rulesetId, updateInfo: [], imodelKey });
 
       expect(result.current.nodeLoader).to.eq(oldNodeLoader);
+    });
+
+    it("creates a fresh `TreeModelSource` when nodeLoader changes", async () => {
+      const { result, rerender, waitForNextUpdate } = renderHook(
+        (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
+        { initialProps: { ...initialProps, ruleset: "initial" } },
+      );
+      const initialModelSource = result.current.nodeLoader.modelSource;
+      expectTree(initialModelSource.getModel(), []);
+      initialModelSource.modifyModel((treeModel) => treeModel.insertChild(undefined, createNodeInput("test"), 0));
+
+      // Update tree so that `info.treeModel` is not undefined
+      presentationManagerMock
+        .setup(async (x) => x.compareHierarchies(moq.It.isAny()))
+        .returns(async () => [{ type: "Update", target: createNode("test").key, changes: createNode("test_updated") }]);
+      onRulesetModified.raiseEvent(
+        new RegisteredRuleset({ id: "initial", rules: [] }, "", () => { }),
+        { id: "initial", rules: [] },
+      );
+      await waitForNextUpdate();
+
+      rerender({ ...initialProps, ruleset: "updated" });
+      const newModelSource = result.current.nodeLoader.modelSource;
+      expectTree(newModelSource.getModel(), []);
     });
 
     it("sends visible expanded nodes when comparing hierarchies due to ruleset modification", async () => {
