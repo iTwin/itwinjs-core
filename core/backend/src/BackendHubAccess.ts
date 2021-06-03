@@ -19,6 +19,7 @@ export type LocalDirName = string;
 
 /** A string that identifies a changeset.
  * @note this string is *not* a Guid. It is generated internally based on the content of the changeset.
+ * @internal
  */
 export type ChangesetId = string;
 
@@ -71,7 +72,7 @@ export type ChangesetRange =
 
 /**
  * The properties of an iModel server lock.
- * @internal
+ * @beta
  */
 export interface LockProps {
   /** The type of lock requested or held */
@@ -133,6 +134,7 @@ export interface ChangesetRangeArg extends IModelIdArg {
   range?: ChangesetRange;
 }
 
+/** @internal */
 export type CheckPointArg = DownloadRequest;
 
 /** Methods for accessing services of IModelHub from the backend.

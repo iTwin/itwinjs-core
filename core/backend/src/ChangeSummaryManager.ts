@@ -10,7 +10,7 @@ import * as path from "path";
 import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
 import { ChangedValueState, ChangeOpCode, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangesetFileProps } from "./BackendHubAccess";
+import { ChangesetFileProps, ChangesetId } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
@@ -257,7 +257,8 @@ export class ChangeSummaryManager {
     }
   }
 
-  public static async downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: string, end: string): Promise<ChangesetFileProps[]> {
+  /** @internal */
+  public static async downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: ChangesetId, end: ChangesetId): Promise<ChangesetFileProps[]> {
     requestContext.enter();
 
     const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: ctx.iModelId, range: { first, end } });

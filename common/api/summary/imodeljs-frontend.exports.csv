@@ -85,6 +85,7 @@ public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Po
 public;CategorySelectorState 
 internal;ChangeFlag
 public;ChangeFlags
+public;ChangeSetId = string
 public;ChangeViewedModel2dOptions
 beta;CheckboxFormatPropEditorSpec 
 public;CheckpointConnection 
@@ -190,6 +191,7 @@ internal;FrameCameraViewData
 internal;FrameRenderData
 alpha;FrameStats
 internal;FrameStatsCollector
+public;FrontendHubAccess
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
@@ -279,6 +281,8 @@ public;IModelAppOptions
 public;class IModelConnection 
 public;IModelConnection
 internal;IModelFrameLifecycle
+internal;IModelHubFrontend
+public;IModelIdArg
 public;IModelRoutingContext
 internal;IModelTile 
 internal;IModelTileContent 

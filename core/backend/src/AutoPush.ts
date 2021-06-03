@@ -80,6 +80,7 @@ export enum AutoPushEventType {
 
 /** The signature of an AutoPush event handler.
  * @beta
+ * @deprecated auto-push is no longer supported and will be removed in 3.0.
  */
 export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
 

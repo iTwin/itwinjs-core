@@ -13,13 +13,16 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { FrontendFeatureUsageTelemetryClient } from "@bentley/usage-logging-client";
 import { IModelApp } from "./imodeljs-frontend";
 
+/** @internal */
 export type ChangeSetId = string;
 
+/** @internal */
 export interface IModelIdArg {
   iModelId: GuidString;
   requestContext: AuthorizedClientRequestContext;
 }
 
+/** @internal */
 export interface FrontendHubAccess {
   getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangeSetId>;
   getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangeSetId>;

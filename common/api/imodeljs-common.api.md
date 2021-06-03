@@ -4216,12 +4216,17 @@ export interface IModelTileTreeProps extends TileTreeProps {
 // @public
 export class IModelVersion {
     static asOfChangeSet(changeSetId: string): IModelVersion;
+    // @deprecated
     evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
     // @deprecated
     static fromJson(jsonObj: any): IModelVersion;
     getAsOfChangeSet(): GuidString | undefined;
+    // @internal
+    static getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<GuidString>;
+    // @internal
+    static getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString>;
     getName(): string | undefined;
     get isFirst(): boolean;
     get isLatest(): boolean;

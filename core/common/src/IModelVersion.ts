@@ -129,16 +129,17 @@ export class IModelVersion {
       return this._afterChangeSetId;
 
     if (this._latest)
-      return IModelVersion.getLatestChangeSetId(requestContext, imodelClient, iModelId);
+      return IModelVersion.getLatestChangeSetId(requestContext, imodelClient, iModelId); // eslint-disable-line deprecation/deprecation
 
     if (this._versionName)
-      return IModelVersion.getChangeSetFromNamedVersion(requestContext, imodelClient, iModelId, this._versionName);
+      return IModelVersion.getChangeSetFromNamedVersion(requestContext, imodelClient, iModelId, this._versionName); // eslint-disable-line deprecation/deprecation
 
     throw new IModelError(BentleyStatus.ERROR, "Invalid version");
   }
 
   /** Gets the last change set that was applied to the imodel
-   * @internal
+   * @internal - public only so tests can catch calls to it and fail.
+   * @deprecated use IModelHost/IModelApp hubAccess.getChangesetIdFromVersion
    */
   public static async getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString> {
     const changeSets: ChangeSet[] = await imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
@@ -146,7 +147,8 @@ export class IModelVersion {
   }
 
   /** Get the change set from the specified named version
-   * @internal
+   * @internal - public only so tests can catch calls to it and fail.
+   * @deprecated use IModelHost/IModelApp hubAccess.getChangesetIdFromVersion
    */
   public static async getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<GuidString> {
     const versions = await imodelClient.versions.get(requestContext, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));

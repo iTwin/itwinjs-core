@@ -27,7 +27,7 @@ import { SQLiteDb } from "./SQLiteDb";
 // cspell:ignore rqctx req's cpid cctl stmts specid
 
 /** ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
- * @internal
+ * @beta
  */
 export class ConcurrencyControl {
   private _pendingRequest = new ConcurrencyControl.Request();
@@ -46,13 +46,19 @@ export class ConcurrencyControl {
 
   /**
      * Manages channels for this iModel.
+   * @alpha
      */
   public get channel(): ConcurrencyControl.Channel {
     return this._channel;
   }
 
+  /** @internal */
   public get iModel(): BriefcaseDb { return this._iModel; }
+
+  /** @internal */
   public getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy { return this._policy; }
+
+  /** @internal */
   public get needLocks(): boolean {
     return this._policy instanceof ConcurrencyControl.PessimisticPolicy;
   }
@@ -65,6 +71,7 @@ export class ConcurrencyControl {
    * Bulk update mode works with either optimistic or pessimistic concurrency policy. Bulk update mode does not represent
    * different locking policy; it just defers the request of locks and codes.
    * Bulk mode is a reasonable choice only when you know there is no chance of conflicts.
+   * @beta
    */
   public startBulkMode() {
     if (this._bulkMode)
@@ -74,7 +81,10 @@ export class ConcurrencyControl {
     this._bulkMode = true;
   }
 
-  /** Query if changes are being monitored in "bulk update mode". */
+  /**
+   * Query if changes are being monitored in "bulk update mode".
+   * @beta
+   */
   public get isBulkMode() {
     return this._bulkMode;
   }
@@ -84,6 +94,7 @@ export class ConcurrencyControl {
    * iModel server for all locks and codes that are required for the changes that you have made since calling startBulkMode.
    * If the request fails, then you must call BriefcaseDb.abandonChanges.
    * Bulk mode is a reasonable choice only when you know there is no chance of conflicts.
+   * @beta
    */
   public async endBulkMode(rqctx: AuthorizedClientRequestContext) {
     if (!this._bulkMode)
@@ -93,9 +104,11 @@ export class ConcurrencyControl {
     this._bulkMode = false;
   }
 
-  public static throwSaveError() {
+  private static throwSaveError() {
     throw new IModelError(IModelStatus.TransactionActive, "Call BriefcaseDb.concurrencyControl.request before saving changes");
   }
+
+  /** @internal */
   public onSaveChanges() {
     if (this.hasPendingRequests)
       ConcurrencyControl.throwSaveError();
@@ -499,6 +512,7 @@ export class ConcurrencyControl {
     return this._cache.isLockHeld(lock);
   }
 
+  /** @internal */
   public hasReservedCode0(code: CodeProps): boolean {
     return this._cache.isCodeReserved(code);
   }
@@ -544,11 +558,12 @@ export class ConcurrencyControl {
     this._cache.deleteLocksForTxn(this.iModel.txns.getCurrentTxnId());
   }
 
-  /**  @deprecated Use concurrencyControl.codes.areAvailable */
+  /** @internal @deprecated Use concurrencyControl.codes.areAvailable */
   public async areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     return this.areCodesAvailable0(requestContext, req);
   }
 
+  /** @internal */
   public async areCodesAvailable0(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     requestContext.enter();
     if (!this._iModel.isOpen)
