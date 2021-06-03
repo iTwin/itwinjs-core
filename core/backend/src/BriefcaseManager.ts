@@ -16,7 +16,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { ChangesType, IModelHubError } from "@bentley/imodelhub-client";
 import {
-  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
+  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
@@ -649,6 +649,13 @@ export class BriefcaseManager {
       const delay = Math.floor(Math.random() * 4800) + 200;
       await new Promise((resolve: any) => setTimeout(resolve, delay));
     }
+  }
+
+  /** Create an iModel on iModelHub
+   * @beta
+   */
+  public static async create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString> {
+    return IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: args.rootSubject.description });
   }
 
   /** @internal */

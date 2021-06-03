@@ -50,6 +50,9 @@ import { LocalHub, LocalHubProps } from "./LocalHub";
  * computer. The mock `AccessTokens` are obtained by calling [[IModelTestUtils.getUserContext]]. There are 4 user profiles (Regular, Manager,
  * Super, SuperManager) for simulating different users/roles.
  *
+ * @note Only one HubMock at a time, *running in a single process*, may be active. The comments above about multiple simultaneous tests refer to tests
+ * running on different computers, or on a single computer in multiple processes. All of those scenarios are problematic without mocking.
+ *
  * @internal
  */
 export class HubMock {
@@ -66,6 +69,9 @@ export class HubMock {
    * It is used to create a private directory used by the HubMock for a test. That directory is removed when [[shutdown]] is called.
    */
   public static startup(mockName: LocalDirName) {
+    if (this.isValid)
+      throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
+
     this.hubs.clear();
     this.mockRoot = join(KnownTestLocations.outputDir, "HubMock", mockName);
     IModelJsFs.recursiveMkDirSync(this.mockRoot);

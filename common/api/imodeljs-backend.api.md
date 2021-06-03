@@ -41,6 +41,7 @@ import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
 import { CreateEmptyStandaloneIModelProps } from '@bentley/imodeljs-common';
+import { CreateIModelProps } from '@bentley/imodeljs-common';
 import { CreateSnapshotIModelProps } from '@bentley/imodeljs-common';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
@@ -527,6 +528,8 @@ export class BriefcaseManager {
         changesetId: ChangesetId;
         changesetIndex: ChangesetIndex;
     }>;
+    // @beta
+    static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
     static deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
