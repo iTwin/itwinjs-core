@@ -11,7 +11,7 @@ import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive
 import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
-import { BingElevationProvider, WebMercatorTilingScheme } from "./tile/internal";
+import { WebMercatorTilingScheme } from "./tile/internal";
 
 const scratchRange = Range3d.createNull();
 const scratchZeroPoint = Point3d.createZero();
@@ -428,27 +428,3 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   return Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
 }
 
-  private _geodeticToSeaLevel?: number;
-  private _projectCenterAltitude?: number;
-  public onEcefChanged(ecefLocation: EcefLocation| undefined) {
-    this._ecefToDb = ecefLocation?.getTransform().inverse();
-      this._geodeticToSeaLevel = 0;
-      this._projectCenterAltitude = 0;
-    const elevationProvider = new BingElevationProvider();
-
-    this._geodeticToSeaLevel = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
-    this._projectCenterAltitude = await elevationProvider.getHeightValue(iModel.projectExtents.center, iModel, true);
-  public get geodeticToSeaLevel(): number {
-    if (undefined === this._geodeticToSeaLevel) {
-      assert (false);
-      return 0.0;
-    }
-    return this._geodeticToSeaLevel;
-  }
-  public get projectCenterAltitude(): number {
-    if (undefined === this._projectCenterAltitude) {
-      assert (false);
-      return 0.0;
-    }
-    return this._projectCenterAltitude;
-  }
