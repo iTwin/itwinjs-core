@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/presentation-common",
-      "comment": "",
+      "comment": "Introduce `Ruleset.version` attribute.",
       "type": "none"
     }
   ],
