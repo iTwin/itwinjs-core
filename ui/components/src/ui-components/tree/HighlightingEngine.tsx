@@ -21,7 +21,8 @@ export interface ActiveMatchInfo {
 }
 
 /**
- * Properties for the [[HighlightingEngine]]
+ * Properties for highlighting nodes in a tree.
+ * @see [[ControlledTreeProps.nodeHighlightingProps]]
  * @public
  */
 export interface HighlightableTreeProps {
