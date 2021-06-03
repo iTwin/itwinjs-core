@@ -21,6 +21,7 @@ export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";
 export * from "./ECSqlTypes";
 export * from "./ElementProps";
+export * from "./EmphasizeElementsProps";
 export * from "./EntityProps";
 export * from "./FeatureGates";
 export * from "./FeatureIndex";
