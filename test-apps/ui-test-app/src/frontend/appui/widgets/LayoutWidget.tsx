@@ -214,8 +214,8 @@ function WidgetInfo({
   };
 
   const handleDockClick = React.useCallback(()=>{
-    frontstageDef!.dockWidgetContainer(id, animate);
-  }, [frontstageDef, id, animate]);
+    frontstageDef!.dockWidgetContainer(id);
+  }, [frontstageDef, id]);
 
   const [xPos, setXPos] = React.useState(50);
   const [yPos, setYPos] = React.useState(100);

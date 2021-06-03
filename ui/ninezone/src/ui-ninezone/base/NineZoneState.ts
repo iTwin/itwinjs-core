@@ -1307,19 +1307,12 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
   return undefined;
 }
 /** @internal */
-export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean, animateTransition?: boolean) {
+export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean) {
   if (idIsContainerId) {
     const widgetLocation = findWidget(state, widgetTabId);
     if (widgetLocation) {
       if (isFloatingWidgetLocation(widgetLocation)) {
         const floatingWidgetId = widgetLocation.floatingWidgetId;
-        window.requestAnimationFrame (() => {
-          state = NineZoneStateReducer(state, {
-            type: "FLOATING_WIDGET_SET_ANIMATE_TRANSITION",
-            id: floatingWidgetId,
-            animateTransition: !!animateTransition,
-          });
-        });
         return NineZoneStateReducer(state, {
           type: "FLOATING_WIDGET_SEND_BACK",
           id: floatingWidgetId,

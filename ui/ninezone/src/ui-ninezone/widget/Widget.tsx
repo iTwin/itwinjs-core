@@ -100,13 +100,18 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
         const listener = (e: Event) => {
           const el = e.target as HTMLElement;
           assert (!!el);
-          const closestEl = el.offsetParent;
-          if (closestEl && closestEl.classList.contains("nz-widget-sendBack")) {
+          let targetElement = el.offsetParent;
+          // istanbul ignore else
+          if (!targetElement)
+            targetElement = el;
+
+          if (targetElement && targetElement.classList.contains("nz-widget-sendBack")){
             floatingWidgetId && dispatch({
               type: "FLOATING_WIDGET_SET_ANIMATE_TRANSITION",
               id: floatingWidgetId,
               animateTransition: true,
             });
+          // istanbul ignore next
           } else {
             floatingWidgetId && dispatch({
               type: "FLOATING_WIDGET_BRING_TO_FRONT",

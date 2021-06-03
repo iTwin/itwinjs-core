@@ -89,7 +89,7 @@ export const FloatingWidgets = React.memo(function FloatingWidgets() { // eslint
   );
 });
 /** @internal */
-function getAnimateStartPoint(home: FloatingWidgetHomeState, nzBounds: Rectangle) {
+export function getAnimateStartPoint(home: FloatingWidgetHomeState, nzBounds: Rectangle) {
   let x = 0;
   let y = 0;
   switch (home.side) {
@@ -98,6 +98,7 @@ function getAnimateStartPoint(home: FloatingWidgetHomeState, nzBounds: Rectangle
         x = nzBounds.left;
       else if (home.widgetIndex === 1)
         x = nzBounds.left + (nzBounds.getWidth()/2);
+        // istanbul ignore else
       else if (home.widgetIndex === 2)
         x = nzBounds.right;
       return { x, y: nzBounds.bottom};
@@ -106,6 +107,7 @@ function getAnimateStartPoint(home: FloatingWidgetHomeState, nzBounds: Rectangle
         x = nzBounds.left;
       else if (home.widgetIndex === 1)
         x = nzBounds.left + (nzBounds.getWidth()/2);
+        // istanbul ignore else
       else if (home.widgetIndex === 2)
         x = nzBounds.right;
       return { x, y: nzBounds.top };
@@ -114,6 +116,7 @@ function getAnimateStartPoint(home: FloatingWidgetHomeState, nzBounds: Rectangle
         y = nzBounds.top;
       else if (home.widgetIndex === 1)
         y = nzBounds.top + (nzBounds.getHeight()/2);
+        // istanbul ignore else
       else if (home.widgetIndex === 2)
         y = nzBounds.bottom;
       return { x: nzBounds.left, y };
@@ -122,6 +125,7 @@ function getAnimateStartPoint(home: FloatingWidgetHomeState, nzBounds: Rectangle
         y = nzBounds.top;
       else if (home.widgetIndex === 1)
         y = nzBounds.top + (nzBounds.getHeight()/2);
+        // istanbul ignore else
       else if (home.widgetIndex === 2)
         y = nzBounds.bottom;
       return { x:nzBounds.right, y};

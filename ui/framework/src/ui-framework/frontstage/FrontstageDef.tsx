@@ -721,13 +721,13 @@ export class FrontstageDef {
    * @param widgetId  case sensitive Wigdet Id.
    * @beta
    */
-  public dockWidgetContainer(widgetId: string, animateTransition?: boolean) {
+  public dockWidgetContainer(widgetId: string) {
     // istanbul ignore else
     if (this.nineZoneState) {
       const location = findTab(this.nineZoneState, widgetId);
       if (location) {
         const widgetContainerId = location.widgetId;
-        const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true, animateTransition);
+        const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
         state && (this.nineZoneState = state);
         if (isPopoutLocation(location)) {
           UiFramework.childWindowManager.closeChildWindow(location.widgetId, true);
