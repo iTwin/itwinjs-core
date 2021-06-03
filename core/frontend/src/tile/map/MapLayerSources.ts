@@ -28,13 +28,31 @@ export enum MapLayerSourceStatus {
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
  * @internal
  */
+interface MapLayerSourceProps extends MapLayerProps
+{
+  /** Indicate if this source definition should be used as a base map. */
+  baseMap?: boolean;
+  /** UserName */
+  userName?: string;
+  /** Password */
+  password?: string;
+}
 export class MapLayerSource implements MapLayerProps {
   public subLayers?: MapSubLayerProps[];
 
   private constructor(public formatId: string, public name: string, public url: string, public baseMap = false, public transparentBackground?: boolean, public maxZoom?: number, public userName?: string, public password?: string) { }
-  public static fromJSON(json: any): MapLayerSource | undefined {
+
+  public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
+    if (json === undefined || json.url === undefined || undefined === json.name || undefined === json.formatId)
+      return undefined;
+
     const baseMap = json.baseMap === true;
-    return (typeof json.name === "string" && typeof json.url === "string" && typeof json.formatId === "string") ? new MapLayerSource(json.formatId, json.name, json.url, baseMap, json.transparentBackground === undefined ? true : json.transparentBackground, json.maxZoom, json.userName, json.password) : undefined;
+    return new MapLayerSource(json.formatId,
+      json.name,
+      json.url,
+      baseMap, json.transparentBackground === undefined ? true : json.transparentBackground,
+      json.maxZoom, json.userName,
+      json.password);
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
