@@ -1090,6 +1090,7 @@ export function ControlledTree(props: ControlledTreeProps): JSX.Element;
 // @beta
 export interface ControlledTreeProps extends CommonProps {
     descriptionsEnabled?: boolean;
+    height?: number;
     iconsEnabled?: boolean;
     noDataRenderer?: () => React.ReactElement;
     nodeHighlightingProps?: HighlightableTreeProps;
@@ -1101,6 +1102,7 @@ export interface ControlledTreeProps extends CommonProps {
     treeEvents: TreeEvents;
     treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
     visibleNodes: VisibleTreeNodes;
+    width?: number;
 }
 
 // @public
@@ -5466,6 +5468,7 @@ TreeRendererContextProvider: React.ProviderExoticComponent<React.ProviderProps<T
 
 // @beta
 export interface TreeRendererProps {
+    height?: number;
     nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
     nodeHighlightingProps?: HighlightableTreeProps;
     // (undocumented)
@@ -5478,6 +5481,7 @@ export interface TreeRendererProps {
     // (undocumented)
     treeActions: TreeActions;
     visibleNodes: VisibleTreeNodes;
+    width?: number;
 }
 
 // @beta
@@ -5817,6 +5821,8 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     // (undocumented)
     eventHandler: IPropertyGridEventHandler;
     // (undocumented)
+    height?: number;
+    // (undocumented)
     highlight?: HighlightingComponentProps & {
         filteredTypes?: FilteredType[];
     };
@@ -5824,6 +5830,8 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     model: IPropertyGridModel;
     // (undocumented)
     propertyCategoryRendererManager?: PropertyCategoryRendererManager;
+    // (undocumented)
+    width?: number;
 }
 
 // @beta
@@ -5834,11 +5842,15 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
     // (undocumented)
     dataProvider: IPropertyDataProvider;
     // (undocumented)
+    height?: number;
+    // (undocumented)
     highlight?: HighlightingComponentProps & {
         filteredTypes?: FilteredType[];
     };
     // (undocumented)
     propertyCategoryRendererManager?: PropertyCategoryRendererManager;
+    // (undocumented)
+    width?: number;
 }
 
 // @beta
