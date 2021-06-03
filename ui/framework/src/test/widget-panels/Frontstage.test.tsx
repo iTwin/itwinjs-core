@@ -1481,8 +1481,7 @@ describe("Frontstage local storage wrapper", () => {
         const newState = restoreNineZoneState(frontstageDef, savedState);
         newState.widgets.w1.tabs.indexOf("t1").should.eq(-1);
         newState.widgets.w1.tabs.indexOf("t2").should.eq(0);
-        newState.tabs["t3"].preferredFloatingWidgetSize?.width.should.eq(444);
-        should
+        newState.tabs.t3.preferredFloatingWidgetSize?.width.should.eq(444);
       });
 
       it("should restore tabs", () => {
