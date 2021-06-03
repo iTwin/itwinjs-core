@@ -187,7 +187,7 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
   }
 
   const coreTreeRef = React.useRef<CoreTree>(null);
-  const minContainerWidth = React.useRef<number>(0);
+  const [minContainerWidth, setMinContainerWidth] = React.useState(0);
   const onLabelRendered = useScrollToActiveMatch(coreTreeRef, props.nodeHighlightingProps);
   const highlightingEngine = React.useMemo(
     () => props.nodeHighlightingProps && new HighlightingEngine(props.nodeHighlightingProps),
@@ -202,8 +202,7 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
     onLabelRendered,
     highlightingEngine,
     onNodeWidthMeasured: (width: number) => {
-      if (width > minContainerWidth.current)
-        minContainerWidth.current = width;
+      setMinContainerWidth((prev) => width > prev ? width : prev);
     },
     onNodeEditorClosed: () => {
       setFocusToSelected(coreTreeRef);
@@ -214,7 +213,7 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
   const prevTreeWidth = React.useRef<number>(0);
   const onTreeSizeChanged = React.useCallback((width: number) => {
     if (width !== prevTreeWidth.current) {
-      minContainerWidth.current = 0;
+      setMinContainerWidth(0);
       prevTreeWidth.current = width;
     }
   }, []);
@@ -251,13 +250,9 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
   const innerElementType = React.useCallback(
     // eslint-disable-next-line react/display-name
     React.forwardRef(({ style, ...rest }: ListChildComponentProps, innerRef: React.Ref<HTMLDivElement>) => (
-      <div
-        ref={innerRef}
-        style={{ ...style, minWidth: minContainerWidth.current }}
-        {...rest}
-      />
+      <div ref={innerRef} style={{ ...style, minWidth: minContainerWidth }} {...rest} />
     )),
-    [],
+    [minContainerWidth],
   );
 
   const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
@@ -326,7 +321,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
     const className = classnames("node-wrapper", { "is-selected": isTreeModelNode(node) && node.isSelected });
 
     const ref = React.useRef<HTMLDivElement>(null);
-    React.useEffect(() => {
+    React.useLayoutEffect(() => {
       // istanbul ignore else
       if (onNodeWidthMeasured && ref.current)
         onNodeWidthMeasured(ref.current.offsetWidth);
@@ -424,7 +419,7 @@ function getHighlightedNodeId(highlightableTreeProps?: HighlightableTreeProps) {
 
 function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightableTreeProps?: HighlightableTreeProps) {
   const scrollToActive = React.useRef(false);
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     scrollToActive.current = true;
   }, [highlightableTreeProps]);
 

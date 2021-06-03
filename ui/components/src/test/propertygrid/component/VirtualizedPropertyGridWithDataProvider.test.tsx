@@ -99,6 +99,19 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       expect(container.querySelector(".components-property-record--vertical")).to.be.not.null;
     });
 
+    it("renders horizontally by default", async () => {
+      const { container, findByText } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          {...defaultProps}
+          orientation={undefined}
+          isOrientationFixed={true}
+        />,
+      );
+
+      await findByText("Group 1");
+      expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
+    });
+
     it("renders PropertyCategoryBlocks correctly", async () => {
       const { container } = render(<VirtualizedPropertyGridWithDataProvider {...defaultProps} />);
 
@@ -404,6 +417,36 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       rerender(
         <VirtualizedPropertyGridWithDataProvider
           {...defaultProps}
+          orientation={Orientation.Vertical}
+          isOrientationFixed={true}
+        />,
+      );
+
+      expect(container.querySelector(".components-property-record--vertical")).to.be.not.null;
+    });
+
+    it("changes orientation when props change and size is not specified", async () => {
+      sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 1200);
+      sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 500);
+
+      const { container, rerender, findByText } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          {...defaultProps}
+          width={undefined}
+          height={undefined}
+          orientation={Orientation.Horizontal}
+          isOrientationFixed={true}
+        />,
+      );
+
+      await findByText("Group 1");
+      expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
+
+      rerender(
+        <VirtualizedPropertyGridWithDataProvider
+          {...defaultProps}
+          width={undefined}
+          height={undefined}
           orientation={Orientation.Vertical}
           isOrientationFixed={true}
         />,

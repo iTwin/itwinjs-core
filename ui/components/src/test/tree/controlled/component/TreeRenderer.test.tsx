@@ -289,6 +289,19 @@ describe("TreeRenderer", () => {
     expect(spy).to.be.called;
   });
 
+  it("resizes scrollable content width to be as wide as the widest node", () => {
+    const node = createRandomMutableTreeModelNode();
+    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
+    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
+
+    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 123);
+
+    const { container } = render(<TreeRenderer {...defaultProps} />);
+
+    const innerContainer = container.querySelector<HTMLDivElement>(".ReactWindow__VariableSizeList > div")!;
+    expect(innerContainer.style.minWidth).to.be.equal("123px");
+  });
+
   describe("scrollToNode", () => {
     let scrollToItemFake: sinon.SinonSpy;
 
