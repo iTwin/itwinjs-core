@@ -18,6 +18,7 @@ allprojects {
         jcenter()
         flatDir {
             dirs "${System.env.OutRoot}AndroidARM64/imodeljsnodeaddon_pkgs/imodeljs-android-arm64"
+            dirs "${System.env.OutRoot}AndroidX64/imodeljsnodeaddon_pkgs/imodeljs-android-x64"
             dirs "${projectDir}/../../../node_modules/@bentley/imodeljs-backend/node_modules/@bentley/imodeljs-native/imodeljs-android-arm64"
         }
     }
