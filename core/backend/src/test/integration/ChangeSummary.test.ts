@@ -77,6 +77,7 @@ describe("ChangeSummary (#integration)", () => {
     Logger.setLevel("DgnCore", LogLevel.Error);
     Logger.setLevel("BeSQLite", LogLevel.Error);
 
+    HubUtility.allowHubBriefcases = true;
     requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
 
     testContextId = await HubUtility.getTestContextId(requestContext);
@@ -99,6 +100,8 @@ describe("ChangeSummary (#integration)", () => {
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, readWriteTestIModelId);
     managerRequestContext.enter();
   });
+
+  after(() => HubUtility.allowHubBriefcases = false);
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
     setupTest(readOnlyTestIModelId);

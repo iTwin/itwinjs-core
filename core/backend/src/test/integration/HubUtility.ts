@@ -4,44 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import {
-  assert, BeDuration, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger,
-} from "@bentley/bentleyjs-core";
+import { BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import {
-  Briefcase, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, HubIModel, IModelBaseHandler, IModelHubClient, IModelQuery,
-  InitializationState, Version, VersionQuery,
+  Briefcase, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ChangesetFileProps, ChangesetId, ChangesetProps } from "../../BackendHubAccess";
 import { IModelDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import { IModelJsFs } from "../../IModelJsFs";
-
-/** DTO to work with iModelHub DeleteChangeSet API */
-@ECJsonTypeMap.classToJson("wsg", "iModelActions.DeleteChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-class DeleteChangeSetAction extends WsgInstance {
-  @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
-  public id?: GuidString;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
-  public changeSetId?: GuidString;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.State")
-  public state?: number;
-}
-
-/** Enum to work with iModelHub Actions API */
-enum ActionState {
-  Completed = 2
-}
+import { assert } from "chai";
+import { HubMock } from "../HubMock";
 
 /** Utility to work with test iModels in the iModelHub */
 export class HubUtility {
   public static logCategory = "HubUtility";
+  public static allowHubBriefcases = false;
 
   public static testContextName = "iModelJsIntegrationTest";
   public static testIModelNames = {
@@ -298,7 +280,6 @@ export class HubUtility {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
     const lastAppliedChangeSetId = nativeDb.getParentChangeSetId();
-    assert(!nativeDb.getReversedChangeSetId());
 
     const changeSets = HubUtility.readChangeSets(iModelDir);
     const lastMergedChangeSet = changeSets.find((value) => value.id === lastAppliedChangeSetId);
@@ -308,10 +289,9 @@ export class HubUtility {
     // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    const status: ChangeSetStatus = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
-
+    const status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
     nativeDb.closeIModel();
-    assert(status === ChangeSetStatus.Success, "Error applying change sets");
+    assert.isTrue(status === ChangeSetStatus.Success, "Error applying change sets");
   }
 
   /** Validate all change set operations on an iModel on disk - the supplied directory contains a sub folder
@@ -353,7 +333,7 @@ export class HubUtility {
     }
 
     nativeDb.closeIModel();
-    assert(status === ChangeSetStatus.Success, "Error applying change sets");
+    assert.isTrue(status === ChangeSetStatus.Success, "Error applying change sets");
   }
 
   /** Validate all change set operations by downloading seed files & change sets, creating a standalone iModel,
@@ -380,6 +360,7 @@ export class HubUtility {
 
   /** Push an iModel to the Hub */
   public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that create iModesl");
     // Delete any existing iModels with the same name as the required iModel
     const locIModelName = iModelName || path.basename(pathname, ".bim");
     const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, locIModelName);
@@ -418,6 +399,7 @@ export class HubUtility {
   }
 
   private static async pushChangeSets(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, uploadDir: string): Promise<void> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests push changesets");
     const changeSetJsonPathname = path.join(uploadDir, "changeSets.json");
     if (!IModelJsFs.existsSync(changeSetJsonPathname))
       return;
@@ -453,6 +435,7 @@ export class HubUtility {
   }
 
   private static async pushNamedVersions(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, uploadDir: string, overwrite?: boolean): Promise<void> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const namedVersionsJsonPathname = path.join(uploadDir, "namedVersions.json");
     if (!IModelJsFs.existsSync(namedVersionsJsonPathname))
       return;
@@ -474,6 +457,7 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcasesById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
+    assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
     if (briefcases.length > acquireThreshold) {
       if (undefined !== onReachThreshold)
@@ -491,6 +475,7 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
+    assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
 
@@ -604,6 +589,7 @@ export class HubUtility {
    * @returns the iModelId of the newly created iModel.
   */
   public static async recreateIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const deleteIModel = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
     if (undefined !== deleteIModel)
       await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId: deleteIModel });
@@ -614,52 +600,11 @@ export class HubUtility {
 
   /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
   public static async createIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
     let iModelId = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
     if (!iModelId)
       iModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: `Description for iModel` });
     return iModelId;
-  }
-
-  /** Delete a changeSet with a specific index */
-  public static async deleteChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetIndex: number): Promise<DeleteChangeSetAction> {
-    const invalidChangeSet = (await IModelHubBackend.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().filter(`Index+eq+${changeSetIndex}`)))[0];
-    const deleteChangeSetActionInstance = new DeleteChangeSetAction();
-    deleteChangeSetActionInstance.changeSetId = invalidChangeSet.id;
-
-    const iModelBaseHandler = new IModelBaseHandler();
-    const relativePostActionUrl = `/Repositories/iModel--${iModelId}/iModelActions/DeleteChangeSet`;
-    return iModelBaseHandler.postInstance(requestContext, DeleteChangeSetAction, relativePostActionUrl, deleteChangeSetActionInstance);
-  }
-
-  /** Wait until the specified delete changeSet action completes successfully */
-  public static async waitForChangeSetDeletion(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, deleteChangeSetActionId: GuidString): Promise<void> {
-    const iModelBaseHandler = new IModelBaseHandler();
-    const relativeGetActionUrl = `/Repositories/iModel--${iModelId}/iModelActions/DeleteChangeSet/${deleteChangeSetActionId}`;
-    return HubUtility.waitForEntityToReachState(
-      async () => (await iModelBaseHandler.getInstances(requestContext, DeleteChangeSetAction, relativeGetActionUrl))[0],
-      (action: DeleteChangeSetAction) => action.state === ActionState.Completed);
-  }
-
-  /** Wait until the checkpoint for the specified changeSet fails to generate */
-  public static async waitforCheckpointGenerationFailure(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString): Promise<void> {
-    return HubUtility.waitForEntityToReachState(
-      async () => (await IModelHubBackend.iModelClient.checkpoints.get(requestContext, iModelId, new CheckpointQuery().byChangeSetId(changeSetId)))[0],
-      (checkpoint: Checkpoint) => checkpoint.state === InitializationState.Failed);
-  }
-
-  private static async waitForEntityToReachState<T>(entityQuery: () => Promise<T>, conditionToSatisfy: (entity: T) => Boolean): Promise<void> {
-    for (let i = 0; i < 60; i++) {
-      const currentEntity = await entityQuery();
-      if (!currentEntity)
-        throw new Error("Queried entity is undefined.");
-
-      if (conditionToSatisfy(currentEntity))
-        return;
-
-      await BeDuration.wait(10000);
-    }
-
-    throw new Error("Entity did not reach the expected state in 10 minutes.");
   }
 }
 
@@ -674,53 +619,27 @@ class TestIModelHubProject {
 
   private static _contextRegistryClient?: ContextRegistryClient;
 
-  private static get connectClient(): ContextRegistryClient {
+  private static get contextClient(): ContextRegistryClient {
     if (this._contextRegistryClient === undefined)
       this._contextRegistryClient = new ContextRegistryClient();
     return this._contextRegistryClient;
   }
 
   public async queryProject(requestContext: AuthorizedClientRequestContext, query: any | undefined): Promise<Project> {
-    const client = TestIModelHubProject.connectClient;
+    const client = TestIModelHubProject.contextClient;
     return client.getProject(requestContext, query);
   }
 
-  public async createIModel(requestContext: AuthorizedClientRequestContext, projectId: string, params: any): Promise<HubIModel> {
-    const client = this.iModelHubClient;
-    return client.iModels.create(requestContext, projectId, params.name, { path: params.seedFile, description: params.description, progressCallback: params.tracker });
-  }
-  public async deleteIModel(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString): Promise<void> {
-    const client = this.iModelHubClient;
-    return client.iModels.delete(requestContext, projectId, iModelId);
-  }
   public async queryIModels(requestContext: AuthorizedClientRequestContext, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     const client = this.iModelHubClient;
     return client.iModels.get(requestContext, projectId, query);
   }
 }
 
-let projectAbstraction: any;
-let authorizationAbstraction: any;
-const usingMocks = false;
-
-export function getIModelPermissionAbstraction(): any {
-  if (authorizationAbstraction !== undefined)
-    return authorizationAbstraction;
-
-  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
-    return authorizationAbstraction = {};
-  }
-
-  throw new Error("WIP");
-}
-
-export function getIModelProjectAbstraction(): any {
+let projectAbstraction: TestIModelHubProject;
+export function getIModelProjectAbstraction(): TestIModelHubProject {
   if (projectAbstraction !== undefined)
     return projectAbstraction;
 
-  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
-    return projectAbstraction = new TestIModelHubProject();
-  }
-
-  throw new Error("WIP");
+  return projectAbstraction = new TestIModelHubProject();
 }

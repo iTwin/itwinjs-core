@@ -7,7 +7,7 @@
  */
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { LockLevel, LockType } from "@bentley/imodelhub-client";
+import { ChangesType, LockLevel, LockType } from "@bentley/imodelhub-client";
 import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { DownloadRequest } from "./CheckpointManager";
@@ -29,14 +29,23 @@ export type ChangesetIndex = number;
  * @internal
  */
 export interface ChangesetProps {
+  /** the ChangesetId */
   id: ChangesetId;
+  /** the ChangeSetId of the parent changeset of this changeset */
   parentId: ChangesetId;
-  changesType: number;
+  /** The type of changeset */
+  changesType: ChangesType;
+  /** The user-supplied description of the work this changeset holds */
   description: string;
+  /** The BriefcaseId of the briefcase that created this changeset */
   briefcaseId: number;
+  /** The date this changeset was uploaded to the hub */
   pushDate: string;
+  /** The identity of the user that created this changeset */
   userCreated: string;
+  /** The size, in bytes, of this changeset */
   size?: number;
+  /** The index (sequence number) in IModelHub for this changeset. Larger index values were pushed later. */
   index?: ChangesetIndex;
 }
 
@@ -44,10 +53,16 @@ export interface ChangesetProps {
  * @internal
  */
 export interface ChangesetFileProps extends ChangesetProps {
+  /** The full pathname of the local file holding this changeset. */
   pathname: LocalFileName;
 }
 
-/** Properties that specify a range of changesetIds.
+/**
+ * Properties that specify a range of changesetIds. There are two ways to specify the start of the range. You may either supply:
+ * - `first` the ChangeSetId of the first changeset to be returned, or
+ * - `after` the *parent* ChangeSetId of the first changeset to be returned.
+ *
+ * `end` specifies the ChangesetId of the last changeset to be returned. If undefined, all later changesets are returned.
  * @internal
  */
 export type ChangesetRange =
@@ -59,8 +74,11 @@ export type ChangesetRange =
  * @internal
  */
 export interface LockProps {
+  /** The type of lock requested or held */
   type: LockType;
+  /** The objectId for the lock */
   objectId: Id64String;
+  /** the lock level */
   level: LockLevel;
 }
 
@@ -107,10 +125,11 @@ export interface ChangesetIdArg extends IModelIdArg {
   changesetId: ChangesetId;
 }
 
-/** Argument for methods that must supply an IModelId and a range of ChangesetIds
+/** Argument for methods that must supply an IModelId and a range of ChangesetIds.
  * @internal
  */
 export interface ChangesetRangeArg extends IModelIdArg {
+  /** the range of changesets desired. If is undefined, *all* changesets are returned. */
   range?: ChangesetRange;
 }
 

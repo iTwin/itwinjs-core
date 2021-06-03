@@ -66,6 +66,7 @@ export class HubMock {
    * It is used to create a private directory used by the HubMock for a test. That directory is removed when [[shutdown]] is called.
    */
   public static startup(mockName: LocalDirName) {
+    this.hubs.clear();
     this.mockRoot = join(KnownTestLocations.outputDir, "HubMock", mockName);
     IModelJsFs.recursiveMkDirSync(this.mockRoot);
     IModelJsFs.purgeDirSync(this.mockRoot);
@@ -98,6 +99,7 @@ export class HubMock {
     for (const hub of this.hubs)
       hub[1].cleanup();
 
+    this.hubs.clear();
     IModelJsFs.purgeDirSync(this.mockRoot!);
     IModelJsFs.removeSync(this.mockRoot!);
     sinon.restore();

@@ -27,8 +27,6 @@ describe("ChangedElements (#integration)", () => {
     testContextId = await HubUtility.getTestContextId(requestContext);
     testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
 
-    // Purge briefcases that are close to reaching the acquire limit
-    await HubUtility.purgeAcquiredBriefcasesById(requestContext, testIModelId);
   });
 
   it("Create ChangedElements Cache and process changesets", async () => {

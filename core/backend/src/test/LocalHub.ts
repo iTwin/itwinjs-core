@@ -375,7 +375,12 @@ export class LocalHub {
       this._hubDb.closeDb();
       this._hubDb = undefined;
     }
-    this.removeDir(BriefcaseManager.getIModelPath(this.iModelId));
-    this.removeDir(this.rootDir);
+    try {
+      this.removeDir(BriefcaseManager.getIModelPath(this.iModelId));
+      this.removeDir(this.rootDir);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.log(`ERROR: test left an iModel open for [${this.iModelName}]. LocalMock cannot clean up - make sure you call imodel.close() in your test`);
+    }
   }
 }
