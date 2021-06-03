@@ -19,7 +19,7 @@ exports[`SpatialContainmentTree <SpatialContainmentTree /> renders 1`] = `
             style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
           >
             <div
-              style="height: 25px; width: 100%; min-width: 0;"
+              style="height: 25px; width: 100%; min-width: 200px;"
             >
               <div
                 class="node-wrapper"
