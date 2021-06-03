@@ -2,7 +2,11 @@
   "changes": [
     {
       "packageName": "@bentley/presentation-common",
+<<<<<<< HEAD:common/changes/@bentley/presentation-common/update-rush_2021-05-24-15-45.json
       "comment": "",
+=======
+      "comment": "Introduce `Ruleset.version` attribute.",
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/presentation-common/presentation-ruleset-versioning_2021-05-27-06-45.json
       "type": "none"
     }
   ],

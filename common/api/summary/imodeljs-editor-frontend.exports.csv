@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+<<<<<<< HEAD
 alpha;ArcMethod
 alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
 alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
@@ -8,6 +9,12 @@ alpha;CreateCurvePhase
 alpha;class CreateElementTool 
 alpha;CreateLineStringTool 
 alpha;class CreateOrContinuePathTool 
+=======
+alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
+alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
+alpha;class CreateElementTool 
+alpha;CreateLineStringTool 
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff
 alpha;DeleteElementsTool 
 alpha;DynamicGraphicsProvider
 alpha;EditorOptions

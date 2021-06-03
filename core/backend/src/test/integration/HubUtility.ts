@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as os from "os";
 import * as path from "path";
 import {
   assert, BeDuration, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger,

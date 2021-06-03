@@ -8,7 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@bentley/geometry-core";
-import { Cartographic, ColorByName, ColorDef, EcefLocation, Frustum, GeoCoordStatus, GlobeMode } from "@bentley/imodeljs-common";
+import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { BingElevationProvider, WebMercatorTilingScheme } from "./tile/internal";
@@ -89,7 +89,7 @@ export class BackgroundMapGeometry {
   private static _scratchPoint = Point3d.createZero();
 
   constructor(private _bimElevationBias: number, globeMode: GlobeMode, private _iModel: IModelConnection) {
-    this._ecefToDb = _iModel.backgroundMapLocation.getMapEcefToDb(_bimElevationBias);
+    this._ecefToDb = _iModel.getMapEcefToDb(_bimElevationBias);
     this.globeMode = globeMode;
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(_iModel);
     this.cartesianTransitionRange = this.cartesianRange.clone();
@@ -428,66 +428,16 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   return Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
 }
 
-/** @internal */
-export class BackgroundMapLocation {
-  private _ecefToDb?: Transform;
-  private _ecefValidated = false;
   private _geodeticToSeaLevel?: number;
   private _projectCenterAltitude?: number;
-
   public onEcefChanged(ecefLocation: EcefLocation| undefined) {
     this._ecefToDb = ecefLocation?.getTransform().inverse();
-    this._ecefValidated = false;
-  }
-
-  public async initialize(iModel: IModelConnection): Promise<void> {
-    if (this._ecefToDb !== undefined && this._ecefValidated)
-      return;
-
-    if (!iModel.ecefLocation) {
-      this._ecefToDb = Transform.createIdentity();
       this._geodeticToSeaLevel = 0;
       this._projectCenterAltitude = 0;
-      return;
-    }
-
-    const ecefLocationDbToEcef = iModel.ecefLocation.getTransform();
-    this._ecefToDb = ecefLocationDbToEcef.inverse();
-    if (this._ecefToDb === undefined) {
-      assert(false);
-      this._ecefToDb = Transform.createIdentity();
-      return;
-    }
-    const projectExtents = iModel.projectExtents;
-    const origin = projectExtents.localXYZToWorld(.5, .5, .5);
-    if (!origin) {
-      this._ecefToDb = Transform.createIdentity();
-      return;
-    }
-
-    origin.z = 0; // always use ground plane
-    const ecefToDb = await calculateEcefToDbTransformAtLocation(origin, iModel);
-    if (undefined !== ecefToDb)
-      this._ecefToDb = ecefToDb;
-
     const elevationProvider = new BingElevationProvider();
 
     this._geodeticToSeaLevel = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
     this._projectCenterAltitude = await elevationProvider.getHeightValue(iModel.projectExtents.center, iModel, true);
-    this._ecefValidated = true;
-  }
-  public getMapEcefToDb(bimElevationBias: number): Transform {
-    if (undefined === this._ecefToDb) {
-      assert(false);
-      return Transform.createIdentity();
-    }
-
-    const mapEcefToDb = this._ecefToDb.clone();
-    mapEcefToDb.origin.z += bimElevationBias;
-
-    return mapEcefToDb;
-  }
-
   public get geodeticToSeaLevel(): number {
     if (undefined === this._geodeticToSeaLevel) {
       assert (false);
@@ -502,4 +452,3 @@ export class BackgroundMapLocation {
     }
     return this._projectCenterAltitude;
   }
-}

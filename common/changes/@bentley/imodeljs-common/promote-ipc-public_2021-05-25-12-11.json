@@ -2,7 +2,11 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-common",
+<<<<<<< HEAD:common/changes/@bentley/imodeljs-common/promote-ipc-public_2021-05-25-12-11.json
       "comment": "make Ipc interfaces @public",
+=======
+      "comment": "promote BriefcaseManager to public",
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/imodeljs-common/promote-BriefcaseManager_2021-05-13-15-41.json
       "type": "none"
     }
   ],

@@ -65,7 +65,6 @@ import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleSettingsProps } from '@bentley/imodeljs-common';
 import { EasingFunction } from '@bentley/imodeljs-common';
-import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
 import { EditingScopeNotifications } from '@bentley/imodeljs-common';
@@ -1369,20 +1368,12 @@ export class BackgroundMapGeometry {
     readonly maxGeometryChordHeight: number;
     }
 
-// @internal (undocumented)
-export class BackgroundMapLocation {
-    // (undocumented)
     get geodeticToSeaLevel(): number;
-    // (undocumented)
-    getMapEcefToDb(bimElevationBias: number): Transform;
-    // (undocumented)
-    initialize(iModel: IModelConnection): Promise<void>;
     // (undocumented)
     onEcefChanged(ecefLocation: EcefLocation | undefined): void;
     // (undocumented)
     get projectCenterAltitude(): number;
     }
-
 // @beta
 export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
     constructor(_quantityFormatter: QuantityFormatter, _maintainOverridesPerIModel?: boolean | undefined);
@@ -1721,6 +1712,11 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseSingleTxn(): Promise<IModelStatus>;
     reverseTxns(numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus>;
 }
+
+// @internal (undocumented)
+export type BuilderOptions = GraphicBuilderOptions & {
+    placement: Transform;
+};
 
 // @internal (undocumented)
 export type BuilderOptions = GraphicBuilderOptions & {
@@ -2372,7 +2368,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get backgroundMapBase(): BaseLayerSettings | undefined;
     // (undocumented)
-    get backgroundMapElevationBias(): number;
+    get backgroundMapElevationBias(): number | undefined;
     // @internal (undocumented)
     get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
@@ -3386,6 +3382,7 @@ export interface FrameStats {
     onRenderOpaqueTime: number;
     opaqueTime: number;
     overlaysTime: number;
+    sceneTime: number;
     screenspaceEffectsTime: number;
     setupViewTime: number;
     shadowsTime: number;
@@ -3406,6 +3403,9 @@ export class FrameStatsCollector {
     endFrame(wasFrameDrawn?: boolean): void;
     // (undocumented)
     endTime(entry: keyof FrameStats): void;
+    set onFrameStatsReady(ev: OnFrameStatsReadyEvent | undefined);
+    // (undocumented)
+    get onFrameStatsReady(): OnFrameStatsReadyEvent | undefined;
     }
 
 // @public
@@ -4580,7 +4580,7 @@ export interface IModelAppOptions {
 export abstract class IModelConnection extends IModel {
     // @internal
     protected constructor(iModelProps: IModelConnectionProps);
-    // @internal
+    readonly altitudeProvider: ProjectAltitudeProvider;
     readonly backgroundMapLocation: BackgroundMapLocation;
     // @internal
     protected beforeClose(): void;
@@ -4602,8 +4602,9 @@ export abstract class IModelConnection extends IModel {
     readonly geoServices: GeoServices;
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string>;
+    // @internal (undocumented)
+    getMapEcefToDb(bimElevationBias: number): Transform;
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
-    // @alpha
     getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
@@ -6829,6 +6830,9 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
 // @alpha
 export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
 
+// @alpha
+export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
+
 // @internal
 export class OnScreenTarget extends Target {
     constructor(canvas: HTMLCanvasElement);
@@ -7124,6 +7128,11 @@ export interface PickableGraphicOptions extends BatchOptions {
     id: Id64String;
 }
 
+// @public
+export interface PickableGraphicOptions extends BatchOptions {
+    id: Id64String;
+}
+
 // @internal
 export interface PingTestResult {
     avg: number | undefined;
@@ -7274,6 +7283,13 @@ export enum PrimitiveVisibility {
     Instanced = 1,
     Uninstanced = 2
 }
+
+// @public
+export class ProjectAltitudeProvider {
+    constructor(iModel: IModelConnection);
+    get geodeticToSeaLevel(): number | undefined;
+    get projectCenterAltitude(): number | undefined;
+    }
 
 // @public
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
@@ -8125,6 +8141,7 @@ export abstract class RenderSystem implements IDisposable {
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
+    abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     // @internal
@@ -8313,6 +8330,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
     setHiliteSet(_hilited: HiliteSet): void;
+    // (undocumented)
+    setOnFrameStats(_event: OnFrameStatsReadyEvent): void;
     setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
@@ -9684,6 +9703,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
     setHiliteSet(hilite: HiliteSet): void;
+    // (undocumented)
+    setOnFrameStats(event: OnFrameStatsReadyEvent): void;
     // (undocumented)
     get shadowFrustum(): Frustum | undefined;
     // (undocumented)
@@ -12167,6 +12188,8 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     forEachMapTreeRef(func: (ref: TileTreeReference) => void): void;
     // @internal (undocumented)
+    forEachMapTreeRef(func: (ref: TileTreeReference) => void): void;
+    // @internal (undocumented)
     forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
     // @internal (undocumented)
     protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void;
@@ -12244,6 +12267,10 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // @internal (undocumented)
+    mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined;
+    // @internal (undocumented)
+    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
+    // @internal (undocumented)
     markSelectionSetDirty(): void;
     get neverDrawn(): Id64Set | undefined;
     npcToView(pt: Point3d, out?: Point3d): Point3d;
@@ -12270,6 +12297,8 @@ export abstract class Viewport implements IDisposable {
     readonly onViewedModelsChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewportChanged: BeEvent<(vp: Viewport, changed: ChangeFlags) => void>;
     readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
+    // @internal (undocumented)
+    get overlayMap(): MapTileTreeReference | undefined;
     // @internal (undocumented)
     get overlayMap(): MapTileTreeReference | undefined;
     overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;

@@ -260,7 +260,6 @@ export abstract class ViewState extends ElementState {
    */
   public async load(): Promise<void> {
     const promises = [
-      this.iModel.backgroundMapLocation.initialize(this.iModel),
       this.loadAcs(),
       this.displayStyle.load(),
     ];
@@ -430,6 +429,7 @@ export abstract class ViewState extends ElementState {
   /** @internal */
   public createScene(context: SceneContext): void {
     this.forEachTileTreeRef((ref: TileTreeReference) => ref.addToScene(context));
+    context.viewport.forEachMapTreeRef((ref: TileTreeReference) => ref.addToScene(context));
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
@@ -1006,8 +1006,7 @@ export abstract class ViewState extends ElementState {
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.iModel.projectExtents.containsPoint(point))
       return Vector3d.unitZ();
 
-    // Note - use the calculated ECEF tranform rather than stored which may not be accurate.
-    const earthCenter = this.iModel.backgroundMapLocation.getMapEcefToDb(0).origin;
+    const earthCenter = this.iModel.getMapEcefToDb(0).origin;
     const normal = Vector3d.createStartEnd(earthCenter, point);
     normal.normalizeInPlace();
 
