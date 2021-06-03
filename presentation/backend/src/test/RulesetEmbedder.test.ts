@@ -143,7 +143,6 @@ describe("RulesetEmbedder", () => {
       model: modelId,
       code: DefinitionPartition.createCode(imodelMock.object, presentationRulesSubjectId, "PresentationRules"),
       classFullName: DefinitionPartition.classFullName,
-      isPrivate: true,
     };
     elementsMock.setup((x) => x.insertElement(createPartitionProps)).returns(() => definitionPartitionId);
 
