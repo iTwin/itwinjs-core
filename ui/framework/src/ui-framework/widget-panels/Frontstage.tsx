@@ -639,12 +639,12 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
           tabId: tab.id,
         }));
         removeTab(draft, tab.id);
-        // continue; // let fall through so we preserve preferred sizes of widgets load via UiItemsProvider
+        // let fall through so we preserve preferred sizes of widgets load via UiItemsProvider
       }
       draft.tabs[tab.id] = {
         ...tab,
         label: getWidgetLabel(widgetDef?.label ?? "undefined"),
-        canPopout: !!widgetDef?.canPopout,
+        canPopout: widgetDef?.canPopout,
       };
     }
     return;
@@ -1018,7 +1018,9 @@ export function useItemsManager(frontstageDef: FrontstageDef) {
 
 function tabShownInCurrentWidget(def: WidgetDef, state: NineZoneState) {
   for (const [, widget] of Object.entries(state.widgets)) {
-    if (widget.tabs.find((tabId) => tabId === def.id))
+    const foundTab = widget.tabs.find((tabId) => tabId === def.id);
+    // istanbul ignore else
+    if (foundTab)
       return true;
   }
   return false;

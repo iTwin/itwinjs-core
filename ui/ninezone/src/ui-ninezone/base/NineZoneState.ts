@@ -781,7 +781,7 @@ export function removeWidgetTab(state: Draft<NineZoneState>, tabId: TabState["id
  */
 export function removeTab(state: Draft<NineZoneState>, tabId: TabState["id"]) {
   removeWidgetTab(state, tabId);
-  // delete state.tabs[tabId]; // keep tab around for preferred size info
+  // keep state.tabs[tabId] around for preferred size info
 }
 
 function removeWidgetTabInternal(
