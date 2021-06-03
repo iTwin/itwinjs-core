@@ -9,6 +9,7 @@ import { AmbientOcclusion } from '@bentley/imodeljs-common';
 import { AnalysisStyle } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
 import { AngleSweep } from '@bentley/geometry-core';
+import { AppearanceOverrideProps as AppearanceOverrideProps_2 } from '@bentley/imodeljs-common';
 import { Arc3d } from '@bentley/geometry-core';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
@@ -46,7 +47,6 @@ import { Code } from '@bentley/imodeljs-common';
 import { CodeProps } from '@bentley/imodeljs-common';
 import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
-import { ColorDefProps } from '@bentley/imodeljs-common';
 import { ColorIndex } from '@bentley/imodeljs-common';
 import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { Constructor } from '@bentley/bentleyjs-core';
@@ -76,6 +76,7 @@ import { ElementLoadOptions } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { Ellipsoid } from '@bentley/geometry-core';
 import { EllipsoidPatch } from '@bentley/geometry-core';
+import { EmphasizeElementsProps as EmphasizeElementsProps_2 } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
@@ -88,6 +89,7 @@ import { FeatureIndex } from '@bentley/imodeljs-common';
 import { FeatureIndexType } from '@bentley/imodeljs-common';
 import { FeatureLogEntry } from '@bentley/usage-logging-client';
 import { FeatureOverrides } from '@bentley/imodeljs-common';
+import { FeatureOverrideType } from '@bentley/imodeljs-common';
 import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
@@ -1065,15 +1067,8 @@ export interface Animator {
     interrupt(): void;
 }
 
-// @public
-export interface AppearanceOverrideProps {
-    // (undocumented)
-    color?: ColorDefProps;
-    // (undocumented)
-    ids?: Id64Array;
-    // (undocumented)
-    overrideType?: FeatureOverrideType;
-}
+// @public @deprecated
+export type AppearanceOverrideProps = AppearanceOverrideProps_2;
 
 // @internal (undocumented)
 export enum ArcGisErrorCode {
@@ -1845,6 +1840,9 @@ export class ChangeFlags {
     get viewedModels(): boolean;
     get viewState(): boolean;
 }
+
+// @internal (undocumented)
+export type ChangeSetId = string;
 
 // @public
 export interface ChangeViewedModel2dOptions {
@@ -2919,7 +2917,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     set defaultAppearance(appearance: FeatureAppearance | undefined);
     emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureAppearance, replace?: boolean): boolean;
     emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureAppearance, replace?: boolean, clearSelection?: boolean): boolean;
-    fromJSON(props: EmphasizeElementsProps, vp: Viewport): boolean;
+    fromJSON(props: EmphasizeElementsProps_2, vp: Viewport): boolean;
     static get(vp: Viewport): EmphasizeElements | undefined;
     getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined;
     getEmphasizedElements(vp: Viewport): Id64Set | undefined;
@@ -2945,7 +2943,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     setAlwaysDrawnElements(ids: Id64Arg, vp: Viewport, exclusive?: boolean, replace?: boolean): boolean;
     // @internal
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
-    toJSON(vp: Viewport): EmphasizeElementsProps;
+    toJSON(vp: Viewport): EmphasizeElementsProps_2;
     get unanimatedAppearance(): FeatureAppearance | undefined;
     set unanimatedAppearance(appearance: FeatureAppearance | undefined);
     // @internal (undocumented)
@@ -2953,25 +2951,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     wantEmphasis: boolean;
 }
 
-// @public
-export interface EmphasizeElementsProps {
-    // (undocumented)
-    alwaysDrawn?: Id64Array;
-    // (undocumented)
-    alwaysDrawnExclusiveEmphasized?: Id64Array;
-    // (undocumented)
-    appearanceOverride?: AppearanceOverrideProps[];
-    // (undocumented)
-    defaultAppearance?: FeatureAppearanceProps;
-    // (undocumented)
-    isAlwaysDrawnExclusive?: boolean;
-    // (undocumented)
-    neverDrawn?: Id64Array;
-    // (undocumented)
-    unanimatedAppearance?: FeatureAppearanceProps;
-    // (undocumented)
-    wantEmphasis?: boolean;
-}
+// @public @deprecated
+export type EmphasizeElementsProps = EmphasizeElementsProps_2;
 
 // @beta
 export class EngineeringLengthDescription extends FormattedQuantityDescription {
@@ -3146,12 +3127,7 @@ export interface FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
-// @public
-export enum FeatureOverrideType {
-    AlphaOnly = 1,
-    ColorAndAlpha = 2,
-    ColorOnly = 0
-}
+export { FeatureOverrideType }
 
 // @public
 export namespace FeatureSymbology {
@@ -3407,6 +3383,20 @@ export class FrameStatsCollector {
     // (undocumented)
     endTime(entry: keyof FrameStats): void;
     }
+
+// @internal (undocumented)
+export interface FrontendHubAccess {
+    // (undocumented)
+    getChangesetIdFromNamedVersion: (arg: IModelIdArg & {
+        versionName: string;
+    }) => Promise<ChangeSetId>;
+    // (undocumented)
+    getChangesetIdFromVersion: (arg: IModelIdArg & {
+        version: IModelVersion;
+    }) => Promise<ChangeSetId>;
+    // (undocumented)
+    getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangeSetId>;
+}
 
 // @public
 export enum FrontendLoggerCategory {
@@ -4479,7 +4469,10 @@ export class IModelApp {
     static formatElementToolTip(msg: string[]): HTMLElement;
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
+    // @internal
+    static get hubAccess(): FrontendHubAccess;
     static get i18n(): I18N;
+    // @deprecated (undocumented)
     static get iModelClient(): IModelClient;
     // @internal (undocumented)
     static get initialized(): boolean;
@@ -4711,6 +4704,32 @@ export class IModelFrameLifecycle {
     static readonly onChangeCameraView: BeEvent<(data: FrameCameraViewData) => void>;
     // (undocumented)
     static readonly onRenderOpaque: BeEvent<(data: FrameRenderData) => void>;
+}
+
+// @internal (undocumented)
+export class IModelHubFrontend {
+    // (undocumented)
+    static getChangesetIdFromNamedVersion(arg: IModelIdArg & {
+        versionName: string;
+    }): Promise<ChangeSetId>;
+    // (undocumented)
+    static getChangesetIdFromVersion(arg: IModelIdArg & {
+        version: IModelVersion;
+    }): Promise<ChangeSetId>;
+    // (undocumented)
+    static getLatestChangesetId(arg: IModelIdArg): Promise<ChangeSetId>;
+    // (undocumented)
+    static get iModelClient(): IModelClient;
+    // (undocumented)
+    static setIModelClient(client?: IModelClient): void;
+}
+
+// @internal (undocumented)
+export interface IModelIdArg {
+    // (undocumented)
+    iModelId: GuidString;
+    // (undocumented)
+    requestContext: AuthorizedClientRequestContext;
 }
 
 // @public

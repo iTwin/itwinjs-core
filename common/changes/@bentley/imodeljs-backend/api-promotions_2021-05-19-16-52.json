@@ -2,11 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-backend",
-<<<<<<< HEAD:common/changes/@bentley/imodeljs-backend/api-promotions_2021-05-19-16-52.json
       "comment": "Promote APIs to public.",
-=======
-      "comment": "Deprecate useless Texture properties.",
->>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/imodeljs-backend/promote-material-apis_2021-05-11-12-58.json
       "type": "none"
     }
   ],
