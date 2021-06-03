@@ -7768,8 +7768,9 @@ export interface TextStringProps {
     widthFactor?: number;
 }
 
-// @alpha
+// @public
 export interface TextureLoadProps {
+    maxTextureSize?: number;
     name: Id64String;
 }
 
