@@ -226,7 +226,7 @@ export class OrbitGtTileTree extends TileTree {
     this.rootTile = new OrbitGtRootTile(this._tileParams, this);
   }
 
-  public async getEcefTranform(): Promise<Transform | undefined> {
+  public async getEcefTransform(): Promise<Transform | undefined> {
     return this._ecefTransform;
   }
 
