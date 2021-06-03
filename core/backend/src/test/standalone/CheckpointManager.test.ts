@@ -3,17 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { ClientRequestContext, DbResult, Guid } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
+import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import { IModelHost } from "../../imodeljs-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { BlobDaemon } from "@bentley/imodeljs-native";
 
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
