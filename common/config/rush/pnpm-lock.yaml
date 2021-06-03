@@ -10384,7 +10384,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001233
-      electron-to-chromium: 1.3.745
+      electron-to-chromium: 1.3.746
     dev: true
 
   /browserslist/4.11.1:
@@ -10392,7 +10392,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001233
-      electron-to-chromium: 1.3.745
+      electron-to-chromium: 1.3.746
       node-releases: 1.1.72
       pkg-up: 2.0.0
 
@@ -10402,7 +10402,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001233
-      electron-to-chromium: 1.3.745
+      electron-to-chromium: 1.3.746
       escalade: 3.1.1
       node-releases: 1.1.72
 
@@ -10413,7 +10413,7 @@ packages:
     dependencies:
       caniuse-lite: 1.0.30001233
       colorette: 1.2.2
-      electron-to-chromium: 1.3.745
+      electron-to-chromium: 1.3.746
       escalade: 3.1.1
       node-releases: 1.1.72
 
@@ -12178,8 +12178,8 @@ packages:
   /ee-first/1.1.1:
     resolution: {integrity: sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=}
 
-  /electron-to-chromium/1.3.745:
-    resolution: {integrity: sha512-ZZCx4CS3kYT3BREYiIXocDqlNPT56KfdTS1Ogo4yvxRriBqiEXCDTLIQZT/zNVtby91xTWMMxW2NBiXh8bpLHw==}
+  /electron-to-chromium/1.3.746:
+    resolution: {integrity: sha512-3ffyGODL38apwSsIgXaWnAKNXChsjXhAmBTjbqCbrv1fBbVltuNLWh0zdrQbwK/oxPQ/Gss/kYfFAPPGu9mszQ==}
 
   /electron/11.4.7:
     resolution: {integrity: sha512-ZObBEsLrD1mIjF15tClcyDsOisOmwpE/+EcZNhBmB5N2WBjskhQHkFczNEOSTTzQ9w0kSWQUPQjLbmKQ3fD/NQ==}
