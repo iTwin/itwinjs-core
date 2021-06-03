@@ -8,7 +8,7 @@
 
 import "./MultiValueFilter.scss";
 import React from "react";
-import { CheckBoxState, CheckListBox, CheckListBoxItem, Gap, SearchBox, UiCore } from "@bentley/ui-core";
+import { CheckBoxState, CheckListBox, CheckListBoxItem, SearchBox, UiCore } from "@bentley/ui-core";
 import { Button, Checkbox } from "@itwin/itwinui-react";
 import { PopupButton, PopupContent } from "../../../editors/PopupButton";
 import { ReactDataGridColumn } from "../../component/TableColumn";
@@ -206,10 +206,9 @@ export function MultiValueFilter(props: MultiValueFilterProps) {
             </div>
           }
           <div className="components-multi-value-buttons">
-            <Button onClick={handleClear} data-testid="components-multi-value-button-clear">{clearLabel}</Button>
-            <Gap />
-            <Button styleType="cta" onClick={handleApplyFilter} data-testid="components-multi-value-button-filter">{filterLabel}</Button>
-            <Button onClick={handleCancel} data-testid="components-multi-value-button-cancel">{cancelLabel}</Button>
+            <Button size="small" onClick={handleClear} data-testid="components-multi-value-button-clear">{clearLabel}</Button>
+            <Button size="small" styleType="cta" onClick={handleApplyFilter} data-testid="components-multi-value-button-filter">{filterLabel}</Button>
+            <Button size="small" onClick={handleCancel} data-testid="components-multi-value-button-cancel">{cancelLabel}</Button>
           </div>
         </PopupContent>
       </PopupButton>

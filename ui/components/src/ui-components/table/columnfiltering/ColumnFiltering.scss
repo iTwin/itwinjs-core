@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@bentley/ui-core/lib/ui-core/inputs/variables";
 @import "~@itwin/itwinui-css/scss/inputs/input";
 
 .components-table {
@@ -22,6 +23,8 @@
 
     .form-control.input-sm {
       @include iui-input;
+      display: inline;
+      padding: $uicore-iui-input-padding;
       margin: 0;
       max-width: calc(100% - 10px);
       height: $filter-height;

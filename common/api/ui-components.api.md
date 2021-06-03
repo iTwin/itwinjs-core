@@ -66,6 +66,7 @@ import * as React from 'react';
 import ReactDataGrid = require('react-data-grid');
 import { RelativePosition } from '@bentley/ui-abstract';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
+import { SelectOption } from '@itwin/itwinui-react';
 import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { TentativePoint } from '@bentley/imodeljs-frontend';
@@ -1726,6 +1727,8 @@ export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {
 export class EnumPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get containerHandlesEnter(): boolean;
+    // (undocumented)
+    get containerStopsKeydownPropagation(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
@@ -3507,6 +3510,8 @@ export abstract class PropertyEditorBase implements DataController {
     get containerHandlesEscape(): boolean;
     // (undocumented)
     get containerHandlesTab(): boolean;
+    // (undocumented)
+    get containerStopsKeydownPropagation(): boolean;
     // (undocumented)
     customDataController: DataController | undefined;
     // (undocumented)
