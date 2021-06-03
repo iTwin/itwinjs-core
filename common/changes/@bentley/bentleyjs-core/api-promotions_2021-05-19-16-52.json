@@ -2,11 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/bentleyjs-core",
-<<<<<<< HEAD:common/changes/@bentley/bentleyjs-core/api-promotions_2021-05-19-16-52.json
-      "comment": "Promote APIs to public.",
-=======
       "comment": "Added new error to indicate corrupt briefcase state",
->>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/bentleyjs-core/deleted-change-set-handling_2021-02-02-08-56.json
       "type": "none"
     }
   ],

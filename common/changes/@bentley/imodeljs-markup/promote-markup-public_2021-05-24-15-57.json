@@ -1,19 +1,11 @@
 {
   "changes": [
     {
-<<<<<<< HEAD:common/changes/@bentley/imodeljs-markup/promote-markup-public_2021-05-24-15-57.json
       "packageName": "@bentley/imodeljs-markup",
-=======
-      "packageName": "@bentley/electron-manager",
->>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/electron-manager/nativeapp-tests_2021-05-05-12-19.json
       "comment": "",
       "type": "none"
     }
   ],
-<<<<<<< HEAD:common/changes/@bentley/imodeljs-markup/promote-markup-public_2021-05-24-15-57.json
   "packageName": "@bentley/imodeljs-markup",
-=======
-  "packageName": "@bentley/electron-manager",
->>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/electron-manager/nativeapp-tests_2021-05-05-12-19.json
   "email": "33296803+kabentley@users.noreply.github.com"
 }
