@@ -113,7 +113,7 @@ export class BeTimePoint {
     plus(duration: BeDuration): BeTimePoint;
 }
 
-// @beta
+// @public
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
@@ -1141,6 +1141,11 @@ export class LRUDictionary<K, V> extends LRUCache<K, V> {
 export class LRUMap<K, V> extends LRUCache<K, V> {
     constructor(limit: number);
 }
+
+// @public
+export type Mutable<T> = {
+    -readonly [K in keyof T]: T[K];
+};
 
 // @public
 export class MutableCompressedId64Set implements OrderedId64Iterable {

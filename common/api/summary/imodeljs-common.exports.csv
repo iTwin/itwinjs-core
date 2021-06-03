@@ -9,6 +9,7 @@ public;AmbientLightProps
 public;AmbientOcclusion
 alpha;AnalysisStyle
 alpha;AnalysisStyleProps
+public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
 public;AuxCoordSystem2dProps 
@@ -155,6 +156,7 @@ public;ElementIdsAndRangesProps
 public;ElementLoadOptions
 public;ElementLoadProps 
 public;ElementProps 
+public;EmphasizeElementsProps
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps
@@ -175,6 +177,7 @@ internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
 public;FeatureOverrides 
+public;FeatureOverrideType
 public;FeatureTable 
 internal;FeatureTableHeader
 public;FilePropertyProps
@@ -310,10 +313,10 @@ internal;IpcAppChannel
 internal;IpcAppFunctions
 internal;IpcAppNotifications
 internal;IpcInvokeReturn =
-beta;IpcListener = (evt: Event, ...args: any[]) => void
-beta;IpcSocket
-beta;IpcSocketBackend 
-beta;IpcSocketFrontend 
+public;IpcListener = (evt: Event, ...args: any[]) => void
+public;IpcSocket
+public;IpcSocketBackend 
+public;IpcSocketFrontend 
 internal;class IpcWebSocket 
 internal;IpcWebSocketBackend 
 internal;IpcWebSocketFrontend 
@@ -325,7 +328,7 @@ public;isPlacement2dProps(props: PlacementProps): props is Placement2dProps
 public;isPlacement3dProps(props: PlacementProps): props is Placement3dProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
-beta;iTwinChannel: (channel: string) => string
+internal;iTwinChannel: (channel: string) => string
 public;JsonGeometryStream
 public;LatAndLong
 public;LatLongAndHeight 
@@ -582,7 +585,7 @@ internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
 public;TextStringProps
-alpha;TextureLoadProps
+public;TextureLoadProps
 public;TextureMapping
 public;TextureMapping
 public;TextureMapProps
@@ -599,8 +602,8 @@ public;ThematicGradientColorScheme
 public;ThematicGradientMode
 public;ThematicGradientSettings
 public;ThematicGradientSettingsProps
-alpha;ThumbnailFormatProps
-alpha;ThumbnailProps 
+public;ThumbnailFormatProps
+public;ThumbnailProps 
 internal;TileContentDescription 
 beta;TileContentIdentifier
 internal;TileContentMetadata
@@ -616,7 +619,7 @@ internal;TileReadStatus
 internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
-alpha;TileVersionInfo
+public;TileVersionInfo
 alpha;TreeFlags
 public;Tween
 public;TweenCallback = (obj: any) => void

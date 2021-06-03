@@ -204,6 +204,7 @@ beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
 internal;schemaItemTypeToXmlString(value: SchemaItemType): string
 beta;SchemaKey
+beta;SchemaKeyProps
 beta;SchemaMap 
 beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate

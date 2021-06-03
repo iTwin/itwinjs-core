@@ -226,6 +226,13 @@ export interface AnalysisStyleProps {
 }
 
 // @public
+export interface AppearanceOverrideProps {
+    color?: ColorDefProps;
+    ids?: Id64Array;
+    overrideType?: FeatureOverrideType;
+}
+
+// @public
 export interface AreaFillProps {
     backgroundFill?: BackgroundFill;
     color?: ColorDefProps;
@@ -1606,8 +1613,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1507328,
-    Major = 23,
+    Combined = 1572864,
+    Major = 24,
     Minor = 0
 }
 
@@ -1863,7 +1870,7 @@ export class DisplayStyleSettings {
     // @internal @deprecated
     readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
-    readonly onSubCategoryOverridesChanged: BeEvent<() => void>;
+    readonly onSubCategoryOverridesChanged: BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>;
     readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
     readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
     readonly onViewFlagsChanged: BeEvent<(newFlags: Readonly<ViewFlags>) => void>;
@@ -2326,6 +2333,18 @@ export interface ElementProps extends EntityProps {
     userLabel?: string;
 }
 
+// @public
+export interface EmphasizeElementsProps {
+    alwaysDrawn?: Id64Array;
+    alwaysDrawnExclusiveEmphasized?: Id64Array;
+    appearanceOverride?: AppearanceOverrideProps[];
+    defaultAppearance?: FeatureAppearanceProps;
+    isAlwaysDrawnExclusive?: boolean;
+    neverDrawn?: Id64Array;
+    unanimatedAppearance?: FeatureAppearanceProps;
+    wantEmphasis?: boolean;
+}
+
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
@@ -2650,6 +2669,13 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     // @internal
     protected readonly _visibleSubCategories: Id64.Uint32Set;
     }
+
+// @public
+export enum FeatureOverrideType {
+    AlphaOnly = 1,
+    ColorAndAlpha = 2,
+    ColorOnly = 0
+}
 
 // @public
 export class FeatureTable extends IndexMap<Feature> {
@@ -4216,12 +4242,17 @@ export interface IModelTileTreeProps extends TileTreeProps {
 // @public
 export class IModelVersion {
     static asOfChangeSet(changeSetId: string): IModelVersion;
+    // @deprecated
     evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
     // @deprecated
     static fromJson(jsonObj: any): IModelVersion;
     getAsOfChangeSet(): GuidString | undefined;
+    // @internal @deprecated
+    static getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<GuidString>;
+    // @internal @deprecated
+    static getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString>;
     getName(): string | undefined;
     get isFirst(): boolean;
     get isLatest(): boolean;
@@ -4301,7 +4332,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
 }
 
 // @public
-export interface InformationPartitionElementProps extends DefinitionElementProps {
+export interface InformationPartitionElementProps extends ElementProps {
     // (undocumented)
     description?: string;
 }
@@ -4397,22 +4428,22 @@ export type IpcInvokeReturn = {
     };
 };
 
-// @beta
+// @public
 export type IpcListener = (evt: Event, ...args: any[]) => void;
 
-// @beta
+// @public
 export interface IpcSocket {
     addListener: (channel: string, listener: IpcListener) => RemoveFunction;
     removeListener: (channel: string, listener: IpcListener) => void;
     send: (channel: string, ...data: any[]) => void;
 }
 
-// @beta
+// @public
 export interface IpcSocketBackend extends IpcSocket {
     handle: (channel: string, handler: (...args: any[]) => Promise<any>) => RemoveFunction;
 }
 
-// @beta
+// @public
 export interface IpcSocketFrontend extends IpcSocket {
     invoke: (channel: string, ...args: any[]) => Promise<any>;
 }
@@ -4501,7 +4532,7 @@ export function isPowerOfTwo(num: number): boolean;
 // @internal (undocumented)
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
-// @beta
+// @internal
 export const iTwinChannel: (channel: string) => string;
 
 // @public
@@ -7745,8 +7776,9 @@ export interface TextStringProps {
     widthFactor?: number;
 }
 
-// @alpha
+// @public
 export interface TextureLoadProps {
+    maxTextureSize?: number;
     name: Id64String;
 }
 
@@ -7962,14 +7994,14 @@ export interface ThematicGradientSettingsProps {
     stepCount?: number;
 }
 
-// @alpha
+// @public
 export interface ThumbnailFormatProps {
     format: "jpeg" | "png";
     height: number;
     width: number;
 }
 
-// @alpha
+// @public
 export interface ThumbnailProps extends ThumbnailFormatProps {
     image: Uint8Array;
 }
@@ -8136,7 +8168,7 @@ export interface TileTreeProps {
     rootTile: TileProps;
 }
 
-// @alpha
+// @public
 export interface TileVersionInfo {
     formatVersion: number;
 }

@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/backend-itwin-client",
+      "packageName": "@bentley/imodeljs-backend",
       "comment": "",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/backend-itwin-client",
+  "packageName": "@bentley/imodeljs-backend",
   "email": "66480813+paulius-valiunas@users.noreply.github.com"
 }
