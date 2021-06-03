@@ -2040,9 +2040,6 @@ export class EcefLocation implements EcefLocationProps {
     getTransform(): Transform;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
-    readonly xVector?: Vector3d;
-    // (undocumented)
-    readonly yVector?: Vector3d;
 }
 
 // @public
@@ -2050,9 +2047,6 @@ export interface EcefLocationProps {
     cartographicOrigin?: LatLongAndHeight;
     orientation: YawPitchRollProps;
     origin: XYZProps;
-    xVector?: XYZProps;
-    // (undocumented)
-    yVector?: XYZProps;
 }
 
 // @public

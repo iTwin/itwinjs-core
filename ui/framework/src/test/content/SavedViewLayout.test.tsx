@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import * as React from "react";
+import * as moq from "typemoq";
 import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   CategorySelectorProps, DisplayStyleProps, EcefLocation, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
-import { DrawingViewState, EmphasizeElements, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState } from "@bentley/imodeljs-frontend";
-import { expect } from "chai";
-import * as React from "react";
-import * as moq from "typemoq";
+import {
+  BackgroundMapLocation, DrawingViewState, EmphasizeElements, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState,
+} from "@bentley/imodeljs-frontend";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentProps, CoreTools, Frontstage,
   FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SavedViewLayout, SavedViewLayoutProps, ViewportContentControl, Widget,
@@ -30,6 +32,7 @@ describe("SavedViewLayout", () => {
   imodelMock.setup((x) => x.views).returns(() => viewsMock.object);
   imodelMock.setup((x) => x.subcategories).returns(() => new SubCategoriesCache(imodelMock.object));
   imodelMock.setup((x) => x.models).returns(() => new IModelConnection.Models(imodelMock.object));
+  imodelMock.setup((x) => x.backgroundMapLocation).returns(() => new BackgroundMapLocation());
   imodelMock.setup((x) => x.ecefLocation).returns(() => new EcefLocation({ origin: Point3d.createZero(), orientation: YawPitchRollAngles.createRadians(0, 0, 0) }));
   imodelMock.setup((x) => x.projectExtents).returns(() => Range3d.create(Point3d.createZero()));
 
