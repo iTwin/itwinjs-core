@@ -9,6 +9,7 @@ public;AmbientLightProps
 public;AmbientOcclusion
 alpha;AnalysisStyle
 alpha;AnalysisStyleProps
+public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
 public;AuxCoordSystem2dProps 
@@ -160,6 +161,7 @@ public;ElementIdsAndRangesProps
 public;ElementLoadOptions
 public;ElementLoadProps 
 public;ElementProps 
+public;EmphasizeElementsProps
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps
@@ -180,6 +182,7 @@ internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
 public;FeatureOverrides 
+public;FeatureOverrideType
 public;FeatureTable 
 internal;FeatureTableHeader
 public;FilePropertyProps
@@ -594,7 +597,7 @@ internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
 public;TextStringProps
-alpha;TextureLoadProps
+public;TextureLoadProps
 public;TextureMapping
 public;TextureMapping
 public;TextureMapProps
