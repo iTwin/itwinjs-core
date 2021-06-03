@@ -573,7 +573,7 @@ export class ChangeSetHandler {
   private async downloadChangeSetWithRetry(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, downloadPath: string, changeSetProgress?: ProgressCallback): Promise<void> {
     requestContext.enter();
     try {
-      await this.downloadChangeset(requestContext, changeSet, downloadPath, changeSetProgress);
+      await this.downloadChangeSet(requestContext, changeSet, downloadPath, changeSetProgress);
       requestContext.enter();
       return;
     } catch (error) {
@@ -592,7 +592,7 @@ export class ChangeSetHandler {
       if (refreshedChangeSets.length === 0)
         throw error;
 
-      await this.downloadChangeset(requestContext, refreshedChangeSets[0], downloadPath, changeSetProgress);
+      await this.downloadChangeSet(requestContext, refreshedChangeSets[0], downloadPath, changeSetProgress);
       requestContext.enter();
       return;
     }
@@ -605,7 +605,7 @@ export class ChangeSetHandler {
    * @param changeSetProgress Callback for tracking progress.
    * @throws [ResponseError]($itwin-client) if the download fails.
    */
-  private async downloadChangeset(requestContext: AuthorizedClientRequestContext, changeSet: ChangeSet, downloadPath: string, changeSetProgress?: ProgressCallback): Promise<void> {
+  private async downloadChangeSet(requestContext: AuthorizedClientRequestContext, changeSet: ChangeSet, downloadPath: string, changeSetProgress?: ProgressCallback): Promise<void> {
     requestContext.enter();
     try {
       await this._fileHandler!.downloadFile(requestContext, changeSet.downloadUrl!, downloadPath, changeSet.fileSizeNumber, changeSetProgress);
@@ -635,7 +635,7 @@ export class ChangeSetHandler {
     if (actualFileSize === expectedFileSize)
       return true;
 
-    Logger.logError(loggerCategory, `ChangeSet size ${actualFileSize} does not match the expected size ${expectedFileSize}. Deleting it so that it can be re-fetched`, () => (changeSet));
+    Logger.logError(loggerCategory, `ChangeSet size ${actualFileSize} does not match the expected size ${expectedFileSize}. Deleting it so that it can be refetched`, () => (changeSet));
     try {
       this._fileHandler.unlink(path);
     } catch (error) {
