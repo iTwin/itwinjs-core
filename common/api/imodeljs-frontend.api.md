@@ -1846,7 +1846,7 @@ export class ChangeFlags {
     get viewState(): boolean;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export type ChangeSetId = string;
 
 // @public
@@ -3411,7 +3411,7 @@ export class FrameStatsCollector {
     endTime(entry: keyof FrameStats): void;
     }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface FrontendHubAccess {
     // (undocumented)
     getChangesetIdFromNamedVersion: (arg: IModelIdArg & {
@@ -4752,7 +4752,7 @@ export class IModelHubFrontend {
     static setIModelClient(client?: IModelClient): void;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface IModelIdArg {
     // (undocumented)
     iModelId: GuidString;

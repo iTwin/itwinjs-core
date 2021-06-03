@@ -4223,9 +4223,9 @@ export class IModelVersion {
     // @deprecated
     static fromJson(jsonObj: any): IModelVersion;
     getAsOfChangeSet(): GuidString | undefined;
-    // @internal
+    // @internal @deprecated
     static getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<GuidString>;
-    // @internal
+    // @internal @deprecated
     static getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString>;
     getName(): string | undefined;
     get isFirst(): boolean;
