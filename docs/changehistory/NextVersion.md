@@ -6,6 +6,7 @@ publish: false
 ## New IModel events
 
 [IModel]($common)s now emit events when their properties change.
+
 * [IModel.onProjectExtentsChanged]($common)
 * [IModel.onGlobalOriginChanged]($common)
 * [IModel.onEcefLocationChanged]($common)
