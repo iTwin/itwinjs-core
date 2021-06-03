@@ -7,5 +7,9 @@
     }
   ],
   "packageName": "@bentley/imodeljs-frontend",
+<<<<<<< HEAD:common/changes/@bentley/imodeljs-frontend/update-rush_2021-05-24-15-45.json
   "email": "38971167+saemjeon@users.noreply.github.com"
+=======
+  "email": "33296803+kabentley@users.noreply.github.com"
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/imodeljs-frontend/download-v2-checkpoint_2021-05-10-17-31.json
 }

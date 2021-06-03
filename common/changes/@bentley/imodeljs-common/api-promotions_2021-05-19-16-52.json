@@ -2,7 +2,11 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-common",
+<<<<<<< HEAD:common/changes/@bentley/imodeljs-common/api-promotions_2021-05-19-16-52.json
       "comment": "Promote APIs to public.",
+=======
+      "comment": "Clean up and promote beta RenderMaterial and RenderTexture APIs.",
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/imodeljs-common/promote-material-apis_2021-05-11-10-44.json
       "type": "none"
     }
   ],

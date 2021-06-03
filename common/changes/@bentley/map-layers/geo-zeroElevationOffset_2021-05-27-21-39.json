@@ -2,7 +2,11 @@
   "changes": [
     {
       "packageName": "@bentley/map-layers",
+<<<<<<< HEAD:common/changes/@bentley/map-layers/geo-zeroElevationOffset_2021-05-27-21-39.json
       "comment": "Fixed a bug where an elevation offset value of 0 could not be in the UI.",
+=======
+      "comment": "Fixed typo in activeViewport.view.isSpatialView: it should be invoked as a method and not a property.",
+>>>>>>> ba767253d304bf3f3ff944118cf98c7bea796eff:common/changes/@bentley/map-layers/geo-typo_isSpatialView_2021-04-20-15-53.json
       "type": "none"
     }
   ],
