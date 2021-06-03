@@ -12,7 +12,6 @@ import { Point, PointProps, Rectangle, RectangleProps, SizeProps } from "@bentle
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@bentley/bentleyjs-core";
 import { getUniqueId } from "./NineZone";
-import { wait } from "@testing-library/react";
 
 /** @internal future */
 export interface SizeAndPositionProps extends SizeProps, PointProps { }

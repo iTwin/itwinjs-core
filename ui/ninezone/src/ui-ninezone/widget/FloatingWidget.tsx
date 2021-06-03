@@ -13,7 +13,7 @@ import { CommonProps, Point, PointProps, Rectangle, useRefs } from "@bentley/ui-
 import { assert } from "@bentley/bentleyjs-core";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
-import { FloatingWidgetHomeState, FloatingWidgetState, WidgetState } from "../base/NineZoneState";
+import { FloatingWidgetState, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
