@@ -77,7 +77,7 @@ export abstract class IModelConnection extends IModel {
   /** The map location.
    * @internal
    */
-  public backgroundMapLocation = new BackgroundMapLocation();
+  public readonly backgroundMapLocation = new BackgroundMapLocation();
   /** The Geographic location services available for this iModelConnection
    * @internal
    */
