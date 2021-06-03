@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-rpcinterface-common",
-  "version": "2.16.1",
+  "version": "2.16.2",
   "description": "Schema RPC Interface common interface",
   "main": "lib/ecschema-rpc-interface.js",
   "typings": "lib/ecschema-rpc-interface",
@@ -30,20 +30,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "2.16.1",
-    "@bentley/ecschema-metadata": "2.16.1",
-    "@bentley/geometry-core": "2.16.1",
-    "@bentley/imodeljs-common": "2.16.1",
-    "@bentley/itwin-client": "2.16.1"
+    "@bentley/bentleyjs-core": "2.16.2",
+    "@bentley/ecschema-metadata": "2.16.2",
+    "@bentley/geometry-core": "2.16.2",
+    "@bentley/imodeljs-common": "2.16.2",
+    "@bentley/itwin-client": "2.16.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.1",
-    "@bentley/build-tools": "2.16.1",
-    "@bentley/ecschema-metadata": "2.16.1",
-    "@bentley/eslint-plugin": "2.16.1",
-    "@bentley/geometry-core": "2.16.1",
-    "@bentley/imodeljs-common": "2.16.1",
-    "@bentley/itwin-client": "2.16.1",
+    "@bentley/bentleyjs-core": "2.16.2",
+    "@bentley/build-tools": "2.16.2",
+    "@bentley/ecschema-metadata": "2.16.2",
+    "@bentley/eslint-plugin": "2.16.2",
+    "@bentley/geometry-core": "2.16.2",
+    "@bentley/imodeljs-common": "2.16.2",
+    "@bentley/itwin-client": "2.16.2",
     "eslint": "^6.8.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0"
