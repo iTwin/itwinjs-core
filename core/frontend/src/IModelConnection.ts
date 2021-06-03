@@ -228,10 +228,6 @@ export abstract class IModelConnection extends IModel {
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
     this.altitudeProvider = new ProjectAltitudeProvider(this);
 
-    this.onEcefLocationChanged.addListener(() => {
-      this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
-    });
-
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
       this.expandDisplayedExtents(this._extentsExpansion);

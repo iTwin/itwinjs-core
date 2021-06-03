@@ -341,11 +341,8 @@ export class TestRunner {
   }
 
   private async setupTest(context: TestContext): Promise<TestCase | undefined> {
-    // Workaround for shifting map geometry when location needs to be asynchronously initialized.
-    const imodel = context.iModel;
-    await imodel.backgroundMapLocation.initialize(imodel);
-
     // Open the view.
+    const imodel = context.iModel;
     const view = await this.loadView(context);
     if (!view)
       return undefined;

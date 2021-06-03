@@ -1239,7 +1239,6 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.quantityFormatting,
       ComponentExamplesProvider.settingPage,
       ComponentExamplesProvider.deprecatedComponentSamples,
-      ComponentExamplesProvider.mergedCellsSamples,
     ];
   }
 }
