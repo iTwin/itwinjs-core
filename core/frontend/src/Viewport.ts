@@ -17,7 +17,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, NpcCenter, Placement, Placement2d,
+  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d,
   Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
   SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -62,6 +62,7 @@ import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
+import { FlashSettings } from "./FlashSettings";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -353,23 +354,18 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public readonly subcategories = new SubCategoriesCache.Queue();
 
-  /** Time the current flash started.
-   * @internal
-   */
-  public flashUpdateTime?: BeTimePoint;
-  /** Current flash intensity from [0..1]
-   * @internal
-   */
-  public flashIntensity = 0;
-  /** The length of time that the flash intensity will increase (in seconds)
-   * @internal
-   */
-  public flashDuration = 0;
-  private _flashedElem?: string;         // id of currently flashed element
-  /** Id of last flashed element.
-   * @internal
-   */
-  public lastFlashedElem?: string;
+  /** Time the current flash started. */
+  private _flashUpdateTime?: BeTimePoint;
+  /** Current flash intensity from [0..this.flashSettings.maxIntensity] */
+  private _flashIntensity = 0;
+  /** Id of the currently flashed element. */
+  private _flashedElem?: string;
+  /** Id of last flashed element. */
+  private _lastFlashedElem?: string;
+  /** The Id of the most recently flashed element, if any. */
+  public get lastFlashedElementId(): Id64String | undefined {
+    return this._lastFlashedElem;
+  }
 
   private _wantViewAttachments = true;
   /** For debug purposes, controls whether or not view attachments are displayed in sheet views.
@@ -424,6 +420,7 @@ export abstract class Viewport implements IDisposable {
   private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+  private _flash = new FlashSettings();
 
   /** @see [DisplayStyle3dSettings.lights]($common) */
   public get lightSettings(): LightSettings | undefined {
@@ -508,6 +505,15 @@ export abstract class Viewport implements IDisposable {
   public get emphasisSettings(): Hilite.Settings { return this._emphasis; }
   public set emphasisSettings(settings: Hilite.Settings) {
     this._emphasis = settings;
+    this.invalidateRenderPlan();
+  }
+
+  /** The settings that control how elements are flashed in this viewport. */
+  public get flashSettings(): FlashSettings {
+    return this._flash;
+  }
+  public set flashSettings(settings: FlashSettings) {
+    this._flash = settings;
     this.invalidateRenderPlan();
   }
 
@@ -1502,14 +1508,13 @@ export abstract class Viewport implements IDisposable {
   /** Set or clear the currently *flashed* element.
    * @note This method is not typically invoked directly - [[ToolAdmin]] will invoke it for you when the user hovers over an element.
    * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element.
-   * @param duration The amount of time, in seconds, the flash intensity will increase (see [[flashDuration]]).
+   * @param _duration Ignored - the duration from [[Viewport.flashSettings]] is used.
    */
-  public setFlashed(id: string | undefined, duration: number): void {
+  public setFlashed(id: string | undefined, _duration?: number): void {
     if (id !== this._flashedElem) {
-      this.lastFlashedElem = this._flashedElem;
+      this._lastFlashedElem = this._flashedElem;
       this._flashedElem = id;
     }
-    this.flashDuration = duration;
   }
 
   public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
@@ -1565,6 +1570,31 @@ export abstract class Viewport implements IDisposable {
       this.onChangeView.raiseEvent(this, prevView);
       this._changeFlags.setViewState();
     }
+  }
+
+  /** Determine whether the supplied point is visible in the viewport rectangle.
+   * @param point the point to test
+   * @param coordSys the coordinate system of the specified point
+   * @param borderPaddingFactor optional border for testing with inset view rectangle.
+   */
+  public isPointVisibleXY(point: Point3d, coordSys: CoordSystem = CoordSystem.World, borderPaddingFactor: number = 0.0): boolean {
+    let testPtView = point;
+    switch (coordSys) {
+      case CoordSystem.Npc:
+        testPtView = this.npcToView(point);
+        break;
+      case CoordSystem.World:
+        testPtView = this.worldToView(point);
+        break;
+    }
+
+    const frustum = this.getFrustum(CoordSystem.View);
+    const screenRangeX = frustum.points[Npc._000].distance(frustum.points[Npc._100]);
+    const screenRangeY = frustum.points[Npc._000].distance(frustum.points[Npc._010]);
+    const xBorder = screenRangeX * borderPaddingFactor;
+    const yBorder = screenRangeY * borderPaddingFactor;
+
+    return (!(testPtView.x < xBorder || testPtView.x > (screenRangeX - xBorder) || testPtView.y < yBorder || testPtView.y > (screenRangeY - yBorder)));
   }
 
   /** Computes the range of npc depth values for a region of the screen
@@ -2159,17 +2189,21 @@ export abstract class Viewport implements IDisposable {
   private processFlash(): boolean {
     let needsFlashUpdate = false;
 
-    if (this._flashedElem !== this.lastFlashedElem) {
-      this.flashIntensity = 0.0;
-      this.flashUpdateTime = BeTimePoint.now();
-      this.lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
+    if (this._flashedElem !== this._lastFlashedElem) {
+      this._flashIntensity = 0.0;
+      this._flashUpdateTime = BeTimePoint.now();
+      this._lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
       needsFlashUpdate = this._flashedElem === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
     }
 
-    if (this._flashedElem !== undefined && this.flashIntensity < 1.0) {
-      const flashDuration = BeDuration.fromSeconds(this.flashDuration);
-      const flashElapsed = BeTimePoint.now().milliseconds - this.flashUpdateTime!.milliseconds;
-      this.flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds; // how intense do we want the flash effect to be from [0..1]?
+    if (this._flashedElem !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
+      assert(undefined !== this._flashUpdateTime);
+
+      const flashDuration = this.flashSettings.duration;
+      const flashElapsed = BeTimePoint.now().milliseconds - this._flashUpdateTime.milliseconds;
+      this._flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds;
+      this._flashIntensity = Math.min(this._flashIntensity, this.flashSettings.maxIntensity);
+
       needsFlashUpdate = true;
     }
 
@@ -2310,7 +2344,7 @@ export abstract class Viewport implements IDisposable {
 
     let requestNextAnimation = false;
     if (this.processFlash()) {
-      target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this.flashIntensity);
+      target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this._flashIntensity);
       isRedrawNeeded = true;
       requestNextAnimation = undefined !== this._flashedElem;
     }

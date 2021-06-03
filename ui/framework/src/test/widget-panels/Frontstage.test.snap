@@ -308,7 +308,7 @@ Object {
 }
 `;
 
-exports[`Frontstage local storage wrapper ModalFrontstageComposer restoreNineZoneState should log error if widgetDef is not found 1`] = `
+exports[`Frontstage local storage wrapper ModalFrontstageComposer restoreNineZoneState should log info if widgetDef is not found 1`] = `
 Object {
   "frontstageId": "",
   "tabId": "t1",

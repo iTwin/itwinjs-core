@@ -13,6 +13,15 @@ alpha;DynamicGraphicsProvider
 alpha;EditorOptions
 alpha;EditTools
 alpha;MoveElementsTool 
+beta;ProjectExtentsClipDecoration 
+beta;ProjectGeolocationMoveTool 
+beta;ProjectGeolocationNorthTool 
+beta;ProjectGeolocationPointTool 
+beta;ProjectLocationCancelTool 
+beta;ProjectLocationChanged
+beta;ProjectLocationHideTool 
+beta;ProjectLocationSaveTool 
+beta;ProjectLocationShowTool 
 alpha;RedoTool 
 alpha;RotateAbout
 alpha;RotateElementsTool 

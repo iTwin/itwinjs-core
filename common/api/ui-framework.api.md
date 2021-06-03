@@ -54,7 +54,7 @@ import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { ECClassGroupingNodeKey } from '@bentley/presentation-common';
-import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
+import { EmphasizeElementsProps } from '@bentley/imodeljs-common';
 import { FunctionKey as FunctionKey_2 } from '@bentley/ui-abstract';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { GuidString } from '@bentley/bentleyjs-core';
