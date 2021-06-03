@@ -96,6 +96,15 @@ export class RpcBriefcaseUtility {
     }
   }
 
+  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
+    const iModelDb = IModelDb.tryFindByKey(iModel.key);
+    if (undefined === iModelDb) {
+      return this.open({ requestContext, tokenProps: iModel, syncMode, timeout: 1000 });
+    }
+    await iModelDb.reattachDaemon(requestContext);
+    return iModelDb;
+  }
+
   /**
    * Download and open a checkpoint or briefcase, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
    * a RpcPendingResponse exception is thrown

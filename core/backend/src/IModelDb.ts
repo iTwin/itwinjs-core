@@ -44,7 +44,6 @@ import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
-import { RpcBriefcaseUtility } from "./rpc-impl/RpcBriefcaseUtility";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
@@ -168,6 +167,8 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.closeIModel();
     this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
+
+  public async reattachDaemon(_requestContext: AuthorizedClientRequestContext): Promise<void> { }
 
   /** Event called when the iModel is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -832,17 +833,6 @@ export abstract class IModelDb extends IModel {
         return entry[1];
     }
     return undefined;
-  }
-
-  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
-    const iModelDb = this.tryFindByKey(iModel.key);
-    if (undefined === iModelDb) {
-      return RpcBriefcaseUtility.open({ requestContext, tokenProps: iModel, syncMode, timeout: 1000 });
-    }
-    if (iModelDb.isSnapshotDb() && iModelDb.isV2Checkpoint) {
-      await V2CheckpointManager.reattachIfNeeded({ requestContext, expectV2: true, ...iModel } as CheckpointProps); // assume contextId, iModelId and changesetId are always defined
-    }
-    return iModelDb;
   }
 
   /** Find an open IModelDb by its key.
@@ -2158,10 +2148,6 @@ export class BriefcaseDb extends IModelDb {
    */
   public static readonly onOpened = new BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
 
-  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<BriefcaseDb> {
-    return await super.findOrOpen(requestContext, iModel, syncMode) as BriefcaseDb;
-  }
-
   public static findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
   }
@@ -2441,6 +2427,7 @@ export class SnapshotDb extends IModelDb {
   public get isSnapshot(): boolean { return true; }
   public get isV2Checkpoint(): boolean { return this._isV2Checkpoint; }
   private _isV2Checkpoint: boolean;
+  private _reattachDueTimestamp: number | undefined;
   private _createClassViewsOnClose?: boolean;
   /** The full path to the snapshot iModel file.
    * @deprecated use pathName
@@ -2452,10 +2439,6 @@ export class SnapshotDb extends IModelDb {
     const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId: nativeDb.getParentChangeSetId(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
     this._isV2Checkpoint = false;
-  }
-
-  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<SnapshotDb> {
-    return await super.findOrOpen(requestContext, iModel, syncMode) as SnapshotDb;
   }
 
   public static findByKey(key: string): SnapshotDb {
@@ -2567,7 +2550,7 @@ export class SnapshotDb extends IModelDb {
    * @internal
    */
   public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
-    const filePath = await V2CheckpointManager.attach(checkpoint);
+    const { filePath, expiryTimestamp } = await V2CheckpointManager.attach(checkpoint);
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
     try {
@@ -2578,27 +2561,33 @@ export class SnapshotDb extends IModelDb {
     }
 
     snapshot._isV2Checkpoint = true;
+    snapshot.setReattachDueTimestamp(expiryTimestamp);
     return snapshot;
   }
 
-  /** Used to refresh the checkpoint daemon's access to this checkpoint's storage container.
+  /** Used to refresh the checkpoint daemon's access to this checkpoint's storage container if it's nearly expired.
    * @param requestContext The client request context.
    * @throws [[IModelError]] If the db is not a checkpoint.
    * @internal
    */
   public async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this._changeSetId)
-      throw new IModelError(IModelStatus.WrongIModel, `SnapshotDb is not a checkpoint`);
-    await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId });
+    if (!this._isV2Checkpoint)
+      return;
+    if (this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
+      const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId! });
+      this.setReattachDueTimestamp(expiryTimestamp);
+    }
+  }
+
+  private setReattachDueTimestamp(expiryTimestamp: number) {
+    const expiresIn = expiryTimestamp - Date.now();
+
+    this._reattachDueTimestamp = Date.now() + expiresIn / 2;
   }
 
   /** @internal */
   public beforeClose(): void {
     super.beforeClose();
-    if (this._changeSetId) {
-      const checkpointKey = CheckpointManager.getKey({ contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId } as CheckpointProps);
-      V2CheckpointManager.detach(checkpointKey);
-    }
 
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
@@ -2635,10 +2624,6 @@ export class StandaloneDb extends IModelDb {
    * @deprecated use pathName
    */
   public get filePath(): string { return this.pathName; }
-
-  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<StandaloneDb> {
-    return await super.findOrOpen(requestContext, iModel, syncMode) as StandaloneDb;
-  }
 
   public static findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;

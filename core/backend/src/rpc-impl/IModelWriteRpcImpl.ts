@@ -80,59 +80,53 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async saveChanges(tokenProps: IModelRpcProps, description?: string): Promise<void> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    (await IModelDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush)).saveChanges(description);
+    IModelDb.findByKey(tokenProps.key).saveChanges(description);
   }
 
   public async hasUnsavedChanges(tokenProps: IModelRpcProps): Promise<boolean> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return (await IModelDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush)).nativeDb.hasUnsavedChanges();
+    return IModelDb.findByKey(tokenProps.key).nativeDb.hasUnsavedChanges();
   }
 
   public async hasPendingTxns(tokenProps: IModelRpcProps): Promise<boolean> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return (await IModelDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush)).nativeDb.hasPendingTxns();
+    return IModelDb.findByKey(tokenProps.key).nativeDb.hasPendingTxns();
   }
 
   public async getParentChangeset(tokenProps: IModelRpcProps): Promise<string> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return (await BriefcaseDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush)).changeSetId;
+    return BriefcaseDb.findByKey(tokenProps.key).changeSetId;
   }
 
   public async updateProjectExtents(tokenProps: IModelRpcProps, newExtents: AxisAlignedBox3dProps): Promise<void> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    (await IModelDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush)).updateProjectExtents(Range3d.fromJSON(newExtents));
+    IModelDb.findByKey(tokenProps.key).updateProjectExtents(Range3d.fromJSON(newExtents));
   }
 
   public async saveThumbnail(tokenProps: IModelRpcProps, val: Uint8Array): Promise<void> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const int32Val = new Uint32Array(val.buffer, 0, 6);
     const props: ThumbnailProps = { format: int32Val[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: int32Val[2], height: int32Val[3], image: new Uint8Array(val.buffer, 24, int32Val[0]) };
     const id = Id64.fromLocalAndBriefcaseIds(int32Val[4], int32Val[5]);
     if (!Id64.isValid(id) || props.width === undefined || props.height === undefined || props.image.length <= 0)
       throw new Error("bad args");
 
-    if (0 !== (await IModelDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush)).views.saveThumbnail(id, props))
+    if (0 !== IModelDb.findByKey(tokenProps.key).views.saveThumbnail(id, props))
       throw new Error("failed to save thumbnail");
   }
 
   public async lockModel(tokenProps: IModelRpcProps, modelId: Id64String, level: LockLevel): Promise<void> {
+    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = await BriefcaseDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush);
     const request = new ConcurrencyControl.Request();
     request.addLocks([{ type: LockType.Model, objectId: modelId, level }]);
     return iModelDb.concurrencyControl.request(requestContext, request);
   }
 
   public async synchConcurrencyControlResourcesCache(tokenProps: IModelRpcProps): Promise<void> {
+    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = await BriefcaseDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush);
     return iModelDb.concurrencyControl.syncCache(requestContext);
   }
 
   public async pullMergePush(tokenProps: IModelRpcProps, comment: string, doPush: boolean): Promise<GuidString> {
+    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = await BriefcaseDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush);
     await iModelDb.pullAndMergeChanges(requestContext);
     requestContext.enter();
     const parentChangeSetId = iModelDb.changeSetId;
@@ -142,22 +136,22 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async pullAndMergeChanges(tokenProps: IModelRpcProps): Promise<IModelConnectionProps> {
+    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = await BriefcaseDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush);
     await iModelDb.pullAndMergeChanges(requestContext);
     return iModelDb.getConnectionProps();
   }
 
   public async pushChanges(tokenProps: IModelRpcProps, description: string): Promise<IModelConnectionProps> {
+    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = await BriefcaseDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush);
     await iModelDb.pushChanges(requestContext, description);
     return iModelDb.getConnectionProps();
   }
 
   public async doConcurrencyControlRequest(tokenProps: IModelRpcProps): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = await BriefcaseDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush);
+    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const rqctx = new AuthorizedBackendRequestContext(requestContext.accessToken);
     return iModelDb.concurrencyControl.request(rqctx);
   }
@@ -167,35 +161,31 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async deleteElements(tokenProps: IModelRpcProps, ids: Id64Array) {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = await IModelDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush);
+    const iModelDb = IModelDb.findByKey(tokenProps.key);
     ids.forEach((id) => iModelDb.elements.deleteElement(id));
   }
 
   public async requestResources(tokenProps: IModelRpcProps, elementIds: Id64Array, modelIds: Id64Array, opcode: DbOpcode): Promise<void> {
     // Don't check if we are in bulk mode - assume the caller knows what he is doing.
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = await BriefcaseDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush);
+    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const elements = elementIds.map((id: string) => ({ element: iModelDb.elements.getElement(id), opcode }));
     const models = modelIds.map((id: string) => ({ model: iModelDb.models.getModel(id), opcode }));
     return iModelDb.concurrencyControl.requestResources(requestContext, elements, models);
   }
 
   public async createAndInsertPhysicalModel(tokenProps: IModelRpcProps, newModelCode: CodeProps, privateModel: boolean): Promise<Id64String> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = await IModelDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush);
+    const iModelDb = IModelDb.findByKey(tokenProps.key);
     return EditingFunctions.createAndInsertPhysicalPartitionAndModel(ClientRequestContext.current as AuthorizedClientRequestContext, iModelDb, newModelCode, privateModel);
   }
 
   public async createAndInsertSpatialCategory(tokenProps: IModelRpcProps, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelDb = await IModelDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush);
+    const iModelDb = IModelDb.findByKey(tokenProps.key);
     return EditingFunctions.createAndInsertSpatialCategory(ClientRequestContext.current as AuthorizedClientRequestContext, iModelDb, scopeModelId, categoryName, appearance);
   }
 
   public async undoRedo(rpc: IModelRpcProps, undo: boolean): Promise<IModelStatus> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const db = await IModelDb.findOrOpen(requestContext, rpc, SyncMode.PullAndPush);
+    const db = IModelDb.findByKey(rpc.key);
     if (db instanceof BriefcaseDb || db instanceof StandaloneDb)
       return undo ? db.txns.reverseSingleTxn() : db.txns.reinstateTxn();
     return IModelStatus.WrongIModel;

@@ -143,7 +143,7 @@ export class V2CheckpointManager {
     }
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<string> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: string, expiryTimestamp: number }> {
     const args = await this.getCommandArgs(checkpoint);
     if (undefined === args.daemonDir || args.daemonDir === "")
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
@@ -158,24 +158,8 @@ export class V2CheckpointManager {
       throw new IModelError(attachResult.result, error);
     }
     const sasTokenExpiry = new URLSearchParams(args.auth).get("se");
-    if (sasTokenExpiry) {
-      const expiresIn = Date.parse(sasTokenExpiry) - Date.now();
 
-      this.reattachDueTimestamps[CheckpointManager.getKey(checkpoint)] = Date.now() + expiresIn / 2;
-    }
-
-    return BlobDaemon.getDbFileName(args);
-  }
-
-  public static async reattachIfNeeded(checkpoint: CheckpointProps): Promise<void> {
-    const key = CheckpointManager.getKey(checkpoint);
-    if (this.reattachDueTimestamps.hasOwnProperty(key) && this.reattachDueTimestamps[key] <= Date.now())
-      await this.attach(checkpoint);
-  }
-
-  public static detach(checkpointKey: string) {
-    if (this.reattachDueTimestamps.hasOwnProperty(checkpointKey))
-      delete this.reattachDueTimestamps[checkpointKey];
+    return { filePath: BlobDaemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 };
   }
 
   private static async performDownload(job: DownloadJob): Promise<void> {

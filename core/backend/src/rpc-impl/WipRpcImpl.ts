@@ -6,10 +6,8 @@
  * @module RpcInterface
  */
 
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager, SyncMode } from "@bentley/imodeljs-common";
+import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ChangedElementsManager } from "../ChangedElementsManager";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { BriefcaseDb } from "../IModelDb";
@@ -23,13 +21,11 @@ export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
   public async placeholder(_tokenProps: IModelRpcProps): Promise<string> { return "placeholder"; }
 
   public async isChangeCacheAttached(tokenProps: IModelRpcProps): Promise<boolean> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return ChangeSummaryManager.isChangeCacheAttached(await BriefcaseDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush));
+    return ChangeSummaryManager.isChangeCacheAttached(BriefcaseDb.findByKey(tokenProps.key));
   }
 
   public async attachChangeCache(tokenProps: IModelRpcProps): Promise<void> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    ChangeSummaryManager.attachChangeCache(await BriefcaseDb.findOrOpen(requestContext, tokenProps, SyncMode.PullAndPush));
+    ChangeSummaryManager.attachChangeCache(BriefcaseDb.findByKey(tokenProps.key));
   }
 
   public async getChangedElements(tokenProps: IModelRpcProps, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
