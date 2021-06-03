@@ -31,10 +31,11 @@ if (!fs.existsSync(distDir))
 // Run eslint with the appropriate configuration and formatter to get a report of the no-internal rule
 let args = [
   "--no-eslintrc",
-  "-c", path.join(distDir, "configs/imodeljs-recommended.js"),
   "-f", path.join(distDir, "formatters/no-internal-summary.js"),
   "--plugin", "@bentley",
-  "--rule", "@bentley/no-internal: 'error'",
+  "--rule", "@bentley/no-internal:'error'",
+  "--parser", "@typescript-eslint/parser",
+  "--parser-options", "{project:'tsconfig.json',sourceType:'module'}",
   ...process.argv.slice(2)
 ];
 
