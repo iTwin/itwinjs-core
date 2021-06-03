@@ -51,16 +51,6 @@ describe("CopyExternalsPlugin", () => {
     expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/c/index.js"), "utf8")).to.equal(`console.log("This is c");`);
   });
 
-  it("should copy @bentley/imodeljs-native", async () => {
-    vol.fromJSON({
-      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as imodeljsnative from "@bentley/imodeljs-native";`,
-    });
-    testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["@bentley/imodeljs-native"]);
-
-    await runWebpack(testConfig, vol);
-    expect(fs.existsSync(path.join(__dirname, "dist/node_modules/@bentley/imodeljs-native"))).to.be.true;
-  });
-
   it("should copy indirect dependencies with symlink", async () => {
     fsFromJson({
       "lib/test/assets/copy-externals-plugin-test/test.js": `import * as a from "a";`,

@@ -585,7 +585,7 @@ internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
 public;TextStringProps
-alpha;TextureLoadProps
+public;TextureLoadProps
 public;TextureMapping
 public;TextureMapping
 public;TextureMapProps
