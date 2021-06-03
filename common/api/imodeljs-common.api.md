@@ -226,6 +226,16 @@ export interface AnalysisStyleProps {
 }
 
 // @public
+export interface AppearanceOverrideProps {
+    // (undocumented)
+    color?: ColorDefProps;
+    // (undocumented)
+    ids?: Id64Array;
+    // (undocumented)
+    overrideType?: FeatureOverrideType;
+}
+
+// @public
 export interface AreaFillProps {
     backgroundFill?: BackgroundFill;
     color?: ColorDefProps;
@@ -2326,6 +2336,26 @@ export interface ElementProps extends EntityProps {
     userLabel?: string;
 }
 
+// @public
+export interface EmphasizeElementsProps {
+    // (undocumented)
+    alwaysDrawn?: Id64Array;
+    // (undocumented)
+    alwaysDrawnExclusiveEmphasized?: Id64Array;
+    // (undocumented)
+    appearanceOverride?: AppearanceOverrideProps[];
+    // (undocumented)
+    defaultAppearance?: FeatureAppearanceProps;
+    // (undocumented)
+    isAlwaysDrawnExclusive?: boolean;
+    // (undocumented)
+    neverDrawn?: Id64Array;
+    // (undocumented)
+    unanimatedAppearance?: FeatureAppearanceProps;
+    // (undocumented)
+    wantEmphasis?: boolean;
+}
+
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
@@ -2650,6 +2680,13 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     // @internal
     protected readonly _visibleSubCategories: Id64.Uint32Set;
     }
+
+// @public
+export enum FeatureOverrideType {
+    AlphaOnly = 1,
+    ColorAndAlpha = 2,
+    ColorOnly = 0
+}
 
 // @public
 export class FeatureTable extends IndexMap<Feature> {

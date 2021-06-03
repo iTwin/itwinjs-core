@@ -19,6 +19,7 @@ export * from "./DrawingViewState";
 export * from "./EditingFunctions";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
+export * from "./EmphasizeElementsProps";
 export * from "./EntityState";
 export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
