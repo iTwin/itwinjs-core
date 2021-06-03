@@ -33,6 +33,7 @@ interface NeedleProps {
  * @deprecated
  */
 // istanbul ignore next
+// eslint-disable-next-line deprecation/deprecation
 function Needle({ startDate, endDate, selectedDate }: NeedleProps) {
   const percent = (selectedDate.getTime() - startDate.getTime()) / (endDate.getTime() - startDate.getTime()) * 100;
   return (
@@ -62,12 +63,14 @@ interface TooltipRailState {
  * @deprecated
  */
 // istanbul ignore next
+// eslint-disable-next-line deprecation/deprecation
 class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 
   public static defaultProps = {
     disabled: false,
   };
 
+  // eslint-disable-next-line deprecation/deprecation
   constructor(props: TooltipRailProps) {
     super(props);
 
@@ -136,6 +139,7 @@ interface HandleProps {
   isActive: boolean;
   disabled?: boolean;
   domain: number[];
+  // eslint-disable-next-line deprecation/deprecation
   milestone: Milestone;
   getHandleProps: (id: string, config: object) => object;
 }
@@ -152,11 +156,13 @@ interface HandleState {
  * @deprecated
  */
 // istanbul ignore next
+// eslint-disable-next-line deprecation/deprecation
 class Handle extends React.Component<HandleProps, HandleState> {
   public static defaultProps = {
     disabled: false,
   };
 
+  // eslint-disable-next-line deprecation/deprecation
   constructor(props: HandleProps) {
     super(props);
 
@@ -256,6 +262,7 @@ export interface TimelineProps extends CommonProps {
   startDate: Date;
   endDate: Date;
   selectedDate: Date;
+  // eslint-disable-next-line deprecation/deprecation
   milestones?: Milestone[];
   isPlaying: boolean;
   onChange?: (values: ReadonlyArray<number>) => void;
@@ -273,8 +280,10 @@ interface TimelineState {
  * @deprecated
  */
 // istanbul ignore next
+// eslint-disable-next-line deprecation/deprecation
 export class Timeline extends React.Component<TimelineProps, TimelineState> {
 
+  // eslint-disable-next-line deprecation/deprecation
   constructor(props: TimelineProps) {
     super(props);
 
@@ -301,6 +310,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
 
     // istanbul ignore else
     if (milestones) {
+      // eslint-disable-next-line deprecation/deprecation
       milestones.forEach((milestone: Milestone) => handles.push(milestone.date.getTime()));
     }
 
