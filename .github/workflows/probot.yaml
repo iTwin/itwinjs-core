@@ -5,8 +5,7 @@ on:
     types:
       - opened
   pull_request:
-    types:
-      - edited
+  push:
 
 
 jobs:
