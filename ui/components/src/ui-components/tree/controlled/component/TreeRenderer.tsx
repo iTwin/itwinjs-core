@@ -68,6 +68,11 @@ export interface TreeRendererProps {
    * @internal
    */
   onNodeEditorClosed?: () => void;
+
+  /** Width of the tree area. */
+  width?: number;
+  /** Height of the tree area. */
+  height?: number;
 }
 
 /**
@@ -274,6 +279,8 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
         <VirtualizedList
           ref={virtualizedListRef}
           className={"ReactWindow__VariableSizeList"}
+          width={props.width}
+          height={props.height}
           onTreeSizeChanged={onTreeSizeChanged}
           itemCount={props.visibleNodes.getNumNodes()}
           itemSize={itemSize}

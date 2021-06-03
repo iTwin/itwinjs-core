@@ -3,17 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList, VariableSizeListProps } from "react-window";
 import { Observable } from "rxjs/internal/Observable";
 import { ReplaySubject } from "rxjs/internal/ReplaySubject";
 import { assert } from "@bentley/bentleyjs-core";
+import { ConditionalAutoSizer } from "../../../common/ConditionalAutoSizer";
 
 /** @internal */
 export type VirtualizedListAttributes = Pick<VariableSizeList, "resetAfterIndex" | "scrollToItem">;
 
 /** @internal */
 export interface VirtualizedListProps extends Omit<VariableSizeListProps, "width" | "height"> {
+  width?: number;
+  height?: number;
   onTreeSizeChanged: (width: number) => void;
 }
 
@@ -35,21 +37,23 @@ export const VirtualizedList = React.forwardRef<VirtualizedListAttributes, Virtu
     [],
   );
 
+  const { width, height, ...innerListProps } = props;
+
   return (
-    <AutoSizer>
-      {({ width, height }) => {
-        props.onTreeSizeChanged(width);
+    <ConditionalAutoSizer width={width} height={height}>
+      {(size) => {
+        props.onTreeSizeChanged(size.width);
         return (
           <VirtualizedListInner
             ref={innerListRef}
             observableScrollToItem={subjectScrollToItemRef.current}
-            width={width}
-            height={height}
-            {...props}
+            width={size.width}
+            height={size.height}
+            {...innerListProps}
           />
         );
       }}
-    </AutoSizer>
+    </ConditionalAutoSizer>
   );
 });
 
