@@ -18,7 +18,7 @@ import { UiSettingsProvider } from "../uisettings/useUiSettings";
 import { PopupRenderer } from "../popup/PopupManager";
 import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
-import { CursorPopupMenu } from "../../ui-framework";
+import { CursorPopupMenu, FrameworkVersion } from "../../ui-framework";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ThemeManager } from "../theme/ThemeManager";
 
@@ -104,15 +104,17 @@ export class ChildWindowManager {
             <Provider store={StateManager.store} >
               <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
                 <ThemeManager>
-                  <div className="uifw-child-window-container-host">
-                    <PopupRenderer />
-                    <ModalDialogRenderer />
-                    <ModelessDialogRenderer />
-                    <CursorPopupMenu />
-                    <div className="uifw-child-window-container nz-widget-widget">
-                      {content}
+                  <FrameworkVersion version="2">
+                    <div className="uifw-child-window-container-host">
+                      <PopupRenderer />
+                      <ModalDialogRenderer />
+                      <ModelessDialogRenderer />
+                      <CursorPopupMenu />
+                      <div className="uifw-child-window-container nz-widget-widget">
+                        {content}
+                      </div>
                     </div>
-                  </div>
+                  </FrameworkVersion>
                 </ThemeManager>
               </UiSettingsProvider>
             </Provider>,
