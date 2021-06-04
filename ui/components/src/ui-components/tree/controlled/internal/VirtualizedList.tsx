@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { Size } from "react-virtualized-auto-sizer";
 import { VariableSizeList, VariableSizeListProps } from "react-window";
 import { Observable } from "rxjs/internal/Observable";
 import { ReplaySubject } from "rxjs/internal/ReplaySubject";
@@ -37,12 +38,12 @@ export const VirtualizedList = React.forwardRef<VirtualizedListAttributes, Virtu
     [],
   );
 
-  const { width, height, ...innerListProps } = props;
+  const { width, height, onTreeSizeChanged, ...innerListProps } = props;
+  const handleOnResize = React.useCallback((size: Size) => onTreeSizeChanged(size.width), [onTreeSizeChanged]);
 
   return (
-    <ConditionalAutoSizer width={width} height={height}>
+    <ConditionalAutoSizer width={width} height={height} onResize={handleOnResize}>
       {(size) => {
-        props.onTreeSizeChanged(size.width);
         return (
           <VirtualizedListInner
             ref={innerListRef}

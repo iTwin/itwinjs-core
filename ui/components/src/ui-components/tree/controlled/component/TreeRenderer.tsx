@@ -321,7 +321,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
     const className = classnames("node-wrapper", { "is-selected": isTreeModelNode(node) && node.isSelected });
 
     const ref = React.useRef<HTMLDivElement>(null);
-    React.useLayoutEffect(() => {
+    React.useEffect(() => {
       // istanbul ignore else
       if (onNodeWidthMeasured && ref.current)
         onNodeWidthMeasured(ref.current.offsetWidth);
