@@ -46,6 +46,7 @@
     "typescript": "^3.7.0 || ^4.0.0"
   },
   "devDependencies": {
-    "@types/eslint": "~7.2.13"
+    "@types/eslint": "~7.2.13",
+    "@types/estree": "~0.0.48"
   }
 }
