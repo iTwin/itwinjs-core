@@ -13,7 +13,16 @@ export interface ConditionalAutoSizerProps {
   children: (size: Size) => React.ReactNode;
 }
 
-/** @internal */
+/**
+ * Supplies child element with parent element's content width and height. If width and height are specified in the
+ * props, these dimensions are forwarded to child without too much overhead. Otherwise, `AutoSizer` from
+ * `react-virtualized-auto-sizer` is employed to measure available space and mount the children when the dimensions
+ * become known.
+ *
+ * This component is intended to aid towards `react-virtualized-auto-sizer` package removal, do not use this in new
+ * components.
+ * @internal
+ */
 export function ConditionalAutoSizer(props: ConditionalAutoSizerProps): React.ReactElement {
   const { width, height, onResize, children } = props;
 
