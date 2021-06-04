@@ -404,3 +404,8 @@ export * from "./ui-framework/zones/ZoneDef";
  * @docs-group-description Zone
  * Classes for working with a Zone
  */
+/**
+ * @docs-group-description Timeline
+ * Classes for working with a TimelineComponent
+ */
+
