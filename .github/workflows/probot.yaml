@@ -5,13 +5,12 @@ on:
     types:
       - opened
   pull_request:
-  push:
 
 
 jobs:
   runProbot:
     runs-on: ubuntu-latest
     steps:
-      - uses: SaemJeon/Test-Apps@v1
+      - uses: SaemJeon/apps@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
