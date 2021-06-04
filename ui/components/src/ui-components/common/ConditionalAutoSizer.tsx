@@ -15,28 +15,30 @@ export interface ConditionalAutoSizerProps {
 
 /** @internal */
 export function ConditionalAutoSizer(props: ConditionalAutoSizerProps): React.ReactElement {
+  const { width, height, onResize, children } = props;
+
   React.useLayoutEffect(
     () => {
-      if (props.width !== undefined && props.height !== undefined) {
-        props.onResize?.({ width: props.width, height: props.height });
+      if (width !== undefined && height !== undefined) {
+        onResize?.({ width, height });
       }
     },
-    [props.width, props.height, props.onResize],
+    [width, height, onResize],
   );
 
-  if (props.width !== undefined && props.height !== undefined) {
-    return <>{props.children({ width: props.width, height: props.height })}</>;
+  if (width !== undefined && height !== undefined) {
+    return <>{children({ width, height })}</>;
   }
 
   return (
     <AutoSizer
-      disableWidth={props.width !== undefined}
-      disableHeight={props.height !== undefined}
-      defaultWidth={props.width}
-      defaultHeight={props.height}
-      onResize={props.onResize}
+      disableWidth={width !== undefined}
+      disableHeight={height !== undefined}
+      defaultWidth={width}
+      defaultHeight={height}
+      onResize={onResize}
     >
-      {props.children}
+      {children}
     </AutoSizer>
   );
 }
