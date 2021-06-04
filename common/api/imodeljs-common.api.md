@@ -1613,8 +1613,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1507328,
-    Major = 23,
+    Combined = 1572864,
+    Major = 24,
     Minor = 0
 }
 
@@ -7775,8 +7775,9 @@ export interface TextStringProps {
     widthFactor?: number;
 }
 
-// @alpha
+// @public
 export interface TextureLoadProps {
+    maxTextureSize?: number;
     name: Id64String;
 }
 
