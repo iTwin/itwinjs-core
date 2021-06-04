@@ -54,7 +54,7 @@ const rule = {
   create(context) {
     const dontPropagate = context.options[0][OPTION_DONT_PROPAGATE];
 
-    /** @param {import("estree").Node} node */
+    /** @param {import("@typescript-eslint/typescript-estree").TSNode} node */
     function isThisSetState(node) {
       if (node.type !== "CallExpression") return false;
       const callee = node.callee;
@@ -84,43 +84,23 @@ const rule = {
     }
 
     return {
-      CallExpression(node) {
-        if (!isThisSetState(node)) return;
 
-        // Forbid object literal
-        const [updaterArgument, callbackArgument] = node.arguments;
-        if (!allowObject && updaterArgument.type === "ObjectExpression") {
-          context.report({
-            node: updaterArgument,
-            messageId: "failure",
-          });
-        }
-
-        // Forbid second argument if updaterOnly flag is set
-        if (updaterOnly && node.arguments.length > 1) {
-          context.report({
-            node: callbackArgument,
-            messageId: "failureUpdaterOnly",
-          });
-        }
-      },
-
-      MemberExpression(node) {
-        if (
-          node.type !== "MemberExpression" ||
-          node.object.type !== "ThisExpression" ||
-          (node.property.name !== "state" && node.property.name !== "props")
-        )
+      /** @param {import("typescript").FunctionLikeDeclaration} node */
+      FunctionDeclaration(node) {
+        // XXX: might not cover promise-returning functions as well as checking the return type
+        if (!node.async)
           return;
 
-        if (isInSetStateUpdater(node)) {
+        // XXX: won't match for example  my_namespace["ClientRequestContext"]
+        if (node.value.returnType.typeAnnotation.value === "ClientRequestContext")
+        const clientReqCtx = node.parameters.find(p => p.value.typeAnnotation === "ClientRequestContext");
+
+        if (clientReqCtx === undefined)
           context.report({
             node,
-            messageId: "failureAccessedMember",
-            data: { accessedMember: node.property.name },
+            messageId: "noContextArg"
           });
-        }
-      },
+      }
     };
   },
 };
