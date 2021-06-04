@@ -671,10 +671,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "lint-staged",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "lodash",
       "allowedCategories": [ "frontend", "tools" ]
     },
@@ -900,7 +896,7 @@
     },
     {
       "name": "request-promise",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "request-promise-native",
