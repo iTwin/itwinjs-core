@@ -894,7 +894,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Temperature (Custom)", undefined,
           <ParsedInput onChange={onTemperatureChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />),
         createComponentExample("Quantity Value Input", undefined,
-          <QuantityValueInput persistenceValue={initialLength} step={0.25} quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
+          <QuantityValueInput persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
       ],
     };
   }

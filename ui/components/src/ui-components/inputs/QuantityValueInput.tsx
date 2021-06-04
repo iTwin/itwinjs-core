@@ -12,7 +12,7 @@ import * as React from "react";
 import { Input, InputProps, WebFontIcon } from "@bentley/ui-core";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@bentley/imodeljs-frontend";
-import { Format, FormatterSpec, ParserSpec, UnitConversionSpec } from "@bentley/imodeljs-quantity";
+import { Format, FormatterSpec, ParserSpec, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
 
 /** Step function prototype for [[NumberInput]] component
  * @beta
@@ -52,11 +52,15 @@ function adjustFormatterSpec(formatterSpec: FormatterSpec | undefined) {
   return new FormatterSpec("single-value", Format.cloneToPrimaryUnitFormat(formatterSpec.format, true), formatterSpec.unitConversions, formatterSpec.persistenceUnit);
 }
 
-function convertValueFromDisplayToPersistence(value: number, unitConversions: UnitConversionSpec[] | undefined) {
+function convertValueFromDisplayToPersistence(value: number, unitConversions: UnitConversionSpec[] | undefined, unit: UnitProps) {
   if (!unitConversions || 0 === unitConversions.length)
     return value;
-  const unitConversion = unitConversions[0].conversion;
-  const convertedValue = (value * unitConversion.factor) + unitConversion.offset;
+
+  const unitConversion = unitConversions.find((spec) => spec.name === unit.name);
+  if (!unitConversion)
+    return value;
+
+  const convertedValue = (value * unitConversion.conversion.factor) + unitConversion.conversion.offset;
   return convertedValue;
 }
 
@@ -140,14 +144,18 @@ const ForwardRefQuantityValueInput = React.forwardRef<HTMLInputElement, Quantity
     }, []);
 
     const updateValue = React.useCallback((newValue: number) => {
-      // convert value from display unit to persistence unit
+      if (parserSpec) {
+        // convert value from display unit to persistence unit
 
-      const persistedValue = convertValueFromDisplayToPersistence(newValue, parserSpec?.unitConversions);
-      rawValueRef.current = persistedValue;
+        const [unit] = parserSpec.format.units ? parserSpec.format.units[0] : [parserSpec.outUnit];
+        const persistedValue = convertValueFromDisplayToPersistence(newValue, parserSpec?.unitConversions, unit);
+        rawValueRef.current = persistedValue;
 
-      const newFormattedVal = formatValue(persistedValue);
-      onChange && onChange(persistedValue);
-      setFormattedValue(newFormattedVal);
+        const newFormattedVal = formatValue(persistedValue);
+        onChange && onChange(persistedValue);
+        setFormattedValue(newFormattedVal);
+      }
+
     }, [formatValue, onChange, parserSpec]);
 
     /**
