@@ -16,7 +16,9 @@ import { HttpsAgent } from "agentkeepalive";
 import { CancelRequest, UserCancelledError } from "@bentley/itwin-client";
 import { checkSync, lockSync } from "proper-lockfile";
 import { AsyncMutex, BeEvent, BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
-/** Configure download task */
+/** Configure download task
+ * @internal
+ */
 export interface ConfigData {
   blockSize?: number;
   ignoreResumeData?: boolean;
@@ -66,6 +68,9 @@ interface SessionData {
   progressTimer?: NodeJS.Timeout;
   lastReportedBytes: number;
 }
+/** Progress data returned by progress callback
+ * @internal
+ */
 export interface ProgressData {
   bytesTotal: number;
   bytesDone: number;
@@ -76,6 +81,10 @@ export interface ProgressData {
   downloadRateBytesPerSec: number;
   windowRateBytesPerSec: number;
 }
+/** Allow to download blob as blocks in parallel. It also support
+ *  resume, md5 checksum and cross process download of same file.
+ * @internal
+ */
 export class BlobDownloader {
   private static downloads = new Map<string, SessionData>();
   private static resumeDataVer = 1;

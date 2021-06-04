@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodelhub-client-tests",
-      "comment": "fixed mock test for new bolb downloader",
+      "comment": "fixed mock test for new blob downloader",
       "type": "none"
     }
   ],

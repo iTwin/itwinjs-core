@@ -7,6 +7,7 @@ export * from "./telemetry";
 export * from "./BackendITwinClientLoggerCategory";
 export * from "./HttpRequestHost";
 export * from "./imodelhub/LocalhostFileHandler";
+export * from "./imodelhub/BlobDownloader";
 export * from "./imodelhub/AzureFileHandler";
 export * from "./UrlFileHandler";
 export * from "./StorageServiceFileHandler";
