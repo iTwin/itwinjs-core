@@ -210,11 +210,7 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
     },
   }), [props, onLabelRendered, highlightingEngine]);
 
-  const prevTreeWidth = React.useRef<number>(0);
-  const onTreeSizeChanged = React.useCallback((width: number) => {
-    setMinContainerWidth(0);
-    prevTreeWidth.current = width;
-  }, []);
+  const onTreeSizeChanged = React.useCallback(() => setMinContainerWidth(0), []);
 
   const itemKey = React.useCallback(
     (index: number) => getNodeKey(props.visibleNodes.getAtIndex(index)!),
