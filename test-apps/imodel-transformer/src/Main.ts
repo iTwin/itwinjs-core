@@ -241,18 +241,10 @@ void (async () => {
       }
     }
 
-    const excludeSubCategories = args.excludeSubCategories?.split(",");
-    const excludeCategories = args.excludeCategories?.split(",");
-
     const transformerOptions: TransformerOptions = {
-      simplifyElementGeometry: args.simplifyElementGeometry,
-      combinePhysicalModels: args.combinePhysicalModels,
-      exportViewDefinition: args.exportViewDefinition,
-      deleteUnusedGeometryParts: args.deleteUnusedGeometryParts,
-      excludeSubCategories,
-      excludeCategories,
-      noProvenance: args.noProvenance,
-      includeSourceProvenance: args.includeSourceProvenance,
+      ...args,
+      excludeSubCategories: args.excludeSubCategories?.split(","),
+      excludeCategories: args.excludeCategories?.split(","),
     };
 
     if (processChanges) {

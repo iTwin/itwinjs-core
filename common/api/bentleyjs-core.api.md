@@ -273,6 +273,7 @@ export namespace CompressedId64Set {
     export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
     export function iterable(ids: CompressedId64Set): OrderedId64Iterable;
     export function iterator(ids: CompressedId64Set): Iterator<Id64String>;
+    export function sortAndCompress(ids: Iterable<Id64String>): CompressedId64Set;
 }
 
 // @public (undocumented)
