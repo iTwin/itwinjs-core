@@ -142,12 +142,12 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
     updateUrl=https://api.github.com/repos/imodeljs/imodeljs/statuses/$(_jq ${pr} '.head.sha')
     target_url=$(_jq  ${status} '.target_url')
 
-    # curl \
-    #   -X POST \
-    #   -H "Accept: application/vnd.github.v3+json" \
-    #   -H "Authorization: token $oauth" \
-    #   $updateUrl \
-    #   -d '{"state":"failure","target_url":"'$(_jq  ${status} '.target_url')'","description":"The build hit the 3 hour threshold. Please re-queue the build.","context":"'$(_jq  ${status} '.context')'"}'
+    curl \
+      -X POST \
+      -H "Accept: application/vnd.github.v3+json" \
+      -H "Authorization: token $oauth" \
+      $updateUrl \
+      -d '{"state":"failure","target_url":"'$(_jq  ${status} '.target_url')'","description":"The build hit the 3 hour threshold. Please re-queue the build.","context":"'$(_jq  ${status} '.context')'"}'
 
     break
   done
