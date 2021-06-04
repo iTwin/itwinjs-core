@@ -1704,7 +1704,7 @@ describe("iModel", () => {
       guid: Guid.createValue(),
     };
 
-    const gcs: GeographicCRS = new GeographicCRS({
+    const gcs = new GeographicCRS({
       horizontalCRS: {
         id: "10TM115-27",
         description: "",
@@ -1831,7 +1831,7 @@ describe("iModel", () => {
       guid: Guid.createValue(),
     };
 
-    const gcs: GeographicCRS = new GeographicCRS({
+    const gcs = new GeographicCRS({
       horizontalCRS: {
         id: "10TM115-27",
         description: "",
