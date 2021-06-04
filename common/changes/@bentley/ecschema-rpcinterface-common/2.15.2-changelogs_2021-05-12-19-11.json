@@ -3,9 +3,9 @@
     {
       "comment": "",
       "type": "none",
-      "packageName": "@bentley/imodeljs-i18n"
+      "packageName": "@bentley/ecschema-rpcinterface-common"
     }
   ],
-  "packageName": "@bentley/imodeljs-i18n",
+  "packageName": "@bentley/ecschema-rpcinterface-common",
   "email": "32379572+skirby1996@users.noreply.github.com"
 }
