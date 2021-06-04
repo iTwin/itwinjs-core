@@ -268,6 +268,17 @@ export class TxnManager {
    */
   public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
 
+  /**
+   * Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed
+   * and reopened.)
+   * @note This can be quite disconcerting to the user expecting to be able to undo previously made changes. It should only be used
+   * under extreme circumstances where damage to the file or session could happen if the currently committed are reversed. Use sparingly and with care.
+   * Probably a good idea to alert the user it happened.
+   */
+  public restartSession() {
+    this._nativeDb.restartTxnSession();
+  }
+
   /** Determine whether undo is possible
    * @@deprecated - use [[isUndoPossible]]
    */
