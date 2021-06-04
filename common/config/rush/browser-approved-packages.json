@@ -896,7 +896,7 @@
     },
     {
       "name": "request-promise",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "request-promise-native",
