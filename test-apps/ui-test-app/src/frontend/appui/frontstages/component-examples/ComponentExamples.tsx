@@ -70,13 +70,13 @@ export const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (prop
               <>
                 {darkLabel}
               &nbsp;
-              <Toggle isOn={isChecked} showCheckmark={false} onChange={onThemeChange} />
+                <Toggle isOn={isChecked} showCheckmark={false} onChange={onThemeChange} />
               &nbsp;
-              {lightLabel}
-            </>
-          }
-        />
-        <hr className="component-examples-items-separator" />
+                {lightLabel}
+              </>
+            }
+          />
+          <hr className="component-examples-items-separator" />
         </>
         }
         {props.categories[activeIndex].examples.map((exampleProps: ComponentExampleProps, index: number) => {

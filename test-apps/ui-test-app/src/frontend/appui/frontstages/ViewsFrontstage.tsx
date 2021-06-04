@@ -48,7 +48,7 @@ import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
-import { OpenCustomPopoutTool, OpenViewPopoutTool, OpenComponentExamplesPopoutTool } from "../../tools/UiProviderTool";
+import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
 
 /* eslint-disable react/jsx-key */
 
