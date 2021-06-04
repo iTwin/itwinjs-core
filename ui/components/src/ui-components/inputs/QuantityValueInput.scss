@@ -1,0 +1,71 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/base/base";
+
+.component-quantity-value-input-container {
+  position: relative;
+  padding:  0;
+  margin:   0;
+  box-sizing: border-box;
+
+  input {
+    margin:       0;
+    padding-right: 1.5em;
+  }
+
+  &.core-number-buttons-for-touch {
+    input {
+      padding-right: 3.5em;
+    }
+  }
+
+  .component-quantity-value-input-buttons-container {
+    position: absolute;
+    top:      0;
+    right:    0;
+    width:    20px;
+    height:   22px;
+    @include uicore-centered;
+    flex-direction: column;
+
+    .component-quantity-value-input-button {
+      font-size: 8px;
+      outline: none;
+      height: 100%;
+      width: 100%;
+      @include uicore-centered;
+      &:hover {
+        color: $buic-foreground-primary-tone;
+        transition-duration: 150ms;
+      }
+      &.component-quantity-value-input-button-up {
+        padding-top: 1px;
+      }
+      &.component-quantity-value-input-button-down {
+        padding-top: 1px;
+      }
+    }
+
+    &.core-number-buttons-for-touch {
+      width:    3.5em;
+      flex-direction: row-reverse;
+
+      .component-quantity-value-input-button {
+        font-size: 1em;
+        &:hover {
+          color: unset;
+          transition-duration: unset;
+        }
+
+        &.component-quantity-value-input-button-up {
+          padding-top: 2px;
+        }
+        &.component-quantity-value-input-button-down {
+          padding-top: 2px;
+        }
+      }
+    }
+  }
+}

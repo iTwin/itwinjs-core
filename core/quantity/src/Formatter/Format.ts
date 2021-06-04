@@ -338,6 +338,40 @@ export class Format {
     this.units!.push([newUnit, label]);
   }
 
+  /**
+   *  Used when UI needs to display with a single unit value or show magnitude without a label, like in a table
+   * @param existing Format to clone
+   * @param clearShowUnitLabel if true clear FormatTraits.ShowUnitLabel.
+   * @returns
+   */
+  public static cloneToPrimaryUnitFormat(existing: Format, clearShowUnitLabel: boolean) {
+    const newFormat = new Format(existing.name);
+    newFormat._roundFactor = existing._roundFactor;
+    newFormat._type = existing._type;
+    newFormat._precision = existing._precision;
+    newFormat._minWidth = existing._minWidth;
+    newFormat._scientificType = existing._scientificType;
+    newFormat._showSignOption = existing._showSignOption;
+    newFormat._decimalSeparator = existing._decimalSeparator;
+    newFormat._thousandSeparator = existing._thousandSeparator;
+    newFormat._uomSeparator = existing._uomSeparator;
+    newFormat._stationSeparator = existing._stationSeparator;
+    newFormat._stationOffsetSize = existing._stationOffsetSize;
+    let formatTraits = existing._formatTraits;
+    if (clearShowUnitLabel)
+      formatTraits &= ~FormatTraits.ShowUnitLabel;
+    newFormat._formatTraits = formatTraits;
+    newFormat._spacer = existing._spacer;
+    newFormat._includeZero = existing._includeZero;
+    newFormat._customProps = existing._customProps;
+    // only copy the primary unit
+    if (existing._units) {
+      newFormat._units = new Array<[UnitProps, string | undefined]>();
+      newFormat._units.push(existing._units[0]);
+    }
+    return newFormat;
+  }
+
   private loadFormatProperties(jsonObj: FormatProps) {
     if (isCustomFormatProps(jsonObj))
       this._customProps = jsonObj.custom;

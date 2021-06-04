@@ -14,7 +14,7 @@ import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvi
 import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
+  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, QuantityValueInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
 } from "@bentley/ui-components";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
@@ -893,6 +893,8 @@ export class ComponentExamplesProvider {
           <QuantityInput initialValue={initialVolume} quantityType={QuantityType.Volume} onQuantityChange={onVolumeChange} />),
         createComponentExample("Temperature (Custom)", undefined,
           <ParsedInput onChange={onTemperatureChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />),
+        createComponentExample("Quantity Value Input", undefined,
+          <QuantityValueInput persistenceValue={initialLength} step={0.25} quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
       ],
     };
   }
