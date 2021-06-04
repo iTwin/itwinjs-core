@@ -15,7 +15,8 @@ import * as React from "react";
 import { GetHandleProps, Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider";
 import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
-import { BodyText, CommonProps, ElementResizeObserver, Popup, Tooltip } from "@bentley/ui-core";
+import { BodyText, CommonProps, ElementResizeObserver, Popup } from "@bentley/ui-core";
+import { Tooltip } from "@itwin/itwinui-react";
 import { UiComponents } from "../../ui-components/UiComponents";
 import { HueSlider } from "../color/HueSlider";
 import { SaturationPicker } from "../color/SaturationPicker";
@@ -26,7 +27,7 @@ import { SpeedTimeline } from "./SpeedTimeline";
 import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker";
 import { TimeField, TimeSpec } from "../datepicker/TimeField";
 
-// cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline
+// cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline datepicker millisecs
 
 const millisecPerMinute = 1000 * 60;
 const millisecPerHour = millisecPerMinute * 60;
@@ -85,7 +86,6 @@ interface TooltipRailProps {
 interface TooltipRailState {
   value: number | null;
   percent: number | null;
-  tooltipTarget: HTMLDivElement | undefined;
 }
 
 class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
@@ -100,7 +100,6 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     this.state = {
       value: null,
       percent: null,
-      tooltipTarget: undefined,
     };
   }
 
@@ -123,12 +122,6 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     }
   };
 
-  private _handleTooltipTarget = (element: HTMLDivElement | null) => {
-    this.setState({
-      tooltipTarget: element || undefined,
-    });
-  };
-
   public render() {
     const { value, percent } = this.state;
     const { formatTime, activeHandleID, getRailProps, dayStartMs, sunrise, sunset } = this.props;
@@ -138,15 +131,13 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     return (
       <>
         {!activeHandleID && value ? (
-          <div className="rail-tooltip" ref={this._handleTooltipTarget} style={{ left: `${percent}%` }}>
-            <Tooltip
-              className="components-rail-tooltip"
-              target={this.state.tooltipTarget}
-              visible
-            >
-              {formatTime(dayStartMs + value)}
-            </Tooltip>
-          </div>
+          <Tooltip
+            className="components-rail-tooltip"
+            visible
+            content={formatTime(dayStartMs + value)}
+          >
+            <div className="rail-tooltip" style={{ left: `${percent}%` }} />
+          </Tooltip>
         ) : null}
         <div className="rail-inner" />
         <div
@@ -195,17 +186,8 @@ interface TimelineProps extends CommonProps {
   onUpdate?: (values: ReadonlyArray<number>) => void;
 }
 
-interface TimelineState {
-  sunriseTooltipTarget: HTMLSpanElement | undefined;
-  sunsetTooltipTarget: HTMLSpanElement | undefined;
-}
-
-class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
+class Timeline extends React.PureComponent<TimelineProps> {
   private _timelineRef = React.createRef<HTMLDivElement>();
-  public readonly state = {
-    sunriseTooltipTarget: undefined,
-    sunsetTooltipTarget: undefined,
-  };
 
   private _getTickValues = (width: number) => {
     const tickValues: number[] = [];
@@ -223,18 +205,6 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
     return tickValues;
   };
 
-  private _handleSunriseTooltipTarget = (element: HTMLSpanElement | null) => {
-    this.setState({
-      sunriseTooltipTarget: element || undefined,
-    });
-  };
-
-  private _handleSunsetTooltipTarget = (element: HTMLSpanElement | null) => {
-    this.setState({
-      sunsetTooltipTarget: element || undefined,
-    });
-  };
-
   public render() {
     const { formatTick, formatTime, onChange, onUpdate, dayStartMs, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs } = this.props;
     const domain = [0, millisecPerDay];
@@ -243,14 +213,11 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
     const sunSetFormat = formatTime(dayStartMs + sunSetOffsetMs);
     return (
       <div className={className}>
-        <span className="sunrise" ref={this._handleSunriseTooltipTarget}>
-          &#x2600;
-          <Tooltip
-            target={this.state.sunriseTooltipTarget}
-          >
-            {sunRiseFormat}
-          </Tooltip>
-        </span>
+        <Tooltip content={sunRiseFormat}>
+          <span className="sunrise">
+            &#x2600;
+          </span>
+        </Tooltip>
         <div ref={this._timelineRef} className="ui-component-solar-slider-sizer">
           <ElementResizeObserver watchedElement={this._timelineRef}
             render={({ width }) => (
@@ -308,12 +275,11 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
             )}
           />
         </div>
-        <span className="sunset" ref={this._handleSunsetTooltipTarget}>
-          &#x263D;
-          <Tooltip target={this.state.sunsetTooltipTarget}>
-            {sunSetFormat}
-          </Tooltip>
-        </span>
+        <Tooltip content={sunSetFormat}>
+          <span className="sunset">
+            &#x263D;
+          </span>
+        </Tooltip>
       </div>
     );
   }
