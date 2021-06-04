@@ -11,7 +11,7 @@
   - This will be used for initial development. The idea is that it would be replaced by a proper model selection process in a production application.
 - From a terminal at your application's root directory, `npm start`. This will serve the application with live reloading.
 - Add/Update/Remove files as needed for your use case. If running `npm start` while making changes, your application will recompile and reload.
-- The viewer can be modified via the Viewer component in the App.tsx file. Visit the [iTwin Viewer React](https://www.npmjs.com/package/@itwin/web-viewer-react) documentation for more information.
+- The viewer can be modified via the Viewer component in the App.tsx file. Visit the [iTwin Web Viewer React](https://www.npmjs.com/package/@itwin/web-viewer-react) documentation for more information.
 - Visit the README file within the root directory of your application for additional development information.
 
 ## Build
