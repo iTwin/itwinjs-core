@@ -268,7 +268,7 @@ export class TxnManager {
    */
   public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
 
-  /** Determine whether undo is possible, optionally permitting undoing txns from previous sessions.
+  /** Determine whether undo is possible
    * @@deprecated - use [[isUndoPossible]]
    */
   public checkUndoPossible() { return this._nativeDb.isUndoPossible(); }
