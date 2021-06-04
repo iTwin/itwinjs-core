@@ -109,9 +109,9 @@ export class MapSubLayerSettings {
  * @beta
  */
 export interface MapLayerProps {
-  /** Controls visibility of layer. Defaults to 'true' in MapLayerSettings.fromJSON(). */
+  /** Controls visibility of layer. Defaults to 'true'. */
   visible?: boolean;
-  /** Identifies the map layers source. If omitted, defaults to 'WMS' in MapLayerSettings.fromJSON().*/
+  /** Identifies the map layers source. Defaults to 'WMS'. */
   formatId?: string;
   /** Name */
   name?: string;
@@ -121,11 +121,11 @@ export interface MapLayerProps {
   subLayers?: MapSubLayerProps[];
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing,
    * or false to indicate the transparency should not be overridden. Default value: 0.
-   * If omitted, defaults to 0 in MapLayerSettings.fromJSON() */
+   * If omitted, defaults to 0. */
   transparency?: number;
-  /** True to indicate background is transparent.  If omitted, defaults to 'true' in MapLayerSettings.fromJSON() */
+  /** True to indicate background is transparent.  Defaults to 'true'. */
   transparentBackground?: boolean;
-  /** Is a base layer.  If omitted, defaults to 'false' in MapLayerSettings.fromJSON() */
+  /** Is a base layer.  Defaults to 'false'. */
   isBase?: boolean;
   /** Access Key for the Layer, like a subscription key or access token */
   accessKey?: MapLayerKey;
