@@ -5,6 +5,8 @@ on:
     types:
       - opened
   pull_request:
+    types:
+      - labeled
 
 
 jobs:
