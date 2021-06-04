@@ -212,10 +212,8 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
 
   const prevTreeWidth = React.useRef<number>(0);
   const onTreeSizeChanged = React.useCallback((width: number) => {
-    if (width !== prevTreeWidth.current) {
-      setMinContainerWidth(0);
-      prevTreeWidth.current = width;
-    }
+    setMinContainerWidth(0);
+    prevTreeWidth.current = width;
   }, []);
 
   const itemKey = React.useCallback(

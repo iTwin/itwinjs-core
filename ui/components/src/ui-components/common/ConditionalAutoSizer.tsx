@@ -28,8 +28,8 @@ export function ConditionalAutoSizer(props: ConditionalAutoSizerProps): React.Re
 
   React.useLayoutEffect(
     () => {
-      if (width !== undefined && height !== undefined) {
-        onResize?.({ width, height });
+      if (width !== undefined && height !== undefined && onResize !== undefined) {
+        onResize({ width, height });
       }
     },
     [width, height, onResize],
