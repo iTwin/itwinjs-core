@@ -256,7 +256,7 @@ describe("TxnManager", () => {
     assert.isTrue(txns.isUndoPossible);
 
     // test restarting the session, which should truncate undo history
-    imodel.nativeDb.restartTxnSession();
+    txns.restartSession();
 
     assert.isFalse(txns.isUndoPossible);
     assert.equal("", txns.getUndoString());
