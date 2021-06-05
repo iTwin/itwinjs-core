@@ -81,7 +81,7 @@ new ESLintTester({
                   async badMethod(reqCtx: ClientRequestContext) {
                     reqCtx.enter();
                     await Promise.resolve(5);
-                    reqCtx.enter();
+                reqCtx.enter();
                     const badStatement = 10;
                   }
                 }
