@@ -47,6 +47,7 @@ const rule = {
               `normally non-node_module-imported ${asyncFuncMoniker}s are flagged if they do not receive ` +
               `the client request context as an argument, this diables that`,
             default: false,
+            required: false
           },
         },
       },
@@ -73,7 +74,8 @@ const rule = {
       parserServices = context.parserServices;
     }
     const checker = parserServices.program.getTypeChecker();
-    const dontPropagate = context.options[0][OPTION_DONT_PROPAGATE];
+    const extraOpts = context.options[0];
+    const dontPropagate = extraOpts && extraOpts[OPTION_DONT_PROPAGATE];
 
     /**
      * @param {import("estree").Expression} node

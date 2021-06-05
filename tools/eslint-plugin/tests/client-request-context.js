@@ -42,7 +42,6 @@ new ESLintTester({
           }
         }
       `,
-      options: [{"dont-propagate-request-context": false}],
     },
     /*
     {
@@ -69,7 +68,6 @@ new ESLintTester({
           }
         }
       `,
-      options: [{"dont-propagate-request-context": false}],
       errors: [
         {
           message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement",
