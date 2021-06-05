@@ -93,7 +93,7 @@ const rule = {
     }
 
     /**
-    * @param {import("estree").ExpressionStatement} node
+    * @param {import("estree").Statement} node
     * @param {string} reqCtxObjName
     * @return {boolean}
     */
@@ -187,20 +187,25 @@ const rule = {
 
       CallExpression(node) {
         // TODO: need to check we aren't in a non-promise returning function nested in an async function...
+        // get the outer function and compare to the top of the stack
         const lastFunc = back(funcStack);
+        if (lastFunc === undefined)
+          return;
         // TODO: need "get name of member expr" or typescript type way to check for calls to e.g. promise["then"]
-        const calledFuncIsThen = ["then", "catch"].includes(node.callee.name);
-        if (calledFuncIsThen) {
+        const isThen = node.callee.name === "then";
+        const isCatch = node.callee.name === "catch";
+        const isPromiseCallback = isThen || isCatch;
+        if (isPromiseCallback) {
           const callback = node.arguments[0];
           if (callback.type === "FunctionExpression" || callback.type === "ArrowFunctionExpression") {
             if (callback.body.type === "BlockStatement") {
               const firstStmt = callback.body.body[0];
-              if (!isClientRequestContextEnter(firstStmt))
+              if (!isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName))
               context.report({
                 node: firstStmt,
-                messageId: calledFuncIsThen ? "noReenterOnThenResume" : "noReenterOnCatchResume",
+                messageId: isThen ? "noReenterOnThenResume" : "noReenterOnCatchResume",
                 data: {
-                  reqCtxName: l
+                  reqCtxName: lastFunc.reqCtxArgName
                 }
               });
             }
@@ -222,6 +227,9 @@ const rule = {
             context.report({
               node: nextStmt,
               messageId: "noReenterOnAwaitResume",
+              data: {
+                reqCtxName: lastFunc.reqCtxArgName
+              }
             });
           }
         }
