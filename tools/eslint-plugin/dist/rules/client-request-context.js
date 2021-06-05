@@ -14,6 +14,9 @@ const OPTION_DONT_PROPAGATE = "dont-propagate-request-context";
 
 const asyncFuncMoniker = "promise returning function";
 
+/** @typedef {import("estree").AwaitExpression} AwaitExpression */
+/** @typedef {import("estree").FunctionExpression} FunctionExpression */
+
 /** @type {import("eslint").Rule.RuleModule} */
 const rule = {
   meta: {
@@ -58,9 +61,9 @@ const rule = {
     const parserServices = getParserServices(context);
     const dontPropagate = context.options[0][OPTION_DONT_PROPAGATE];
 
-    const stack = [];
+    /** @type {{func: FunctionExpression, awaits: Set<AwaitExpression>}[]} */
+    const awaitsStack = [];
 
-    ///** @param {import("@typescript-eslint/typescript-estree").TSNode} node */
     ///** @param {import("typescript").FunctionLikeDeclaration} node */
     function ProcessFunction(node) {
 
@@ -68,39 +71,63 @@ const rule = {
 
     return {
       AwaitExpression(node) {
-
+        awaits.add(node);
       },
       CallExpression(node) {
         //node.callee.name === "then"
       },
       "FunctionExpression:exit"(node) {
         if (node === stack[stack.length - 1])
-          stack.pop();
+          awaitsStack.pop();
+
+        for (const await of awaits) {
+
+        }
       },
       //ArrowFunctionExpression() {}
       //FunctionDeclaration
       FunctionExpression (node) {
-        stack.push(node);
+        awaitsStack.push(node);
         // XXX: might not cover promise-returning functions as well as checking the return type
         if (!node.async)
           return;
 
+        /** @type {import("typescript").FunctionExpression} */
+        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+
         // XXX: won't match for example  my_namespace["ClientRequestContext"]
-        const ps = parserServices;
-        const clientReqCtx = node.params.find(p => p.typeAnnotation.typeAnnotation.typeName.name === "ClientRequestContext");
+        const clientReqCtx = node.params.find(p => {
+          const identifier
+            = p.type === "Identifier"
+            ? p
+            : p.type === "AssignmentPattern"
+            ? p.left
+            : p;
+          const tsParam = parserServices.esTreeNodeToTSNodeMap.get(identifier);
+          try {
+            return /ClientRequestContext$/.test(tsParam.parent.type.getText());
+          } catch (_) {
+            console.error("unknown parameter ast format")
+            return;
+          }
+        });
 
         if (clientReqCtx === undefined) {
           context.report({
             node,
             messageId: "noContextArg",
           });
-          return;getP
+          return;
         }
 
         // do this with a stack
         function containsAwait(node) {
           // XXX: stub
           return false;
+        }
+
+        function getExpressionOuterStatement(node) {
+
         }
 
         for (let i = 0; i < node.body.body.length; ++i) {

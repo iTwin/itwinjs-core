@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "noEmit": true,
+    "strict": true,
+  },
+  "include": ["rules/*.js"]
+}
