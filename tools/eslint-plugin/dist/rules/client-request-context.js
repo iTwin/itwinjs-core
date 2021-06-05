@@ -17,14 +17,73 @@ const asyncFuncMoniker = "promise returning function";
 /** @typedef {import("estree").AwaitExpression} AwaitExpression */
 /** @typedef {import("estree").FunctionExpression} FunctionExpression */
 
+/** Get the final element of an Array
+ * @template T
+ * @param {T[]} array
+ * @returns {T | undefined}
+ */
+function back(array) {
+  return array[array.length - 1];
+}
+
+/**
+ * @param {import("estree").Expression} node
+ * @returns {import("estree").Statement}
+ */
+function getExpressionOuterStatement(node) {
+  while (node && !/Statement$/.test(node.type)) node = node.parent;
+  return node;
+}
+
+/**
+ * @param {import("estree").ExpressionStatement} node
+ * @param {string} reqCtxObjName
+ * @return {boolean}
+ */
+function isClientRequestContextEnter(node, reqCtxObjName) {
+  /** @type {import("estree").ExpressionStatement} */
+  const simpleEnterCall = {
+    type: "ExpressionStatement",
+    expression: {
+      type: "CallExpression",
+      optional: false,
+      callee: {
+        type: "MemberExpression",
+        object: {
+          type: "Identifier",
+          name: reqCtxObjName,
+        },
+        property: {
+          type: "Identifier",
+          name: "enter",
+        },
+        computed: false,
+        optional: false,
+      },
+      arguments: [],
+    },
+  };
+  // until JSDoc supports `as const`, using explicit strings is easier
+  // see: https://github.com/microsoft/TypeScript/issues/30445
+  return (
+    node.type === "ExpressionStatement" &&
+    node.expression.type === "CallExpression" &&
+    node.expression.callee.type === "MemberExpression" &&
+    node.expression.callee.object.type === "Identifier" &&
+    node.expression.callee.object.name === reqCtxObjName &&
+    node.expression.callee.property.type === "Identifier" &&
+    node.expression.callee.property.name === "enter"
+  );
+}
+
 /** @type {import("eslint").Rule.RuleModule} */
 const rule = {
   meta: {
     type: "problem",
     docs: {
       description:
-        "Follow the ClientRequestContext rules "
-        + "(see https://www.itwinjs.org/learning/backend/managingclientrequestcontext/)",
+        "Follow the ClientRequestContext rules " +
+        "(see https://www.itwinjs.org/learning/backend/managingclientrequestcontext/)",
       category: "TypeScript",
     },
     schema: [
@@ -61,53 +120,60 @@ const rule = {
     const parserServices = getParserServices(context);
     const dontPropagate = context.options[0][OPTION_DONT_PROPAGATE];
 
-    /** @type {{func: FunctionExpression, awaits: Set<AwaitExpression>}[]} */
-    const awaitsStack = [];
-
-    ///** @param {import("typescript").FunctionLikeDeclaration} node */
-    function ProcessFunction(node) {
-
-    }
+    /**
+     * @type {{
+     *  func: FunctionExpression,
+     *  awaits: Set<AwaitExpression>,
+     *  reqCtxArgName: string
+     * }[]}
+     */
+    const funcStack = [];
 
     return {
       AwaitExpression(node) {
-        awaits.add(node);
+        const lastFunc = back(funcStack);
+        // if the stack is empty, this is a top-level await and we can ignore it
+        if (lastFunc) lastFunc.awaits.add(node);
       },
+
       CallExpression(node) {
         //node.callee.name === "then"
       },
+
+      /** @param {import("estree").FunctionExpression} node */
       "FunctionExpression:exit"(node) {
-        if (node === stack[stack.length - 1])
-          awaitsStack.pop();
-
-        for (const await of awaits) {
-
+        const lastFunc = funcStack.pop();
+        if (lastFunc === undefined) return;
+        for (const await_ of lastFunc.awaits) {
+          const stmt = getExpressionOuterStatement(await_);
+          const stmtIndex = stmt.parent.body.findIndex((s) => s === stmt);
+          const nextStmt = stmt.parent.body[stmtIndex + 1];
+          if (nextStmt && !isClientRequestContextEnter(nextStmt, "")) {
+            context.report({
+              node,
+              messageId: "noReenterOnAwaitResume",
+            });
+          }
         }
       },
+
       //ArrowFunctionExpression() {}
       //FunctionDeclaration
-      FunctionExpression (node) {
-        awaitsStack.push(node);
+      FunctionExpression(node) {
         // XXX: might not cover promise-returning functions as well as checking the return type
-        if (!node.async)
-          return;
+        if (!node.async) return;
 
         /** @type {import("typescript").FunctionExpression} */
         const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
 
         // XXX: won't match for example  my_namespace["ClientRequestContext"]
-        const clientReqCtx = node.params.find(p => {
-          const identifier
-            = p.type === "Identifier"
-            ? p
-            : p.type === "AssignmentPattern"
-            ? p.left
-            : p;
+        const clientReqCtx = node.params.find((p) => {
+          const identifier = p.type === "AssignmentPattern" ? p.left : p;
           const tsParam = parserServices.esTreeNodeToTSNodeMap.get(identifier);
           try {
             return /ClientRequestContext$/.test(tsParam.parent.type.getText());
           } catch (_) {
-            console.error("unknown parameter ast format")
+            console.error("unknown parameter ast format");
             return;
           }
         });
@@ -120,46 +186,11 @@ const rule = {
           return;
         }
 
-        // do this with a stack
-        function containsAwait(node) {
-          // XXX: stub
-          return false;
-        }
-
-        function getExpressionOuterStatement(node) {
-
-        }
-
-        for (let i = 0; i < node.body.body.length; ++i) {
-          const stmt = node.body.body[i];
-          const nextStmt = node.body.body[i+1];
-          if (containsAwait(stmt) && !nextStmt.deepEquals({
-            type: "ExpressionStatement",
-            expression: {
-              type: "CallExpression",
-              optional: false,
-              callee: {
-                type: "MemberExpression",
-                object: {
-                  type: "identifier",
-                  name: ""
-                },
-                property: {
-                  type: "Identifier",
-                  name: "enter"
-                },
-                computed: false,
-                optional: false,
-              },
-              arguments: []
-            }
-          })) {
-            context.report({
-              node,
-              messageId: "noReenterOnAwaitResume"
-            });
-          }
-        }
+        funcStack.push({
+          func: node,
+          awaits: new Set(),
+          reqCtxArgName: clientReqCtx.name,
+        });
       },
     };
   },
