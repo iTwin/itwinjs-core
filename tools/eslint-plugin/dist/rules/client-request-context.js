@@ -135,6 +135,7 @@ const rule = {
       // until JSDoc supports `as const`, using explicit strings is easier
       // see: https://github.com/microsoft/TypeScript/issues/30445
       return (
+        node &&
         node.type === "ExpressionStatement" &&
         node.expression.type === "CallExpression" &&
         node.expression.callee.type === "MemberExpression" &&
@@ -158,9 +159,8 @@ const rule = {
      * @param {FuncDeclLike} node
      */
     function VisitFunctionDecl(node) {
-      // XXX: might not cover promise-returning functions as well as checking the return type
       if (!returnsPromise(node))
-      return;
+        return;
 
       /** @type {import("typescript").FunctionExpression} */
       const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
@@ -185,10 +185,9 @@ const rule = {
             {
               desc: "Add a ClientRequestContext parameter",
               fix(fixer) {
-                // TODO: work when there are no params
                 const hasOtherParams = node.params.length > 0;
-                return fixer.insertTextBefore(
-                  node.params[0],
+                return fixer.insertTextBeforeRange(
+                  [tsNode.parameters.pos, tsNode.parameters.end],
                   `${contextArgName}: ClientRequestContext${hasOtherParams ? ", " : ""}`
                 );
               }
@@ -207,16 +206,22 @@ const rule = {
       });
 
       if (node.body.type === "BlockStatement") {
-        // XXX: fixing on empty body
         const firstStmt = node.body.body[0];
         if (!isClientRequestContextEnter(firstStmt, reqCtxArgName))
         context.report({
-          node: firstStmt,
+          node: firstStmt || node.body,
           messageId: "noReenterOnFirstLine",
           suggest: [{
               desc: `Add '${reqCtxArgName}.enter()' as the first statement of the body`,
               fix(fixer) {
-                return fixer.insertTextBefore(firstStmt, `${reqCtxArgName}.enter();`);
+                if (firstStmt)
+                  return fixer.insertTextBefore(firstStmt, `${reqCtxArgName}.enter();`);
+                else
+                  return fixer.insertTextBeforeRange(
+                    // TODO: clarify why the tsNode locations are like this
+                    [tsNode.body.end-1, tsNode.body.end],
+                    `${reqCtxArgName}.enter();`
+                  );
               }
           }],
           data: { reqCtxArgName }
@@ -249,12 +254,19 @@ const rule = {
               const firstStmt = callback.body.body[0];
               if (!isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName))
               context.report({
-                node: firstStmt,
+                node: firstStmt || callback.body,
                 messageId: isThen ? "noReenterOnThenResume" : "noReenterOnCatchResume",
                 suggest: [{
-                    desc: "Add a 'clientRequestContext.enter()' as the first statement of the body",
+                    desc: `Add a '${lastFunc.reqCtxArgName}.enter()' as the first statement of the body`,
                     fix(fixer) {
-                      return fixer.insertTextBefore(firstStmt, `${contextArgName}.enter();`);
+                      if (firstStmt)
+                        return fixer.insertTextBefore(firstStmt, `${lastFunc.reqCtxArgName}.enter();`);
+                      const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+                      return fixer.insertTextBeforeRange(
+                        // TODO: clarify why the tsNode locations are like this
+                        [tsNode.body.end-1, tsNode.body.end],
+                        `${lastFunc.reqCtxArgName}.enter();`
+                      );
                     }
                 }],
                 data: {

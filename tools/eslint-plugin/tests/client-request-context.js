@@ -190,8 +190,6 @@ new ESLintTester({
       ]
     },
     {
-      //skip: true,
-      only: true,
       code: normalizeIndent`
         async function missingFirstEnterCall(reqCtx: ClientRequestContext) {
           await Promise.resolve(5);
@@ -216,6 +214,22 @@ new ESLintTester({
       ]
     },
     {
+      only: true,
+      code: "async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {}",
+      errors: [
+        {
+          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately",
+          suggestions: [
+            {
+              desc: "Add 'reqCtx.enter()' as the first statement of the body",
+              output: "async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {reqCtx.enter();}",
+            }
+          ]
+        }
+      ]
+    },
+    {
+      // no idea how to do this in the test yet
       skip: true,
       code: normalizeIndent`
         function noEnterAtBeginImplicitAsync(reqCtx: ClientRequestContext) {
@@ -227,11 +241,10 @@ new ESLintTester({
           message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately",
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' after the statement containing 'await'",
+              desc: "Add 'reqCtx.enter()' as the first statement of the body",
               output: normalizeIndent`
                 function noEnterAtBeginImplicitAsync(reqCtx: ClientRequestContext) {
-                reqCtx.enter();
-                  return Promise.resolve(5);
+                  reqCtx.enter();return Promise.resolve(5);
                 }
               `,
             }
@@ -240,14 +253,30 @@ new ESLintTester({
       ]
     },
     {
+      only: true,
       code: "async function f() {}",
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
-              desc: "Add a parameter of type ClientRequestContext",
+              desc: "Add a ClientRequestContext parameter",
               output: "async function f(clientRequestContext: ClientRequestContext) {}",
+            },
+          ]
+        },
+      ]
+    },
+    {
+      only: true,
+      code: "async function f(arg1: string) {}",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a ClientRequestContext parameter",
+              output: "async function f(clientRequestContext: ClientRequestContext, arg1: string) {}",
             },
           ]
         },
@@ -420,76 +449,8 @@ new ESLintTester({
         }
       ]
     },
-    /*
-        async function goodFreeFunc(reqCtx: ClientRequestContext) {
-        const goodArrowFunc = async (reqCtx: ClientRequestContext) => {
-        function goodNonAsyncFunc(reqCtx: ClientRequestContext): Promise<number> {
-        function goodNonAsyncImplicitReturnTypeFunc(reqCtx: ClientRequestContext) {
-          */
     {
-      code: normalizeIndent`
-        function goodThenCall(reqCtx: ClientRequestContext) {
-          reqCtx.enter();
-          return Promise.resolve(5);
-        }
-      `,
-    },
-    {
-      code: normalizeIndent`
-        function goodCatchCall(reqCtx: ClientRequestContext) {
-          reqCtx.enter();
-          const promise = fetch()
-            .then(() => {
-              reqCtx.enter();
-              const otherStuff = 5;
-            })
-            .catch(() => {
-              reqCtx.enter();
-              const otherStuff = 5;
-            });
-          return promise;
-        }
-      `,
-    },
-    {
-      code: normalizeIndent`
-        function nonAsyncThen(reqCtx: ClientRequestContext) {
-          getPromise().then(() => {
-            const notAnEnter = 5;
-          });
-        }
-      `,
-    },
-    {
-      code: normalizeIndent`
-        function goodAsyncCatch(reqCtx: ClientRequestContext) {
-          reqCtx.enter();
-          try {
-            return Promise.resolve("success");
-          } catch (err) {
-            reqCtx.enter();
-            return Promise.resolve("caught");
-          }
-        }
-      `,
-    },
-    {
-      code: normalizeIndent`
-        function goodAsyncFinally(reqCtx: ClientRequestContext) {
-          reqCtx.enter();
-          try {
-            const x = 5 + 1;
-          } catch (err) {
-            reqCtx.enter();
-          } finally {
-            reqCtx.enter();
-            return Promise.resolve(5);
-          }
-        }
-      `,
-    },
-    /*
-    {
+      skip: true,
       code: normalizeIndent`
         class C {
           async dontNeedEnterIfAwaitIsLastStatement(reqCtx: ClientRequestContext) {
@@ -500,6 +461,5 @@ new ESLintTester({
       `,
       options: [{"dont-propagate-request-context": true}]
     }
-    */
   ]
 }));
