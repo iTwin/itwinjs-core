@@ -18,11 +18,16 @@ function normalizeIndent(strings) {
   return codeLines.map(l => l.substr(leftPadding.length)).join('\n');
 }
 
-const prelude = normalizeIndent`
-interface ClientRequestContext {
-  enter(): void;
+/** allow specifying `only` and `skip` properties for easier debugging */
+function supportSkippedAndOnlyInTests(obj) {
+  const hasOnly = obj.valid.some(test => Boolean(test.only)) || obj.invalid.some(test => Boolean(test.only));
+  const keepTest = test => (hasOnly && test.only) || !test.skip;
+  const stripExtraTags = (test) => { delete test.skip; delete test.only; return test; };
+  return {
+    valid: obj.valid.filter(keepTest).map(stripExtraTags),
+    invalid: obj.invalid.filter(keepTest).map(stripExtraTags),
+  };
 }
-`;
 
 new ESLintTester({
   parser: require.resolve('@typescript-eslint/parser'),
@@ -30,7 +35,7 @@ new ESLintTester({
     ecmaVersion: 6,
     sourceType: 'module',
   }
-}).run('client-request-context', ClientRequestContextESLintRule, {
+}).run('client-request-context', ClientRequestContextESLintRule, supportSkippedAndOnlyInTests({
   valid: [
     {
       code: normalizeIndent`
@@ -186,6 +191,7 @@ new ESLintTester({
       ]
     },
     {
+      skip: true,
       code: normalizeIndent`
         class C {
           async missingFirst(reqCtx: ClientRequestContext) {
@@ -217,6 +223,7 @@ new ESLintTester({
       ]
     },
     {
+      skip: true,
       code: normalizeIndent`
         function badNonAsyncImplicitReturnTypeFunc(reqCtx: ClientRequestContext) {
           return Promise.resolve(5);
@@ -240,4 +247,4 @@ new ESLintTester({
       ]
     },
   ]
-});
+}));
