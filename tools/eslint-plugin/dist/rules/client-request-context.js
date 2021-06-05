@@ -60,10 +60,7 @@ const rule = {
       noReenterOnAwaitResume: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement`,
       noReenterOnCatchResume: `All ${asyncFuncMoniker}s must call '{{reqCtxName}}.enter()' immediately after catching an async exception`,
       didntPropagate: `All ${asyncFuncMoniker}s must propagate their async to functions`,
-      failureUpdaterOnly:
-        'Do not use callback parameter in setState. Use componentDidUpdate method instead ("updater-only" switch).',
-      failureAccessedMember:
-        "Do not access 'this.{{accessedMember}}' in setState. Use arguments from callback function instead.",
+      calledCurrent: `All ${asyncFuncMoniker}s must not call ClientRequestContext.current`,
     },
   },
 
@@ -189,7 +186,26 @@ const rule = {
       },
 
       CallExpression(node) {
-        //node.callee.name === "then"
+        // TODO: need to check we aren't in a non-promise returning function nested in an async function...
+        const lastFunc = back(funcStack);
+        // TODO: need "get name of member expr" or typescript type way to check for calls to e.g. promise["then"]
+        const calledFuncIsThen = ["then", "catch"].includes(node.callee.name);
+        if (calledFuncIsThen) {
+          const callback = node.arguments[0];
+          if (callback.type === "FunctionExpression" || callback.type === "ArrowFunctionExpression") {
+            if (callback.body.type === "BlockStatement") {
+              const firstStmt = callback.body.body[0];
+              if (!isClientRequestContextEnter(firstStmt))
+              context.report({
+                node: firstStmt,
+                messageId: calledFuncIsThen ? "noReenterOnThenResume" : "noReenterOnCatchResume",
+                data: {
+                  reqCtxName: l
+                }
+              });
+            }
+          }
+        }
       },
 
       /** @param {import("estree").FunctionExpression} node */
