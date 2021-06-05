@@ -179,8 +179,7 @@ new ESLintTester({
                 class Bad {
                   async badMethod(reqCtx: ClientRequestContext) {
                     reqCtx.enter();
-                    await Promise.resolve(5);
-                reqCtx.enter();
+                    await Promise.resolve(5);reqCtx.enter();
                     const badStatement = 10;
                   }
                 }
@@ -191,28 +190,24 @@ new ESLintTester({
       ]
     },
     {
-      skip: true,
+      //skip: true,
+      only: true,
       code: normalizeIndent`
-        async missingFirst(reqCtx: ClientRequestContext) {
-          reqCtx.enter();
+        async function missingFirstEnterCall(reqCtx: ClientRequestContext) {
           await Promise.resolve(5);
           reqCtx.enter();
         }
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement",
+          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately",
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' after the statement containing 'await'",
+              desc: "Add 'reqCtx.enter()' as the first statement of the body",
               output: normalizeIndent`
-                class Bad {
-                  async badMethod(reqCtx: ClientRequestContext) {
-                    reqCtx.enter();
-                    await Promise.resolve(5);
-                reqCtx.enter();
-                    const badStatement = 10;
-                  }
+                async function missingFirstEnterCall(reqCtx: ClientRequestContext) {
+                  reqCtx.enter();await Promise.resolve(5);
+                  reqCtx.enter();
                 }
               `,
             }

@@ -81,8 +81,8 @@ const rule = {
     }
     const checker = parserServices.program.getTypeChecker();
     const extraOpts = context.options[0];
-    const dontPropagate = extraOpts && extraOpts[OPTION_DONT_PROPAGATE];
-    const contextArgName = extraOpts && extraOpts[OPTION_CONTEXT_ARG_NAME];
+    const dontPropagate = extraOpts && extraOpts[OPTION_DONT_PROPAGATE] || false;
+    const contextArgName = extraOpts && extraOpts[OPTION_CONTEXT_ARG_NAME] || "clientRequestContext";
 
     /**
      * @param {import("estree").Expression} node
@@ -181,23 +181,47 @@ const rule = {
         context.report({
           node,
           messageId: "noContextParam",
-          fix(fixer) {
-            // TODO: work when there are no params
-            const hasOtherParams = node.params.length > 0;
-            return fixer.insertTextBefore(
-              node.params[0],
-              `${contextArgName}: ClientRequestContext${hasOtherParams ? ", " : ""}`
-            );
-          }
+          suggest: [
+            {
+              desc: "Add a ClientRequestContext parameter",
+              fix(fixer) {
+                // TODO: work when there are no params
+                const hasOtherParams = node.params.length > 0;
+                return fixer.insertTextBefore(
+                  node.params[0],
+                  `${contextArgName}: ClientRequestContext${hasOtherParams ? ", " : ""}`
+                );
+              }
+            }
+          ]
         });
         return;
       }
 
+      const reqCtxArgName = clientReqCtx.name;
+
       funcStack.push({
         func: node,
         awaits: new Set(),
-        reqCtxArgName: clientReqCtx.name,
+        reqCtxArgName,
       });
+
+      if (node.body.type === "BlockStatement") {
+        // XXX: fixing on empty body
+        const firstStmt = node.body.body[0];
+        if (!isClientRequestContextEnter(firstStmt, reqCtxArgName))
+        context.report({
+          node: firstStmt,
+          messageId: "noReenterOnFirstLine",
+          suggest: [{
+              desc: `Add '${reqCtxArgName}.enter()' as the first statement of the body`,
+              fix(fixer) {
+                return fixer.insertTextBefore(firstStmt, `${reqCtxArgName}.enter();`);
+              }
+          }],
+          data: { reqCtxArgName }
+        });
+      }
     }
 
     return {
@@ -221,11 +245,18 @@ const rule = {
           const callback = node.arguments[0];
           if (callback.type === "FunctionExpression" || callback.type === "ArrowFunctionExpression") {
             if (callback.body.type === "BlockStatement") {
+              // FIXME: deal with empty body...
               const firstStmt = callback.body.body[0];
               if (!isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName))
               context.report({
                 node: firstStmt,
                 messageId: isThen ? "noReenterOnThenResume" : "noReenterOnCatchResume",
+                suggest: [{
+                    desc: "Add a 'clientRequestContext.enter()' as the first statement of the body",
+                    fix(fixer) {
+                      return fixer.insertTextBefore(firstStmt, `${contextArgName}.enter();`);
+                    }
+                }],
                 data: {
                   reqCtxArgName: lastFunc.reqCtxArgName
                 }
