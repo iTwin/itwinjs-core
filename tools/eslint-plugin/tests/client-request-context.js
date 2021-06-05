@@ -3,11 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+// based heavily on eslint-plugin-react-hooks's tests
+
+"use strict";
+
 const ESLintTester = require('eslint').RuleTester;
 const BentleyESLintPlugin = require('../dist');
 const ClientRequestContextESLintRule = BentleyESLintPlugin.rules["client-request-context"];
 
-// copied from eslint-plugin-react-hooks's tests
 /** @param {string[]} strings */
 function normalizeIndent(strings) {
   const codeLines = strings[0].split('\n');
@@ -21,21 +24,57 @@ interface ClientRequestContext {
 }
 `;
 
-const goodMethod = `class Good {
-  async goodMethod(reqCtx: ClientRequestContext) {
-    reqCtx.enter();
-    await Promise.resolve(5);
-    reqCtx.enter();
+new ESLintTester({
+  parser: require.resolve('@typescript-eslint/parser'),
+  parserOptions: {
+    ecmaVersion: 6,
+    sourceType: 'module',
   }
-}
-`
-
-const badMethod = normalizeIndex`
-class Bad {
-  async badMethod(reqCtx: ClientRequestContext) {
-    reqCtx.enter();
-    await Promise.resolve(5);
-    const badStatement = 10;
-  }
-}
-`;
+}).run('client-request-context', ClientRequestContextESLintRule, {
+  valid: [
+    {
+      code: normalizeIndent`
+        class Good {
+          async goodMethod(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            await Promise.resolve(5);
+            reqCtx.enter();
+          }
+        }
+      `,
+    }
+  ],
+  invalid: [
+    {
+      code: normalizeIndent`
+        class Bad {
+          async badMethod(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            await Promise.resolve(5);
+            const badStatement = 10;
+          }
+        }
+      `,
+      errors: [
+        {
+          message: "",
+          suggestions: [
+            {
+              desc: "Add a call to 'reqCtx.enter()' after the statement containing 'await'",
+              output: normalizeIndent`
+                class Bad {
+                  async badMethod(reqCtx: ClientRequestContext) {
+                    reqCtx.enter();
+                    await Promise.resolve(5);
+                    reqCtx.enter();
+                    const badStatement = 10;
+                  }
+                }
+              `,
+            }
+          ]
+        }
+      ]
+    }
+  ]
+});
