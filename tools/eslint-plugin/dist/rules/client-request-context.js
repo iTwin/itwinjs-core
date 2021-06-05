@@ -10,6 +10,7 @@
 const { getParserServices } = require("./utils/parser");
 
 const OPTION_DONT_PROPAGATE = "dont-propagate-request-context";
+const OPTION_CONTEXT_ARG_NAME = "context-arg-name";
 
 const asyncFuncMoniker = "promise-returning function";
 
@@ -48,12 +49,18 @@ const rule = {
               `the client request context as an argument, this diables that`,
             default: false,
           },
+          [OPTION_CONTEXT_ARG_NAME]: {
+            type: "string",
+            description:
+              `The name to use for adding an ClientRequestContext parameter when fixing. Defaults to 'clientRequestContext'`,
+            default: "clientRequestContext",
+          }
         },
       },
     ],
     fixable: "code",
     messages: {
-      noContextArg: `All ${asyncFuncMoniker}s must take an argument of type ClientRequestContext`,
+      noContextParam: `All ${asyncFuncMoniker}s must take a parameter of type ClientRequestContext`,
       noReenterOnFirstLine: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately`,
       noReenterOnThenResume: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks`,
       // TODO: should probably do it after expressions, not statements but that might be more complicated...
@@ -75,6 +82,7 @@ const rule = {
     const checker = parserServices.program.getTypeChecker();
     const extraOpts = context.options[0];
     const dontPropagate = extraOpts && extraOpts[OPTION_DONT_PROPAGATE];
+    const contextArgName = extraOpts && extraOpts[OPTION_CONTEXT_ARG_NAME];
 
     /**
      * @param {import("estree").Expression} node
@@ -172,7 +180,15 @@ const rule = {
       if (clientReqCtx === undefined) {
         context.report({
           node,
-          messageId: "noContextArg",
+          messageId: "noContextParam",
+          fix(fixer) {
+            // TODO: work when there are no params
+            const hasOtherParams = node.params.length > 0;
+            return fixer.insertTextBefore(
+              node.params[0],
+              `${contextArgName}: ClientRequestContext${hasOtherParams ? ", " : ""}`
+            );
+          }
         });
         return;
       }
@@ -239,7 +255,7 @@ const rule = {
                   fix(fixer) {
                     return fixer.insertTextAfter(
                       stmt,
-                      `\n${lastFunc.reqCtxArgName}.enter();`
+                      `${lastFunc.reqCtxArgName}.enter();`
                     );
                   }
                 }

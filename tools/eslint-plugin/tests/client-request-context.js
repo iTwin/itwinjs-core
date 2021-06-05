@@ -144,7 +144,6 @@ new ESLintTester({
         }
       `,
     },
-    /*
     {
       code: normalizeIndent`
         class C {
@@ -154,9 +153,10 @@ new ESLintTester({
           }
         }
       `,
-      options: [{"dont-propagate-request-context": true}]
-    }
-    */
+    },
+    { code: "async function f(ctx: IMJSBackend.ClientRequestContext) {}" },
+    { code: "async function f(ctx: AuthorizedClientRequestContext) {}" },
+    { code: `async function f(ctx: Backend["ClientRequestContext"]) {}`, skip: true },
   ],
   invalid: [
     {
@@ -193,12 +193,10 @@ new ESLintTester({
     {
       skip: true,
       code: normalizeIndent`
-        class C {
-          async missingFirst(reqCtx: ClientRequestContext) {
-            reqCtx.enter();
-            await Promise.resolve(5);
-            reqCtx.enter();
-          }
+        async missingFirst(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          await Promise.resolve(5);
+          reqCtx.enter();
         }
       `,
       errors: [
@@ -225,7 +223,7 @@ new ESLintTester({
     {
       skip: true,
       code: normalizeIndent`
-        function badNonAsyncImplicitReturnTypeFunc(reqCtx: ClientRequestContext) {
+        function noEnterAtBeginImplicitAsync(reqCtx: ClientRequestContext) {
           return Promise.resolve(5);
         }
       `,
@@ -236,7 +234,7 @@ new ESLintTester({
             {
               desc: "Add a call to 'reqCtx.enter()' after the statement containing 'await'",
               output: normalizeIndent`
-                function badNonAsyncImplicitReturnTypeFunc(reqCtx: ClientRequestContext) {
+                function noEnterAtBeginImplicitAsync(reqCtx: ClientRequestContext) {
                 reqCtx.enter();
                   return Promise.resolve(5);
                 }
@@ -246,33 +244,187 @@ new ESLintTester({
         }
       ]
     },
-    // check all function syntaxes are supported
-    ...[
-      {
-        before: `
-          class C {
-            async asyncMethod(reqCtx: ClientRequestContext)
-        `,
-        after: `
+    {
+      code: "async function f() {}",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "async function f(clientRequestContext: ClientRequestContext) {}",
+            },
+          ]
+        },
+      ]
+    },
+    {
+      options: [{"context-arg-name": "ctx"}],
+      code: "async function f() {}",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "async function f(ctx: ClientRequestContext) {}",
+            },
+          ]
+        },
+      ]
+    },
+    {
+      code: "async function asyncMethod(otherArg: number) {}",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "async function asyncMethod(clientRequestContext: ClientRequestContext, otherArg: number) {}",
+            },
+          ]
+        }
+      ]
+    },
+    {
+      // not sure how to test this one, (need ESLintRuleTest to have type info)
+      // should check @typescript-eslint's own rule testing
+      skip: true,
+      code: normalizeIndent`
+        function implicitlyAsync(reqCtx: ClientRequestContext) {
+          return Promise.resolve();
+        }
+      `,
+      errors: [
+        {
+          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement",
+          suggestions: [
+            {
+              desc: "Add a call to 'reqCtx.enter()' at the beginning of the function block",
+              output: normalizeIndent`
+                function implicitlyAsync(reqCtx: ClientRequestContext) {
+                reqCtx.enter();
+                  return Promise.resolve();
+                }
+              `,
             }
-          }
-        `,
-      },
-      {
-        before: normalizeIndent`
-          async function freeFunc(reqCtx: ClientRequestContext) {
-        `,
-        after: normalizeIndent`
-          }
-        `,
-      }
-    ].map(({before, after, ...rest}) => ({
-      code: normalizeIndent(before + `
-        const notReqCtxEnter;
-        reqCtx.enter();
-      ` + after),
-      ...rest
-    })),
+          ]
+        }
+      ]
+    },
+    {
+      code: "async function asyncFunc() {}",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "async function asyncFunc(clientRequestContext: ClientRequestContext) {}",
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: "class C { async asyncMethod() {} }",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "class C { async asyncMethod(clientRequestContext: ClientRequestContext) {} }",
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: "function promiseReturning(): Promise<void> { return Promise.resolve(); } }",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "function promiseReturning(clientRequestContext: ClientRequestContext): Promise<void> { return Promise.resolve(); } }",
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: "function implicitPromiseReturning() { return Promise.resolve(); } }",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "function implicitPromiseReturning(clientRequestContext: ClientRequestContext) { return Promise.resolve(); } }",
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: "const asyncArrow = async () => {};",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "const asyncArrow = async (clientRequestContext: ClientRequestContext) => {};",
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: "const promiseReturningArrow = (): Promise<void> => { return Promise.resolve(); };",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "const promiseReturningArrow = (clientRequestContext: ClientRequestContext): Promise<void> => { return Promise.resolve(); };",
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: "const implicitPromiseReturningArrow = () => { return Promise.resolve(); };",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "const implicitPromiseReturningArrow = (clientRequestContext: ClientRequestContext) => { return Promise.resolve(); };",
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: "const typedButNoReturnTypeArrow: (() => Promise<void>) = () => { return Promise.resolve(); };",
+      errors: [
+        {
+          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          suggestions: [
+            {
+              desc: "Add a parameter of type ClientRequestContext",
+              output: "const implicitPromiseReturningArrow = (clientRequestContext: ClientRequestContext) => { return Promise.resolve(); };",
+            }
+          ]
+        }
+      ]
+    },
     /*
         async function goodFreeFunc(reqCtx: ClientRequestContext) {
         const goodArrowFunc = async (reqCtx: ClientRequestContext) => {
