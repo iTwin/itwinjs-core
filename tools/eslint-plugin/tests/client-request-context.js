@@ -34,7 +34,7 @@ new ESLintTester({
   valid: [
     {
       code: normalizeIndent`
-        class Good {
+        class C {
           async goodMethod(reqCtx: ClientRequestContext) {
             reqCtx.enter();
             await Promise.resolve(5);
@@ -42,7 +42,21 @@ new ESLintTester({
           }
         }
       `,
+      options: [{"dont-propagate-request-context": false}],
+    },
+    /*
+    {
+      code: normalizeIndent`
+        class C {
+          async dontNeedEnterIfAwaitIsLastStatement(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            await Promise.resolve(5);
+          }
+        }
+      `,
+      options: [{"dont-propagate-request-context": true}]
     }
+    */
   ],
   invalid: [
     {
@@ -55,9 +69,10 @@ new ESLintTester({
           }
         }
       `,
+      options: [{"dont-propagate-request-context": false}],
       errors: [
         {
-          message: "",
+          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement",
           suggestions: [
             {
               desc: "Add a call to 'reqCtx.enter()' after the statement containing 'await'",

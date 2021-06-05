@@ -7,15 +7,15 @@
 
 "use strict";
 
-const ts = require("typescript");
 const { getParserServices } = require("./utils/parser");
 
 const OPTION_DONT_PROPAGATE = "dont-propagate-request-context";
 
-const asyncFuncMoniker = "promise returning function";
+const asyncFuncMoniker = "promise-returning function";
 
 /** @typedef {import("estree").AwaitExpression} AwaitExpression */
 /** @typedef {import("estree").FunctionExpression} FunctionExpression */
+/** @typedef {import("estree").FunctionExpression | import("estree").ArrowFunctionExpression | import("estree").FunctionDeclaration} FuncDeclLike */
 
 /** Get the final element of an Array
  * @template T
@@ -58,14 +58,20 @@ const rule = {
       noReenterOnThenResume: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks`,
       // TODO: should probably do it after expressions, not statements but that might be more complicated...
       noReenterOnAwaitResume: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement`,
-      noReenterOnCatchResume: `All ${asyncFuncMoniker}s must call '{{reqCtxName}}.enter()' immediately after catching an async exception`,
+      noReenterOnCatchResume: `All ${asyncFuncMoniker}s must call '{{reqCtxArgName}}.enter()' immediately after catching an async exception`,
       didntPropagate: `All ${asyncFuncMoniker}s must propagate their async to functions`,
       calledCurrent: `All ${asyncFuncMoniker}s must not call ClientRequestContext.current`,
     },
   },
 
   create(context) {
-    const parserServices = getParserServices(context);
+    // XXX: at least tests don't seem to believe they have full type info...
+    let parserServices;
+    try {
+      parserServices = getParserServices(context);
+    } catch (_) {
+      parserServices = context.parserServices;
+    }
     const checker = parserServices.program.getTypeChecker();
     const dontPropagate = context.options[0][OPTION_DONT_PROPAGATE];
 
@@ -79,10 +85,7 @@ const rule = {
     }
 
     /**
-    * @param { import("estree").FunctionDeclaration
-    *  | import("estree").ArrowFunctionExpression
-    *  | import("estree").FunctionExpression
-    * } node
+    * @param {FuncDeclLike} node
     * @returns {boolean}
     */
     function returnsPromise(node) {
@@ -94,10 +97,10 @@ const rule = {
 
     /**
     * @param {import("estree").Statement} node
-    * @param {string} reqCtxObjName
+    * @param {string} reqCtxArgName
     * @return {boolean}
     */
-    function isClientRequestContextEnter(node, reqCtxObjName) {
+    function isClientRequestContextEnter(node, reqCtxArgName) {
       /** @type {import("estree").ExpressionStatement} */
       const simpleEnterCall = {
         type: "ExpressionStatement",
@@ -108,7 +111,7 @@ const rule = {
             type: "MemberExpression",
             object: {
               type: "Identifier",
-              name: reqCtxObjName,
+              name: reqCtxArgName,
             },
             property: {
               type: "Identifier",
@@ -127,7 +130,7 @@ const rule = {
         node.expression.type === "CallExpression" &&
         node.expression.callee.type === "MemberExpression" &&
         node.expression.callee.object.type === "Identifier" &&
-        node.expression.callee.object.name === reqCtxObjName &&
+        node.expression.callee.object.name === reqCtxArgName &&
         node.expression.callee.property.type === "Identifier" &&
         node.expression.callee.property.name === "enter"
       );
@@ -135,14 +138,16 @@ const rule = {
 
     /**
      * @type {{
-     *  func: FunctionExpression,
+     *  func: FuncDeclLike,
      *  awaits: Set<AwaitExpression>,
      *  reqCtxArgName: string
      * }[]}
      */
     const funcStack = [];
 
-    /** @param {import("estree").FunctionExpression} node */
+    /**
+     * @param {FuncDeclLike} node
+     */
     function VisitFunctionDecl(node) {
       // XXX: might not cover promise-returning functions as well as checking the return type
       if (!returnsPromise(node))
@@ -205,7 +210,7 @@ const rule = {
                 node: firstStmt,
                 messageId: isThen ? "noReenterOnThenResume" : "noReenterOnCatchResume",
                 data: {
-                  reqCtxName: lastFunc.reqCtxArgName
+                  reqCtxArgName: lastFunc.reqCtxArgName
                 }
               });
             }
@@ -227,8 +232,19 @@ const rule = {
             context.report({
               node: nextStmt,
               messageId: "noReenterOnAwaitResume",
+              suggest: [
+                {
+                  desc: `Add a call to '${lastFunc.reqCtxArgName}.enter()' after the statement containing 'await'`,
+                  fix(fixer) {
+                    return fixer.insertTextAfter(
+                      stmt,
+                      `\n${lastFunc.reqCtxArgName}.enter();`
+                    );
+                  }
+                }
+              ],
               data: {
-                reqCtxName: lastFunc.reqCtxArgName
+                reqCtxArgName: lastFunc.reqCtxArgName
               }
             });
           }

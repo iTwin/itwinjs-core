@@ -10,5 +10,5 @@
     "strictFunctionTypes": true,
     "moduleResolution": "node"
   },
-  "include": ["rules/*.js"]
+  "include": ["**/*.js"]
 }
