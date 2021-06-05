@@ -246,5 +246,113 @@ new ESLintTester({
         }
       ]
     },
+    // check all function syntaxes are supported
+    ...[
+      {
+        before: `
+          class C {
+            async asyncMethod(reqCtx: ClientRequestContext)
+        `,
+        after: `
+            }
+          }
+        `,
+      },
+      {
+        before: normalizeIndent`
+          async function freeFunc(reqCtx: ClientRequestContext) {
+        `,
+        after: normalizeIndent`
+          }
+        `,
+      }
+    ].map(({before, after, ...rest}) => ({
+      code: normalizeIndent(before + `
+        const notReqCtxEnter;
+        reqCtx.enter();
+      ` + after),
+      ...rest
+    })),
+    /*
+        async function goodFreeFunc(reqCtx: ClientRequestContext) {
+        const goodArrowFunc = async (reqCtx: ClientRequestContext) => {
+        function goodNonAsyncFunc(reqCtx: ClientRequestContext): Promise<number> {
+        function goodNonAsyncImplicitReturnTypeFunc(reqCtx: ClientRequestContext) {
+          */
+    {
+      code: normalizeIndent`
+        function goodThenCall(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          return Promise.resolve(5);
+        }
+      `,
+    },
+    {
+      code: normalizeIndent`
+        function goodCatchCall(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          const promise = fetch()
+            .then(() => {
+              reqCtx.enter();
+              const otherStuff = 5;
+            })
+            .catch(() => {
+              reqCtx.enter();
+              const otherStuff = 5;
+            });
+          return promise;
+        }
+      `,
+    },
+    {
+      code: normalizeIndent`
+        function nonAsyncThen(reqCtx: ClientRequestContext) {
+          getPromise().then(() => {
+            const notAnEnter = 5;
+          });
+        }
+      `,
+    },
+    {
+      code: normalizeIndent`
+        function goodAsyncCatch(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          try {
+            return Promise.resolve("success");
+          } catch (err) {
+            reqCtx.enter();
+            return Promise.resolve("caught");
+          }
+        }
+      `,
+    },
+    {
+      code: normalizeIndent`
+        function goodAsyncFinally(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          try {
+            const x = 5 + 1;
+          } catch (err) {
+            reqCtx.enter();
+          } finally {
+            reqCtx.enter();
+            return Promise.resolve(5);
+          }
+        }
+      `,
+    },
+    /*
+    {
+      code: normalizeIndent`
+        class C {
+          async dontNeedEnterIfAwaitIsLastStatement(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            await Promise.resolve(5);
+          }
+        }
+      `,
+      options: [{"dont-propagate-request-context": true}]
+    }
+    */
   ]
 }));
