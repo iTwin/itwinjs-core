@@ -7,6 +7,9 @@
 
 "use strict";
 
+const ts = require("typescript");
+const { getParserServices } = require("./utils/parser");
+
 const OPTION_DONT_PROPAGATE = "dont-propagate-request-context";
 
 const asyncFuncMoniker = "promise returning function";
@@ -52,55 +55,85 @@ const rule = {
   },
 
   create(context) {
+    const parserServices = getParserServices(context);
     const dontPropagate = context.options[0][OPTION_DONT_PROPAGATE];
 
-    /** @param {import("@typescript-eslint/typescript-estree").TSNode} node */
-    function isThisSetState(node) {
-      if (node.type !== "CallExpression") return false;
-      const callee = node.callee;
-      return (
-        callee.type === "MemberExpression" &&
-        callee.object.type === "ThisExpression" &&
-        callee.property.name === "setState"
-      );
-    }
+    const stack = [];
 
-    function getFirstSetStateAncestor(node) {
-      if (!node.parent) return undefined;
-      if (isThisSetState(node)) return node;
-      return getFirstSetStateAncestor(node.parent);
-    }
+    ///** @param {import("@typescript-eslint/typescript-estree").TSNode} node */
+    ///** @param {import("typescript").FunctionLikeDeclaration} node */
+    function ProcessFunction(node) {
 
-    function isInSetStateUpdater(node) {
-      const setState = getFirstSetStateAncestor(node.parent);
-      if (!setState) return false;
-      const [updaterArgument] = setState.arguments;
-      let ancestorNode = node.parent;
-      while (ancestorNode) {
-        if (ancestorNode === updaterArgument) return true;
-        ancestorNode = ancestorNode.parent;
-      }
-      return false;
     }
 
     return {
+      AwaitExpression(node) {
 
-      /** @param {import("typescript").FunctionLikeDeclaration} node */
-      FunctionDeclaration(node) {
+      },
+      CallExpression(node) {
+        //node.callee.name === "then"
+      },
+      "FunctionExpression:exit"(node) {
+        if (node === stack[stack.length - 1])
+          stack.pop();
+      },
+      //ArrowFunctionExpression() {}
+      //FunctionDeclaration
+      FunctionExpression (node) {
+        stack.push(node);
         // XXX: might not cover promise-returning functions as well as checking the return type
         if (!node.async)
           return;
 
         // XXX: won't match for example  my_namespace["ClientRequestContext"]
-        if (node.value.returnType.typeAnnotation.value === "ClientRequestContext")
-        const clientReqCtx = node.parameters.find(p => p.value.typeAnnotation === "ClientRequestContext");
+        const ps = parserServices;
+        const clientReqCtx = node.params.find(p => p.typeAnnotation.typeAnnotation.typeName.name === "ClientRequestContext");
 
-        if (clientReqCtx === undefined)
+        if (clientReqCtx === undefined) {
           context.report({
             node,
-            messageId: "noContextArg"
+            messageId: "noContextArg",
           });
-      }
+          return;getP
+        }
+
+        // do this with a stack
+        function containsAwait(node) {
+          // XXX: stub
+          return false;
+        }
+
+        for (let i = 0; i < node.body.body.length; ++i) {
+          const stmt = node.body.body[i];
+          const nextStmt = node.body.body[i+1];
+          if (containsAwait(stmt) && !nextStmt.deepEquals({
+            type: "ExpressionStatement",
+            expression: {
+              type: "CallExpression",
+              optional: false,
+              callee: {
+                type: "MemberExpression",
+                object: {
+                  type: "identifier",
+                  name: ""
+                },
+                property: {
+                  type: "Identifier",
+                  name: "enter"
+                },
+                computed: false,
+                optional: false,
+              },
+              arguments: []
+            }
+          })) {
+            context.report({
+              node,
+              messageId: "noReenterOnAwaitResume"
+            });
+          }
+        }
+      },
     };
   },
 };
