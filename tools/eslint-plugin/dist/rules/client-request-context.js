@@ -47,7 +47,6 @@ const rule = {
               `normally non-node_module-imported ${asyncFuncMoniker}s are flagged if they do not receive ` +
               `the client request context as an argument, this diables that`,
             default: false,
-            required: false
           },
         },
       },

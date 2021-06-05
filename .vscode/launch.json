@@ -1635,6 +1635,16 @@
         "[NODE] Certa Test Runner for Full Stack RPC Interface Tests",
         "[BACKEND] Local Backend for Full Stack RPC Interface Tests"
       ]
+    },
+    {
+      "name": "eslint rule tests @bentley/client-request-context",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/eslint-plugin",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/eslint-plugin/tests/client-request-context.js",
     }
   ],
   "compounds": [
