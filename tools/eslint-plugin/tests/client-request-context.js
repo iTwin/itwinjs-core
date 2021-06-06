@@ -8,15 +8,29 @@
 const ESLintTester = require('eslint').RuleTester;
 const BentleyESLintPlugin = require('../dist');
 const ClientRequestContextESLintRule = BentleyESLintPlugin.rules["client-request-context"];
-const { ESLintUtils: { RuleTester } } = require('@typescript-eslint/experimental-utils');
+
+// TODO: see if we can automatically inject a prelude into the parser options instead of using this
+const prelude = `
+namespace IMJSBackend {
+  export interface ClientRequestContext {
+    enter(): void;
+  }
+  export interface AuthorizedClientRequestContext {}
+}
+
+type ClientRequestContext = IMJSBackend.ClientRequestContext;
+type AuthorizedClientRequestContext = IMJSBackend.AuthorizedClientRequestContext;
+`;
 
 /** mostly stolen from eslint-plugin-react-hooks's test
  *  @param {string[]} strings
  */
-function normalizeIndent(strings) {
+function makeTest(strings) {
   const codeLines = strings[0].split('\n');
+  if (codeLines.length <= 1)
+    return prelude + strings;
   const leftPadding = codeLines[1].match(/\s+/)[0];
-  return codeLines.map(l => l.substr(leftPadding.length)).join('\n');
+  return prelude + codeLines.map(l => l.substr(leftPadding.length)).join('\n');
 }
 
 /** allow specifying `only` and `skip` properties for easier debugging */
@@ -41,7 +55,7 @@ new ESLintTester({
 }).run('client-request-context', ClientRequestContextESLintRule, supportSkippedAndOnlyInTests({
   valid: [
     {
-      code: normalizeIndent`
+      code: makeTest`
         class C {
           async goodMethod(reqCtx: ClientRequestContext) {
             reqCtx.enter();
@@ -52,7 +66,7 @@ new ESLintTester({
       `,
     },
     {
-      code: normalizeIndent`
+      code: makeTest`
         async function goodFreeFunc(reqCtx: ClientRequestContext) {
           reqCtx.enter();
           await Promise.resolve(5);
@@ -61,7 +75,7 @@ new ESLintTester({
       `,
     },
     {
-      code: normalizeIndent`
+      code: makeTest`
         const goodArrowFunc = async (reqCtx: ClientRequestContext) => {
           reqCtx.enter();
           await Promise.resolve(5);
@@ -71,15 +85,15 @@ new ESLintTester({
     },
     {
       only: true,
-      code: normalizeIndent`
-        function goodNonAsyncFunc(reqCtx: ClientRequestContext): Promise<number> {
+      code: makeTest`
+        function goodNonAsyncFunc(reqCtx: IMJSBackend.ClientRequestContext): Promise<number> {
           reqCtx.enter();
           return Promise.resolve(5);
         }
       `,
     },
     {
-      code: normalizeIndent`
+      code: makeTest`
         function goodNonAsyncImplicitReturnTypeFunc(reqCtx: ClientRequestContext) {
           reqCtx.enter();
           return Promise.resolve(5);
@@ -87,7 +101,7 @@ new ESLintTester({
       `,
     },
     {
-      code: normalizeIndent`
+      code: makeTest`
         function goodThenCall(reqCtx: ClientRequestContext) {
           reqCtx.enter();
           return Promise.resolve(5);
@@ -95,7 +109,7 @@ new ESLintTester({
       `,
     },
     {
-      code: normalizeIndent`
+      code: makeTest`
         function goodCatchCall(reqCtx: ClientRequestContext) {
           reqCtx.enter();
           const promise = fetch()
@@ -112,7 +126,7 @@ new ESLintTester({
       `,
     },
     {
-      code: normalizeIndent`
+      code: makeTest`
         function nonAsyncThen(reqCtx: ClientRequestContext) {
           getPromise().then(() => {
             const notAnEnter = 5;
@@ -121,7 +135,7 @@ new ESLintTester({
       `,
     },
     {
-      code: normalizeIndent`
+      code: makeTest`
         function goodAsyncCatch(reqCtx: ClientRequestContext) {
           reqCtx.enter();
           try {
@@ -134,7 +148,7 @@ new ESLintTester({
       `,
     },
     {
-      code: normalizeIndent`
+      code: makeTest`
         function goodAsyncFinally(reqCtx: ClientRequestContext) {
           reqCtx.enter();
           try {
@@ -149,7 +163,7 @@ new ESLintTester({
       `,
     },
     {
-      code: normalizeIndent`
+      code: makeTest`
         class C {
           async dontNeedEnterIfAwaitIsLastStatement(reqCtx: ClientRequestContext) {
             reqCtx.enter();
@@ -158,13 +172,13 @@ new ESLintTester({
         }
       `,
     },
-    { code: "async function f(ctx: IMJSBackend.ClientRequestContext) {ctx.enter();}" },
-    { code: "async function f(ctx: AuthorizedClientRequestContext) {ctx.enter();}" },
-    { code: `async function f(ctx: Backend["ClientRequestContext"]) {ctx.enter();}`, skip: true },
+    { code: makeTest`async function f(ctx: IMJSBackend.ClientRequestContext) {ctx.enter();}` },
+    { code: makeTest`async function f(ctx: AuthorizedClientRequestContext) {ctx.enter();}` },
+    { code: `async function f(ctx: IMJSBackend["ClientRequestContext"]) {ctx.enter();}`, skip: true },
   ],
   invalid: [
     {
-      code: normalizeIndent`
+      code: makeTest`
         class Bad {
           async badMethod(reqCtx: ClientRequestContext) {
             reqCtx.enter();
@@ -179,7 +193,7 @@ new ESLintTester({
           suggestions: [
             {
               desc: "Add a call to 'reqCtx.enter()' after the statement containing 'await'",
-              output: normalizeIndent`
+              output: makeTest`
                 class Bad {
                   async badMethod(reqCtx: ClientRequestContext) {
                     reqCtx.enter();
@@ -194,7 +208,7 @@ new ESLintTester({
       ]
     },
     {
-      code: normalizeIndent`
+      code: makeTest`
         async function missingFirstEnterCall(reqCtx: ClientRequestContext) {
           await Promise.resolve(5);
           reqCtx.enter();
@@ -206,7 +220,7 @@ new ESLintTester({
           suggestions: [
             {
               desc: "Add 'reqCtx.enter()' as the first statement of the body",
-              output: normalizeIndent`
+              output: makeTest`
                 async function missingFirstEnterCall(reqCtx: ClientRequestContext) {
                   reqCtx.enter();await Promise.resolve(5);
                   reqCtx.enter();
@@ -218,14 +232,14 @@ new ESLintTester({
       ]
     },
     {
-      code: "async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {}",
+      code: makeTest`async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {}`,
       errors: [
         {
           message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately",
           suggestions: [
             {
               desc: "Add 'reqCtx.enter()' as the first statement of the body",
-              output: "async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {reqCtx.enter();}",
+              output: makeTest`async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {reqCtx.enter();}`,
             }
           ]
         }
@@ -235,7 +249,7 @@ new ESLintTester({
       // no idea how to match this without type information during tests
       // skipping for now, should check @typescript-eslint's own tests
       skip: true,
-      code: normalizeIndent`
+      code: makeTest`
         function noEnterAtBeginImplicitAsync(reqCtx: ClientRequestContext) {
           return Promise.resolve(5);
         }
@@ -246,7 +260,7 @@ new ESLintTester({
           suggestions: [
             {
               desc: "Add 'reqCtx.enter()' as the first statement of the body",
-              output: normalizeIndent`
+              output: makeTest`
                 function noEnterAtBeginImplicitAsync(reqCtx: ClientRequestContext) {
                   reqCtx.enter();return Promise.resolve(5);
                 }
@@ -257,28 +271,28 @@ new ESLintTester({
       ]
     },
     {
-      code: "async function f() {}",
+      code: makeTest`async function f() {}`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "async function f(clientRequestContext: ClientRequestContext) {}",
+              output: makeTest`async function f(clientRequestContext: ClientRequestContext) {}`,
             },
           ]
         },
       ]
     },
     {
-      code: "async function f(arg1: string) {}",
+      code: makeTest`async function f(arg1: string) {}`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "async function f(clientRequestContext: ClientRequestContext, arg1: string) {}",
+              output: makeTest`async function f(clientRequestContext: ClientRequestContext, arg1: string) {}`,
             },
           ]
         },
@@ -286,28 +300,28 @@ new ESLintTester({
     },
     {
       options: [{"context-arg-name": "ctx"}],
-      code: "async function f() {}",
+      code: makeTest`async function f() {}`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "async function f(ctx: ClientRequestContext) {}",
+              output: makeTest`async function f(ctx: ClientRequestContext) {}`,
             },
           ]
         },
       ]
     },
     {
-      code: "async function asyncMethod(otherArg: number) {}",
+      code: makeTest`async function asyncMethod(otherArg: number) {}`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "async function asyncMethod(clientRequestContext: ClientRequestContext, otherArg: number) {}",
+              output: makeTest`async function asyncMethod(clientRequestContext: ClientRequestContext, otherArg: number) {}`,
             },
           ]
         }
@@ -317,7 +331,7 @@ new ESLintTester({
       // not sure how to test this one, (need ESLintRuleTest to have type info)
       // should check @typescript-eslint's own rule testing
       skip: true,
-      code: normalizeIndent`
+      code: makeTest`
         function implicitlyAsync(reqCtx: ClientRequestContext) {
           return Promise.resolve();
         }
@@ -328,7 +342,7 @@ new ESLintTester({
           suggestions: [
             {
               desc: "Add a call to 'reqCtx.enter()' at the beginning of the function block",
-              output: normalizeIndent`
+              output: makeTest`
                 function implicitlyAsync(reqCtx: ClientRequestContext) {
                 reqCtx.enter();
                   return Promise.resolve();
@@ -340,42 +354,42 @@ new ESLintTester({
       ]
     },
     {
-      code: "async function asyncFunc() {}",
+      code: makeTest`async function asyncFunc() {}`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "async function asyncFunc(clientRequestContext: ClientRequestContext) {}",
+              output: makeTest`async function asyncFunc(clientRequestContext: ClientRequestContext) {}`,
             }
           ]
         }
       ]
     },
     {
-      code: "class C { async asyncMethod() {} }",
+      code: makeTest`class C { async asyncMethod() {} }`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "class C { async asyncMethod(clientRequestContext: ClientRequestContext) {} }",
+              output: makeTest`class C { async asyncMethod(clientRequestContext: ClientRequestContext) {} }`,
             }
           ]
         }
       ]
     },
     {
-      code: "function promiseReturning(): Promise<void> { return Promise.resolve(); }",
+      code: makeTest`function promiseReturning(): Promise<void> { return Promise.resolve(); }`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "function promiseReturning(clientRequestContext: ClientRequestContext): Promise<void> { return Promise.resolve(); }",
+              output: makeTest`function promiseReturning(clientRequestContext: ClientRequestContext): Promise<void> { return Promise.resolve(); }`,
             }
           ]
         }
@@ -384,56 +398,56 @@ new ESLintTester({
     {
       // testing implicit promise return type not supported yet
       skip: true,
-      code: "function implicitPromiseReturning() { return Promise.resolve(); }",
+      code: makeTest`function implicitPromiseReturning() { return Promise.resolve(); }`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "function implicitPromiseReturning(clientRequestContext: ClientRequestContext) { return Promise.resolve(); }",
+              output: makeTest`function implicitPromiseReturning(clientRequestContext: ClientRequestContext) { return Promise.resolve(); }`,
             }
           ]
         }
       ]
     },
     {
-      code: "const asyncArrow = async () => {};",
+      code: makeTest`const asyncArrow = async () => {};`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "const asyncArrow = async (clientRequestContext: ClientRequestContext) => {};",
+              output: makeTest`const asyncArrow = async (clientRequestContext: ClientRequestContext) => {};`,
             }
           ]
         }
       ]
     },
     {
-      code: "const promiseReturningArrow = (): Promise<void> => { return Promise.resolve(); };",
+      code: makeTest`const promiseReturningArrow = (): Promise<void> => { return Promise.resolve(); };`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "const promiseReturningArrow = (clientRequestContext: ClientRequestContext): Promise<void> => { return Promise.resolve(); };",
+              output: makeTest`const promiseReturningArrow = (clientRequestContext: ClientRequestContext): Promise<void> => { return Promise.resolve(); };`,
             }
           ]
         }
       ]
     },
     {
-      code: "const implicitPromiseReturningArrow = () => { return Promise.resolve(); };",
+      code: makeTest`const implicitPromiseReturningArrow = () => { return Promise.resolve(); };`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "const implicitPromiseReturningArrow = (clientRequestContext: ClientRequestContext) => { return Promise.resolve(); };",
+              output: makeTest`const implicitPromiseReturningArrow = (clientRequestContext: ClientRequestContext) => { return Promise.resolve(); };`,
             }
           ]
         }
@@ -441,14 +455,14 @@ new ESLintTester({
     },
     {
       //only: true,
-      code: "const typedButNoReturnTypeArrow: (() => Promise<void>) = () => { return Promise.resolve(); };",
+      code: makeTest`const typedButNoReturnTypeArrow: (() => Promise<void>) = () => { return Promise.resolve(); };`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: "const typedButNoReturnTypeArrow: (clientRequestContext: ClientRequestContext) => Promise<void> = (clientRequestContext: ClientRequestContext) => { return Promise.resolve(); };",
+              output: makeTest`const typedButNoReturnTypeArrow: (clientRequestContext: ClientRequestContext) => Promise<void> = (clientRequestContext: ClientRequestContext) => { return Promise.resolve(); };`,
             }
           ]
         }
@@ -457,7 +471,7 @@ new ESLintTester({
     {
       // this should eventually test dont-propagate-request-context settings
       skip: true,
-      code: normalizeIndent`
+      code: makeTest`
         class C {
           async dontNeedEnterIfAwaitIsLastStatement(reqCtx: ClientRequestContext) {
             reqCtx.enter();

@@ -8,6 +8,8 @@
 "use strict";
 
 const { getParserServices } = require("./utils/parser");
+//const { AST_NODE_TYPES } = require("@typescript-eslint/typescript-estree");
+const { AST_NODE_TYPES } = require("@typescript-eslint/experimental-utils");
 
 const OPTION_DONT_PROPAGATE = "dont-propagate-request-context";
 const OPTION_CONTEXT_ARG_NAME = "context-arg-name";
@@ -173,14 +175,11 @@ const rule = {
       const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
 
       const clientReqCtx = node.params.find((p) => {
-        const tsParam = parserServices.esTreeNodeToTSNodeMap.get(p);
+        // TODO: fix type?
+        const actualParam = p.type === AST_NODE_TYPES.TSParameterProperty ? p.parameter : p;
+        const tsParam = parserServices.esTreeNodeToTSNodeMap.get(actualParam);
         const type = checker.getTypeAtLocation(tsParam);
-        try {
-          return /ClientRequestContext$/.test(tsParam.parent.type.getText());
-        } catch (_) {
-          console.error("unknown parameter ast format");
-          return;
-        }
+        return type.symbol.getName() === "ClientRequestContext";
       });
 
       if (clientReqCtx === undefined) {
@@ -317,9 +316,9 @@ const rule = {
         }
       },
 
-      FunctionExpression: VisitFunctionDecl,
-      FunctionDeclaration: VisitFunctionDecl,
-      ArrowFunctionExpression: VisitFunctionDecl,
+      [AST_NODE_TYPES.ArrowFunctionExpression]: VisitFunctionDecl,
+      [AST_NODE_TYPES.FunctionDeclaration]: VisitFunctionDecl,
+      [AST_NODE_TYPES.FunctionExpression]: VisitFunctionDecl,
     };
   },
 };
