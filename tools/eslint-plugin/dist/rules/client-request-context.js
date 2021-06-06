@@ -73,6 +73,7 @@ const rule = {
 
   create(context) {
     // XXX: at least tests don't seem to believe they have full type info...
+    /** @type {import("@typescript-eslint/parser").ParserServices} */
     let parserServices;
     try {
       parserServices = getParserServices(context);
@@ -98,10 +99,13 @@ const rule = {
     * @returns {boolean}
     */
     function returnsPromise(node) {
-      // TODO: use type information to resolve aliases
-      // currently won't work on `type IntPromise = Promise<number>`
-      // TODO: get typescript-estree typings to work
-      return node.async || (node.returnType && node.returnType.typeAnnotation.typeName.name === "Promise");
+      const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+      if (!tsNode) return false;
+      const signature = checker.getSignatureFromDeclaration(tsNode);
+      if (!signature) return false;
+      const returnType = signature && signature.getReturnType();
+      if (!returnType) return false;
+      return checker.getFullyQualifiedName(returnType.symbol) === "Promise";
     }
 
     /**
@@ -110,6 +114,9 @@ const rule = {
     * @return {boolean}
     */
     function isClientRequestContextEnter(node, reqCtxArgName) {
+      if (!node)
+        return false;
+
       /** @type {import("estree").ExpressionStatement} */
       const simpleEnterCall = {
         type: "ExpressionStatement",
@@ -162,13 +169,12 @@ const rule = {
       if (!returnsPromise(node))
         return;
 
-      /** @type {import("typescript").FunctionExpression} */
+      ///** @type {import("@typescript-eslint/typescript-estree").TSESTreeToTSNode<import("typescript").FunctionExpression>} */
       const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
 
-      // XXX: won't match for example  my_namespace["ClientRequestContext"]
       const clientReqCtx = node.params.find((p) => {
-        const identifier = p.type === "AssignmentPattern" ? p.left : p;
-        const tsParam = parserServices.esTreeNodeToTSNodeMap.get(identifier);
+        const tsParam = parserServices.esTreeNodeToTSNodeMap.get(p);
+        const type = checker.getTypeAtLocation(tsParam);
         try {
           return /ClientRequestContext$/.test(tsParam.parent.type.getText());
         } catch (_) {
