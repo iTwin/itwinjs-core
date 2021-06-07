@@ -54,7 +54,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   if (undefined === jsonOut.metadata.vulnerabilities)
     failBuild();
 
-  if (jsonOut.metadata.vulnerabilities.high || jsonOut.metadata.vulnerabilities.critical) {
+  if (jsonOut.metadata.vulnerabilities.critical) {
     if (1 < jsonOut.actions.length || jsonOut.actions[0].resolves[0].id !== 725)
       failBuild();
   }
