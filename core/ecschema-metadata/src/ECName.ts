@@ -23,7 +23,7 @@ function isValidAlphaNumericCharacter(c: string): boolean {
   return (((c >= "0" && c <= "9") || (c >= "A" && c <= "Z") || (c >= "a" && c <= "z") || c === "_"));
 }
 
-/** Identifies an item in a [[Schema]], encoding characters that are not permitted in such names.
+/** The name of an item in a [[Schema]], encoded to meet restrictions on the characters usable in such names.
  * An ECName meets the following criteria:
  *  - Contains at least one character.
  *  - Does not begin with a digit.
