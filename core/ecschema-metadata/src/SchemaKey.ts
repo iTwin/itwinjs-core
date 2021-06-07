@@ -100,6 +100,7 @@ function isValidAlphaNumericCharacter(c: string): boolean {
 }
 
 const validECNameRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i;
+const ecNameReplacerRegex = /__x([0-9a-fA-F]{4})__/g;
 
 /**
  * An ECName is an invariant, string based, name is needed for an item in a schema.
@@ -170,6 +171,10 @@ export class ECName {
     }
 
     return new ECName(output);
+  }
+
+  public decode(): string {
+    return this.name.replace(ecNameReplacerRegex, (_match, hex) => String.fromCharCode(Number.parseInt(hex, 16)));
   }
 }
 
