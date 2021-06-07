@@ -96,17 +96,17 @@ new ESLintTester({
       code: makeTest`
         function goodThenCall(reqCtx: ClientRequestContext) {
           reqCtx.enter();
-          return Promise.resolve(5);
+          return Promise.resolve().then(() => {
+            reqCtx.enter();
+          })
         }
       `,
     },
     {
       code: makeTest`
-        async function fetch(ctx: ClientRequestContext) {ctx.enter();}
-
         function goodCatchCall(reqCtx: ClientRequestContext) {
           reqCtx.enter();
-          const promise = fetch()
+          const promise = Promise.resolve()
             .then(() => {
               reqCtx.enter();
               const otherStuff = 5;
@@ -169,6 +169,18 @@ new ESLintTester({
     { code: makeTest`async function f(ctx: IMJSBackend.ClientRequestContext) {ctx.enter();}` },
     { code: makeTest`async function f(ctx: AuthorizedClientRequestContext) {ctx.enter();}` },
     { code: makeTest`async function f(ctx: typeof IMJSBackend["ClientRequestContext"]) {ctx.enter();}` },
+    {
+      code: makeTest`
+        async nonAsyncCatch(reqCtx: ClientRequestContext) {
+          try {
+            const notAsync = 5;
+          } catch (_) {
+            const notAnEntryButNotNeeded = 10;
+          }
+          return Promise.resolve();
+        }
+      `,
+    }
   ],
   invalid: [
     {
@@ -335,7 +347,7 @@ new ESLintTester({
           message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement",
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' at the beginning of the function block",
+              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
               output: makeTest`
                 function implicitlyAsync(reqCtx: ClientRequestContext) {
                 reqCtx.enter();
@@ -474,6 +486,206 @@ new ESLintTester({
         }
       `,
       options: [{"dont-propagate-request-context": true}]
-    }
+    },
+    {
+      code: makeTest`
+        function badThenCall(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          return Promise.resolve().then(() => {
+            const notEnterFirst = 10;
+          });
+        }
+      `,
+      errors: [
+        {
+          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks",
+          suggestions: [
+            {
+              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              output: makeTest`
+                function badThenCall(reqCtx: ClientRequestContext) {
+                  reqCtx.enter();
+                  return Promise.resolve().then(() => {
+                    reqCtx.enter();const notEnterFirst = 10;
+                  });
+                }
+              `,
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: makeTest`
+        function badComplicatedThenCall(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          return Promise.resolve()["then"](() => {
+            const notEnterFirst = 10;
+          });
+        }
+      `,
+      errors: [
+        {
+          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks",
+          suggestions: [
+            {
+              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              output: makeTest`
+                function badComplicatedThenCall(reqCtx: ClientRequestContext) {
+                  reqCtx.enter();
+                  return Promise.resolve()["then"](() => {
+                    reqCtx.enter();const notEnterFirst = 10;
+                  });
+                }
+              `,
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: makeTest`
+        function badCatchCall(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          return Promise.resolve().catch(() => {
+            const notEnterFirst = 10;
+          });
+        }
+      `,
+      errors: [
+        {
+          message: "All promise-returning functions must call 'reqCtx.enter()' immediately after catching an async exception",
+          suggestions: [
+            {
+              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              output: makeTest`
+                function badCatchCall(reqCtx: ClientRequestContext) {
+                  reqCtx.enter();
+                  return Promise.resolve().catch(() => {
+                    reqCtx.enter();const notEnterFirst = 10;
+                  });
+                }
+              `,
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: makeTest`
+        function badSecondThenCall(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          return Promise.resolve().then(() => {
+            reqCtx.enter();
+            const otherStuff = 5;
+          }).then(() => {
+            const notEnterFirst = 10;
+          });
+        }
+      `,
+      errors: [
+        {
+          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks",
+          suggestions: [
+            {
+              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              output: makeTest`
+                function badSecondThenCall(reqCtx: ClientRequestContext) {
+                  reqCtx.enter();
+                  return Promise.resolve().then(() => {
+                    reqCtx.enter();
+                    const otherStuff = 5;
+                  }).then(() => {
+                    reqCtx.enter();const notEnterFirst = 10;
+                  });
+                }
+              `,
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: makeTest`
+        function bathBothThenCalls(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          return Promise.resolve().then(() => {
+            const notEnterFirst = 7;
+          }).then(() => {
+            const notEnterFirst = 10;
+          });
+        }
+      `,
+      errors: [
+        {
+          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks",
+          suggestions: [
+            {
+              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              output: makeTest`
+                function bathBothThenCalls(reqCtx: ClientRequestContext) {
+                  reqCtx.enter();
+                  return Promise.resolve().then(() => {
+                    reqCtx.enter();const notEnterFirst = 7;
+                  }).then(() => {
+                    const notEnterFirst = 10;
+                  });
+                }
+              `,
+            },
+          ]
+        },
+        {
+          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks",
+          suggestions: [
+            {
+              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              output: makeTest`
+                function bathBothThenCalls(reqCtx: ClientRequestContext) {
+                  reqCtx.enter();
+                  return Promise.resolve().then(() => {
+                    const notEnterFirst = 7;
+                  }).then(() => {
+                    reqCtx.enter();const notEnterFirst = 10;
+                  });
+                }
+              `,
+            },
+          ]
+        }
+      ]
+    },
+    {
+      code: makeTest`
+        async function badAsyncCatch(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          try {
+            await Promise.resolve()
+          } catch (ignore) {
+            // no immediate context.enter
+          }
+        }
+      `,
+      errors: [
+        {
+          message: "All promise-returning functions must call 'reqCtx.enter()' immediately after catching an async exception",
+          suggestions: [
+            {
+              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              output: makeTest`
+                async function badAsyncCatch(reqCtx: ClientRequestContext) {
+                  reqCtx.enter();
+                  try {
+                    await Promise.resolve()
+                  } catch (ignore) {
+                    // no immediate context.enter
+                  reqCtx.enter();}
+                }
+              `,
+            }
+          ]
+        }
+      ]
+    },
   ]
 }));

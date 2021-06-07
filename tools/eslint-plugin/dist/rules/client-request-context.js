@@ -238,37 +238,72 @@ const rule = {
         if (lastFunc) lastFunc.awaits.add(node);
       },
 
+      CatchClause(node) {
+        // TODO: need to verify the outer function
+        const lastFunc = back(funcStack);
+        if (lastFunc === undefined)
+          return;
+
+        // TODO: abstract firstStmt check and fixer to reused function
+        const firstStmt = node.body.body[0];
+        if (!isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName))
+          context.report({
+            node: firstStmt || node.body,
+            messageId: "noReenterOnCatchResume",
+            suggest: [{
+                desc: `Add a call to '${lastFunc.reqCtxArgName}.enter()' as the first statement of the body`,
+                fix(fixer) {
+                  const bodyIsEmpty = firstStmt === undefined;
+                  if (bodyIsEmpty) {
+                    const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+                    return fixer.insertTextBeforeRange(
+                      // TODO: clarify why the tsNode locations are like this
+                      [tsNode.block.end-1, tsNode.block.end],
+                      `${lastFunc.reqCtxArgName}.enter();`
+                    );
+                  }
+                  return fixer.insertTextBefore(firstStmt, `${lastFunc.reqCtxArgName}.enter();`);
+                }
+            }],
+            data: {
+              reqCtxArgName: lastFunc.reqCtxArgName
+            }
+          });
+      },
+
       CallExpression(node) {
         // TODO: need to check we aren't in a non-promise returning function nested in an async function...
         // get the outer function and compare to the top of the stack
         const lastFunc = back(funcStack);
         if (lastFunc === undefined)
           return;
-        // TODO: need "get name of member expr" or typescript type way to check for calls to e.g. promise["then"]
-        const isThen = node.callee.name === "then";
-        const isCatch = node.callee.name === "catch";
+        // TODO: more robust checking that it is a Thenable's method being called
+        const isThen = (node.callee.property.name || node.callee.property.value) === "then";
+        const isCatch = (node.callee.property.name || node.callee.property.value) === "catch";
         const isPromiseCallback = isThen || isCatch;
         if (isPromiseCallback) {
           const callback = node.arguments[0];
           if (callback.type === "FunctionExpression" || callback.type === "ArrowFunctionExpression") {
+            // FIXME: deal with non-block body in async funcs...
             if (callback.body.type === "BlockStatement") {
-              // FIXME: deal with empty body...
               const firstStmt = callback.body.body[0];
               if (!isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName))
               context.report({
                 node: firstStmt || callback.body,
                 messageId: isThen ? "noReenterOnThenResume" : "noReenterOnCatchResume",
                 suggest: [{
-                    desc: `Add a '${lastFunc.reqCtxArgName}.enter()' as the first statement of the body`,
+                    desc: `Add a call to '${lastFunc.reqCtxArgName}.enter()' as the first statement of the body`,
                     fix(fixer) {
-                      if (firstStmt)
-                        return fixer.insertTextBefore(firstStmt, `${lastFunc.reqCtxArgName}.enter();`);
-                      const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
-                      return fixer.insertTextBeforeRange(
-                        // TODO: clarify why the tsNode locations are like this
-                        [tsNode.body.end-1, tsNode.body.end],
-                        `${lastFunc.reqCtxArgName}.enter();`
-                      );
+                      const bodyIsEmpty = firstStmt === undefined;
+                      if (bodyIsEmpty) {
+                        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+                        return fixer.insertTextBeforeRange(
+                          // TODO: clarify why the tsNode locations are like this
+                          [tsNode.body.end-1, tsNode.body.end],
+                          `${lastFunc.reqCtxArgName}.enter();`
+                        );
+                      }
+                      return fixer.insertTextBefore(firstStmt, `${lastFunc.reqCtxArgName}.enter();`);
                     }
                 }],
                 data: {
