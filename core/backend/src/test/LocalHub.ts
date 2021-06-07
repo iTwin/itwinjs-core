@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { DbResult, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, IModelHubStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName } from "../BackendHubAccess";
+import { ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName, LockProps } from "../BackendHubAccess";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
+import { LockLevel } from "@bentley/imodelhub-client";
 
 // cspell:ignore rowid
 
@@ -55,10 +56,12 @@ export class LocalHub {
 
     const db = this._hubDb = new SQLiteDb();
     db.createDb(this.mockDbName);
-    db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY,user TEXT)");
-    db.executeSQL("CREATE TABLE timeline(id TEXT PRIMARY KEY,parentId TEXT,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,FOREIGN KEY(parentId) REFERENCES timeline(id))");
-    db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY)");
-    db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY,id TEXT,FOREIGN KEY(id) REFERENCES timeline(id))");
+    db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY NOT NULL,user TEXT NOT NULL)");
+    db.executeSQL("CREATE TABLE timeline(id TEXT PRIMARY KEY NOT NULL,parentId TEXT,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,FOREIGN KEY(parentId) REFERENCES timeline(id))");
+    db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
+    db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,id TEXT,FOREIGN KEY(id) REFERENCES timeline(id))");
+    db.executeSQL("CREATE TABLE locks(id TEXT PRIMARY KEY NOT NULL,type INTEGER NOT NULL,level INTEGER NOT NULL,released TEXT,holder TEXT,FOREIGN KEY(released) REFERENCES timeline(id))");
+    db.executeSQL("CREATE TABLE sharedLocks(userId TEXT NOT NULL,lockId TEXT NOT NULL,PRIMARY KEY(lockId,userId)))");
     db.saveChanges();
 
     const path = this.uploadCheckpoint({ changesetId: "", localFile: arg.revision0 });
@@ -363,13 +366,54 @@ export class LocalHub {
     return cSets;
   }
 
+  private querySharedLockHolders(lockId: string) {
+    return this.db.withPreparedSqliteStatement("SELECT userId FROM sharedLocks WHERE lockId=?", (stmt) => {
+      stmt.bindValue(1, lockId);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_ROW !== rc)
+        throw new Error("lock holder not found");
+      return stmt.getValue(0).getString();
+    });
+  }
+
+  private queryLock(props: LockProps) {
+    return this.db.withPreparedSqliteStatement("SELECT released,type,holder FROM locks WHERE id=?", (stmt) => {
+      stmt.bindValue(1, props.objectId);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_ROW !== rc)
+        return undefined;
+      const released = stmt.getValue(0).getString();
+      const type = stmt.getValue(1).getInteger();
+      if (type === LockLevel.None)
+        return { released, type };
+      if (type === LockLevel.Exclusive)
+        return { userId: stmt.getValue(2).getString(), released, type };
+      return
+      if (type === LockLevel.None)
+
+
+    }
+  public requestLock(arg: { props: LockProps, changeset: ChangesetId, userId: string }) {
+      const lockStatus = this.db.withPreparedSqliteStatement("SELECT userId,released,type FROM locks WHERE id=?", (stmt) => {
+        stmt.bindValue(1, arg.props.objectId);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_ROW === rc) {
+          if (stmt.getValue(0).getString() !== arg.userId)
+            if (this.getChangesetIndex(stmt.getValue(1).getString()) > this.getChangesetIndex(arg.changeset))
+              throw new IModelError(IModelHubStatus.PullIsRequired, "Pull is required");
+
+        }
+        if (rc === BESQ)
+
+    }
+
   public removeDir(dirName: string) {
-    if (IModelJsFs.existsSync(dirName)) {
+        if(IModelJsFs.existsSync(dirName)) {
       IModelJsFs.purgeDirSync(dirName);
       IModelJsFs.rmdirSync(dirName);
     }
 
-  }
+}
   public cleanup() {
     if (this._hubDb) {
       this._hubDb.closeDb();
