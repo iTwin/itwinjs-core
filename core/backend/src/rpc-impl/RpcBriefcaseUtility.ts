@@ -101,6 +101,7 @@ export class RpcBriefcaseUtility {
       return this.open({ requestContext, tokenProps: iModel, syncMode, timeout: 1000 });
     }
     await iModelDb.reattachDaemon(requestContext);
+    requestContext.enter();
     return iModelDb;
   }
 
