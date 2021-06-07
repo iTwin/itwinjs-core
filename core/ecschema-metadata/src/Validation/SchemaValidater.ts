@@ -36,6 +36,7 @@ class CollectionReporter extends SuppressionDiagnosticReporter {
 /**
  * Applies EC Rules, see [[ECRuleSet]], to a given Schema and reports any violations.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export class SchemaValidater {
   /**

@@ -31,10 +31,14 @@ import { AnyDiagnostic } from "./Diagnostic";
  * Interface used for all rule suppressions used during schema validation.
  * Just telling us whether a rule is suppressed or not.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export type ISuppressionRule<T extends AnyECType, U = {}> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated Moved to the ecschema-editing package.
+*/
 export type BaseSuppressionRule<T extends AnyECType, U extends AnyECType> = ISuppressionRule<T, U>;
 
 export type AnyRuleSuppressionMap = IRuleSuppressionMap<AnyECType>;

@@ -18,6 +18,7 @@ const baseTranslationKey = `${translationNamespace}:${subTranslationNamespace}`;
 /**
  * Interface used to report [[IDiagnostic]] objects created during schema validation.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export interface IDiagnosticReporter {
   /**
@@ -42,6 +43,7 @@ export interface IDiagnosticReporter {
  * provided Map to suppress certain rule violations from being reported. The Map's key
  * a schema full name, and the Map's value is a collection of rule codes to suppress.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export abstract class SuppressionDiagnosticReporter implements IDiagnosticReporter {
   private _suppressions?: Map<string, string[]>;
@@ -90,6 +92,7 @@ export abstract class SuppressionDiagnosticReporter implements IDiagnosticReport
  * diagnostic message with the message args. If an I18N implementation is specified,
  * the message will also be translated.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticReporter {
   /**

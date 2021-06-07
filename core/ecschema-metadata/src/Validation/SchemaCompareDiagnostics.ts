@@ -32,6 +32,7 @@ import {
 /**
  * The unique diagnostic codes for Schema comparison.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export const SchemaCompareCodes = {
   SchemaDelta: "SC-100",
@@ -76,6 +77,7 @@ import { CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 /**
  * The list of [[IDiagnostic]] implementation classes used by the Schema comparison framework.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export const SchemaCompareDiagnostics = {
   /** Required message parameters: property name, property A value, property B value */

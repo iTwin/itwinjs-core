@@ -26,6 +26,7 @@ const formatString = (format: string, ...args: string[]) => {
 /**
  * Defines the possible diagnostic types.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export enum DiagnosticType {
   None,
@@ -39,6 +40,7 @@ export enum DiagnosticType {
 /**
  * Defines the possible diagnostic categories.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export enum DiagnosticCategory {
   Warning,
@@ -50,6 +52,7 @@ export enum DiagnosticCategory {
 /**
  * The interface implemented by all diagnostics used during schema validation.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
   /** The diagnostic category (error, warning, etc...). Value is static across all instances. */
@@ -71,12 +74,14 @@ export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
 /**
  * Type which encapsulates all possible diagnostics.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export type AnyDiagnostic = IDiagnostic<AnyECType, any[]>;
 
 /**
  * The abstract base class for all [[IDiagnostic]] implementations.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]> implements IDiagnostic<TYPE, ARGS> {
   /**
@@ -111,6 +116,7 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
 /**
  * An [[IDiagnostic]] implementation used for [[Schema]] diagnostics.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnostic<Schema, ARGS> {
   public static diagnosticType = DiagnosticType.SchemaItem;
@@ -135,6 +141,7 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
 /**
  * An [[IDiagnostic]] implementation used for [[SchemaItem]] diagnostics.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
   public static diagnosticType = DiagnosticType.SchemaItem;
@@ -158,6 +165,7 @@ export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends
 /**
  * An [[IDiagnostic]] implementation used for [[ECClass]] diagnostics.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiagnostic<AnyClass, ARGS> {
   /**
@@ -177,6 +185,7 @@ export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiag
 /**
  * An [[IDiagnostic]] implementation used for [[Property]] diagnostics.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnostic<AnyProperty, ARGS> {
   /**
@@ -199,6 +208,7 @@ export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnos
 /**
  * An [[IDiagnostic]] implementation used for [[RelationshipConstraint]] diagnostics.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> extends BaseDiagnostic<RelationshipConstraint, ARGS> {
   /**
@@ -221,6 +231,7 @@ export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> exten
 /**
  * An [[IDiagnostic]] implementation used for [[CustomAttributeContainerProps]] diagnostics.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> extends BaseDiagnostic<CustomAttributeContainerProps, ARGS> {
   /**
@@ -245,6 +256,7 @@ export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> ext
  * @param code The string that uniquely identifies the diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
@@ -260,6 +272,7 @@ export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, me
  * @param code The string that uniquely identifies the diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
@@ -274,6 +287,7 @@ export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS ex
  * @param code The string that uniquely identifies the diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export function createClassDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
@@ -288,6 +302,7 @@ export function createClassDiagnosticClass<ARGS extends any[]>(code: string, mes
  * @param code The string that uniquely identifies the diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
@@ -303,6 +318,7 @@ export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, 
  * @param code The string that uniquely identifies the type of diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
@@ -317,6 +333,7 @@ export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(
  * @param code The that uniquely identifies the type of diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
@@ -326,7 +343,10 @@ export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]
   };
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated Moved to the ecschema-editing package.
+ */
 export function diagnosticCategoryToString(category: DiagnosticCategory) {
   switch (category) {
     case DiagnosticCategory.Error:
@@ -340,7 +360,10 @@ export function diagnosticCategoryToString(category: DiagnosticCategory) {
   }
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated Moved to the ecschema-editing package.
+ */
 export function diagnosticTypeToString(type: DiagnosticType) {
   switch (type) {
     case DiagnosticType.CustomAttributeContainer:

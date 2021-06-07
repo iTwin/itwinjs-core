@@ -15,6 +15,7 @@ const loggingCategory = "ecschema-metadata";
 /**
  * An [[IDiagnosticReporter]] for logging [[IDiagnostic]] objects.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export class LoggingDiagnosticReporter extends FormatDiagnosticReporter {
   public reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string) {

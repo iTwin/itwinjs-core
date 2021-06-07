@@ -41,6 +41,7 @@ interface RuleSetArray {
  * objects returned from failing rules using [[IDiagnosticReporter]] implementations registered
  * with an instance of this class.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export class SchemaValidationVisitor implements ISchemaPartVisitor {
   private _reporters: IDiagnosticReporter[] = [];

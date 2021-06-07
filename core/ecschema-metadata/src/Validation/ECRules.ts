@@ -58,6 +58,7 @@ function getCode(code: number): string {
  * - Unit:                      1800-1899
  * - UnitSystem:                1900-1999
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 /* eslint-disable @typescript-eslint/naming-convention */
 export const DiagnosticCodes = {
@@ -101,6 +102,7 @@ import { SchemaItem } from "../Metadata/SchemaItem";
 /**
  * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export const Diagnostics = {
   /** EC-001: Required message parameters: schema name, referenced schema name */
@@ -199,6 +201,7 @@ export const Diagnostics = {
 /**
  * All schema validation rules that fall under the category of ECObjects.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export const ECRuleSet: IRuleSet = {
   name: ruleSetName,

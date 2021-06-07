@@ -39,6 +39,7 @@ export type BaseRule<T extends AnyECType, U extends AnyECType> = IRule<T, U>;
 /**
  * Interface used to represent logical collection of [[IRule]] instances.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export interface IRuleSet {
   /** The name of the rule set. */
