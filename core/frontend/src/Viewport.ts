@@ -16,7 +16,7 @@ import {
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d,
   Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
   SubCategoryOverride, ViewFlags,
@@ -158,18 +158,6 @@ export interface ChangeViewedModel2dOptions {
  * @public
  */
 export enum ViewUndoEvent { Undo = 0, Redo = 1 }
-
-/** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
- * @see [[Viewport.setOSMBuildingDisplay=]].
-   * @public
- */
-export interface OsmBuildingDisplayOptions {
-  /**  If defined will turn the display of the OpenStreetMap buildings on or off by attaching or detaching the OSM reality model. */
-  /** If `true`, enables display of OpenStreetMap buildings within the viewport. */
-  onOff?: boolean;
-  /** If defined, overrides aspects of the appearance of the OpenStreetMap building meshes. */
-  appearanceOverrides?: FeatureAppearance;
-}
 
 /** @internal */
 export const ELEMENT_MARKED_FOR_REMOVAL = Symbol.for("@bentley/imodeljs/Viewport/__element_marked_for_removal__");
@@ -500,7 +488,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** The settings that control how emphasized elements are displayed in this Viewport. The default settings apply a thick black silhouette to the emphasized elements.
-   * @see [FeatureSymbology.Appearance.emphasized].
+   * @see [FeatureAppearance.emphasized]($common).
    */
   public get emphasisSettings(): Hilite.Settings { return this._emphasis; }
   public set emphasisSettings(settings: Hilite.Settings) {
@@ -627,112 +615,18 @@ export abstract class Viewport implements IDisposable {
   /** Override the appearance of a model when rendered within this viewport.
    * @param id The Id of the model.
    * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
-   * @see [[dropModelAppearanceOverride]]
+   * @see [DisplayStyleSettings.overrideModelAppearance]($common)
    */
   public overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void {
-    this.view.displayStyle.overrideModelAppearance(id, ovr);
+    this.view.displayStyle.settings.overrideModelAppearance(id, ovr);
   }
 
   /** Remove any model appearance override for the specified model.
    * @param id The Id of the model.
-   * @see [[overrideModelAppearance]]
+   * @see [DisplayStyleSettings.dropModelAppearanceOverride]($common)
    */
   public dropModelAppearanceOverride(id: Id64String): void {
-    this.view.displayStyle.dropModelAppearanceOverride(id);
-  }
-
-  /**
-   * Detach a context reality model from its index.
-   * @see [[ContextRealityModelProps]].
-   * @param index The reality model index or -1 to detach all models.
-   * @beta
-   */
-  public detachRealityModelByIndex(index: number): void {
-    // ###TODO events from DisplayStyle
-    this.view.displayStyle.detachRealityModelByIndex(index);
-    this.invalidateRenderPlan();
-  }
-
-  /**
-  * Attach a context reality model
-  * @see [[ContextRealityModelProps]].
-  * @beta
-  */
-  public attachRealityModel(props: ContextRealityModelProps): void {
-    // ###TODO events from DisplayStyle
-    this.view.displayStyle.attachRealityModel(props);
-    this.invalidateRenderPlan();
-  }
-
-  /** Obtain the override applied to a [[Model]] displayed in this viewport.
-   * @param id The reality model index
-   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
-   * @see [[overrideModelAppearance]]
-   * @beta
-   */
-  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
-    return this.displayStyle.getModelAppearanceOverride(id);
-  }
-
-  /** Change the appearance overrides for a "contextual" reality model displayed by this viewport.
-   * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
-   * @param index The reality model index or -1 to apply to all models.
-   * @returns true if overrides are successfully applied.
-   * @beta
-   */
-  public overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean {
-    // ###TODO events from DisplayStyle
-    const changed = this.displayStyle.overrideRealityModelAppearance(index, overrides);
-    if (changed) {
-      this._changeFlags.setDisplayStyle();
-      this.invalidateRenderPlan();
-    }
-    return changed;
-  }
-
-  /** Drop the appearance overrides for a "contextual" reality model displayed by this viewport.
-   * @param index The reality model index or to drop overrides from or -1 to drop overrides from all reality models.
-   * @returns true if overrides are successfully dropped.
-   * @beta
-   */
-  public dropRealityModelAppearanceOverride(index: number) {
-    // ###TODO events from DisplayStyle
-    this.displayStyle.dropRealityModelAppearanceOverride(index);
-    this._changeFlags.setDisplayStyle();
-    this.invalidateRenderPlan();
-  }
-
-  /** Obtain the override applied to a "contextual" reality model displayed in this viewport.
-   * @param index The reality model index
-   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
-   * @see [[overrideRealityModelAppearance]]
-   * @beta
-   */
-  public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
-    return this.displayStyle.getRealityModelAppearanceOverride(index);
-  }
-
-  /** Return the "contextual" reality model index for a transient model ID or -1 if none found
-   * @beta
-   */
-  public getRealityModelIndexFromTransientId(id: Id64String): number {
-    return this.displayStyle.getRealityModelIndexFromTransientId(id);
-  }
-
-  /** Change the display of worldwide [OpenStreetMap Building](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/) meshes within this viewport.
-   * The building meshes are supplied by [Cesium ION](https://cesium.com/content/cesium-osm-buildings/).
-   */
-  public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions) {
-    // ###TODO events from DisplayStyle
-    const originalOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
-    if (this.displayStyle.setOSMBuildingDisplay(options)) {
-      const newOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
-      this._changeFlags.setDisplayStyle();
-      if (newOn !== originalOn)
-        this.synchWithView(false);      // May change frustum depth...
-      if (options.appearanceOverrides)
-        this.invalidateRenderPlan();
-    }
+    this.view.displayStyle.settings.dropModelAppearanceOverride(id);
   }
 
   /** Some changes may or may not require us to invalidate the scene.
@@ -1103,7 +997,15 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
-    removals.push(settings.onRealityModelPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
+
+    removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
+      displayStyleChanged();
+      this.synchWithView(false); // May change frustum depth.
+    }));
 
     const analysisChanged = () => {
       this._changeFlags.setDisplayStyle();
