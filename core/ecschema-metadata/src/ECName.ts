@@ -6,11 +6,12 @@
  * @module Metadata
  */
 
-import { assert }from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
 const validECNameRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i;
 const ecNameReplacerRegex = /__x([0-9a-fA-F]{4})__/g;
+const leadingDigits = ["0000", "000", "00", "0", ""];
 
 function isDigit(character: string): boolean {
   assert(1 === character.length);
@@ -19,7 +20,7 @@ function isDigit(character: string): boolean {
 
 function isValidAlphaNumericCharacter(c: string): boolean {
   assert(1 === c.length);
-  return (((c >= "0" && c <= "9") || (c >= "A" && c <= "Z") || (c >= "a" && c <= "z") || c == "_"));
+  return (((c >= "0" && c <= "9") || (c >= "A" && c <= "Z") || (c >= "a" && c <= "z") || c === "_"));
 }
 
 /** Identifies an item in a [[Schema]], encoding characters that are not permitted in such names.
@@ -70,21 +71,9 @@ export class ECName {
     let output = "";
 
     function appendEncodedCharacter(index: number): void {
-      let hex = input.charCodeAt(index).toString(16).toUpperCase();
-      switch (hex.length) {
-        case 1:
-          hex = "000" + hex;
-          break;
-        case 2:
-          hex = "00" + hex;
-          break;
-        case 3:
-          hex = "0" + hex;
-          break;
-      }
-
-      const encoded = `__x${hex}__`;
-      output += encoded;
+      const hex = input.charCodeAt(index).toString(16).toUpperCase();
+      assert(hex.length > 0 && hex.length < 5);
+      output += `__x${leadingDigits[hex.length]}${hex}__`;
     }
 
     // First character cannot be a digit.
