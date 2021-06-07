@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-cli",
-  "version": "2.17.0-dev.23",
+  "version": "2.17.0-dev.28",
   "description": "A CLI client for publishing iModel.js Extensions",
   "license": "MIT",
   "main": "bin/extension-cli.js",

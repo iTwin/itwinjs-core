@@ -2,6 +2,12 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "2.16.2",
+      "tag": "@bentley/frontend-devtools_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.1",
       "tag": "@bentley/frontend-devtools_v2.16.1",
       "date": "Thu, 27 May 2021 20:04:22 GMT",

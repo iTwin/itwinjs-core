@@ -308,7 +308,7 @@ export abstract class ViewState extends ElementState {
    * @return The symbology overrides applied to the model, or undefined if no such overrides exist.
    */
   public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
-    return this.displayStyle.getModelAppearanceOverride(id);
+    return this.displayStyle.settings.getModelAppearanceOverride(id);
   }
 
   /** @internal */
