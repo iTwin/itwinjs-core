@@ -12,6 +12,8 @@ import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 
+// NEEDSWORK - use Select & ToggleSwitch from iTwinUI-react
+
 enum MapMaskingOption {
   None,
   AllModels
