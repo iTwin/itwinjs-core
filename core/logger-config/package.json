@@ -1,6 +1,6 @@
 {
   "name": "@bentley/logger-config",
-  "version": "2.17.0-dev.27",
+  "version": "2.17.0-dev.28",
   "description": "Logger configuration",
   "main": "lib/logger-config.js",
   "typings": "lib/logger-config",
@@ -30,7 +30,7 @@
     "iModel"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.17.0-dev.27",
+    "@bentley/bentleyjs-core": "workspace:^2.17.0-dev.28",
     "bunyan": "^1.8.12",
     "bunyan-seq": "^0.2.0",
     "request": "^2.88.0",
