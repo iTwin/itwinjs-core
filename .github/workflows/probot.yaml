@@ -7,7 +7,13 @@ on:
 jobs:
   runProbot:
     runs-on: ubuntu-latest
+    if: github.event.label.name == "extract-api"
     steps:
+      - uses: actions/checkout@v2
+      - name: Set Git Config
+        run: |
+          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
       - uses: SaemJeon/apps@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
