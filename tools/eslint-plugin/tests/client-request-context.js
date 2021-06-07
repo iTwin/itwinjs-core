@@ -11,15 +11,8 @@ const ClientRequestContextESLintRule = BentleyESLintPlugin.rules["client-request
 
 // TODO: see if we can automatically inject a prelude into the parser options instead of using this
 const prelude = `
-namespace IMJSBackend {
-  export interface ClientRequestContext {
-    enter(): void;
-  }
-  export interface AuthorizedClientRequestContext {}
-}
-
-type ClientRequestContext = IMJSBackend.ClientRequestContext;
-type AuthorizedClientRequestContext = IMJSBackend.AuthorizedClientRequestContext;
+import * as IMJSBackend from "./backend";
+import { ClientRequestContext, AuthorizedClientRequestContext } from "./backend";
 `;
 
 /** mostly stolen from eslint-plugin-react-hooks's test
@@ -84,7 +77,6 @@ new ESLintTester({
       `,
     },
     {
-      only: true,
       code: makeTest`
         function goodNonAsyncFunc(reqCtx: IMJSBackend.ClientRequestContext): Promise<number> {
           reqCtx.enter();
@@ -110,6 +102,8 @@ new ESLintTester({
     },
     {
       code: makeTest`
+        async function fetch(ctx: ClientRequestContext) {ctx.enter();}
+
         function goodCatchCall(reqCtx: ClientRequestContext) {
           reqCtx.enter();
           const promise = fetch()
@@ -174,7 +168,7 @@ new ESLintTester({
     },
     { code: makeTest`async function f(ctx: IMJSBackend.ClientRequestContext) {ctx.enter();}` },
     { code: makeTest`async function f(ctx: AuthorizedClientRequestContext) {ctx.enter();}` },
-    { code: `async function f(ctx: IMJSBackend["ClientRequestContext"]) {ctx.enter();}`, skip: true },
+    { code: makeTest`async function f(ctx: typeof IMJSBackend["ClientRequestContext"]) {ctx.enter();}` },
   ],
   invalid: [
     {
@@ -454,15 +448,15 @@ new ESLintTester({
       ]
     },
     {
-      //only: true,
-      code: makeTest`const typedButNoReturnTypeArrow: (() => Promise<void>) = () => { return Promise.resolve(); };`,
+      // note that this won't fix the type, that's an error that should probably be suggested instead of fixed...
+      code: makeTest`const typedButNoReturnTypeArrow: (() => Promise<void>) = () => {return Promise.resolve();};`,
       errors: [
         {
           message: "All promise-returning functions must take a parameter of type ClientRequestContext",
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: makeTest`const typedButNoReturnTypeArrow: (clientRequestContext: ClientRequestContext) => Promise<void> = (clientRequestContext: ClientRequestContext) => { return Promise.resolve(); };`,
+              output: makeTest`const typedButNoReturnTypeArrow: () => Promise<void> = (clientRequestContext: ClientRequestContext) => {return Promise.resolve();};`,
             }
           ]
         }

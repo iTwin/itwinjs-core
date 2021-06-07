@@ -3,4 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// TODO: figure out a way to use this file as a prelude
+// this file is imported by the ts program in the prelude of the rule unit tests
+
+export class ClientRequestContext {
+  enter() {}
+}
+
+export class AuthorizedClientRequestContext extends ClientRequestContext {
+}

@@ -6,5 +6,5 @@
     "esModuleInterop": true,
     "lib": ["es2015", "es2017", "esnext"],
   },
-  "include": ["estree.ts", "./file.ts"]
+  "include": ["estree.ts", "backend.ts"]
 }

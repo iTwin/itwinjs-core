@@ -3,12 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// some parts based on @typescript-eslint/no-misused-promises
-
 "use strict";
 
 const { getParserServices } = require("./utils/parser");
-//const { AST_NODE_TYPES } = require("@typescript-eslint/typescript-estree");
 const { AST_NODE_TYPES } = require("@typescript-eslint/experimental-utils");
 
 const OPTION_DONT_PROPAGATE = "dont-propagate-request-context";
@@ -107,7 +104,7 @@ const rule = {
       if (!signature) return false;
       const returnType = signature && signature.getReturnType();
       if (!returnType) return false;
-      return checker.getFullyQualifiedName(returnType.symbol) === "Promise";
+      return returnType.symbol && checker.getFullyQualifiedName(returnType.symbol) === "Promise";
     }
 
     /**
@@ -175,11 +172,11 @@ const rule = {
       const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
 
       const clientReqCtx = node.params.find((p) => {
-        // TODO: fix type?
         const actualParam = p.type === AST_NODE_TYPES.TSParameterProperty ? p.parameter : p;
         const tsParam = parserServices.esTreeNodeToTSNodeMap.get(actualParam);
         const type = checker.getTypeAtLocation(tsParam);
-        return type.symbol.getName() === "ClientRequestContext";
+        // TODO: should probably check the package name here too
+        return type.symbol && /ClientRequestContext$/.test(checker.getFullyQualifiedName(type.symbol));
       });
 
       if (clientReqCtx === undefined) {
