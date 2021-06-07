@@ -2119,7 +2119,7 @@ export enum SpinnerSize {
     XLarge = 3
 }
 
-// @public
+// @public @deprecated
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
     constructor(props: SplitButtonProps);
     // (undocumented)
@@ -2136,7 +2136,7 @@ export enum SplitButtonActionType {
     List = 1
 }
 
-// @public
+// @public @deprecated
 export interface SplitButtonProps extends CommonProps {
     buttonType?: ButtonType;
     drawBorder?: boolean;

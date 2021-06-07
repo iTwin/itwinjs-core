@@ -299,8 +299,10 @@ deprecated;SpinnerProps
 public;SpinnerSize
 deprecated;SpinnerSize
 public;SplitButton 
+deprecated;SplitButton 
 internal;SplitButtonActionType
 public;SplitButtonProps 
+deprecated;SplitButtonProps 
 beta;StepFunctionProp = number | ((direction: string) => number | undefined)
 public;StyledText(props: StyledTextProps): JSX.Element
 public;StyledTextProps 

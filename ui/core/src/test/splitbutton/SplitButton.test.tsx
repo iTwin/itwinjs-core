@@ -10,6 +10,8 @@ import { SplitButton } from "../../ui-core";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { ButtonType } from "../../ui-core/button/Button";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("<SplitButton />", () => {
   it("should render", () => {
     const wrapper = mount(<SplitButton label="test" />);
