@@ -278,7 +278,7 @@ export class CssProperties {
 export type CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing";
 
 // @internal (undocumented)
-export const CursorTypeContext: React.Context<"ew-resize" | "grabbing" | "nesw-resize" | "ns-resize" | "nwse-resize" | undefined>;
+export const CursorTypeContext: React.Context<"nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing" | undefined>;
 
 // @beta
 export class Dialog extends React.PureComponent<DialogProps> {
