@@ -850,13 +850,13 @@ export enum ECClassModifier {
     Sealed = 2
 }
 
-// @beta
+// @public
 export class ECName {
     constructor(name: string);
-    // (undocumented)
+    decode(): string;
+    static encode(input: string): ECName;
     get name(): string;
-    // (undocumented)
-    static validate(newName: string): boolean;
+    static validate(name: string): boolean;
 }
 
 // @internal (undocumented)
