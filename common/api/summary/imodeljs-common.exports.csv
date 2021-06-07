@@ -96,7 +96,11 @@ internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvid
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
 alpha;ContentFlags
 internal;class ContentIdProvider
+public;ContextRealityModel
 public;ContextRealityModelProps
+public;ContextRealityModelProps
+public;ContextRealityModels
+public;ContextRealityModelsContainer
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
 internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps
 public;CreateIModelProps 
@@ -119,11 +123,12 @@ public;DisplayStyle3dProps
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
 public;DisplayStyleLoadProps
-beta;DisplayStyleModelAppearanceProps 
+public;DisplayStyleModelAppearanceProps 
 public;DisplayStyleOverridesOptions
+public;DisplayStylePlanarClipMaskProps 
 public;DisplayStyleProps 
-beta;DisplayStyleRealityModelPlanarClipMaskProps 
 public;DisplayStyleSettings
+public;DisplayStyleSettingsOptions
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
@@ -417,10 +422,10 @@ public;Placement2dProps
 public;Placement3d 
 public;Placement3dProps
 public;PlacementProps = Placement2dProps | Placement3dProps
-beta;PlanarClipMaskMode
-beta;PlanarClipMaskPriority
-beta;PlanarClipMaskProps
-beta;PlanarClipMaskSettings
+public;PlanarClipMaskMode
+public;PlanarClipMaskPriority
+public;PlanarClipMaskProps
+public;PlanarClipMaskSettings
 public;PlanProjectionSettings
 public;PlanProjectionSettingsProps
 internal;PntsHeader 
@@ -565,7 +570,14 @@ public;SolarLightProps
 public;SolarShadowSettings
 public;SolarShadowSettingsProps
 public;SourceAndTarget
-beta;SpatialClassificationProps
+public;SpatialClassifier
+public;SpatialClassifierFlags
+public;SpatialClassifierFlagsProps
+public;SpatialClassifierInsideDisplay
+public;SpatialClassifierOutsideDisplay
+public;SpatialClassifierProps
+public;SpatialClassifiers 
+public;SpatialClassifiersContainer
 public;SpatialViewDefinitionProps 
 public;StandaloneOpenOptions = OpenDbKey
 beta;StorageValue = string | number | boolean | null | Uint8Array
