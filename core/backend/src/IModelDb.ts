@@ -2394,6 +2394,7 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public get isSnapshot(): boolean { return true; }
+  /** @beta */
   public get isV2Checkpoint(): boolean { return this._isV2Checkpoint; }
   private _isV2Checkpoint: boolean;
   private _reattachDueTimestamp: number | undefined;
