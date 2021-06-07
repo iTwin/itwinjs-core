@@ -7,7 +7,7 @@ on:
 jobs:
   runProbot:
     runs-on: ubuntu-latest
-    if: github.event.label.name == "extract-api"
+    if: ${{ github.event.label.name == "extract-api" }}
     steps:
       - uses: actions/checkout@v2
       - name: Set Git Config
