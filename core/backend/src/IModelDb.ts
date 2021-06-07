@@ -168,6 +168,7 @@ export abstract class IModelDb extends IModel {
     this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
+  /** @internal */
   public async reattachDaemon(_requestContext: AuthorizedClientRequestContext): Promise<void> { }
 
   /** Event called when the iModel is about to be closed */
@@ -2393,6 +2394,7 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public get isSnapshot(): boolean { return true; }
+  /** @beta */
   public get isV2Checkpoint(): boolean { return this._isV2Checkpoint; }
   private _isV2Checkpoint: boolean;
   private _reattachDueTimestamp: number | undefined;
