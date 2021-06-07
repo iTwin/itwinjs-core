@@ -32,7 +32,7 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
         opened={this.state.opened}
         modal={true}
         width={470}
-        height={700}
+        height={500}
         onClose={this._handleCancel}
         onEscape={this._handleCancel}
         onOutsideClick={this._handleCancel}

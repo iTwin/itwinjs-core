@@ -19,12 +19,12 @@ import { UiComponents } from "../UiComponents";
 interface EnumEditorState {
   selectValue: string | number;
   valueIsNumber: boolean;
-  options: SelectOption<string | number>[];
+  options: SelectOption<string>[];
 }
 
 /** EnumEditor React component that is a property editor with select input
- * @beta
- */
+  * @beta
+  */
 export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
   private _isMounted = false;
   private _ariaLabel = UiComponents.translate("editor.enum");
@@ -67,10 +67,16 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     return containsFocus;
   }
 
-  private _updateSelectValue = (newValue: string | number) => {
+  private _updateSelectValue = (newValue: string) => {
     // istanbul ignore else
     if (this._isMounted) {
-      const selectValue = newValue;
+      let selectValue: string | number;
+
+      // istanbul ignore if
+      if (this.state.valueIsNumber)
+        selectValue = parseInt(newValue, 10);
+      else
+        selectValue = newValue;
 
       this.setState({
         selectValue,
@@ -133,10 +139,10 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
       }
     }
 
-    const options: SelectOption<string | number>[] = [];
+    const options: SelectOption<string>[] = [];
     if (choices) {
       choices.forEach((choice: EnumerationChoice) => {
-        options.push({ value: choice.value, label: choice.label }); // [choice.value.toString()] = choice.label;
+        options.push({ value: choice.value.toString(), label: choice.label });
       });
     }
 
@@ -148,6 +154,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   /** @internal */
   public render() {
     const className = classnames("components-cell-editor", "components-enum-editor", this.props.className);
+    const selectValue = this.state.selectValue !== undefined ? this.state.selectValue.toString() : /* istanbul ignore next */ undefined;
 
     // set min-width to show about 4 characters + down arrow
     const minWidthStyle: React.CSSProperties = {
@@ -159,7 +166,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
         <Select
           className={className}
           style={this.props.style ? this.props.style : minWidthStyle}
-          value={this.state.selectValue}
+          value={selectValue}
           onChange={this._updateSelectValue}
           data-testid="components-select-editor"
           options={this.state.options}
@@ -171,15 +178,14 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 }
 
 /** Enum Property Button Group Editor registered for the "enum" type name.
- * It uses the [[EnumEditor]] React component.
- * @beta
- */
+  * It uses the [[EnumEditor]] React component.
+  * @beta
+  */
 export class EnumPropertyEditor extends PropertyEditorBase {
   // istanbul ignore next
   public get containerHandlesEnter(): boolean {
     return false;
   }
-  // istanbul ignore next
   public get containerStopsKeydownPropagation(): boolean {
     return false;
   }

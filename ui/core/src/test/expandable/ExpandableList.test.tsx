@@ -40,7 +40,7 @@ describe("ExpandableList", () => {
 
     expect(expanded.length).to.eq(1);
     expect(blocks.length).to.eq(2);
-    expect(expanded.find("div.iui-content").text()).to.eq("Hello1");
+    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello1");
 
     wrapper.unmount();
   });
@@ -76,13 +76,13 @@ describe("ExpandableList", () => {
 
     expect(expanded.length).to.eq(1);
     expect(blocks.length).to.eq(2);
-    expect(expanded.find("div.iui-content").text()).to.eq("Hello1");
+    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello1");
 
     blocks.at(0).find(".iui-header").simulate("click");
     wrapper.update();
     expanded = wrapper.find("div.iui-expanded");
     expect(expanded.length).to.eq(1);
-    expect(expanded.find("div.iui-content").text()).to.eq("Hello0");
+    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello0");
 
     blocks = wrapper.find("div.iui-expandable-block");
     blocks.at(0).find(".iui-header").simulate("click");
@@ -109,19 +109,19 @@ describe("ExpandableList", () => {
 
     expect(expanded.length).to.eq(1);
     expect(blocks.length).to.eq(2);
-    expect(expanded.find("div.iui-content").text()).to.eq("Hello1");
+    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello1");
 
     wrapper.setProps({ defaultActiveBlock: 0 });
     wrapper.update();
     expanded = wrapper.find("div.iui-expanded");
     expect(expanded.length).to.eq(1);
-    expect(expanded.find("div.iui-content").text()).to.eq("Hello0");
+    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello0");
 
     wrapper.setProps({ defaultActiveBlock: 1 });
     wrapper.update();
     expanded = wrapper.find("div.iui-expanded");
     expect(expanded.length).to.eq(1);
-    expect(expanded.find("div.iui-content").text()).to.eq("Hello1");
+    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello1");
 
     wrapper.unmount();
   });

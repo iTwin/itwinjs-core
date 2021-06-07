@@ -55,12 +55,6 @@
     }
 
     &.iui-expanded {
-      border-top: 1px solid $buic-background-primary;
-
-      > .iui-header {
-        border-top-color: $buic-background-primary;
-      }
-
       > .iui-content {
         padding: 0;
       }
