@@ -121,7 +121,7 @@
   "dependencies": {
     "@azure/storage-blob": "10.4.0",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/imodeljs-native": "2.17.3",
+    "@bentley/imodeljs-native": "2.17.4",
     "@bentley/usage-logging-client": "workspace:*",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",
