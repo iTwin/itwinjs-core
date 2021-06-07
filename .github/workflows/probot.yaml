@@ -1,12 +1,9 @@
 name: Run probot
 
 on:
-  issues:
-    types:
-      - opened
   pull_request:
-    types:
-      - labeled
+    # types:
+    #   - labeled
 
 
 jobs:
