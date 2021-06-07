@@ -112,8 +112,6 @@ export class Downloads {
  * @internal
 */
 export class V2CheckpointManager {
-  private static reattachDueTimestamps: { [key: string]: number } = {};
-
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
     const { requestContext, iModelId, changeSetId } = checkpoint;
 
