@@ -86,6 +86,7 @@ public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Po
 public;CategorySelectorState 
 internal;ChangeFlag
 public;ChangeFlags
+internal;ChangeSetId = string
 public;ChangeViewedModel2dOptions
 beta;CheckboxFormatPropEditorSpec 
 public;CheckpointConnection 
@@ -93,7 +94,7 @@ public;ClipEventType
 public;Cluster
 internal;CompassMode
 internal;ContextMode
-beta;ContextRealityModelState
+public;ContextRealityModelState 
 public;ContextRotationId
 public;CoordinateLockOverrides
 public;CoordSource
@@ -191,6 +192,7 @@ internal;FrameCameraViewData
 internal;FrameRenderData
 alpha;FrameStats
 internal;FrameStatsCollector
+internal;FrontendHubAccess
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
@@ -280,6 +282,8 @@ public;IModelAppOptions
 public;class IModelConnection 
 public;IModelConnection
 internal;IModelFrameLifecycle
+internal;IModelHubFrontend
+internal;IModelIdArg
 public;IModelRoutingContext
 internal;IModelTile 
 internal;IModelTileContent 
@@ -515,8 +519,6 @@ public;SnapHeat
 public;SnapMode
 public;SnapshotConnection 
 public;SnapStatus
-beta;SpatialClassifiers
-internal;SpatialClassifiersContainer
 internal;class SpatialClassifierTileTreeReference 
 public;SpatialLocationModelState 
 public;SpatialModelState 

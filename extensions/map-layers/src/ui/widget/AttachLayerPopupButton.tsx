@@ -98,12 +98,10 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
             if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
 
               if (status === MapLayerSourceStatus.Valid) {
-
-                const layerSettings = mapLayerSettings.toLayerSettings();
+                const layerSettings = mapLayerSettings.toLayerSettings(subLayers);
 
                 if (layerSettings) {
-                  const updatedLayerSettings = layerSettings.clone({ subLayers });
-                  activeViewport.displayStyle.attachMapLayerSettings(updatedLayerSettings, isOverlay);
+                  activeViewport.displayStyle.attachMapLayerSettings(layerSettings, isOverlay);
 
                   activeViewport.invalidateRenderPlan();
 

@@ -573,7 +573,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 2.17.1
+      '@bentley/imodeljs-native': 2.17.3
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -624,7 +624,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 2.17.1
+      '@bentley/imodeljs-native': 2.17.3
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -2880,6 +2880,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/object-hash': ^1.3.0
+      '@types/semver': ^5.5.0
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
@@ -2896,12 +2897,14 @@ importers:
       nyc: ^15.1.0
       object-hash: ^1.3.1
       rimraf: ^3.0.2
+      semver: ^5.5.0
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       typemoq: ^2.1.0
       typescript: ~4.1.0
     dependencies:
       object-hash: 1.3.1
+      semver: 5.7.1
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
@@ -2920,6 +2923,7 @@ importers:
       '@types/mocha': 8.2.2
       '@types/node': 10.14.1
       '@types/object-hash': 1.3.4
+      '@types/semver': 5.5.0
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
       chai: 4.3.4
@@ -3056,6 +3060,8 @@ importers:
       micro-memoize: ^4.0.9
       mocha: ^8.3.2
       nyc: ^15.1.0
+      react: ^16.8.0
+      react-dom: ^16.8.0
       react-test-renderer: ^16.13.1
       rimraf: ^3.0.2
       rxjs: ^6.6.2
@@ -3083,9 +3089,9 @@ importers:
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
       '@itwin/itwinui-css': 0.18.0
-      '@itwin/itwinui-react': 1.6.1
-      '@testing-library/react': 8.0.9
-      '@testing-library/react-hooks': 3.7.0_react-test-renderer@16.14.0
+      '@itwin/itwinui-react': 1.6.1_react-dom@16.14.0+react@16.14.0
+      '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
+      '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -3105,7 +3111,7 @@ importers:
       cpx: 1.5.0
       cross-env: 5.2.1
       enzyme: 3.11.0
-      enzyme-adapter-react-16: 1.15.6_enzyme@3.11.0
+      enzyme-adapter-react-16: 1.15.6_4f82faf5e8cab057bc46d4d95079ec42
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 6.8.0
       faker: 4.1.0
@@ -3113,7 +3119,9 @@ importers:
       jsdom-global: 3.0.2
       mocha: 8.4.0
       nyc: 15.1.0
-      react-test-renderer: 16.14.0
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
+      react-test-renderer: 16.14.0_react@16.14.0
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
@@ -4843,12 +4851,14 @@ importers:
       mocha: ^8.3.2
       nyc: ^15.1.0
       raf: ^3.4.0
+      react: ^16.8.0
       react-compound-slider: ^2.5.0
       react-data-grid: 6.0.1
       react-dnd: ^11.1.3
       react-dnd-html5-backend: ^11.1.3
       react-dnd-test-backend: ^11.1.3
       react-dnd-test-utils: ^11.1.3
+      react-dom: ^16.8.0
       react-highlight-words: ^0.14.0
       react-select: 3.1.0
       react-select-event: 5.0.0
@@ -4878,15 +4888,15 @@ importers:
       inspire-tree: 5.0.2
       linkify-it: 2.2.0
       lodash: 4.17.21
-      react-compound-slider: 2.5.0
-      react-data-grid: 6.0.1
-      react-dnd: 11.1.3
+      react-compound-slider: 2.5.0_react@16.14.0
+      react-data-grid: 6.0.1_react-dom@16.14.0+react@16.14.0
+      react-dnd: 11.1.3_react-dom@16.14.0+react@16.14.0
       react-dnd-html5-backend: 11.1.3
-      react-highlight-words: 0.14.0
-      react-select: 3.1.0
-      react-virtualized: 9.22.3
-      react-virtualized-auto-sizer: 1.0.5
-      react-window: 1.8.6
+      react-highlight-words: 0.14.0_react@16.14.0
+      react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
+      react-virtualized: 9.22.3_react-dom@16.14.0+react@16.14.0
+      react-virtualized-auto-sizer: 1.0.5_react-dom@16.14.0+react@16.14.0
+      react-window: 1.8.6_react-dom@16.14.0+react@16.14.0
       rxjs: 6.6.7
       shortid: 2.2.16
       ts-key-enum: 2.0.7
@@ -4902,9 +4912,9 @@ importers:
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-core': link:../core
       '@itwin/itwinui-css': 0.18.0
-      '@itwin/itwinui-react': 1.6.1
-      '@testing-library/react': 8.0.9
-      '@testing-library/react-hooks': 3.7.0_react-test-renderer@16.14.0
+      '@itwin/itwinui-react': 1.6.1_react-dom@16.14.0+react@16.14.0
+      '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
+      '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -4933,7 +4943,7 @@ importers:
       chai-string: 1.5.0_chai@4.3.4
       cpx: 1.5.0
       enzyme: 3.11.0
-      enzyme-adapter-react-16: 1.15.6_enzyme@3.11.0
+      enzyme-adapter-react-16: 1.15.6_4f82faf5e8cab057bc46d4d95079ec42
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 6.8.0
       faker: 4.1.0
@@ -4943,10 +4953,12 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
+      react: 16.14.0
       react-dnd-test-backend: 11.1.3
-      react-dnd-test-utils: 11.1.3_7cd36bd96cfcafce2be4961bebcb86cf
+      react-dnd-test-utils: 11.1.3_08cdc8f9308497b700c9a4ec3eaac5b5
+      react-dom: 16.14.0_react@16.14.0
       react-select-event: 5.0.0
-      react-test-renderer: 16.14.0
+      react-test-renderer: 16.14.0_react@16.14.0
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
@@ -5004,8 +5016,10 @@ importers:
       mocha: ^8.3.2
       nyc: ^15.1.0
       raf: ^3.4.0
+      react: ^16.8.0
       react-autosuggest: ^10.0.2
       react-compound-slider: ^2.5.0
+      react-dom: ^16.8.0
       react-select: 3.1.0
       react-test-renderer: ^16.13.1
       resize-observer-polyfill: 1.5.1
@@ -5023,9 +5037,9 @@ importers:
       classnames: 2.3.1
       dompurify: 2.2.9
       lodash: 4.17.21
-      react-autosuggest: 10.1.0
-      react-compound-slider: 2.5.0
-      react-select: 3.1.0
+      react-autosuggest: 10.1.0_react@16.14.0
+      react-compound-slider: 2.5.0_react@16.14.0
+      react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
       resize-observer-polyfill: 1.5.1
       svg-sprite-loader: 4.2.1
     devDependencies:
@@ -5037,9 +5051,9 @@ importers:
       '@bentley/react-scripts': 3.4.9_typescript@4.1.5
       '@bentley/ui-abstract': link:../abstract
       '@itwin/itwinui-css': 0.18.0
-      '@itwin/itwinui-react': 1.6.1
-      '@testing-library/react': 8.0.9
-      '@testing-library/react-hooks': 3.7.0_react-test-renderer@16.14.0
+      '@itwin/itwinui-react': 1.6.1_react-dom@16.14.0+react@16.14.0
+      '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
+      '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -5062,7 +5076,7 @@ importers:
       chai-spies: 1.0.0_chai@4.3.4
       cpx: 1.5.0
       enzyme: 3.11.0
-      enzyme-adapter-react-16: 1.15.6_enzyme@3.11.0
+      enzyme-adapter-react-16: 1.15.6_4f82faf5e8cab057bc46d4d95079ec42
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 6.8.0
       ignore-styles: 5.0.1
@@ -5071,7 +5085,9 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
-      react-test-renderer: 16.14.0
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
+      react-test-renderer: 16.14.0_react@16.14.0
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
@@ -5150,8 +5166,11 @@ importers:
       mocha: ^8.3.2
       nyc: ^15.1.0
       raf: ^3.4.0
+      react: ^16.8.0
       react-dnd: ^11.1.3
       react-dnd-html5-backend: ^11.1.3
+      react-dom: ^16.8.0
+      react-redux: ^7.2.0
       react-split-pane: 0.1.92
       react-test-renderer: ^16.13.1
       redux: ^4.0.3
@@ -5173,9 +5192,9 @@ importers:
       classnames: 2.3.1
       immer: 9.0.2
       lodash: 4.17.21
-      react-dnd: 11.1.3
+      react-dnd: 11.1.3_react-dom@16.14.0+react@16.14.0
       react-dnd-html5-backend: 11.1.3
-      react-split-pane: 0.1.92
+      react-split-pane: 0.1.92_react-dom@16.14.0+react@16.14.0
       rxjs: 6.6.7
       svg-sprite-loader: 4.2.1
     devDependencies:
@@ -5204,9 +5223,9 @@ importers:
       '@bentley/ui-core': link:../core
       '@bentley/ui-ninezone': link:../ninezone
       '@itwin/itwinui-css': 0.18.0
-      '@itwin/itwinui-react': 1.6.1
-      '@testing-library/react': 8.0.9
-      '@testing-library/react-hooks': 3.7.0_react-test-renderer@16.14.0
+      '@itwin/itwinui-react': 1.6.1_react-dom@16.14.0+react@16.14.0
+      '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
+      '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -5229,7 +5248,7 @@ importers:
       chai-spies: 1.0.0_chai@4.3.4
       cpx: 1.5.0
       enzyme: 3.11.0
-      enzyme-adapter-react-16: 1.15.6_enzyme@3.11.0
+      enzyme-adapter-react-16: 1.15.6_4f82faf5e8cab057bc46d4d95079ec42
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 6.8.0
       faker: 4.1.0
@@ -5239,7 +5258,10 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
-      react-test-renderer: 16.14.0
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
+      react-redux: 7.2.4_react-dom@16.14.0+react@16.14.0
+      react-test-renderer: 16.14.0_react@16.14.0
       redux: 4.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -5290,6 +5312,8 @@ importers:
       mocha: ^8.3.2
       nyc: ^15.1.0
       raf: ^3.4.0
+      react: ^16.8.0
+      react-dom: ^16.8.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -5311,9 +5335,9 @@ importers:
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-core': link:../core
       '@itwin/itwinui-css': 0.18.0
-      '@itwin/itwinui-react': 1.6.1
-      '@testing-library/react': 8.0.9
-      '@testing-library/react-hooks': 3.7.0
+      '@itwin/itwinui-react': 1.6.1_react-dom@16.14.0+react@16.14.0
+      '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
+      '@testing-library/react-hooks': 3.7.0_react@16.14.0
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -5331,7 +5355,7 @@ importers:
       chai-spies: 1.0.0_chai@4.3.4
       cpx: 1.5.0
       enzyme: 3.11.0
-      enzyme-adapter-react-16: 1.15.6_enzyme@3.11.0
+      enzyme-adapter-react-16: 1.15.6_4f82faf5e8cab057bc46d4d95079ec42
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 6.8.0
       ignore-styles: 5.0.1
@@ -5340,6 +5364,8 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
@@ -7205,8 +7231,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/2.17.1:
-    resolution: {integrity: sha512-ehVg4B9jNmu01CBe1hTZxAHfS5EyNQ8aIzMcnyn3DJbayeyUqU0rjS55pQYhTPl0bHlygqG7z+CpGOeDsm0VZw==}
+  /@bentley/imodeljs-native/2.17.3:
+    resolution: {integrity: sha512-tnDK1mCPUv/L+ohgh9f/7mkCu8oUP9WP31c7xcNp8Ig1hrWQi6UOUjF6Q8QSa8JmEo1WXMW6NnFLQPJXn5fxwQ==}
     requiresBuild: true
     dev: false
 
@@ -7447,19 +7473,6 @@ packages:
       '@emotion/weak-memoize': 0.2.5
     dev: false
 
-  /@emotion/core/10.1.1:
-    resolution: {integrity: sha512-ZMLG6qpXR8x031NXD8HJqugy/AZSkAuMxxqB46pmAR7ze47MhNJ56cdoX243QPZdGctrdfo+s08yZTiwaUcRKA==}
-    peerDependencies:
-      react: '>=16.3.0'
-    dependencies:
-      '@babel/runtime': 7.14.0
-      '@emotion/cache': 10.0.29
-      '@emotion/css': 10.0.27
-      '@emotion/serialize': 0.11.16
-      '@emotion/sheet': 0.9.4
-      '@emotion/utils': 0.11.3
-    dev: false
-
   /@emotion/core/10.1.1_react@16.14.0:
     resolution: {integrity: sha512-ZMLG6qpXR8x031NXD8HJqugy/AZSkAuMxxqB46pmAR7ze47MhNJ56cdoX243QPZdGctrdfo+s08yZTiwaUcRKA==}
     peerDependencies:
@@ -7596,13 +7609,6 @@ packages:
   /@itwin/itwinui-css/0.18.0:
     resolution: {integrity: sha512-dcL/2msufpVWKz4xsxL2Ws6NSOU8Oszma9gAMOxyScnT7kYAQP/BkzzuLG10bhk1L0j8pcG+o3iMXbh95QKQEg==}
 
-  /@itwin/itwinui-icons-react/1.1.3:
-    resolution: {integrity: sha512-CNTjNvbuscb8nGOpu9PGRQc5ciYlwcKVOSxs8HYBa9xdf2QKl3iPuj3+B85tsNYGkZJGa6DMli1KAhr2w27aSw==}
-    peerDependencies:
-      react: ^16.8.6 || ^17.0.0
-      react-dom: ^16.8.6 || ^17.0.0
-    dev: true
-
   /@itwin/itwinui-icons-react/1.1.3_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-CNTjNvbuscb8nGOpu9PGRQc5ciYlwcKVOSxs8HYBa9xdf2QKl3iPuj3+B85tsNYGkZJGa6DMli1KAhr2w27aSw==}
     peerDependencies:
@@ -7611,7 +7617,6 @@ packages:
     dependencies:
       react: 16.14.0
       react-dom: 16.14.0_react@16.14.0
-    dev: false
 
   /@itwin/itwinui-icons-react/1.1.3_react@16.14.0:
     resolution: {integrity: sha512-CNTjNvbuscb8nGOpu9PGRQc5ciYlwcKVOSxs8HYBa9xdf2QKl3iPuj3+B85tsNYGkZJGa6DMli1KAhr2w27aSw==}
@@ -7622,13 +7627,6 @@ packages:
       react: 16.14.0
     dev: true
 
-  /@itwin/itwinui-illustrations-react/1.0.2:
-    resolution: {integrity: sha512-sgBmBBOGOLNPuT/G700iQqlPB/QRBBWczSkVZJ7mpCZaktMfJxX2SH1NhUUpJ4emf20dsLEeAo62Gz7ek7DMkA==}
-    peerDependencies:
-      react: ^16.8.6 || ^17.0.0
-      react-dom: ^16.8.6 || ^17.0.0
-    dev: true
-
   /@itwin/itwinui-illustrations-react/1.0.2_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-sgBmBBOGOLNPuT/G700iQqlPB/QRBBWczSkVZJ7mpCZaktMfJxX2SH1NhUUpJ4emf20dsLEeAo62Gz7ek7DMkA==}
     peerDependencies:
@@ -7637,7 +7635,6 @@ packages:
     dependencies:
       react: 16.14.0
       react-dom: 16.14.0_react@16.14.0
-    dev: false
 
   /@itwin/itwinui-illustrations-react/1.0.2_react@16.14.0:
     resolution: {integrity: sha512-sgBmBBOGOLNPuT/G700iQqlPB/QRBBWczSkVZJ7mpCZaktMfJxX2SH1NhUUpJ4emf20dsLEeAo62Gz7ek7DMkA==}
@@ -7646,22 +7643,6 @@ packages:
       react-dom: ^16.8.6 || ^17.0.0
     dependencies:
       react: 16.14.0
-    dev: true
-
-  /@itwin/itwinui-react/1.6.1:
-    resolution: {integrity: sha512-Xg758q/VH0EGs9gTyS/YXNq7SjNgejOGwTsVGNAgLuHKM9TLPsTPT1RqdsGSFmd0iRuk67KKLATybSUoaPDWZw==}
-    peerDependencies:
-      react: ^16.8.6 || ^17.0.0
-      react-dom: ^16.8.6 || ^17.0.0
-    dependencies:
-      '@itwin/itwinui-css': 0.18.0
-      '@itwin/itwinui-icons-react': 1.1.3
-      '@itwin/itwinui-illustrations-react': 1.0.2
-      '@tippyjs/react': 4.2.5
-      '@types/react-table': 7.7.1
-      classnames: 2.3.1
-      react-table: 7.7.0
-      react-transition-group: 4.4.2
     dev: true
 
   /@itwin/itwinui-react/1.6.1_react-dom@16.14.0+react@16.14.0:
@@ -7680,7 +7661,6 @@ packages:
       react-dom: 16.14.0_react@16.14.0
       react-table: 7.7.0_react@16.14.0
       react-transition-group: 4.4.2_react-dom@16.14.0+react@16.14.0
-    dev: false
 
   /@itwin/itwinui-react/1.6.1_react@16.14.0:
     resolution: {integrity: sha512-Xg758q/VH0EGs9gTyS/YXNq7SjNgejOGwTsVGNAgLuHKM9TLPsTPT1RqdsGSFmd0iRuk67KKLATybSUoaPDWZw==}
@@ -8228,16 +8208,6 @@ packages:
       pretty-format: 26.6.2
     dev: true
 
-  /@testing-library/react-hooks/3.7.0:
-    resolution: {integrity: sha512-TwfbY6BWtWIHitjT05sbllyLIProcysC0dF0q1bbDa7OHLC6A6rJOYJwZ13hzfz3O4RtOuInmprBozJRyyo7/g==}
-    peerDependencies:
-      react: '>=16.9.0'
-      react-test-renderer: '>=16.9.0'
-    dependencies:
-      '@babel/runtime': 7.14.0
-      '@types/testing-library__react-hooks': 3.4.1
-    dev: true
-
   /@testing-library/react-hooks/3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4:
     resolution: {integrity: sha512-TwfbY6BWtWIHitjT05sbllyLIProcysC0dF0q1bbDa7OHLC6A6rJOYJwZ13hzfz3O4RtOuInmprBozJRyyo7/g==}
     peerDependencies:
@@ -8248,18 +8218,6 @@ packages:
       '@types/testing-library__react-hooks': 3.4.1
       react: 16.14.0
       react-test-renderer: 16.14.0_react@16.14.0
-    dev: false
-
-  /@testing-library/react-hooks/3.7.0_react-test-renderer@16.14.0:
-    resolution: {integrity: sha512-TwfbY6BWtWIHitjT05sbllyLIProcysC0dF0q1bbDa7OHLC6A6rJOYJwZ13hzfz3O4RtOuInmprBozJRyyo7/g==}
-    peerDependencies:
-      react: '>=16.9.0'
-      react-test-renderer: '>=16.9.0'
-    dependencies:
-      '@babel/runtime': 7.14.0
-      '@types/testing-library__react-hooks': 3.4.1
-      react-test-renderer: 16.14.0
-    dev: true
 
   /@testing-library/react-hooks/3.7.0_react@16.14.0:
     resolution: {integrity: sha512-TwfbY6BWtWIHitjT05sbllyLIProcysC0dF0q1bbDa7OHLC6A6rJOYJwZ13hzfz3O4RtOuInmprBozJRyyo7/g==}
@@ -8272,7 +8230,7 @@ packages:
       react: 16.14.0
     dev: true
 
-  /@testing-library/react/8.0.9:
+  /@testing-library/react/8.0.9_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-I7zd+MW5wk8rQA5VopZgBfxGKUd91jgZ6Vzj2gMqFf2iGGtKwvI5SVTrIJcSFaOXK88T2EUsbsIKugDtoqOcZQ==}
     engines: {node: '>=8'}
     peerDependencies:
@@ -8281,6 +8239,8 @@ packages:
     dependencies:
       '@babel/runtime': 7.14.0
       '@testing-library/dom': 5.6.1
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
     dev: true
 
   /@testing-library/react/8.0.9_react@16.14.0:
@@ -8295,15 +8255,6 @@ packages:
       react: 16.14.0
     dev: true
 
-  /@tippyjs/react/4.2.5:
-    resolution: {integrity: sha512-YBLgy+1zznBNbx4JOoOdFXWMLXjBh9hLPwRtq3s8RRdrez2l3tPBRt2m2909wZd9S1KUeKjOOYYsnitccI9I3A==}
-    peerDependencies:
-      react: '>=16.8'
-      react-dom: '>=16.8'
-    dependencies:
-      tippy.js: 6.3.1
-    dev: true
-
   /@tippyjs/react/4.2.5_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-YBLgy+1zznBNbx4JOoOdFXWMLXjBh9hLPwRtq3s8RRdrez2l3tPBRt2m2909wZd9S1KUeKjOOYYsnitccI9I3A==}
     peerDependencies:
@@ -8313,7 +8264,6 @@ packages:
       react: 16.14.0
       react-dom: 16.14.0_react@16.14.0
       tippy.js: 6.3.1
-    dev: false
 
   /@tippyjs/react/4.2.5_react@16.14.0:
     resolution: {integrity: sha512-YBLgy+1zznBNbx4JOoOdFXWMLXjBh9hLPwRtq3s8RRdrez2l3tPBRt2m2909wZd9S1KUeKjOOYYsnitccI9I3A==}
@@ -9490,22 +9440,6 @@ packages:
     dependencies:
       clean-stack: 2.2.0
       indent-string: 4.0.0
-
-  /airbnb-prop-types/2.16.0:
-    resolution: {integrity: sha512-7WHOFolP/6cS96PhKNrslCLMYAI8yB1Pp6u6XmxozQOiZbsI5ycglZr5cHhBFfuRcQQjzCMith5ZPZdYiJCxUg==}
-    peerDependencies:
-      react: ^0.14 || ^15.0.0 || ^16.0.0-alpha
-    dependencies:
-      array.prototype.find: 2.1.1
-      function.prototype.name: 1.1.4
-      is-regex: 1.1.3
-      object-is: 1.1.5
-      object.assign: 4.1.2
-      object.entries: 1.1.4
-      prop-types: 15.7.2
-      prop-types-exact: 1.2.0
-      react-is: 16.13.1
-    dev: true
 
   /airbnb-prop-types/2.16.0_react@16.14.0:
     resolution: {integrity: sha512-7WHOFolP/6cS96PhKNrslCLMYAI8yB1Pp6u6XmxozQOiZbsI5ycglZr5cHhBFfuRcQQjzCMith5ZPZdYiJCxUg==}
@@ -12424,7 +12358,7 @@ packages:
     resolution: {integrity: sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==}
     engines: {node: '>=6'}
 
-  /enzyme-adapter-react-16/1.15.6_enzyme@3.11.0:
+  /enzyme-adapter-react-16/1.15.6_4f82faf5e8cab057bc46d4d95079ec42:
     resolution: {integrity: sha512-yFlVJCXh8T+mcQo8M6my9sPgeGzj85HSHi6Apgf1Cvq/7EL/J9+1JoJmJsRxZgyTvPMAqOEpRSu/Ii/ZpyOk0g==}
     peerDependencies:
       enzyme: ^3.0.0
@@ -12432,14 +12366,16 @@ packages:
       react-dom: ^16.0.0-0
     dependencies:
       enzyme: 3.11.0
-      enzyme-adapter-utils: 1.14.0
+      enzyme-adapter-utils: 1.14.0_react@16.14.0
       enzyme-shallow-equal: 1.0.4
       has: 1.0.3
       object.assign: 4.1.2
       object.values: 1.1.4
       prop-types: 15.7.2
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
       react-is: 16.13.1
-      react-test-renderer: 16.14.0
+      react-test-renderer: 16.14.0_react@16.14.0
       semver: 5.7.1
     dev: true
 
@@ -12460,20 +12396,6 @@ packages:
       react: 16.14.0
       react-is: 16.13.1
       react-test-renderer: 16.14.0_react@16.14.0
-      semver: 5.7.1
-    dev: true
-
-  /enzyme-adapter-utils/1.14.0:
-    resolution: {integrity: sha512-F/z/7SeLt+reKFcb7597IThpDp0bmzcH1E9Oabqv+o01cID2/YInlqHbFl7HzWBl4h3OdZYedtwNDOmSKkk0bg==}
-    peerDependencies:
-      react: 0.13.x || 0.14.x || ^15.0.0-0 || ^16.0.0-0
-    dependencies:
-      airbnb-prop-types: 2.16.0
-      function.prototype.name: 1.1.4
-      has: 1.0.3
-      object.assign: 4.1.2
-      object.fromentries: 2.0.4
-      prop-types: 15.7.2
       semver: 5.7.1
     dev: true
 
@@ -19063,13 +18985,14 @@ packages:
       whatwg-fetch: 3.6.2
     dev: true
 
-  /react-autosuggest/10.1.0:
+  /react-autosuggest/10.1.0_react@16.14.0:
     resolution: {integrity: sha512-/azBHmc6z/31s/lBf6irxPf/7eejQdR0IqnZUzjdSibtlS8+Rw/R79pgDAo6Ft5QqCUTyEQ+f0FhL+1olDQ8OA==}
     peerDependencies:
       react: '>=16.3.0'
     dependencies:
       es6-promise: 4.2.8
       prop-types: 15.7.2
+      react: 16.14.0
       react-themeable: 1.1.0
       section-iterator: 2.0.0
       shallow-equal: 1.2.1
@@ -19112,17 +19035,6 @@ packages:
       - react-native
     dev: false
 
-  /react-compound-slider/2.5.0:
-    resolution: {integrity: sha512-T84FtSI0bkQPmH5GaaHbL+2McOyIR6M5sqS80dqw/bHc5r2UKLYY64BWTbsL+XO0jlx7REuJJnZUBqo4eSRl7g==}
-    peerDependencies:
-      react: ^16.3.0
-    dependencies:
-      '@babel/runtime': 7.14.0
-      d3-array: 1.2.4
-      prop-types: 15.7.2
-      warning: 3.0.0
-    dev: false
-
   /react-compound-slider/2.5.0_react@16.14.0:
     resolution: {integrity: sha512-T84FtSI0bkQPmH5GaaHbL+2McOyIR6M5sqS80dqw/bHc5r2UKLYY64BWTbsL+XO0jlx7REuJJnZUBqo4eSRl7g==}
     peerDependencies:
@@ -19135,11 +19047,14 @@ packages:
       warning: 3.0.0
     dev: false
 
-  /react-data-grid/6.0.1:
+  /react-data-grid/6.0.1_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-a4OGEjWTOCJ64GvXwTXEHDEQ8iXZ8Xk30izUKyAVmP5q+Q2AOTMq/qUcHQwpL+XJ81/vTPTIhR//ELjjzYGwFQ==}
     peerDependencies:
       react: ^16.0.0
       react-dom: ^16.0.0
+    dependencies:
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
     dev: false
 
   /react-dev-utils/11.0.4:
@@ -19183,7 +19098,7 @@ packages:
       dnd-core: 11.1.3
     dev: true
 
-  /react-dnd-test-utils/11.1.3_7cd36bd96cfcafce2be4961bebcb86cf:
+  /react-dnd-test-utils/11.1.3_08cdc8f9308497b700c9a4ec3eaac5b5:
     resolution: {integrity: sha512-Yg+oTpXaCJ+NxEFt+qXJZX96dbar47EK410eXj7bDsIdYYTZzYO51BtEGlEvR/a9Kb4vEkhPZkJLxyCfqNrpjw==}
     peerDependencies:
       react: '>= 16.9.0'
@@ -19191,11 +19106,13 @@ packages:
       react-dnd-test-backend: '>= 10.0.0'
       react-dom: '>= 16.9.0'
     dependencies:
-      react-dnd: 11.1.3
+      react: 16.14.0
+      react-dnd: 11.1.3_react-dom@16.14.0+react@16.14.0
       react-dnd-test-backend: 11.1.3
+      react-dom: 16.14.0_react@16.14.0
     dev: true
 
-  /react-dnd/11.1.3:
+  /react-dnd/11.1.3_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-8rtzzT8iwHgdSC89VktwhqdKKtfXaAyC4wiqp0SywpHG12TTLvfOoL6xNEIUWXwIEWu+CFfDn4GZJyynCEuHIQ==}
     peerDependencies:
       react: '>= 16.9.0'
@@ -19205,6 +19122,8 @@ packages:
       '@types/hoist-non-react-statics': 3.3.1
       dnd-core: 11.1.3
       hoist-non-react-statics: 3.3.2
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
     dev: false
 
   /react-dom/16.14.0_react@16.14.0:
@@ -19217,12 +19136,11 @@ packages:
       prop-types: 15.7.2
       react: 16.14.0
       scheduler: 0.19.1
-    dev: false
 
   /react-error-overlay/6.0.9:
     resolution: {integrity: sha512-nQTTcUu+ATDbrSD1BZHr5kgSD4oF8OFjxun8uAaL8RwPBacGBNPf/yAuVVdx17N8XNzRDMrZ9XcKZHCjPW+9ew==}
 
-  /react-highlight-words/0.14.0:
+  /react-highlight-words/0.14.0_react@16.14.0:
     resolution: {integrity: sha512-DNp1zAIiNqs1nunFv5K67ca0KVSKihbmpZLNwqQj61yMK6zf8YHoGrpLlEt7WEqj1227FOm41FuXiv9KZgcwdA==}
     peerDependencies:
       react: ^0.14.0 || ^15.0.0 || ^16.0.0-0
@@ -19230,14 +19148,7 @@ packages:
       highlight-words-core: 1.2.2
       memoize-one: 4.0.3
       prop-types: 15.7.2
-    dev: false
-
-  /react-input-autosize/2.2.2:
-    resolution: {integrity: sha512-jQJgYCA3S0j+cuOwzuCd1OjmBmnZLdqQdiLKRYrsMMzbjUrVDS5RvJUDwJqA7sKuksDuzFtm6hZGKFu7Mjk5aw==}
-    peerDependencies:
-      react: ^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0
-    dependencies:
-      prop-types: 15.7.2
+      react: 16.14.0
     dev: false
 
   /react-input-autosize/2.2.2_react@16.14.0:
@@ -19296,7 +19207,6 @@ packages:
       react: 16.14.0
       react-dom: 16.14.0_react@16.14.0
       react-is: 16.13.1
-    dev: false
 
   /react-redux/7.2.4_react@16.14.0:
     resolution: {integrity: sha512-hOQ5eOSkEJEXdpIKbnRyl04LhaWabkDPV+Ix97wqQX3T3d2NQ8DUblNXXtNMavc7DpswyQM6xfaN4HQDKNY2JA==}
@@ -19358,22 +19268,6 @@ packages:
       '@testing-library/dom': 7.31.0
     dev: true
 
-  /react-select/3.1.0:
-    resolution: {integrity: sha512-wBFVblBH1iuCBprtpyGtd1dGMadsG36W5/t2Aj8OE6WbByDg5jIFyT7X5gT+l0qmT5TqWhxX+VsKJvCEl2uL9g==}
-    peerDependencies:
-      react: ^16.8.0
-      react-dom: ^16.8.0
-    dependencies:
-      '@babel/runtime': 7.14.0
-      '@emotion/cache': 10.0.29
-      '@emotion/core': 10.1.1
-      '@emotion/css': 10.0.27
-      memoize-one: 5.2.1
-      prop-types: 15.7.2
-      react-input-autosize: 2.2.2
-      react-transition-group: 4.4.2
-    dev: false
-
   /react-select/3.1.0_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-wBFVblBH1iuCBprtpyGtd1dGMadsG36W5/t2Aj8OE6WbByDg5jIFyT7X5gT+l0qmT5TqWhxX+VsKJvCEl2uL9g==}
     peerDependencies:
@@ -19409,13 +19303,15 @@ packages:
       react-transition-group: 4.4.2_react@16.14.0
     dev: false
 
-  /react-split-pane/0.1.92:
+  /react-split-pane/0.1.92_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-GfXP1xSzLMcLJI5BM36Vh7GgZBpy+U/X0no+VM3fxayv+p1Jly5HpMofZJraeaMl73b3hvlr+N9zJKvLB/uz9w==}
     peerDependencies:
       react: ^16.0.0-0
       react-dom: ^16.0.0-0
     dependencies:
       prop-types: 15.7.2
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
       react-lifecycles-compat: 3.0.4
       react-style-proptype: 3.2.2
     dev: false
@@ -19426,29 +19322,12 @@ packages:
       prop-types: 15.7.2
     dev: false
 
-  /react-table/7.7.0:
-    resolution: {integrity: sha512-jBlj70iBwOTvvImsU9t01LjFjy4sXEtclBovl3mTiqjz23Reu0DKnRza4zlLtOPACx6j2/7MrQIthIK1Wi+LIA==}
-    peerDependencies:
-      react: ^16.8.3 || ^17.0.0-0
-    dev: true
-
   /react-table/7.7.0_react@16.14.0:
     resolution: {integrity: sha512-jBlj70iBwOTvvImsU9t01LjFjy4sXEtclBovl3mTiqjz23Reu0DKnRza4zlLtOPACx6j2/7MrQIthIK1Wi+LIA==}
     peerDependencies:
       react: ^16.8.3 || ^17.0.0-0
     dependencies:
       react: 16.14.0
-
-  /react-test-renderer/16.14.0:
-    resolution: {integrity: sha512-L8yPjqPE5CZO6rKsKXRO/rVPiaCOy0tQQJbC+UjPNlobl5mad59lvPjwFsQHTvL03caVDIVr9x9/OSgDe6I5Eg==}
-    peerDependencies:
-      react: ^16.14.0
-    dependencies:
-      object-assign: 4.1.1
-      prop-types: 15.7.2
-      react-is: 16.13.1
-      scheduler: 0.19.1
-    dev: true
 
   /react-test-renderer/16.14.0_react@16.14.0:
     resolution: {integrity: sha512-L8yPjqPE5CZO6rKsKXRO/rVPiaCOy0tQQJbC+UjPNlobl5mad59lvPjwFsQHTvL03caVDIVr9x9/OSgDe6I5Eg==}
@@ -19467,17 +19346,6 @@ packages:
       object-assign: 3.0.0
     dev: false
 
-  /react-transition-group/4.4.2:
-    resolution: {integrity: sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg==}
-    peerDependencies:
-      react: '>=16.6.0'
-      react-dom: '>=16.6.0'
-    dependencies:
-      '@babel/runtime': 7.14.0
-      dom-helpers: 5.2.1
-      loose-envify: 1.4.0
-      prop-types: 15.7.2
-
   /react-transition-group/4.4.2_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg==}
     peerDependencies:
@@ -19490,7 +19358,6 @@ packages:
       prop-types: 15.7.2
       react: 16.14.0
       react-dom: 16.14.0_react@16.14.0
-    dev: false
 
   /react-transition-group/4.4.2_react@16.14.0:
     resolution: {integrity: sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg==}
@@ -19504,15 +19371,18 @@ packages:
       prop-types: 15.7.2
       react: 16.14.0
 
-  /react-virtualized-auto-sizer/1.0.5:
+  /react-virtualized-auto-sizer/1.0.5_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-kivjYVWX15TX2IUrm8F1jaCEX8EXrpy3DD+u41WGqJ1ZqbljWpiwscV+VxOM1l7sSIM1jwi2LADjhhAJkJ9dxA==}
     engines: {node: '>8.0.0'}
     peerDependencies:
       react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0
       react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0
+    dependencies:
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
     dev: false
 
-  /react-virtualized/9.22.3:
+  /react-virtualized/9.22.3_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-MKovKMxWTcwPSxE1kK1HcheQTWfuCxAuBoSTf2gwyMM21NdX/PXUhnoP8Uc5dRKd+nKm8v41R36OellhdCpkrw==}
     peerDependencies:
       react: ^15.3.0 || ^16.0.0-alpha
@@ -19523,10 +19393,12 @@ packages:
       dom-helpers: 5.2.1
       loose-envify: 1.4.0
       prop-types: 15.7.2
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
       react-lifecycles-compat: 3.0.4
     dev: false
 
-  /react-window/1.8.6:
+  /react-window/1.8.6_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-8VwEEYyjz6DCnGBsd+MgkD0KJ2/OXFULyDtorIiTz+QzwoP94tBoA7CnbtyXMm+cCeAUER5KJcPtWl9cpKbOBg==}
     engines: {node: '>8.0.0'}
     peerDependencies:
@@ -19535,6 +19407,8 @@ packages:
     dependencies:
       '@babel/runtime': 7.14.0
       memoize-one: 5.2.1
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
     dev: false
 
   /react/16.14.0:

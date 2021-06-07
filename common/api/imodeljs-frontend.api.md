@@ -51,6 +51,7 @@ import { ColorIndex } from '@bentley/imodeljs-common';
 import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { Constructor } from '@bentley/bentleyjs-core';
 import { ContentIdProvider } from '@bentley/imodeljs-common';
+import { ContextRealityModel } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
@@ -253,7 +254,10 @@ import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
 import { SolarShadowSettings } from '@bentley/imodeljs-common';
 import { SortedArray } from '@bentley/bentleyjs-core';
-import { SpatialClassificationProps } from '@bentley/imodeljs-common';
+import { SpatialClassifier } from '@bentley/imodeljs-common';
+import { SpatialClassifierInsideDisplay } from '@bentley/imodeljs-common';
+import { SpatialClassifierOutsideDisplay } from '@bentley/imodeljs-common';
+import { SpatialClassifiers } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StopWatch } from '@bentley/bentleyjs-core';
@@ -1841,6 +1845,9 @@ export class ChangeFlags {
     get viewState(): boolean;
 }
 
+// @internal (undocumented)
+export type ChangeSetId = string;
+
 // @public
 export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
@@ -1917,40 +1924,15 @@ export enum ContextMode {
     ZAxis = 3
 }
 
-// @beta
-export class ContextRealityModelState {
+// @public
+export class ContextRealityModelState extends ContextRealityModel {
+    // @internal
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
-    // (undocumented)
-    get appearanceOverrides(): FeatureAppearance | undefined;
-    set appearanceOverrides(overrides: FeatureAppearance | undefined);
-    // (undocumented)
-    get classifiers(): SpatialClassifiers | undefined;
-    // (undocumented)
-    readonly description: string;
-    // (undocumented)
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
-    // (undocumented)
-    matches(other: ContextRealityModelState): boolean;
-    // (undocumented)
-    matchesNameAndUrl(name: string, url: string): boolean;
-    // (undocumented)
     get modelId(): Id64String | undefined;
-    // (undocumented)
-    readonly name: string;
-    // (undocumented)
-    readonly orbitGtBlob?: OrbitGtBlobProps;
-    // (undocumented)
-    get planarClipMask(): PlanarClipMaskState | undefined;
-    set planarClipMask(planarClipMask: PlanarClipMaskState | undefined);
-    readonly realityDataId?: string;
-    // (undocumented)
-    toJSON(): ContextRealityModelProps;
-    // (undocumented)
     get treeRef(): TileTreeReference;
-    // (undocumented)
-    readonly url: string;
-}
+    }
 
 // @public
 export enum ContextRotationId {
@@ -2360,8 +2342,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex?: number): void;
     // @internal (undocumented)
     attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex?: number): void;
-    // @beta
-    attachRealityModel(props: ContextRealityModelProps): void;
+    attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
     // @internal (undocumented)
@@ -2388,29 +2369,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
+    get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
+    // @internal (undocumented)
+    protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     // @internal
     detachMapLayerByIndex(index: number, isOverlay: boolean): void;
     // @internal (undocumented)
     detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void;
-    // @beta
-    detachRealityModelByIndex(index: number): void;
-    // @beta
-    detachRealityModelByNameAndUrl(name: string, url: string): void;
+    detachRealityModelByNameAndUrl(name: string, url: string): boolean;
     // @internal (undocumented)
     get displayTerrain(): boolean;
-    // @beta
-    dropModelAppearanceOverride(modelId: Id64String): void;
-    // @beta
-    dropRealityModelAppearanceOverride(index: number): boolean;
-    // @beta
-    dropRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     equalState(other: DisplayStyleState): boolean;
     // @internal (undocumented)
     findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean): number;
-    // @beta
-    findRealityModelIndex(accept: (model: ContextRealityModelState) => boolean): number;
-    // @beta
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
     // @internal (undocumented)
     forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void;
@@ -2431,32 +2403,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
-    // @beta
-    getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
-    // @beta
-    getOSMBuildingDisplayIndex(): number;
-    // @beta
-    getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined;
-    // @beta
-    getRealityModelIndexFromTransientId(id: Id64String): number;
-    // @beta
-    getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMaskState | undefined;
+    getOSMBuildingRealityModel(): ContextRealityModelState | undefined;
+    // @internal (undocumented)
+    getPlanarClipMaskState(modelId: Id64String): PlanarClipMaskState | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     get globeMode(): GlobeMode;
     // @internal (undocumented)
     hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean;
-    // @beta
     hasAttachedRealityModel(name: string, url: string): boolean;
-    // @beta
-    get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
     load(): Promise<void>;
     // @internal (undocumented)
     mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined;
-    // @beta
-    get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance>;
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
     // @internal
@@ -2466,15 +2426,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal
     moveMapLayerToTop(index: number, isOverlay: boolean): void;
     get name(): string;
+    readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
     readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
     // @internal (undocumented)
     get overlayMapLayers(): MapLayerSettings[];
-    // @beta
-    overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
-    // @beta
-    overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
-    // @beta
-    overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, mask: PlanarClipMaskSettings): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
@@ -2484,7 +2439,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     // @internal (undocumented)
     get scheduleState(): RenderScheduleState | undefined;
-    // @beta
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
     // @internal
     setScheduleState(state: RenderScheduleState | undefined): void;
@@ -3380,6 +3334,20 @@ export class FrameStatsCollector {
     // (undocumented)
     endTime(entry: keyof FrameStats): void;
     }
+
+// @internal (undocumented)
+export interface FrontendHubAccess {
+    // (undocumented)
+    getChangesetIdFromNamedVersion: (arg: IModelIdArg & {
+        versionName: string;
+    }) => Promise<ChangeSetId>;
+    // (undocumented)
+    getChangesetIdFromVersion: (arg: IModelIdArg & {
+        version: IModelVersion;
+    }) => Promise<ChangeSetId>;
+    // (undocumented)
+    getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangeSetId>;
+}
 
 // @public
 export enum FrontendLoggerCategory {
@@ -4452,7 +4420,10 @@ export class IModelApp {
     static formatElementToolTip(msg: string[]): HTMLElement;
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
+    // @internal
+    static get hubAccess(): FrontendHubAccess;
     static get i18n(): I18N;
+    // @deprecated (undocumented)
     static get iModelClient(): IModelClient;
     // @internal (undocumented)
     static get initialized(): boolean;
@@ -4576,7 +4547,6 @@ export abstract class IModelConnection extends IModel {
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string>;
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
-    // @alpha
     getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
@@ -4685,6 +4655,32 @@ export class IModelFrameLifecycle {
     static readonly onChangeCameraView: BeEvent<(data: FrameCameraViewData) => void>;
     // (undocumented)
     static readonly onRenderOpaque: BeEvent<(data: FrameRenderData) => void>;
+}
+
+// @internal (undocumented)
+export class IModelHubFrontend {
+    // (undocumented)
+    static getChangesetIdFromNamedVersion(arg: IModelIdArg & {
+        versionName: string;
+    }): Promise<ChangeSetId>;
+    // (undocumented)
+    static getChangesetIdFromVersion(arg: IModelIdArg & {
+        version: IModelVersion;
+    }): Promise<ChangeSetId>;
+    // (undocumented)
+    static getLatestChangesetId(arg: IModelIdArg): Promise<ChangeSetId>;
+    // (undocumented)
+    static get iModelClient(): IModelClient;
+    // (undocumented)
+    static setIModelClient(client?: IModelClient): void;
+}
+
+// @internal (undocumented)
+export interface IModelIdArg {
+    // (undocumented)
+    iModelId: GuidString;
+    // (undocumented)
+    requestContext: AuthorizedClientRequestContext;
 }
 
 // @public
@@ -5387,8 +5383,6 @@ export interface MapLayerSetting {
     // (undocumented)
     formatId: string;
     // (undocumented)
-    maxZoom: number | undefined;
-    // (undocumented)
     name: string;
     // (undocumented)
     transparentBackground: boolean | undefined;
@@ -5413,7 +5407,7 @@ export class MapLayerSettingsService {
 }
 
 // @internal
-export class MapLayerSource implements MapLayerProps {
+export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
     // (undocumented)
@@ -5421,31 +5415,26 @@ export class MapLayerSource implements MapLayerProps {
     // (undocumented)
     static fromBackgroundMapProps(props: BackgroundMapProps): MapLayerSource | undefined;
     // (undocumented)
-    static fromJSON(json: any): MapLayerSource | undefined;
-    // (undocumented)
-    maxZoom?: number | undefined;
+    static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined;
     // (undocumented)
     name: string;
     // (undocumented)
-    password?: string | undefined;
-    // (undocumented)
-    subLayers?: MapSubLayerProps[];
+    password?: string;
     // (undocumented)
     toJSON(): {
         url: string;
         name: string;
         formatId: string;
-        maxZoom: number | undefined;
         transparentBackground: boolean | undefined;
     };
     // (undocumented)
-    toLayerSettings(): MapLayerSettings | undefined;
+    toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined;
     // (undocumented)
-    transparentBackground?: boolean | undefined;
+    transparentBackground?: boolean;
     // (undocumented)
     url: string;
     // (undocumented)
-    userName?: string | undefined;
+    userName?: string;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
@@ -6851,7 +6840,7 @@ export class OrbitGtTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
-    getEcefTranform(): Promise<Transform | undefined>;
+    getEcefTransform(): Promise<Transform | undefined>;
     // (undocumented)
     get is3d(): boolean;
     // (undocumented)
@@ -7508,7 +7497,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         protected _mapDrapeTree?: TileTreeReference;
         // (undocumented)
-        protected _maskModelIds?: string;
+        protected get maskModelIds(): string | undefined;
         // (undocumented)
         get modelId(): string;
         // (undocumented)
@@ -7538,7 +7527,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         name?: string;
         // (undocumented)
-        planarMask?: PlanarClipMaskProps;
+        planarClipMask?: PlanarClipMaskSettings;
         // (undocumented)
         source: RealityModelSource;
         // (undocumented)
@@ -8248,7 +8237,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     createGraphicBuilder(options: GraphicBuilderOptions): import("./GraphicBuilder").GraphicBuilder;
     // (undocumented)
-    createPlanarClassifier(_properties?: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined;
+    createPlanarClassifier(_properties?: SpatialClassifier): RenderPlanarClassifier | undefined;
     // (undocumented)
     cssPixelsToDevicePixels(cssPixels: number, floor?: boolean): number;
     // (undocumented)
@@ -8439,7 +8428,7 @@ export class SceneContext extends RenderContext {
     requestMissingTiles(): void;
     readonly scene: Scene;
     // @internal (undocumented)
-    setVolumeClassifier(classifier: SpatialClassificationProps.Classifier, modelId: Id64String): void;
+    setVolumeClassifier(classifier: SpatialClassifier, modelId: Id64String): void;
     // @internal (undocumented)
     get textureDrapes(): Map<string, RenderTextureDrape>;
     get viewingSpace(): ViewingSpace;
@@ -8450,7 +8439,7 @@ export class SceneContext extends RenderContext {
 // @internal
 export interface SceneVolumeClassifier {
     // (undocumented)
-    classifier: SpatialClassificationProps.Classifier;
+    classifier: SpatialClassifier;
     // (undocumented)
     modelId: Id64String;
 }
@@ -9142,27 +9131,10 @@ export enum SnapStatus {
     Success = 0
 }
 
-// @beta
-export class SpatialClassifiers {
-    [Symbol.iterator](): Iterator<SpatialClassificationProps.Classifier>;
-    // @internal
-    constructor(jsonContainer: SpatialClassifiersContainer);
-    get active(): SpatialClassificationProps.Classifier | undefined;
-    set active(active: SpatialClassificationProps.Classifier | undefined);
-    get length(): number;
-    push(classifier: SpatialClassificationProps.Classifier): SpatialClassificationProps.Classifier | undefined;
-}
-
-// @internal (undocumented)
-export interface SpatialClassifiersContainer {
-    // (undocumented)
-    classifiers?: SpatialClassificationProps.Properties[];
-}
-
 // @internal (undocumented)
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
     // (undocumented)
-    abstract get activeClassifier(): SpatialClassificationProps.Classifier | undefined;
+    abstract get activeClassifier(): SpatialClassifier | undefined;
     // (undocumented)
     abstract get classifiers(): SpatialClassifiers;
     // (undocumented)
@@ -9180,11 +9152,9 @@ export class SpatialModelState extends GeometricModel3dState {
     constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState);
     // @internal (undocumented)
     get asSpatialModel(): SpatialModelState;
-    // @beta
     readonly classifiers?: SpatialClassifiers;
     // @internal (undocumented)
     static get className(): string;
-    // @beta
     get isRealityModel(): boolean;
 }
 
@@ -9441,7 +9411,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     activeVolumeClassifierModelId?: Id64String;
     // (undocumented)
-    activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
+    activeVolumeClassifierProps?: SpatialClassifier;
     // (undocumented)
     activeVolumeClassifierTexture?: WebGLTexture;
     // (undocumented)
@@ -9502,7 +9472,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     copyImageToCanvas(): HTMLCanvasElement;
     // (undocumented)
-    createPlanarClassifier(properties?: SpatialClassificationProps.Classifier): PlanarClassifier;
+    createPlanarClassifier(properties?: SpatialClassifier): PlanarClassifier;
     // (undocumented)
     protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect;
     // (undocumented)
@@ -12069,8 +12039,6 @@ export abstract class Viewport implements IDisposable {
     // @internal
     applyViewState(val: ViewState): void;
     get areAllTileTreesLoaded(): boolean;
-    // @beta
-    attachRealityModel(props: ContextRealityModelProps): void;
     // (undocumented)
     get auxCoordSystem(): AuxCoordSystemState;
     // @internal (undocumented)
@@ -12112,8 +12080,6 @@ export abstract class Viewport implements IDisposable {
     set debugBoundingBoxes(boxes: TileBoundingBoxes);
     // @internal (undocumented)
     protected _decorationsValid: boolean;
-    // @beta
-    detachRealityModelByIndex(index: number): void;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
     get devicePixelRatio(): number;
     // @internal
@@ -12124,8 +12090,6 @@ export abstract class Viewport implements IDisposable {
     dispose(): void;
     dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
     dropModelAppearanceOverride(id: Id64String): void;
-    // @beta
-    dropRealityModelAppearanceOverride(index: number): void;
     dropSubCategoryOverride(id: Id64String): void;
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     get emphasisSettings(): Hilite.Settings;
@@ -12161,16 +12125,10 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
     // @beta
-    getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
-    // @beta
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     // @beta
     getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
-    // @beta
-    getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined;
-    // @beta
-    getRealityModelIndexFromTransientId(id: Id64String): number;
     // @internal (undocumented)
     getSubCategories(categoryId: Id64String): Id64Set | undefined;
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
@@ -12247,8 +12205,6 @@ export abstract class Viewport implements IDisposable {
     get overlayMap(): MapTileTreeReference | undefined;
     overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;
     overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void;
-    // @beta
-    overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;
     pixelsFromInches(inches: number): number;
@@ -12290,7 +12246,6 @@ export abstract class Viewport implements IDisposable {
     // @internal
     setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void;
     setNeverDrawn(ids: Id64Set): void;
-    setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): void;
     // @internal @deprecated (undocumented)
     setRedrawPending(): void;
     // @internal (undocumented)

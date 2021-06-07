@@ -689,10 +689,10 @@ export interface BaseItemState {
     isVisible?: boolean;
 }
 
-// @beta
+// @public
 export function BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element;
 
-// @beta
+// @public
 export interface BasicNavigationWidgetProps {
     additionalHorizontalItems?: CommonToolbarItem[];
     additionalVerticalItems?: CommonToolbarItem[];
@@ -1191,7 +1191,7 @@ export interface ConfigurableUiState {
     widgetOpacity: number;
 }
 
-// @beta
+// @public
 export const connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps<any, any>;
 
 // @beta
@@ -1910,7 +1910,7 @@ export interface ElementTooltipChangedEventArgs {
     pt?: XAndY;
 }
 
-// @alpha
+// @public
 export interface EmphasizeElementsChangedArgs {
     readonly action: HideIsolateEmphasizeAction;
     readonly viewport: ScreenViewport;
@@ -2928,7 +2928,7 @@ export interface GroupItemProps extends ItemProps {
     panelLabelKey?: string;
 }
 
-// @alpha
+// @public
 export enum HideIsolateEmphasizeAction {
     // (undocumented)
     ClearHiddenIsolatedEmphasized = "ClearHiddenIsolatedEmphasized",
@@ -2952,7 +2952,7 @@ export enum HideIsolateEmphasizeAction {
     IsolateSelectedModels = "IsolateSelectedModels"
 }
 
-// @alpha
+// @public
 export abstract class HideIsolateEmphasizeActionHandler {
     abstract areFeatureOverridesActive(vp: Viewport): boolean;
     // (undocumented)
@@ -2970,7 +2970,7 @@ export abstract class HideIsolateEmphasizeActionHandler {
     abstract processIsolateSelectedElementsModel(): Promise<void>;
 }
 
-// @alpha
+// @public
 export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
     areFeatureOverridesActive(vp: Viewport): boolean;
     static clearEmphasize(vp: Viewport | undefined): void;
@@ -4195,7 +4195,7 @@ export interface PanelSizeChangedEventArgs {
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
 
-// @beta
+// @public
 export interface PanelStateChangedEventArgs {
     // (undocumented)
     panelDef: StagePanelDef;
@@ -4587,7 +4587,7 @@ export const RULESET_SPATIAL_BREAKDOWN: Ruleset;
 // @internal (undocumented)
 export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset;
 
-// @alpha
+// @public
 export const SafeAreaContext: React.Context<SafeAreaInsets>;
 
 // @public
@@ -4626,7 +4626,7 @@ export interface SavedViewProps extends ViewStateProps {
 // @internal (undocumented)
 export function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window): Promise<NineZoneState>;
 
-// @alpha
+// @public
 export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
     // (undocumented)
@@ -4649,7 +4649,7 @@ export interface SectionsStatusFieldProps extends StatusFieldProps {
 // @beta
 export function selectionContextStateFunc(state: Readonly<BaseItemState>): BaseItemState;
 
-// @beta
+// @public
 export class SelectionContextToolDefinitions {
     // (undocumented)
     static get clearHideIsolateEmphasizeElementsItemDef(): CommandItemDef;
@@ -6801,13 +6801,13 @@ export function useActiveFrontstageDef(): FrontstageDef | undefined;
 // @beta
 export const useActiveFrontstageId: () => string;
 
-// @beta
+// @public
 export function useActiveIModelConnection(): IModelConnection | undefined;
 
 // @internal (undocumented)
 export function useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined;
 
-// @beta
+// @public
 export function useActiveViewport(): ScreenViewport | undefined;
 
 // @internal
@@ -7645,7 +7645,7 @@ export enum WidgetType {
 // @public
 export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
 
-// @alpha
+// @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
     new (props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>): {
         render(): JSX.Element;

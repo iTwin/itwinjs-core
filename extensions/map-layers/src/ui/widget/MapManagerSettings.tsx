@@ -5,10 +5,9 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { NumberInput, Select, Slider } from "@bentley/ui-core";
+import { NumberInput, Select, Slider, Toggle } from "@bentley/ui-core";
 import { ViewState3d } from "@bentley/imodeljs-frontend";
 import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
-import { ToggleSwitch } from "@itwin/itwinui-react";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
@@ -95,8 +94,7 @@ export function MapManagerSettings() {
 
   const [masking, setMasking] = React.useState(() => getMapMaskingFromBackgroundMapSetting(backgroundMapSettings));
 
-  const onMaskingToggle = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
+  const onMaskingToggle = React.useCallback((checked: boolean) => {
     const maskingOption = checked ? MapMaskingOption.AllModels : MapMaskingOption.None;
     updateMaskingSettings(maskingOption);
     setMasking(maskingOption);
@@ -118,8 +116,7 @@ export function MapManagerSettings() {
 
   const [applyTerrain, setApplyTerrain] = React.useState(() => backgroundMapSettings.applyTerrain);
 
-  const onToggleTerrain = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
+  const onToggleTerrain = React.useCallback((checked: boolean) => {
     updateBackgroundMap({ applyTerrain: checked });
     setApplyTerrain(checked);
   }, [updateBackgroundMap]);
@@ -142,8 +139,7 @@ export function MapManagerSettings() {
   }, [updateTerrainSettings]);
 
   const [useDepthBuffer, setUseDepthBuffer] = React.useState(() => backgroundMapSettings.useDepthBuffer);
-  const onToggleUseDepthBuffer = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
+  const onToggleUseDepthBuffer = React.useCallback((checked: boolean) => {
     updateBackgroundMap({ useDepthBuffer: checked });
     setUseDepthBuffer(checked);
   }, [updateBackgroundMap]);
@@ -155,14 +151,14 @@ export function MapManagerSettings() {
   }, []);
 
   const [isLocatable, setIsLocatable] = React.useState(() => backgroundMapSettings.locatable);
-  const onLocatableToggle = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
+  const onLocatableToggle = React.useCallback((checked: boolean) => {
     updateBackgroundMap({ nonLocatable: !checked });
     setIsLocatable(checked);
   }, [updateBackgroundMap]);
 
   const [transparencyLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Transparency"));
   const [terrainLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Terrain"));
+  const [enableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Enable"));
   const [elevationOffsetLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationOffset"));
   const [useDepthBufferLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.UseDepthBuffer"));
   const [modelHeightLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ModelHeight"));
@@ -179,35 +175,40 @@ export function MapManagerSettings() {
         <Slider min={0} max={100} showMinMax showTooltip values={[transparency * 100]} onChange={handleAlphaChange} step={1} />
 
         <span className="map-manager-settings-label">{locatableLabel}</span>
-        <ToggleSwitch onChange={onLocatableToggle} checked={isLocatable} />
+        <Toggle onChange={onLocatableToggle} isOn={isLocatable} />
 
         <span className="map-manager-settings-label">{maskingLabel}</span>
-        <ToggleSwitch onChange={onMaskingToggle} checked={masking !== MapMaskingOption.None} />
+        <Toggle onChange={onMaskingToggle} isOn={masking !== MapMaskingOption.None} />
 
-        <span className="map-manager-settings-label">{terrainLabel}</span>
-        <ToggleSwitch onChange={onToggleTerrain} checked={applyTerrain} />
+        <>
+          <span className="map-manager-settings-label">{elevationOffsetLabel}</span>
+          <NumberInput disabled={applyTerrain} value={groundBias} onChange={handleElevationChange} onKeyDown={onKeyDown} />
 
-        {!applyTerrain && (
-          <>
-            <span className="map-manager-settings-label">{elevationOffsetLabel}</span>
-            <NumberInput value={groundBias} onChange={handleElevationChange} onKeyDown={onKeyDown} />
+          <span className="map-manager-settings-label">{useDepthBufferLabel}</span>
+          <Toggle disabled={applyTerrain} onChange={onToggleUseDepthBuffer} isOn={useDepthBuffer} />
+        </>
 
-            <span className="map-manager-settings-label">{useDepthBufferLabel}</span>
-            <ToggleSwitch onChange={onToggleUseDepthBuffer} checked={useDepthBuffer} />
-          </>
-        )}
-        {applyTerrain && (
-          <>
+      </div>
+      <div className="map-manager-settings-terrain-container">
+        <fieldset>
+          <legend>{terrainLabel}</legend>
+
+          <div className="maplayers-settings-container">
+
+            <span className="map-manager-settings-label">{enableLabel}</span>
+            <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />
+
             <span className="map-manager-settings-label">{modelHeightLabel}</span>
-            <NumberInput value={terrainOrigin} onChange={handleHeightOriginChange} onKeyDown={onKeyDown} />
+            <NumberInput value={terrainOrigin} disabled={!applyTerrain} onChange={handleHeightOriginChange} onKeyDown={onKeyDown} />
 
             <span className="map-manager-settings-label">{heightOriginLabel}</span>
-            <Select options={terrainHeightOptions.current} value={heightOriginMode} onChange={handleElevationTypeSelected} />
+            <Select options={terrainHeightOptions.current} disabled={!applyTerrain} value={heightOriginMode} onChange={handleElevationTypeSelected} />
 
             <span className="map-manager-settings-label">{exaggerationLabel}</span>
-            <NumberInput value={exaggeration} onChange={handleExaggerationChange} onKeyDown={onKeyDown} />
-          </>
-        )}
+            <NumberInput value={exaggeration} disabled={!applyTerrain} onChange={handleExaggerationChange} onKeyDown={onKeyDown} />
+          </div>
+
+        </fieldset>
       </div>
     </>
   );
