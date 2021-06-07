@@ -10,6 +10,7 @@ import * as rimraf from "rimraf";
 import * as sha256 from "fast-sha256";
 import * as semver from "semver";
 import * as readline from "readline";
+import fetch from "node-fetch";
 import { ExtensionClient, ExtensionProps } from "@bentley/extension-client";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
@@ -18,6 +19,7 @@ import { IModelError } from "@bentley/imodeljs-common";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { prettyPrint, signIn } from "./helpers";
 
+if (!globalThis.fetch) globalThis.fetch = fetch as any; // polyfill fetch for ExtensionClient
 let command: "publish" | "get" | "delete" | "view" | undefined;
 let filePath: string | undefined;
 let json = false;
