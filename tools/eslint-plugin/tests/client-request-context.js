@@ -456,7 +456,7 @@ new ESLintTester({
           suggestions: [
             {
               desc: "Add a ClientRequestContext parameter",
-              output: makeTest`const typedButNoReturnTypeArrow: () => Promise<void> = (clientRequestContext: ClientRequestContext) => {return Promise.resolve();};`,
+              output: makeTest`const typedButNoReturnTypeArrow: (() => Promise<void>) = (clientRequestContext: ClientRequestContext) => {return Promise.resolve();};`,
             }
           ]
         }
