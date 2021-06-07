@@ -168,6 +168,7 @@ export abstract class IModelDb extends IModel {
     this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
+  /** @internal */
   public async reattachDaemon(_requestContext: AuthorizedClientRequestContext): Promise<void> { }
 
   /** Event called when the iModel is about to be closed */
