@@ -5456,7 +5456,7 @@ export class MapLayerSettingsService {
 }
 
 // @internal
-export class MapLayerSource implements MapLayerProps {
+export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
     // (undocumented)
@@ -5468,9 +5468,7 @@ export class MapLayerSource implements MapLayerProps {
     // (undocumented)
     name: string;
     // (undocumented)
-    password?: string | undefined;
-    // (undocumented)
-    subLayers?: MapSubLayerProps[];
+    password?: string;
     // (undocumented)
     toJSON(): {
         url: string;
@@ -5479,13 +5477,13 @@ export class MapLayerSource implements MapLayerProps {
         transparentBackground: boolean | undefined;
     };
     // (undocumented)
-    toLayerSettings(): MapLayerSettings | undefined;
+    toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined;
     // (undocumented)
-    transparentBackground?: boolean | undefined;
+    transparentBackground?: boolean;
     // (undocumented)
     url: string;
     // (undocumented)
-    userName?: string | undefined;
+    userName?: string;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
