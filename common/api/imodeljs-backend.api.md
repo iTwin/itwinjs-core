@@ -2635,7 +2635,7 @@ export abstract class IModelDb extends IModel {
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     // @internal (undocumented)
-    reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus;
+    reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
     // (undocumented)
@@ -2957,7 +2957,7 @@ export class IModelHubBackend {
     // (undocumented)
     static getRequestContext(arg: {
         requestContext?: AuthorizedClientRequestContext;
-    }): Promise<AuthorizedBackendRequestContext | AuthorizedClientRequestContext>;
+    }): Promise<AuthorizedClientRequestContext | AuthorizedBackendRequestContext>;
     // (undocumented)
     static get iModelClient(): IModelClient;
     // (undocumented)
@@ -4576,14 +4576,14 @@ export class TxnManager {
     // @internal
     constructor(_iModel: BriefcaseDb | StandaloneDb);
     beginMultiTxnOperation(): DbResult;
-    cancelTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus;
-    checkUndoPossible(allowCrossSessions?: boolean): boolean;
+    cancelTo(txnId: TxnIdString): IModelStatus;
+    checkUndoPossible(): boolean;
     endMultiTxnOperation(): DbResult;
     getCurrentTxnId(): TxnIdString;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
-    getUndoString(allowCrossSessions?: boolean): string;
+    getUndoString(): string;
     get hasFatalError(): boolean;
     get hasLocalChanges(): boolean;
     get hasPendingTxns(): boolean;
@@ -4631,15 +4631,16 @@ export class TxnManager {
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
-    queryFirstTxnId(allowCrossSessions?: boolean): TxnIdString;
+    queryFirstTxnId(): TxnIdString;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;
     reportError(error: ValidationError): void;
+    restartSession(): void;
     reverseAll(): IModelStatus;
     reverseSingleTxn(): IModelStatus;
-    reverseTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus;
-    reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus;
+    reverseTo(txnId: TxnIdString): IModelStatus;
+    reverseTxns(numOperations: number): IModelStatus;
     readonly validationErrors: ValidationError[];
 }
 
