@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ECName } from "../../SchemaKey";
+import { ECName } from "../../ECName";
 import { ECObjectsError } from "../../Exception";
 
 describe("ECName", () => {
@@ -29,43 +29,30 @@ describe("ECName", () => {
     expectInvalid("ABC@");
   });
 
+  const testcases = [
+    [ "NothingSpecial", "NothingSpecial" ],
+    [ "Nothing1Special2", "Nothing1Special2" ],
+    [ "1_LeadingDigitsDisallowed", "__x0031___LeadingDigitsDisallowed" ],
+    [ "Special!", "Special__x0021__" ],
+    [ "thing@mail.com", "thing__x0040__mail__x002E__com" ],
+    [ "*", "__x002A__" ],
+    [ "9&:", "__x0039____x0026____x003A__" ],
+    [ "__xNotAChar__", "__xNotAChar__" ],
+    [ "__xTTTT__", "__xTTTT__" ],
+    [ "__x####__", "__x__x0023____x0023____x0023____x0023____" ],
+    [ "\u822C\u6A21\u578B", "__x822C____x6A21____x578B__" ],
+  ];
+
   it("encodes", () => {
-    const testcases: Array<[string, string | undefined]> = [
-      [ "", undefined ],
-      [ "NothingSpecial", "NothingSpecial" ],
-      [ "Nothing1Special2", "Nothing1Special2" ],
-      [ "1_LeadingDigitsDisallowed", "__x0031___LeadingDigitsDisallowed" ],
-      [ "Special!", "Special__x0021__" ],
-      [ "thing@mail.com", "thing__x0040__mail__x002E__com" ],
-      [ "*", "__x002A__" ],
-      [ "9&:", "__x0039____x0026____x003A__" ],
-      [ "__xNotAChar__", "__xNotAChar__" ],
-      [ "__xTTTT__", "__xTTTT__" ],
-      [ "__x####__", "__x__x0023____x0023____x0023____x0023____" ],
-      [ "\u822C\u6A21\u578B", "__x822C____x6A21____x578B__" ],
-    ];
+    expect(() => ECName.encode("")).to.throw(ECObjectsError);
 
     for (const testcase of testcases) {
       const name = ECName.encode(testcase[0]);
-      expect(name?.name).to.equal(testcase[1]);
+      expect(name.name).to.equal(testcase[1]);
     }
   });
 
   it("decodes", () => {
-    const testcases = [
-      [ "NothingSpecial", "NothingSpecial" ],
-      [ "Nothing1Special2", "Nothing1Special2" ],
-      [ "1_LeadingDigitsDisallowed", "__x0031___LeadingDigitsDisallowed" ],
-      [ "Special!", "Special__x0021__" ],
-      [ "thing@mail.com", "thing__x0040__mail__x002E__com" ],
-      [ "*", "__x002A__" ],
-      [ "9&:", "__x0039____x0026____x003A__" ],
-      [ "__xNotAChar__", "__xNotAChar__" ],
-      [ "__xTTTT__", "__xTTTT__" ],
-      [ "__x####__", "__x__x0023____x0023____x0023____x0023____" ],
-      [ "\u822C\u6A21\u578B", "__x822C____x6A21____x578B__" ],
-    ];
-
     for (const testcase of testcases) {
       const name = new ECName(testcase[1]);
       expect(name.decode()).to.equal(testcase[0]);

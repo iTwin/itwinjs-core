@@ -6,10 +6,10 @@
  * @module Metadata
  */
 
-import { assert }from "@bentley/bentleyjs-core";
 import { SchemaKeyProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECName } from "./ECName";
 
 /**
  * @beta
@@ -86,95 +86,6 @@ export class ECVersion {
       return this.write - rhv.write;
 
     return this.minor - rhv.minor;
-  }
-}
-
-function isDigit(character: string): boolean {
-  assert(1 === character.length);
-  return character >= "0" && character <= "9";
-}
-
-function isValidAlphaNumericCharacter(c: string): boolean {
-  assert(1 === c.length);
-  return (((c >= "0" && c <= "9") || (c >= "A" && c <= "Z") || (c >= "a" && c <= "z") || c == "_"));
-}
-
-const validECNameRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i;
-const ecNameReplacerRegex = /__x([0-9a-fA-F]{4})__/g;
-
-/**
- * An ECName is an invariant, string based, name is needed for an item in a schema.
- * @beta
- */
-export class ECName {
-  private _name: string;
-
-  constructor(name: string) {
-    if (!ECName.validate(name))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
-
-    this._name = name;
-  }
-
-  /**
-   * @param newName string to validate
-   * @return boolean whether newName is a valid ECName
-   */
-  public static validate(newName: string) {
-    return validECNameRegex.test(newName);
-  }
-
-  public get name(): string {
-    return this._name;
-  }
-
-  public static encode(input: string): ECName | undefined {
-    if (0 === input.length)
-      return undefined;
-
-    if (ECName.validate(input)) {
-      // It's already a valid EC name.
-      return new ECName(input);
-    }
-
-    let output = "";
-
-    function appendEncodedCharacter(index: number): void {
-      let hex = input.charCodeAt(index).toString(16).toUpperCase();
-      switch (hex.length) {
-        case 1:
-          hex = "000" + hex;
-          break;
-        case 2:
-          hex = "00" + hex;
-          break;
-        case 3:
-          hex = "0" + hex;
-          break;
-      }
-
-      const encoded = `__x${hex}__`;
-      output += encoded;
-    }
-
-    // First character cannot be a digit.
-    const firstCharIsDigit = isDigit(input[0]);
-    if (firstCharIsDigit)
-      appendEncodedCharacter(0);
-
-    for (let i = firstCharIsDigit ? 1 : 0; i < input.length; i++) {
-      const char = input[i];
-      if (!isValidAlphaNumericCharacter(char))
-        appendEncodedCharacter(i);
-      else
-        output += char;
-    }
-
-    return new ECName(output);
-  }
-
-  public decode(): string {
-    return this.name.replace(ecNameReplacerRegex, (_match, hex) => String.fromCharCode(Number.parseInt(hex, 16)));
   }
 }
 
