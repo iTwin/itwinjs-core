@@ -162,8 +162,8 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).getLatestChangesetId();
   }
 
-  public static async getChangesetIndexFromId(arg: IModelIdArg & { changesetId: ChangesetId }): Promise<number> {
-    return this.findLocalHub(arg.iModelId).getChangesetIndex(arg.changesetId);
+  public static async getChangesetIndexFromId(arg: IModelIdArg & { changeSetId: ChangesetId }): Promise<number> {
+    return this.findLocalHub(arg.iModelId).getChangesetIndex(arg.changeSetId);
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
@@ -182,15 +182,15 @@ export class HubMock {
   }
 
   public static async downloadChangeset(arg: ChangesetIdArg): Promise<ChangesetFileProps> {
-    return this.findLocalHub(arg.iModelId).downloadChangeset({ changesetId: arg.changesetId, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
+    return this.findLocalHub(arg.iModelId).downloadChangeset({ changeSetId: arg.changeSetId, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
   }
 
   public static async downloadChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetFileProps[]> {
     return this.findLocalHub(arg.iModelId).downloadChangesets({ range: arg.range, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
   }
 
-  public static async queryChangeset(arg: IModelIdArg & { changesetId: ChangesetId }): Promise<ChangesetProps> {
-    return this.findLocalHub(arg.iModelId).getChangesetById(arg.changesetId);
+  public static async queryChangeset(arg: IModelIdArg & { changeSetId: ChangesetId }): Promise<ChangesetProps> {
+    return this.findLocalHub(arg.iModelId).getChangesetById(arg.changeSetId);
   }
 
   public static async queryChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetProps[]> {
@@ -202,14 +202,19 @@ export class HubMock {
   }
 
   public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
-    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changesetId: arg.checkpoint.changeSetId, targetFile: arg.localFile });
+    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeSetId: arg.checkpoint.changeSetId, targetFile: arg.localFile });
   }
 
   public static async downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
-    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changesetId: arg.checkpoint.changeSetId, targetFile: arg.localFile });
+    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeSetId: arg.checkpoint.changeSetId, targetFile: arg.localFile });
   }
 
-  public static async releaseAllLocks(_arg: BriefcaseIdArg) {
+  public static async releaseAllLocks(arg: BriefcaseIdArg & ChangesetIdArg) {
+    const hub = this.findLocalHub(arg.iModelId);
+    const locks = hub.queryAllLocks(arg.briefcaseId);
+    for (const props of locks)
+      hub.releaseLock({ props, ...arg });
+
   }
 
   public static async releaseAllCodes(_arg: BriefcaseIdArg) {
@@ -223,9 +228,11 @@ export class HubMock {
     return [];
   }
 
-  public static async acquireLocks(_arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
-    return this.findLocalHub(_arg.briefcase.iModelId).requestLocks();
-
+  public static async acquireLocks(arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
+    const hub = this.findLocalHub(arg.briefcase.iModelId);
+    for (const lock of arg.locks) {
+      hub.requestLock(lock, arg.briefcase);
+    }
   }
 
   public static async acquireSchemaLock(_arg: BriefcaseDbArg): Promise<void> {

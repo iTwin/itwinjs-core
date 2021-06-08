@@ -123,7 +123,7 @@ export interface BriefcaseIdArg extends IModelIdArg {
  * @internal
  */
 export interface ChangesetIdArg extends IModelIdArg {
-  changesetId: ChangesetId;
+  changeSetId: ChangesetId;
 }
 
 /** Argument for methods that must supply an IModelId and a range of ChangesetIds.
@@ -152,11 +152,11 @@ export interface BackendHubAccess {
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
   /** Query an array of changeset properties given a range of ChangesetIds  */
   pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<void>;
-  /** Get the changesetId of the most recent changeset */
+  /** Get the changeSetId of the most recent changeset */
   getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangesetId>;
-  /** Get the changesetId for an IModelVersion */
+  /** Get the changeSetId for an IModelVersion */
   getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetId>;
-  /** Get the changesetId for a named version */
+  /** Get the changeSetId for a named version */
   getChangesetIdFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetId>;
 
   /** Get the index of the change set from its id */

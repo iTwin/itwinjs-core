@@ -39,7 +39,7 @@ describe.only("HubMock", () => {
     assert.equal(checkpoints[0], 0);
 
     const cp1 = join(tmpDir, "cp-1.bim");
-    localHub.downloadCheckpoint({ changesetId: "", targetFile: cp1 });
+    localHub.downloadCheckpoint({ changeSetId: "", targetFile: cp1 });
     const stat1 = IModelJsFs.lstatSync(cp1);
     const statRev0 = IModelJsFs.lstatSync(revision0);
     assert.equal(stat1?.size, statRev0?.size);
@@ -106,7 +106,7 @@ describe.only("HubMock", () => {
     assert.isDefined(changesets2[1].pushDate);
     assert.equal(cs2.id, localHub.getLatestChangesetId());
 
-    localHub.uploadCheckpoint({ changesetId: cs2.id, localFile: revision0 });
+    localHub.uploadCheckpoint({ changeSetId: cs2.id, localFile: revision0 });
     checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 2);
     assert.equal(checkpoints[1], 2);
@@ -164,7 +164,7 @@ describe.only("HubMock", () => {
       objectId: "0x12",
       type: LockType.Model,
     };
-    localHub.requestLock({ props: lock1, briefcaseId: 1, changesetId: cs1.id });
+    localHub.requestLock(lock1, { briefcaseId: 1, changeSetId: cs1.id });
     let lockStat = localHub.queryLockStatus(lock1.objectId);
     assert.equal(lockStat.level, LockLevel.Shared);
     assert.equal(lockStat.type, lock1.type);
@@ -172,54 +172,54 @@ describe.only("HubMock", () => {
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(1));
 
     assert.isUndefined(lockStat.released);
-    localHub.requestLock({ props: lock1, briefcaseId: 10, changesetId: cs1.id });
+    localHub.requestLock(lock1, { briefcaseId: 10, changeSetId: cs1.id });
     lockStat = localHub.queryLockStatus(lock1.objectId);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 2);
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(1));
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(10));
 
-    expect(() => localHub.requestLock({ props: { ...lock1, level: LockLevel.Exclusive }, briefcaseId: 2, changesetId: "cs1" })).to.throw("cannot obtain exclusive");
-    expect(() => localHub.releaseLock({ props: lock1, briefcaseId: 9, changesetId: cs1.id })).to.throw("shared lock not held");
+    expect(() => localHub.requestLock({ ...lock1, level: LockLevel.Exclusive }, { briefcaseId: 2, changeSetId: "cs1" })).to.throw("cannot obtain exclusive");
+    expect(() => localHub.releaseLock({ props: lock1, briefcaseId: 9, changeSetId: cs1.id })).to.throw("shared lock not held");
 
-    localHub.releaseLock({ props: lock1, briefcaseId: 1, changesetId: cs1.id });
+    localHub.releaseLock({ props: lock1, briefcaseId: 1, changeSetId: cs1.id });
     lockStat = localHub.queryLockStatus(lock1.objectId);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
 
-    localHub.releaseLock({ props: lock1, briefcaseId: 10, changesetId: cs1.id });
+    localHub.releaseLock({ props: lock1, briefcaseId: 10, changeSetId: cs1.id });
     lockStat = localHub.queryLockStatus(lock1.objectId);
     assert.equal(lockStat.level, LockLevel.None);
 
-    expect(() => localHub.requestLock({ props: { ...lock1, type: LockType.CodeSpecs }, briefcaseId: 2, changesetId: "cs1" })).to.throw("cannot change lock type");
+    expect(() => localHub.requestLock({ ...lock1, type: LockType.CodeSpecs }, { briefcaseId: 2, changeSetId: "cs1" })).to.throw("cannot change lock type");
 
     lock1.level = LockLevel.Exclusive;
-    localHub.requestLock({ props: lock1, briefcaseId: 4, changesetId: cs1.id });
+    localHub.requestLock(lock1, { briefcaseId: 4, changeSetId: cs1.id });
     lockStat = localHub.queryLockStatus(lock1.objectId);
     assert.equal(lockStat.level, LockLevel.Exclusive);
     assert.equal(lockStat.type, lock1.type);
-    localHub.requestLock({ props: lock1, briefcaseId: 4, changesetId: cs1.id });
-    expect(() => localHub.requestLock({ props: lock1, briefcaseId: 5, changesetId: cs1.id })).to.throw("already owned");
-    expect(() => localHub.requestLock({ props: { ...lock1, level: LockLevel.Shared }, briefcaseId: 5, changesetId: cs1.id })).to.throw("already owned");
-    localHub.releaseLock({ props: lock1, briefcaseId: 4, changesetId: cs2.id });
+    localHub.requestLock(lock1, { briefcaseId: 4, changeSetId: cs1.id });
+    expect(() => localHub.requestLock(lock1, { briefcaseId: 5, changeSetId: cs1.id })).to.throw("already owned");
+    expect(() => localHub.requestLock({ ...lock1, level: LockLevel.Shared }, { briefcaseId: 5, changeSetId: cs1.id })).to.throw("already owned");
+    localHub.releaseLock({ props: lock1, briefcaseId: 4, changeSetId: cs2.id });
     lockStat = localHub.queryLockStatus(lock1.objectId);
     assert.equal(lockStat.level, LockLevel.None);
     assert.equal(lockStat.released, cs2.id);
 
-    expect(() => localHub.requestLock({ props: lock1, briefcaseId: 5, changesetId: cs1.id })).to.throw("Pull is required");
-    localHub.requestLock({ props: lock1, briefcaseId: 5, changesetId: cs2.id });
+    expect(() => localHub.requestLock(lock1, { briefcaseId: 5, changeSetId: cs1.id })).to.throw("Pull is required");
+    localHub.requestLock(lock1, { briefcaseId: 5, changeSetId: cs2.id });
     lockStat = localHub.queryLockStatus(lock1.objectId);
     assert.equal(lockStat.level, LockLevel.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
     assert.equal(lockStat.released, cs2.id);
 
-    localHub.requestLock({ props: { level: LockLevel.Exclusive, objectId: "0x22", type: LockType.Element }, briefcaseId: 5, changesetId: cs1.id });
+    localHub.requestLock({ level: LockLevel.Exclusive, objectId: "0x22", type: LockType.Element }, { briefcaseId: 5, changeSetId: cs1.id });
     lockStat = localHub.queryLockStatus("0x22");
     assert.equal(lockStat.level, LockLevel.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
     assert.isUndefined(lockStat.released);
 
-    localHub.requestLock({ props: { level: LockLevel.Exclusive, objectId: "0x23", type: LockType.Element }, briefcaseId: 6, changesetId: cs1.id });
-    localHub.requestLock({ props: { level: LockLevel.Shared, objectId: "0x24", type: LockType.Model }, briefcaseId: 6, changesetId: cs1.id });
-    localHub.requestLock({ props: { level: LockLevel.Shared, objectId: "0x24", type: LockType.Model }, briefcaseId: 5, changesetId: cs1.id });
+    localHub.requestLock({ level: LockLevel.Exclusive, objectId: "0x23", type: LockType.Element }, { briefcaseId: 6, changeSetId: cs1.id });
+    localHub.requestLock({ level: LockLevel.Shared, objectId: "0x24", type: LockType.Model }, { briefcaseId: 6, changeSetId: cs1.id });
+    localHub.requestLock({ level: LockLevel.Shared, objectId: "0x24", type: LockType.Model }, { briefcaseId: 5, changeSetId: cs1.id });
 
     const locks = localHub.queryAllLocks(5);
     assert.equal(locks.length, 3);

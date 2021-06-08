@@ -87,7 +87,7 @@ export class LocalHub {
     db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
     db.saveChanges();
 
-    const path = this.uploadCheckpoint({ changesetId: "", localFile: arg.revision0 });
+    const path = this.uploadCheckpoint({ changeSetId: "", localFile: arg.revision0 });
     const nativeDb = IModelDb.openDgnDb({ path }, OpenMode.ReadWrite);
     try {
       nativeDb.saveProjectGuid(this.contextId);
@@ -297,13 +297,13 @@ export class LocalHub {
     });
   }
 
-  public checkpointNameFromId(changesetId: ChangesetId) {
-    return changesetId === "" ? "0" : changesetId;
+  public checkpointNameFromId(changeSetId: ChangesetId) {
+    return changeSetId === "" ? "0" : changeSetId;
   }
 
   /** "upload" a checkpoint */
-  public uploadCheckpoint(arg: { changesetId: ChangesetId, localFile: LocalFileName }) {
-    const index = (arg.changesetId !== "") ? this.getChangesetIndex(arg.changesetId) : 0;
+  public uploadCheckpoint(arg: { changeSetId: ChangesetId, localFile: LocalFileName }) {
+    const index = (arg.changeSetId !== "") ? this.getChangesetIndex(arg.changeSetId) : 0;
     const db = this.db;
     db.withSqliteStatement("INSERT INTO checkpoints(csIndex) VALUES (?)", (stmt) => {
       stmt.bindValue(1, index);
@@ -312,7 +312,7 @@ export class LocalHub {
         throw new IModelError(res, "can't insert checkpoint into mock db");
     });
     db.saveChanges();
-    const outName = join(this.checkpointDir, this.checkpointNameFromId(arg.changesetId));
+    const outName = join(this.checkpointDir, this.checkpointNameFromId(arg.changeSetId));
     IModelJsFs.copySync(arg.localFile, outName);
     return outName;
   }
@@ -328,11 +328,11 @@ export class LocalHub {
     return checkpoints;
   }
 
-  /** Find the checkpoint that is no newer than a changesetId */
-  public queryPreviousCheckpoint(changesetId: ChangesetId): ChangesetId {
-    if (changesetId === "")
+  /** Find the checkpoint that is no newer than a changeSetId */
+  public queryPreviousCheckpoint(changeSetId: ChangesetId): ChangesetId {
+    if (changeSetId === "")
       return "";
-    const index = this.getChangesetIndex(changesetId);
+    const index = this.getChangesetIndex(changeSetId);
     return this.db.withSqliteStatement("SELECT max(csIndex) FROM checkpoints WHERE csIndex <= ? ", (stmt) => {
       stmt.bindValue(1, index);
       const res = stmt.step();
@@ -343,8 +343,8 @@ export class LocalHub {
   }
 
   /** "download" a checkpoint */
-  public downloadCheckpoint(arg: { changesetId: ChangesetId, targetFile: LocalFileName }) {
-    const prev = this.queryPreviousCheckpoint(arg.changesetId);
+  public downloadCheckpoint(arg: { changeSetId: ChangesetId, targetFile: LocalFileName }) {
+    const prev = this.queryPreviousCheckpoint(arg.changeSetId);
     IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromId(prev)), arg.targetFile);
     return prev;
   }
@@ -355,8 +355,8 @@ export class LocalHub {
   }
 
   /** "download" a changeset */
-  public downloadChangeset(arg: { changesetId: ChangesetId, targetDir: LocalDirName }) {
-    const cs = this.getChangesetById(arg.changesetId);
+  public downloadChangeset(arg: { changeSetId: ChangesetId, targetDir: LocalDirName }) {
+    const cs = this.getChangesetById(arg.changeSetId);
     const csProps = { ...cs, pathname: join(arg.targetDir, cs.id) };
     return this.copyChangeset(csProps);
   }
@@ -440,8 +440,8 @@ export class LocalHub {
     });
   }
 
-  private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: { changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
-    if (props.level === LockLevel.Exclusive && currStatus.released && (this.getChangesetIndex(currStatus.released) > this.getChangesetIndex(briefcase.changesetId)))
+  private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: { changeSetId: ChangesetId, briefcaseId: BriefcaseId }) {
+    if (props.level === LockLevel.Exclusive && currStatus.released && (this.getChangesetIndex(currStatus.released) > this.getChangesetIndex(briefcase.changeSetId)))
       throw new IModelError(IModelHubStatus.PullIsRequired, "Pull is required");
 
     const wantShared = props.level === LockLevel.Shared;
@@ -481,42 +481,39 @@ export class LocalHub {
         throw new Error("can't release lock");
     });
   }
-  private updateLockChangeset(id: Id64String, changesetId: ChangesetId) {
+  private updateLockChangeset(id: Id64String, changeSetId: ChangesetId) {
     this.db.withPreparedSqliteStatement("UPDATE locks SET released=?1 WHERE id=?2", (stmt) => {
-      stmt.bindValue(1, changesetId);
+      stmt.bindValue(1, changeSetId);
       stmt.bindValue(2, id);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new Error("can't update lock changesetId");
+        throw new Error("can't update lock changeSetId");
     });
   }
 
-  public requestLock(props: LockProps, briefcase: { changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
+  public requestLock(props: LockProps, briefcase: { changeSetId: ChangesetId, briefcaseId: BriefcaseId }) {
     if (props.level === LockLevel.None)
       throw new Error("cannot request lock for LockLevel.None");
 
     const lockStatus = this.queryLockStatus(props.objectId);
     switch (lockStatus.level) {
       case LockLevel.None:
-        return this.reserveLock(lockStatus, arg);
+        return this.reserveLock(lockStatus, props, briefcase);
 
       case LockLevel.Shared:
-        if (arg.props.level !== LockLevel.Shared)
+        if (props.level !== LockLevel.Shared)
           throw new Error("element is locked with shared access, cannot obtain exclusive lock");
-        if (!lockStatus.sharedBy.has(arg.briefcaseId))
-          this.reserveLock(lockStatus, arg);
+        if (!lockStatus.sharedBy.has(briefcase.briefcaseId))
+          this.reserveLock(lockStatus, props, briefcase);
         return;
 
       case LockLevel.Exclusive:
-        if (lockStatus.briefcaseId !== arg.briefcaseId)
+        if (lockStatus.briefcaseId !== briefcase.briefcaseId)
           throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock is already owned by another user");
     }
   }
 
-  public requestLocks(arg: { locks: LockProps[], changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
-  }
-
-  public releaseLock(arg: { props: LockProps, changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
+  public releaseLock(arg: { props: LockProps, changeSetId: ChangesetId, briefcaseId: BriefcaseId }) {
     const lockId = arg.props.objectId;
     const lockStatus = this.queryLockStatus(lockId);
     switch (lockStatus.level) {
@@ -526,7 +523,7 @@ export class LocalHub {
       case LockLevel.Exclusive:
         if (lockStatus.briefcaseId !== arg.briefcaseId)
           throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase");
-        this.updateLockChangeset(lockId, arg.changesetId);
+        this.updateLockChangeset(lockId, arg.changeSetId);
         this.clearLock(lockId);
         break;
 
