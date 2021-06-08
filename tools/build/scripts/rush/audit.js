@@ -37,7 +37,6 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // for development dependencies only.
   // All security issues should be addressed asap.
   const excludedAdvisories = [
-    1674, // https://npmjs.com/advisories/1674
     1700, // https://npmjs.com/advisories/1700
   ];
 
