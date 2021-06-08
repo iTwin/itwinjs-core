@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { assert, CompressedId64Set, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 
 export interface ChangedEntity {
   id: Id64String;
@@ -43,7 +43,6 @@ function * entityIterator(classIds: Id64Array | undefined, entityIds: Compressed
   for (const id of CompressedId64Set.iterable(entityIds)) {
     const classIndex = classIndices[index++];
     const classId = undefined !== classIndex ? classIds[classIndex] : undefined;
-    assert(undefined !== classId);
     if (classId) {
       entity.id = id;
       entity.classId = classId;
