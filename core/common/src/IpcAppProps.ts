@@ -115,7 +115,7 @@ export interface IpcAppFunctions {
   /** see BriefcaseTxns.isRedoPossible */
   isRedoPossible: (key: string) => Promise<boolean>;
   /** see BriefcaseTxns.getUndoString */
-  getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
+  getUndoString: (key: string) => Promise<string>;
   /** see BriefcaseTxns.getRedoString */
   getRedoString: (key: string) => Promise<string>;
 
@@ -134,7 +134,7 @@ export interface IpcAppFunctions {
   toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
   isGraphicalEditingSupported: (key: string) => Promise<boolean>;
 
-  reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
+  reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;
   reinstateTxn: (key: string) => Promise<IModelStatus>;
 

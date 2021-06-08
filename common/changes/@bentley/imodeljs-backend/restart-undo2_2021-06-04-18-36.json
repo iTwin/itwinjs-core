@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-backend",
-      "comment": "promote BriefcaseManager to public",
+      "comment": "added TxnManager.restartSession",
       "type": "none"
     }
   ],

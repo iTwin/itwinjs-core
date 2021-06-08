@@ -53,6 +53,18 @@ export class TestWsgClient extends WsgClient {
   }
 }
 
+class TestUrlWsgClient extends WsgClient {
+
+  public constructor(apiVersion: string) {
+    super(apiVersion);
+    this.baseUrl = "https://api.bentley.com/testservice";
+  }
+
+  protected getRelyingPartyUrl() { return ""; }
+  protected getUrlSearchKey() { return ""; }
+
+}
+
 @ECJsonTypeMap.classToJson("wsg", "TestClass", { classKeyPropertyName: "className" })
 export class TestClass extends WsgInstance {
 }
@@ -182,4 +194,37 @@ describe("WsgClient", async () => {
       };
     };
   });
+
+  describe("getUrl method", () => {
+
+    it("should return correct url #1", async () => {
+      // Arrange
+      const wsgClient = new TestUrlWsgClient("2.5");
+
+      // Act
+      const url1 = await wsgClient.getUrl({} as any);
+      const url2 = await wsgClient.getUrl({} as any);
+
+      // Assert
+      expect(url1).to.be.equal("https://api.bentley.com/testservice/2.5");
+      expect(url2).to.be.equal("https://api.bentley.com/testservice/2.5");
+    });
+
+    it("should return correct url #2", async () => {
+      // Arrange
+      const wsgClient = new TestUrlWsgClient("2.5");
+
+      // Act
+      const [url1, url2] = await Promise.all([
+        wsgClient.getUrl({} as any),
+        wsgClient.getUrl({} as any),
+      ]);
+
+      // Assert
+      expect(url1).to.be.equal("https://api.bentley.com/testservice/2.5");
+      expect(url2).to.be.equal("https://api.bentley.com/testservice/2.5");
+    });
+
+  });
+
 });

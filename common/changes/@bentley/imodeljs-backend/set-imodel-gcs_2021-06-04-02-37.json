@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-backend",
-      "comment": "promote BriefcaseManager to public",
+      "comment": "Tests for iModel.UpdateIModelProps()",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-backend",
-  "email": "33296803+kabentley@users.noreply.github.com"
+  "email": "73677355+AlainRobertAtBentley@users.noreply.github.com"
 }

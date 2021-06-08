@@ -19,8 +19,8 @@ import {
   UserCancelledError,
 } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
-import { downloadFileAtomic } from "../downloadFileAtomic";
 import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "../util/AzCopy";
+import { BlobDownloader, ConfigData, ProgressData } from "./BlobDownloader";
 
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
@@ -115,15 +115,16 @@ export class AzureFileHandler implements FileHandler {
   public agent?: https.Agent;
   private _threshold: number;
   private _useDownloadBuffer: boolean | undefined;
-
+  private _config: ConfigData | undefined;
   /**
    * Constructor for AzureFileHandler.
    * @param useDownloadBuffer Should Buffering be used when downloading files. If undefined, buffering is enabled only for Azure File Shares mounted with a UNC path.
    * @param threshold Minimum chunk size in bytes for a single file write.
    */
-  constructor(useDownloadBuffer?: boolean, threshold = 1024 * 1024 * 20) {
+  constructor(useDownloadBuffer?: boolean, threshold = 1024 * 1024 * 20, config?: ConfigData) {
     this._threshold = threshold;
     this._useDownloadBuffer = useDownloadBuffer;
+    this._config = config;
   }
 
   /** Check if using Azure File Share with UNC path. This is a temporary optimization for Design Review, until they move to using SSD disks. */
@@ -141,13 +142,12 @@ export class AzureFileHandler implements FileHandler {
       return;
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(dirPath));
-
     fs.mkdirSync(dirPath);
   }
 
   private async transferFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, source: string, target: string, progressCallback?: ProgressCallback): Promise<void> {
     requestContext.enter();
-    Logger.logTrace(loggerCategory, `Using AzCopy with verison ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
+    Logger.logTrace(loggerCategory, `Using AzCopy with version ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
 
     // setup log dir so we can delete it. It seem there is no way of disable it.
     const azLogDir = path.join(os.tmpdir(), "bentley", "log", "azcopy");
@@ -185,9 +185,25 @@ export class AzureFileHandler implements FileHandler {
     }
   }
 
-  private async downloadFileUsingHttps(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
-    const bufferThreshold = (this.useBufferedDownload(downloadToPathname)) ? this._threshold : undefined;
-    return downloadFileAtomic(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest, bufferThreshold);
+  private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+    let lastProgressStat: ProgressData;
+    const onProgress = (data: ProgressData) => {
+      if (progressCallback)
+        progressCallback({ percent: data.percentage, loaded: data.bytesDone, total: data.bytesTotal });
+      lastProgressStat = data;
+    };
+    await BlobDownloader.downloadFile(downloadUrl, downloadToPathname, this._config, onProgress, cancelRequest);
+    if (!fs.existsSync(downloadToPathname)) {
+      throw new Error("file not found");
+    }
+    Logger.logInfo(loggerCategory, `BlobDownloader finished`, () => {
+      return {
+        file: downloadToPathname,
+        overallSpeed: BlobDownloader.formatRate(lastProgressStat.downloadRateBytesPerSec),
+        lastTwoSecSpeed: BlobDownloader.formatRate(lastProgressStat.windowRateBytesPerSec),
+        blobSize: BlobDownloader.formatBytes(lastProgressStat.bytesTotal),
+      };
+    });
   }
 
   /**
