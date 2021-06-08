@@ -1237,10 +1237,14 @@
     },
     {
       "name": "lodash",
+<<<<<<< HEAD
       "allowedCategories": [
         "frontend",
         "tools"
       ]
+=======
+      "allowedCategories": [ "common", "frontend", "tools" ]
+>>>>>>> 5525ef8f06 (WsgClient.getUrl returns incomplete URL when querying concurrently for the first time (#1486))
     },
     {
       "name": "lolex",
