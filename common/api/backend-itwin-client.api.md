@@ -128,6 +128,16 @@ export class BackendTelemetryEvent extends ClientTelemetryEvent {
 }
 
 // @internal
+export class BlobDownloader {
+    // (undocumented)
+    static downloadFile(downloadUrl: string, downloadFile: string, config?: ConfigData, onProgress?: (data: ProgressData) => void, cancelRequest?: CancelRequest): Promise<void>;
+    // (undocumented)
+    static formatBytes(bytes: number): string;
+    // (undocumented)
+    static formatRate(bytePerSec: number): string;
+    }
+
+// @internal
 export class BufferedStream extends Transform {
     constructor(bufferSize: number);
     _flush(callback: TransformCallback): void;
@@ -151,6 +161,24 @@ export class ClientAuthIntrospectionManager {
     getClientAuthDetails(requestContext: AuthorizedClientRequestContext): Promise<ClientAuthDetail>;
     // (undocumented)
     readonly introspectionClient: IntrospectionClient;
+}
+
+// @internal
+export interface ConfigData {
+    // (undocumented)
+    blockSize?: number;
+    // (undocumented)
+    checkMD5AfterDownload?: boolean;
+    // (undocumented)
+    downloadRateWindowSize?: number;
+    // (undocumented)
+    enableResumableDownload?: boolean;
+    // (undocumented)
+    ignoreResumeData?: boolean;
+    // (undocumented)
+    progressReportAfter?: number;
+    // (undocumented)
+    simultaneousDownloads?: number;
 }
 
 // @beta
@@ -285,6 +313,26 @@ export type OidcDelegationClient = DelegationAuthorizationClient;
 
 // @beta @deprecated
 export type OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration;
+
+// @internal
+export interface ProgressData {
+    // (undocumented)
+    blocksDownloaded: number;
+    // (undocumented)
+    blocksDownloading: number;
+    // (undocumented)
+    blocksPending: number;
+    // (undocumented)
+    bytesDone: number;
+    // (undocumented)
+    bytesTotal: number;
+    // (undocumented)
+    downloadRateBytesPerSec: number;
+    // (undocumented)
+    percentage: number;
+    // (undocumented)
+    windowRateBytesPerSec: number;
+}
 
 // @internal
 export class StorageServiceFileHandler extends UrlFileHandler {
