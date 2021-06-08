@@ -8,7 +8,7 @@
 
 import { CompressedId64Set, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 
-export interface ChangedEntity {
+export interface EntityIdAndClassId {
   id: Id64String;
   classId: Id64String;
 }
@@ -34,12 +34,12 @@ export interface ChangedEntities {
   updatedClassIndices?: number[];
 }
 
-function * entityIterator(classIds: Id64Array | undefined, entityIds: CompressedId64Set | undefined, classIndices: number[] | undefined): Iterator<ChangedEntity> {
+function * entityIterator(classIds: Id64Array | undefined, entityIds: CompressedId64Set | undefined, classIndices: number[] | undefined): Iterator<Readonly<EntityIdAndClassId>> {
   if (!classIds || !entityIds || !classIndices)
     return;
 
   let index = 0;
-  const entity: ChangedEntity = { id: "", classId: "" };
+  const entity: EntityIdAndClassId = { id: "", classId: "" };
   for (const id of CompressedId64Set.iterable(entityIds)) {
     const classIndex = classIndices[index++];
     const classId = undefined !== classIndex ? classIds[classIndex] : undefined;
@@ -51,16 +51,16 @@ function * entityIterator(classIds: Id64Array | undefined, entityIds: Compressed
   }
 }
 
-function entityIterable(classIds: Id64Array | undefined, entityIds: CompressedId64Set | undefined, classIndices: number[] | undefined): Iterable<ChangedEntity> {
+function entityIterable(classIds: Id64Array | undefined, entityIds: CompressedId64Set | undefined, classIndices: number[] | undefined): Iterable<Readonly<EntityIdAndClassId>> {
   return {
     [Symbol.iterator]: () => entityIterator(classIds, entityIds, classIndices),
   };
 }
 
 export interface ChangedEntitiesIterable {
-  readonly inserted: Iterable<ChangedEntity>;
-  readonly deleted: Iterable<ChangedEntity>;
-  readonly updated: Iterable<ChangedEntity>;
+  readonly inserted: Iterable<Readonly<EntityIdAndClassId>>;
+  readonly deleted: Iterable<Readonly<EntityIdAndClassId>>;
+  readonly updated: Iterable<Readonly<EntityIdAndClassId>>;
 }
 
 export namespace ChangedEntitiesIterable {

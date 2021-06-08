@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  ChangedEntity, Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
+  EntityIdAndClassId, Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
@@ -66,7 +66,7 @@ describe("TxnManager", () => {
     IModelJsFs.removeSync(testFileName);
   });
 
-  function makeEntity(id: string, classFullName: string): ChangedEntity {
+  function makeEntity(id: string, classFullName: string): EntityIdAndClassId {
     const classId = imodel.nativeDb.classNameToId(classFullName);
     expect(Id64.isValid(classId)).to.be.true;
     return { id, classId };
@@ -295,9 +295,9 @@ describe("TxnManager", () => {
   });
 
   class EventAccumulator {
-    public readonly inserted: ChangedEntity[] = [];
-    public readonly updated: ChangedEntity[] = [];
-    public readonly deleted: ChangedEntity[] = [];
+    public readonly inserted: EntityIdAndClassId[] = [];
+    public readonly updated: EntityIdAndClassId[] = [];
+    public readonly deleted: EntityIdAndClassId[] = [];
     public numValidates = 0;
     public numApplyChanges = 0;
     private _numBeforeUndo = 0;
@@ -389,13 +389,13 @@ describe("TxnManager", () => {
       expect(this._numBeforeUndo).to.equal(expected);
     }
 
-    public expectChanges(expected: { inserted?: ChangedEntity[], updated?: ChangedEntity[], deleted?: ChangedEntity[] }): void {
+    public expectChanges(expected: { inserted?: EntityIdAndClassId[], updated?: EntityIdAndClassId[], deleted?: EntityIdAndClassId[] }): void {
       this.expect(expected.inserted, "inserted");
       this.expect(expected.updated, "updated");
       this.expect(expected.deleted, "deleted");
     }
 
-    private expect(expected: ChangedEntity[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
+    private expect(expected: EntityIdAndClassId[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
       expect(this[propName]).to.deep.equal(expected ?? []);
     }
 

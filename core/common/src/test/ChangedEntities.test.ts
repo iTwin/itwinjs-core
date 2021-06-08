@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ChangedEntities, ChangedEntitiesIterable, ChangedEntity } from "../ChangedEntities";
+import { ChangedEntities, ChangedEntitiesIterable, EntityIdAndClassId } from "../ChangedEntities";
 
 describe("ChangedEntitiesIterable", () => {
-  function entity(id: string, classId: string): ChangedEntity {
+  function entity(id: string, classId: string): EntityIdAndClassId {
     return { id, classId }
   }
 
-  function expectEntities(entities: Iterable<ChangedEntity>, expected: ChangedEntity[]) {
+  function expectEntities(entities: Iterable<Readonly<EntityIdAndClassId>>, expected: EntityIdAndClassId[]) {
     let actual = [];
     for (const e of entities)
       actual.push({ ...e });
@@ -19,7 +19,7 @@ describe("ChangedEntitiesIterable", () => {
     expect(actual).to.deep.equal(expected);
   }
 
-  function expectChangedEntities(props: ChangedEntities, expected: { inserted?: ChangedEntity[], updated?: ChangedEntity[], deleted?: ChangedEntity[] }) {
+  function expectChangedEntities(props: ChangedEntities, expected: { inserted?: EntityIdAndClassId[], updated?: EntityIdAndClassId[], deleted?: EntityIdAndClassId[] }) {
     const iterable = ChangedEntitiesIterable.create(props);
     expectEntities(iterable.inserted, expected.inserted ?? []);
     expectEntities(iterable.deleted, expected.deleted ?? []);
