@@ -142,10 +142,6 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
     updateUrl=https://api.github.com/repos/imodeljs/imodeljs/statuses/$(_jq ${pr} '.head.sha')
     target_url=$(_jq  ${status} '.target_url')
     context=$(_jq  ${status} '.context')
-    echo "     updateUrl is ${updateUrl}"
-    echo "     target_url is ${target_url}"
-    echo "     context is ${context}"
-    echo '{"state": "failure", "target_url": "'${target_url}'", "context": "'${context}'", "description": "The build hit the 3 hour threshold. Please re-queue the build."}'
 
     curl \
       -X POST \
