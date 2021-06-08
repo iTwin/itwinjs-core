@@ -75,10 +75,9 @@ describe("Concurrent schema accesses", () => {
     }
   });
 
-  /* eslint-disable no-console */
+  /* Run these tests below one at a time. Running them together doesn't get accurate performance likely bc of disk access caching */
   it.skip("should measure concurrent performance", async () => {
-    // Asynchronous
-    const startTime1 = new Date().getTime();
+    const startTime = new Date().getTime();
     const asyncSchemas: Schema[] = [];
     await Promise.all(schemaKeys.map( async (key) => {
       if (!key)
@@ -90,10 +89,12 @@ describe("Concurrent schema accesses", () => {
       return;
     }));
     expect(asyncSchemas.length).to.equal(schemaKeys.length);
-    const endTime1 = new Date().getTime();
-    console.log(`Concurrent async deserialization took ~ ${endTime1 - startTime1}`);
+    const endTime = new Date().getTime();
+    console.log(`Concurrent async deserialization took ~${endTime - startTime}ms`);
+  });
 
-    const startTime2 = new Date().getTime();
+  it.skip("should measure regular deserialization performance", async () => {
+    const startTime = new Date().getTime();
     const syncSchemas: Schema[] =  [];
     const getSchema = async (key: SchemaKey) => {
       if (!key)
@@ -108,7 +109,7 @@ describe("Concurrent schema accesses", () => {
       await getSchema(schemaKeys[i]);
     }
     expect(syncSchemas.length).to.equal(schemaKeys.length);
-    const endTime2 = new Date().getTime();
-    console.log(`Async deserialization took ~ ${endTime2 - startTime2}`);
+    const endTime = new Date().getTime();
+    console.log(`Async deserialization took ~${endTime - startTime}ms`);
   });
 });

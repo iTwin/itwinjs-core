@@ -399,7 +399,12 @@ export class SchemaReadHelper<T = unknown> {
     if (undefined === schemaName || 0 === schemaName.length)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${name} is invalid without a schema name`);
 
-    if (isInThisSchema && undefined === await this._schema!.getItem(itemName)) {
+    if (isInThisSchema) {
+      schemaItem = await this._schema!.getItem(itemName);
+      if (schemaItem !== undefined) {
+        return schemaItem;
+      }
+
       const foundItem = this._parser.findItem(itemName);
       if (foundItem) {
         schemaItem = await this.loadSchemaItem(this._schema!, ...foundItem);
@@ -413,9 +418,6 @@ export class SchemaReadHelper<T = unknown> {
       }
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${name}.`);
     }
-
-    if (isInThisSchema)
-      return this._schema!.getItem(itemName);
 
     schemaItem = await this._context.getSchemaItem(new SchemaItemKey(itemName, new SchemaKey(schemaName)));
     if (undefined === schemaItem)

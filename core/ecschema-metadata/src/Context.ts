@@ -68,7 +68,7 @@ export class SchemaCache implements ISchemaLocater {
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
    * @param schema The schema to add to the cache.
    */
-  public async addSchema<T extends Schema>(schema: Schema, loadFunc?: () => Promise<T>) {
+  public async addSchema<T extends Schema>(schema: T, loadFunc?: () => Promise<T>) {
     if (this.getSchemaSync(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
