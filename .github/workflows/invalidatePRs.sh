@@ -141,8 +141,8 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
 
     updateUrl=https://api.github.com/repos/imodeljs/imodeljs/statuses/$(_jq ${pr} '.head.sha')
     target_url=$(_jq  ${status} '.target_url')
-    log "     updateUrl is ${updateUrl}"
-    log "     target_url is ${target_url}"
+    echo "     updateUrl is ${updateUrl}"
+    echo "     target_url is ${target_url}"
 
     curl \
       -X POST \
