@@ -36,6 +36,7 @@ interface State {
 export class DefaultViewOverlay extends React.Component<Props, State> {
   private _componentMounted = false;
   private _removeListener?: () => void | undefined;
+  private _displayStyleId = "";
 
   constructor(props: any) {
     super(props);
@@ -44,6 +45,8 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
   }
 
   private _handleDisplayStyleChange = () => {
+    if (this.props.viewport.displayStyle.id === this._displayStyleId) return;
+    this._displayStyleId = this.props.viewport.displayStyle.id;
     setImmediate(() => {
       // reset to beginning of animation
       if (this.state.dataProvider) {
@@ -236,6 +239,8 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
         );
       }
     }
-    return null;
+    return (
+      <div className="uifw-view-overlay"/>
+    );
   }
 }
