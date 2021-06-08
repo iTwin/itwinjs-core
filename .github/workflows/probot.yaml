@@ -21,7 +21,7 @@ jobs:
           node ./common/scripts/install-run-rush.js build
           node ./common/scripts/install-run-rush.js extract-api
           git add .
-          git commit --amend --no-edit
+          git commit -m "rush extract-api"
           git push
         env:
           commitid: ${{ github.sha }}
