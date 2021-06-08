@@ -13,7 +13,7 @@ import * as readline from "readline";
 import fetch from "node-fetch";
 import { ExtensionClient, ExtensionProps } from "@bentley/extension-client";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
+import { BeDuration, BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelError } from "@bentley/imodeljs-common";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
@@ -172,11 +172,7 @@ const argv = yargs.strict(true)
         process.stdout.write("Uploading extension...\n");
 
         while (true) {
-          await new Promise<void>((resolve) => {
-            setTimeout(() => {
-              resolve();
-            }, 1000);
-          });
+          await BeDuration.wait(1000);
 
           const status: string = (await client.getExtensionProps(requestContext, contextId, argv.extensionName!, argv.extensionVersion!))?.status?.status ?? "";
           if (status === "Valid") {
