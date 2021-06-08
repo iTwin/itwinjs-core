@@ -3,6 +3,16 @@ publish: false
 ---
 # NextVersion
 
+## UI Changes
+
+### Cube Navigation Aid
+
+The enums HitBoxX, HitBoxY, and HitBoxZ used by the CubeNavigationAid have been renamed to CubeNavigationHitBoxX, CubeNavigationHitBoxY, and CubeNavigationHitBoxZ, respectively. The old enums are deprecated.
+
+### TimelineComponent and TimelineComponentDataProvider
+
+The incomplete milestones feature was removed from the TimelineComponent and TimelineComponentDataProvider in preparation to move the APIs to @public.
+
 ## New IModel events
 
 [IModel]($common)s now emit events when their properties change.
