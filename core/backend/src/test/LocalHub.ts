@@ -30,19 +30,19 @@ export interface LocalHubProps {
   readonly revision0: string;
 }
 
-interface LockStatusNone {
+export interface LockStatusNone {
   level: LockLevel.None;
   released?: string;
   type?: LockType;
 }
-interface LockStatusExclusive {
+export interface LockStatusExclusive {
   level: LockLevel.Exclusive;
   briefcaseId: BriefcaseId;
   released?: string;
   type: LockType;
 }
 
-interface LockStatusShared {
+export interface LockStatusShared {
   level: LockLevel.Shared;
   sharedBy: Set<BriefcaseId>;
   released?: string;
@@ -82,7 +82,9 @@ export class LocalHub {
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,id TEXT,FOREIGN KEY(id) REFERENCES timeline(id))");
     db.executeSQL("CREATE TABLE locks(id TEXT PRIMARY KEY NOT NULL,type INTEGER NOT NULL,level INTEGER NOT NULL,released TEXT,briefcaseId INTEGER,FOREIGN KEY(released) REFERENCES timeline(id))");
-    db.executeSQL("CREATE TABLE sharedLocks(briefcaseId INTEGER NOT NULL,lockId TEXT NOT NULL,PRIMARY KEY(lockId,briefcaseId)))");
+    db.executeSQL("CREATE TABLE sharedLocks(briefcaseId INTEGER NOT NULL,lockId TEXT NOT NULL,PRIMARY KEY(lockId,briefcaseId))");
+    db.executeSQL("CREATE INDEX LockIdx ON locks(briefcaseId)");
+    db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
     db.saveChanges();
 
     const path = this.uploadCheckpoint({ changesetId: "", localFile: arg.revision0 });
@@ -93,6 +95,7 @@ export class LocalHub {
       nativeDb.saveChanges();
       nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
       nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+      nativeDb.saveChanges();
     } finally {
       nativeDb.closeIModel();
     }
@@ -390,67 +393,158 @@ export class LocalHub {
   private querySharedLockHolders(elementId: Id64String) {
     return this.db.withPreparedSqliteStatement("SELECT briefcaseId FROM sharedLocks WHERE lockId=?", (stmt) => {
       stmt.bindValue(1, elementId);
-      const users = new Set<BriefcaseId>();
-      const rc = stmt.step();
-      while (DbResult.BE_SQLITE_ROW === rc)
-        users.add(stmt.getValue(0).getInteger());
-      return users;
+      const briefcases = new Set<BriefcaseId>();
+      while (DbResult.BE_SQLITE_ROW === stmt.step())
+        briefcases.add(stmt.getValue(0).getInteger());
+      return briefcases;
     });
   }
 
-  private queryLockStatus(elementId: Id64String): LockStatus {
+  public queryAllLocks(briefcaseId: number) {
+    const locks: LockProps[] = [];
+    this.db.withPreparedSqliteStatement("SELECT id FROM locks WHERE briefcaseId=?", (stmt) => {
+      stmt.bindValue(1, briefcaseId);
+      while (DbResult.BE_SQLITE_ROW === stmt.step())
+        locks.push({ objectId: stmt.getValue(0).getString(), level: LockLevel.Exclusive, type: LockType.Element });
+    });
+    this.db.withPreparedSqliteStatement("SELECT lockId FROM sharedLocks WHERE briefcaseId=?", (stmt) => {
+      stmt.bindValue(1, briefcaseId);
+      while (DbResult.BE_SQLITE_ROW === stmt.step())
+        locks.push({ objectId: stmt.getValue(0).getString(), level: LockLevel.Shared, type: LockType.Model });
+    });
+    return locks;
+  }
+
+  public queryLockStatus(elementId: Id64String): LockStatus {
     return this.db.withPreparedSqliteStatement("SELECT released,type,level,briefcaseId FROM locks WHERE id=?", (stmt) => {
       stmt.bindValue(1, elementId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
         return { level: LockLevel.None };
+      const releaseVal = stmt.getValue(0);
       const state = {
-        released: stmt.getValue(0).isNull ? undefined : stmt.getValue(0).getString(),
+        released: releaseVal.isNull ? undefined : releaseVal.getString(),
         type: stmt.getValue(1).getInteger(),
+        level: stmt.getValue(2).getInteger(),
       };
-      const level = stmt.getValue(2).getInteger(), ;
-      switch (level) {
+      switch (state.level) {
         case LockLevel.None:
-          return { level: LockLevel.None };
+          return state;
         case LockLevel.Exclusive:
-          return { level, ...state, briefcaseId: stmt.getValue(2).getInteger() };
+          return { ...state, briefcaseId: stmt.getValue(3).getInteger() };
         case LockLevel.Shared:
-          return { level, ...state, sharedBy: this.querySharedLockHolders(elementId) };
+          return { ...state, sharedBy: this.querySharedLockHolders(elementId) };
         default:
           throw new Error("illegal lock state");
       }
     });
   }
 
-  private reserveLock(arg: { lockStatus: LockStatus, props: LockProps, changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
-    if (arg.lockStatus.released) {
-      if (this.getChangesetIndex(arg.lockStatus.released) > this.getChangesetIndex(arg.changesetId))
-        throw new IModelError(IModelHubStatus.PullIsRequired, "Pull is required");
-      this.db.withPreparedSqliteStatement("UPDATE  INTO locks(id,type,level,briefcaseId VALUES(?,?,?)
+  private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: { changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
+    if (props.level === LockLevel.Exclusive && currStatus.released && (this.getChangesetIndex(currStatus.released) > this.getChangesetIndex(briefcase.changesetId)))
+      throw new IModelError(IModelHubStatus.PullIsRequired, "Pull is required");
 
-    if (arg.lockStatus.released)
-        this.db.withPreparedSqliteStatement("INSERT INTO locks(id,type,level,briefcaseId VALUES(?,?,?)
-    db.executeSQL("CREATE TABLE locks(id TEXT PRIMARY KEY NOT NULL,type INTEGER NOT NULL,level INTEGER NOT NULL,released TEXT,briefcaseId INTEGER,FOREIGN KEY(released) REFERENCES timeline(id))");
+    const wantShared = props.level === LockLevel.Shared;
+    if (wantShared && (currStatus.level === LockLevel.Exclusive))
+      throw new Error("cannot acquire shared lock because an exclusive lock is already held");
+
+    if (currStatus.type !== undefined && currStatus.type !== props.type)
+      throw new Error("cannot change lock type");
+
+    this.db.withPreparedSqliteStatement("INSERT INTO locks(id,type,level,briefcaseId) VALUES(?,?,?,?) ON CONFLICT(id) DO UPDATE SET briefcaseId=excluded.briefcaseId,level=excluded.level", (stmt) => {
+      stmt.bindValue(1, props.objectId);
+      stmt.bindValue(2, props.type);
+      stmt.bindValue(3, props.level);
+      stmt.bindValue(4, wantShared ? undefined : briefcase.briefcaseId);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new Error("cannot insert lock");
+    });
+
+    if (wantShared) {
+      this.db.withPreparedSqliteStatement("INSERT INTO sharedLocks(lockId,briefcaseId) VALUES(?,?)", (stmt) => {
+        stmt.bindValue(1, props.objectId);
+        stmt.bindValue(2, briefcase.briefcaseId);
+        const rc = stmt.step();
+        if (rc !== DbResult.BE_SQLITE_DONE)
+          throw new Error("cannot insert shared lock");
+      });
     }
-  public requestLock(arg: { props: LockProps, changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
-    if (arg.props.level === LockLevel.None)
+    this.db.saveChanges();
+  }
+
+  private clearLock(id: Id64String) {
+    this.db.withPreparedSqliteStatement("UPDATE locks SET level=0,briefcaseId=NULL WHERE id=?", (stmt) => {
+      stmt.bindValue(1, id);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new Error("can't release lock");
+    });
+  }
+  private updateLockChangeset(id: Id64String, changesetId: ChangesetId) {
+    this.db.withPreparedSqliteStatement("UPDATE locks SET released=?1 WHERE id=?2", (stmt) => {
+      stmt.bindValue(1, changesetId);
+      stmt.bindValue(2, id);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new Error("can't update lock changesetId");
+    });
+  }
+
+  public requestLock(props: LockProps, briefcase: { changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
+    if (props.level === LockLevel.None)
       throw new Error("cannot request lock for LockLevel.None");
 
-    const lockStatus = this.queryLockStatus(arg.props.objectId);
+    const lockStatus = this.queryLockStatus(props.objectId);
     switch (lockStatus.level) {
-      case LockLevel.None: {
-        return this.reserveLock(arg);
+      case LockLevel.None:
+        return this.reserveLock(lockStatus, arg);
+
       case LockLevel.Shared:
         if (arg.props.level !== LockLevel.Shared)
-          throw new Error("element is locked with shared access, cannot obt");
+          throw new Error("element is locked with shared access, cannot obtain exclusive lock");
         if (!lockStatus.sharedBy.has(arg.briefcaseId))
-          this.addSharedLock(arg);
+          this.reserveLock(lockStatus, arg);
         return;
+
       case LockLevel.Exclusive:
         if (lockStatus.briefcaseId !== arg.briefcaseId)
           throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock is already owned by another user");
-        return; // lock is already held by briefcase
     }
+  }
+
+  public requestLocks(arg: { locks: LockProps[], changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
+  }
+
+  public releaseLock(arg: { props: LockProps, changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
+    const lockId = arg.props.objectId;
+    const lockStatus = this.queryLockStatus(lockId);
+    switch (lockStatus.level) {
+      case LockLevel.None:
+        throw new IModelError(IModelHubStatus.LockDoesNotExist, "lock not held");
+
+      case LockLevel.Exclusive:
+        if (lockStatus.briefcaseId !== arg.briefcaseId)
+          throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase");
+        this.updateLockChangeset(lockId, arg.changesetId);
+        this.clearLock(lockId);
+        break;
+
+      case LockLevel.Shared:
+        if (!lockStatus.sharedBy.has(arg.briefcaseId))
+          throw new IModelError(IModelHubStatus.LockDoesNotExist, "shared lock not held by this briefcase");
+
+        this.db.withPreparedSqliteStatement("DELETE FROM sharedLocks WHERE lockId=? AND briefcaseId=?", (stmt) => {
+          stmt.bindValue(1, lockId);
+          stmt.bindValue(2, arg.briefcaseId);
+          const rc = stmt.step();
+          if (rc !== DbResult.BE_SQLITE_DONE)
+            throw new Error("can't remove shared lock");
+        });
+        if (lockStatus.sharedBy.size === 1)
+          this.clearLock(lockId);
+    }
+    this.db.saveChanges();
   }
 
   public removeDir(dirName: string) {

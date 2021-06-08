@@ -224,6 +224,8 @@ export class HubMock {
   }
 
   public static async acquireLocks(_arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
+    return this.findLocalHub(_arg.briefcase.iModelId).requestLocks();
+
   }
 
   public static async acquireSchemaLock(_arg: BriefcaseDbArg): Promise<void> {
