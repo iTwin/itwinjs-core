@@ -9,7 +9,7 @@
 import * as immer from "immer";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  HierarchyUpdateRecord, PageOptions, PartialHierarchyModification, RegisteredRuleset, Ruleset, UPDATE_FULL, VariableValue,
+  HierarchyUpdateRecord, PageOptions, PartialHierarchyModification, RegisteredRuleset, Ruleset, RulesetVariable, UPDATE_FULL, VariableValue,
 } from "@bentley/presentation-common";
 import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import {
@@ -183,10 +183,15 @@ function useModelSourceUpdateOnRulesetModification(props: ModelSourceUpdateProps
 }
 
 function useModelSourceUpdateOnRulesetVariablesChange(props: ModelSourceUpdateProps) {
-  const onRulesetVariableChanged = useCallback(async (variableId: string, prevValue: VariableValue) => {
+  const onRulesetVariableChanged = useCallback(async (variableId: string, prevValue: VariableValue | undefined) => {
     // note: we should probably debounce these events while accumulating changed variables in case multiple vars are changed
-    const prevVariables = (await Presentation.presentation.vars(props.dataProvider.rulesetId).getAllVariables())
-      .map((v) => (v.id === variableId) ? { ...v, value: prevValue } : v);
+    const prevVariables: RulesetVariable[] = [];
+    Presentation.presentation.vars(props.dataProvider.rulesetId).getAllVariables().forEach((variable) => {
+      if (variableId !== variable.id)
+        prevVariables.push(variable);
+      else if (prevValue !== undefined)
+        prevVariables.push({ ...variable, value: prevValue } as RulesetVariable);
+    });
     const compareResult = await Presentation.presentation.compareHierarchies({
       imodel: props.dataProvider.imodel,
       prev: {

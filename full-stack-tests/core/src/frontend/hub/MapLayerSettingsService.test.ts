@@ -43,7 +43,6 @@ describe("MapLayerSettingsService (#integration)", () => {
       url: "test12345",
       name: testName,
       formatId: "test12345",
-      maxZoom: 1,
       transparentBackground: true,
     });
     chai.assert.isDefined(layer);
@@ -65,7 +64,6 @@ describe("MapLayerSettingsService (#integration)", () => {
       url: "test12345",
       name: testName,
       formatId: "test12345",
-      maxZoom: 1,
       transparentBackground: true,
     });
     let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, contextId, iModelId);
@@ -81,7 +79,6 @@ describe("MapLayerSettingsService (#integration)", () => {
       url: "test12345",
       name: testName,
       formatId: "test12345",
-      maxZoom: 1,
       transparentBackground: true,
     });
     let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, contextId, iModelId);
@@ -97,7 +94,6 @@ describe("MapLayerSettingsService (#integration)", () => {
       url: "test12345",
       name: testName,
       formatId: "test12345",
-      maxZoom: 1,
       transparentBackground: true,
     });
     let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, contextId, iModelId);

@@ -18,7 +18,7 @@ import { UiSettingsProvider } from "../uisettings/useUiSettings";
 import { PopupRenderer } from "../popup/PopupManager";
 import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
-import { CursorPopupMenu } from "../../ui-framework";
+import { CursorPopupMenu, FrameworkVersion } from "../../ui-framework";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 const childHtml = `<!DOCTYPE html>
 <html>
@@ -104,15 +104,17 @@ export class ChildWindowManager {
           ReactDOM.render(
             <Provider store={StateManager.store} >
               <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
-                <div className="uifw-child-window-container-host">
-                  <PopupRenderer />
-                  <ModalDialogRenderer />
-                  <ModelessDialogRenderer />
-                  <CursorPopupMenu />
-                  <div className="uifw-child-window-container nz-widget-widget">
-                    {content}
+                <FrameworkVersion version="2">
+                  <div className="uifw-child-window-container-host">
+                    <PopupRenderer />
+                    <ModalDialogRenderer />
+                    <ModelessDialogRenderer />
+                    <CursorPopupMenu />
+                    <div className="uifw-child-window-container nz-widget-widget">
+                      {content}
+                    </div>
                   </div>
-                </div>
+                </FrameworkVersion>
               </UiSettingsProvider>
             </Provider>,
             reactConnectionDiv

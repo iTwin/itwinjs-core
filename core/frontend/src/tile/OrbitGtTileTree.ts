@@ -226,7 +226,7 @@ export class OrbitGtTileTree extends TileTree {
     this.rootTile = new OrbitGtRootTile(this._tileParams, this);
   }
 
-  public async getEcefTranform(): Promise<Transform | undefined> {
+  public async getEcefTransform(): Promise<Transform | undefined> {
     return this._ecefTransform;
   }
 
@@ -373,7 +373,7 @@ export namespace OrbitGtTileTree {
       const pointCloudCenterToEcef = pointCloudToEcef.multiplyTransformTransform(addCloudCenter);
       ecefTransform.setFrom(pointCloudCenterToEcef);
 
-      let ecefToDb = iModel.ecefLocation ? iModel.backgroundMapLocation.getMapEcefToDb(0) : Transform.createIdentity();
+      let ecefToDb = iModel.backgroundMapLocation.getMapEcefToDb(0);
       // In initial publishing version the iModel ecef Transform was used to locate the reality model.
       // This would work well only for tilesets published from that iModel but for iModels the ecef transform is calculated
       // at the center of the project extents and the reality model location may differ greatly, and the curvature of the earth
