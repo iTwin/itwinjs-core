@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { DbResult, GuidString, IModelHubStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
-import { BriefcaseManager } from "../BriefcaseManager";
 import { ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName, LockProps } from "../BackendHubAccess";
+import { BriefcaseId, BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
-import { LockLevel } from "@bentley/imodelhub-client";
 
 // cspell:ignore rowid
 
@@ -29,6 +29,27 @@ export interface LocalHubProps {
   readonly description?: string;
   readonly revision0: string;
 }
+
+interface LockStatusNone {
+  level: LockLevel.None;
+  released?: string;
+  type?: LockType;
+}
+interface LockStatusExclusive {
+  level: LockLevel.Exclusive;
+  briefcaseId: BriefcaseId;
+  released?: string;
+  type: LockType;
+}
+
+interface LockStatusShared {
+  level: LockLevel.Shared;
+  sharedBy: Set<BriefcaseId>;
+  released?: string;
+  type: LockType;
+}
+
+type LockStatus = LockStatusNone | LockStatusExclusive | LockStatusShared;
 
 /**
  * A "local" mock for IModelHub to provide access to a single iModel. Used by HubMock.
@@ -60,8 +81,8 @@ export class LocalHub {
     db.executeSQL("CREATE TABLE timeline(id TEXT PRIMARY KEY NOT NULL,parentId TEXT,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,FOREIGN KEY(parentId) REFERENCES timeline(id))");
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,id TEXT,FOREIGN KEY(id) REFERENCES timeline(id))");
-    db.executeSQL("CREATE TABLE locks(id TEXT PRIMARY KEY NOT NULL,type INTEGER NOT NULL,level INTEGER NOT NULL,released TEXT,holder TEXT,FOREIGN KEY(released) REFERENCES timeline(id))");
-    db.executeSQL("CREATE TABLE sharedLocks(userId TEXT NOT NULL,lockId TEXT NOT NULL,PRIMARY KEY(lockId,userId)))");
+    db.executeSQL("CREATE TABLE locks(id TEXT PRIMARY KEY NOT NULL,type INTEGER NOT NULL,level INTEGER NOT NULL,released TEXT,briefcaseId INTEGER,FOREIGN KEY(released) REFERENCES timeline(id))");
+    db.executeSQL("CREATE TABLE sharedLocks(briefcaseId INTEGER NOT NULL,lockId TEXT NOT NULL,PRIMARY KEY(lockId,briefcaseId)))");
     db.saveChanges();
 
     const path = this.uploadCheckpoint({ changesetId: "", localFile: arg.revision0 });
@@ -366,54 +387,79 @@ export class LocalHub {
     return cSets;
   }
 
-  private querySharedLockHolders(lockId: string) {
-    return this.db.withPreparedSqliteStatement("SELECT userId FROM sharedLocks WHERE lockId=?", (stmt) => {
-      stmt.bindValue(1, lockId);
+  private querySharedLockHolders(elementId: Id64String) {
+    return this.db.withPreparedSqliteStatement("SELECT briefcaseId FROM sharedLocks WHERE lockId=?", (stmt) => {
+      stmt.bindValue(1, elementId);
+      const users = new Set<BriefcaseId>();
       const rc = stmt.step();
-      if (DbResult.BE_SQLITE_ROW !== rc)
-        throw new Error("lock holder not found");
-      return stmt.getValue(0).getString();
+      while (DbResult.BE_SQLITE_ROW === rc)
+        users.add(stmt.getValue(0).getInteger());
+      return users;
     });
   }
 
-  private queryLock(props: LockProps) {
-    return this.db.withPreparedSqliteStatement("SELECT released,type,holder FROM locks WHERE id=?", (stmt) => {
-      stmt.bindValue(1, props.objectId);
+  private queryLockStatus(elementId: Id64String): LockStatus {
+    return this.db.withPreparedSqliteStatement("SELECT released,type,level,briefcaseId FROM locks WHERE id=?", (stmt) => {
+      stmt.bindValue(1, elementId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
-        return undefined;
-      const released = stmt.getValue(0).getString();
-      const type = stmt.getValue(1).getInteger();
-      if (type === LockLevel.None)
-        return { released, type };
-      if (type === LockLevel.Exclusive)
-        return { userId: stmt.getValue(2).getString(), released, type };
-      return
-      if (type === LockLevel.None)
+        return { level: LockLevel.None };
+      const state = {
+        released: stmt.getValue(0).isNull ? undefined : stmt.getValue(0).getString(),
+        type: stmt.getValue(1).getInteger(),
+      };
+      const level = stmt.getValue(2).getInteger(), ;
+      switch (level) {
+        case LockLevel.None:
+          return { level: LockLevel.None };
+        case LockLevel.Exclusive:
+          return { level, ...state, briefcaseId: stmt.getValue(2).getInteger() };
+        case LockLevel.Shared:
+          return { level, ...state, sharedBy: this.querySharedLockHolders(elementId) };
+        default:
+          throw new Error("illegal lock state");
+      }
+    });
+  }
 
+  private reserveLock(arg: { lockStatus: LockStatus, props: LockProps, changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
+    if (arg.lockStatus.released) {
+      if (this.getChangesetIndex(arg.lockStatus.released) > this.getChangesetIndex(arg.changesetId))
+        throw new IModelError(IModelHubStatus.PullIsRequired, "Pull is required");
+      this.db.withPreparedSqliteStatement("UPDATE  INTO locks(id,type,level,briefcaseId VALUES(?,?,?)
 
+    if (arg.lockStatus.released)
+        this.db.withPreparedSqliteStatement("INSERT INTO locks(id,type,level,briefcaseId VALUES(?,?,?)
+    db.executeSQL("CREATE TABLE locks(id TEXT PRIMARY KEY NOT NULL,type INTEGER NOT NULL,level INTEGER NOT NULL,released TEXT,briefcaseId INTEGER,FOREIGN KEY(released) REFERENCES timeline(id))");
     }
-  public requestLock(arg: { props: LockProps, changeset: ChangesetId, userId: string }) {
-      const lockStatus = this.db.withPreparedSqliteStatement("SELECT userId,released,type FROM locks WHERE id=?", (stmt) => {
-        stmt.bindValue(1, arg.props.objectId);
-        const rc = stmt.step();
-        if (DbResult.BE_SQLITE_ROW === rc) {
-          if (stmt.getValue(0).getString() !== arg.userId)
-            if (this.getChangesetIndex(stmt.getValue(1).getString()) > this.getChangesetIndex(arg.changeset))
-              throw new IModelError(IModelHubStatus.PullIsRequired, "Pull is required");
+  public requestLock(arg: { props: LockProps, changesetId: ChangesetId, briefcaseId: BriefcaseId }) {
+    if (arg.props.level === LockLevel.None)
+      throw new Error("cannot request lock for LockLevel.None");
 
-        }
-        if (rc === BESQ)
-
+    const lockStatus = this.queryLockStatus(arg.props.objectId);
+    switch (lockStatus.level) {
+      case LockLevel.None: {
+        return this.reserveLock(arg);
+      case LockLevel.Shared:
+        if (arg.props.level !== LockLevel.Shared)
+          throw new Error("element is locked with shared access, cannot obt");
+        if (!lockStatus.sharedBy.has(arg.briefcaseId))
+          this.addSharedLock(arg);
+        return;
+      case LockLevel.Exclusive:
+        if (lockStatus.briefcaseId !== arg.briefcaseId)
+          throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock is already owned by another user");
+        return; // lock is already held by briefcase
     }
+  }
 
   public removeDir(dirName: string) {
-        if(IModelJsFs.existsSync(dirName)) {
+    if (IModelJsFs.existsSync(dirName)) {
       IModelJsFs.purgeDirSync(dirName);
       IModelJsFs.rmdirSync(dirName);
     }
 
-}
+  }
   public cleanup() {
     if (this._hubDb) {
       this._hubDb.closeDb();
