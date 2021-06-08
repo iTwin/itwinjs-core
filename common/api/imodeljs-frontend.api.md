@@ -1669,7 +1669,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     dispose(): void;
     getRedoString(): Promise<string>;
-    getUndoString(allowCrossSessions?: boolean): Promise<string>;
+    getUndoString(): Promise<string>;
     hasPendingTxns(): Promise<boolean>;
     isRedoPossible(): Promise<boolean>;
     isUndoPossible(): Promise<boolean>;
@@ -1718,7 +1718,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reinstateTxn(): Promise<IModelStatus>;
     reverseAll(): Promise<IModelStatus>;
     reverseSingleTxn(): Promise<IModelStatus>;
-    reverseTxns(numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus>;
+    reverseTxns(numOperations: number): Promise<IModelStatus>;
 }
 
 // @internal (undocumented)
@@ -5383,8 +5383,6 @@ export interface MapLayerSetting {
     // (undocumented)
     formatId: string;
     // (undocumented)
-    maxZoom: number | undefined;
-    // (undocumented)
     name: string;
     // (undocumented)
     transparentBackground: boolean | undefined;
@@ -5409,7 +5407,7 @@ export class MapLayerSettingsService {
 }
 
 // @internal
-export class MapLayerSource implements MapLayerProps {
+export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
     // (undocumented)
@@ -5417,31 +5415,26 @@ export class MapLayerSource implements MapLayerProps {
     // (undocumented)
     static fromBackgroundMapProps(props: BackgroundMapProps): MapLayerSource | undefined;
     // (undocumented)
-    static fromJSON(json: any): MapLayerSource | undefined;
-    // (undocumented)
-    maxZoom?: number | undefined;
+    static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined;
     // (undocumented)
     name: string;
     // (undocumented)
-    password?: string | undefined;
-    // (undocumented)
-    subLayers?: MapSubLayerProps[];
+    password?: string;
     // (undocumented)
     toJSON(): {
         url: string;
         name: string;
         formatId: string;
-        maxZoom: number | undefined;
         transparentBackground: boolean | undefined;
     };
     // (undocumented)
-    toLayerSettings(): MapLayerSettings | undefined;
+    toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined;
     // (undocumented)
-    transparentBackground?: boolean | undefined;
+    transparentBackground?: boolean;
     // (undocumented)
     url: string;
     // (undocumented)
-    userName?: string | undefined;
+    userName?: string;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
