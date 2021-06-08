@@ -303,6 +303,12 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "agentkeepalive",
+      "allowedCategories": [
+        "backend"
+      ]
+    },
+    {
       "name": "almost-equal",
       "allowedCategories": [ "common" ]
     },
@@ -773,6 +779,12 @@
     {
       "name": "postcss-safe-parser",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "proper-lockfile",
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "puppeteer",
