@@ -678,7 +678,7 @@
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "common", "frontend", "tools" ]
     },
     {
       "name": "lolex",
