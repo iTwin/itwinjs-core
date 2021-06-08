@@ -10,6 +10,7 @@ export * from "./Deserialization/SchemaGraphUtil";
 export * from "./Deserialization/JsonProps";
 export * from "./Deserialization/Helper";
 export * from "./Deserialization/XmlParser";
+export * from "./ECName";
 export * from "./ECObjects";
 export * from "./Exception";
 export * from "./Interfaces";
