@@ -23,8 +23,6 @@ jobs:
           git add .
           git commit -m "rush extract-api"
           git push
-        env:
-          commitid: ${{ github.sha }}
       - uses: SaemJeon/apps@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
