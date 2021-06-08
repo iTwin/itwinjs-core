@@ -22,7 +22,7 @@ export type StepFunctionProp = number | ((direction: string) => number | undefin
 /** Properties for the [[NumberInput]] component
  * @beta
  */
-export interface QuantityNumberInputProps extends Omit<InputProps, "value" | "min" | "max" | "step" | "onChange"> {
+export interface QuantityNumberInputProps extends Omit<InputProps, "value" | "min" | "max" | "step" | "onFocus" | "onChange"> {
   /** Quantity value in persistence units, set to `undefined` to show placeholder text */
   persistenceValue?: number;
   /** CSS class name for the NumberInput component container div */
@@ -54,7 +54,7 @@ function adjustFormatterSpec(formatterSpec: FormatterSpec | undefined) {
   const newFormat = Format.clone(formatterSpec.format);
   if (FormatType.Decimal !== newFormat.type) {
     newFormat.type = FormatType.Decimal;
-    newFormat.precision = (0 === newFormat.precision) ? newFormat.precision : 6;
+    newFormat.precision = newFormat.precision;
   }
   // clear the formatting label
   newFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
@@ -66,10 +66,12 @@ function adjustFormatterSpec(formatterSpec: FormatterSpec | undefined) {
 }
 
 function convertValueFromDisplayToPersistence(value: number, unitConversions: UnitConversionSpec[] | undefined, unit: UnitProps) {
+  // istanbul ignore next
   if (!unitConversions || 0 === unitConversions.length)
     return value;
 
   const unitConversion = unitConversions.find((spec) => spec.name === unit.name);
+  // istanbul ignore next
   if (!unitConversion)
     return value;
 
@@ -86,6 +88,7 @@ function getUnitLabel(parserSpec: ParserSpec | undefined) {
   if (!format.units || !format.units[0])
     return parserSpec.outUnit.label;
   const [unit, label] = format.units[0];
+  // istanbul ignore next
   return label ?? unit.label;
 }
 
@@ -101,7 +104,7 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
 
     const formatValue = React.useCallback((value: number | undefined) => {
       if (undefined === value)
-        return value;
+        return "";
 
       // istanbul ignore else
       if (formatterSpec) {
@@ -157,17 +160,17 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
     }, []);
 
     const updateValue = React.useCallback((newValue: number) => {
+      let persistedValue = newValue;
+      // istanbul ignore else
       if (parserSpec) {
         // convert value from display unit to persistence unit
-
-        const [unit] = parserSpec.format.units ? parserSpec.format.units[0] : [parserSpec.outUnit];
-        const persistedValue = convertValueFromDisplayToPersistence(newValue, parserSpec?.unitConversions, unit);
+        const [unit] = parserSpec.format.units ? parserSpec.format.units[0] : /* istanbul ignore next */[parserSpec.outUnit];
+        persistedValue = convertValueFromDisplayToPersistence(newValue, parserSpec.unitConversions, unit);
         rawValueRef.current = persistedValue;
-
-        const newFormattedVal = formatValue(persistedValue);
-        onChange && onChange(persistedValue);
-        setFormattedValue(newFormattedVal);
       }
+      const newFormattedVal = formatValue(persistedValue);
+      onChange && onChange(persistedValue);
+      setFormattedValue(newFormattedVal);
 
     }, [formatValue, onChange, parserSpec]);
 
@@ -182,13 +185,10 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
       if (!x)
         return 0;
 
-      let n: number | undefined | null;
-
-      if (undefined === n || null === n) {
-        n = parseFloat(x);
-        if (isNaN(n) || !isFinite(n)) {
-          n = 0;
-        }
+      let n = parseFloat(x);
+      // istanbul ignore next
+      if (isNaN(n) || !isFinite(n)) {
+        n = 0;
       }
 
       const localPrecision = 6; // TODO get a reasonable value from format
@@ -202,6 +202,7 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
     }, [min, max]);
 
     const updateValueFromString = React.useCallback((strValue: string) => {
+      // istanbul ignore else
       if (parserSpec) {
         const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(strValue, parserSpec);
         // at this point we should have a string value in persistence units without a label
@@ -210,8 +211,8 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
           // set strValue and let it go through parseInternal which will ensure min/max limits are observed
           strValue = formatValue(persistedValue)!;
         } else {
-          // restore last known good value
-          if (rawValueRef.current) {
+          // istanbul ignore else
+          if (rawValueRef.current) { // restore last known good value
             const lastKnownFormattedVal = formatValue(rawValueRef.current);
             setFormattedValue(lastKnownFormattedVal);
             return;
@@ -219,6 +220,7 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
         }
       }
       const newValue = parseInternal(strValue);
+      // istanbul ignore else
       if (undefined !== newValue)
         updateValue(newValue);
     }, [formatValue, parseInternal, parserSpec, updateValue]);
@@ -284,12 +286,18 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
       event.preventDefault();
     }, [applyStep]);
 
-    const containerClasses = classnames("component-quantity-number-input-container", containerClassName, showTouchButtons && "core-number-buttons-for-touch");
+    // istanbul ignore next
+    const handleFocus = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
+      event.currentTarget.select();
+    }, []);
+
+    const containerClasses = classnames("component-quantity-number-input-container", containerClassName, showTouchButtons && "component-number-buttons-for-touch");
     return (
       <div className={containerClasses} >
         <div className="component-quantity-number-input-value-and-buttons-container">
-          <Input ref={ref} value={formattedValue} onChange={handleDisplayValueChange} onKeyDown={handleKeyDown} onBlur={handleBlur} {...otherProps} />
-          <div className={classnames("component-quantity-number-input-buttons-container", showTouchButtons && "core-number-buttons-for-touch")}>
+          <Input ref={ref} value={formattedValue} onChange={handleDisplayValueChange} onKeyDown={handleKeyDown}
+            onBlur={handleBlur} onFocus={handleFocus} {...otherProps} />
+          <div className={classnames("component-quantity-number-input-buttons-container", showTouchButtons && "component-number-buttons-for-touch")}>
             { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
             <div className="component-quantity-number-input-button component-quantity-number-input-button-up" tabIndex={-1} onClick={handleUpClick}>
               <WebFontIcon iconName="icon-caret-up" />

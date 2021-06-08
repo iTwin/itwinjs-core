@@ -894,13 +894,13 @@ export class ComponentExamplesProvider {
         createComponentExample("Temperature (Custom)", undefined,
           <ParsedInput onChange={onTemperatureChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />),
         createComponentExample("Quantity Number Input", "QuantityType.Length",
-          <QuantityNumberInput persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.Length} onChange={onLengthChange} />),
+          <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.Length} onChange={onLengthChange} />),
         createComponentExample("Quantity Number Input", "QuantityType.LengthEngineering",
-          <QuantityNumberInput persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
+          <QuantityNumberInput style={{ width: "140px" }} placeholder={"Specify Length"} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
         createComponentExample("Quantity Number Input", "QuantityType.Angle",
-          <QuantityNumberInput persistenceValue={initialAngle} step={0.5} snap quantityType={QuantityType.Angle} onChange={onAngleChange} />),
+          <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialAngle} step={0.5} snap quantityType={QuantityType.Angle} onChange={onAngleChange} />),
         createComponentExample("Quantity Number Input", "QuantityType.Volume",
-          <QuantityNumberInput persistenceValue={initialVolume} step={0.5} snap quantityType={QuantityType.Volume} onChange={onVolumeChange} />),
+          <QuantityNumberInput showTouchButtons persistenceValue={initialVolume} step={0.5} snap quantityType={QuantityType.Volume} onChange={onVolumeChange} />),
       ],
     };
   }
