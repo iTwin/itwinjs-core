@@ -7,9 +7,9 @@
  */
 
 import {
-  assert, BeEvent, compareStrings, CompressedId64Set, DbResult, EntityIdAndClassIdIterable, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+  assert, BeEvent, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@bentley/bentleyjs-core";
-import { ChangedEntities, EntityIdAndClassId, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
+import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -39,15 +39,24 @@ export interface ValidationError {
  * @public
  */
 export interface TxnChangedEntities {
-  /** Ids of entities that were inserted by the transaction. */
+  /** Ids of entities that were inserted by the transaction.
+   * @deprecated use [[inserts]].
+   */
   inserted: OrderedId64Array;
-  /** Ids of entities that were deleted by the transaction. */
+  /** Ids of entities that were deleted by the transaction.
+   * @deprecated use [[deletes]].
+   */
   deleted: OrderedId64Array;
-  /** Ids of elements that were modified by the transaction. */
+  /** Ids of entities that were modified by the transaction.
+   * @deprecated use [[updates]].
+   */
   updated: OrderedId64Array;
 
+  /** The entities that were inserted by the transaction. */
   readonly inserts: EntityIdAndClassIdIterable;
+  /** The entities that were deleted by the transaction. */
   readonly deletes: EntityIdAndClassIdIterable;
+  /** The entities that were modified by the transaction, including any [[Element]]s for which one of their [[ElementAspect]]s was changed. */
   readonly updates: EntityIdAndClassIdIterable;
 }
 

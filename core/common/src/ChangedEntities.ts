@@ -19,7 +19,6 @@ export interface EntityIdAndClassId {
 }
 
 /** JSON representation of the set of [Element]($backend)s or [Model]($backend)s that were changed by a [Txn]($docs/learning/InteractiveEditing.md).
- * @note The presence of an element indicates either a direct change to that element, or a change to one of its [ElementAspect]($backend)s.
  * @see [[ChangedEntitiesIterable]] to iterate the [[EntityIdAndClassId]] pairs represented by this object.
  * @see [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend).
  * @see [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend).
@@ -30,7 +29,7 @@ export interface ChangedEntities {
   inserted?: CompressedId64Set;
   /** The ids of entities that were deleted during the Txn. */
   deleted?: CompressedId64Set;
-  /** The ids of entities that were modified during the Txn. */
+  /** The ids of entities that were modified during the Txn, including any [Element]($backend)s for which one of their [ElementAspect]($backend)s was changed. */
   updated?: CompressedId64Set;
 
   /** An array of the Ids of the [ECClass]($docs/bis/intro/glossary/#ecclass)es of the entities in this object, indexed by [[insertedClassIndices]], [[deletedClassIndices]], and [[updatedClassIndices]].

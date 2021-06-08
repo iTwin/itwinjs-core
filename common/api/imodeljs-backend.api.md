@@ -62,6 +62,7 @@ import { ElementGeometryUpdate } from '@bentley/imodeljs-common';
 import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
 import { ElementLoadProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
+import { EntityIdAndClassIdIterable } from '@bentley/imodeljs-common';
 import { EntityMetaData } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
@@ -2957,7 +2958,7 @@ export class IModelHubBackend {
     // (undocumented)
     static getRequestContext(arg: {
         requestContext?: AuthorizedClientRequestContext;
-    }): Promise<AuthorizedBackendRequestContext | AuthorizedClientRequestContext>;
+    }): Promise<AuthorizedClientRequestContext | AuthorizedBackendRequestContext>;
     // (undocumented)
     static get iModelClient(): IModelClient;
     // (undocumented)
@@ -4563,9 +4564,15 @@ export enum TxnAction {
 
 // @public
 export interface TxnChangedEntities {
+    // @deprecated
     deleted: OrderedId64Array;
+    readonly deletes: EntityIdAndClassIdIterable;
+    // @deprecated
     inserted: OrderedId64Array;
+    readonly inserts: EntityIdAndClassIdIterable;
+    // @deprecated
     updated: OrderedId64Array;
+    readonly updates: EntityIdAndClassIdIterable;
 }
 
 // @public
