@@ -307,6 +307,12 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "agentkeepalive",
+      "allowedCategories": [
+        "backend"
+      ]
+    },
+    {
       "name": "almost-equal",
       "allowedCategories": [ "backend", "common" ]
     },
@@ -676,7 +682,7 @@
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "common", "frontend", "tools" ]
     },
     {
       "name": "lolex",
@@ -777,6 +783,12 @@
     {
       "name": "postcss-safe-parser",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "proper-lockfile",
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "puppeteer",
