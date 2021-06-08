@@ -71,18 +71,21 @@ const rule = {
   },
 
   create(context) {
-    // XXX: at least tests don't seem to believe they have full type info...
-    /** @type {import("@typescript-eslint/parser").ParserServices} */
-    let parserServices;
-    try {
-      parserServices = getParserServices(context);
-    } catch (_) {
-      parserServices = context.parserServices;
-    }
+    const parserServices = getParserServices(context);
     const checker = parserServices.program.getTypeChecker();
     const extraOpts = context.options[0];
     const dontPropagate = extraOpts && extraOpts[OPTION_DONT_PROPAGATE] || false;
     const contextArgName = extraOpts && extraOpts[OPTION_CONTEXT_ARG_NAME] || "clientRequestContext";
+
+    /**
+     * @param {import("estree").Node} node
+     * @returns {FuncDeclLike}
+     */
+    function getOuterFunction(node) {
+      while (!(node.type === "FunctionExpression" || node.type === "ArrowFunctionExpression" || node.type === "FunctionDeclaration"))
+        node = node.parent;
+      return node;
+    }
 
     /**
      * @param {import("estree").Expression} node
@@ -159,7 +162,7 @@ const rule = {
      *  reqCtxArgName: string
      * }[]}
      */
-    const funcStack = [];
+    const asyncFuncStack = [];
 
     /**
      * @param {FuncDeclLike} node
@@ -201,7 +204,7 @@ const rule = {
 
       const reqCtxArgName = clientReqCtx.name;
 
-      funcStack.push({
+      asyncFuncStack.push({
         func: node,
         awaits: new Set(),
         reqCtxArgName,
@@ -233,15 +236,15 @@ const rule = {
 
     return {
       AwaitExpression(node) {
-        const lastFunc = back(funcStack);
+        const lastFunc = back(asyncFuncStack);
         // if the stack is empty, this is a top-level await and we can ignore it
         if (lastFunc) lastFunc.awaits.add(node);
       },
 
       CatchClause(node) {
-        // TODO: need to verify the outer function
-        const lastFunc = back(funcStack);
-        if (lastFunc === undefined)
+        const outerFunc = getOuterFunction(node);
+        const lastFunc = back(asyncFuncStack);
+        if (lastFunc === undefined || lastFunc.func !== outerFunc)
           return;
 
         // TODO: abstract firstStmt check and fixer to reused function
@@ -274,12 +277,13 @@ const rule = {
       CallExpression(node) {
         // TODO: need to check we aren't in a non-promise returning function nested in an async function...
         // get the outer function and compare to the top of the stack
-        const lastFunc = back(funcStack);
-        if (lastFunc === undefined)
+        const outerFunc = getOuterFunction(node);
+        const lastFunc = back(asyncFuncStack);
+        if (lastFunc === undefined || lastFunc.func !== outerFunc)
           return;
         // TODO: more robust checking that it is a Thenable's method being called
-        const isThen = (node.callee.property.name || node.callee.property.value) === "then";
-        const isCatch = (node.callee.property.name || node.callee.property.value) === "catch";
+        const isThen = (node.callee.name || node.callee.property.name || node.callee.property.value) === "then";
+        const isCatch = (node.callee.name || node.callee.property.name || node.callee.property.value) === "catch";
         const isPromiseCallback = isThen || isCatch;
         if (isPromiseCallback) {
           const callback = node.arguments[0];
@@ -317,10 +321,10 @@ const rule = {
 
       /** @param {import("estree").FunctionExpression} node */
       "FunctionExpression:exit"(node) {
-        const lastFunc = back(funcStack);
+        const lastFunc = back(asyncFuncStack);
         if (!lastFunc || lastFunc.func !== node)
           return;
-        funcStack.pop();
+        asyncFuncStack.pop();
         for (const await_ of lastFunc.awaits) {
           const stmt = getExpressionOuterStatement(await_);
           const stmtIndex = stmt.parent.body.findIndex((s) => s === stmt);

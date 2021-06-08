@@ -182,6 +182,22 @@ new ESLintTester({
           return Promise.resolve();
         }
       `,
+    },
+    {
+      code: makeTest`
+        async function nestedNonPromiseReturner(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          function recklessNonePromiseReturner() {
+            const myPromise = Promise.resolve();
+            myPromise.then(() => {
+              const validNotEnter = 10;
+            }).catch(() => {
+              const validNotEnter = 10;
+            });
+          }
+          return Promise.resolve(recklessNonPromiseReturner());
+        }
+      `,
     }
   ],
   invalid: [
