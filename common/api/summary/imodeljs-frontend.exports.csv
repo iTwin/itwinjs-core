@@ -94,7 +94,7 @@ public;ClipEventType
 public;Cluster
 internal;CompassMode
 internal;ContextMode
-beta;ContextRealityModelState
+public;ContextRealityModelState 
 public;ContextRotationId
 public;CoordinateLockOverrides
 public;CoordSource
@@ -335,7 +335,7 @@ internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 internal;MapLayerSetting
 internal;MapLayerSettingsService
-internal;MapLayerSource 
+internal;MapLayerSource
 internal;MapLayerSourceChangeType
 internal;MapLayerSources
 internal;MapLayerSourceStatus
@@ -519,8 +519,6 @@ public;SnapHeat
 public;SnapMode
 public;SnapshotConnection 
 public;SnapStatus
-beta;SpatialClassifiers
-internal;SpatialClassifiersContainer
 internal;class SpatialClassifierTileTreeReference 
 public;SpatialLocationModelState 
 public;SpatialModelState 

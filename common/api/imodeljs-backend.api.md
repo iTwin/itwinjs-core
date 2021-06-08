@@ -2957,7 +2957,7 @@ export class IModelHubBackend {
     // (undocumented)
     static getRequestContext(arg: {
         requestContext?: AuthorizedClientRequestContext;
-    }): Promise<AuthorizedClientRequestContext | AuthorizedBackendRequestContext>;
+    }): Promise<AuthorizedBackendRequestContext | AuthorizedClientRequestContext>;
     // (undocumented)
     static get iModelClient(): IModelClient;
     // (undocumented)
@@ -4577,6 +4577,7 @@ export class TxnManager {
     constructor(_iModel: BriefcaseDb | StandaloneDb);
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
+    // @deprecated
     checkUndoPossible(): boolean;
     endMultiTxnOperation(): DbResult;
     getCurrentTxnId(): TxnIdString;

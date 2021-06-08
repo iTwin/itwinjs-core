@@ -280,7 +280,7 @@ export class TxnManager {
   }
 
   /** Determine whether undo is possible
-   * @@deprecated - use [[isUndoPossible]]
+   * @deprecated - use [[isUndoPossible]]
    */
   public checkUndoPossible() { return this._nativeDb.isUndoPossible(); }
 
