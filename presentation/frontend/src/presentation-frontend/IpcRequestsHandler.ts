@@ -6,7 +6,7 @@
 import { AsyncMethodsOf, IpcApp, PromiseReturnType } from "@bentley/imodeljs-frontend";
 import {
   NodeKey, NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,
-  UpdateHierarchyStateParams,
+  UnsetRulesetVariableParams, UpdateHierarchyStateParams,
 } from "@bentley/presentation-common";
 
 /** @internal */
@@ -28,6 +28,14 @@ export class IpcRequestsHandler {
       variable: RulesetVariable.toJSON(params.variable),
     };
     return this.call("setRulesetVariable", jsonParams);
+  }
+
+  public async unsetRulesetVariable(params: Omit<UnsetRulesetVariableParams, "clientId">) {
+    const jsonParams: UnsetRulesetVariableParams = {
+      ...params,
+      clientId: this.clientId,
+    };
+    return this.call("unsetRulesetVariable", jsonParams);
   }
 
   public async updateHierarchyState(params: Omit<UpdateHierarchyStateParams<NodeKey>, "clientId">) {

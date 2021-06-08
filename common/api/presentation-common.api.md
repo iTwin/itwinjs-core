@@ -1768,6 +1768,7 @@ export enum PresentationIpcEvents {
 // @internal (undocumented)
 export interface PresentationIpcInterface {
     setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void>;
+    unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void>;
     updateHierarchyState(params: UpdateHierarchyStateParams<NodeKeyJSON>): Promise<void>;
 }
 
@@ -2649,6 +2650,14 @@ export interface SupplementationInfo {
 
 // @public
 export type TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription;
+
+// @internal (undocumented)
+export interface UnsetRulesetVariableParams extends CommonIpcParams {
+    // (undocumented)
+    rulesetId: string;
+    // (undocumented)
+    variableId: string;
+}
 
 // @alpha (undocumented)
 export const UPDATE_FULL = "FULL";

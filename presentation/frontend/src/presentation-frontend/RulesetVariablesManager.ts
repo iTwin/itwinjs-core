@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, Id64, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 import { RulesetVariable, VariableValue, VariableValueTypes } from "@bentley/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 
@@ -19,7 +19,7 @@ export interface RulesetVariablesManager {
   /**
    * An event that is raised when variable changes.
    */
-  onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue, currValue: VariableValue) => void>;
+  onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue | undefined) => void>;
 
   /**
    * Retrieves `string` variable value.
@@ -81,6 +81,9 @@ export interface RulesetVariablesManager {
    */
   setId64s(variableId: string, value: Id64String[]): Promise<void>;
 
+  /** Unsets variable with given id. */
+  unset(variableId: string): Promise<void>;
+
   /** Retrieves all variables.
    * @internal
    */
@@ -93,7 +96,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
   private _clientValues = new Map<string, RulesetVariable>();
   private _rulesetId: string;
   private _ipcHandler?: IpcRequestsHandler;
-  public onVariableChanged = new BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue) => void>();
+  public onVariableChanged = new BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue | undefined) => void>();
 
   public constructor(rulesetId: string, ipcHandler?: IpcRequestsHandler) {
     this._rulesetId = rulesetId;
@@ -157,15 +160,29 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     return variable.value;
   }
 
-  private async setValue(id: string, type: VariableValueTypes, value: VariableValue): Promise<void> {
-    const oldValue = this._clientValues.get(id);
-    const variable = { id, type, value } as RulesetVariable;
-    this._clientValues.set(id, variable);
+  private async setValue(variable: RulesetVariable): Promise<void> {
+    const oldVariable = this._clientValues.get(variable.id);
+    if (oldVariable && variablesEqual(oldVariable, variable))
+      return;
+
+    this._clientValues.set(variable.id, variable);
     if (this._ipcHandler) {
       await this._ipcHandler.setRulesetVariable({ rulesetId: this._rulesetId, variable });
     }
 
-    this.onVariableChanged.raiseEvent(id, oldValue?.value, value);
+    this.onVariableChanged.raiseEvent(variable.id, oldVariable?.value, variable.value);
+  }
+
+  public async unset(variableId: string): Promise<void> {
+    const variable = this._clientValues.get(variableId);
+    if (variable === undefined)
+      return;
+
+    this._clientValues.delete(variable.id);
+    if (this._ipcHandler) {
+      await this._ipcHandler.unsetRulesetVariable({ rulesetId: this._rulesetId, variableId });
+    }
+    this.onVariableChanged.raiseEvent(variable.id, variable.value, undefined);
   }
 
   /**
@@ -180,7 +197,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Sets `string` variable value
    */
   public async setString(variableId: string, value: string): Promise<void> {
-    await this.setValue(variableId, VariableValueTypes.String, value);
+    await this.setValue({ id: variableId, type: VariableValueTypes.String, value });
   }
 
   /**
@@ -195,7 +212,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Sets `boolean` variable value
    */
   public async setBool(variableId: string, value: boolean): Promise<void> {
-    await this.setValue(variableId, VariableValueTypes.Bool, value);
+    await this.setValue({ id: variableId, type: VariableValueTypes.Bool, value });
   }
 
   /**
@@ -210,7 +227,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Sets `number` variable value
    */
   public async setInt(variableId: string, value: number): Promise<void> {
-    await this.setValue(variableId, VariableValueTypes.Int, value);
+    await this.setValue({ id: variableId, type: VariableValueTypes.Int, value });
   }
 
   /**
@@ -225,7 +242,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Sets `number[]` variable value
    */
   public async setInts(variableId: string, value: number[]): Promise<void> {
-    await this.setValue(variableId, VariableValueTypes.IntArray, value);
+    await this.setValue({ id: variableId, type: VariableValueTypes.IntArray, value });
   }
 
   /**
@@ -240,7 +257,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Sets `Id64String` variable value
    */
   public async setId64(variableId: string, value: Id64String): Promise<void> {
-    await this.setValue(variableId, VariableValueTypes.Id64, value);
+    await this.setValue({ id: variableId, type: VariableValueTypes.Id64, value });
   }
 
   /**
@@ -255,6 +272,35 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Sets `Id64String[]` variable value
    */
   public async setId64s(variableId: string, value: Id64String[]): Promise<void> {
-    await this.setValue(variableId, VariableValueTypes.Id64Array, OrderedId64Iterable.sortArray(value));
+    await this.setValue({ id: variableId, type: VariableValueTypes.Id64Array, value: OrderedId64Iterable.sortArray(value) });
   }
+}
+
+function variablesEqual(lhs: RulesetVariable, rhs: RulesetVariable) {
+  if (lhs.type !== rhs.type)
+    return false;
+
+  switch (lhs.type) {
+    case VariableValueTypes.IntArray:
+    case VariableValueTypes.Id64Array:
+      assert(rhs.type === lhs.type);
+      return arraysEqual(lhs.value, rhs.value);
+
+    default:
+      return lhs.value === rhs.value;
+  }
+}
+
+function arraysEqual(lhs: any[], rhs: any[]) {
+  if (lhs === rhs)
+    return true;
+
+  if (lhs.length !== rhs.length)
+    return false;
+
+  for (let i = 0; i < lhs.length; ++i) {
+    if (lhs[i] !== rhs[i])
+      return false;
+  }
+  return true;
 }
