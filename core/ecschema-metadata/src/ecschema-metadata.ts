@@ -55,19 +55,11 @@ export { SchemaValidater } from "./Validation/SchemaValidater";
 export { CustomAttribute, CustomAttributeContainerProps} from "./Metadata/CustomAttribute";
 
 /** @docs-package-description
- * The ecschema-metadata package contains classes for working with, validating, and editing ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
+ * The ecschema-metadata package contains classes for working with ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Metadata
  * Definitions of classes and interfaces that represent all [EC elements]($docs/bis/ec/index.md).
- */
-/**
- * @docs-group-description Validation
- * Set of classes used to perform validation on ECSchemas.
- */
-/**
- * @docs-group-description Comparison
- * Set of classes to enable comparison of ECSchemas.
  */
 /**
  * @docs-group-description Utils
