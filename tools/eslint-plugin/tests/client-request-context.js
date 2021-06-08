@@ -171,11 +171,13 @@ new ESLintTester({
     { code: makeTest`async function f(ctx: typeof IMJSBackend["ClientRequestContext"]) {ctx.enter();}` },
     {
       code: makeTest`
-        async nonAsyncCatch(reqCtx: ClientRequestContext) {
+        async function nonAsyncCatch(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
           try {
             const notAsync = 5;
           } catch (_) {
-            const notAnEntryButNotNeeded = 10;
+            reqCtx.enter();
+            const other = 10;
           }
           return Promise.resolve();
         }
@@ -252,9 +254,6 @@ new ESLintTester({
       ]
     },
     {
-      // no idea how to match this without type information during tests
-      // skipping for now, should check @typescript-eslint's own tests
-      skip: true,
       code: makeTest`
         function noEnterAtBeginImplicitAsync(reqCtx: ClientRequestContext) {
           return Promise.resolve(5);
@@ -334,9 +333,6 @@ new ESLintTester({
       ]
     },
     {
-      // not sure how to test this one, (need ESLintRuleTest to have type info)
-      // should check @typescript-eslint's own rule testing
-      skip: true,
       code: makeTest`
         function implicitlyAsync(reqCtx: ClientRequestContext) {
           return Promise.resolve();
@@ -344,14 +340,13 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement",
+          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately",
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              desc: "Add 'reqCtx.enter()' as the first statement of the body",
               output: makeTest`
                 function implicitlyAsync(reqCtx: ClientRequestContext) {
-                reqCtx.enter();
-                  return Promise.resolve();
+                  reqCtx.enter();return Promise.resolve();
                 }
               `,
             }
@@ -402,8 +397,6 @@ new ESLintTester({
       ]
     },
     {
-      // testing implicit promise return type not supported yet
-      skip: true,
       code: makeTest`function implicitPromiseReturning() { return Promise.resolve(); }`,
       errors: [
         {
