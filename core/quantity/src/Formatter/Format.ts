@@ -45,21 +45,37 @@ export class Format {
   }
 
   public get name(): string { return this._name; }
+  public set name(val: string) { this._name = val; }
   public get roundFactor(): number { return this._roundFactor; }
+  public set roundFactor(val: number) { this._roundFactor = val; }
   public get type(): FormatType { return this._type; }
+  public set type(val: FormatType) { this._type = val; }
   public get precision(): DecimalPrecision | FractionalPrecision { return this._precision; }
+  public set precision(val: DecimalPrecision | FractionalPrecision) { this._precision = val; }
   public get minWidth(): number | undefined { return this._minWidth; }
+  public set minWidth(val: number | undefined) { this._minWidth = val; }
   public get scientificType(): ScientificType | undefined { return this._scientificType; }
+  public set scientificType(val: ScientificType | undefined) { this._scientificType = val; }
   public get showSignOption(): ShowSignOption { return this._showSignOption; }
+  public set showSignOption(val: ShowSignOption) { this._showSignOption = val; }
   public get decimalSeparator(): string { return this._decimalSeparator; }
+  public set decimalSeparator(val: string) { this._decimalSeparator = val; }
   public get thousandSeparator(): string { return this._thousandSeparator; }
+  public set thousandSeparator(val: string) { this._thousandSeparator = val; }
   public get uomSeparator(): string { return this._uomSeparator; }
+  public set uomSeparator(val: string) { this._uomSeparator = val; }
   public get stationSeparator(): string { return this._stationSeparator; }
+  public set stationSeparator(val: string) { this._stationSeparator = val; }
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
+  public set stationOffsetSize(val: number | undefined) { this._stationOffsetSize = val; }
   public get formatTraits(): FormatTraits { return this._formatTraits; }
-  public get spacer(): string | undefined { return this._spacer; }
-  public get includeZero(): boolean | undefined { return this._includeZero; }
+  public set formatTraits(val: FormatTraits) { this._formatTraits = val; }
+  public get spacer(): string { return this._spacer; }
+  public set spacer(val: string) { this._spacer = val; }
+  public get includeZero(): boolean { return this._includeZero; }
+  public set includeZero(val: boolean) { this._includeZero = val; }
   public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
+  public set units(val: Array<[UnitProps, string | undefined]> | undefined) { this._units = val; }
   public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
   public get customProps(): any { return this._customProps; }
 
@@ -339,12 +355,10 @@ export class Format {
   }
 
   /**
-   *  Used when UI needs to display with a single unit value or show magnitude without a label, like in a table
+   *  Clone existing format
    * @param existing Format to clone
-   * @param clearShowUnitLabel if true clear FormatTraits.ShowUnitLabel.
-   * @returns
    */
-  public static cloneToPrimaryUnitFormat(existing: Format, clearShowUnitLabel: boolean) {
+  public static clone(existing: Format) {
     const newFormat = new Format(existing.name);
     newFormat._roundFactor = existing._roundFactor;
     newFormat._type = existing._type;
@@ -357,18 +371,11 @@ export class Format {
     newFormat._uomSeparator = existing._uomSeparator;
     newFormat._stationSeparator = existing._stationSeparator;
     newFormat._stationOffsetSize = existing._stationOffsetSize;
-    let formatTraits = existing._formatTraits;
-    if (clearShowUnitLabel)
-      formatTraits &= ~FormatTraits.ShowUnitLabel;
-    newFormat._formatTraits = formatTraits;
+    newFormat._formatTraits = existing._formatTraits;
     newFormat._spacer = existing._spacer;
     newFormat._includeZero = existing._includeZero;
     newFormat._customProps = existing._customProps;
-    // only copy the primary unit
-    if (existing._units) {
-      newFormat._units = new Array<[UnitProps, string | undefined]>();
-      newFormat._units.push(existing._units[0]);
-    }
+    existing._units && (newFormat._units = [...existing._units]);
     return newFormat;
   }
 

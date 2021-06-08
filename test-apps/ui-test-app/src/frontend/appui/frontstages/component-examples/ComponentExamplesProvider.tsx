@@ -14,7 +14,7 @@ import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvi
 import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, QuantityValueInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
+  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, QuantityNumberInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
 } from "@bentley/ui-components";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
@@ -893,8 +893,14 @@ export class ComponentExamplesProvider {
           <QuantityInput initialValue={initialVolume} quantityType={QuantityType.Volume} onQuantityChange={onVolumeChange} />),
         createComponentExample("Temperature (Custom)", undefined,
           <ParsedInput onChange={onTemperatureChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />),
-        createComponentExample("Quantity Value Input", undefined,
-          <QuantityValueInput persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Length",
+          <QuantityNumberInput persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.Length} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.LengthEngineering",
+          <QuantityNumberInput persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Angle",
+          <QuantityNumberInput persistenceValue={initialAngle} step={0.5} snap quantityType={QuantityType.Angle} onChange={onAngleChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Volume",
+          <QuantityNumberInput persistenceValue={initialVolume} step={0.5} snap quantityType={QuantityType.Volume} onChange={onVolumeChange} />),
       ],
     };
   }

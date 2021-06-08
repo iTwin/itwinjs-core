@@ -6,13 +6,13 @@
  * @module Inputs
  */
 
-import "./QuantityValueInput.scss";
+import "./QuantityNumberInput.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Input, InputProps, WebFontIcon } from "@bentley/ui-core";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@bentley/imodeljs-frontend";
-import { Format, FormatterSpec, ParserSpec, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
+import { Format, FormatterSpec, FormatTraits, FormatType, Parser, ParserSpec, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
 
 /** Step function prototype for [[NumberInput]] component
  * @beta
@@ -22,7 +22,7 @@ export type StepFunctionProp = number | ((direction: string) => number | undefin
 /** Properties for the [[NumberInput]] component
  * @beta
  */
-export interface QuantityValueInputProps extends Omit<InputProps, "value" | "min" | "max" | "step" | "onChange"> {
+export interface QuantityNumberInputProps extends Omit<InputProps, "value" | "min" | "max" | "step" | "onChange"> {
   /** Quantity value in persistence units, set to `undefined` to show placeholder text */
   persistenceValue?: number;
   /** CSS class name for the NumberInput component container div */
@@ -45,11 +45,24 @@ export interface QuantityValueInputProps extends Omit<InputProps, "value" | "min
   quantityType: QuantityTypeArg;
 }
 
-/** adjust formatter spec to show only primary unit without a label */
+/** adjust formatter spec to show only primary unit without a label.  */
 function adjustFormatterSpec(formatterSpec: FormatterSpec | undefined) {
   if (undefined === formatterSpec)
     return formatterSpec;
-  return new FormatterSpec("single-value", Format.cloneToPrimaryUnitFormat(formatterSpec.format, true), formatterSpec.unitConversions, formatterSpec.persistenceUnit);
+  const singleUnitConversion: UnitConversionSpec[] = [];
+  singleUnitConversion.push(formatterSpec.unitConversions[0]);
+  const newFormat = Format.clone(formatterSpec.format);
+  if (FormatType.Decimal !== newFormat.type) {
+    newFormat.type = FormatType.Decimal;
+    newFormat.precision = (0 === newFormat.precision) ? newFormat.precision : 6;
+  }
+  // clear the formatting label
+  newFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
+  // only copy the primary unit
+  if (newFormat.units && newFormat.units.length > 1)
+    newFormat.units.length = 1;
+
+  return new FormatterSpec("single-value", newFormat, singleUnitConversion, formatterSpec.persistenceUnit);
 }
 
 function convertValueFromDisplayToPersistence(value: number, unitConversions: UnitConversionSpec[] | undefined, unit: UnitProps) {
@@ -76,8 +89,8 @@ function getUnitLabel(parserSpec: ParserSpec | undefined) {
   return label ?? unit.label;
 }
 
-const ForwardRefQuantityValueInput = React.forwardRef<HTMLInputElement, QuantityValueInputProps>(
-  function ForwardRefQuantityValueInput(props, ref) {
+const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, QuantityNumberInputProps>(
+  function ForwardRefQuantityNumberInput(props, ref) {
 
     const { containerClassName, persistenceValue, min, max,
       onChange, onBlur, onKeyDown, step, snap, showTouchButtons, quantityType, ...otherProps } = props;
@@ -189,9 +202,26 @@ const ForwardRefQuantityValueInput = React.forwardRef<HTMLInputElement, Quantity
     }, [min, max]);
 
     const updateValueFromString = React.useCallback((strValue: string) => {
-      const newVal = parseInternal(strValue);
-      updateValue(newVal);
-    }, [parseInternal, updateValue]);
+      if (parserSpec) {
+        const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(strValue, parserSpec);
+        // at this point we should have a string value in persistence units without a label
+        if (Parser.isParsedQuantity(parseResult)) {
+          const persistedValue = parseResult.value;  // in persistence units
+          // set strValue and let it go through parseInternal which will ensure min/max limits are observed
+          strValue = formatValue(persistedValue)!;
+        } else {
+          // restore last known good value
+          if (rawValueRef.current) {
+            const lastKnownFormattedVal = formatValue(rawValueRef.current);
+            setFormattedValue(lastKnownFormattedVal);
+            return;
+          }
+        }
+      }
+      const newValue = parseInternal(strValue);
+      if (undefined !== newValue)
+        updateValue(newValue);
+    }, [formatValue, parseInternal, parserSpec, updateValue]);
 
     const handleBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
       const newVal = parseInternal(event.target.value);
@@ -254,22 +284,24 @@ const ForwardRefQuantityValueInput = React.forwardRef<HTMLInputElement, Quantity
       event.preventDefault();
     }, [applyStep]);
 
-    const containerClasses = classnames("component-quantity-value-input-container", containerClassName, showTouchButtons && "core-number-buttons-for-touch");
+    const containerClasses = classnames("component-quantity-number-input-container", containerClassName, showTouchButtons && "core-number-buttons-for-touch");
     return (
       <div className={containerClasses} >
-        <Input ref={ref} value={formattedValue} onChange={handleDisplayValueChange} onKeyDown={handleKeyDown} onBlur={handleBlur} {...otherProps} />
-        <div className={classnames("component-quantity-value-input-buttons-container", showTouchButtons && "core-number-buttons-for-touch")}>
-          { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
-          <div className="component-quantity-value-input-button component-quantity-value-input-button-up" tabIndex={-1} onClick={handleUpClick}>
-            <WebFontIcon iconName="icon-caret-up" />
-          </div>
-          { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
-          <div className="component-quantity-value-input-button component-quantity-value-input-button-down" tabIndex={-1} onClick={handleDownClick}>
-            <WebFontIcon iconName="icon-caret-down" />
+        <div className="component-quantity-number-input-value-and-buttons-container">
+          <Input ref={ref} value={formattedValue} onChange={handleDisplayValueChange} onKeyDown={handleKeyDown} onBlur={handleBlur} {...otherProps} />
+          <div className={classnames("component-quantity-number-input-buttons-container", showTouchButtons && "core-number-buttons-for-touch")}>
+            { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
+            <div className="component-quantity-number-input-button component-quantity-number-input-button-up" tabIndex={-1} onClick={handleUpClick}>
+              <WebFontIcon iconName="icon-caret-up" />
+            </div>
+            { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
+            <div className="component-quantity-number-input-button component-quantity-number-input-button-down" tabIndex={-1} onClick={handleDownClick}>
+              <WebFontIcon iconName="icon-caret-down" />
+            </div>
           </div>
         </div>
-        <span className="component-quantity-value-input-suffix">{unitLabel}</span>
-      </div>
+        <span className="component-quantity-number-input-suffix">{unitLabel}</span>
+      </div >
     );
   }
 );
@@ -277,4 +309,4 @@ const ForwardRefQuantityValueInput = React.forwardRef<HTMLInputElement, Quantity
 /** Input component for numbers with up and down buttons to increment and decrement the value.
    * @beta
    */
-export const QuantityValueInput: (props: QuantityValueInputProps) => JSX.Element | null = ForwardRefQuantityValueInput;
+export const QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null = ForwardRefQuantityNumberInput;
