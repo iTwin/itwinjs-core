@@ -72,10 +72,15 @@ class ChangedEntitiesArray {
 
   public insert(entityId: Id64String, classId: Id64String): void {
     const entityIndex = this.entityIds.insert(entityId);
+    const classIndex = this._classIds.insert(classId);
+    assert(classIndex >= 0);
     if (this.entityIds.length !== this._classIndices.length) {
-      const classIndex = this._classIds.insert(classId);
-      assert(classIndex >= 0);
+      // New entity - insert corresponding class index entry.
       this._classIndices.splice(entityIndex, 0, classIndex);
+    } else {
+      // Existing entity - update corresponding class index enty.
+      // (We do this because apparently connectors can (very rarely) change the class Id of an existing element).
+      this._classIndices[entityIndex] = classIndex;
     }
 
     assert(this.entityIds.length === this._classIndices.length);
