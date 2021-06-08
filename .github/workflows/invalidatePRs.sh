@@ -151,7 +151,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
       -H "Accept: application/vnd.github.v3+json" \
       -H "Authorization: token $oauth" \
       $updateUrl \
-      -d '{"state": "failure", "target_url": "'${target_url}'", "description": "The build hit the 3 hour threshold. Please re-queue the build."}'
+      -d '{"state": "failure", "target_url": "'${target_url}'", "context": "'${context}'", "description": "The build hit the 3 hour threshold. Please re-queue the build."}'
 
     break
   done
