@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.label.name == 'extract-api' }}
     steps:
-      - run: echo ${{ github }}
+      - run: echo ${{ github.pull_request.mergeable_state }}
       - uses: actions/checkout@v2
       - name: Set Git Config
         run: |
