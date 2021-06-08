@@ -43,6 +43,19 @@ describe("RulesetVariablesManager", () => {
       ipcHandlerMock.verifyAll();
     });
 
+    it("calls ipc handler to unset variable value on backend", async () => {
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      const ipcHandlerMock = moq.Mock.ofType<IpcRequestsHandler>();
+      const rulesetId = "test-ruleset-id";
+
+      vars = new RulesetVariablesManagerImpl(rulesetId, ipcHandlerMock.object);
+      await vars.setString("test-id", "test-value");
+
+      ipcHandlerMock.setup(async (x) => x.unsetRulesetVariable(moq.It.isObjectWith({ rulesetId, variableId: "test-id" }))).verifiable(moq.Times.once());
+      await vars.unset("test-id");
+      ipcHandlerMock.verifyAll();
+    });
+
   });
 
   describe("getAllVariables", () => {
@@ -57,6 +70,28 @@ describe("RulesetVariablesManager", () => {
       const allVariables = vars.getAllVariables();
       expect(allVariables).to.deep.eq(variables);
     });
+  });
+
+  describe("unset", () => {
+
+    it("unsets existing value", async () => {
+      await vars.setString(variableId, "a");
+      expect(vars.getAllVariables()).to.deep.eq([{
+        id: variableId,
+        type: VariableValueTypes.String,
+        value: "a",
+      }]);
+      await vars.unset(variableId);
+      expect(vars.getAllVariables()).to.deep.eq([]);
+    });
+
+    it("doesn't raise onVariableChanged event when value is not set", async () => {
+      const spy = sinon.spy();
+      vars.onVariableChanged.addListener(spy);
+      await vars.unset(variableId);
+      expect(spy).to.not.be.called;
+    });
+
   });
 
   describe("string", () => {
@@ -74,9 +109,21 @@ describe("RulesetVariablesManager", () => {
     it("raises onVariableChanged event when variable changes", async () => {
       const spy = sinon.spy();
       vars.onVariableChanged.addListener(spy);
-      const value = faker.random.word();
-      await vars.setString(variableId, value);
-      expect(spy).to.be.calledWith(variableId);
+
+      await vars.setString(variableId, "a");
+      expect(spy).to.be.calledWithExactly(variableId, undefined, "a");
+      spy.resetHistory();
+
+      await vars.setString(variableId, "b");
+      expect(spy).to.be.calledWith(variableId, "a", "b");
+      spy.resetHistory();
+
+      await vars.setString(variableId, "b");
+      expect(spy).to.not.be.called;
+      spy.resetHistory();
+
+      await vars.unset(variableId);
+      expect(spy).to.be.calledWith(variableId, "b", undefined);
     });
 
   });
@@ -96,9 +143,21 @@ describe("RulesetVariablesManager", () => {
     it("raises onVariableChanged event when variable changes", async () => {
       const spy = sinon.spy();
       vars.onVariableChanged.addListener(spy);
-      const value = faker.random.boolean();
-      await vars.setBool(variableId, value);
-      expect(spy).to.be.calledWith(variableId);
+
+      await vars.setBool(variableId, false);
+      expect(spy).to.be.calledWith(variableId, undefined, false);
+      spy.resetHistory();
+
+      await vars.setBool(variableId, true);
+      expect(spy).to.be.calledWith(variableId, false, true);
+      spy.resetHistory();
+
+      await vars.setBool(variableId, true);
+      expect(spy).to.not.be.called;
+      spy.resetHistory();
+
+      await vars.unset(variableId);
+      expect(spy).to.be.calledWith(variableId, true, undefined);
     });
 
     it("handles type conversion", async () => {
@@ -134,9 +193,21 @@ describe("RulesetVariablesManager", () => {
     it("raises onVariableChanged event when variable changes", async () => {
       const spy = sinon.spy();
       vars.onVariableChanged.addListener(spy);
-      const value = faker.random.number();
-      await vars.setInt(variableId, value);
-      expect(spy).to.be.calledWith(variableId);
+
+      await vars.setInt(variableId, 123);
+      expect(spy).to.be.calledWith(variableId, undefined, 123);
+      spy.resetHistory();
+
+      await vars.setInt(variableId, 456);
+      expect(spy).to.be.calledWith(variableId, 123, 456);
+      spy.resetHistory();
+
+      await vars.setInt(variableId, 456);
+      expect(spy).to.not.be.called;
+      spy.resetHistory();
+
+      await vars.unset(variableId);
+      expect(spy).to.be.calledWith(variableId, 456, undefined);
     });
 
     it("handles type conversion", async () => {
@@ -166,9 +237,22 @@ describe("RulesetVariablesManager", () => {
     it("raises onVariableChanged event when variable changes", async () => {
       const spy = sinon.spy();
       vars.onVariableChanged.addListener(spy);
-      const value = [faker.random.number(), faker.random.number()];
-      await vars.setInts(variableId, value);
-      expect(spy).to.be.calledWith(variableId);
+
+      await vars.setInts(variableId, [1, 2, 3]);
+      expect(spy).to.be.calledWith(variableId, undefined, [1, 2, 3]);
+      spy.resetHistory();
+
+      const arr = [4, 5, 6];
+      await vars.setInts(variableId, arr);
+      expect(spy).to.be.calledWith(variableId, [1, 2, 3], arr);
+      spy.resetHistory();
+
+      await vars.setInts(variableId, arr);
+      expect(spy).to.not.be.called;
+      spy.resetHistory();
+
+      await vars.unset(variableId);
+      expect(spy).to.be.calledWith(variableId, [4, 5, 6], undefined);
     });
 
     it("handles type conversion", async () => {
@@ -198,9 +282,21 @@ describe("RulesetVariablesManager", () => {
     it("raises onVariableChanged event when variable changes", async () => {
       const spy = sinon.spy();
       vars.onVariableChanged.addListener(spy);
-      const value = createRandomId();
-      await vars.setId64(variableId, value);
-      expect(spy).to.be.calledWith(variableId);
+
+      await vars.setId64(variableId, "0x123");
+      expect(spy).to.be.calledWith(variableId, undefined, "0x123");
+      spy.resetHistory();
+
+      await vars.setId64(variableId, "0x456");
+      expect(spy).to.be.calledWith(variableId, "0x123", "0x456");
+      spy.resetHistory();
+
+      await vars.setId64(variableId, "0x456");
+      expect(spy).to.not.be.called;
+      spy.resetHistory();
+
+      await vars.unset(variableId);
+      expect(spy).to.be.calledWith(variableId, "0x456", undefined);
     });
 
     it("handles type conversion", async () => {
@@ -230,9 +326,21 @@ describe("RulesetVariablesManager", () => {
     it("raises onVariableChanged event when variable changes", async () => {
       const spy = sinon.spy();
       vars.onVariableChanged.addListener(spy);
-      const value = [createRandomId(), createRandomId()];
-      await vars.setId64s(variableId, value);
-      expect(spy).to.be.calledWith(variableId);
+
+      await vars.setId64s(variableId, ["0x123", "0x789"]);
+      expect(spy).to.be.calledWith(variableId, undefined, ["0x123", "0x789"]);
+      spy.resetHistory();
+
+      await vars.setId64s(variableId, ["0x456"]);
+      expect(spy).to.be.calledWith(variableId, ["0x123", "0x789"], ["0x456"]);
+      spy.resetHistory();
+
+      await vars.setId64s(variableId, ["0x456"]);
+      expect(spy).to.not.be.called;
+      spy.resetHistory();
+
+      await vars.unset(variableId);
+      expect(spy).to.be.calledWith(variableId, ["0x456"], undefined);
     });
 
     it("handles type conversion", async () => {
@@ -245,6 +353,22 @@ describe("RulesetVariablesManager", () => {
       expect(await vars.getId64(variableId)).to.deep.eq(Id64.invalid);
     });
 
+  });
+
+  it("sets value to different type", async () => {
+    await vars.setInt(variableId, 123);
+    expect(vars.getAllVariables()).to.deep.eq([{
+      id: variableId,
+      type: VariableValueTypes.Int,
+      value: 123,
+    }]);
+
+    await vars.setString(variableId, "456");
+    expect(vars.getAllVariables()).to.deep.eq([{
+      id: variableId,
+      type: VariableValueTypes.String,
+      value: "456",
+    }]);
   });
 
 });

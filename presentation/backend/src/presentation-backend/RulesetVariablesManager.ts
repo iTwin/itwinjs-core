@@ -19,6 +19,8 @@ export interface RulesetVariablesManager {
   getValue(variableId: string, type: VariableValueTypes): VariableValue;
   /** Sets a value of the specified type */
   setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
+  /** Unsets variable with given id. */
+  unset(variableId: string): void;
 
   /**
    * Retrieves `string` variable value.
@@ -112,6 +114,11 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
       case VariableValueTypes.String: return this.setString(variableId, value as string);
     }
   }
+
+  public unset(variableId: string): void {
+    this._getNativePlatform().unsetRulesetVariableValue(this._rulesetId, variableId);
+  }
+
   public getValue(variableId: string, type: VariableValueTypes): VariableValue {
     switch (type) {
       case VariableValueTypes.Bool: return this.getBool(variableId);

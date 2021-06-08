@@ -50,6 +50,7 @@ import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SetRulesetVariableParams } from '@bentley/presentation-common';
+import { UnsetRulesetVariableParams } from '@bentley/presentation-common';
 import { UpdateHierarchyStateParams } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 
@@ -376,13 +377,14 @@ export interface RulesetVariablesManager {
     getInt(variableId: string): Promise<number>;
     getInts(variableId: string): Promise<number[]>;
     getString(variableId: string): Promise<string>;
-    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue, currValue: VariableValue) => void>;
+    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue | undefined) => void>;
     setBool(variableId: string, value: boolean): Promise<void>;
     setId64(variableId: string, value: Id64String): Promise<void>;
     setId64s(variableId: string, value: Id64String[]): Promise<void>;
     setInt(variableId: string, value: number): Promise<void>;
     setInts(variableId: string, value: number[]): Promise<void>;
     setString(variableId: string, value: string): Promise<void>;
+    unset(variableId: string): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -397,14 +399,16 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     getInts(variableId: string): Promise<number[]>;
     getString(variableId: string): Promise<string>;
     // (undocumented)
-    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue) => void>;
+    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue | undefined) => void>;
     setBool(variableId: string, value: boolean): Promise<void>;
     setId64(variableId: string, value: Id64String): Promise<void>;
     setId64s(variableId: string, value: Id64String[]): Promise<void>;
     setInt(variableId: string, value: number): Promise<void>;
     setInts(variableId: string, value: number[]): Promise<void>;
     setString(variableId: string, value: string): Promise<void>;
-    }
+    // (undocumented)
+    unset(variableId: string): Promise<void>;
+}
 
 // @public
 export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> {

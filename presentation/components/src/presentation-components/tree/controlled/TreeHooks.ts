@@ -183,10 +183,15 @@ function useModelSourceUpdateOnRulesetModification(props: ModelSourceUpdateProps
 }
 
 function useModelSourceUpdateOnRulesetVariablesChange(props: ModelSourceUpdateProps) {
-  const onRulesetVariableChanged = useCallback(async (variableId: string, prevValue: VariableValue) => {
+  const onRulesetVariableChanged = useCallback(async (variableId: string, prevValue: VariableValue | undefined) => {
     // note: we should probably debounce these events while accumulating changed variables in case multiple vars are changed
-    const prevVariables = Presentation.presentation.vars(props.dataProvider.rulesetId).getAllVariables()
-      .map((v): RulesetVariable => (v.id === variableId) ? { ...v, value: prevValue } as RulesetVariable : v);
+    const prevVariables: RulesetVariable[] = [];
+    Presentation.presentation.vars(props.dataProvider.rulesetId).getAllVariables().forEach((variable) => {
+      if (variableId !== variable.id)
+        prevVariables.push(variable);
+      else if (prevValue !== undefined)
+        prevVariables.push({ ...variable, value: prevValue } as RulesetVariable);
+    });
     const compareResult = await Presentation.presentation.compareHierarchies({
       imodel: props.dataProvider.imodel,
       prev: {
