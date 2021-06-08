@@ -77,7 +77,7 @@ describe("TxnManager", () => {
 
     assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
 
-    let txns = imodel.txns;
+    const txns = imodel.txns;
     assert.isFalse(txns.hasPendingTxns);
 
     const change1Msg = "change 1";
@@ -254,32 +254,16 @@ describe("TxnManager", () => {
     expect(lastMod3).not.to.equal(lastMod2);
 
     assert.isTrue(txns.isUndoPossible);
-    assert.isTrue(txns.checkUndoPossible(true));
-    assert.isTrue(txns.checkUndoPossible(false));
-    assert.isTrue(txns.checkUndoPossible());
 
-    // test the ability to undo/redo from previous sessions
-    imodel.close();
-    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
-    txns = imodel.txns;
+    // test restarting the session, which should truncate undo history
+    txns.restartSession();
 
     assert.isFalse(txns.isUndoPossible);
-    assert.isTrue(txns.checkUndoPossible(true));
-    assert.isFalse(txns.checkUndoPossible(false));
-    assert.isFalse(txns.checkUndoPossible());
-    assert.equal(deleteTxnMsg, txns.getUndoString(true));
     assert.equal("", txns.getUndoString());
 
-    assert.equal(IModelStatus.Success, txns.reverseTxns(1, true), "reverse from previous session");
-    assert.equal(saveUpdateMsg, txns.getUndoString(true));
-    assert.equal(deleteTxnMsg, txns.getRedoString());
-    assert.equal(IModelStatus.Success, txns.reinstateTxn());
-    assert.equal(IModelStatus.Success, txns.cancelTo(txns.queryFirstTxnId(true), true), "cancel all committed txns");
-    assert.isFalse(txns.checkUndoPossible(true));
     assert.isFalse(txns.isRedoPossible);
-    assert.isFalse(txns.isUndoPossible);
     assert.isFalse(txns.hasUnsavedChanges);
-    assert.isFalse(txns.hasPendingTxns);
+    assert.isTrue(txns.hasPendingTxns); // these are from the previous session
     cleanup.forEach((drop) => drop());
   });
 

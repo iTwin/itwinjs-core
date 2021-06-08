@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Add getters to retrieve the list of category and model overrides & make update category/model overrides functions public",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "85196633+morganadrales@users.noreply.github.com"
+}
