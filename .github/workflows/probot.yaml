@@ -10,18 +10,21 @@ jobs:
     if: |
       github.event.label.name == 'extract-api' && github.event.pull_request.mergeable_state == 'draft'
     steps:
-      - run: echo ${{ github.event.pull_request.mergeable_state }}
       - uses: actions/checkout@v2
       - name: Set Git Config
         run: |
           git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
-      - run: |
+      - name: Run rush extract-api
+        run: |
           node ./common/scripts/install-run-rush.js update
           node ./common/scripts/install-run-rush.js build
           node ./common/scripts/install-run-rush.js extract-api
           git add .
-
+          git commit --amend --no-edit
+          git push
+        env:
+          commitid: ${{ github.sha }}
       - uses: SaemJeon/apps@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
