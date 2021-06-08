@@ -14,10 +14,13 @@ jobs:
         run: |
           git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
-      - run: npm install @microsoft/rush
-      - run: rush update
-      - run: rush build
-      - run: rush extract-api
+      - run: |
+          npm install @microsoft/rush
+          rush update
+          rush build
+          rush extract-api
+          git add .
+
       - uses: SaemJeon/apps@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
