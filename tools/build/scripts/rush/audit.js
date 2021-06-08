@@ -41,7 +41,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
     1700, // https://npmjs.com/advisories/1700
   ];
 
-  const failBuild = false;
+  let shouldFailBuild = false;
   for (const action of jsonOut.actions) {
     for (const issue of action.resolves) {
       const advisory = jsonOut.advisories[issue.id];
@@ -55,14 +55,14 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
       if (!excludedAdvisories.includes(advisory.id) && (severity === "HIGH" || severity === "CRITICAL")) {
         logBuildError(message);
-        failBuild = true;
+        shouldFailBuild = true;
       } else if (excludedAdvisories.includes(advisory.id) || severity === "MODERATE") // Only warn on MODERATE severity items
         logBuildWarning(message);
     }
   }
 
   // For some reason yarn audit can return the json without the vulnerabilities
-  if (undefined === jsonOut.metadata.vulnerabilities || failBuild)
+  if (undefined === jsonOut.metadata.vulnerabilities || shouldFailBuild)
     failBuild();
 
   process.exit();
