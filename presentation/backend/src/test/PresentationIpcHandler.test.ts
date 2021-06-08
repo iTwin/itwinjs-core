@@ -6,7 +6,8 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
 import {
-  NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UpdateHierarchyStateParams, VariableValueTypes,
+  NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams, UpdateHierarchyStateParams,
+  VariableValueTypes,
 } from "@bentley/presentation-common";
 import { createRandomBaseNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
@@ -42,6 +43,28 @@ describe("PresentationIpcHandler", () => {
         variable: testVariable,
       };
       await ipcHandler.setRulesetVariable(params);
+      variablesManagerMock.verifyAll();
+    });
+  });
+
+  describe("unsetRulesetVariable", () => {
+    const testRulesetId = "test-ruleset-id";
+    const variablesManagerMock = moq.Mock.ofType<RulesetVariablesManager>();
+
+    beforeEach(() => {
+      presentationManagerMock.setup((x) => x.vars(testRulesetId)).returns(() => variablesManagerMock.object);
+    });
+
+    it("unsets ruleset variable", async () => {
+      variablesManagerMock.setup((x) => x.unset("test-id")).verifiable(moq.Times.once());
+
+      const ipcHandler = new PresentationIpcHandler();
+      const params: UnsetRulesetVariableParams = {
+        clientId: "test-client-id",
+        rulesetId: testRulesetId,
+        variableId: "test-id",
+      };
+      await ipcHandler.unsetRulesetVariable(params);
       variablesManagerMock.verifyAll();
     });
   });
