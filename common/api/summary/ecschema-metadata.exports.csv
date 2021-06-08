@@ -4,6 +4,7 @@ beta;AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | Stru
 beta;AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass
 beta;AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps
 beta;AnyDiagnostic = IDiagnostic
+deprecated;AnyDiagnostic = IDiagnostic
 beta;AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator
 beta;AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty
 beta;AnyEnumerator = Enumerator
@@ -15,30 +16,34 @@ beta;AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps
 beta;AnyStructProperty = StructProperty | StructArrayProperty
 beta;class ArrayProperty 
 beta;ArrayPropertyProps 
-alpha;BaseClassDelta 
 beta;class BaseDiagnostic
+deprecated;class BaseDiagnostic
 beta;BaseRule
-alpha;class BaseSchemaChange 
-alpha;class BaseSchemaChanges 
-alpha;ChangeType
-alpha;ClassChanges 
 beta;class ClassDiagnostic
+deprecated;class ClassDiagnostic
 beta;classModifierToString(modifier: ECClassModifier): string
 beta;ClassProps 
 beta;Constant 
 beta;ConstantProps 
 beta;containerTypeToString(type: CustomAttributeContainerType): string
 beta;createClassDiagnosticClass
+deprecated;createClassDiagnosticClass
 beta;createCustomAttributeContainerDiagnosticClass
+deprecated;createCustomAttributeContainerDiagnosticClass
 beta;createPropertyDiagnosticClass
+deprecated;createPropertyDiagnosticClass
 beta;createRelationshipConstraintDiagnosticClass
+deprecated;createRelationshipConstraintDiagnosticClass
 beta;createSchemaDiagnosticClass
+deprecated;createSchemaDiagnosticClass
 beta;createSchemaItemDiagnosticClass
+deprecated;createSchemaItemDiagnosticClass
+beta;CustomAttribute
 beta;CustomAttributeClass 
 beta;CustomAttributeClassProps 
-alpha;CustomAttributeContainerChange 
-alpha;CustomAttributeContainerChanges 
 beta;class CustomAttributeContainerDiagnostic
+deprecated;class CustomAttributeContainerDiagnostic
+beta;CustomAttributeContainerProps
 beta;CustomAttributeContainerType
 beta;DecimalPrecision
 beta;DelayedPromise
@@ -46,66 +51,63 @@ beta;DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor
 beta;DelayedPromiseWithProps
 beta;DelayedPromiseWithPropsConstructor
 beta;DiagnosticCategory
+deprecated;DiagnosticCategory
 beta;diagnosticCategoryToString(category: DiagnosticCategory): "Error" | "Warning" | "Message" | "Suggestion"
+deprecated;diagnosticCategoryToString(category: DiagnosticCategory): "Error" | "Warning" | "Message" | "Suggestion"
 beta;DiagnosticCodes:
+deprecated;DiagnosticCodes:
 beta;Diagnostics:
+deprecated;Diagnostics:
 beta;DiagnosticType
+deprecated;DiagnosticType
 beta;diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem"
+deprecated;diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem"
 beta;class ECClass 
 beta;ECClassModifier
 public;ECName
 internal;ECObjectsError 
 beta;ECObjectsStatus
 beta;ECRuleSet: IRuleSet
+deprecated;ECRuleSet: IRuleSet
 internal;ECStringConstants
 beta;ECVersion
-alpha;Editors
 beta;EntityClass 
 beta;EntityClassProps 
-alpha;EntityMixinChange 
-alpha;EntityMixinChanges 
 beta;Enumeration 
 beta;EnumerationArrayProperty 
-alpha;EnumerationChanges 
 beta;EnumerationProperty 
 beta;EnumerationPropertyProps 
 beta;EnumerationProps 
 beta;Enumerator
-alpha;EnumeratorChanges 
-alpha;EnumeratorDelta 
-alpha;EnumeratorMissing 
 beta;EnumeratorProps
 beta;Format 
-alpha;FormatChanges 
 beta;class FormatDiagnosticReporter 
+deprecated;class FormatDiagnosticReporter 
 beta;FormatProps 
 internal;formatStringRgx: RegExp
 beta;FormatTraits
 internal;formatTraitsToArray(currentFormatTrait: FormatTraits): string[]
 beta;FormatType
 internal;formatTypeToString(type: FormatType): string
-alpha;FormatUnitChange 
-alpha;FormatUnitChanges 
 beta;FractionalPrecision
 internal;getItemNamesFromFormatString(formatString: string): Iterable
 beta;IDiagnostic
+deprecated;IDiagnostic
 beta;IDiagnosticReporter
+deprecated;IDiagnosticReporter
 beta;InvertedUnit 
 beta;InvertedUnitProps 
 beta;IRule
 beta;IRuleSet
+deprecated;IRuleSet
 beta;IRuleSuppressionMap
 beta;IRuleSuppressionSet
-alpha;ISchemaChange
-alpha;ISchemaChanges
-alpha;ISchemaComparer
-alpha;ISchemaCompareReporter
 beta;ISchemaItemLocater
 beta;ISchemaLocater
 beta;ISchemaPartVisitor
 beta;ISuppressionRule
+deprecated;ISuppressionRule
 beta;KindOfQuantity 
-alpha;KindOfQuantityChanges 
 beta;KindOfQuantityProps 
 beta;LazyLoadedConstant = LazyLoadedSchemaItem
 beta;LazyLoadedCustomAttributeClass = LazyLoadedSchemaItem
@@ -126,6 +128,7 @@ beta;LazyLoadedStructClass = LazyLoadedSchemaItem
 beta;LazyLoadedUnit = LazyLoadedSchemaItem
 beta;LazyLoadedUnitSystem = LazyLoadedSchemaItem
 beta;LoggingDiagnosticReporter 
+deprecated;LoggingDiagnosticReporter 
 beta;Mixin 
 beta;MixinProps 
 beta;NavigationProperty 
@@ -148,8 +151,6 @@ beta;parseStrength(strength: string): StrengthType | undefined
 beta;parseStrengthDirection(direction: string): StrengthDirection | undefined
 beta;Phenomenon 
 beta;PhenomenonProps 
-alpha;PresentationUnitChange 
-alpha;PresentationUnitChanges 
 beta;PrimitiveArrayProperty 
 beta;PrimitiveArrayPropertyProps 
 beta;class PrimitiveOrEnumPropertyBase 
@@ -161,44 +162,35 @@ beta;primitiveTypeToString(type: PrimitiveType): string
 beta;class Property 
 beta;PropertyCategory 
 beta;PropertyCategoryProps 
-alpha;PropertyChanges 
 beta;class PropertyDiagnostic
-alpha;PropertyEditResults
-alpha;PropertyMissing 
+deprecated;class PropertyDiagnostic
 beta;PropertyProps
 beta;PropertyType
 beta;propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty"
 beta;PropertyTypeUtils
-alpha;PropertyValueChange 
 beta;RelationshipClass 
 beta;RelationshipClassProps 
 beta;RelationshipConstraint 
-alpha;RelationshipConstraintChanges 
-alpha;RelationshipConstraintClassChange 
 beta;class RelationshipConstraintDiagnostic
+deprecated;class RelationshipConstraintDiagnostic
 beta;RelationshipConstraintProps
 beta;RelationshipEnd
 beta;relationshipEndToString(end: RelationshipEnd): string
 beta;RelationshipMultiplicity
 beta;Schema 
 beta;SchemaCache 
-alpha;SchemaChanges 
 beta;SchemaCompareCodes:
+deprecated;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
-alpha;SchemaCompareDirection
-alpha;SchemaComparer
+deprecated;SchemaCompareDiagnostics:
 beta;SchemaContext 
-alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
-alpha;SchemaEditResults
+deprecated;class SchemaDiagnostic
 internal;SchemaGraphUtil
 beta;class SchemaItem
-alpha;class SchemaItemChange 
-alpha;SchemaItemChanges 
 beta;class SchemaItemDiagnostic
-alpha;SchemaItemEditResults
+deprecated;class SchemaItemDiagnostic
 beta;SchemaItemKey
-alpha;SchemaItemMissing 
 beta;SchemaItemProps
 beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
@@ -210,11 +202,11 @@ beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate
 beta;SchemaProps
 internal;SchemaReadHelper
-alpha;SchemaReferenceDelta 
-alpha;SchemaReferenceMissing 
 beta;SchemaReferenceProps
 beta;SchemaValidater
+deprecated;SchemaValidater
 beta;SchemaValidationVisitor 
+deprecated;SchemaValidationVisitor 
 internal;SchemaWalker
 beta;ScientificType
 internal;scientificTypeToString(scientificType: ScientificType): string
@@ -231,8 +223,8 @@ beta;StructClassProps = ClassProps
 beta;StructProperty 
 beta;StructPropertyProps 
 beta;class SuppressionDiagnosticReporter 
+deprecated;class SuppressionDiagnosticReporter 
 beta;Unit 
-alpha;UnitLabelOverrideDelta 
 beta;UnitProps 
 beta;UnitSystem 
 beta;UnitSystemProps = SchemaItemProps
