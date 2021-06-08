@@ -205,7 +205,47 @@ describe("usePresentationNodeLoader", () => {
       presentationManagerMock.verifyAll();
     });
 
-    it("creates a new nodeLoader when `RulesetVariablesManager` raises an `onRulesetVariableChanged` event", async () => {
+    it("creates a new nodeLoader when `RulesetVariablesManager` raises an `onRulesetVariableChanged` event with a new value", async () => {
+      const { result, waitForNextUpdate } = renderHook(
+        (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
+        { initialProps },
+      );
+      const oldNodeLoader = result.current.nodeLoader;
+
+      const variables: RulesetVariable[] = [{
+        id: "var-id",
+        type: VariableValueTypes.String,
+        value: "curr",
+      }, {
+        id: "other-var",
+        type: VariableValueTypes.Int,
+        value: 123,
+      }];
+
+      presentationManagerMock
+        .setup(async (x) => x.compareHierarchies({
+          imodel: imodelMock.object,
+          prev: {
+            rulesetVariables: [
+              variables[1],
+            ],
+          },
+          rulesetOrId: rulesetId,
+          expandedNodeKeys: [],
+        }))
+        .returns(async () => [hierarchyChange])
+        .verifiable();
+      rulesetVariablesManagerMock.setup((x) => x.getAllVariables()).returns(() => variables);
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      act(() => { onRulesetVariableChanged.raiseEvent("var-id", undefined, "curr"); });
+      await waitForNextUpdate();
+
+      expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
+      presentationManagerMock.verifyAll();
+    });
+
+    it("creates a new nodeLoader when `RulesetVariablesManager` raises an `onRulesetVariableChanged` event with a changed value", async () => {
       const { result, waitForNextUpdate } = renderHook(
         (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
         { initialProps },
@@ -240,6 +280,40 @@ describe("usePresentationNodeLoader", () => {
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       act(() => { onRulesetVariableChanged.raiseEvent("var-id", "prev", "curr"); });
+      await waitForNextUpdate();
+
+      expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
+      presentationManagerMock.verifyAll();
+    });
+
+    it("creates a new nodeLoader when `RulesetVariablesManager` raises an `onRulesetVariableChanged` event with a removed value", async () => {
+      const { result, waitForNextUpdate } = renderHook(
+        (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
+        { initialProps },
+      );
+      const oldNodeLoader = result.current.nodeLoader;
+
+      const variables: RulesetVariable[] = [{
+        id: "other-var",
+        type: VariableValueTypes.Int,
+        value: 123,
+      }];
+
+      presentationManagerMock
+        .setup(async (x) => x.compareHierarchies({
+          imodel: imodelMock.object,
+          prev: {
+            rulesetVariables: variables,
+          },
+          rulesetOrId: rulesetId,
+          expandedNodeKeys: [],
+        }))
+        .returns(async () => [hierarchyChange])
+        .verifiable();
+      rulesetVariablesManagerMock.setup((x) => x.getAllVariables()).returns(() => variables);
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      act(() => { onRulesetVariableChanged.raiseEvent("var-id", "prev", undefined); });
       await waitForNextUpdate();
 
       expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);

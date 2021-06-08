@@ -335,6 +335,7 @@ export interface RulesetVariablesManager {
     setInts(variableId: string, value: number[]): void;
     setString(variableId: string, value: string): void;
     setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
+    unset(variableId: string): void;
 }
 
 // @internal
@@ -360,6 +361,8 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
     // (undocumented)
     setValueInternal(variableId: string, type: VariableValueTypes, value: VariableValue): void;
+    // (undocumented)
+    unset(variableId: string): void;
 }
 
 // @alpha
