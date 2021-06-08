@@ -145,6 +145,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
     echo "     updateUrl is ${updateUrl}"
     echo "     target_url is ${target_url}"
     echo "     context is ${context}"
+    echo '{"state": "failure", "target_url": "'${target_url}'", "context": "'${context}'", "description": "The build hit the 3 hour threshold. Please re-queue the build."}'
 
     curl \
       -X POST \
@@ -152,6 +153,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
       -H "Authorization: token $oauth" \
       $updateUrl \
       -d '{"state": "failure", "target_url": "'${target_url}'", "context": "'${context}'", "description": "The build hit the 3 hour threshold. Please re-queue the build."}'
+
 
     break
   done
