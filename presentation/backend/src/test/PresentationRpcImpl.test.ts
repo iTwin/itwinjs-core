@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, CompressedId64Set, Id64String } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
 import {
@@ -1713,7 +1713,7 @@ describe("PresentationRpcImpl", () => {
         const rpcOptions: HierarchyCompareRpcOptions = {
           ...defaultRpcParams,
           prev: {
-            rulesetVariables: [{ id: "test", type: VariableValueTypes.Int, value: 123 }],
+            rulesetVariables: [{ id: "test", type: VariableValueTypes.Id64Array, value: CompressedId64Set.compressArray(["0x123", "0x456"]) }],
           },
           rulesetOrId: "2",
           expandedNodeKeys: [createRandomECInstancesNodeKeyJSON()],
