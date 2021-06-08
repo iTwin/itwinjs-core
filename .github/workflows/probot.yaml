@@ -7,10 +7,10 @@ on:
 jobs:
   runProbot:
     runs-on: ubuntu-latest
-    if: ${{ github.event.label.name == 'extract-api' }}
+    if: |
+      github.event.label.name == 'extract-api' && github.event.pull_request.mergeable_state == 'clean'
     steps:
       - run: echo ${{ github.event.pull_request.mergeable_state }}
-      - run: echo ${{ github.event.mergeable_state }}
       - uses: actions/checkout@v2
       - name: Set Git Config
         run: |
