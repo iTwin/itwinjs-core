@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { CompressedId64Set, GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, GuidString, Id64Array, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3dProps, XYZProps } from "@bentley/geometry-core";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import {
@@ -37,6 +37,11 @@ export interface ModelIdAndGeometryGuid {
   guid: GuidString;
 }
 
+export interface ChangedEntity {
+  id: Id64String;
+  classId: Id64String;
+}
+
 /** The set of elements or models that were changed by a [Txn]($docs/learning/InteractiveEditing.md)
  * @note this object holds lists of ids of elements or models that were modified somehow during the Txn. Any modifications to an [[ElementAspect]]($backend) will
  * cause its element to appear in these lists.
@@ -51,6 +56,11 @@ export interface ChangedEntities {
   deleted?: CompressedId64Set;
   /** The ids of entities that were modified during this Txn */
   updated?: CompressedId64Set;
+
+  classIds?: Id64Array;
+  insertedClassIndices?: number[];
+  deletedClassIndices?: number[];
+  updatedClassIndices?: number[];
 }
 
 /** @internal */
