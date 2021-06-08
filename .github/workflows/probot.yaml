@@ -8,7 +8,7 @@ jobs:
   runProbot:
     runs-on: ubuntu-latest
     if: |
-      github.event.label.name == 'extract-api' && github.event.pull_request.mergeable_state == 'clean'
+      github.event.label.name == 'extract-api' && github.event.pull_request.mergeable_state == 'draft'
     steps:
       - run: echo ${{ github.event.pull_request.mergeable_state }}
       - uses: actions/checkout@v2
