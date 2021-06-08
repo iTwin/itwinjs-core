@@ -15,10 +15,9 @@ jobs:
           git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
       - run: |
-          node ./common/scripts/install-run-rush.js
-          rush update
-          rush build
-          rush extract-api
+          node ./common/scripts/install-run-rush.js update
+          node ./common/scripts/install-run-rush.js build
+          node ./common/scripts/install-run-rush.js extract-api
           git add .
 
       - uses: SaemJeon/apps@v1
