@@ -46,4 +46,4 @@ jobs:
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          Node_Version: 12.0.0
+          Node_Version: 12.13.0
