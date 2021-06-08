@@ -8,11 +8,11 @@ import { ChangedEntities, ChangedEntitiesIterable, EntityIdAndClassId } from "..
 
 describe("ChangedEntitiesIterable", () => {
   function entity(id: string, classId: string): EntityIdAndClassId {
-    return { id, classId }
+    return { id, classId };
   }
 
   function expectEntities(entities: Iterable<Readonly<EntityIdAndClassId>>, expected: EntityIdAndClassId[]) {
-    let actual = [];
+    const actual = [];
     for (const e of entities)
       actual.push({ ...e });
 

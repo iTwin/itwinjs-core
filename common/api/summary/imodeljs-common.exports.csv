@@ -66,6 +66,8 @@ public;CategorySelectorProps
 internal;ChangeData
 public;ChangedElements
 public;ChangedEntities
+public;ChangedEntitiesIterable
+public;ChangedEntitiesIterable
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
@@ -162,6 +164,8 @@ public;ElementLoadOptions
 public;ElementLoadProps 
 public;ElementProps 
 public;EmphasizeElementsProps
+public;EntityIdAndClassId
+public;EntityIdAndClassIdIterable = Iterable
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps

@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { CompressedId64Set, GuidString, Id64Array, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3dProps, XYZProps } from "@bentley/geometry-core";
 import { ChangedEntities } from "./ChangedEntities";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";

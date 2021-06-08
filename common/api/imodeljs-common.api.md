@@ -845,9 +845,25 @@ export interface ChangedElements {
 
 // @public
 export interface ChangedEntities {
+    classIds?: Id64Array;
     deleted?: CompressedId64Set;
+    deletedClassIndices?: number[];
     inserted?: CompressedId64Set;
+    insertedClassIndices?: number[];
     updated?: CompressedId64Set;
+    updatedClassIndices?: number[];
+}
+
+// @public
+export interface ChangedEntitiesIterable {
+    readonly deleted: EntityIdAndClassIdIterable;
+    readonly inserted: EntityIdAndClassIdIterable;
+    readonly updated: EntityIdAndClassIdIterable;
+}
+
+// @public (undocumented)
+export namespace ChangedEntitiesIterable {
+    export function create(props: ChangedEntities): ChangedEntitiesIterable;
 }
 
 // @internal (undocumented)
@@ -2378,6 +2394,15 @@ export interface EmphasizeElementsProps {
     unanimatedAppearance?: FeatureAppearanceProps;
     wantEmphasis?: boolean;
 }
+
+// @public
+export interface EntityIdAndClassId {
+    classId: Id64String;
+    id: Id64String;
+}
+
+// @public
+export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;
 
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {

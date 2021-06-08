@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeEvent, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+  assert, BeEvent, compareStrings, CompressedId64Set, DbResult, EntityIdAndClassIdIterable, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@bentley/bentleyjs-core";
 import { ChangedEntities, EntityIdAndClassId, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -46,9 +46,9 @@ export interface TxnChangedEntities {
   /** Ids of elements that were modified by the transaction. */
   updated: OrderedId64Array;
 
-  readonly inserts: Iterable<Readonly<EntityIdAndClassId>>;
-  readonly deletes: Iterable<Readonly<EntityIdAndClassId>>;
-  readonly updates: Iterable<Readonly<EntityIdAndClassId>>;
+  readonly inserts: EntityIdAndClassIdIterable;
+  readonly deletes: EntityIdAndClassIdIterable;
+  readonly updates: EntityIdAndClassIdIterable;
 }
 
 type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
@@ -100,7 +100,7 @@ class ChangedEntitiesArray {
     entities[prop] = this._classIndices;
   }
 
-  public iterable(classIds: Id64Array): Iterable<Readonly<EntityIdAndClassId>> {
+  public iterable(classIds: Id64Array): EntityIdAndClassIdIterable {
     function* iterator(entityIds: ReadonlyArray<Id64String>, classIndices: number[]) {
       const entity = { id: "", classId: "" };
       for (let i = 0; i < entityIds.length; i++) {
