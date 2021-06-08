@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { expect } from "chai";
+import sinon from "sinon";
 import { IpcApp } from "@bentley/imodeljs-frontend";
 import { NodeKey, PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
 import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { expect } from "chai";
-import sinon from "sinon";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 
 describe("IpcRequestsHandler", () => {
@@ -27,6 +27,19 @@ describe("IpcRequestsHandler", () => {
         clientId: "test-client-id",
         rulesetId,
         variable,
+      });
+    });
+  });
+
+  describe("unsetRulesetVariable", () => {
+    it("calls IpcApp.callIpcChannel with injected client id", async () => {
+      const callChannelStub = sinon.stub(IpcApp, "callIpcChannel");
+      const rulesetId = "test-ruleset-id";
+      await handler.unsetRulesetVariable({ rulesetId, variableId: "test-id" });
+      expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "unsetRulesetVariable", {
+        clientId: "test-client-id",
+        rulesetId,
+        variableId: "test-id",
       });
     });
   });
