@@ -15,7 +15,7 @@ import {
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
+  DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
   TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
@@ -1159,6 +1159,13 @@ describe("iModel", () => {
 
     imodel5.cartographicToSpatialFromEcef(carto, z2);
     assert.isTrue(z2.isAlmostEqual(center, .001), "cartographicToSpatial");
+
+    assert.isTrue(imodel5.geographicCoordinateSystem !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.horizontalCRS !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.horizontalCRS!.id === "UTM84-53N");
+    assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id === "ELLIPSOID");
   });
 
   function checkClassHasHandlerMetaData(obj: EntityMetaData) {
@@ -1686,6 +1693,214 @@ describe("iModel", () => {
     assert.equal(nativeDb.queryLocalValue(testLocal), testValue);
 
     iModel.close();
+  });
+
+  it("should be able to create a snapshot IModel and set geolocation by GCS", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const gcs = new GeographicCRS({
+      horizontalCRS: {
+        id: "10TM115-27",
+        description: "",
+        source: "Mentor Software Client",
+        deprecated: false,
+        datumId: "NAD27",
+        unit: "Meter",
+        projection: {
+          method: "TransverseMercator",
+          centralMeridian: -115,
+          latitudeOfOrigin: 0,
+          scaleFactor: 0.9992,
+          falseEasting: 0.0,
+          falseNorthing: 0.0,
+        },
+        extent: {
+          southWest: { latitude: 48, longitude: -120.5 },
+          northEast: { latitude: 84, longitude: -109.5 },
+        },
+      },
+      verticalCRS: { id: "GEOID" },
+      additionalTransform: {
+        helmert2DWithZOffset: {
+          translationX: 10.0,
+          translationY: 15.0,
+          translationZ: 0.02,
+          rotDeg: 1.2,
+          scale: 1.0001,
+        },
+      },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot2.bim");
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    let eventListenedTo = false;
+    const gcsListener = (previousGCS: GeographicCRS | undefined) => {
+      assert.equal(previousGCS, undefined);
+      assert.isTrue(iModel.geographicCoordinateSystem !== undefined);
+      assert.isTrue(iModel.geographicCoordinateSystem!.equals(gcs));
+      eventListenedTo = true;
+    };
+    iModel.onGeographicCoordinateSystemChanged.addListener(gcsListener);
+
+    assert.isTrue(iModel.geographicCoordinateSystem === undefined);
+
+    assert.isFalse(eventListenedTo);
+
+    iModel.geographicCoordinateSystem = gcs;
+
+    assert.isTrue(eventListenedTo);
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel2.geographicCoordinateSystem !== undefined);
+
+    // The reloaded gcs will be different as the datum definition will have been expanded
+    assert.isFalse(iModel2.geographicCoordinateSystem!.equals(gcs));
+
+    // But other properties will be identical
+    assert.isTrue(iModel2.geographicCoordinateSystem !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.verticalCRS !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.verticalCRS!.equals(gcs.verticalCRS!));
+    assert.isTrue(iModel2.geographicCoordinateSystem!.additionalTransform !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.additionalTransform!.equals(gcs.additionalTransform!));
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.projection !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.projection!.equals(gcs.horizontalCRS!.projection!));
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.id !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.id === gcs.horizontalCRS!.id!);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.extent !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.extent!.equals(gcs.horizontalCRS!.extent!));
+
+    // When a gcs is present then the ECEF is automatically defined.
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+
+    iModel2.close();
+  });
+
+  it("should be able to create a snapshot IModel and set geolocation by ECEF", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const ecef = new EcefLocation({
+      origin: [42, 21, 0],
+      orientation: { yaw: 1, pitch: 1, roll: -1 },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot3.bim");
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    assert.isTrue(iModel.ecefLocation === undefined);
+
+    iModel.ecefLocation = ecef;
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+    assert.isTrue(iModel2.ecefLocation!.isAlmostEqual(ecef));
+
+    iModel2.close();
+  });
+
+  // Deactivated since change was (temporarily) reverted
+  it.skip("presence of a GCS imposes the ecef value", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const gcs = new GeographicCRS({
+      horizontalCRS: {
+        id: "10TM115-27",
+        description: "",
+        source: "Mentor Software Client",
+        deprecated: false,
+        datumId: "NAD27",
+        unit: "Meter",
+        projection: {
+          method: "TransverseMercator",
+          centralMeridian: -115,
+          latitudeOfOrigin: 0,
+          scaleFactor: 0.9992,
+          falseEasting: 0.0,
+          falseNorthing: 0.0,
+        },
+        extent: {
+          southWest: { latitude: 48, longitude: -120.5 },
+          northEast: { latitude: 84, longitude: -109.5 },
+        },
+      },
+      verticalCRS: { id: "GEOID" },
+      additionalTransform: {
+        helmert2DWithZOffset: {
+          translationX: 10.0,
+          translationY: 15.0,
+          translationZ: 0.02,
+          rotDeg: 1.2,
+          scale: 1.0001,
+        },
+      },
+    });
+
+    const ecef = new EcefLocation({
+      origin: [42, 21, 0],
+      orientation: { yaw: 1, pitch: 1, roll: -1 },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot4.bim");
+
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    iModel.ecefLocation = ecef;
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openForApplyChangesets(testFile);
+
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+    assert.isTrue(iModel2.ecefLocation!.isAlmostEqual(ecef));
+
+    assert.isTrue(iModel2.geographicCoordinateSystem === undefined);
+
+    iModel2.geographicCoordinateSystem = gcs;
+
+    iModel2.updateIModelProps();
+    iModel2.saveChanges();
+    iModel2.close();
+
+    const iModel3 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel3.geographicCoordinateSystem !== undefined);
+
+    // When a gcs is present then ecef value is imposed by the gcs disregarding previous value.
+    assert.isTrue(iModel3.ecefLocation !== undefined);
+    assert.isFalse(iModel3.ecefLocation!.isAlmostEqual(ecef));
+
+    iModel3.close();
   });
 
   it("should be able to open checkpoints", async () => {

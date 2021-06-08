@@ -14,7 +14,8 @@ import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils"
 import { ECClassModifier, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, AnySchemaItem } from "../Interfaces";
-import { ECName, ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { ECName } from "../ECName";
 import { ECClass, StructClass } from "./Class";
 import { Constant } from "./Constant";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
