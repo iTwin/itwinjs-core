@@ -31,6 +31,8 @@ import { IDiagnosticReporter } from "./DiagnosticReporter";
 import { IRuleSet } from "./Rules";
 import { IRuleSuppressionMap, IRuleSuppressionSet, ISuppressionRule } from "./RuleSuppressionSet";
 
+/* eslint-disable deprecation/deprecation */
+
 interface RuleSetArray {
   [name: string]: IRuleSet;
 }

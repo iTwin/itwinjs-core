@@ -27,6 +27,8 @@ import { Unit } from "../Metadata/Unit";
 import { UnitSystem } from "../Metadata/UnitSystem";
 import { AnyDiagnostic } from "./Diagnostic";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Interface used for all rule suppressions used during schema validation.
  * Just telling us whether a rule is suppressed or not.

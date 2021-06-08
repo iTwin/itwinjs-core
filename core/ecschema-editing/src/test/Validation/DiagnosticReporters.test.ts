@@ -13,6 +13,7 @@ import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticRep
 
 import sinon = require("sinon");
 
+/* eslint-disable-next-line deprecation/deprecation */
 class TestDiagnosticReporter extends FormatDiagnosticReporter {
   constructor(suppressions?: Map<string, string[]>) {
     super(suppressions);

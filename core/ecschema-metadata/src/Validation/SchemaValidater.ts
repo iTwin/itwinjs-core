@@ -15,6 +15,8 @@ import { AnyDiagnostic } from "./Diagnostic";
 import { SchemaWalker } from "./SchemaWalker";
 import { ECRuleSet } from "./ECRules";
 
+/* eslint-disable deprecation/deprecation */
+
 class CollectionReporter extends SuppressionDiagnosticReporter {
   private _diagnostics: AnyDiagnostic[] = [];
 

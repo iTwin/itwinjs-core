@@ -7,6 +7,8 @@ import { expect } from "chai";
 import { DiagnosticCategory, DiagnosticType, Enumeration, PrimitiveType, Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import * as Rules from "../../../Validation/ECRules";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Enumeration rule tests", () => {
   let schema: Schema;
 

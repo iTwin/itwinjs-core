@@ -9,6 +9,8 @@ import { DelayedPromiseWithProps, DiagnosticCategory, DiagnosticType, ECClassMod
 } from "@bentley/ecschema-metadata";
 import * as Rules from "../../../Validation/ECRules";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("ClassRule tests", () => {
   let schema: Schema;
 

@@ -12,6 +12,8 @@ import { FormatDiagnosticReporter } from "./DiagnosticReporter";
 
 const loggingCategory = "ecschema-metadata";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * An [[IDiagnosticReporter]] for logging [[IDiagnostic]] objects.
  * @beta

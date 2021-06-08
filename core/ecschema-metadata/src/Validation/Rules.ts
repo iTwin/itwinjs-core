@@ -31,6 +31,7 @@ import { BaseDiagnostic } from "./Diagnostic";
  * Interface used for all rule implementations used during schema validation.
  * @beta
  */
+/* eslint-disable-next-line deprecation/deprecation */
 export type IRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[]) => AsyncIterable<BaseDiagnostic<T, any[]>>;
 
 /** @beta */

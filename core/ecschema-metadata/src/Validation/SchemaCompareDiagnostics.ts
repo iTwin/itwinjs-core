@@ -74,6 +74,8 @@ import { AnyProperty, RelationshipConstraint } from "../ecschema-metadata";
 import { CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 /* eslint-enable no-duplicate-imports, @typescript-eslint/no-unused-vars */
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * The list of [[IDiagnostic]] implementation classes used by the Schema comparison framework.
  * @beta

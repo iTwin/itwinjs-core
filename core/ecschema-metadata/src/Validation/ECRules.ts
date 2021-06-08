@@ -24,6 +24,8 @@ import { IRuleSet } from "./Rules";
 import { SchemaGraph } from "./SchemaGraph";
 import { Schema } from "../Metadata/Schema";
 
+/* eslint-disable deprecation/deprecation */
+
 const ruleSetName = "ECObjects";
 
 function getCode(code: number): string {

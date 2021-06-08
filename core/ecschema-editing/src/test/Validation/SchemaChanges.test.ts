@@ -10,6 +10,8 @@ import {
 } from "@bentley/ecschema-metadata";
 import { ChangeType, SchemaChanges } from "../../Validation/SchemaChanges";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("SchemaChanges tests", () => {
   let schema: Schema;
   beforeEach(async () => {

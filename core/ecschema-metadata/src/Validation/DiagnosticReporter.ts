@@ -15,6 +15,8 @@ const translationNamespace = "ECSchemaMetaData";
 const subTranslationNamespace = "Diagnostics";
 const baseTranslationKey = `${translationNamespace}:${subTranslationNamespace}`;
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Interface used to report [[IDiagnostic]] objects created during schema validation.
  * @beta
