@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-frontend",
-  "version": "2.17.0-dev.23",
+  "version": "2.17.0-dev.29",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-editor-frontend.js",
   "typings": "lib/imodeljs-editor-frontend",
@@ -34,9 +34,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.17.0-dev.23",
-    "@bentley/imodeljs-common": "workspace:^2.17.0-dev.23",
-    "@bentley/imodeljs-i18n": "workspace:^2.17.0-dev.23"
+    "@bentley/bentleyjs-core": "workspace:^2.17.0-dev.29",
+    "@bentley/imodeljs-common": "workspace:^2.17.0-dev.29",
+    "@bentley/imodeljs-i18n": "workspace:^2.17.0-dev.29"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
