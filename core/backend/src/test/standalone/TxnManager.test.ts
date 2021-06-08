@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
+  ChangedEntity, Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
@@ -65,6 +65,17 @@ describe("TxnManager", () => {
     imodel.close();
     IModelJsFs.removeSync(testFileName);
   });
+
+  function makeEntity(id: string, classFullName: string): ChangedEntity {
+    const classId = imodel.nativeDb.classNameToId(classFullName);
+    expect(Id64.isValid(classId)).to.be.true;
+    return { id, classId };
+  }
+
+  function physicalModelEntity(id: string) { return makeEntity(id, "BisCore:PhysicalModel"); }
+  function physicalObjectEntity(id: string) { return makeEntity(id, "TestBim:TestPhysicalObject"); }
+  function spatialCategoryEntity(id: string) { return makeEntity(id, "BisCore:SpatialCategory"); }
+  function subCategoryEntity(categoryId: string) { return makeEntity(IModel.getDefaultSubCategoryId(categoryId), "BisCore:SubCategory"); }
 
   it("TxnManager", async () => {
     const models = imodel.models;
@@ -284,9 +295,9 @@ describe("TxnManager", () => {
   });
 
   class EventAccumulator {
-    public readonly inserted: string[] = [];
-    public readonly updated: string[] = [];
-    public readonly deleted: string[] = [];
+    public readonly inserted: ChangedEntity[] = [];
+    public readonly updated: ChangedEntity[] = [];
+    public readonly deleted: ChangedEntity[] = [];
     public numValidates = 0;
     public numApplyChanges = 0;
     private _numBeforeUndo = 0;
@@ -352,9 +363,17 @@ describe("TxnManager", () => {
       if (!source)
         return;
 
+      const iterNames = { "inserted": "inserts", "updated": "updates", "deleted": "deletes" } as const;
+      const iterName = iterNames[propName];
+      const entities = changes[iterName];
+
+      let i = 0;
       const dest = this[propName];
-      for (const id of source)
-        dest.push(id);
+      for (const entity of entities) {
+        expect(entity.id).to.equal(source.array[i]);
+        ++i;
+        dest.push({...entity});
+      }
     }
 
     public expectNumValidations(expected: number) {
@@ -370,13 +389,13 @@ describe("TxnManager", () => {
       expect(this._numBeforeUndo).to.equal(expected);
     }
 
-    public expectChanges(expected: { inserted?: string[], updated?: string[], deleted?: string[] }): void {
+    public expectChanges(expected: { inserted?: ChangedEntity[], updated?: ChangedEntity[], deleted?: ChangedEntity[] }): void {
       this.expect(expected.inserted, "inserted");
       this.expect(expected.updated, "updated");
       this.expect(expected.deleted, "deleted");
     }
 
-    private expect(expected: string[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
+    private expect(expected: ChangedEntity[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
       expect(this[propName]).to.deep.equal(expected ?? []);
     }
 
@@ -397,7 +416,7 @@ describe("TxnManager", () => {
       id2 = elements.insertElement(props);
       imodel.saveChanges("2 inserts");
       accum.expectNumValidations(1);
-      accum.expectChanges({ inserted: [id1, id2] });
+      accum.expectChanges({ inserted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
@@ -413,7 +432,7 @@ describe("TxnManager", () => {
       elem2.update();
       imodel.saveChanges("2 updates");
       accum.expectNumValidations(1);
-      accum.expectChanges({ updated: [id1, id2] });
+      accum.expectChanges({ updated: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     EventAccumulator.testElements(imodel, (accum) => {
@@ -421,14 +440,14 @@ describe("TxnManager", () => {
       elem2.delete();
       imodel.saveChanges("2 deletes");
       accum.expectNumValidations(1);
-      accum.expectChanges({ deleted: [id1, id2] });
+      accum.expectChanges({ deleted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     // Undo
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reverseSingleTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ inserted: [id1, id2] });
+      accum.expectChanges({ inserted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
       accum.expectNumApplyChanges(1);
       accum.expectNumValidations(0);
     });
@@ -436,32 +455,32 @@ describe("TxnManager", () => {
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reverseSingleTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ updated: [id1, id2] });
+      accum.expectChanges({ updated: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reverseSingleTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ deleted: [id1, id2] });
+      accum.expectChanges({ deleted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     // Redo
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reinstateTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ inserted: [id1, id2] });
+      accum.expectChanges({ inserted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reinstateTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ updated: [id1, id2] });
+      accum.expectChanges({ updated: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reinstateTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ deleted: [id1, id2] });
+      accum.expectChanges({ deleted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
       accum.expectNumApplyChanges(1);
       accum.expectNumValidations(0);
     });
@@ -475,9 +494,9 @@ describe("TxnManager", () => {
 
       // We received 3 separate "elements changed" events - one for each txn - and just concatenated the lists.
       accum.expectChanges({
-        inserted: [id1, id2],
-        updated: [id1, id2],
-        deleted: [id1, id2],
+        inserted: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
+        updated: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
+        deleted: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
       });
     });
 
@@ -490,9 +509,25 @@ describe("TxnManager", () => {
 
       // We received 3 separate "elements changed" events - one for each txn - and just concatenated the lists.
       accum.expectChanges({
-        inserted: [id1, id2],
-        updated: [id1, id2],
-        deleted: [id1, id2],
+        inserted: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
+        updated: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
+        deleted: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
+      });
+    });
+
+    EventAccumulator.testElements(imodel, (accum) => {
+      const elemId1 = imodel.elements.insertElement(props);
+      const catId = SpatialCategory.insert(imodel, IModel.dictionaryId, Guid.createValue(), new SubCategoryAppearance({ color: ColorByName.green }));
+      const elemId2 = imodel.elements.insertElement(props);
+      imodel.saveChanges("2 physical elems and 1 spatial category");
+      accum.expectNumValidations(1);
+      accum.expectChanges({
+        inserted: [
+          physicalObjectEntity(elemId1),
+          spatialCategoryEntity(catId),
+          subCategoryEntity(catId),
+          physicalObjectEntity(elemId2),
+        ],
       });
     });
   });
@@ -505,7 +540,7 @@ describe("TxnManager", () => {
       newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
       imodel.saveChanges("1 insert");
       accum.expectNumValidations(1);
-      accum.expectChanges({ inserted: [newModelId] });
+      accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
     });
     await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
 
@@ -533,7 +568,7 @@ describe("TxnManager", () => {
       newModel.delete();
       imodel.saveChanges("1 delete");
       accum.expectNumValidations(1);
-      accum.expectChanges({ deleted: [newModelId] });
+      accum.expectChanges({ deleted: [physicalModelEntity(newModelId)] });
 
       accum.expectNumApplyChanges(0);
     });
@@ -543,7 +578,7 @@ describe("TxnManager", () => {
       imodel.txns.reverseSingleTxn();
       accum.expectNumUndoRedo(1);
       accum.expectNumApplyChanges(1);
-      accum.expectChanges({ inserted: [newModelId] });
+      accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
     });
 
     EventAccumulator.testModels(imodel, (accum) => {
@@ -564,7 +599,7 @@ describe("TxnManager", () => {
       imodel.txns.reverseSingleTxn();
       accum.expectNumUndoRedo(1);
       accum.expectNumApplyChanges(1);
-      accum.expectChanges({ deleted: [newModelId] });
+      accum.expectChanges({ deleted: [physicalModelEntity(newModelId)] });
     });
 
     // Redo
@@ -574,7 +609,7 @@ describe("TxnManager", () => {
 
       accum.expectNumUndoRedo(4);
       accum.expectNumApplyChanges(4);
-      accum.expectChanges({ inserted: [newModelId], deleted: [newModelId] });
+      accum.expectChanges({ inserted: [physicalModelEntity(newModelId)], deleted: [physicalModelEntity(newModelId)] });
     });
   });
 
