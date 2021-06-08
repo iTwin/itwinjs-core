@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.label.name == 'extract-api' }}
     steps:
+      - run: echo ${{ github }}
       - uses: actions/checkout@v2
       - name: Set Git Config
         run: |
