@@ -167,7 +167,7 @@ const rule = {
     /**
      * @param {FuncDeclLike} node
      */
-    function VisitFunctionDecl(node) {
+    function VisitFuncDeclLike(node) {
       if (!returnsPromise(node))
         return;
 
@@ -234,6 +234,39 @@ const rule = {
       }
     }
 
+    /** @param {import("estree").FunctionExpression} node */
+    function ExitFuncDeclLike(node) {
+      const lastFunc = back(asyncFuncStack);
+      if (!lastFunc || lastFunc.func !== node)
+        return;
+      asyncFuncStack.pop();
+      for (const await_ of lastFunc.awaits) {
+        const stmt = getExpressionOuterStatement(await_);
+        const stmtIndex = stmt.parent.body.findIndex((s) => s === stmt);
+        const nextStmt = stmt.parent.body[stmtIndex + 1];
+        if (nextStmt && !isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)) {
+          context.report({
+            node: nextStmt,
+            messageId: "noReenterOnAwaitResume",
+            suggest: [
+              {
+                desc: `Add a call to '${lastFunc.reqCtxArgName}.enter()' after the statement containing 'await'`,
+                fix(fixer) {
+                  return fixer.insertTextAfter(
+                    stmt,
+                    `${lastFunc.reqCtxArgName}.enter();`
+                  );
+                }
+              }
+            ],
+            data: {
+              reqCtxArgName: lastFunc.reqCtxArgName
+            }
+          });
+        }
+      }
+    };
+
     return {
       AwaitExpression(node) {
         const lastFunc = back(asyncFuncStack);
@@ -281,7 +314,7 @@ const rule = {
         const lastFunc = back(asyncFuncStack);
         if (lastFunc === undefined || lastFunc.func !== outerFunc)
           return;
-        // TODO: more robust checking that it is a Thenable's method being called
+        // TODO: use type checking to check for thenable's methods
         const isThen = (node.callee.name || node.callee.property.name || node.callee.property.value) === "then";
         const isCatch = (node.callee.name || node.callee.property.name || node.callee.property.value) === "catch";
         const isPromiseCallback = isThen || isCatch;
@@ -319,42 +352,13 @@ const rule = {
         }
       },
 
-      /** @param {import("estree").FunctionExpression} node */
-      "FunctionExpression:exit"(node) {
-        const lastFunc = back(asyncFuncStack);
-        if (!lastFunc || lastFunc.func !== node)
-          return;
-        asyncFuncStack.pop();
-        for (const await_ of lastFunc.awaits) {
-          const stmt = getExpressionOuterStatement(await_);
-          const stmtIndex = stmt.parent.body.findIndex((s) => s === stmt);
-          const nextStmt = stmt.parent.body[stmtIndex + 1];
-          if (nextStmt && !isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)) {
-            context.report({
-              node: nextStmt,
-              messageId: "noReenterOnAwaitResume",
-              suggest: [
-                {
-                  desc: `Add a call to '${lastFunc.reqCtxArgName}.enter()' after the statement containing 'await'`,
-                  fix(fixer) {
-                    return fixer.insertTextAfter(
-                      stmt,
-                      `${lastFunc.reqCtxArgName}.enter();`
-                    );
-                  }
-                }
-              ],
-              data: {
-                reqCtxArgName: lastFunc.reqCtxArgName
-              }
-            });
-          }
-        }
-      },
 
-      [AST_NODE_TYPES.ArrowFunctionExpression]: VisitFunctionDecl,
-      [AST_NODE_TYPES.FunctionDeclaration]: VisitFunctionDecl,
-      [AST_NODE_TYPES.FunctionExpression]: VisitFunctionDecl,
+      "ArrowFunctionExpression:exit": ExitFuncDeclLike,
+      "FunctionDeclaration:exit": ExitFuncDeclLike,
+      "FunctionExpression:exit": ExitFuncDeclLike,
+      ArrowFunctionExpression: VisitFuncDeclLike,
+      FunctionDeclaration: VisitFuncDeclLike,
+      FunctionExpression: VisitFuncDeclLike,
     };
   },
 };

@@ -371,6 +371,7 @@ module.exports = {
     "@bentley/prefer-get": "error",
     "@bentley/react-set-state-usage": ["error", { "updater-only": false, "allow-object": true }],
     "@bentley/require-basic-rpc-values": "off",
+    "@bentley/client-request-context": ["error"],
   },
   settings: {
     "react": {
