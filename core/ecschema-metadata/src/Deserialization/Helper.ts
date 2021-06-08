@@ -74,7 +74,7 @@ export class SchemaReadHelper<T = unknown> {
 
     if (!await this._context.getCachedSchema(schema.schemaKey)) {
       // Need to add this schema to the context to be able to locate schemaItems within the context.
-      await this._context.addSchema(schema, async () => this.loadSchema(schema));
+      await this._context.addSchema(schema, this.loadSchema(schema));
     }
 
     await this._context.getSchema(schema.schemaKey);

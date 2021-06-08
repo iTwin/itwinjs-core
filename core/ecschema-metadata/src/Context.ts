@@ -11,7 +11,6 @@ import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 interface SchemaInfo {
   schema: Schema;
-  startLoading?: () => Promise<Schema>;
   loadSchema?: Promise<Schema>;
 }
 
@@ -67,13 +66,14 @@ export class SchemaCache implements ISchemaLocater {
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
    * @param schema The schema to add to the cache.
+   * @param loadSchema Promise to load the schema
    */
-  public async addSchema<T extends Schema>(schema: T, loadFunc?: () => Promise<T>) {
+  public async addSchema<T extends Schema>(schema: T, loadSchema?: Promise<T>) {
     if (this.getSchemaSync(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
-    if (loadFunc)
-      this._schema.push({ schema, startLoading: loadFunc });
+    if (loadSchema)
+      this._schema.push({ schema, loadSchema: loadSchema });
     else
       this._schema.push({ schema });
   }
@@ -108,11 +108,6 @@ export class SchemaCache implements ISchemaLocater {
       return undefined;
 
     if (foundSchemaInfo.loadSchema) {
-      return foundSchemaInfo.loadSchema as Promise<T>;
-    }
-
-    if (foundSchemaInfo.startLoading) {
-      foundSchemaInfo.loadSchema = foundSchemaInfo.startLoading();
       return foundSchemaInfo.loadSchema as Promise<T>;
     }
 
@@ -169,8 +164,8 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * Adds the schema to this context
    * @param schema The schema to add to this context
    */
-  public async addSchema(schema: Schema, loadFunc?: () => Promise<Schema>) {
-    await this._knownSchemas.addSchema(schema, loadFunc);
+  public async addSchema(schema: Schema, loadSchema?: Promise<Schema>) {
+    await this._knownSchemas.addSchema(schema, loadSchema);
   }
 
   /**
