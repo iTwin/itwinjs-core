@@ -73,7 +73,7 @@ export class SchemaCache implements ISchemaLocater {
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
     if (loadSchema)
-      this._schema.push({ schema, loadSchema: loadSchema });
+      this._schema.push({ schema, loadSchema });
     else
       this._schema.push({ schema });
   }
