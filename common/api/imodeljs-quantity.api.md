@@ -76,6 +76,7 @@ export enum DecimalPrecision {
 // @beta
 export class Format {
     constructor(name: string);
+    static clone(existing: Format): Format;
     static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
     // (undocumented)
     get customProps(): any;
@@ -83,10 +84,12 @@ export class Format {
     protected _customProps?: any;
     // (undocumented)
     get decimalSeparator(): string;
+    set decimalSeparator(val: string);
     // (undocumented)
     protected _decimalSeparator: string;
     // (undocumented)
     get formatTraits(): FormatTraits;
+    set formatTraits(val: FormatTraits);
     // (undocumented)
     protected _formatTraits: FormatTraits;
     static formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
@@ -97,17 +100,20 @@ export class Format {
     // (undocumented)
     get hasUnits(): boolean;
     // (undocumented)
-    get includeZero(): boolean | undefined;
+    get includeZero(): boolean;
+    set includeZero(val: boolean);
     // (undocumented)
     protected _includeZero: boolean;
     // (undocumented)
     static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits): boolean;
     // (undocumented)
     get minWidth(): number | undefined;
+    set minWidth(val: number | undefined);
     // (undocumented)
     protected _minWidth?: number;
     // (undocumented)
     get name(): string;
+    set name(val: string);
     static parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision;
     static parseFormatTrait(stringToCheck: string, currentFormatTrait: number): FormatTraits;
     static parseFormatTraits(formatTraitsFromJson: string | string[] | undefined): FormatTraits | undefined;
@@ -118,50 +124,61 @@ export class Format {
     static parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
+    set precision(val: DecimalPrecision | FractionalPrecision);
     // (undocumented)
     protected _precision: number;
     // (undocumented)
     get roundFactor(): number;
+    set roundFactor(val: number);
     // (undocumented)
     protected _roundFactor: number;
     // (undocumented)
     get scientificType(): ScientificType | undefined;
+    set scientificType(val: ScientificType | undefined);
     // (undocumented)
     protected _scientificType?: ScientificType;
     // (undocumented)
     static scientificTypeToString(scientificType: ScientificType): string;
     // (undocumented)
     get showSignOption(): ShowSignOption;
+    set showSignOption(val: ShowSignOption);
     // (undocumented)
     protected _showSignOption: ShowSignOption;
     static showSignOptionToString(showSign: ShowSignOption): string;
     // (undocumented)
-    get spacer(): string | undefined;
+    get spacer(): string;
+    set spacer(val: string);
     // (undocumented)
     protected _spacer: string;
     // (undocumented)
     get stationOffsetSize(): number | undefined;
+    set stationOffsetSize(val: number | undefined);
     // (undocumented)
     protected _stationOffsetSize?: number;
     // (undocumented)
     get stationSeparator(): string;
+    set stationSeparator(val: string);
     // (undocumented)
     protected _stationSeparator: string;
     // (undocumented)
     get thousandSeparator(): string;
+    set thousandSeparator(val: string);
     // (undocumented)
     protected _thousandSeparator: string;
     toJSON(): FormatProps;
     // (undocumented)
     get type(): FormatType;
+    set type(val: FormatType);
     // (undocumented)
     protected _type: FormatType;
     // (undocumented)
     get units(): Array<[UnitProps, string | undefined]> | undefined;
+    set units(val: Array<[UnitProps, string | undefined]> | undefined);
     // (undocumented)
     protected _units?: Array<[UnitProps, string | undefined]>;
     // (undocumented)
     get uomSeparator(): string;
+    set uomSeparator(val: string);
     // (undocumented)
     protected _uomSeparator: string;
     }
