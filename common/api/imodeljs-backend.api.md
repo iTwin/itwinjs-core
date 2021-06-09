@@ -2960,7 +2960,7 @@ export class IModelHubBackend {
     // (undocumented)
     static getRequestContext(arg: {
         requestContext?: AuthorizedClientRequestContext;
-    }): Promise<AuthorizedClientRequestContext | AuthorizedBackendRequestContext>;
+    }): Promise<AuthorizedBackendRequestContext | AuthorizedClientRequestContext>;
     // (undocumented)
     static get iModelClient(): IModelClient;
     // (undocumented)
