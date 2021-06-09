@@ -2636,6 +2636,8 @@ export abstract class IModelDb extends IModel {
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     // @internal (undocumented)
+    restartTxnSession(): void;
+    // @internal (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
