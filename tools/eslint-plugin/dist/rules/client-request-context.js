@@ -27,6 +27,21 @@ function back(array) {
   return array[array.length - 1];
 }
 
+/**
+ * Find an element in the array, and return the element after it
+ * handles undefined arrays by returning undefined
+ * @template T
+ * @param {T[] | undefined} array
+ * @param {Parameters<Array<T>["findIndex"]>[0]} predicate
+ * @returns {T | undefined}
+ */
+function findAfter(array, predicate) {
+  if (array === undefined)
+    return undefined;
+  const index = array.findIndex(predicate);
+  return array[index + 1];
+}
+
 /** @type {import("eslint").Rule.RuleModule} */
 const rule = {
   meta: {
@@ -226,13 +241,21 @@ const rule = {
       asyncFuncStack.pop();
       for (const await_ of lastFunc.awaits) {
         const stmt = getExpressionOuterStatement(await_);
+        if (stmt === undefined)
+          throw Error("unexpected AST format, await expression was not inside a statement");
         // TODO: test + handle cases for expression bodies of arrow functions
-        let body = stmt && stmt.parent &&
-            ((stmt.parent.type === "FunctionExpression" && stmt.parent.body.body)
-          || (stmt.parent.type === "TryStatement" && stmt.parent.block.body))
-          || undefined;
+        if (stmt.parent === undefined)
+          throw Error("unexpected AST format, stmt had no parent node");
+        const nextStmt = stmt.parent &&
+          findAfter(
+             (stmt.parent.type === "FunctionExpression" && stmt.parent.body.body)
+          || (stmt.parent.type === "TryStatement" && stmt.parent.block.body)
+          || (stmt.parent.type === "BlockStatement" && stmt.parent.body)
+          || undefined, s => s === stmt);
+        //if (body === undefined)
+          //throw Error(`unhandled parent node of type: ${stmt.parent.type}`)
         const stmtIndex = body.findIndex((s) => s === stmt);
-        const nextStmt = stmt.parent.body[stmtIndex + 1];
+        //const nextStmt = body[stmtIndex + 1];
         if (nextStmt && !isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)) {
           context.report({
             node: nextStmt,
@@ -257,12 +280,14 @@ const rule = {
     };
 
     return {
+      /** @param {TSESTree.AwaitExpression} node */
       AwaitExpression(node) {
         const lastFunc = back(asyncFuncStack);
         // if the stack is empty, this is a top-level await and we can ignore it
         if (lastFunc) lastFunc.awaits.add(node);
       },
 
+      /** @param {TSESTree.CatchClause} node */
       CatchClause(node) {
         const outerFunc = getOuterFunction(node);
         const lastFunc = back(asyncFuncStack);
