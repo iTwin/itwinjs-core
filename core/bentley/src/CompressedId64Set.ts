@@ -361,6 +361,9 @@ export class OrderedId64Array extends SortedArray<Id64String> {
 
   /** An iterable that iterates over the Ids in sorted order. */
   public get ids(): OrderedId64Iterable { return this._array; }
+
+  /** The underlying array of Ids. */
+  public get array(): ReadonlyArray<Id64String> { return this._array; }
 }
 
 /** A mutable set of valid [[Id64String]]s sorted in ascending order by the 64-bit unsigned integer value of the Ids.
