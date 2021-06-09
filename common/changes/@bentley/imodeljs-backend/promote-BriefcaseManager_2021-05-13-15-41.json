@@ -3,7 +3,6 @@
     {
       "packageName": "@bentley/imodeljs-backend",
       "comment": "promote BriefcaseManager to public",
-      "comment": "",
       "type": "none"
     }
   ],
