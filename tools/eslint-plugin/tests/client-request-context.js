@@ -213,10 +213,11 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement",
+          messageId: "noEnterOnAwaitResume",
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' after the statement containing 'await'",
+              messageId: "addEnterOnAwaitResume",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 class Bad {
                   async badMethod(reqCtx: ClientRequestContext) {
@@ -240,10 +241,11 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately",
+          messageId: "noEnterOnFirstLine",
           suggestions: [
             {
-              desc: "Add 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 async function missingFirstEnterCall(reqCtx: ClientRequestContext) {
                   reqCtx.enter();await Promise.resolve(5);
@@ -259,10 +261,11 @@ new ESLintTester({
       code: makeTest`async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {}`,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately",
+          messageId: "noEnterOnFirstLine",
           suggestions: [
             {
-              desc: "Add 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {reqCtx.enter();}`,
             }
           ]
@@ -277,10 +280,11 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately",
+          messageId: "noEnterOnFirstLine",
           suggestions: [
             {
-              desc: "Add 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 function noEnterAtBeginImplicitAsync(reqCtx: ClientRequestContext) {
                   reqCtx.enter();return Promise.resolve(5);
@@ -295,10 +299,10 @@ new ESLintTester({
       code: makeTest`async function f() {}`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`async function f(clientRequestContext: ClientRequestContext) {}`,
             },
           ]
@@ -309,10 +313,10 @@ new ESLintTester({
       code: makeTest`async function f(arg1: string) {}`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`async function f(clientRequestContext: ClientRequestContext, arg1: string) {}`,
             },
           ]
@@ -324,10 +328,10 @@ new ESLintTester({
       code: makeTest`async function f() {}`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`async function f(ctx: ClientRequestContext) {}`,
             },
           ]
@@ -338,10 +342,10 @@ new ESLintTester({
       code: makeTest`async function asyncMethod(otherArg: number) {}`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`async function asyncMethod(clientRequestContext: ClientRequestContext, otherArg: number) {}`,
             },
           ]
@@ -356,10 +360,11 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately",
+          messageId: "noEnterOnFirstLine",
           suggestions: [
             {
-              desc: "Add 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 function implicitlyAsync(reqCtx: ClientRequestContext) {
                   reqCtx.enter();return Promise.resolve();
@@ -374,10 +379,10 @@ new ESLintTester({
       code: makeTest`async function asyncFunc() {}`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`async function asyncFunc(clientRequestContext: ClientRequestContext) {}`,
             }
           ]
@@ -388,10 +393,10 @@ new ESLintTester({
       code: makeTest`class C { async asyncMethod() {} }`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`class C { async asyncMethod(clientRequestContext: ClientRequestContext) {} }`,
             }
           ]
@@ -402,10 +407,10 @@ new ESLintTester({
       code: makeTest`function promiseReturning(): Promise<void> { return Promise.resolve(); }`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`function promiseReturning(clientRequestContext: ClientRequestContext): Promise<void> { return Promise.resolve(); }`,
             }
           ]
@@ -416,10 +421,10 @@ new ESLintTester({
       code: makeTest`function implicitPromiseReturning() { return Promise.resolve(); }`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`function implicitPromiseReturning(clientRequestContext: ClientRequestContext) { return Promise.resolve(); }`,
             }
           ]
@@ -430,10 +435,10 @@ new ESLintTester({
       code: makeTest`const asyncArrow = async () => {};`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`const asyncArrow = async (clientRequestContext: ClientRequestContext) => {};`,
             }
           ]
@@ -444,10 +449,10 @@ new ESLintTester({
       code: makeTest`const promiseReturningArrow = (): Promise<void> => { return Promise.resolve(); };`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`const promiseReturningArrow = (clientRequestContext: ClientRequestContext): Promise<void> => { return Promise.resolve(); };`,
             }
           ]
@@ -458,10 +463,10 @@ new ESLintTester({
       code: makeTest`const implicitPromiseReturningArrow = () => { return Promise.resolve(); };`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`const implicitPromiseReturningArrow = (clientRequestContext: ClientRequestContext) => { return Promise.resolve(); };`,
             }
           ]
@@ -473,10 +478,10 @@ new ESLintTester({
       code: makeTest`const typedButNoReturnTypeArrow: (() => Promise<void>) = () => {return Promise.resolve();};`,
       errors: [
         {
-          message: "All promise-returning functions must take a parameter of type ClientRequestContext",
+          messageId: "noCtxParam",
           suggestions: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: "addCtxParam",
               output: makeTest`const typedButNoReturnTypeArrow: (() => Promise<void>) = (clientRequestContext: ClientRequestContext) => {return Promise.resolve();};`,
             }
           ]
@@ -507,10 +512,11 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks",
+          messageId: "noEnterOnThenResume",
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 function badThenCall(reqCtx: ClientRequestContext) {
                   reqCtx.enter();
@@ -535,10 +541,11 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks",
+          messageId: "noEnterOnThenResume",
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 function badComplicatedThenCall(reqCtx: ClientRequestContext) {
                   reqCtx.enter();
@@ -563,10 +570,12 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'reqCtx.enter()' immediately after catching an async exception",
+          messageId: "noEnterOnCatchResume",
+          data: { reqCtxArgName: "reqCtx" },
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 function badCatchCall(reqCtx: ClientRequestContext) {
                   reqCtx.enter();
@@ -594,10 +603,11 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks",
+          messageId: "noEnterOnThenResume",
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 function badSecondThenCall(reqCtx: ClientRequestContext) {
                   reqCtx.enter();
@@ -627,10 +637,11 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks",
+          messageId: "noEnterOnThenResume",
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 function bathBothThenCalls(reqCtx: ClientRequestContext) {
                   reqCtx.enter();
@@ -645,10 +656,11 @@ new ESLintTester({
           ]
         },
         {
-          message: "All promise-returning functions must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks",
+          messageId: "noEnterOnThenResume",
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 function bathBothThenCalls(reqCtx: ClientRequestContext) {
                   reqCtx.enter();
@@ -677,10 +689,12 @@ new ESLintTester({
       `,
       errors: [
         {
-          message: "All promise-returning functions must call 'reqCtx.enter()' immediately after catching an async exception",
+          messageId: "noEnterOnCatchResume",
+          data: {reqCtxArgName: "reqCtx"},
           suggestions: [
             {
-              desc: "Add a call to 'reqCtx.enter()' as the first statement of the body",
+              messageId: "addEnterOnFirstLine",
+              data: {reqCtxArgName: "reqCtx"},
               output: makeTest`
                 async function badAsyncCatch(reqCtx: ClientRequestContext) {
                   reqCtx.enter();

@@ -15,6 +15,24 @@ const OPTION_CONTEXT_ARG_NAME = "context-arg-name";
 
 const asyncFuncMoniker = "promise-returning function";
 
+const messages = {
+  noCtxParam: `All ${asyncFuncMoniker}s must take a parameter of type ClientRequestContext`,
+  noEnterOnFirstLine: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately`,
+  noEnterOnThenResume: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks`,
+  // TODO: should probably do it after expressions, not statements but that might be more complicated...
+  noEnterOnAwaitResume: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement`,
+  noEnterOnCatchResume: `All ${asyncFuncMoniker}s must call '{{reqCtxArgName}}.enter()' immediately after catching an async exception`,
+  didntPropagate: `All ${asyncFuncMoniker}s must propagate their async to functions`,
+  calledCurrent: `All ${asyncFuncMoniker}s must not call ClientRequestContext.current`,
+  // suggestion descriptions
+  addCtxParam: "Add a ClientRequextContext parameter",
+  addEnterOnFirstLine: "Add '{{reqCtxArgName}}.enter()' as the first statement of the body",
+  addEnterOnAwaitResume: "Add '{{reqCtxArgName}}.enter()' immediately after the statement containing 'await'",
+};
+
+/** @type {typeof messages} */
+const messageIds = Object.keys(messages).reduce((obj, key) => {obj[key] = key; return obj;}, {});
+
 /** @typedef {import("@typescript-eslint/typescript-estree")} TSESTreeModule */
 /** @typedef {TSESTree.FunctionExpression | TSESTree.ArrowFunctionExpression | TSESTree.FunctionDeclaration} FuncDeclLike */
 
@@ -47,7 +65,7 @@ class ASTPreconditionViolated extends Error {}
 /**
  * Given a syntax construct that has a statement child, replace
  * that statement child with a block
- * @param { TSESTree.ForOfStatement
+ * @param { TSESTree.Statement
  *        | TSESTree.ArrowFunctionExpression
  *        | TSESTree.IfStatement
  *        | TSESTree.ForOfStatement
@@ -64,8 +82,8 @@ function promoteBlocklessStmtFixer(stmt, fixer, {textBefore} = {textBefore: ""})
     = stmt.type === "IfStatement"
     ? stmt.consequent
     : stmt.body;
-  fixer.insertTextBefore(body, "{" + textBefore)
-  fixer.insertTextAfter(body, "}")
+  fixer.insertTextBefore(body, "{" + textBefore);
+  fixer.insertTextAfter(body, "}");
 }
 
 /**
@@ -74,7 +92,7 @@ function promoteBlocklessStmtFixer(stmt, fixer, {textBefore} = {textBefore: ""})
  * @param {TSESTree.Statement} stmt
  * @returns {TSESTree.Statement | undefined} Statement
  */
-function nextStatement(stmt) {
+function getNextStatement(stmt) {
   if (stmt.parent === undefined)
     throw new ASTPreconditionViolated("no parent");
   switch (stmt.parent.type) {
@@ -145,16 +163,7 @@ const rule = {
       },
     ],
     fixable: "code",
-    messages: {
-      noContextParam: `All ${asyncFuncMoniker}s must take a parameter of type ClientRequestContext`,
-      noReenterOnFirstLine: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately`,
-      noReenterOnThenResume: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks`,
-      // TODO: should probably do it after expressions, not statements but that might be more complicated...
-      noReenterOnAwaitResume: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement`,
-      noReenterOnCatchResume: `All ${asyncFuncMoniker}s must call '{{reqCtxArgName}}.enter()' immediately after catching an async exception`,
-      didntPropagate: `All ${asyncFuncMoniker}s must propagate their async to functions`,
-      calledCurrent: `All ${asyncFuncMoniker}s must not call ClientRequestContext.current`,
-    },
+    messages,
   },
 
   create(context) {
@@ -254,10 +263,10 @@ const rule = {
       if (clientReqCtx === undefined) {
         context.report({
           node,
-          messageId: "noContextParam",
+          messageId: messageIds.noCtxParam,
           suggest: [
             {
-              desc: "Add a ClientRequestContext parameter",
+              messageId: messageIds.addCtxParam,
               fix(fixer) {
                 const hasOtherParams = node.params.length > 0;
                 return fixer.insertTextBeforeRange(
@@ -284,9 +293,10 @@ const rule = {
         if (!isClientRequestContextEnter(firstStmt, reqCtxArgName))
         context.report({
           node: firstStmt || node.body,
-          messageId: "noReenterOnFirstLine",
+          messageId: messageIds.noEnterOnFirstLine,
           suggest: [{
-              desc: `Add '${reqCtxArgName}.enter()' as the first statement of the body`,
+              messageId: messageIds.addEnterOnFirstLine,
+              data: {reqCtxArgName},
               fix(fixer) {
                 if (firstStmt)
                   return fixer.insertTextBefore(firstStmt, `${reqCtxArgName}.enter();`);
@@ -317,22 +327,21 @@ const rule = {
         // TODO: test + handle cases for expression bodies of arrow functions
         if (stmt.parent === undefined)
           throw Error("unexpected AST format, stmt had no parent node");
-        const nextStmt =  nextStatement(stmt);
+        const nextStmt =  getNextStatement(stmt);
         if (nextStmt && !isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)) {
           context.report({
             node: nextStmt,
-            messageId: "noReenterOnAwaitResume",
+            messageId: messageIds.noEnterOnAwaitResume,
+            data: { reqCtxArgName: lastFunc.reqCtxArgName },
             suggest: [
               {
-                desc: `Add a call to '${lastFunc.reqCtxArgName}.enter()' after the statement containing 'await'`,
+                messageId: messageIds.addEnterOnAwaitResume,
+                data: { reqCtxArgName: lastFunc.reqCtxArgName },
                 fix(fixer) {
                   return fixer.insertTextAfter(stmt, `${lastFunc.reqCtxArgName}.enter();`);
                 }
               }
             ],
-            data: {
-              reqCtxArgName: lastFunc.reqCtxArgName
-            }
           });
         }
       }
@@ -358,9 +367,10 @@ const rule = {
         if (!isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName))
           context.report({
             node: firstStmt || node.body,
-            messageId: "noReenterOnCatchResume",
+            messageId: messageIds.noEnterOnCatchResume,
             suggest: [{
-                desc: `Add a call to '${lastFunc.reqCtxArgName}.enter()' as the first statement of the body`,
+                messageId: messageIds.addEnterOnFirstLine,
+                data: {reqCtxArgName: lastFunc.reqCtxArgName},
                 fix(fixer) {
                   const bodyIsEmpty = firstStmt === undefined;
                   if (bodyIsEmpty) {
@@ -400,9 +410,10 @@ const rule = {
               if (!isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName))
               context.report({
                 node: firstStmt || callback.body,
-                messageId: isThen ? "noReenterOnThenResume" : "noReenterOnCatchResume",
+                messageId: isThen ? messageIds.noEnterOnThenResume : messageIds.noEnterOnCatchResume,
                 suggest: [{
-                    desc: `Add a call to '${lastFunc.reqCtxArgName}.enter()' as the first statement of the body`,
+                    messageId: messageIds.addEnterOnFirstLine,
+                    data: {reqCtxArgName: lastFunc.reqCtxArgName},
                     fix(fixer) {
                       const bodyIsEmpty = firstStmt === undefined;
                       if (bodyIsEmpty) {
