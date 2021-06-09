@@ -243,7 +243,7 @@ export class SampleAppIModelApp {
 
     await MarkupApp.initialize();
     await FrontendDevTools.initialize();
-    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true, registerSketchTools: true });
+    await EditTools.initialize({ registerAllTools: true });
 
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
