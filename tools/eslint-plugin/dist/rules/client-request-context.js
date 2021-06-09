@@ -42,6 +42,53 @@ function findAfter(array, predicate) {
   return array[index + 1];
 }
 
+class ASTPreconditionViolated extends Error {}
+
+/**
+ * Return the statement immediately following the input statement
+ // TODO: expand to all input nodes types, not just statements
+ * @param {TSESTree.Statement} stmt
+ * @returns {TSESTree.Statement | undefined} Statement
+ */
+function nextStatement(stmt) {
+  if (stmt.parent === undefined)
+    throw new ASTPreconditionViolated("no parent");
+  switch (stmt.parent.type) {
+    // XXX: don't these only show up when the statement isn't embedded in the block statement but in the parameter initializers or something?
+    case "ArrowFunctionExpression":
+      if (stmt.parent.body.type === "BlockStatement")
+        return findAfter(stmt.parent.body.body, s => s === stmt);
+      // XXX: promote block-less ARROW FUNC EXPR to block
+      // XXX: handle empty body
+      else return;
+    case "FunctionDeclaration":
+    case "FunctionExpression":
+      return findAfter(stmt.parent.body.body, s => s === stmt);
+    case "CatchClause":
+      return findAfter(stmt.parent.body.body, s => s === stmt);
+    case "TryStatement":
+      return findAfter(stmt.parent.block.body, s => s === stmt);
+    case "BlockStatement":
+      return findAfter(stmt.parent.body, s => s === stmt);
+    case "IfStatement":
+      // XXX: promote block-less IF-CONSEQUENCE to block
+      // XXX: handle empty body
+      if (stmt.parent.consequent.type === "BlockStatement")
+        return stmt.parent.consequent.body[0];
+      else return;
+    case "ForInStatement":
+    case "ForStatement":
+    case "ForOfStatement":
+      // XXX: promote block-less FOR BODY to blocks
+      // XXX: handle empty body
+      if (stmt.parent.body.type === "BlockStatement")
+        return stmt.parent.body.body[0];
+      else return;
+    default:
+      throw Error(`Unhandled case: ${stmt.parent.type}`);
+  }
+}
+
 /** @type {import("eslint").Rule.RuleModule} */
 const rule = {
   meta: {
@@ -246,16 +293,7 @@ const rule = {
         // TODO: test + handle cases for expression bodies of arrow functions
         if (stmt.parent === undefined)
           throw Error("unexpected AST format, stmt had no parent node");
-        const nextStmt = stmt.parent &&
-          findAfter(
-             (stmt.parent.type === "FunctionExpression" && stmt.parent.body.body)
-          || (stmt.parent.type === "TryStatement" && stmt.parent.block.body)
-          || (stmt.parent.type === "BlockStatement" && stmt.parent.body)
-          || undefined, s => s === stmt);
-        //if (body === undefined)
-          //throw Error(`unhandled parent node of type: ${stmt.parent.type}`)
-        const stmtIndex = body.findIndex((s) => s === stmt);
-        //const nextStmt = body[stmtIndex + 1];
+        const nextStmt =  nextStatement(stmt);
         if (nextStmt && !isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)) {
           context.report({
             node: nextStmt,
@@ -264,10 +302,7 @@ const rule = {
               {
                 desc: `Add a call to '${lastFunc.reqCtxArgName}.enter()' after the statement containing 'await'`,
                 fix(fixer) {
-                  return fixer.insertTextAfter(
-                    stmt,
-                    `${lastFunc.reqCtxArgName}.enter();`
-                  );
+                  return fixer.insertTextAfter(stmt, `${lastFunc.reqCtxArgName}.enter();`);
                 }
               }
             ],
@@ -347,10 +382,12 @@ const rule = {
                     fix(fixer) {
                       const bodyIsEmpty = firstStmt === undefined;
                       if (bodyIsEmpty) {
+                        /** @type {TSESTreeModule.TSESTreeToTSNode<TSESTree.CallExpression>} */
                         const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
                         return fixer.insertTextBeforeRange(
+                          // TODO: abstract out inserting into empty bodies
                           // TODO: clarify why the tsNode locations are like this
-                          [tsNode.body.end-1, tsNode.body.end],
+                          [tsNode.getEnd()-1, tsNode.getEnd()],
                           `${lastFunc.reqCtxArgName}.enter();`
                         );
                       }
