@@ -4443,6 +4443,8 @@ export interface IpcAppFunctions {
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
+    restartTxnSession: (key: string) => Promise<void>;
+    // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
     reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
