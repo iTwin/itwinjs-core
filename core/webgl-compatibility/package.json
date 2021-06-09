@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webgl-compatibility",
-  "version": "2.17.0-dev.28",
+  "version": "2.17.0-dev.30",
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",
   "main": "lib/webgl-compatibility.js",
@@ -33,7 +33,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.17.0-dev.28"
+    "@bentley/bentleyjs-core": "workspace:^2.17.0-dev.30"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

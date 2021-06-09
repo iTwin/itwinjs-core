@@ -374,6 +374,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
       options = {
         ...options,
         ...(options.expandedNodeKeys ? { expandedNodeKeys: options.expandedNodeKeys.map(NodeKey.fromJSON) } : undefined),
+        prev: {
+          ...options.prev,
+          ...(options.prev.rulesetVariables ? { rulesetVariables: options.prev.rulesetVariables.map(RulesetVariable.fromJSON) } : {}),
+        },
       };
       const result = await this.getManager(requestOptions.clientId).compareHierarchies(options);
       return result.changes.map(PartialHierarchyModification.toJSON);
@@ -385,6 +389,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
       options = {
         ...options,
         ...(options.expandedNodeKeys ? { expandedNodeKeys: options.expandedNodeKeys.map(NodeKey.fromJSON) } : undefined),
+        prev: {
+          ...options.prev,
+          ...(options.prev.rulesetVariables ? { rulesetVariables: options.prev.rulesetVariables.map(RulesetVariable.fromJSON) } : undefined),
+        },
         resultSetSize: getValidPageSize(requestOptions.resultSetSize),
       };
       const result = await this.getManager(requestOptions.clientId).compareHierarchies(options);

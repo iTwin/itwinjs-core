@@ -137,7 +137,11 @@ export interface RequestNewBriefcaseProps {
    */
   fileName?: string;
 
-  /** The BriefcaseId of the newly downloaded briefcase. If undefined, a new BriefcaseId will be acquired from iModelHub before the download, and is returned in this member.
+  /**
+   * The BriefcaseId for the new briefcase. If undefined, a new BriefcaseId will be acquired from iModelHub before the download, and is returned in this member.
+   * @note To download a briefcase that can accept but not create new changesets (sometimes referred to as "pull only" briefcases), set this value to [[BriefcaseIdValue.Unassigned]].
+   * After downloading, you can merely delete unassigned briefcase files when they are no longer needed. Assigned BriefcaseIds should be released (via [BriefcaseManager.releaseBriefcase]($backend) )
+   * when you are done with them.
    * @note this member is both an input and an output.
    *
    */

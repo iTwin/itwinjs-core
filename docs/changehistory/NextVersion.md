@@ -62,7 +62,11 @@ To disable external textures, pass a `TileAdmin` to [IModelApp.startup]($fronten
   IModelApp.startup({ tileAdmin });
 ```
 
-Disabling this feature will incur a performance penalty. The option to disable this feature will likely be removed in the future.
+Disabling this feature is not recommended and will incur a performance penalty. The option to disable the feature will likely be removed in the future.
+
+## ECClass Ids in changed events
+
+The events [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend) now include the Id of each changed entity's [ECClass]($docs/bis/intro/glossary/#ecclass). The [OrderedId64Array]($bentleyjs-core) properties of [TxnChangedEntities]($backend) are deprecated in favor of the new [EntityIdAndClassIdIterable]($common) properties.
 
 ## Presentation
 
