@@ -143,3 +143,7 @@ The following method is now `async` to make it easier to integrate with asynchro
 Properties getter in @beta [ECClass]($ecschema-metadata) has been changed to return an iterator of properties instead of an array of properties.
 Array indexing and properties like .length will no longer work with the returned iterator, so you may need to create an array from the iterator or use its .next() method. Iterating with for...of loop works the same with iterator as before with an array.\
 This change is made because internally properties are now stored in a map instead of an array, and it is more efficient to return an iterator for the properties to be generated on demand than to create them on the getter.
+
+### @bentley/ui-framework package
+
+The alpha interface PopupInfo has a new required property named parentDocument.  This new property will ensure the popup is displayed in the proper browser window once child windows are fully supported. For popups that are displayed over an iModel's ScreenViewport, this new property can be set using `vp.vpDiv.ownerDocument`.
