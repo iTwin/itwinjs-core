@@ -19,13 +19,14 @@ import { Format, FormatterSpec, FormatTraits, FormatType, Parser, ParserSpec, Un
  */
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
-/** Properties for the [[NumberInput]] component
+/** Properties for the [[QuantityNumberInput]] component
  * @beta
  */
 export interface QuantityNumberInputProps extends Omit<InputProps, "value" | "min" | "max" | "step" | "onFocus" | "onChange"> {
-  /** Quantity value in persistence units, set to `undefined` to show placeholder text */
+  /** Initial magnitude in 'persistence' units. See `getPersistenceUnitByQuantityType` in [QuantityFormatter]($imodeljs-frontend).
+   * Set to `undefined` to show placeholder text */
   persistenceValue?: number;
-  /** CSS class name for the NumberInput component container div */
+  /** CSS class name for the QuantityNumberInput component container div */
   containerClassName?: string;
   /** number or function	Number.MIN_SAFE_INTEGER */
   min?: number;
@@ -314,7 +315,10 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
   }
 );
 
-/** Input component for numbers with up and down buttons to increment and decrement the value.
-   * @beta
-   */
+/** The QuantityNumberInput component accepts input for quantity values. The quantity value is shown as a single numeric value and the quantity's
+ * "display" unit is shown next to the input control. The "display" unit is determined by the active unit system as defined by the [QuantityFormatter]($frontend).
+ * The control also display buttons to increment and decrement the "displayed" value. The value reported by via the onChange function is in "persistence"
+ * units that can be stored in the iModel.
+ * @beta
+ */
 export const QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null = ForwardRefQuantityNumberInput;
