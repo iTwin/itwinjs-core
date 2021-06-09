@@ -10,7 +10,8 @@ import * as React from "react";
 import { Tile, TileProps } from "./Tile";
 
 /** Minimal [[Tile]] component
- * @beta @deprecated
+ * @beta
+ * @deprecated
  */
 export function MinimalTile(props: TileProps) { // eslint-disable-line deprecation/deprecation
   return <Tile {...props} minimal={true} />;

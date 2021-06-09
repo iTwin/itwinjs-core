@@ -36,7 +36,8 @@ export interface ToggleProps extends CommonProps {
   rounded?: boolean;
   /** Show a check mark icon when the toggle is "on" (false is default) */
   showCheckmark?: boolean;
-  /** Button type, either Primary or Blue (Blue is default). @deprecated */
+  /** Button type, either Primary or Blue (Blue is default).
+   * @deprecated */
   buttonType?: ToggleButtonType;  // eslint-disable-line deprecation/deprecation
   /** Function called when the toggle state is changed */
   onChange?: (checked: boolean) => any;

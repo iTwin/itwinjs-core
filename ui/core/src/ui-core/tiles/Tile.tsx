@@ -12,7 +12,8 @@ import { Icon } from "../icons/IconComponent";
 import { CommonDivProps } from "../utils/Props";
 
 /** Properties for the [[Tile]] component
- * @beta @deprecated
+ * @beta
+ * @deprecated
  */
 export interface TileProps extends CommonDivProps {
   title: string;
@@ -29,7 +30,8 @@ export interface TileProps extends CommonDivProps {
 export type TileDefaultProps = Pick<TileProps, "stepNum">;  // eslint-disable-line deprecation/deprecation
 
 /** The Tile React component is a container for rendering elements that can be grouped together.
- * @beta @deprecated
+ * @beta
+ * @deprecated
  */
 export class Tile extends React.Component<TileProps> {  // eslint-disable-line deprecation/deprecation
 

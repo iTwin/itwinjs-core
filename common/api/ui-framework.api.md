@@ -5640,7 +5640,7 @@ export interface StagePanelHeaderProps extends CommonProps {
     title?: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export enum StagePanelLocation {
     // (undocumented)
     Bottom = 105,
@@ -5705,7 +5705,7 @@ export interface StagePanelRuntimeProps {
     zoneDefProvider: ZoneDefProvider;
 }
 
-// @alpha
+// @alpha @deprecated
 export enum StagePanelSection {
     // (undocumented)
     End = 2,
