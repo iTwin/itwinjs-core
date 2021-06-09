@@ -107,8 +107,8 @@ export class SchemaCache implements ISchemaLocater {
     if (!foundSchemaInfo)
       return undefined;
 
-    if (foundSchemaInfo.loadSchema) {
-      return foundSchemaInfo.loadSchema as Promise<T>;
+    if (undefined !== foundSchemaInfo.loadSchema) {
+      await foundSchemaInfo.loadSchema;
     }
 
     return foundSchemaInfo.schema as T;
@@ -233,7 +233,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @internal
    */
   public async getCachedSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
-    return this.getCachedSchemaSync(schemaKey, matchType) as T;
+    return await this._knownSchemas.getSchema(schemaKey, matchType) as T;
   }
 
   /**

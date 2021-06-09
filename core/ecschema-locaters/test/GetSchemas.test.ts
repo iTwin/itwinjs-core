@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
-import  * as path from "path";
+import * as path from "path";
 import { ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
 import { SchemaJsonFileLocater } from "../src/SchemaJsonFileLocater";
 
@@ -40,7 +40,7 @@ describe("Concurrent schema accesses", () => {
   it("should correctly deserialize schemas concurrently", async () => {
     // Asynchronous
     const asyncSchemas: Schema[] = [];
-    await Promise.all(schemaKeys.map( async (key) => {
+    await Promise.all(schemaKeys.map(async (key) => {
       if (!key)
         return;
       const schema = await context1.getSchema(key, SchemaMatchType.Latest);
@@ -52,7 +52,7 @@ describe("Concurrent schema accesses", () => {
     expect(asyncSchemas.length).to.equal(schemaKeys.length);
 
     // Synchronous
-    const syncSchemas: Schema[] =  [];
+    const syncSchemas: Schema[] = [];
     schemaKeys.forEach((key) => {
       if (!key)
         return;
@@ -79,7 +79,7 @@ describe("Concurrent schema accesses", () => {
   it.skip("should measure concurrent performance", async () => {
     const startTime = new Date().getTime();
     const asyncSchemas: Schema[] = [];
-    await Promise.all(schemaKeys.map( async (key) => {
+    await Promise.all(schemaKeys.map(async (key) => {
       if (!key)
         return;
       const schema = await context1.getSchema(key, SchemaMatchType.Latest);
@@ -95,7 +95,7 @@ describe("Concurrent schema accesses", () => {
 
   it.skip("should measure regular deserialization performance", async () => {
     const startTime = new Date().getTime();
-    const syncSchemas: Schema[] =  [];
+    const syncSchemas: Schema[] = [];
     const getSchema = async (key: SchemaKey) => {
       if (!key)
         return;

@@ -67,17 +67,20 @@ export class SchemaReadHelper<T = unknown> {
 
     this._parser = new this._parserType(rawSchema);
 
-    // Loads all of the properties on the Schema object
+    // Load the schemas attributes but not the items or references of the schema
     await schema.fromJSON(this._parser.parseSchema());
 
     this._schema = schema;
 
-    if (!await this._context.getCachedSchema(schema.schemaKey)) {
-      // Need to add this schema to the context to be able to locate schemaItems within the context.
-      await this._context.addSchema(schema, this.loadSchema(schema));
+    const cachedSchema = await this._context.getCachedSchema<U>(schema.schemaKey);
+    if (cachedSchema) {
+      return cachedSchema;
     }
 
-    await this._context.getSchema(schema.schemaKey);
+    // Need to add this schema to the context to be able to locate schemaItems within the context.
+    await this._context.addSchema(schema, this.loadSchema(schema));
+    // Await loading the schema and all it's references
+    await this._context.getSchema<U>(schema.schemaKey);
 
     return schema;
   }
@@ -166,8 +169,6 @@ export class SchemaReadHelper<T = unknown> {
   private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
     let refSchema = await this._context.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
-    // sometimes refSchema isn't the most up to date here, so have to repeat getSchema again
-    refSchema = await this._context.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (undefined === refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
