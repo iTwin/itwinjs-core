@@ -232,11 +232,11 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
     const headerElement = header || (
       <div
-        className={
-          classnames(
-            "core-dialog-head",
-            { "core-dialog-movable": movable })
-        }
+        className={classnames(
+          "core-dialog-head",
+          { "core-dialog-movable": movable },
+          { "core-dialog-modal": modal }
+        )}
         data-testid="core-dialog-head"
         onPointerDown={this._handleStartMove}>
         <div className={"core-dialog-title"} data-testid="core-dialog-title" style={titleStyle}>{title}</div>

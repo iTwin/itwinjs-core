@@ -11,6 +11,7 @@
 @import "~@itwin/itwinui-css/scss/style/variables";
 @import "~@itwin/itwinui-css/scss/text/block";
 @import "~@itwin/itwinui-css/scss/text/leading";
+@import "~@itwin/itwinui-css/scss/text/subheading";
 
 // cspell:ignore titlebar outoffocus nwse
 
@@ -124,10 +125,18 @@
         > .core-dialog-title {
           flex: 1 1;
 
-          @include iui-text-leading;
+          @include iui-text(leading);
 
           margin: 0;
           margin-left: 4px;
+        }
+
+        &.core-dialog-modal {
+          background-color: $buic-background-dialog;
+
+          > .core-dialog-title {
+            @include iui-text(subheading);
+          }
         }
 
         > .core-dialog-close {
