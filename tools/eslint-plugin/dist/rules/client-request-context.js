@@ -7,15 +7,16 @@
 
 const { getParserServices } = require("./utils/parser");
 const { AST_NODE_TYPES } = require("@typescript-eslint/experimental-utils");
+const TSESTreeModule = require("@typescript-eslint/typescript-estree");
+const { TSESTree } = require("@typescript-eslint/typescript-estree");
 
 const OPTION_DONT_PROPAGATE = "dont-propagate-request-context";
 const OPTION_CONTEXT_ARG_NAME = "context-arg-name";
 
 const asyncFuncMoniker = "promise-returning function";
 
-/** @typedef {import("estree").AwaitExpression} AwaitExpression */
-/** @typedef {import("estree").FunctionExpression} FunctionExpression */
-/** @typedef {import("estree").FunctionExpression | import("estree").ArrowFunctionExpression | import("estree").FunctionDeclaration} FuncDeclLike */
+/** @typedef {import("@typescript-eslint/typescript-estree")} TSESTreeModule */
+/** @typedef {TSESTree.FunctionExpression | TSESTree.ArrowFunctionExpression | TSESTree.FunctionDeclaration} FuncDeclLike */
 
 /** Get the final element of an Array
  * @template T
@@ -78,22 +79,27 @@ const rule = {
     const contextArgName = extraOpts && extraOpts[OPTION_CONTEXT_ARG_NAME] || "clientRequestContext";
 
     /**
-     * @param {import("estree").Node} node
+     * @param {TSESTree.Node} node
      * @returns {FuncDeclLike}
      */
     function getOuterFunction(node) {
-      while (!(node.type === "FunctionExpression" || node.type === "ArrowFunctionExpression" || node.type === "FunctionDeclaration"))
-        node = node.parent;
-      return node;
+      /** @type {TSESTree.Node | undefined} */
+      let cur = node;
+      while (cur && !(cur.type === "FunctionExpression" || cur.type === "ArrowFunctionExpression" || cur.type === "FunctionDeclaration"))
+        cur = cur.parent;
+      return cur;
     }
 
     /**
-     * @param {import("estree").Expression} node
-     * @returns {import("estree").Statement}
+     * @param {TSESTree.Expression} node
+     * @returns {TSESTree.Statement | undefined}
      */
     function getExpressionOuterStatement(node) {
-      while (node && !/Statement$/.test(node.type)) node = node.parent;
-      return node;
+      /** @type {TSESTree.Node | undefined} */
+      let cur = node;
+      while (cur && !/Statement$/.test(cur.type))
+        cur = cur.parent;
+      return cur;
     }
 
     /**
@@ -111,46 +117,23 @@ const rule = {
     }
 
     /**
-    * @param {import("estree").Statement} node
+    * @param {TSESTree.Statement} node
     * @param {string} reqCtxArgName
     * @return {boolean}
     */
     function isClientRequestContextEnter(node, reqCtxArgName) {
       if (!node)
         return false;
-
-      /** @type {import("estree").ExpressionStatement} */
-      const simpleEnterCall = {
-        type: "ExpressionStatement",
-        expression: {
-          type: "CallExpression",
-          optional: false,
-          callee: {
-            type: "MemberExpression",
-            object: {
-              type: "Identifier",
-              name: reqCtxArgName,
-            },
-            property: {
-              type: "Identifier",
-              name: "enter",
-            },
-            computed: false,
-            optional: false,
-          },
-          arguments: [],
-        },
-      };
       // until JSDoc supports `as const`, using explicit strings is easier
       // see: https://github.com/microsoft/TypeScript/issues/30445
       return (
         node &&
-        node.type === "ExpressionStatement" &&
-        node.expression.type === "CallExpression" &&
-        node.expression.callee.type === "MemberExpression" &&
-        node.expression.callee.object.type === "Identifier" &&
+        node.type === AST_NODE_TYPES.ExpressionStatement &&
+        node.expression.type === AST_NODE_TYPES.CallExpression &&
+        node.expression.callee.type === AST_NODE_TYPES.MemberExpression &&
+        node.expression.callee.object.type === AST_NODE_TYPES.Identifier &&
         node.expression.callee.object.name === reqCtxArgName &&
-        node.expression.callee.property.type === "Identifier" &&
+        node.expression.callee.property.type === AST_NODE_TYPES.Identifier &&
         node.expression.callee.property.name === "enter"
       );
     }
@@ -158,7 +141,7 @@ const rule = {
     /**
      * @type {{
      *  func: FuncDeclLike,
-     *  awaits: Set<AwaitExpression>,
+     *  awaits: Set<TSESTree.AwaitExpression>,
      *  reqCtxArgName: string
      * }[]}
      */
@@ -171,7 +154,7 @@ const rule = {
       if (!returnsPromise(node))
         return;
 
-      ///** @type {import("@typescript-eslint/typescript-estree").TSESTreeToTSNode<import("typescript").FunctionExpression>} */
+      /** @type {TSESTreeModule.TSESTreeToTSNode<TSESTree.FunctionExpression>} */
       const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
 
       const clientReqCtx = node.params.find((p) => {
@@ -221,12 +204,13 @@ const rule = {
               fix(fixer) {
                 if (firstStmt)
                   return fixer.insertTextBefore(firstStmt, `${reqCtxArgName}.enter();`);
-                else
+                else if (tsNode.body)
                   return fixer.insertTextBeforeRange(
                     // TODO: clarify why the tsNode locations are like this
                     [tsNode.body.end-1, tsNode.body.end],
                     `${reqCtxArgName}.enter();`
                   );
+                return null;
               }
           }],
           data: { reqCtxArgName }
@@ -234,7 +218,7 @@ const rule = {
       }
     }
 
-    /** @param {import("estree").FunctionExpression} node */
+    /** @param {TSESTree.FunctionExpression} node */
     function ExitFuncDeclLike(node) {
       const lastFunc = back(asyncFuncStack);
       if (!lastFunc || lastFunc.func !== node)
@@ -242,7 +226,12 @@ const rule = {
       asyncFuncStack.pop();
       for (const await_ of lastFunc.awaits) {
         const stmt = getExpressionOuterStatement(await_);
-        const stmtIndex = stmt.parent.body.findIndex((s) => s === stmt);
+        // TODO: test + handle cases for expression bodies of arrow functions
+        let body = stmt && stmt.parent &&
+            ((stmt.parent.type === "FunctionExpression" && stmt.parent.body.body)
+          || (stmt.parent.type === "TryStatement" && stmt.parent.block.body))
+          || undefined;
+        const stmtIndex = body.findIndex((s) => s === stmt);
         const nextStmt = stmt.parent.body[stmtIndex + 1];
         if (nextStmt && !isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)) {
           context.report({
