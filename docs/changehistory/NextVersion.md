@@ -29,6 +29,7 @@ Within [IpcApp]($frontend)-based applications, [BriefcaseConnection]($frontend)s
 ## Reality model APIs
 
 Several APIs relating to reality models have been introduced, in some cases replacing previous `beta` APIs. A reality model can be displayed in a [Viewport]($frontend) in one of two ways:
+
 * Adding to the [ViewState]($frontend)'s [ModelSelector]($backend) the Id of a persistent [SpatialModelState]($frontend) containing a URL pointing to a 3d tileset; or
 * Attaching to the [DisplayStyleState]($frontend) a [ContextRealityModel]($common) with a URL pointing to a 3d tileset.
 
@@ -105,6 +106,7 @@ The arguments for the @beta protected static methods called during modifications
 * [ElementAspect]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
 
 In addition, new protected static methods were added:
+
 * [Element]($backend) `[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]`
 
 ### [@bentley/webgl-compatibility](https://www.itwinjs.org/reference/webgl-compatibility/)
@@ -143,3 +145,7 @@ To make it easier to use async APIs while exporting a schema, [IModelExportHandl
 [IModelTransformer.shouldExportSchema]($backend) now gets a [SchemaKey]($ecschema-metadata) schema key as argument, instead of a full [Schema]($ecschema-metadata). If you
 need to check the full schema, return `true` in shouldExportSchema and in [IModelExportHandler.onExportSchema]($backend), you can use the schema object to check and then
 return early.
+
+### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/ecschema-metadata/)
+
+To reduce the size and limit the scope of the APIs available in the ecschema-metadata package, all APIs associated with EC Schema editing and validation have been moved to the [@bentley/ecschema-editing](https://www.itwinjs.org/reference/ecschema-editing/) package. This includes all source code under the [Validation](https://www.itwinjs.org/reference/ecschema-metadata/) and [Editing](https://www.itwinjs.org/reference/ecschema-metadata/editing/) folders. All corresponding @beta types defined in the ecschema-metadata package have been deprecated.  All @alpha types have been removed from the ecschema-metadata package.

@@ -19,6 +19,10 @@ export { SchemaValidater } from "./Validation/SchemaValidater";
  * The ecschema-editing package contains classes for validating, and editing ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
  */
 /**
+ * @docs-group-description Editing
+ * Set of classes used to perform editing of ECSchemas.
+ */
+/**
  * @docs-group-description Validation
  * Set of classes used to perform validation on ECSchemas.
  */
