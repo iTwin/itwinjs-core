@@ -845,25 +845,9 @@ export interface ChangedElements {
 
 // @public
 export interface ChangedEntities {
-    classIds?: Id64Array;
     deleted?: CompressedId64Set;
-    deletedClassIndices?: number[];
     inserted?: CompressedId64Set;
-    insertedClassIndices?: number[];
     updated?: CompressedId64Set;
-    updatedClassIndices?: number[];
-}
-
-// @public
-export interface ChangedEntitiesIterable {
-    readonly deleted: EntityIdAndClassIdIterable;
-    readonly inserted: EntityIdAndClassIdIterable;
-    readonly updated: EntityIdAndClassIdIterable;
-}
-
-// @public (undocumented)
-export namespace ChangedEntitiesIterable {
-    export function create(props: ChangedEntities): ChangedEntitiesIterable;
 }
 
 // @internal (undocumented)

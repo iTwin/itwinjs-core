@@ -66,8 +66,6 @@ public;CategorySelectorProps
 internal;ChangeData
 public;ChangedElements
 public;ChangedEntities
-public;ChangedEntitiesIterable
-public;ChangedEntitiesIterable
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode

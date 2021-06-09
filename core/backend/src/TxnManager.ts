@@ -101,12 +101,8 @@ class ChangedEntitiesArray {
   }
 
   public addToChangedEntities(entities: ChangedEntities, type: "deleted" | "inserted" | "updated"): void {
-    if (this.entityIds.length === 0)
-      return;
-
-    entities[type] = CompressedId64Set.compressIds(this.entityIds);
-    const prop = `${type}ClassIndices` as const;
-    entities[prop] = this._classIndices;
+    if (this.entityIds.length > 0)
+      entities[type] = CompressedId64Set.compressIds(this.entityIds);
   }
 
   public iterable(classIds: Id64Array): EntityIdAndClassIdIterable {
@@ -162,7 +158,7 @@ class ChangedEntitiesProc {
     evt.raiseEvent(txnEntities);
 
     // Notify frontend listeners.
-    const entities: ChangedEntities = { classIds };
+    const entities: ChangedEntities = { };
     this._inserted.addToChangedEntities(entities, "inserted");
     this._deleted.addToChangedEntities(entities, "deleted");
     this._updated.addToChangedEntities(entities, "updated");
