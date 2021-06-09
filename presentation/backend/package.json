@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-backend",
-  "version": "2.17.0-dev.30",
+  "version": "2.17.0-dev.31",
   "description": "Backend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -37,11 +37,11 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.17.0-dev.30",
-    "@bentley/imodeljs-backend": "workspace:^2.17.0-dev.30",
-    "@bentley/imodeljs-common": "workspace:^2.17.0-dev.30",
-    "@bentley/imodeljs-quantity": "workspace:^2.17.0-dev.30",
-    "@bentley/presentation-common": "workspace:^2.17.0-dev.30"
+    "@bentley/bentleyjs-core": "workspace:^2.17.0-dev.31",
+    "@bentley/imodeljs-backend": "workspace:^2.17.0-dev.31",
+    "@bentley/imodeljs-common": "workspace:^2.17.0-dev.31",
+    "@bentley/imodeljs-quantity": "workspace:^2.17.0-dev.31",
+    "@bentley/presentation-common": "workspace:^2.17.0-dev.31"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
