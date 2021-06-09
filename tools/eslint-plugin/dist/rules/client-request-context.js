@@ -45,6 +45,30 @@ function findAfter(array, predicate) {
 class ASTPreconditionViolated extends Error {}
 
 /**
+ * Given a syntax construct that has a statement child, replace
+ * that statement child with a block
+ * @param { TSESTree.ForOfStatement
+ *        | TSESTree.ArrowFunctionExpression
+ *        | TSESTree.IfStatement
+ *        | TSESTree.ForOfStatement
+ *        | TSESTree.ForInStatement
+ *        | TSESTree.ForStatement
+ *        } stmt
+ * @param {import("@typescript-eslint/experimental-utils/dist/ts-eslint").RuleFixer} fixer
+ * @param {{textBefore?: string}}  options
+ * @returns {void}
+ */
+// XXX: make sure reqCtx is not placed inside if statements incorrectly
+function promoteBlocklessStmtFixer(stmt, fixer, {textBefore} = {textBefore: ""}) {
+  const body
+    = stmt.type === "IfStatement"
+    ? stmt.consequent
+    : stmt.body;
+  fixer.insertTextBefore(body, "{" + textBefore)
+  fixer.insertTextAfter(body, "}")
+}
+
+/**
  * Return the statement immediately following the input statement
  // TODO: expand to all input nodes types, not just statements
  * @param {TSESTree.Statement} stmt
