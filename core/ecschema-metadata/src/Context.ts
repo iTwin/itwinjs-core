@@ -66,7 +66,7 @@ export class SchemaCache implements ISchemaLocater {
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
    * @param schema The schema to add to the cache.
-   * @param loadSchema Promise to load the schema
+   * @param loadSchema Promise that resolves when the schema has been completely loaded
    */
   public async addSchema<T extends Schema>(schema: T, loadSchema?: Promise<T>) {
     if (this.getSchemaSync(schema.schemaKey))
@@ -156,6 +156,10 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     this._locaters.push(this._knownSchemas);
   }
 
+  /**
+   * Adds a schema locater to this context that will be used when getting schemas
+   * @param locater The Schema Locater to add to this context
+   */
   public addLocater(locater: ISchemaLocater) {
     this._locaters.push(locater);
   }
@@ -163,6 +167,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   /**
    * Adds the schema to this context
    * @param schema The schema to add to this context
+   * @param loadSchema Promise that resolves when the schema has been completely loaded
    */
   public async addSchema(schema: Schema, loadSchema?: Promise<Schema>) {
     await this._knownSchemas.addSchema(schema, loadSchema);
@@ -179,6 +184,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   /**
    * Adds the given SchemaItem to the the SchemaContext by locating the schema, with the best match of SchemaMatchType.Exact, and
    * @param schemaItem The SchemaItem to add
+   * @deprecated Use the Schema Editor API to modify a schema
    */
   public async addSchemaItem(schemaItem: SchemaItem) {
     const schema = await this.getSchema(schemaItem.key.schemaKey, SchemaMatchType.Exact);
@@ -189,8 +195,9 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   }
 
   /**
-   *
-   * @param schemaKey
+   * Locate a schema that has already been loaded or that can be found via one of the registered schema locaters.
+   * @param schemaKey The SchemaKey which describes the schema to be located
+   * @param matchType Controls how the schema versions in the schemaKey and the schemas being located are compared.  Defaults to [[SchemaMatchType.Latest]].
    */
   public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
     // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
@@ -204,8 +211,9 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   }
 
   /**
-   *
-   * @param schemaKey
+   * Locate a schema that has already been loaded or that can be found via one of the registered schema locaters.
+   * @param schemaKey The SchemaKey which describes the schema to be located
+   * @param matchType Controls how the schema versions in the schemaKey and the schemas being located are compared.  Defaults to [[SchemaMatchType.Latest]].
    */
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
     // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
@@ -239,6 +247,11 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     return schema as T;
   }
 
+  /**
+   * Returns the schema item (class, enumeration etc) referenced by the key or undefined if not found.
+   * @param schemaItemKey The [[SchemaItemKey]] that identifies the item to find.  [[SchemaMatchType.Latest]] is used to find the schema of the item.
+   * @returns The schema item or undefined
+   */
   public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined> {
     const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
     if (undefined === schema)
@@ -246,6 +259,11 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     return schema.getItem<T>(schemaItemKey.name);
   }
 
+  /**
+   * Returns the schema item (class, enumeration etc) referenced by the key or undefined if not found.
+   * @param schemaItemKey The [[SchemaItemKey]] that identifies the item to find.  [[SchemaMatchType.Latest]] is used to find the schema of the item.
+   * @returns The schema item or undefined
+   */
   public getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined {
     const schema = this.getSchemaSync(schemaItemKey.schemaKey, SchemaMatchType.Latest);
     if (undefined === schema)
