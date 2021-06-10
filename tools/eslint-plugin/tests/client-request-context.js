@@ -214,21 +214,15 @@ new ESLintTester({
       errors: [
         {
           messageId: "noEnterOnAwaitResume",
-          suggestions: [
-            {
-              messageId: "addEnterOnAwaitResume",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                class Bad {
-                  async badMethod(reqCtx: ClientRequestContext) {
-                    reqCtx.enter();
-                    await Promise.resolve(5);reqCtx.enter();
-                    const badStatement = 10;
-                  }
-                }
-              `,
+          output: makeTest`
+            class Bad {
+              async badMethod(reqCtx: ClientRequestContext) {
+                reqCtx.enter();
+                await Promise.resolve(5);reqCtx.enter();
+                const badStatement = 10;
+              }
             }
-          ]
+          `,
         }
       ]
     },
@@ -242,18 +236,12 @@ new ESLintTester({
       errors: [
         {
           messageId: "noEnterOnFirstLine",
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                async function missingFirstEnterCall(reqCtx: ClientRequestContext) {
-                  reqCtx.enter();await Promise.resolve(5);
-                  reqCtx.enter();
-                }
-              `,
+          output: makeTest`
+            async function missingFirstEnterCall(reqCtx: ClientRequestContext) {
+              reqCtx.enter();await Promise.resolve(5);
+              reqCtx.enter();
             }
-          ]
+          `,
         }
       ]
     },
@@ -262,13 +250,8 @@ new ESLintTester({
       errors: [
         {
           messageId: "noEnterOnFirstLine",
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {reqCtx.enter();}`,
-            }
-          ]
+          data: {reqCtxArgName: "reqCtx"},
+          output: makeTest`async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {reqCtx.enter();}`,
         }
       ]
     },
@@ -281,17 +264,12 @@ new ESLintTester({
       errors: [
         {
           messageId: "noEnterOnFirstLine",
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                function noEnterAtBeginImplicitAsync(reqCtx: ClientRequestContext) {
-                  reqCtx.enter();return Promise.resolve(5);
-                }
-              `,
+          data: {reqCtxArgName: "reqCtx"},
+          output: makeTest`
+            function noEnterAtBeginImplicitAsync(reqCtx: ClientRequestContext) {
+              reqCtx.enter();return Promise.resolve(5);
             }
-          ]
+          `,
         }
       ]
     },
@@ -300,12 +278,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`async function f(clientRequestContext: ClientRequestContext) {}`,
-            },
-          ]
+          output: makeTest`async function f(clientRequestContext: ClientRequestContext) {}`,
         },
       ]
     },
@@ -314,12 +287,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`async function f(clientRequestContext: ClientRequestContext, arg1: string) {}`,
-            },
-          ]
+          output: makeTest`async function f(clientRequestContext: ClientRequestContext, arg1: string) {}`,
         },
       ]
     },
@@ -329,12 +297,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`async function f(ctx: ClientRequestContext) {}`,
-            },
-          ]
+          output: makeTest`async function f(ctx: ClientRequestContext) {}`,
         },
       ]
     },
@@ -343,12 +306,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`async function asyncMethod(clientRequestContext: ClientRequestContext, otherArg: number) {}`,
-            },
-          ]
+          output: makeTest`async function asyncMethod(clientRequestContext: ClientRequestContext, otherArg: number) {}`,
         }
       ]
     },
@@ -361,17 +319,12 @@ new ESLintTester({
       errors: [
         {
           messageId: "noEnterOnFirstLine",
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                function implicitlyAsync(reqCtx: ClientRequestContext) {
-                  reqCtx.enter();return Promise.resolve();
-                }
-              `,
+          data: {reqCtxArgName: "reqCtx"},
+          output: makeTest`
+            function implicitlyAsync(reqCtx: ClientRequestContext) {
+              reqCtx.enter();return Promise.resolve();
             }
-          ]
+          `,
         }
       ]
     },
@@ -380,12 +333,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`async function asyncFunc(clientRequestContext: ClientRequestContext) {}`,
-            }
-          ]
+          output: makeTest`async function asyncFunc(clientRequestContext: ClientRequestContext) {}`,
         }
       ]
     },
@@ -394,12 +342,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`class C { async asyncMethod(clientRequestContext: ClientRequestContext) {} }`,
-            }
-          ]
+          output: makeTest`class C { async asyncMethod(clientRequestContext: ClientRequestContext) {} }`,
         }
       ]
     },
@@ -408,12 +351,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`function promiseReturning(clientRequestContext: ClientRequestContext): Promise<void> { return Promise.resolve(); }`,
-            }
-          ]
+          output: makeTest`function promiseReturning(clientRequestContext: ClientRequestContext): Promise<void> { return Promise.resolve(); }`,
         }
       ]
     },
@@ -422,12 +360,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`function implicitPromiseReturning(clientRequestContext: ClientRequestContext) { return Promise.resolve(); }`,
-            }
-          ]
+          output: makeTest`function implicitPromiseReturning(clientRequestContext: ClientRequestContext) { return Promise.resolve(); }`,
         }
       ]
     },
@@ -436,12 +369,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`const asyncArrow = async (clientRequestContext: ClientRequestContext) => {};`,
-            }
-          ]
+          output: makeTest`const asyncArrow = async (clientRequestContext: ClientRequestContext) => {};`,
         }
       ]
     },
@@ -450,12 +378,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`const promiseReturningArrow = (clientRequestContext: ClientRequestContext): Promise<void> => { return Promise.resolve(); };`,
-            }
-          ]
+          output: makeTest`const promiseReturningArrow = (clientRequestContext: ClientRequestContext): Promise<void> => { return Promise.resolve(); };`,
         }
       ]
     },
@@ -464,12 +387,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`const implicitPromiseReturningArrow = (clientRequestContext: ClientRequestContext) => { return Promise.resolve(); };`,
-            }
-          ]
+          output: makeTest`const implicitPromiseReturningArrow = (clientRequestContext: ClientRequestContext) => { return Promise.resolve(); };`,
         }
       ]
     },
@@ -479,12 +397,7 @@ new ESLintTester({
       errors: [
         {
           messageId: "noCtxParam",
-          suggestions: [
-            {
-              messageId: "addCtxParam",
-              output: makeTest`const typedButNoReturnTypeArrow: (() => Promise<void>) = (clientRequestContext: ClientRequestContext) => {return Promise.resolve();};`,
-            }
-          ]
+          output: makeTest`const typedButNoReturnTypeArrow: (() => Promise<void>) = (clientRequestContext: ClientRequestContext) => {return Promise.resolve();};`,
         }
       ]
     },
@@ -513,20 +426,15 @@ new ESLintTester({
       errors: [
         {
           messageId: "noEnterOnThenResume",
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                function badThenCall(reqCtx: ClientRequestContext) {
-                  reqCtx.enter();
-                  return Promise.resolve().then(() => {
-                    reqCtx.enter();const notEnterFirst = 10;
-                  });
-                }
-              `,
+          data: {reqCtxArgName: "reqCtx"},
+          output: makeTest`
+            function badThenCall(reqCtx: ClientRequestContext) {
+              reqCtx.enter();
+              return Promise.resolve().then(() => {
+                reqCtx.enter();const notEnterFirst = 10;
+              });
             }
-          ]
+          `,
         }
       ]
     },
@@ -542,20 +450,15 @@ new ESLintTester({
       errors: [
         {
           messageId: "noEnterOnThenResume",
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                function badComplicatedThenCall(reqCtx: ClientRequestContext) {
-                  reqCtx.enter();
-                  return Promise.resolve()["then"](() => {
-                    reqCtx.enter();const notEnterFirst = 10;
-                  });
-                }
-              `,
+          data: {reqCtxArgName: "reqCtx"},
+          output: makeTest`
+            function badComplicatedThenCall(reqCtx: ClientRequestContext) {
+              reqCtx.enter();
+              return Promise.resolve()["then"](() => {
+                reqCtx.enter();const notEnterFirst = 10;
+              });
             }
-          ]
+          `,
         }
       ]
     },
@@ -572,20 +475,15 @@ new ESLintTester({
         {
           messageId: "noEnterOnCatchResume",
           data: { reqCtxArgName: "reqCtx" },
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                function badCatchCall(reqCtx: ClientRequestContext) {
-                  reqCtx.enter();
-                  return Promise.resolve().catch(() => {
-                    reqCtx.enter();const notEnterFirst = 10;
-                  });
-                }
-              `,
+          data: {reqCtxArgName: "reqCtx"},
+          output: makeTest`
+            function badCatchCall(reqCtx: ClientRequestContext) {
+              reqCtx.enter();
+              return Promise.resolve().catch(() => {
+                reqCtx.enter();const notEnterFirst = 10;
+              });
             }
-          ]
+          `,
         }
       ]
     },
@@ -604,23 +502,18 @@ new ESLintTester({
       errors: [
         {
           messageId: "noEnterOnThenResume",
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                function badSecondThenCall(reqCtx: ClientRequestContext) {
-                  reqCtx.enter();
-                  return Promise.resolve().then(() => {
-                    reqCtx.enter();
-                    const otherStuff = 5;
-                  }).then(() => {
-                    reqCtx.enter();const notEnterFirst = 10;
-                  });
-                }
-              `,
+          data: {reqCtxArgName: "reqCtx"},
+          output: makeTest`
+            function badSecondThenCall(reqCtx: ClientRequestContext) {
+              reqCtx.enter();
+              return Promise.resolve().then(() => {
+                reqCtx.enter();
+                const otherStuff = 5;
+              }).then(() => {
+                reqCtx.enter();const notEnterFirst = 10;
+              });
             }
-          ]
+          `,
         }
       ]
     },
@@ -638,41 +531,31 @@ new ESLintTester({
       errors: [
         {
           messageId: "noEnterOnThenResume",
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                function bathBothThenCalls(reqCtx: ClientRequestContext) {
-                  reqCtx.enter();
-                  return Promise.resolve().then(() => {
-                    reqCtx.enter();const notEnterFirst = 7;
-                  }).then(() => {
-                    const notEnterFirst = 10;
-                  });
-                }
-              `,
-            },
-          ]
+          data: {reqCtxArgName: "reqCtx"},
+          output: makeTest`
+            function bathBothThenCalls(reqCtx: ClientRequestContext) {
+              reqCtx.enter();
+              return Promise.resolve().then(() => {
+                reqCtx.enter();const notEnterFirst = 7;
+              }).then(() => {
+                const notEnterFirst = 10;
+              });
+            }
+          `,
         },
         {
           messageId: "noEnterOnThenResume",
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                function bathBothThenCalls(reqCtx: ClientRequestContext) {
-                  reqCtx.enter();
-                  return Promise.resolve().then(() => {
-                    const notEnterFirst = 7;
-                  }).then(() => {
-                    reqCtx.enter();const notEnterFirst = 10;
-                  });
-                }
-              `,
-            },
-          ]
+          data: {reqCtxArgName: "reqCtx"},
+          output: makeTest`
+            function bathBothThenCalls(reqCtx: ClientRequestContext) {
+              reqCtx.enter();
+              return Promise.resolve().then(() => {
+                const notEnterFirst = 7;
+              }).then(() => {
+                reqCtx.enter();const notEnterFirst = 10;
+              });
+            }
+          `,
         }
       ]
     },
@@ -691,22 +574,16 @@ new ESLintTester({
         {
           messageId: "noEnterOnCatchResume",
           data: {reqCtxArgName: "reqCtx"},
-          suggestions: [
-            {
-              messageId: "addEnterOnFirstLine",
-              data: {reqCtxArgName: "reqCtx"},
-              output: makeTest`
-                async function badAsyncCatch(reqCtx: ClientRequestContext) {
-                  reqCtx.enter();
-                  try {
-                    await Promise.resolve()
-                  } catch (ignore) {
-                    // no immediate context.enter
-                  reqCtx.enter();}
-                }
-              `,
+          output: makeTest`
+            async function badAsyncCatch(reqCtx: ClientRequestContext) {
+              reqCtx.enter();
+              try {
+                await Promise.resolve()
+              } catch (ignore) {
+                // no immediate context.enter
+              reqCtx.enter();}
             }
-          ]
+          `,
         }
       ]
     },
