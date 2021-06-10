@@ -1,8 +1,9 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+"use strict";
+// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
 // See the @microsoft/rush package's LICENSE file for license information.
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
