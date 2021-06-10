@@ -18,229 +18,148 @@ import { ContentViewManager } from "./ContentViewManager";
 
 /** Props of Viewport Overlay Control that show timelines
  */
-interface Props {
+export interface ViewOverlayProps {
   viewport: ScreenViewport;
+  timelineDataProvider?: TimelineDataProvider;
+  solarDataProvider?: SolarDataProvider;
   onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
 }
-
-interface State {
-  showOverlay: boolean;
-  dataProvider?: TimelineDataProvider;
-  solarDataProvider?: SolarDataProvider;
-}
-
-/** Overlay for iModel Viewport that will show either schedule, analysis, or solar timelines.
- * @alpha
+/**
+ *
  */
-// istanbul ignore next
-export class DefaultViewOverlay extends React.Component<Props, State> {
-  private _componentMounted = false;
-  private _removeListener?: () => void | undefined;
-  private _displayStyleId = "";
+export function DefaultViewOverlay(props: ViewOverlayProps) {
+  const [showOverlay, setShowOverlay] = React.useState(false);
+  const [timelineDataProvider, setTimelineDataProvider] = React.useState(props.timelineDataProvider);
+  const [solarDataProvider, setSolarDataProvider] = React.useState(props.solarDataProvider);
+  const [viewport] = React.useState(props.viewport);
+  const [viewId, setViewId] = React.useState("");
 
-  constructor(props: any) {
-    super(props);
-
-    this.state = { dataProvider: undefined, showOverlay: false };
-  }
-
-  private _handleDisplayStyleChange = () => {
-    if (this.props.viewport.displayStyle.id === this._displayStyleId) return;
-    this._displayStyleId = this.props.viewport.displayStyle.id;
-    setImmediate(() => {
-      // reset to beginning of animation
-      if (this.state.dataProvider) {
-        if (this.state.dataProvider.onAnimationFractionChanged)
-          this.state.dataProvider.onAnimationFractionChanged(0);
-
-        if (this.props.viewport) {
-          this.props.viewport.timePoint = undefined;
-          this.props.viewport.analysisFraction = 0;
-        }
-      }
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this._setTimelineDataProvider(this.props.viewport);
-    });
+  const handleViewChanged = (vp: Viewport): void => {
+    if (viewId !== vp.view.id){
+      setViewId(vp.view.id);
+      // setNewDataProvider().then;
+    }
   };
 
-  public componentDidMount() {
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
-    this._removeListener = this.props.viewport.onDisplayStyleChanged.addListener(this._handleDisplayStyleChange, this);
-    this._componentMounted = true;
-    setImmediate(() => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this._setTimelineDataProvider(this.props.viewport);
-    });
-  }
-
-  private setShowOverlayState(): void {
-    let showOverlay = this.isInActiveContentControl();
-    if (showOverlay && this.state.solarDataProvider)
-      showOverlay = this.state.solarDataProvider.shouldShowTimeline;
-    if (showOverlay !== this.state.showOverlay) this.setState({ showOverlay });
-  }
-
-  private _onHandleViewChanged = (vp: Viewport) => {
-    const viewId = this.state.dataProvider
-      ? this.state.dataProvider.viewId
-      : this.state.solarDataProvider
-        ? this.state.solarDataProvider.viewId
-        : "";
-    if (vp.view.id !== viewId) {
-      setImmediate(() => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._setTimelineDataProvider(vp as ScreenViewport);
-      });
+  async function setNewDataProvider () {
+    let newDataProvider: TimelineDataProvider | SolarDataProvider | undefined = await getTimelineDataProvider(viewport);
+    if (newDataProvider && newDataProvider.supportsTimelineAnimation) {
+      setTimelineDataProvider(newDataProvider);
+      setSolarDataProvider(undefined);
     } else {
-      this.setShowOverlayState();
-    }
-  };
-
-  public componentWillUnmount() {
-    this._componentMounted = false;
-    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
-    if (this.state.solarDataProvider && this.state.solarDataProvider.viewport) {
-      if (this.state.solarDataProvider.viewport.onViewChanged)
-        this.state.solarDataProvider.viewport.onViewChanged.removeListener(
-          this._onHandleViewChanged,
-        );
-    }
-
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.analysisFraction = 0;
-      activeContentControl.viewport.timePoint = undefined;
-    }
-    if (this._removeListener)
-      this._removeListener();
-  }
-
-  private isInActiveContentControl(): boolean {
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      if (activeContentControl.viewport.view.id === this.props.viewport.view.id) {
-        return true;
+      newDataProvider = await getSolarDataProvider(viewport, solarDataProvider);
+      if (newDataProvider) {
+        setTimelineDataProvider(undefined);
+        setSolarDataProvider(newDataProvider);
       }
     }
-    return false;
+    setShowOverlay(isInActiveContentControl(viewport));
   }
 
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-    // istanbul ignore if
-    if (this._componentMounted) return;
+  const updateShowOverlayState = (): void => {
+    let updateOverlay = isInActiveContentControl(viewport);
+    if (updateOverlay && solarDataProvider)
+      updateOverlay = solarDataProvider.shouldShowTimeline;
+    if (updateOverlay !== showOverlay) setShowOverlay(updateOverlay);
+  }
 
-    // since this is a tool button automatically monitor the activation of tools so the active state of the button is updated.
+  const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    // istanbul ignore if
     if (args.eventIds.has(SyncUiEventId.ActiveContentChanged)) {
-      this.setShowOverlayState();
+      updateShowOverlayState();
     }
     if (args.eventIds.has(SyncUiEventId.ContentControlActivated)) {
-      this.setShowOverlayState();
+      updateShowOverlayState();
     }
     if (args.eventIds.has(SyncUiEventId.FrontstageReady)) {
-      this.setShowOverlayState();
+      updateShowOverlayState();
     }
   };
 
-  private async _getTimelineDataProvider(viewport: ScreenViewport): Promise<TimelineDataProvider | undefined> {
-    let timelineDataProvider: TimelineDataProvider;
+  React.useEffect(() => {
+    setNewDataProvider().then;
 
-    timelineDataProvider = new ScheduleAnimationTimelineDataProvider(viewport.view, viewport);
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    viewport.onViewChanged.addListener(handleViewChanged);
+    return function cleanup() {
+      viewport.onViewChanged.removeListener(handleViewChanged);
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+    };
+  }, [viewport]);
+
+  if (showOverlay) {
+    if (solarDataProvider) {
+      return (
+        <div className="uifw-view-overlay">
+          <div className="uifw-animation-overlay">
+            <SolarTimeline dataProvider={solarDataProvider} />
+          </div>
+        </div>
+      );
+    } else if (timelineDataProvider) {
+      return (
+        <div className="uifw-view-overlay">
+          <div className="uifw-animation-overlay">
+            <TimelineComponent
+              startDate={timelineDataProvider.start}
+              endDate={timelineDataProvider.end}
+              initialDuration={timelineDataProvider.initialDuration}
+              totalDuration={timelineDataProvider.duration}
+              minimized={true}
+              onChange={timelineDataProvider.onAnimationFractionChanged}
+              onPlayPause={props.onPlayPause}
+            />
+          </div>
+        </div>
+      );
+    }
+  }
+  return (
+    <div className="uifw-view-overlay"/>
+  );
+}
+async function getSolarDataProvider (viewport: ScreenViewport, dataProvider: SolarDataProvider | undefined): Promise<SolarDataProvider | undefined> {
+  if (IModelApp.renderSystem.options.displaySolarShadows) {
+    if (dataProvider && dataProvider.viewport === viewport)
+      return dataProvider;
+
+    const solarDataProvider: SolarDataProvider = new SolarTimelineDataProvider(viewport.view, viewport);
+    if (solarDataProvider.supportsTimelineAnimation) {
+      return solarDataProvider;
+    }
+  }
+
+  return undefined;
+}
+async function getTimelineDataProvider(viewport: ScreenViewport): Promise<TimelineDataProvider | undefined> {
+  let timelineDataProvider: TimelineDataProvider;
+
+  timelineDataProvider = new ScheduleAnimationTimelineDataProvider(viewport.view, viewport);
+  if (timelineDataProvider.supportsTimelineAnimation) {
+    const dataLoaded = await timelineDataProvider.loadTimelineData();
+    if (dataLoaded) {
+      // double the default duration
+      timelineDataProvider.updateSettings({ duration: 40 * 1000 });
+      return timelineDataProvider;
+    }
+  } else {
+    timelineDataProvider = new AnalysisAnimationTimelineDataProvider(viewport.view, viewport);
     if (timelineDataProvider.supportsTimelineAnimation) {
       const dataLoaded = await timelineDataProvider.loadTimelineData();
       if (dataLoaded) {
-        // double the default duration
-        timelineDataProvider.updateSettings({ duration: 40 * 1000 });
-        viewport.onViewChanged.removeListener(this._onHandleViewChanged);
-        viewport.onViewChanged.addListener(this._onHandleViewChanged);
         return timelineDataProvider;
       }
-    } else {
-      timelineDataProvider = new AnalysisAnimationTimelineDataProvider(viewport.view, viewport);
-      if (timelineDataProvider.supportsTimelineAnimation) {
-        const dataLoaded = await timelineDataProvider.loadTimelineData();
-        if (dataLoaded) {
-          viewport.onViewChanged.removeListener(this._onHandleViewChanged);
-          viewport.onViewChanged.addListener(this._onHandleViewChanged);
-          return timelineDataProvider;
-        }
-      }
     }
-    return undefined;
   }
+  return undefined;
+}
 
-  private _getSolarDataProvider(viewport: ScreenViewport): SolarDataProvider | undefined {
-    if (IModelApp.renderSystem.options.displaySolarShadows) {
-      if (this.state.solarDataProvider && this.state.solarDataProvider.viewport === viewport)
-        return this.state.solarDataProvider;
-
-      const solarDataProvider: SolarDataProvider = new SolarTimelineDataProvider(viewport.view, viewport);
-      if (solarDataProvider.supportsTimelineAnimation) {
-        viewport.onViewChanged.removeListener(this._onHandleViewChanged);
-        viewport.onViewChanged.addListener(this._onHandleViewChanged);
-        return solarDataProvider;
-      }
+function isInActiveContentControl(viewport: Viewport): boolean {
+  const activeContentControl = ContentViewManager.getActiveContentControl();
+  if (activeContentControl && activeContentControl.viewport) {
+    if (activeContentControl.viewport.view.id === viewport.view.id) {
+      return true;
     }
-
-    return undefined;
   }
-
-  private async _setTimelineDataProvider(viewport: ScreenViewport): Promise<void> {
-    const dataProvider = await this._getTimelineDataProvider(viewport);
-    if (dataProvider && dataProvider.supportsTimelineAnimation) {
-      this.setState({
-        dataProvider,
-        showOverlay: this.isInActiveContentControl(),
-        solarDataProvider: undefined,
-      });
-      return;
-    }
-    const solarDataProvider = this._getSolarDataProvider(viewport);
-    if (solarDataProvider && solarDataProvider.supportsTimelineAnimation) {
-      let showOverlay = this.isInActiveContentControl();
-      if (showOverlay && !solarDataProvider.shouldShowTimeline) showOverlay = false;
-      this.setState({ solarDataProvider, showOverlay, dataProvider: undefined });
-      return;
-    }
-    this.setState({
-      dataProvider: undefined,
-      showOverlay: false,
-      solarDataProvider: undefined,
-    });
-  }
-
-  public render(): React.ReactNode {
-    if (this.state.showOverlay) {
-      if (this.state.solarDataProvider) {
-        return (
-          <div className="uifw-view-overlay">
-            <div className="uifw-animation-overlay">
-              <SolarTimeline dataProvider={this.state.solarDataProvider} />
-            </div>
-          </div>
-        );
-      }
-
-      // handle both schedule and analysis animations
-      if (this.state.dataProvider) {
-        return (
-          <div className="uifw-view-overlay">
-            <div className="uifw-animation-overlay">
-              <TimelineComponent
-                startDate={this.state.dataProvider.start}
-                endDate={this.state.dataProvider.end}
-                initialDuration={this.state.dataProvider.initialDuration}
-                totalDuration={this.state.dataProvider.duration}
-                minimized={true}
-                onChange={this.state.dataProvider.onAnimationFractionChanged}
-                onPlayPause={this.props.onPlayPause}
-              />
-            </div>
-          </div>
-        );
-      }
-    }
-    return (
-      <div className="uifw-view-overlay"/>
-    );
-  }
+  return false;
 }
