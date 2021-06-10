@@ -1,7 +1,7 @@
 
 # Class Filter Expression
 
-ECSQL allows filters by type
+ECSQL allows filters by class
 
 ```sql
     <ECClassId>|<expr> IS [NOT] ( [ONLY] <qualified-classname-1> [, [ONLY] <qualified-classname-2>, ...])
@@ -11,7 +11,7 @@ ECSQL allows filters by type
 
 > **Try it yourself**
 >
-> *Goal:* Returns elements only if it's either of type GeometricElement3d, GeometricElement2d, or any of their sub-classes
+> *Goal:* Returns elements only if it's either of class GeometricElement3d, GeometricElement2d, or any of their sub-classes
 >
 > *ECSQL*
 >
@@ -25,7 +25,7 @@ ECSQL allows filters by type
 
 > **Try it yourself**
 >
-> *Goal:* Returns elements only if it's exactly of the specified types - sub-classes are not included
+> *Goal:* Returns elements only if it's exactly of the specified classess - sub-classes are not included
 >
 > *ECSQL*
 >
