@@ -24,10 +24,6 @@ const messages = {
   noEnterOnCatchResume: `All ${asyncFuncMoniker}s must call '{{reqCtxArgName}}.enter()' immediately after catching an async exception`,
   didntPropagate: `All ${asyncFuncMoniker}s must propagate their async to functions`,
   calledCurrent: `All ${asyncFuncMoniker}s must not call ClientRequestContext.current`,
-  // suggestion descriptions
-  addCtxParam: "Add a ClientRequextContext parameter",
-  addEnterOnFirstLine: "Add '{{reqCtxArgName}}.enter()' as the first statement of the body",
-  addEnterOnAwaitResume: "Add '{{reqCtxArgName}}.enter()' immediately after the statement containing 'await'",
 };
 
 /** @type {typeof messages} */
@@ -264,18 +260,13 @@ const rule = {
         context.report({
           node,
           messageId: messageIds.noCtxParam,
-          suggest: [
-            {
-              messageId: messageIds.addCtxParam,
-              fix(fixer) {
-                const hasOtherParams = node.params.length > 0;
-                return fixer.insertTextBeforeRange(
-                  [tsNode.parameters.pos, tsNode.parameters.end],
-                  `${contextArgName}: ClientRequestContext${hasOtherParams ? ", " : ""}`
-                );
-              }
-            }
-          ]
+          fix(fixer) {
+            const hasOtherParams = node.params.length > 0;
+            return fixer.insertTextBeforeRange(
+              [tsNode.parameters.pos, tsNode.parameters.end],
+              `${contextArgName}: ClientRequestContext${hasOtherParams ? ", " : ""}`
+            );
+          }
         });
         return;
       }
@@ -294,22 +285,18 @@ const rule = {
         context.report({
           node: firstStmt || node.body,
           messageId: messageIds.noEnterOnFirstLine,
-          suggest: [{
-              messageId: messageIds.addEnterOnFirstLine,
-              data: {reqCtxArgName},
-              fix(fixer) {
-                if (firstStmt)
-                  return fixer.insertTextBefore(firstStmt, `${reqCtxArgName}.enter();`);
-                else if (tsNode.body)
-                  return fixer.insertTextBeforeRange(
-                    // TODO: clarify why the tsNode locations are like this
-                    [tsNode.body.end-1, tsNode.body.end],
-                    `${reqCtxArgName}.enter();`
-                  );
-                return null;
-              }
-          }],
-          data: { reqCtxArgName }
+          data: { reqCtxArgName },
+          fix(fixer) {
+            if (firstStmt)
+              return fixer.insertTextBefore(firstStmt, `${reqCtxArgName}.enter();`);
+            else if (tsNode.body)
+              return fixer.insertTextBeforeRange(
+                // TODO: clarify why the tsNode locations are like this
+                [tsNode.body.end-1, tsNode.body.end],
+                `${reqCtxArgName}.enter();`
+              );
+            return null;
+          },
         });
       }
     }
@@ -333,15 +320,9 @@ const rule = {
             node: nextStmt,
             messageId: messageIds.noEnterOnAwaitResume,
             data: { reqCtxArgName: lastFunc.reqCtxArgName },
-            suggest: [
-              {
-                messageId: messageIds.addEnterOnAwaitResume,
-                data: { reqCtxArgName: lastFunc.reqCtxArgName },
-                fix(fixer) {
-                  return fixer.insertTextAfter(stmt, `${lastFunc.reqCtxArgName}.enter();`);
-                }
-              }
-            ],
+            fix(fixer) {
+              return fixer.insertTextAfter(stmt, `${lastFunc.reqCtxArgName}.enter();`);
+            },
           });
         }
       }
@@ -368,25 +349,19 @@ const rule = {
           context.report({
             node: firstStmt || node.body,
             messageId: messageIds.noEnterOnCatchResume,
-            suggest: [{
-                messageId: messageIds.addEnterOnFirstLine,
-                data: {reqCtxArgName: lastFunc.reqCtxArgName},
-                fix(fixer) {
-                  const bodyIsEmpty = firstStmt === undefined;
-                  if (bodyIsEmpty) {
-                    const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
-                    return fixer.insertTextBeforeRange(
-                      // TODO: clarify why the tsNode locations are like this
-                      [tsNode.block.end-1, tsNode.block.end],
-                      `${lastFunc.reqCtxArgName}.enter();`
-                    );
-                  }
-                  return fixer.insertTextBefore(firstStmt, `${lastFunc.reqCtxArgName}.enter();`);
-                }
-            }],
-            data: {
-              reqCtxArgName: lastFunc.reqCtxArgName
-            }
+            data: { reqCtxArgName: lastFunc.reqCtxArgName },
+            fix(fixer) {
+              const bodyIsEmpty = firstStmt === undefined;
+              if (bodyIsEmpty) {
+                const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+                return fixer.insertTextBeforeRange(
+                  // TODO: clarify why the tsNode locations are like this
+                  [tsNode.block.end-1, tsNode.block.end],
+                  `${lastFunc.reqCtxArgName}.enter();`
+                );
+              }
+              return fixer.insertTextBefore(firstStmt, `${lastFunc.reqCtxArgName}.enter();`);
+            },
           });
       },
 
@@ -411,27 +386,21 @@ const rule = {
               context.report({
                 node: firstStmt || callback.body,
                 messageId: isThen ? messageIds.noEnterOnThenResume : messageIds.noEnterOnCatchResume,
-                suggest: [{
-                    messageId: messageIds.addEnterOnFirstLine,
-                    data: {reqCtxArgName: lastFunc.reqCtxArgName},
-                    fix(fixer) {
-                      const bodyIsEmpty = firstStmt === undefined;
-                      if (bodyIsEmpty) {
-                        /** @type {TSESTreeModule.TSESTreeToTSNode<TSESTree.CallExpression>} */
-                        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
-                        return fixer.insertTextBeforeRange(
-                          // TODO: abstract out inserting into empty bodies
-                          // TODO: clarify why the tsNode locations are like this
-                          [tsNode.getEnd()-1, tsNode.getEnd()],
-                          `${lastFunc.reqCtxArgName}.enter();`
-                        );
-                      }
-                      return fixer.insertTextBefore(firstStmt, `${lastFunc.reqCtxArgName}.enter();`);
-                    }
-                }],
-                data: {
-                  reqCtxArgName: lastFunc.reqCtxArgName
-                }
+                data: { reqCtxArgName: lastFunc.reqCtxArgName },
+                fix(fixer) {
+                  const bodyIsEmpty = firstStmt === undefined;
+                  if (bodyIsEmpty) {
+                    /** @type {TSESTreeModule.TSESTreeToTSNode<TSESTree.CallExpression>} */
+                    const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+                    return fixer.insertTextBeforeRange(
+                      // TODO: abstract out inserting into empty bodies
+                      // TODO: clarify why the tsNode locations are like this
+                      [tsNode.getEnd()-1, tsNode.getEnd()],
+                      `${lastFunc.reqCtxArgName}.enter();`
+                    );
+                  }
+                  return fixer.insertTextBefore(firstStmt, `${lastFunc.reqCtxArgName}.enter();`);
+                },
               });
             }
           }
