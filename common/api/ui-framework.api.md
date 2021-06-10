@@ -133,6 +133,7 @@ import { StagePanelLocation as StagePanelLocation_2 } from '@bentley/ui-abstract
 import { StagePanelSection as StagePanelSection_2 } from '@bentley/ui-abstract';
 import { StagePanelType } from '@bentley/ui-ninezone';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
+import { Status } from '@bentley/ui-ninezone';
 import { StatusBarItemsManager as StatusBarItemsManager_2 } from '@bentley/ui-abstract';
 import { StatusBarSection } from '@bentley/ui-abstract';
 import { Store } from 'redux';
@@ -5820,6 +5821,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
+    // (undocumented)
+    static severityToStatus(severity: MessageSeverity): Status;
 }
 
 // @public

@@ -487,7 +487,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.errorMessageBox",
       execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error,
         "This is an error message", this._longMessage,
-        OutputMessageType.Alert, OutputMessageAlert.Dialog)),
+        OutputMessageType.Alert, OutputMessageAlert.Balloon)),
     });
   }
 
