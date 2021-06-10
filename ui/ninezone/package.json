@@ -36,7 +36,7 @@
     "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.1",
     "@bentley/ui-abstract": "workspace:^2.18.0-dev.1",
     "@bentley/ui-core": "workspace:^2.18.0-dev.1",
-    "@itwin/itwinui-css": "^0.18.1",
+    "@itwin/itwinui-css": "^0.20.0",
     "@itwin/itwinui-react": "^1.7.2",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
@@ -52,7 +52,7 @@
     "@bentley/react-scripts": "3.4.9",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-core": "workspace:*",
-    "@itwin/itwinui-css": "^0.18.1",
+    "@itwin/itwinui-css": "^0.20.0",
     "@itwin/itwinui-react": "^1.7.1",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
