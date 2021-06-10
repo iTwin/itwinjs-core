@@ -26,18 +26,19 @@ describe("OneAtATime test", () => {
       assert.equal(b, "hello");
       await BeDuration.wait(100);
       return ++calls;
-    });
+    }, "testAbandon");
 
     expect(operation.request(200, "hello")).to.be.eventually.fulfilled; // is started immediately
     expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError); // becomes pending, doesn't abort previous because its already started
     expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError); // aborts previous, becomes pending
-    const count = await operation.request(200, "hello"); // aborts previous, becomes pending, eventually is run
+    let count = await operation.request(200, "hello"); // aborts previous, becomes pending, eventually is run
     assert.equal(count, 2); // only the first and last complete
 
     // then, just try the whole thing again
-    expect(operation.request(200, "hello")).to.be.eventually.fulfilled; // is started immediately
-    expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError); // aborts previous, becomes pending
-    expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError); // becomes pending, doesn't abort previous because its already started
-    expect(operation.request(10, "hello")).to.be.rejectedWith(AbandonedError, "cancelled");
+    expect(operation.request(10, "hello")).to.be.rejectedWith(AbandonedError, "cancelled"); // try calling a function that throws
+    expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError, "testAbandon"); // becomes pending, doesn't abort previous because its already started
+    expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError, "testAbandon"); // aborts previous, becomes pending
+    count = await operation.request(200, "hello");
+    assert.equal(count, 3);
   });
 });
