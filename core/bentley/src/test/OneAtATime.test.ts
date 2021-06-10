@@ -18,7 +18,10 @@ describe("OneAtATime test", () => {
 
   it("OneAtATime", async () => {
     let calls = 0;
-    const operation = new OneAtATimeAction<number>(async (a: number, b: string) => {
+    const operation = new OneAtATimeAction(async (a: number, b: string) => {
+      if (a === 10)
+        throw new Error("cancelled");
+
       assert.equal(a, 200);
       assert.equal(b, "hello");
       await BeDuration.wait(100);
@@ -28,14 +31,13 @@ describe("OneAtATime test", () => {
     expect(operation.request(200, "hello")).to.be.eventually.fulfilled; // is started immediately
     expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError); // becomes pending, doesn't abort previous because its already started
     expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError); // aborts previous, becomes pending
-    let count = await operation.request(200, "hello"); // aborts previous, becomes pending, eventually is run
+    const count = await operation.request(200, "hello"); // aborts previous, becomes pending, eventually is run
     assert.equal(count, 2); // only the first and last complete
 
     // then, just try the whole thing again
     expect(operation.request(200, "hello")).to.be.eventually.fulfilled; // is started immediately
     expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError); // aborts previous, becomes pending
     expect(operation.request(200, "hello")).to.be.rejectedWith(AbandonedError); // becomes pending, doesn't abort previous because its already started
-    count = await operation.request(200, "hello"); // aborts previous, becomes pending, eventually is run
-    assert.equal(count, 4); // only the first and last complete, again
+    expect(operation.request(10, "hello")).to.be.rejectedWith(AbandonedError, "cancelled");
   });
 });

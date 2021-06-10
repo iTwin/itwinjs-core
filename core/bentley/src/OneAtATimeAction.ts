@@ -17,7 +17,7 @@ export class AbandonedError extends Error { }
  */
 class PromiseWithAbandon<T> {
   /** Method to abandon the Promise created by [[init]] while it is outstanding. The promise will be rejected. */
-  public abandon!: () => void;
+  public abandon!: (msg?: string) => void;
   private _resolve!: (val: any) => void;
 
   /** Create a PromiseWithAbandon. After this call you must call [[init]] to create the underlying Promise.
@@ -27,10 +27,21 @@ class PromiseWithAbandon<T> {
   constructor(private _run: (...args: any[]) => Promise<T>, private _args: any[]) { }
 
   /** Create a Promise that is chained to the underlying Promise, but is connected to the abandon method. */
-  public async init(msg: string): Promise<T> { return new Promise<T>((resolve, reject) => { this.abandon = () => reject(new AbandonedError(msg)); this._resolve = resolve; }); }
+  public async init(msg: string): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      this.abandon = (message?: string) => reject(new AbandonedError(message ?? msg));
+      this._resolve = resolve;
+    });
+  }
 
   /** Call the [[run]] method supplied to the ctor to start the underlying Promise. */
-  public start() { this._run(...this._args).then((val) => this._resolve(val)); } // eslint-disable-line @typescript-eslint/no-floating-promises
+  public async start() {
+    try {
+      this._resolve(await this._run(...this._args));
+    } catch (err) {
+      this.abandon(err.msg); // turn all errors from execution into abandoned errors, but keep the message
+    }
+  }
 }
 
 /**
@@ -68,18 +79,18 @@ export class OneAtATimeAction<T> {
       this._pending = entry;
     } else {
       this._active = entry; // this is the first request, start it.
-      entry.start();
+      entry.start(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
 
     try {
-      await promise; // wait until we're finally completed
+      await promise;
+      return promise;
     } finally {
       // do all of this whether promise was fulfilled or rejected
       this._active = this._pending; // see if there's a pending request waiting
       this._pending = undefined; // clear pending
       if (this._active)
-        this._active.start(); // now start the pending request
+        this._active.start(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
-    return promise; // return fulfilled or rejected promise
   }
 }
