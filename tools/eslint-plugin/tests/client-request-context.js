@@ -198,7 +198,27 @@ new ESLintTester({
           return Promise.resolve(recklessNonPromiseReturner());
         }
       `,
-    }
+    },
+    {
+      only: true,
+      code: makeTest`
+          async function typeUnion(reqCtx: ClientRequestContext | AuthorizedRequestContext) {
+            reqCtx.enter();
+            return Promise.resolve(5);
+          }
+        }
+      `,
+    },
+    {
+      only: true,
+      code: makeTest`
+          async function derivedType(reqCtx: MyReqCtx) {
+            reqCtx.enter();
+            return Promise.resolve(5);
+          }
+        }
+      `,
+    },
   ],
   invalid: [
     {

@@ -11,3 +11,6 @@ export class ClientRequestContext {
 
 export class AuthorizedClientRequestContext extends ClientRequestContext {
 }
+
+class MyReqCtx extends ClientRequestContext {
+}
