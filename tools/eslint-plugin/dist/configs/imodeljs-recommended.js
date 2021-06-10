@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @type{import("eslint").Linter.BaseConfig} */
 module.exports = {
   env: {
     "browser": true
@@ -377,5 +378,13 @@ module.exports = {
     "react": {
       "version": "16.8"
     }
-  }
+  },
+  overrides: [
+    {
+      files: ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
+      rules: {
+        "@bentley/client-request-context": ["off"],
+      }
+    }
+  ]
 }
