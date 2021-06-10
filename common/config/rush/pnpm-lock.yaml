@@ -245,6 +245,7 @@ importers:
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
       '@types/js-base64': ^2.3.1
+      '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/qs': ^6.5.0
@@ -254,6 +255,7 @@ importers:
       deep-assign: ^2.0.0
       eslint: ^6.8.0
       js-base64: ^2.4.5
+      lodash: ^4.17.10
       mocha: ^8.3.2
       nock: ^12.0.3
       nyc: ^15.1.0
@@ -268,6 +270,7 @@ importers:
     dependencies:
       deep-assign: 2.0.0
       js-base64: 2.6.4
+      lodash: 4.17.21
       qs: 6.10.1
       superagent: 5.3.1
       xmldom: 0.5.0
@@ -281,6 +284,7 @@ importers:
       '@types/chai': 4.2.18
       '@types/deep-assign': 0.1.1
       '@types/js-base64': 2.3.2
+      '@types/lodash': 4.14.170
       '@types/mocha': 8.2.2
       '@types/node': 10.14.1
       '@types/qs': 6.9.6
@@ -573,7 +577,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 2.17.4
+      '@bentley/imodeljs-native': 2.17.5
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -624,7 +628,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 2.17.4
+      '@bentley/imodeljs-native': 2.17.5
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -706,9 +710,11 @@ importers:
       '@types/jsonwebtoken': ^8.5.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
+      '@types/proper-lockfile': ^4.1.1
       '@types/semver': ^5.5.0
       '@types/sinon': ^9.0.0
       '@types/stream-buffers': ~3.0.2
+      agentkeepalive: ^4.1.4
       applicationinsights: ^1.7.5
       chai: ^4.1.2
       cpx: ^1.5.0
@@ -725,6 +731,7 @@ importers:
       nock: ^12.0.3
       nyc: ^15.1.0
       openid-client: ^3.15.3
+      proper-lockfile: ^4.1.2
       rimraf: ^3.0.2
       semver: ^5.5.0
       sinon: ^9.0.2
@@ -733,6 +740,7 @@ importers:
       typescript: ~4.1.0
     dependencies:
       '@bentley/usage-logging-client': link:../../clients/usage-logging
+      agentkeepalive: 4.1.4
       applicationinsights: 1.8.10
       deep-assign: 2.0.0
       fs-extra: 8.1.0
@@ -742,6 +750,7 @@ importers:
       js-base64: 2.6.4
       jsonwebtoken: 8.5.1
       openid-client: 3.15.10
+      proper-lockfile: 4.1.2
       semver: 5.7.1
     devDependencies:
       '@bentley/bentleyjs-core': link:../bentley
@@ -764,6 +773,7 @@ importers:
       '@types/jsonwebtoken': 8.5.1
       '@types/mocha': 8.2.2
       '@types/node': 10.14.1
+      '@types/proper-lockfile': 4.1.1
       '@types/semver': 5.5.0
       '@types/sinon': 9.0.11
       '@types/stream-buffers': 3.0.3
@@ -7264,8 +7274,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/2.17.4:
-    resolution: {integrity: sha512-tFqb8zFkSFzbQywHWOdGzQTa+3BcGo74LGg77Xdp7sb/hSFFvTG1vw6mjPHDtJWcMbhhhBXLAZywXSoB2f/XPA==}
+  /@bentley/imodeljs-native/2.17.5:
+    resolution: {integrity: sha512-OBnT89gqiXiXIvnodNrjXGGuwK62N1W40U6Rkd0CSkiYoSq8jolGGFopmqfvP4gW+hcNNHjudRsPuMakjx82qg==}
     requiresBuild: true
     dev: false
 
@@ -8602,6 +8612,12 @@ packages:
   /@types/prop-types/15.7.3:
     resolution: {integrity: sha512-KfRL3PuHmqQLOG+2tGpRO26Ctg+Cq1E01D2DMriKEATHgWLfeNDmq9e29Q9WIky0dQ3NPkd1mzYH8Lm936Z9qw==}
 
+  /@types/proper-lockfile/4.1.1:
+    resolution: {integrity: sha512-HAjVfDa73pFgivViHyDu8HHHcds+W4MgOuZZAdyFJrHS8ngtCXmhl4hc2YXqSOwO6Bsa+iF2Sgxb2+gv874VOQ==}
+    dependencies:
+      '@types/retry': 0.12.0
+    dev: true
+
   /@types/puppeteer/2.0.1:
     resolution: {integrity: sha512-G8vEyU83Bios+dzs+DZGpAirDmMqRhfFBJCkFrg+A5+6n5EPPHxwBLImJto3qjh0mrBXbLBCyuahhhtTrAfR5g==}
     dependencies:
@@ -8736,6 +8752,10 @@ packages:
     dependencies:
       '@types/node': 10.14.1
     dev: false
+
+  /@types/retry/0.12.0:
+    resolution: {integrity: sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==}
+    dev: true
 
   /@types/rimraf/2.0.4:
     resolution: {integrity: sha512-8gBudvllD2A/c0CcEX/BivIDorHFt5UI5m46TsNj8DjWCCTTZT74kEe4g+QsY7P/B9WdO98d82zZgXO/RQzu2Q==}
@@ -9358,6 +9378,17 @@ packages:
     engines: {node: '>= 6.0.0'}
     dependencies:
       debug: 4.3.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /agentkeepalive/4.1.4:
+    resolution: {integrity: sha512-+V/rGa3EuU74H6wR04plBb7Ks10FbtUQgRj/FQOG7uUIEuaINI+AiqJR1k6t3SVNs7o7ZjIdus6706qqzVq8jQ==}
+    engines: {node: '>= 8.0.0'}
+    dependencies:
+      debug: 4.3.1
+      depd: 1.1.2
+      humanize-ms: 1.2.1
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -14367,6 +14398,12 @@ packages:
       - supports-color
     dev: false
 
+  /humanize-ms/1.2.1:
+    resolution: {integrity: sha1-xG4xWaKT9riW2ikxbYtv6Lt5u+0=}
+    dependencies:
+      ms: 2.1.3
+    dev: false
+
   /i18next-browser-languagedetector/2.2.4:
     resolution: {integrity: sha512-wPbtH18FdOuB245I8Bhma5/XSDdN/HpYlX+wga1eMy+slhaFQSnrWX6fp+aYSL2eEuj0RlfHeEVz6Fo/lxAj6A==}
     dev: false
@@ -18680,6 +18717,14 @@ packages:
     resolution: {integrity: sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==}
     engines: {node: '>= 8'}
 
+  /proper-lockfile/4.1.2:
+    resolution: {integrity: sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==}
+    dependencies:
+      graceful-fs: 4.2.6
+      retry: 0.12.0
+      signal-exit: 3.0.3
+    dev: false
+
   /proto-list/1.2.4:
     resolution: {integrity: sha1-IS1b/hMYMGpCD2QCuOJv85ZHqEk=}
     optional: true
@@ -19830,7 +19875,6 @@ packages:
   /retry/0.12.0:
     resolution: {integrity: sha1-G0KmJmoh8HQh0bC1S33BZ7AcATs=}
     engines: {node: '>= 4'}
-    dev: true
 
   /reusify/1.0.4:
     resolution: {integrity: sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==}
