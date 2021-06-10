@@ -12,7 +12,7 @@ import * as React from "react";
 import { Input, InputProps, WebFontIcon } from "@bentley/ui-core";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@bentley/imodeljs-frontend";
-import { Format, FormatterSpec, FormatTraits, FormatType, Parser, ParserSpec, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
+import { FormatterSpec, FormatTraits, FormatType, Parser, ParserSpec, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
 
 /** Step function prototype for [[NumberInput]] component
  * @beta
