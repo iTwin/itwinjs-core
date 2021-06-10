@@ -11,13 +11,15 @@ import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 interface SchemaInfo {
   schema: Schema;
-  loadSchema?: Promise<Schema>;
+  loadSchema: Promise<Schema>;
 }
 
 /**
  * @beta
  */
-export class SchemaMap extends Array<SchemaInfo> { }
+// export class SchemaMap extends Array<SchemaInfo> { }
+export class LoadedSchemas extends Array<Schema> { }
+export class LoadingSchemas extends Array<SchemaInfo> { }
 
 /**
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
@@ -55,13 +57,15 @@ export interface ISchemaItemLocater {
  * @beta
  */
 export class SchemaCache implements ISchemaLocater {
-  private _schema: SchemaMap;
+  private _loadedSchemas: LoadedSchemas;
+  private _loadingSchemas: LoadingSchemas;
 
   constructor() {
-    this._schema = new SchemaMap();
+    this._loadedSchemas = new LoadedSchemas();
+    this._loadingSchemas = new LoadingSchemas();
   }
 
-  public get count() { return this._schema.length; }
+  public get count() { return this._loadedSchemas.length + this._loadingSchemas.length; }
 
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
@@ -73,9 +77,9 @@ export class SchemaCache implements ISchemaLocater {
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
     if (loadSchema)
-      this._schema.push({ schema, loadSchema });
+      this._loadingSchemas.push({ schema, loadSchema });
     else
-      this._schema.push({ schema });
+      this._loadedSchemas.push(schema);
   }
 
   /**
@@ -86,7 +90,7 @@ export class SchemaCache implements ISchemaLocater {
     if (this.getSchemaSync<T>(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
-    this._schema.push({ schema });
+    this._loadedSchemas.push(schema);
   }
 
   /**
@@ -98,20 +102,29 @@ export class SchemaCache implements ISchemaLocater {
     if (this.count === 0)
       return undefined;
 
-    const findFunc = (schemaInfo: SchemaInfo) => {
+    const findLoadedSchema = (schema: Schema) => {
+      return schema.schemaKey.matches(schemaKey, matchType);
+    };
+
+    const loadedSchema = this._loadedSchemas.find(findLoadedSchema);
+
+    if (loadedSchema)
+      return loadedSchema as T;
+
+    const findLoadingSchema = (schemaInfo: SchemaInfo) => {
       return schemaInfo.schema.schemaKey.matches(schemaKey, matchType);
     };
 
-    const foundSchemaInfo = this._schema.find(findFunc);
-
-    if (!foundSchemaInfo)
-      return undefined;
-
-    if (undefined !== foundSchemaInfo.loadSchema) {
-      await foundSchemaInfo.loadSchema;
+    const loadingSchema = this._loadingSchemas.find(findLoadingSchema);
+    if (loadingSchema) {
+      const schema = await loadingSchema.loadSchema;
+      this._loadedSchemas.push(schema);
+      const loadingSchemaIndex = this._loadingSchemas.findIndex(findLoadingSchema);
+      this._loadingSchemas.splice(loadingSchemaIndex, 1);
+      return schema as T;
     }
 
-    return foundSchemaInfo.schema as T;
+    return undefined;
   }
 
   /**
@@ -123,16 +136,25 @@ export class SchemaCache implements ISchemaLocater {
     if (this.count === 0)
       return undefined;
 
-    const findFunc = (schemaInfo: SchemaInfo) => {
-      return schemaInfo.schema.schemaKey.matches(schemaKey, matchType);
-    };
+      const findLoadedSchema = (schema: Schema) => {
+        return schema.schemaKey.matches(schemaKey, matchType);
+      };
 
-    const foundSchemaInfo = this._schema.find(findFunc);
+      const loadedSchema = this._loadedSchemas.find(findLoadedSchema);
 
-    if (!foundSchemaInfo)
+      if (loadedSchema)
+        return loadedSchema as T;
+
+      // const findLoadingSchema = (schemaInfo: SchemaInfo) => {
+      //   return schemaInfo.schema.schemaKey.matches(schemaKey, matchType);
+      // };
+
+      // const loadingSchema = this._loadingSchemas.find(findLoadingSchema);
+      // if (loadingSchema) {
+      //   return loadingSchema.schema as T;
+      // }
+
       return undefined;
-
-    return foundSchemaInfo.schema as T;
   }
 }
 

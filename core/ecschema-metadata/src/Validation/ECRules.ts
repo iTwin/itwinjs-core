@@ -265,7 +265,12 @@ export function* validateSchemaReferencesSync(schema: Schema): Iterable<SchemaDi
   }
 
   const graph = new SchemaGraph(schema);
+  console.log(`Here2 ${schema.name}`);
+  for (const ref of schema.references) {
+    console.log(`${ref.name}`);
+  }
   const cycles = graph.detectCycles();
+  console.log(cycles);
   if (cycles) {
     const result = cycles.map((cycle) => `${cycle.schema.name} --> ${cycle.refSchema.name}`).join(", ");
     yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [schema.name, result]);

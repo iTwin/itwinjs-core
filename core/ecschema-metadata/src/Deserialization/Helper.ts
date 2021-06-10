@@ -168,7 +168,9 @@ export class SchemaReadHelper<T = unknown> {
    */
   private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
+    console.log(`Here1`, schemaKey.name);
     let refSchema = await this._context.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
+    console.log(`${refSchema?.name}`);
     if (undefined === refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
