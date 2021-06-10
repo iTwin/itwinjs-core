@@ -76,7 +76,7 @@ export enum DecimalPrecision {
 // @beta
 export class Format {
     constructor(name: string);
-    static clone(existing: Format): Format;
+    clone(): Format;
     static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
     // (undocumented)
     get customProps(): any;
