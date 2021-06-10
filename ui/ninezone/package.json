@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "2.18.0-dev.0",
+  "version": "2.18.0-dev.1",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
@@ -33,9 +33,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.0",
-    "@bentley/ui-abstract": "workspace:^2.18.0-dev.0",
-    "@bentley/ui-core": "workspace:^2.18.0-dev.0",
+    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.1",
+    "@bentley/ui-abstract": "workspace:^2.18.0-dev.1",
+    "@bentley/ui-core": "workspace:^2.18.0-dev.1",
     "@itwin/itwinui-css": "^0.18.1",
     "@itwin/itwinui-react": "^1.7.2",
     "react": "^16.8.0",
