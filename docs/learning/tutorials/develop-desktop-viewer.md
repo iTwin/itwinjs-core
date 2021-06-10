@@ -13,8 +13,8 @@
   - Provide application name
   - API associations: "Visualization"
   - Application type: "Desktop/Mobile"
-  - Redirect URI: "http://localhost:3000/signin-callback"
-  - Post logout redirect URI: "http://localhost:3000"
+  - Redirect URI: `http://localhost:3000/signin-callback`
+  - Post logout redirect URI: `http://localhost:3000`
   - Save
 - Click on the name of the client you just created to see the details
 - Copy Client ID to your clipboard
