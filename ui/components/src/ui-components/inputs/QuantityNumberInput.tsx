@@ -52,7 +52,7 @@ function adjustFormatterSpec(formatterSpec: FormatterSpec | undefined) {
     return formatterSpec;
   const singleUnitConversion: UnitConversionSpec[] = [];
   singleUnitConversion.push(formatterSpec.unitConversions[0]);
-  const newFormat = Format.clone(formatterSpec.format);
+  const newFormat = formatterSpec.format.clone();
   if (FormatType.Decimal !== newFormat.type) {
     newFormat.type = FormatType.Decimal;
     newFormat.precision = newFormat.precision;

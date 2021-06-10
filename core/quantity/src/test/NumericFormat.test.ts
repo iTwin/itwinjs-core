@@ -105,7 +105,7 @@ describe("Numeric Formats tests:", () => {
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(!format.hasUnits);
 
-    const clonedFormat = Format.clone(format);
+    const clonedFormat = format.clone();
     clonedFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
     clonedFormat.precision = 2;
     const testQuantityData = [
@@ -636,7 +636,7 @@ describe("Numeric Formats tests:", () => {
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(!format.hasUnits);
 
-    const clonedFormat = Format.clone(format);
+    const clonedFormat = format.clone();
     clonedFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
     clonedFormat.type = FormatType.Decimal;
     clonedFormat.precision = 4;
@@ -677,7 +677,7 @@ describe("Numeric Formats tests:", () => {
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(!format.hasUnits);
 
-    const clonedFormat = Format.clone(format);
+    const clonedFormat = format.clone();
     clonedFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
     clonedFormat.type = FormatType.Decimal;
     clonedFormat.precision = 2;
@@ -718,7 +718,7 @@ describe("Numeric Formats tests:", () => {
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(!format.hasUnits);
 
-    const clonedFormat = Format.clone(format);
+    const clonedFormat = format.clone();
     clonedFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
     clonedFormat.type = FormatType.Decimal;
     clonedFormat.precision = 2;

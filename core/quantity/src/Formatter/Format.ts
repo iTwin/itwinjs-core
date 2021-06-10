@@ -355,27 +355,26 @@ export class Format {
   }
 
   /**
-   *  Clone existing format
-   * @param existing Format to clone
+   *  Clone Format
    */
-  public static clone(existing: Format) {
-    const newFormat = new Format(existing.name);
-    newFormat._roundFactor = existing._roundFactor;
-    newFormat._type = existing._type;
-    newFormat._precision = existing._precision;
-    newFormat._minWidth = existing._minWidth;
-    newFormat._scientificType = existing._scientificType;
-    newFormat._showSignOption = existing._showSignOption;
-    newFormat._decimalSeparator = existing._decimalSeparator;
-    newFormat._thousandSeparator = existing._thousandSeparator;
-    newFormat._uomSeparator = existing._uomSeparator;
-    newFormat._stationSeparator = existing._stationSeparator;
-    newFormat._stationOffsetSize = existing._stationOffsetSize;
-    newFormat._formatTraits = existing._formatTraits;
-    newFormat._spacer = existing._spacer;
-    newFormat._includeZero = existing._includeZero;
-    newFormat._customProps = existing._customProps;
-    existing._units && (newFormat._units = [...existing._units]);
+  public clone(): Format {
+    const newFormat = new Format(this.name);
+    newFormat._roundFactor = this._roundFactor;
+    newFormat._type = this._type;
+    newFormat._precision = this._precision;
+    newFormat._minWidth = this._minWidth;
+    newFormat._scientificType = this._scientificType;
+    newFormat._showSignOption = this._showSignOption;
+    newFormat._decimalSeparator = this._decimalSeparator;
+    newFormat._thousandSeparator = this._thousandSeparator;
+    newFormat._uomSeparator = this._uomSeparator;
+    newFormat._stationSeparator = this._stationSeparator;
+    newFormat._stationOffsetSize = this._stationOffsetSize;
+    newFormat._formatTraits = this._formatTraits;
+    newFormat._spacer = this._spacer;
+    newFormat._includeZero = this._includeZero;
+    newFormat._customProps = this._customProps;
+    this._units && (newFormat._units = [...this._units]);
     return newFormat;
   }
 
