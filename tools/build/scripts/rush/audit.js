@@ -42,10 +42,10 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       const severity = advisory.severity.toUpperCase();
       const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
 
-      // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
-      if (severity === "HIGH" || severity === "CRITICAL")
+      // For now, we'll only treat CRITICAL vulnerabilities as errors in CI builds.
+      if (severity === "CRITICAL")
         logBuildError(message);
-      else if (severity === "MODERATE") // Only warn on Moderate severity items
+      else if (severity === "MODERATE" || severity === "HIGH") // Only warn on Moderate/High severity items
         logBuildWarning(message);
     }
   }
@@ -54,7 +54,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   if (undefined === jsonOut.metadata.vulnerabilities)
     failBuild();
 
-  if (jsonOut.metadata.vulnerabilities.high || jsonOut.metadata.vulnerabilities.critical) {
+  if (jsonOut.metadata.vulnerabilities.critical) {
     if (1 < jsonOut.actions.length || jsonOut.actions[0].resolves[0].id !== 725)
       failBuild();
   }
