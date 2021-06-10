@@ -7,6 +7,8 @@
  */
 // cspell:ignore Helmert
 
+import { Geometry } from "@bentley/geometry-core";
+
 /** An affine transformation with an additional Z Offset.
  *  The equations are:
  *  given a = scale * cos(rotation) and b = scale * sin(rotation)
@@ -76,11 +78,15 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
    * It is useful for tests purposes only.
    *  @internal */
   public equals(other: Helmert2DWithZOffset): boolean {
-    return (this.translationX === other.translationX &&
-      this.translationY === other.translationY &&
-      this.translationZ === other.translationZ &&
-      this.rotDeg === other.rotDeg &&
-      this.scale === other.scale);
+    return this.equal("translationX", other) &&
+      this.equal("translationY", other) &&
+      this.equal("translationZ", other) &&
+      this.equal("rotDeg", other) &&
+      this.equal("scale", other);
+  }
+
+  private equal(propName: keyof Helmert2DWithZOffsetProps, other: Helmert2DWithZOffset): boolean {
+    return Geometry.isSameCoordinate(this[propName], other[propName]);
   }
 }
 
