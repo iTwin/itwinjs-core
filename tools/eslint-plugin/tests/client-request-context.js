@@ -200,7 +200,7 @@ new ESLintTester({
       `,
     },
     {
-      only: true,
+      skip: true,
       code: makeTest`
           async function typeUnion(reqCtx: ClientRequestContext | AuthorizedRequestContext) {
             reqCtx.enter();
@@ -210,7 +210,7 @@ new ESLintTester({
       `,
     },
     {
-      only: true,
+      skip: true,
       code: makeTest`
           async function derivedType(reqCtx: MyReqCtx) {
             reqCtx.enter();
@@ -602,6 +602,46 @@ new ESLintTester({
               } catch (ignore) {
                 // no immediate context.enter
               reqCtx.enter();}
+            }
+          `,
+        }
+      ]
+    },
+    {
+      // should add a block since it must return the promise immediately, just needs to propagate the ctx
+      skip: true,
+      options: [{"dont-propagate": false}],
+      code: makeTest`const blocklessArrow = async (reqCtx: MyReqCtx) => somePromiseReturner();`,
+      errors: [
+        {
+          messageId: "didntPropagate",
+          data: {reqCtxArgName: "reqCtx"},
+          // TODO: should probably be a suggestion
+          output: makeTest`const blocklessArrow = async (reqCtx: MyReqCtx) => somePromiseReturner(reqCtx);`,
+        }
+      ]
+    },
+    {
+      skip: true,
+      code: makeTest`
+        async function awaitInIf(reqCtx: ClientRequestContext) {
+          reqCtx.enter();
+          if (await someFunc()) {
+            return 10;
+          }
+          return 5;
+        }
+      `,
+      errors: [
+        {
+          messageId: "noEnterOnAwaitResume",
+          output: makeTest`
+            async function awaitInIf(reqCtx: ClientRequestContext) {
+              reqCtx.enter();
+              if (await someFunc()) {reqCtx.enter();
+                return 10;
+              }
+              return 5;
             }
           `,
         }
