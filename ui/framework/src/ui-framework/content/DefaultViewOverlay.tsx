@@ -34,49 +34,49 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
   const [viewport] = React.useState(props.viewport);
   const [viewId, setViewId] = React.useState("");
 
-  const handleViewChanged = (vp: Viewport): void => {
-    if (viewId !== vp.view.id){
-      setViewId(vp.view.id);
-      // setNewDataProvider().then;
-    }
-  };
-
-  async function setNewDataProvider () {
-    let newDataProvider: TimelineDataProvider | SolarDataProvider | undefined = await getTimelineDataProvider(viewport);
-    if (newDataProvider && newDataProvider.supportsTimelineAnimation) {
-      setTimelineDataProvider(newDataProvider);
-      setSolarDataProvider(undefined);
-    } else {
-      newDataProvider = await getSolarDataProvider(viewport, solarDataProvider);
-      if (newDataProvider) {
-        setTimelineDataProvider(undefined);
-        setSolarDataProvider(newDataProvider);
-      }
-    }
-    setShowOverlay(isInActiveContentControl(viewport));
-  }
-
-  const updateShowOverlayState = (): void => {
-    let updateOverlay = isInActiveContentControl(viewport);
-    if (updateOverlay && solarDataProvider)
-      updateOverlay = solarDataProvider.shouldShowTimeline;
-    if (updateOverlay !== showOverlay) setShowOverlay(updateOverlay);
-  }
-
-  const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-    // istanbul ignore if
-    if (args.eventIds.has(SyncUiEventId.ActiveContentChanged)) {
-      updateShowOverlayState();
-    }
-    if (args.eventIds.has(SyncUiEventId.ContentControlActivated)) {
-      updateShowOverlayState();
-    }
-    if (args.eventIds.has(SyncUiEventId.FrontstageReady)) {
-      updateShowOverlayState();
-    }
-  };
-
   React.useEffect(() => {
+    async function setNewDataProvider() {
+      let newDataProvider: TimelineDataProvider | SolarDataProvider | undefined = await getTimelineDataProvider(viewport);
+      if (newDataProvider && newDataProvider.supportsTimelineAnimation) {
+        setTimelineDataProvider(newDataProvider);
+        setSolarDataProvider(undefined);
+      } else {
+        newDataProvider = await getSolarDataProvider(viewport, solarDataProvider);
+        if (newDataProvider) {
+          setTimelineDataProvider(undefined);
+          setSolarDataProvider(newDataProvider);
+        }
+      }
+      setShowOverlay(isInActiveContentControl(viewport));
+    }
+
+    const updateShowOverlayState = (): void => {
+      let updateOverlay = isInActiveContentControl(viewport);
+      if (updateOverlay && solarDataProvider)
+        updateOverlay = solarDataProvider.shouldShowTimeline;
+      if (updateOverlay !== showOverlay) setShowOverlay(updateOverlay);
+    };
+
+    const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+      // istanbul ignore if
+      if (args.eventIds.has(SyncUiEventId.ActiveContentChanged)) {
+        updateShowOverlayState();
+      }
+      if (args.eventIds.has(SyncUiEventId.ContentControlActivated)) {
+        updateShowOverlayState();
+      }
+      if (args.eventIds.has(SyncUiEventId.FrontstageReady)) {
+        updateShowOverlayState();
+      }
+    };
+
+    const handleViewChanged = (vp: Viewport): void => {
+      if (viewId !== vp.view.id){
+        setViewId(vp.view.id);
+        // setNewDataProvider().then;
+      }
+    };
+
     setNewDataProvider().then;
 
     SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
@@ -85,7 +85,7 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
       viewport.onViewChanged.removeListener(handleViewChanged);
       SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
-  }, [viewport]);
+  }, [viewport, viewId, solarDataProvider, showOverlay]);
 
   if (showOverlay) {
     if (solarDataProvider) {
@@ -118,7 +118,7 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
     <div className="uifw-view-overlay"/>
   );
 }
-async function getSolarDataProvider (viewport: ScreenViewport, dataProvider: SolarDataProvider | undefined): Promise<SolarDataProvider | undefined> {
+async function getSolarDataProvider(viewport: ScreenViewport, dataProvider: SolarDataProvider | undefined): Promise<SolarDataProvider | undefined> {
   if (IModelApp.renderSystem.options.displaySolarShadows) {
     if (dataProvider && dataProvider.viewport === viewport)
       return dataProvider;
