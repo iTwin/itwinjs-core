@@ -9,6 +9,7 @@ export * from "./Base64EncodedString";
 export * from "./BriefcaseTypes";
 export * from "./Camera";
 export * from "./ChangedElements";
+export * from "./ChangedEntities";
 export * from "./ClipStyle";
 export * from "./CloudStorage";
 export * from "./CloudStorageTileCache";
