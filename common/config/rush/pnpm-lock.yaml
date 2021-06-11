@@ -1429,6 +1429,8 @@ importers:
       bunyan: ^1.8.12
       bunyan-seq: ^0.2.0
       eslint: ^6.8.0
+      request: ^2.88.0
+      request-promise: ^4.2.0
       rimraf: ^3.0.2
       typescript: ~4.1.0
     devDependencies:
@@ -1441,6 +1443,8 @@ importers:
       bunyan: 1.8.15
       bunyan-seq: 0.2.0
       eslint: 6.8.0
+      request: 2.88.2
+      request-promise: 4.2.6_request@2.88.2
       rimraf: 3.0.2
       typescript: 4.1.5
 
@@ -4008,6 +4012,7 @@ importers:
       react-redux: ^7.2.0
       react-select: 3.1.0
       redux: ^4.0.3
+      request: ^2.88.0
       request-promise: ^4.2.0
       rimraf: ^3.0.2
       sass: ^1.29.0
@@ -4063,7 +4068,8 @@ importers:
       react-redux: 7.2.4_react-dom@16.14.0+react@16.14.0
       react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
       redux: 4.1.0
-      request-promise: 4.2.6
+      request: 2.88.2
+      request-promise: 4.2.6_request@2.88.2
       semver: 5.7.1
     devDependencies:
       '@axe-core/react': 4.2.1
@@ -19687,7 +19693,7 @@ packages:
       stealthy-require: 1.1.1
       tough-cookie: 2.5.0
 
-  /request-promise/4.2.6:
+  /request-promise/4.2.6_request@2.88.2:
     resolution: {integrity: sha512-HCHI3DJJUakkOr8fNoCc73E5nU5bqITjOYFMDrKHYOXWXrgD/SBaC7LjwuPymUprRyuF06UK7hd/lMHkmUXglQ==}
     engines: {node: '>=0.10.0'}
     deprecated: request-promise has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142
@@ -19695,10 +19701,10 @@ packages:
       request: ^2.34
     dependencies:
       bluebird: 3.7.2
-      request-promise-core: 1.1.4
+      request: 2.88.2
+      request-promise-core: 1.1.4_request@2.88.2
       stealthy-require: 1.1.1
       tough-cookie: 2.5.0
-    dev: false
 
   /request/2.88.2:
     resolution: {integrity: sha512-MsvtOrfG9ZcrOwAW+Qi+F6HbD0CWXEh9ou77uOb7FM2WPhwT7smM833PzanhJLsgXjN89Ir6V2PczXNnMpwKhw==}
