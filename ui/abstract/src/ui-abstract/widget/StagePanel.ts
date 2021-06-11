@@ -6,6 +6,20 @@
  * @module Widget
  */
 
+/** Enum for [[Zone]] Location used to specify zone location using AppUi 1.0 designations.
+ * @public
+ */
+export enum AbstractZoneLocation {
+  TopLeft = 1,
+  TopCenter = 2,
+  TopRight = 3,
+  CenterLeft = 4,
+  CenterRight = 6,
+  BottomLeft = 7,
+  BottomCenter = 8,
+  BottomRight = 9,
+}
+
 /** Available Stage Panel locations.
  * @public
  */

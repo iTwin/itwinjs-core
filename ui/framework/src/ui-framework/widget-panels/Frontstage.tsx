@@ -16,9 +16,10 @@ import { assert, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, findWidget, floatingWidgetBringToFront,
-  FloatingWidgets, getUniqueId, isFloatingLocation, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
-  NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
+  addPanelWidget, addTab, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
+  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgets, getUniqueId, isFloatingLocation,
+  isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
+  NineZoneStateReducer, PanelSide, panelSides, PanelState, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
@@ -290,7 +291,9 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
   }
 
   const panel = state.panels[side];
-  if (panel.maxWidgetCount === panel.widgets.length) {
+  preferredWidgetIndex = preferredWidgetIndex >= panel.maxWidgetCount ? panel.maxWidgetCount - 1 : preferredWidgetIndex;
+
+  if (preferredWidgetIndex < panel.widgets.length) {
     // Append tabs to existing widget.
     const widgetId = panel.widgets[preferredWidgetIndex];
     state = produce(state, (draft) => {
@@ -300,10 +303,10 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       }
     });
   } else {
-    // Create a new panel widget.
-    const widget = createWidgetState(getUniqueId(), tabs);
+    const newWidgetId = getNextAvailablePanelWidgetId(panel);
+    const widget = createWidgetState(newWidgetId, tabs);
     state = produce(state, (draft) => {
-      draft.panels[side].widgets.splice(preferredWidgetIndex, 0, widget.id);
+      draft.panels[side].widgets.push(widget.id);
       draft.widgets[widget.id] = castDraft(widget);
     });
   }
@@ -439,6 +442,13 @@ export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): Widget
       return "bottomEnd";
     }
   }
+}
+
+/** @internal */
+function getNextAvailablePanelWidgetId(panel: PanelState) {
+  const keys: StagePanelZoneDefKeys[] = ["start", "middle", "end"];
+  const index = panel.widgets.length;
+  return getWidgetId(panel.side, keys[index]);
 }
 
 function isVerticalPanelSide(side: PanelSide) { return !isHorizontalPanelSide(side); }
