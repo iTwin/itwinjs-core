@@ -273,6 +273,7 @@ export namespace CompressedId64Set {
     export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
     export function iterable(ids: CompressedId64Set): OrderedId64Iterable;
     export function iterator(ids: CompressedId64Set): Iterator<Id64String>;
+    export function sortAndCompress(ids: Iterable<Id64String>): CompressedId64Set;
 }
 
 // @public (undocumented)
@@ -1006,6 +1007,7 @@ export class IndexMap<T> {
     };
     // (undocumented)
     protected readonly _maximumSize: number;
+    toArray(): T[];
 }
 
 // @internal @deprecated
@@ -1177,7 +1179,7 @@ export class ObservableSet<T> extends Set<T> {
 
 // @beta
 export class OneAtATimeAction<T> {
-    constructor(run: (...args: any[]) => Promise<T>);
+    constructor(run: (...args: any[]) => Promise<T>, msg?: string);
     // (undocumented)
     msg: string;
     request(...args: any[]): Promise<T>;
@@ -1197,6 +1199,7 @@ export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
 // @public
 export class OrderedId64Array extends SortedArray<Id64String> {
     constructor();
+    get array(): ReadonlyArray<Id64String>;
     get ids(): OrderedId64Iterable;
 }
 
