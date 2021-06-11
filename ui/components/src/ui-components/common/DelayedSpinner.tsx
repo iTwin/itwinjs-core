@@ -7,7 +7,10 @@
  */
 
 import * as React from "react";
-import { ProgressRadial } from "@itwin/itwinui-react";
+import { ProgressRadial, ProgressRadialProps } from "@itwin/itwinui-react";
+
+/** Type for ProgressRadialProps.size */
+type RadialSizeType = ProgressRadialProps["size"];
 
 /**
  * Props for [[DelayedSpinner]] component.
@@ -16,7 +19,7 @@ import { ProgressRadial } from "@itwin/itwinui-react";
 export interface DelayedSpinnerProps {
   loadStart?: Date;
   delay?: number;
-  size?: "" | "x-small" | "small" | "large";
+  size?: RadialSizeType;
 }
 
 /**

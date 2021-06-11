@@ -1265,9 +1265,10 @@ export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
 }
 
 // @public
-export interface LoadingSpinnerProps extends ProgressRadialProps {
+export interface LoadingSpinnerProps extends Omit<ProgressRadialProps, "size"> {
     message?: string;
     messageOnTop?: boolean;
+    size?: RadialSizeType | SpinnerSize;
 }
 
 // @public
@@ -1700,6 +1701,9 @@ export interface RadialMenuProps extends CommonProps {
     selected?: number;
     top?: number | string;
 }
+
+// @public
+export type RadialSizeType = ProgressRadialProps["size"];
 
 // @public @deprecated
 export class Radio extends React.PureComponent<RadioProps> {

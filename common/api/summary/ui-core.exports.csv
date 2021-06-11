@@ -246,6 +246,7 @@ beta;RadialButton
 beta;RadialButtonProps 
 beta;RadialMenu 
 beta;RadialMenuProps 
+public;RadialSizeType = ProgressRadialProps["size"]
 public;Radio 
 deprecated;Radio 
 public;RadioProps 

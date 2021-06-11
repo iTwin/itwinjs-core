@@ -20,46 +20,6 @@
   height: 100%;
   overflow: hidden;
   font-size: $iui-font-size;
-
-  // Override some iTwinUI-css padding and minimums
-  .iui-input {
-    padding: $uicore-iui-input-padding;
-  }
-
-  .iui-select {
-    >.iui-select-button {
-      min-height: 24px;
-      padding-top: 1px;
-      padding-bottom: 1px;
-      padding-right: 24px;
-    }
-
-    >.iui-select-button::after {
-      right: 6px;
-    }
-  }
-
-  .iui-toggle-switch {
-    padding: 1px 0;
-  }
-
-  .iui-expandable-block {
-    > .iui-header {
-      padding: $iui-xs $iui-xs;
-
-      > .iui-icon {
-        width: $uicore-icons-x-small;
-        height: $uicore-icons-x-small;
-        margin-top: $iui-xs;
-      }
-    }
-
-    &.iui-expanded {
-      > .iui-content {
-        padding: 0;
-      }
-    }
-  }
 }
 
 #uifw-frontstage-composer {
@@ -113,4 +73,44 @@
 
 .uifw-app-button-small {
   margin-bottom: 6px;
+}
+
+// Override some iTwinUI-css padding and minimums
+.iui-input {
+  padding: $uicore-iui-input-padding;
+}
+
+.iui-select {
+  >.iui-select-button {
+    min-height: 24px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-right: 24px;
+  }
+
+  >.iui-select-button::after {
+    right: 6px;
+  }
+}
+
+.iui-toggle-switch {
+  padding: 1px 0;
+}
+
+.iui-expandable-block {
+  > .iui-header {
+    padding: $iui-xs $iui-xs;
+
+    > .iui-icon {
+      width: $uicore-icons-x-small;
+      height: $uicore-icons-x-small;
+      margin-top: $iui-xs;
+    }
+  }
+
+  &.iui-expanded {
+    > .iui-content {
+      padding: 0;
+    }
+  }
 }

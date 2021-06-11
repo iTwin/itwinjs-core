@@ -27,6 +27,7 @@
       padding: $uicore-iui-input-padding;
       margin: 0;
       max-width: calc(100% - 10px);
+      min-height: $filter-height;
       height: $filter-height;
     }
 
