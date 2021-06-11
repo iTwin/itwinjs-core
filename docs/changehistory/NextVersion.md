@@ -5,6 +5,46 @@ publish: false
 
 ## UI Changes
 
+Added ability for UiItemsProvider to provide widgets to "zone" locations when running is AppUi version 1. Prior to this a widget could only be targeted to a "stage panel" location.
+
+### Example UiItemsProvider
+
+The example below, shows how to add a widget to a StagePanelLocation if UiFramework.uiVersion === "2" and to the "BottomRight" zone location if UiFramework.uiVersion === "1".  See [UiItemsProvider.provideWidgets]($ui-abstract) for new `zoneLocation` argument.
+
+```tsx
+export class ExtensionUiItemsProvider implements UiItemsProvider {
+  public readonly id = "ExtensionUiItemsProvider";
+  public static i18n: I18N;
+  private _backstageItems?: BackstageItem[];
+
+  public constructor(i18n: I18N) {
+    ExtensionUiItemsProvider.i18n = i18n;
+  }
+
+  /** provideWidgets() is called for each registered UI provider to allow the provider to add widgets to a specific section of a stage panel.
+   *  items to the StatusBar.
+   */
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    // section will be undefined if uiVersion === "1" and in that case we can add widgets to the specified zoneLocation
+    if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
+      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
+      {
+        widgets.push({
+          id: PresentationPropertyGridWidgetControl.id,
+          icon: PresentationPropertyGridWidgetControl.iconSpec,  // icon required if uiVersion === "1"
+          label: PresentationPropertyGridWidgetControl.label,
+          defaultState: WidgetState.Open,
+          getWidgetContent: () => <PresentationPropertyGridWidget />, // eslint-disable-line react/display-name
+          canPopout: true,  // canPopout ignore if uiVersion === "1"
+        });
+      }
+    }
+    return widgets;
+  }
+}
+```
+
 ### Cube Navigation Aid
 
 The enums HitBoxX, HitBoxY, and HitBoxZ used by the CubeNavigationAid have been renamed to CubeNavigationHitBoxX, CubeNavigationHitBoxY, and CubeNavigationHitBoxZ, respectively. The old enums are deprecated.
@@ -29,6 +69,7 @@ Within [IpcApp]($frontend)-based applications, [BriefcaseConnection]($frontend)s
 ## Reality model APIs
 
 Several APIs relating to reality models have been introduced, in some cases replacing previous `beta` APIs. A reality model can be displayed in a [Viewport]($frontend) in one of two ways:
+
 * Adding to the [ViewState]($frontend)'s [ModelSelector]($backend) the Id of a persistent [SpatialModelState]($frontend) containing a URL pointing to a 3d tileset; or
 * Attaching to the [DisplayStyleState]($frontend) a [ContextRealityModel]($common) with a URL pointing to a 3d tileset.
 
@@ -109,6 +150,7 @@ The arguments for the @beta protected static methods called during modifications
 * [ElementAspect]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
 
 In addition, new protected static methods were added:
+
 * [Element]($backend) `[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]`
 
 ### [@bentley/webgl-compatibility](https://www.itwinjs.org/reference/webgl-compatibility/)
