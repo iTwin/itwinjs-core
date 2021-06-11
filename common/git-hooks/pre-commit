@@ -6,4 +6,4 @@
 # Invoke the "copyright:linter" custom command to reformat files whenever they
 # are committed. The command is defined in common/config/rush/command-line.json
 # and uses the "rush-lintstaged" autoinstaller.
-node common/scripts/install-run-rush.js copyright:linter || exit $?
+# node common/scripts/install-run-rush.js copyright:linter || exit $?
