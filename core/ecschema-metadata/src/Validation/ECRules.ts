@@ -21,7 +21,7 @@ import {
   PropertyDiagnostic, RelationshipConstraintDiagnostic, SchemaDiagnostic, SchemaItemDiagnostic,
 } from "./Diagnostic";
 import { IRuleSet } from "./Rules";
-import { SchemaGraph } from "./SchemaGraph";
+import { SchemaGraph } from "../utils/SchemaGraph";
 import { Schema } from "../Metadata/Schema";
 
 /* eslint-disable deprecation/deprecation */

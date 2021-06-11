@@ -48,6 +48,7 @@ export type AnyRuleSuppressionMap = IRuleSuppressionMap<AnyECType>;
 /**
  * Interface used to represent elements of a rule suppression
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export interface IRuleSuppressionMap<T extends AnyECType, U = {}> {
   ruleCode: string;
@@ -56,7 +57,7 @@ export interface IRuleSuppressionMap<T extends AnyECType, U = {}> {
 
 /**
  * Interface used to represent elements of a rule suppression
- * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export interface BaseRuleSuppressionMap<T extends AnyECType, U extends AnyECType> {
   ruleCode: string;
@@ -65,7 +66,7 @@ export interface BaseRuleSuppressionMap<T extends AnyECType, U extends AnyECType
 
 /**
  * Interface used to represent logical collection of [[ISuppressionRule]] instances.
- * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export interface IRuleSuppressionSet {
   name: string;

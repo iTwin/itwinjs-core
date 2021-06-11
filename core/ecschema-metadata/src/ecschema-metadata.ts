@@ -54,6 +54,7 @@ export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Va
 /* eslint-disable-next-line deprecation/deprecation */
 export { SchemaValidater } from "./Validation/SchemaValidater";
 export { CustomAttribute, CustomAttributeContainerProps} from "./Metadata/CustomAttribute";
+export { SchemaGraph } from "./utils/SchemaGraph";
 
 /** @docs-package-description
  * The ecschema-metadata package contains classes for working with ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).

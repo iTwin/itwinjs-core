@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Schema } from "@bentley/ecschema-metadata";
+import { Schema } from "../Metadata/Schema";
 
-/** @internal */
+/** @beta */
 export interface ReferenceCycle {
   schema: Schema;
   refSchema: Schema;
@@ -13,7 +13,7 @@ export interface ReferenceCycle {
 
 /**
  * Utility class for detecting cyclic references in a Schema graph.
- * @internal
+ * @beta
  */
 export class SchemaGraph {
   private _schemas: Schema[] = [];
