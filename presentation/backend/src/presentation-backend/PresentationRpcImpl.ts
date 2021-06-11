@@ -12,12 +12,13 @@ import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions,
   DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,
-  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyCompareInfo,
-  HierarchyCompareInfoJSON, HierarchyCompareRpcOptions, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON, isContentDescriptorRequestOptions,
-  isDisplayLabelRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition,
-  LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse,
-  PageOptions, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcResponse,
-  PresentationStatus, Ruleset, RulesetVariable, RulesetVariableJSON, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
+  DistinctValuesRpcRequestOptions, ElementProperties, ElementPropertiesRpcRequestOptions, ExtendedContentRpcRequestOptions,
+  ExtendedHierarchyRpcRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareRpcOptions, HierarchyRpcRequestOptions,
+  InstanceKey, InstanceKeyJSON, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isExtendedContentRequestOptions,
+  isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON,
+  NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
+  PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset,
+  RulesetVariable, RulesetVariableJSON, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
@@ -301,6 +302,12 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   public async getPagedContentSet(token: IModelRpcProps, requestOptions: Paged<ExtendedContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> {
     const content = await this.getPagedContent(token, requestOptions);
     return this.successResponse(content.result ? content.result.contentSet : { total: 0, items: [] });
+  }
+
+  public async getElementProperties(token: IModelRpcProps, requestOptions: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> {
+    return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
+      return this.getManager(requestOptions.clientId).getElementProperties(options);
+    });
   }
 
   // eslint-disable-next-line deprecation/deprecation
