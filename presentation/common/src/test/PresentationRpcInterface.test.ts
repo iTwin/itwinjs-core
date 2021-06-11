@@ -131,7 +131,7 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getFilteredNodePaths call", async () => {
-      const options: HierarchyRpcRequestOptions = {
+      const options: ExtendedHierarchyRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
       };
       await rpcInterface.getFilteredNodePaths(token, options, "filter");
@@ -139,7 +139,7 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getNodePaths call", async () => {
-      const options: HierarchyRpcRequestOptions = {
+      const options: ExtendedHierarchyRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
       };
       const keys = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];

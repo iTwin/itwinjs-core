@@ -533,7 +533,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
 // @beta
 export interface PresentationTreeDataProviderDataSourceEntryPoints {
     // (undocumented)
-    getFilteredNodePaths: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>, filterText: string) => Promise<NodePathElement[]>;
+    getFilteredNodePaths: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never>, filterText: string) => Promise<NodePathElement[]>;
     // (undocumented)
     getNodesAndCount: (requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>) => Promise<{
         nodes: Node[];

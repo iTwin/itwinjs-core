@@ -9,7 +9,7 @@
 import { ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
 import {
-  DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValueJSON, VariableValueTypes,
+  DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
 } from "@bentley/presentation-common";
 import { HierarchyCacheMode, PresentationManagerMode, UnitSystemFormat } from "./PresentationManager";
 
@@ -53,8 +53,9 @@ export interface NativePlatformDefinition extends IDisposable {
 
   handleRequest(db: any, options: string): Promise<NativePlatformResponse<string>>;
 
-  getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): NativePlatformResponse<VariableValueJSON>;
-  setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): NativePlatformResponse<void>;
+  getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): NativePlatformResponse<VariableValue>;
+  setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValue): NativePlatformResponse<void>;
+  unsetRulesetVariableValue(rulesetId: string, variableId: string): NativePlatformResponse<void>;
 
   getUpdateInfo(): NativePlatformResponse<UpdateInfoJSON | undefined>;
   updateHierarchyState(db: any, rulesetId: string, changeType: "nodesExpanded" | "nodesCollapsed", serializedKeys: string): NativePlatformResponse<void>;
@@ -184,6 +185,9 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     public setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON) {
       return this.handleVoidResult(this._nativeAddon.setRulesetVariableValue(rulesetId, variableId, type, value));
+    }
+    public unsetRulesetVariableValue(rulesetId: string, variableId: string) {
+      return this.handleVoidResult(this._nativeAddon.unsetRulesetVariableValue(rulesetId, variableId));
     }
     public getUpdateInfo() {
       return this.handleResult(this._nativeAddon.getUpdateInfo());

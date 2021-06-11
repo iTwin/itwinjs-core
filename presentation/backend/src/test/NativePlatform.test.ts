@@ -221,6 +221,16 @@ describe("default NativePlatform", () => {
     addonMock.verifyAll();
   });
 
+  it("calls addon's unsetRulesetVariableValue", async () => {
+    const rulesetId = faker.random.word();
+    const variableId = faker.random.word();
+    addonMock.setup((x) => x.unsetRulesetVariableValue(rulesetId, variableId))
+      .returns(() => ({}))
+      .verifiable();
+    nativePlatform.unsetRulesetVariableValue(rulesetId, variableId);
+    addonMock.verifyAll();
+  });
+
   it("calls addon's getRulesetVariableValue", async () => {
     const rulesetId = faker.random.word();
     const variableId = faker.random.word();
