@@ -6,6 +6,7 @@
  * @module Core
  */
 
+import { Id64String } from "@bentley/bentleyjs-core";
 import { DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
 import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
@@ -27,7 +28,10 @@ export enum RequestPriority {
   Max = Number.MAX_SAFE_INTEGER,
 }
 
-/** @alpha */
+/**
+ * Enumeration of unit systems that can be used when formatting values.
+ * @beta
+ */
 export enum PresentationUnitSystem {
   Metric = "metric",
   BritishImperial = "british-imperial",
@@ -50,7 +54,7 @@ export interface RequestOptions<TIModel> {
    * Unit system to use when formatting property values with units. Default presentation
    * unit is used if unit system is not specified.
    *
-   * @alpha
+   * @beta
    */
   unitSystem?: PresentationUnitSystem;
 
@@ -157,6 +161,15 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
   keys: TKeySet;
   /** Descriptor for a field distinct values are requested for */
   fieldDescriptor: FieldDescriptor;
+}
+
+/**
+ * Request type for element properties requests.
+ * @beta
+ */
+export interface ElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+  /** ID of the element to get properties for. */
+  elementId: Id64String;
 }
 
 /**

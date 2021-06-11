@@ -114,15 +114,11 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return retValue;
     }
     private handleResult<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
-      if (!response)
-        throw new PresentationError(PresentationStatus.InvalidResponse);
       if (response.error)
         throw new PresentationError(this.getStatus(response.error.status), response.error.message);
       return this.createSuccessResponse(response);
     }
     private handleVoidResult(response: IModelJsNative.ECPresentationManagerResponse<void>): NativePlatformResponse<void> {
-      if (!response)
-        throw new PresentationError(PresentationStatus.InvalidResponse);
       if (response.error)
         throw new PresentationError(this.getStatus(response.error.status), response.error.message);
       return this.createSuccessResponse(response);
