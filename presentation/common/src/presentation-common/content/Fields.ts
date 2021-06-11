@@ -401,7 +401,7 @@ export class NestedContentField extends Field {
       this.priority,
       this.contentClassInfo,
       this.pathToPrimaryClass,
-      this.nestedFields,
+      this.nestedFields.map((n) => n.clone()),
       this.editor,
       this.autoExpand,
       this.renderer,
