@@ -12,10 +12,10 @@ import * as moq from "typemoq";
 import { ClientRequestContext, DbResult, using } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
 import {
-  ArrayTypeDescription, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor,
-  DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor,
-  FieldDescriptorType, FieldJSON, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions,
+  ArrayTypeDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes,
+  Descriptor, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions,
   HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions,
   NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PresentationUnitSystem, PrimitiveTypeDescription,
   PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON, SelectionInfo,
