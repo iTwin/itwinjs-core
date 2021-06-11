@@ -145,14 +145,34 @@ export class SchemaCache implements ISchemaLocater {
       if (loadedSchema)
         return loadedSchema as T;
 
-      // const findLoadingSchema = (schemaInfo: SchemaInfo) => {
-      //   return schemaInfo.schema.schemaKey.matches(schemaKey, matchType);
-      // };
+      return undefined;
+  }
 
-      // const loadingSchema = this._loadingSchemas.find(findLoadingSchema);
-      // if (loadingSchema) {
-      //   return loadingSchema.schema as T;
-      // }
+  public async getLoadedOrLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
+    return this.getLoadedOrLoadingSchemaSync(schemaKey, matchType) as T;
+  }
+
+  public getLoadedOrLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
+    if (this.count === 0)
+      return undefined;
+
+      const findLoadedSchema = (schema: Schema) => {
+        return schema.schemaKey.matches(schemaKey, matchType);
+      };
+
+      const loadedSchema = this._loadedSchemas.find(findLoadedSchema);
+
+      if (loadedSchema)
+        return loadedSchema as T;
+
+      const findLoadingSchema = (schemaInfo: SchemaInfo) => {
+        return schemaInfo.schema.schemaKey.matches(schemaKey, matchType);
+      };
+
+      const loadingSchema = this._loadingSchemas.find(findLoadingSchema);
+      if (loadingSchema) {
+        return loadingSchema.schema as T;
+      }
 
       return undefined;
   }
@@ -241,6 +261,36 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
     for (const locater of this._locaters) {
       const schema = locater.getSchemaSync<T>(schemaKey, matchType, this);
+      if (undefined !== schema)
+        return schema;
+    }
+
+    return undefined;
+  }
+
+  public async getLoadedOrLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
+    const schema = await this._knownSchemas.getLoadedOrLoadingSchema(schemaKey, matchType);
+    if (schema)
+      return schema as T;
+
+    const locaters = [...this._locaters];
+    for (let i = 1; i < locaters.length; i++) {
+      const schema = await locaters[i].getSchema<T>(schemaKey, matchType, this);
+      if (undefined !== schema)
+        return schema;
+    }
+
+    return undefined;
+  }
+
+  public getLoadedOrLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
+    const schema = this._knownSchemas.getLoadedOrLoadingSchemaSync(schemaKey, matchType);
+    if (schema)
+      return schema as T;
+
+    const locaters = [...this._locaters];
+    for (let i = 1; i < locaters.length; i++) {
+      const schema = locaters[i].getSchemaSync<T>(schemaKey, matchType, this);
       if (undefined !== schema)
         return schema;
     }
