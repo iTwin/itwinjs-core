@@ -1,0 +1,50 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PresentationRpcInterface getElementProperties returns properties for requested element 1`] = `
+Object {
+  "result": Object {
+    "class": "Subject",
+    "id": "0x1",
+    "items": Object {
+      "$élêçtèd Ítêm(s)": Object {
+        "items": Object {
+          "$óúrçè Íñfórmâtíöñ": Object {
+            "items": Object {
+              "Mòdél $õürçê": Object {
+                "items": Object {
+                  "Repository Link": Object {
+                    "type": "array",
+                    "valueType": "struct",
+                    "values": Array [],
+                  },
+                },
+                "type": "category",
+              },
+            },
+            "type": "category",
+          },
+          "Code": Object {
+            "type": "primitive",
+            "value": "DgnV8Bridge",
+          },
+          "Description": Object {
+            "type": "primitive",
+            "value": "",
+          },
+          "Model": Object {
+            "type": "primitive",
+            "value": "Ñót spêçìfíêd",
+          },
+          "User Label": Object {
+            "type": "primitive",
+            "value": "",
+          },
+        },
+        "type": "category",
+      },
+    },
+    "label": "DgnV8Bridge",
+  },
+  "statusCode": 0,
+}
+`;

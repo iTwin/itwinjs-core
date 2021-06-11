@@ -17,6 +17,8 @@ import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
+import { ElementProperties } from '@bentley/presentation-common';
+import { ElementPropertiesRequestOptions } from '@bentley/presentation-common';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
@@ -289,6 +291,8 @@ export class PresentationManager implements IDisposable {
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
     // @deprecated
     getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
+    // @beta
+    getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
     getFilteredNodePaths(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never, RulesetVariable>, filterText: string): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never, RulesetVariable>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
     // @deprecated
