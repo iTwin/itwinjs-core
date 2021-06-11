@@ -37,7 +37,7 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
   }, [viewport, solarDataProvider]);
 
   const updateDataProviders = React.useCallback(() => {
-    (async function fetchNewDataProviders() {
+    async function fetchNewDataProviders() {
       let newDataProvider: TimelineDataProvider | SolarDataProvider | undefined = await getTimelineDataProvider(viewport);
       if (newDataProvider) {
         setTimelineDataProvider(newDataProvider);
@@ -47,7 +47,8 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
         setTimelineDataProvider(undefined);
         setSolarDataProvider(newDataProvider);
       }
-    });
+    }
+    void fetchNewDataProviders();
   },[viewport, isSolarDataProviderCurrent]);
 
   const updateShowOverlayState = React.useCallback((): void => {
