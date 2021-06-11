@@ -197,6 +197,13 @@ describe("PresentationRpcInterface tests", () => {
       });
     });
 
+    it("getElementProperties works as expected", async () => {
+      const result = await client.getElementProperties(iModel.getRpcProps(), {
+        elementId: "0x1",
+      });
+      expect(result).to.not.be.undefined;
+    });
+
     it("getDisplayLabelDefinition works as expected", async () => {
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
         const displayLabel = await Presentation.presentation.getDisplayLabelDefinition(props, key1);

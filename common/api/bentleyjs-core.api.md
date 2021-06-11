@@ -1179,7 +1179,7 @@ export class ObservableSet<T> extends Set<T> {
 
 // @beta
 export class OneAtATimeAction<T> {
-    constructor(run: (...args: any[]) => Promise<T>);
+    constructor(run: (...args: any[]) => Promise<T>, msg?: string);
     // (undocumented)
     msg: string;
     request(...args: any[]): Promise<T>;
