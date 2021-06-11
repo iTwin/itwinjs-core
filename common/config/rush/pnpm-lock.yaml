@@ -2169,7 +2169,7 @@ importers:
       '@bentley/ui-framework': workspace:*
       '@bentley/ui-ninezone': workspace:*
       '@itwin/itwinui-css': ^0.20.0
-      '@itwin/itwinui-react': ^1.7.1
+      '@itwin/itwinui-react': ^1.7.2
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -2228,7 +2228,7 @@ importers:
       '@bentley/ui-framework': link:../../ui/framework
       '@bentley/ui-ninezone': link:../../ui/ninezone
       '@itwin/itwinui-css': 0.20.0
-      '@itwin/itwinui-react': 1.7.1_react@16.14.0
+      '@itwin/itwinui-react': 1.7.2_react@16.14.0
       '@testing-library/react': 8.0.9_react@16.14.0
       '@testing-library/react-hooks': 3.7.0_react@16.14.0
       '@types/chai': 4.2.18
@@ -2968,6 +2968,7 @@ importers:
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
+      '@types/chai-subset': 1.3.1
       '@types/deep-equal': ^1
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
@@ -2977,6 +2978,7 @@ importers:
       chai: ^4.1.2
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
+      chai-subset: 1.6.0
       cpx: ^1.5.0
       cross-env: ^5.1.4
       deep-equal: ^1
@@ -3001,6 +3003,7 @@ importers:
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
+      '@types/chai-subset': 1.3.1
       '@types/deep-equal': 1.0.1
       '@types/faker': 4.1.12
       '@types/mocha': 8.2.2
@@ -3010,6 +3013,7 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
+      chai-subset: 1.6.0
       cpx: 1.5.0
       cross-env: 5.2.1
       deep-equal: 1.1.1
@@ -3040,7 +3044,7 @@ importers:
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
       '@itwin/itwinui-css': ^0.20.0
-      '@itwin/itwinui-react': ^1.7.1
+      '@itwin/itwinui-react': ^1.7.2
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -3103,7 +3107,7 @@ importers:
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
       '@itwin/itwinui-css': 0.20.0
-      '@itwin/itwinui-react': 1.7.1_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.7.2_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.18
@@ -3238,16 +3242,19 @@ importers:
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
+      '@types/faker': ^4.1.0
       '@types/jsdom': ^12.2.0
       '@types/mocha': ^8.2.2
       '@types/rimraf': ^2.0.2
       '@types/sinon': ^9.0.0
+      '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       cpx: ^1.5.0
       cross-env: ^5.1.4
       eslint: ^6.8.0
+      faker: ^4.1.0
       ignore-styles: ^5.0.1
       jsdom-global: 3.0.2
       make-dir: ^1.3.0
@@ -3255,6 +3262,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
+      sinon-chai: ^3.2.0
       typemoq: ^2.1.0
       typescript: ~4.1.0
     dependencies:
@@ -3275,15 +3283,18 @@ importers:
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
+      '@types/faker': 4.1.12
       '@types/jsdom': 12.2.4
       '@types/mocha': 8.2.2
       '@types/rimraf': 2.0.4
       '@types/sinon': 9.0.11
+      '@types/sinon-chai': 3.2.5
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       cross-env: 5.2.1
       eslint: 6.8.0
+      faker: 4.1.0
       ignore-styles: 5.0.1
       jsdom-global: 3.0.2
       make-dir: 1.3.0
@@ -3291,6 +3302,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
+      sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       typemoq: 2.1.0
       typescript: 4.1.5
     devDependencies:
@@ -3883,7 +3895,7 @@ importers:
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
       '@itwin/itwinui-css': ^0.20.0
-      '@itwin/itwinui-react': ^1.7.1
+      '@itwin/itwinui-react': ^1.7.2
       '@types/bunyan': ^1.8.4
       '@types/react': 16.9.43
       '@types/react-dom': ^16.8.0
@@ -3923,7 +3935,7 @@ importers:
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
       '@itwin/itwinui-css': 0.20.0
-      '@itwin/itwinui-react': 1.7.1_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.7.2_react-dom@16.14.0+react@16.14.0
       react: 16.14.0
       react-dom: 16.14.0_react@16.14.0
       react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
@@ -3996,7 +4008,7 @@ importers:
       '@bentley/ui-framework': workspace:*
       '@bentley/ui-ninezone': workspace:*
       '@itwin/itwinui-css': ^0.20.0
-      '@itwin/itwinui-react': ^1.7.1
+      '@itwin/itwinui-react': ^1.7.2
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -4070,7 +4082,7 @@ importers:
       '@bentley/ui-framework': link:../../ui/framework
       '@bentley/ui-ninezone': link:../../ui/ninezone
       '@itwin/itwinui-css': 0.20.0
-      '@itwin/itwinui-react': 1.7.1_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.7.2_react-dom@16.14.0+react@16.14.0
       classnames: 2.3.1
       lorem-ipsum: 2.0.3
       react: 16.14.0
@@ -4817,7 +4829,7 @@ importers:
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-core': workspace:*
       '@itwin/itwinui-css': ^0.20.0
-      '@itwin/itwinui-react': ^1.7.1
+      '@itwin/itwinui-react': ^1.7.2
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -4928,7 +4940,7 @@ importers:
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-core': link:../core
       '@itwin/itwinui-css': 0.20.0
-      '@itwin/itwinui-react': 1.7.1_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.7.2_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.18
@@ -4995,7 +5007,7 @@ importers:
       '@bentley/react-scripts': 3.4.9
       '@bentley/ui-abstract': workspace:*
       '@itwin/itwinui-css': ^0.20.0
-      '@itwin/itwinui-react': ^1.7.1
+      '@itwin/itwinui-react': ^1.7.2
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -5067,7 +5079,7 @@ importers:
       '@bentley/react-scripts': 3.4.9_typescript@4.1.5
       '@bentley/ui-abstract': link:../abstract
       '@itwin/itwinui-css': 0.20.0
-      '@itwin/itwinui-react': 1.7.1_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.7.2_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.18
@@ -5144,7 +5156,7 @@ importers:
       '@bentley/ui-core': workspace:*
       '@bentley/ui-ninezone': workspace:*
       '@itwin/itwinui-css': ^0.20.0
-      '@itwin/itwinui-react': ^1.7.1
+      '@itwin/itwinui-react': ^1.7.2
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -5239,7 +5251,7 @@ importers:
       '@bentley/ui-core': link:../core
       '@bentley/ui-ninezone': link:../ninezone
       '@itwin/itwinui-css': 0.20.0
-      '@itwin/itwinui-react': 1.7.1_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.7.2_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.18
@@ -5297,7 +5309,7 @@ importers:
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-core': workspace:*
       '@itwin/itwinui-css': ^0.20.0
-      '@itwin/itwinui-react': ^1.7.1
+      '@itwin/itwinui-react': ^1.7.2
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -5351,7 +5363,7 @@ importers:
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-core': link:../core
       '@itwin/itwinui-css': 0.20.0
-      '@itwin/itwinui-react': 1.7.1_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-react': 1.7.2_react-dom@16.14.0+react@16.14.0
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_react@16.14.0
       '@types/chai': 4.2.18
@@ -7664,8 +7676,8 @@ packages:
       react: 16.14.0
     dev: true
 
-  /@itwin/itwinui-react/1.7.1_react-dom@16.14.0+react@16.14.0:
-    resolution: {integrity: sha512-tdskItCli7F6GpF17qj5ZMlBEnJAesxZiNt2Ws3rOIeR6qy9GM+RYU5PxdpnGoQJ4bZ5vdLc9nbFG03e3g60yg==}
+  /@itwin/itwinui-react/1.7.2_react-dom@16.14.0+react@16.14.0:
+    resolution: {integrity: sha512-twqFvhwg1avkblf+dqR0uJvwmZNfX+b+2DyKrxFkoPjo8U+g3ryowcxDBd535QEXxhUxa2tiA5G0VfsZRcMung==}
     peerDependencies:
       react: ^16.8.6 || ^17.0.0
       react-dom: ^16.8.6 || ^17.0.0
@@ -7681,8 +7693,8 @@ packages:
       react-table: 7.7.0_react@16.14.0
       react-transition-group: 4.4.2_react-dom@16.14.0+react@16.14.0
 
-  /@itwin/itwinui-react/1.7.1_react@16.14.0:
-    resolution: {integrity: sha512-tdskItCli7F6GpF17qj5ZMlBEnJAesxZiNt2Ws3rOIeR6qy9GM+RYU5PxdpnGoQJ4bZ5vdLc9nbFG03e3g60yg==}
+  /@itwin/itwinui-react/1.7.2_react@16.14.0:
+    resolution: {integrity: sha512-twqFvhwg1avkblf+dqR0uJvwmZNfX+b+2DyKrxFkoPjo8U+g3ryowcxDBd535QEXxhUxa2tiA5G0VfsZRcMung==}
     peerDependencies:
       react: ^16.8.6 || ^17.0.0
       react-dom: ^16.8.6 || ^17.0.0

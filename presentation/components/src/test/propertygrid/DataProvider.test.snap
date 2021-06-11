@@ -1,5 +1,50 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`PropertyDataProvider getData with flat categories assigns category renderer 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+      "renderer": Object {
+        "name": "test",
+      },
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "SimpleField",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": "",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
 exports[`PropertyDataProvider getData with flat categories handles records with no values 1`] = `
 Object {
   "categories": Array [
@@ -203,14 +248,14 @@ exports[`PropertyDataProvider getData with flat categories nested content handli
 Object {
   "categories": Array [
     Object {
-      "expand": true,
-      "label": "Test Category",
-      "name": "Category2",
-    },
-    Object {
       "expand": false,
       "label": "Test Category",
       "name": "Category1",
+    },
+    Object {
+      "expand": true,
+      "label": "Test Category",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -451,12 +496,12 @@ Object {
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category2",
+      "name": "Category1",
     },
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category1",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -514,12 +559,12 @@ Object {
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category2",
+      "name": "Category1",
     },
     Object {
       "expand": false,
       "label": "Test Category",
-      "name": "Category1",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -1250,15 +1295,58 @@ Object {
 }
 `;
 
+exports[`PropertyDataProvider getData with nested categories assigns category renderer 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+      "renderer": Object {
+        "name": "test",
+      },
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "SimpleField",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": "",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
 exports[`PropertyDataProvider getData with nested categories handles records with no values 1`] = `
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1298,11 +1386,9 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category2",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1356,18 +1442,14 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category1",
-      "renderer": undefined,
     },
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category2",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1461,18 +1543,14 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category1",
-      "renderer": undefined,
     },
     Object {
-      "childCategories": Array [],
       "expand": true,
       "label": "Test Category",
       "name": "Category2",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1668,11 +1746,9 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category2",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1713,18 +1789,14 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category1",
-      "renderer": undefined,
     },
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category2",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1780,18 +1852,14 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category1",
-      "renderer": undefined,
     },
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "Category2",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -1872,11 +1940,9 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -2006,11 +2072,9 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -2089,11 +2153,9 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -2186,11 +2248,9 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -2231,11 +2291,9 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -2301,11 +2359,9 @@ exports[`PropertyDataProvider getData with nested categories nested content hand
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -2371,11 +2427,9 @@ exports[`PropertyDataProvider getData with nested categories returns array prope
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -2442,11 +2496,9 @@ exports[`PropertyDataProvider getData with nested categories returns primitive p
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
-      "renderer": undefined,
     },
   ],
   "description": undefined,
@@ -2487,11 +2539,9 @@ exports[`PropertyDataProvider getData with nested categories returns struct prop
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [],
       "expand": false,
       "label": "Test Category",
       "name": "test-category",
-      "renderer": undefined,
     },
   ],
   "description": undefined,

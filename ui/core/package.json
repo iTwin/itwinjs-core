@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.18.0-dev.1",
+  "version": "2.18.0-dev.2",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.1",
-    "@bentley/geometry-core": "workspace:^2.18.0-dev.1",
-    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.1",
-    "@bentley/ui-abstract": "workspace:^2.18.0-dev.1",
+    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.2",
+    "@bentley/geometry-core": "workspace:^2.18.0-dev.2",
+    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.2",
+    "@bentley/ui-abstract": "workspace:^2.18.0-dev.2",
     "@itwin/itwinui-css": "^0.20.0",
     "@itwin/itwinui-react": "^1.7.2",
     "react": "^16.8.0",
@@ -57,7 +57,7 @@
     "@bentley/react-scripts": "3.4.9",
     "@bentley/ui-abstract": "workspace:*",
     "@itwin/itwinui-css": "^0.20.0",
-    "@itwin/itwinui-react": "^1.7.1",
+    "@itwin/itwinui-react": "^1.7.2",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
