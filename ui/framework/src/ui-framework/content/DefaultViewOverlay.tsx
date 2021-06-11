@@ -23,8 +23,9 @@ export interface ViewOverlayProps {
   onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
 }
 /**
- *
+ * Default viewport overlay that shows a schedule timeline for views containing a schedule script or a solar timeline for views with solar shadow info
  */
+// istanbul ignore next
 export function DefaultViewOverlay(props: ViewOverlayProps) {
   const [showOverlay, setShowOverlay] = React.useState(false);
   const [timelineDataProvider, setTimelineDataProvider] = React.useState<undefined | TimelineDataProvider>();
@@ -67,6 +68,7 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
 
   React.useEffect(() => {
     const handleDisplayStyleChange = () => {
+      // istanbul ignore else
       if (viewport.displayStyle.id === displayStyleId) return;
       setViewport(viewport);
       updateDataProviders();
@@ -127,6 +129,7 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
           </div>
         </div>
       );
+      // istanbul ignore else
     } else if (timelineDataProvider) {
       return (
         <div className="uifw-view-overlay">
@@ -149,9 +152,12 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
     <div className="uifw-view-overlay"/>
   );
 }
+// istanbul ignore next
 async function getSolarDataProvider(viewport: ScreenViewport): Promise<SolarDataProvider | undefined> {
+  // istanbul ignore else
   if (IModelApp.renderSystem.options.displaySolarShadows) {
     const solarDataProvider: SolarDataProvider = new SolarTimelineDataProvider(viewport.view, viewport);
+    // istanbul ignore else
     if (solarDataProvider.supportsTimelineAnimation) {
       return solarDataProvider;
     }
@@ -159,12 +165,14 @@ async function getSolarDataProvider(viewport: ScreenViewport): Promise<SolarData
 
   return undefined;
 }
+// istanbul ignore next
 async function getTimelineDataProvider(viewport: ScreenViewport): Promise<TimelineDataProvider | undefined> {
   let timelineDataProvider: TimelineDataProvider;
 
   timelineDataProvider = new ScheduleAnimationTimelineDataProvider(viewport.view, viewport);
   if (timelineDataProvider.supportsTimelineAnimation) {
     const dataLoaded = await timelineDataProvider.loadTimelineData();
+    // istanbul ignore else
     if (dataLoaded) {
       // double the default duration
       timelineDataProvider.updateSettings({ duration: 40 * 1000 });
@@ -172,6 +180,7 @@ async function getTimelineDataProvider(viewport: ScreenViewport): Promise<Timeli
     }
   } else {
     timelineDataProvider = new AnalysisAnimationTimelineDataProvider(viewport.view, viewport);
+    // istanbul ignore else
     if (timelineDataProvider.supportsTimelineAnimation) {
       const dataLoaded = await timelineDataProvider.loadTimelineData();
       if (dataLoaded) {
@@ -182,12 +191,12 @@ async function getTimelineDataProvider(viewport: ScreenViewport): Promise<Timeli
   return undefined;
 }
 
+// istanbul ignore next
 function isInActiveContentControl(viewport: Viewport): boolean {
   const activeContentControl = ContentViewManager.getActiveContentControl();
-  if (activeContentControl && activeContentControl.viewport) {
-    if (activeContentControl.viewport.view.id === viewport.view.id) {
-      return true;
-    }
+  // istanbul ignore else
+  if (activeContentControl && activeContentControl.viewport && activeContentControl.viewport.view.id === viewport.view.id) {
+    return true;
   }
   return false;
 }
