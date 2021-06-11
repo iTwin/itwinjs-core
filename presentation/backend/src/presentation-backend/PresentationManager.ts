@@ -420,7 +420,7 @@ export class PresentationManager {
   /** @internal */
   public getNativePlatform = (): NativePlatformDefinition => {
     if (this._isDisposed)
-      throw new PresentationError(PresentationStatus.UseAfterDisposal, "Attempting to use Presentation manager after disposal");
+      throw new PresentationError(PresentationStatus.NotInitialized, "Attempting to use Presentation manager after disposal");
     return this._nativePlatform!;
   };
 

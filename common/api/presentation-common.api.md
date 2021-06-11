@@ -1902,15 +1902,19 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<{
 
 // @public
 export enum PresentationStatus {
+    // @deprecated
     BackendOutOfSync = 65542,
     BackendTimeout = 65543,
     Canceled = 1,
     Error = 65536,
     InvalidArgument = 65539,
+    // @deprecated
     InvalidResponse = 65540,
+    // @deprecated
     NoContent = 65541,
     NotInitialized = 65537,
     Success = 0,
+    // @deprecated
     UseAfterDisposal = 65538
 }
 

@@ -35,7 +35,7 @@ import { Omit, PagedResponse } from "./Utils";
  * @public
  */
 export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel" | "diagnostics"> & {
-  /** ID of the client requesting data */
+  /** @internal ID of the client requesting data */
   clientId?: string;
   /** @alpha */
   diagnostics?: DiagnosticsOptions;
