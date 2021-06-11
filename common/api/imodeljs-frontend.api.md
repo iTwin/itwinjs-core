@@ -1716,6 +1716,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
     reinstateTxn(): Promise<IModelStatus>;
+    restartTxnSession(): Promise<void>;
     reverseAll(): Promise<IModelStatus>;
     reverseSingleTxn(): Promise<IModelStatus>;
     reverseTxns(numOperations: number): Promise<IModelStatus>;

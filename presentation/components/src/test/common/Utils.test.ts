@@ -8,13 +8,12 @@ import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
+import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import {
   createRandomDescriptor, createRandomLabelCompositeValue, createRandomLabelDefinition, createRandomNestedContentField, createRandomPropertiesField,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
-import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 import * as utils from "../../presentation-components/common/Utils";
 
 class TestComponent extends React.Component {
