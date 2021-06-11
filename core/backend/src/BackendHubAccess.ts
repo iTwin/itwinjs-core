@@ -46,7 +46,7 @@ export interface ChangesetProps {
   userCreated: string;
   /** The size, in bytes, of this changeset */
   size?: number;
-  /** The index (sequence number) in IModelHub for this changeset. Larger index values were pushed later. */
+  /** The index (sequence number) from IModelHub for this changeset. Larger index values were pushed later. */
   index?: ChangesetIndex;
 }
 
@@ -54,21 +54,22 @@ export interface ChangesetProps {
  * @internal
  */
 export interface ChangesetFileProps extends ChangesetProps {
+  /** The index (sequence number) from IModelHub for this changeset. Larger index values were pushed later. */
+  index: ChangesetIndex;
   /** The full pathname of the local file holding this changeset. */
   pathname: LocalFileName;
 }
 
 /**
- * Properties that specify a range of changesetIds. There are two ways to specify the start of the range. You may either supply:
- * - `first` the ChangeSetId of the first changeset to be returned, or
- * - `after` the *parent* ChangeSetId of the first changeset to be returned.
- *
- * `end` specifies the ChangesetId of the last changeset to be returned. If undefined, all later changesets are returned.
+ * A range of changesets
  * @internal
  */
-export type ChangesetRange =
-  { first: ChangesetId, after?: never, end?: ChangesetId } |
-  { after: ChangesetId, first?: never, end?: ChangesetId };
+export interface ChangesetRange {
+  /** index of the first changeset */
+  first: ChangesetIndex;
+  /** index of last changeset. If undefined, all changesets after first are returned. */
+  end?: ChangesetIndex;
+}
 
 /**
  * The properties of an iModel server lock.

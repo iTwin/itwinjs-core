@@ -7,7 +7,7 @@ import { join } from "path";
 import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
-import { ChangesetFileProps, ChangesetId, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName, LockProps } from "../BackendHubAccess";
+import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName, LockProps } from "../BackendHubAccess";
 import { BriefcaseId, BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
@@ -62,6 +62,8 @@ export class LocalHub {
   public readonly description?: string;
   private _hubDb?: SQLiteDb;
   private _nextBriefcaseId = BriefcaseIdValue.FirstValid;
+  private _latestChangesetIndex = 0;
+  public get latestChangesetIndex() { return this._latestChangesetIndex; }
 
   public constructor(public readonly rootDir: string, arg: LocalHubProps) {
     this.contextId = arg.contextId;
@@ -78,11 +80,12 @@ export class LocalHub {
     const db = this._hubDb = new SQLiteDb();
     db.createDb(this.mockDbName);
     db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY NOT NULL,user TEXT NOT NULL)");
-    db.executeSQL("CREATE TABLE timeline(id TEXT PRIMARY KEY NOT NULL,parentId TEXT,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,FOREIGN KEY(parentId) REFERENCES timeline(id))");
+    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,changesetId TEXT NOT NULL,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER)");
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
-    db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,id TEXT,FOREIGN KEY(id) REFERENCES timeline(id))");
-    db.executeSQL("CREATE TABLE locks(id TEXT PRIMARY KEY NOT NULL,type INTEGER NOT NULL,level INTEGER NOT NULL,released TEXT,briefcaseId INTEGER,FOREIGN KEY(released) REFERENCES timeline(id))");
-    db.executeSQL("CREATE TABLE sharedLocks(briefcaseId INTEGER NOT NULL,lockId TEXT NOT NULL,PRIMARY KEY(lockId,briefcaseId))");
+    db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,csIndex TEXT,FOREIGN KEY(csIndex) REFERENCES timeline(csIndex))");
+    db.executeSQL("CREATE TABLE locks(entityId TEXT PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastChangeset INTEGER,briefcaseId INTEGER,FOREIGN KEY(lastChangeset) REFERENCES timeline(csIndex))");
+    db.executeSQL("CREATE TABLE sharedLocks(lockId TEXT NOT NULL,briefcaseId INTEGER NOT NULL,PRIMARY KEY(lockId,briefcaseId))");
+    db.executeSQL("CREATE INDEX changeSetIdx ON timeline(changesetId)");
     db.executeSQL("CREATE INDEX LockIdx ON locks(briefcaseId)");
     db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
     db.saveChanges();
@@ -158,16 +161,21 @@ export class LocalHub {
     return briefcases;
   }
 
-  /** Add a changeset to the timeline */
-  public addChangeset(changeset: ChangesetFileProps) {
+  /** Add a changeset to the timeline
+   * @return the changesetIndex of the added changeset
+   */
+  public addChangeset(changeset: ChangesetFileProps): number {
     const stats = IModelJsFs.lstatSync(changeset.pathname);
     if (!stats)
       throw new Error(`cannot read changeset file ${changeset.pathname}`);
 
+    if (changeset.parentIndex !== this.latestChangesetIndex)
+      throw new IModelError(IModelStatus.InvalidParent, "changeset parent is latest changeset");
+
     const db = this.db;
-    db.withSqliteStatement("INSERT INTO timeline(id,parentId,description,size,type,pushDate,user,briefcaseId) VALUES (?,?,?,?,?,?,?,?)", (stmt) => {
-      stmt.bindValue(1, changeset.id);
-      stmt.bindValue(2, changeset.parentId === "" ? undefined : changeset.parentId);
+    db.withSqliteStatement("INSERT INTO timeline(csIndex,changesetId,description,size,type,pushDate,user,briefcaseId) VALUES (?,?,?,?,?,?,?,?)", (stmt) => {
+      stmt.bindValue(1, this.latestChangesetIndex);
+      stmt.bindValue(2, changeset.id);
       stmt.bindValue(3, changeset.description);
       stmt.bindValue(4, stats.size);
       stmt.bindValue(5, changeset.changesType ?? 0);
@@ -180,6 +188,7 @@ export class LocalHub {
     });
     db.saveChanges();
     IModelJsFs.copySync(changeset.pathname, join(this.changesetDir, changeset.id));
+    return this._latestChangesetIndex++;
   }
 
   /** Get the index of a changeset by its Id */
@@ -187,7 +196,7 @@ export class LocalHub {
     if (id === "")
       return 0;
 
-    return this.db.withPreparedSqliteStatement("SELECT rowid FROM timeline WHERE Id=?", (stmt) => {
+    return this.db.withPreparedSqliteStatement("SELECT csIndex FROM timeline WHERE Id=?", (stmt) => {
       stmt.bindValue(1, id);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
@@ -204,17 +213,16 @@ export class LocalHub {
 
   /** Get the properties of a changeset by its index */
   public getChangesetByIndex(index: number): ChangesetProps {
-    if (index === 0)
-      return { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "" };
+    if (index <= 0)
+      throw new Error("invalid changeset index");
 
-    return this.db.withPreparedSqliteStatement("SELECT parentId,description,size,type,pushDate,user,id,briefcaseId FROM timeline WHERE rowid=?", (stmt) => {
+    return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,id,briefcaseId FROM timeline WHERE csIndex=?", (stmt) => {
       stmt.bindValue(1, index);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
         throw new IModelError(rc, `changeset at index ${index} not found`);
 
       return {
-        parentId: stmt.getValue(0).isNull ? "" : stmt.getValue(0).getString(),
         description: stmt.getValue(1).getString(),
         size: stmt.getValue(2).getDouble(),
         changesType: stmt.getValue(3).getInteger(),
@@ -223,50 +231,22 @@ export class LocalHub {
         id: stmt.getValue(6).getString(),
         briefcaseId: stmt.getValue(7).getInteger(),
         index,
+        parentIndex: index - 1,
       };
-    });
-  }
-
-  /** Get an array of changesets starting with first to last, by index */
-  public getChangesets(first?: number, last?: number): ChangesetProps[] {
-    const changesets: ChangesetProps[] = [];
-    if (undefined === first)
-      first = 1;
-    if (undefined === last)
-      last = this.getLatestChangesetIndex();
-    if (0 === first) {
-      changesets.push(this.getChangesetByIndex(0));
-      ++first;
-    }
-
-    this.db.withPreparedSqliteStatement("SELECT rowid FROM timeline WHERE rowid>=? AND rowid<=? ORDER BY rowid", (stmt) => {
-      stmt.bindValue(1, first);
-      stmt.bindValue(2, last);
-      while (DbResult.BE_SQLITE_ROW === stmt.step())
-        changesets.push(this.getChangesetByIndex(stmt.getValue(0).getInteger()));
-    });
-    return changesets;
-  }
-
-  /** Get the index of the latest changeset. 0=no changesets have been added. */
-  public getLatestChangesetIndex(): number {
-    return this.db.withSqliteStatement("SELECT max(rowid) FROM timeline", (stmt) => {
-      stmt.step();
-      return stmt.getValue(0).getInteger();
     });
   }
 
   /** Get the ChangesetId of the latest changeset */
   public getLatestChangesetId(): ChangesetId {
-    return this.getChangesetByIndex(this.getLatestChangesetIndex()).id;
+    return this.getChangesetByIndex(this.latestChangesetIndex).id;
   }
 
   /** Name a version */
-  public addNamedVersion(arg: { versionName: string, id: ChangesetId }) {
+  public addNamedVersion(arg: { versionName: string, csIndex: ChangesetIndex }) {
     const db = this.db;
-    db.withSqliteStatement("INSERT INTO versions(name,id) VALUES (?,?)", (stmt) => {
+    db.withSqliteStatement("INSERT INTO versions(name,csIndex) VALUES (?,?)", (stmt) => {
       stmt.bindValue(1, arg.versionName);
-      stmt.bindValue(2, arg.id);
+      stmt.bindValue(2, arg.csIndex);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert named version");
@@ -286,33 +266,32 @@ export class LocalHub {
     db.saveChanges();
   }
 
-  /** find the ChangesetId of a named version */
-  public findNamedVersion(versionName: string): ChangesetId {
-    return this.db.withSqliteStatement("SELECT id FROM versions WHERE name=?", (stmt) => {
+  /** find the ChangesetIndex of a named version */
+  public findNamedVersion(versionName: string): ChangesetIndex {
+    return this.db.withSqliteStatement("SELECT csIndex FROM versions WHERE name=?", (stmt) => {
       stmt.bindValue(1, versionName);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
         throw new IModelError(IModelStatus.NotFound, `Named version ${versionName} not found`);
-      return stmt.getValue(0).getString();
+      return stmt.getValue(0).getInteger();
     });
   }
 
-  public checkpointNameFromId(changeSetId: ChangesetId) {
-    return changeSetId === "" ? "0" : changeSetId;
+  public checkpointNameFromIndex(csIndex: ChangesetIndex) {
+    return `checkpoint-${csIndex}`;
   }
 
   /** "upload" a checkpoint */
-  public uploadCheckpoint(arg: { changeSetId: ChangesetId, localFile: LocalFileName }) {
-    const index = (arg.changeSetId !== "") ? this.getChangesetIndex(arg.changeSetId) : 0;
+  public uploadCheckpoint(arg: { changeSetIndex: ChangesetIndex, localFile: LocalFileName }) {
     const db = this.db;
     db.withSqliteStatement("INSERT INTO checkpoints(csIndex) VALUES (?)", (stmt) => {
-      stmt.bindValue(1, index);
+      stmt.bindValue(1, arg.changeSetIndex);
       const res = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== res)
         throw new IModelError(res, "can't insert checkpoint into mock db");
     });
     db.saveChanges();
-    const outName = join(this.checkpointDir, this.checkpointNameFromId(arg.changeSetId));
+    const outName = join(this.checkpointDir, this.checkpointNameFromIndex(arg.changeSetIndex));
     IModelJsFs.copySync(arg.localFile, outName);
     return outName;
   }
@@ -329,64 +308,48 @@ export class LocalHub {
   }
 
   /** Find the checkpoint that is no newer than a changeSetId */
-  public queryPreviousCheckpoint(changeSetId: ChangesetId): ChangesetId {
-    if (changeSetId === "")
-      return "";
-    const index = this.getChangesetIndex(changeSetId);
+  public queryPreviousCheckpoint(changesetIndex: ChangesetIndex): ChangesetIndex {
+    if (changesetIndex <= 0)
+      return 0;
+
     return this.db.withSqliteStatement("SELECT max(csIndex) FROM checkpoints WHERE csIndex <= ? ", (stmt) => {
-      stmt.bindValue(1, index);
+      stmt.bindValue(1, changesetIndex);
       const res = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== res)
         throw new IModelError(res, "can't get previous checkpoint");
-      return this.getChangesetByIndex(stmt.getValue(0).getInteger()).id;
+      return stmt.getValue(0).getInteger();
     });
   }
 
   /** "download" a checkpoint */
-  public downloadCheckpoint(arg: { changeSetId: ChangesetId, targetFile: LocalFileName }) {
-    const prev = this.queryPreviousCheckpoint(arg.changeSetId);
-    IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromId(prev)), arg.targetFile);
+  public downloadCheckpoint(arg: { changesetIndex: ChangesetIndex, targetFile: LocalFileName }) {
+    const prev = this.queryPreviousCheckpoint(arg.changesetIndex);
+    IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromIndex(prev)), arg.targetFile);
     return prev;
   }
 
   private copyChangeset(arg: ChangesetFileProps): ChangesetFileProps {
-    IModelJsFs.copySync(join(this.changesetDir, arg.id), arg.pathname);
+    IModelJsFs.copySync(join(this.changesetDir, this.checkpointNameFromIndex(arg.index)), arg.pathname);
     return arg;
   }
 
   /** "download" a changeset */
-  public downloadChangeset(arg: { changeSetId: ChangesetId, targetDir: LocalDirName }) {
-    const cs = this.getChangesetById(arg.changeSetId);
-    const csProps = { ...cs, pathname: join(arg.targetDir, cs.id) };
+  public downloadChangeset(arg: { changesetIndex: ChangesetIndex, targetDir: LocalDirName }) {
+    const cs = this.getChangesetByIndex(arg.changesetIndex);
+    const csProps = { ...cs, pathname: join(arg.targetDir, cs.id), index: arg.changesetIndex };
     return this.copyChangeset(csProps);
-  }
-
-  /** Get the ChangesetProps for all changesets in a given range */
-  public queryChangesets(range?: ChangesetRange): ChangesetProps[] {
-    range = range ?? { first: "" };
-    const startId = (undefined !== range.after) ? range.after : range.first;
-    let startIndex = this.getChangesetIndex(startId);
-    if (undefined !== range.after)
-      startIndex++;
-    if (startIndex === 0) // there's no changeset for index 0 - that's revision0
-      startIndex = 1;
-    const endIndex = range.end ? this.getChangesetIndex(range.end) : this.getLatestChangesetIndex();
-    if (endIndex < startIndex)
-      throw new Error("illegal changeset range");
-
-    const changesets: ChangesetProps[] = [];
-    while (startIndex <= endIndex)
-      changesets.push(this.getChangesetByIndex(startIndex++));
-    return changesets;
   }
 
   /** "download" all the changesets in a given range */
   public downloadChangesets(arg: { range?: ChangesetRange, targetDir: LocalDirName }): ChangesetFileProps[] {
-    const cSets = this.queryChangesets(arg.range) as ChangesetFileProps[];
-    for (const cs of cSets) {
-      cs.pathname = join(arg.targetDir, cs.id);
-      this.copyChangeset(cs);
-    }
+    const start = arg.range?.first ?? 0;
+    const end = arg.range?.end ?? this._latestChangesetIndex;
+    const targetDir = arg.targetDir;
+    const cSets: ChangesetFileProps[] = [];
+
+    for (let changesetIndex = start; changesetIndex < end; ++changesetIndex)
+      cSets.push(this.downloadChangeset({ changesetIndex, targetDir }));
+
     return cSets;
   }
 

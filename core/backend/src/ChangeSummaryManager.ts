@@ -258,13 +258,11 @@ export class ChangeSummaryManager {
   }
 
   /** @internal */
-  public static async downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: ChangesetId, end: ChangesetId): Promise<ChangesetFileProps[]> {
-    requestContext.enter();
-
-    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: ctx.iModelId, range: { first, end } });
-    requestContext.enter();
-    assert(first === "" || first === changeSetInfos[0].id);
-    assert(end === changeSetInfos[changeSetInfos.length - 1].id);
+  public static async downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, firstId: ChangesetId, endId: ChangesetId): Promise<ChangesetFileProps[]> {
+    const iModelId = ctx.iModelId;
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeSetId: firstId, requestContext })).index!;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeSetId: endId, requestContext })).index!;
+    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end } });
     return changeSetInfos;
   }
 
