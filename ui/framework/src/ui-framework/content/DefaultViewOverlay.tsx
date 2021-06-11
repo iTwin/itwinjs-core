@@ -20,8 +20,6 @@ import { ContentViewManager } from "./ContentViewManager";
  */
 export interface ViewOverlayProps {
   viewport: ScreenViewport;
-  timelineDataProvider?: TimelineDataProvider;
-  solarDataProvider?: SolarDataProvider;
   onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
 }
 /**
@@ -29,32 +27,64 @@ export interface ViewOverlayProps {
  */
 export function DefaultViewOverlay(props: ViewOverlayProps) {
   const [showOverlay, setShowOverlay] = React.useState(false);
-  const [timelineDataProvider, setTimelineDataProvider] = React.useState(props.timelineDataProvider);
-  const [solarDataProvider, setSolarDataProvider] = React.useState(props.solarDataProvider);
-  const [viewport] = React.useState(props.viewport);
-  const [viewId, setViewId] = React.useState("");
+  const [timelineDataProvider, setTimelineDataProvider] = React.useState<undefined | TimelineDataProvider>();
+  const [solarDataProvider, setSolarDataProvider] = React.useState<undefined | SolarDataProvider>();
+  const [viewport, setViewport] = React.useState(props.viewport);
+  const [displayStyleId, setDisplayStyleId] = React.useState(viewport.displayStyle.id);
 
-  React.useEffect(() => {
-    async function setNewDataProvider() {
+  const isSolarDataProviderCurrent = React.useCallback((): boolean => {
+    return (!!solarDataProvider && solarDataProvider.viewport === viewport);
+  }, [viewport, solarDataProvider]);
+
+  const updateDataProviders = React.useCallback(() => {
+    async function fetchNewDataProviders() {
       let newDataProvider: TimelineDataProvider | SolarDataProvider | undefined = await getTimelineDataProvider(viewport);
-      if (newDataProvider && newDataProvider.supportsTimelineAnimation) {
+      if (newDataProvider) {
         setTimelineDataProvider(newDataProvider);
         setSolarDataProvider(undefined);
-      } else {
-        newDataProvider = await getSolarDataProvider(viewport, solarDataProvider);
-        if (newDataProvider) {
-          setTimelineDataProvider(undefined);
-          setSolarDataProvider(newDataProvider);
-        }
+      } else if (!isSolarDataProviderCurrent()) {
+        newDataProvider = await getSolarDataProvider(viewport);
+        setTimelineDataProvider(undefined);
+        setSolarDataProvider(newDataProvider);
       }
-      setShowOverlay(isInActiveContentControl(viewport));
+    }
+    fetchNewDataProviders().then;
+  },[viewport, isSolarDataProviderCurrent]);
+
+  const updateShowOverlayState = React.useCallback((): void => {
+    let newShowOverlay = true;
+    if (solarDataProvider)
+      newShowOverlay = solarDataProvider.shouldShowTimeline;
+    else {
+      if (timelineDataProvider && (timelineDataProvider.viewport === viewport))
+        newShowOverlay = !!(timelineDataProvider.viewport.view.scheduleScript) || !!(timelineDataProvider.viewport.view.analysisStyle);
+      else
+        newShowOverlay = false;
     }
 
-    const updateShowOverlayState = (): void => {
-      let updateOverlay = isInActiveContentControl(viewport);
-      if (updateOverlay && solarDataProvider)
-        updateOverlay = solarDataProvider.shouldShowTimeline;
-      if (updateOverlay !== showOverlay) setShowOverlay(updateOverlay);
+    setShowOverlay(isInActiveContentControl(viewport) && newShowOverlay);
+  },[viewport, solarDataProvider, timelineDataProvider]);
+
+  React.useEffect(() => {
+    const handleDisplayStyleChange = () => {
+      if (viewport.displayStyle.id === displayStyleId) return;
+      setViewport(viewport);
+      updateDataProviders();
+      setImmediate(() => {
+        // reset to beginning of animation
+        if (timelineDataProvider) {
+          if (timelineDataProvider.onAnimationFractionChanged)
+            timelineDataProvider.onAnimationFractionChanged(0);
+
+          if (viewport) {
+            viewport.timePoint = undefined;
+            viewport.analysisFraction = 0;
+          }
+        }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        setDisplayStyleId(viewport.displayStyle.id);
+        updateShowOverlayState();
+      });
     };
 
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
@@ -70,23 +100,24 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
       }
     };
 
-    const handleViewChanged = (vp: Viewport): void => {
-      if (viewId !== vp.view.id){
-        setViewId(vp.view.id);
-        // setNewDataProvider().then;
-      }
+    const handleViewChanged = (_vp: Viewport): void => {
+      updateDataProviders();
     };
-
-    setNewDataProvider().then;
 
     SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
-    viewport.onViewChanged.addListener(handleViewChanged);
+    viewport.onChangeView.addListener(handleViewChanged);
+    viewport.onDisplayStyleChanged.addListener(handleDisplayStyleChange);
     return function cleanup() {
-      viewport.onViewChanged.removeListener(handleViewChanged);
+      viewport.onChangeView.removeListener(handleViewChanged);
+      viewport.onDisplayStyleChanged.removeListener(handleDisplayStyleChange);
       SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
-  }, [viewport, viewId, solarDataProvider, showOverlay]);
+  }, [displayStyleId, timelineDataProvider, updateDataProviders, updateShowOverlayState, viewport]);
 
+  React.useLayoutEffect(() => {
+    updateDataProviders();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
   if (showOverlay) {
     if (solarDataProvider) {
       return (
@@ -118,11 +149,8 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
     <div className="uifw-view-overlay"/>
   );
 }
-async function getSolarDataProvider(viewport: ScreenViewport, dataProvider: SolarDataProvider | undefined): Promise<SolarDataProvider | undefined> {
+async function getSolarDataProvider(viewport: ScreenViewport): Promise<SolarDataProvider | undefined> {
   if (IModelApp.renderSystem.options.displaySolarShadows) {
-    if (dataProvider && dataProvider.viewport === viewport)
-      return dataProvider;
-
     const solarDataProvider: SolarDataProvider = new SolarTimelineDataProvider(viewport.view, viewport);
     if (solarDataProvider.supportsTimelineAnimation) {
       return solarDataProvider;
