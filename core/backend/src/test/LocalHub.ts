@@ -90,7 +90,7 @@ export class LocalHub {
     db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
     db.saveChanges();
 
-    const path = this.uploadCheckpoint({ changeSetId: "", localFile: arg.revision0 });
+    const path = this.uploadCheckpoint({ changesetIndex: 0, localFile: arg.revision0 });
     const nativeDb = IModelDb.openDgnDb({ path }, OpenMode.ReadWrite);
     try {
       nativeDb.saveProjectGuid(this.contextId);
@@ -169,7 +169,8 @@ export class LocalHub {
     if (!stats)
       throw new Error(`cannot read changeset file ${changeset.pathname}`);
 
-    if (changeset.parentIndex !== this.latestChangesetIndex)
+    const parentIndex = this.getChangesetById(changeset.parentId).index!;
+    if (parentIndex !== this.latestChangesetIndex)
       throw new IModelError(IModelStatus.InvalidParent, "changeset parent is latest changeset");
 
     const db = this.db;
@@ -214,7 +215,8 @@ export class LocalHub {
   /** Get the properties of a changeset by its index */
   public getChangesetByIndex(index: number): ChangesetProps {
     if (index <= 0)
-      throw new Error("invalid changeset index");
+      return {}
+    throw new Error("invalid changeset index");
 
     return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,id,briefcaseId FROM timeline WHERE csIndex=?", (stmt) => {
       stmt.bindValue(1, index);
@@ -231,7 +233,7 @@ export class LocalHub {
         id: stmt.getValue(6).getString(),
         briefcaseId: stmt.getValue(7).getInteger(),
         index,
-        parentIndex: index - 1,
+        parentId: this.getChangesetByIndex()
       };
     });
   }
@@ -282,16 +284,16 @@ export class LocalHub {
   }
 
   /** "upload" a checkpoint */
-  public uploadCheckpoint(arg: { changeSetIndex: ChangesetIndex, localFile: LocalFileName }) {
+  public uploadCheckpoint(arg: { changesetIndex: ChangesetIndex, localFile: LocalFileName }) {
     const db = this.db;
     db.withSqliteStatement("INSERT INTO checkpoints(csIndex) VALUES (?)", (stmt) => {
-      stmt.bindValue(1, arg.changeSetIndex);
+      stmt.bindValue(1, arg.changesetIndex);
       const res = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== res)
         throw new IModelError(res, "can't insert checkpoint into mock db");
     });
     db.saveChanges();
-    const outName = join(this.checkpointDir, this.checkpointNameFromIndex(arg.changeSetIndex));
+    const outName = join(this.checkpointDir, this.checkpointNameFromIndex(arg.changesetIndex));
     IModelJsFs.copySync(arg.localFile, outName);
     return outName;
   }
