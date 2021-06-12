@@ -4049,7 +4049,7 @@ packages:
   /autoprefixer/8.6.5:
     dependencies:
       browserslist: 3.2.8
-      caniuse-lite: 1.0.30001166
+      caniuse-lite: 1.0.30001235
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       postcss: 6.0.23
@@ -4061,7 +4061,7 @@ packages:
   /autoprefixer/9.8.6:
     dependencies:
       browserslist: 4.15.0
-      caniuse-lite: 1.0.30001166
+      caniuse-lite: 1.0.30001235
       colorette: 1.2.1
       normalize-range: 0.1.2
       num2fraction: 1.2.2
@@ -4641,7 +4641,7 @@ packages:
       integrity: sha512-Z942RysHXmJrhqk88FmKBVq/v5tqmSkDz7p54G/MGyjMnCFFnC79XWNbg+Vta8W6Wb2qtSZTSxIGkJrRpCFEiA==
   /browserslist/3.2.8:
     dependencies:
-      caniuse-lite: 1.0.30001166
+      caniuse-lite: 1.0.30001235
       electron-to-chromium: 1.3.626
     dev: false
     hasBin: true
@@ -4649,7 +4649,7 @@ packages:
       integrity: sha512-WHVocJYavUwVgVViC0ORikPHQquXwVh939TaelZ4WDqpWgTX/FsGhl/+P4qBUAGcRvtOgDgC+xftNWWp2RUTAQ==
   /browserslist/4.10.0:
     dependencies:
-      caniuse-lite: 1.0.30001166
+      caniuse-lite: 1.0.30001235
       electron-to-chromium: 1.3.626
       node-releases: 1.1.67
       pkg-up: 3.1.0
@@ -4659,7 +4659,7 @@ packages:
       integrity: sha512-TpfK0TDgv71dzuTsEAlQiHeWQ/tiPqgNZVdv046fvNtBZrjbv2O3TsWCDU0AWGJJKCF/KsjNdLzR9hXOsh/CfA==
   /browserslist/4.11.1:
     dependencies:
-      caniuse-lite: 1.0.30001166
+      caniuse-lite: 1.0.30001235
       electron-to-chromium: 1.3.626
       node-releases: 1.1.67
       pkg-up: 2.0.0
@@ -4669,7 +4669,7 @@ packages:
       integrity: sha512-DCTr3kDrKEYNw6Jb9HFxVLQNaue8z+0ZfRBRjmCunKDEXEBajKDj2Y+Uelg+Pi29OnvaSGwjOsnRyNEkXzHg5g==
   /browserslist/4.15.0:
     dependencies:
-      caniuse-lite: 1.0.30001166
+      caniuse-lite: 1.0.30001235
       colorette: 1.2.1
       electron-to-chromium: 1.3.626
       escalade: 3.1.1
@@ -4944,16 +4944,12 @@ packages:
   /caniuse-api/3.0.0:
     dependencies:
       browserslist: 4.15.0
-      caniuse-lite: 1.0.30001166
+      caniuse-lite: 1.0.30001235
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: false
     resolution:
       integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==
-  /caniuse-lite/1.0.30001166:
-    dev: false
-    resolution:
-      integrity: sha512-nCL4LzYK7F4mL0TjEMeYavafOGnBa98vTudH5c8lW9izUjnB99InG6pmC1ElAI1p0GlyZajv4ltUdFXvOHIl1A==
   /caniuse-lite/1.0.30001235:
     dev: false
     resolution:
@@ -13817,7 +13813,7 @@ packages:
     dependencies:
       autoprefixer: 9.8.6
       browserslist: 4.15.0
-      caniuse-lite: 1.0.30001166
+      caniuse-lite: 1.0.30001235
       css-blank-pseudo: 0.1.4
       css-has-pseudo: 0.10.0
       css-prefers-color-scheme: 3.1.1
@@ -15581,6 +15577,33 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-MKuEYXFSGuRSi8FZ3A7imN1CeVn9Gpw0/SFJKdL1ejXJneI9a5rwlEZrKejhEFAA3O6yr3eIyl/WuvASvlT36g==
+  /sass-loader/10.1.0_53415b21df40cc83b644a66662504942:
+    dependencies:
+      klona: 2.0.4
+      loader-utils: 2.0.0
+      neo-async: 2.6.2
+      node-sass: 4.13.1
+      sass: 1.30.0
+      schema-utils: 3.0.0
+      semver: 7.3.4
+      webpack: 4.42.0_webpack@4.42.0
+    dev: false
+    engines:
+      node: '>= 10.13.0'
+    peerDependencies:
+      fibers: '>= 3.1.0'
+      node-sass: ^4.0.0 || ^5.0.0
+      sass: ^1.3.0
+      webpack: ^4.36.0 || ^5.0.0
+    peerDependenciesMeta:
+      fibers:
+        optional: true
+      node-sass:
+        optional: true
+      sass:
+        optional: true
+    resolution:
+      integrity: sha512-ZCKAlczLBbFd3aGAhowpYEy69Te3Z68cg8bnHHl6WnSCvnKpbM6pQrz957HWMa8LKVuhnD9uMplmMAHwGQtHeg==
   /sass-loader/10.1.0_sass@1.30.0+webpack@4.42.0:
     dependencies:
       klona: 2.0.4
@@ -19386,7 +19409,7 @@ packages:
       resolve-url-loader: 3.1.2
       rimraf: 3.0.2
       sass: 1.30.0
-      sass-loader: 10.1.0_sass@1.30.0+webpack@4.42.0
+      sass-loader: 10.1.0_53415b21df40cc83b644a66662504942
       source-map-loader: 1.1.3_webpack@4.42.0
       style-loader: 1.3.0_webpack@4.42.0
       svg-sprite-loader: 4.2.1_webpack@4.42.0
