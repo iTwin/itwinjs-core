@@ -2194,6 +2194,7 @@ export interface Decorator extends ViewportDecorator {
     getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined;
     getDecorationToolTip?(hit: HitDetail): Promise<HTMLElement | string>;
     onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    overrideElementHit?(hit: HitDetail): boolean;
     testDecorationHit?(id: string): boolean;
 }
 
@@ -11869,6 +11870,12 @@ export class ViewManager implements Iterable<ScreenViewport> {
     readonly onViewOpen: BeUiEvent<ScreenViewport>;
     readonly onViewResume: BeUiEvent<ScreenViewport>;
     readonly onViewSuspend: BeUiEvent<ScreenViewport>;
+    // @internal
+    overrideElementButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    // @internal
+    overrideElementGeometry(hit: HitDetail): GeometryStreamProps | undefined;
+    // @internal
+    overrideElementToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     // @internal
     purgeTileTrees(olderThan: BeTimePoint): void;
     // @internal
