@@ -1,6 +1,11 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Thu, 04 Feb 2021 17:07:25 GMT and should not be manually modified.
+This log was last generated on Sat, 12 Jun 2021 00:11:22 GMT and should not be manually modified.
+
+## 2.10.8
+Sat, 12 Jun 2021 00:11:22 GMT
+
+_Version update only_
 
 ## 2.10.7
 Thu, 04 Feb 2021 17:07:25 GMT

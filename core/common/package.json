@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "2.10.7",
+  "version": "2.10.8",
   "description": "iModel.js components common to frontend and backend",
   "main": "lib/imodeljs-common.js",
   "typings": "lib/imodeljs-common",
@@ -36,20 +36,20 @@
     "semver": "^5.5.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.10.7",
-    "@bentley/geometry-core": "^2.10.7",
-    "@bentley/imodelhub-client": "^2.10.7",
-    "@bentley/itwin-client": "^2.10.7",
-    "@bentley/rbac-client": "^2.10.7"
+    "@bentley/bentleyjs-core": "^2.10.8",
+    "@bentley/geometry-core": "^2.10.8",
+    "@bentley/imodelhub-client": "^2.10.8",
+    "@bentley/itwin-client": "^2.10.8",
+    "@bentley/rbac-client": "^2.10.8"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.10.7",
-    "@bentley/build-tools": "2.10.7",
-    "@bentley/eslint-plugin": "2.10.7",
-    "@bentley/geometry-core": "2.10.7",
-    "@bentley/imodelhub-client": "2.10.7",
-    "@bentley/itwin-client": "2.10.7",
-    "@bentley/rbac-client": "2.10.7",
+    "@bentley/bentleyjs-core": "2.10.8",
+    "@bentley/build-tools": "2.10.8",
+    "@bentley/eslint-plugin": "2.10.8",
+    "@bentley/geometry-core": "2.10.8",
+    "@bentley/imodelhub-client": "2.10.8",
+    "@bentley/itwin-client": "2.10.8",
+    "@bentley/rbac-client": "2.10.8",
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^5.2.5",

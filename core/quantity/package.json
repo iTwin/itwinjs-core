@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-quantity",
-  "version": "2.10.7",
+  "version": "2.10.8",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/imodeljs-quantity.js",
   "typings": "lib/imodeljs-quantity",
@@ -31,9 +31,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.10.7",
-    "@bentley/build-tools": "2.10.7",
-    "@bentley/eslint-plugin": "2.10.7",
+    "@bentley/bentleyjs-core": "2.10.8",
+    "@bentley/build-tools": "2.10.8",
+    "@bentley/eslint-plugin": "2.10.8",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -51,7 +51,7 @@
     "typescript": "~3.7.4"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.10.7"
+    "@bentley/bentleyjs-core": "^2.10.8"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
