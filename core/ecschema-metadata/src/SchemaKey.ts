@@ -6,8 +6,10 @@
  * @module Metadata
  */
 
+import { SchemaKeyProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECName } from "./ECName";
 
 /**
  * @beta
@@ -88,31 +90,6 @@ export class ECVersion {
 }
 
 /**
- * An ECName is an invariant, string based, name is needed for an item in a schema.
- * @beta
- */
-export class ECName {
-  private _name: string;
-
-  constructor(name: string) {
-    const test: boolean = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(name);
-    if (!test)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
-    this._name = name;
-  }
-
-  /**
-   * @param newName string to validate
-   * @return boolean whether newName is a valid ECName
-   */
-  public static validate(newName: string) {
-    return /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(newName);
-  }
-
-  public get name() { return this._name; }
-}
-
-/**
  * The SchemaKey contains a Schemas name and version.
  * @beta
  */
@@ -126,7 +103,7 @@ export class SchemaKey {
   constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number);
   constructor(name: string, readOrVersion?: number | ECVersion, writeVersion?: number, minorVersion?: number) {
     this._name = new ECName(name);
-    if (readOrVersion !== undefined && readOrVersion instanceof ECVersion)
+    if (readOrVersion !== undefined && typeof(readOrVersion) !== "number")
       this._version = readOrVersion;
     else
       this._version = new ECVersion(readOrVersion, writeVersion, minorVersion);
@@ -211,6 +188,27 @@ export class SchemaKey {
       default:
         return false;
     }
+  }
+
+  /**
+   * Deserializes a SchemaKeyProps JSON object into a SchemaKey object.
+   * @param props SchemaKeyProps
+   * @returns A SchemaKey object.
+   */
+  public static fromJSON(props: SchemaKeyProps): SchemaKey {
+    return new SchemaKey(props.name, props.read, props.write, props.minor);
+  }
+
+  /**
+   * Save this SchemaKey's properties to an object for serializing to JSON.
+   */
+  public toJSON(): SchemaKeyProps {
+    return {
+      name: this.name,
+      read: this.readVersion,
+      write: this.writeVersion,
+      minor: this.minorVersion,
+    };
   }
 }
 

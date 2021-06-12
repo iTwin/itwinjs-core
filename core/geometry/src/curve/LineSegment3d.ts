@@ -64,7 +64,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param point0
    * @param point1
    */
-  private constructor(point0: Point3d, point1: Point3d) { super(); this._point0 = point0; this._point1 = point1; }
+  protected constructor(point0: Point3d, point1: Point3d) { super(); this._point0 = point0; this._point1 = point1; }
   /** Set the start and endpoints by capturing input references. */
   public setRefs(point0: Point3d, point1: Point3d) { this._point0 = point0; this._point1 = point1; }
   /** Set the start and endpoints by cloning the input parameters. */

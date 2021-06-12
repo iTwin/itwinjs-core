@@ -11,6 +11,7 @@ There are numerous React components and TypeScript classes in the `@bentley/ui-f
   - [Modal FrontStage](./ModalFrontstage.md)
 - [Content Views and Layouts](./ContentViews.md)
 - [Widgets](./Widgets.md)
+- [Child Windows](./ChildWindows.md)
 - [Status Bar and Fields](./StatusBar.md)
 - [Navigation Aids]($ui-framework:NavigationAids) - A user interface control that moves the user's perspective around within a specific Content View.
 - [Tool Settings](./ToolSettings.md)
@@ -20,6 +21,7 @@ There are numerous React components and TypeScript classes in the `@bentley/ui-f
 - [Dialogs](./Dialogs.md)
 - [Workflows and Tasks](./TasksWorkflows.md)
 - [KeyboardShortcut]($ui-framework:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
+- [UI Settings](./UiSettings.md)
 
 ## Other Topics
 

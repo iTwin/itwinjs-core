@@ -6,7 +6,7 @@
 
 import { compareStrings } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerProps, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
@@ -25,16 +25,56 @@ export enum MapLayerSourceStatus {
   RequireAuth,
 }
 
+/** JSON representation of a map layer source.
+ * @internal
+ */
+interface MapLayerSourceProps
+{
+  /** Identifies the map layers source. Defaults to 'WMS'. */
+  formatId?: string;
+  /** Name */
+  name: string;
+  /** URL */
+  url: string;
+  /** True to indicate background is transparent.  Defaults to 'true'. */
+  transparentBackground?: boolean;
+  /** Is a base layer.  Defaults to 'false'. */
+  isBase?: boolean;
+  /** Indicate if this source definition should be used as a base map. Defaults to false. */
+  baseMap?: boolean;
+  /** UserName */
+  userName?: string;
+  /** Password */
+  password?: string;
+}
+
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
  * @internal
  */
-export class MapLayerSource implements MapLayerProps {
-  public subLayers?: MapSubLayerProps[];
+export class MapLayerSource  {
+  public formatId: string;
+  public name: string;
+  public url: string;
+  public baseMap = false;
+  public transparentBackground?: boolean;
+  public userName?: string;
+  public password?: string;
 
-  private constructor(public formatId: string, public name: string, public url: string, public baseMap = false, public transparentBackground?: boolean, public maxZoom?: number, public userName?: string, public password?: string) { }
-  public static fromJSON(json: any): MapLayerSource | undefined {
-    const baseMap = json.baseMap === true || (json.url && json.url.toLowerCase().indexOf("basemap") >= 0);
-    return (typeof json.name === "string" && typeof json.url === "string" && typeof json.formatId === "string") ? new MapLayerSource(json.formatId, json.name, json.url, baseMap, json.transparentBackground === undefined ? true : json.transparentBackground, json.maxZoom, json.userName, json.password) : undefined;
+  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, userName?: string, password?: string) {
+    this.formatId = formatId;
+    this.name = name;
+    this.url = url;
+    this.baseMap = baseMap;
+    this.transparentBackground = transparentBackground;
+    this.userName = userName;
+    this.password = password;
+  }
+
+  public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
+    if (json === undefined)
+      return undefined;
+
+    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground, json.userName, json.password);
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
@@ -53,11 +93,12 @@ export class MapLayerSource implements MapLayerProps {
     return undefined;
   }
   public toJSON() {
-    return { url: this.url, name: this.name, formatId: this.formatId, maxZoom: this.maxZoom, transparentBackground: this.transparentBackground };
+    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
   }
 
-  public toLayerSettings(): MapLayerSettings | undefined {
-    const layerSettings = MapLayerSettings.fromJSON(this);
+  public toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined {
+    // When MapLayerSetting is created from a MapLayerSource, sub-layers and credentials need to be set separately.
+    const layerSettings = MapLayerSettings.fromJSON({...this, subLayers });
     layerSettings?.setCredentials(this.userName, this.password);
     return layerSettings;
   }
@@ -74,6 +115,8 @@ export class MapLayerSource implements MapLayerProps {
 export class MapLayerSources {
   private static _instance?: MapLayerSources;
   private constructor(private _sources: MapLayerSource[]) { }
+
+  public static getInstance() {return MapLayerSources._instance;}
 
   public findByName(name: string, baseMap: boolean = false): MapLayerSource | undefined {
     const nameTest = name.toLowerCase();
@@ -209,5 +252,18 @@ export class MapLayerSources {
     MapLayerSources._instance._sources.push(mapLayerSource);
     MapLayerSources._instance._sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));
     return MapLayerSources._instance;
+  }
+
+  public static removeLayerByName(name: string): boolean {
+    if (!MapLayerSources._instance) {
+      return false;
+    }
+
+    // For now we only rely on the name
+    const lengthBeforeRemove = MapLayerSources._instance._sources.length;
+    MapLayerSources._instance._sources = MapLayerSources._instance._sources.filter((source) => {
+      return (source.name !== name);
+    });
+    return (lengthBeforeRemove !== MapLayerSources._instance._sources.length);
   }
 }

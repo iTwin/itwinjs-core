@@ -7,23 +7,23 @@
  */
 
 import * as React from "react";
-import { from } from "rxjs/internal/observable/from";
 import { CommonProps, FillCentered, SpinnerSize } from "@bentley/ui-core";
+import { DelayedSpinner } from "../../../common/DelayedSpinner";
 import { SelectionMode } from "../../../common/selection/SelectionModes";
 import { UiComponents } from "../../../UiComponents";
 import { HighlightableTreeProps } from "../../HighlightingEngine";
 import { TreeImageLoader } from "../../ImageLoader";
+import { toRxjsObservable } from "../Observable";
 import { TreeEventDispatcher } from "../TreeEventDispatcher";
 import { TreeEvents } from "../TreeEvents";
 import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../TreeModel";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
-import { TreeRenderer, TreeRendererProps } from "./TreeRenderer";
-import { DelayedSpinner } from "../../../common/DelayedSpinner";
+import { RenderedItemsRange, TreeRenderer, TreeRendererProps } from "./TreeRenderer";
 
 /**
  * Properties for [[ControlledTree]]
- * @beta
+ * @public
  */
 export interface ControlledTreeProps extends CommonProps {
   /** Flat list of nodes to be rendered in tree. */
@@ -34,15 +34,18 @@ export interface ControlledTreeProps extends CommonProps {
   treeEvents: TreeEvents;
   /** Mode of nodes' selection in tree. */
   selectionMode: SelectionMode;
-  /** Specifies whether to show node description or not. It is used in default node renderer and to determine node height.
+  /**
+   * Specifies whether to show node description or not. It is used in default node renderer and to determine node height.
    * If custom node renderer and node height callbacks are used it does nothing.
    */
   descriptionsEnabled?: boolean;
-  /** Specifies whether to show node icon or not. It is used in default node renderer.
+  /**
+   * Specifies whether to show node icon or not. It is used in default node renderer.
    * If custom node renderer is used it does nothing.
    */
   iconsEnabled?: boolean;
-  /** Used to highlight matches when filtering tree.
+  /**
+   * Used to highlight matches when filtering tree.
    * It is passed to treeRenderer.
    */
   nodeHighlightingProps?: HighlightableTreeProps;
@@ -52,11 +55,16 @@ export interface ControlledTreeProps extends CommonProps {
   spinnerRenderer?: () => React.ReactElement;
   /** Custom renderer to be used when there is no data to show in tree. */
   noDataRenderer?: () => React.ReactElement;
+  /**
+   * Callback that is invoked when rendered items range changes.
+   * @alpha
+   */
+  onItemsRendered?: (items: RenderedItemsRange) => void;
 }
 
 /**
  * React tree component which rendering is fully controlled from outside.
- * @beta
+ * @public
  */
 export function ControlledTree(props: ControlledTreeProps) {
   const nodeHeight = useNodeHeight(!!props.descriptionsEnabled);
@@ -78,7 +86,8 @@ export function ControlledTree(props: ControlledTreeProps) {
     nodeLoader: props.nodeLoader,
     visibleNodes: props.visibleNodes,
     nodeHighlightingProps: props.nodeHighlightingProps,
-  }), [nodeRenderer, nodeHeight, eventDispatcher, props.nodeLoader, props.visibleNodes, props.nodeHighlightingProps]);
+    onItemsRendered: props.onItemsRendered,
+  }), [nodeRenderer, nodeHeight, eventDispatcher, props.nodeLoader, props.visibleNodes, props.nodeHighlightingProps, props.onItemsRendered]);
 
   const loading = useRootNodeLoader(props.visibleNodes, props.nodeLoader);
   const noData = props.visibleNodes.getNumRootNodes() === 0;
@@ -92,7 +101,7 @@ export function ControlledTree(props: ControlledTreeProps) {
 function useRootNodeLoader(visibleNodes: VisibleTreeNodes, nodeLoader: ITreeNodeLoader): boolean {
   React.useEffect(() => {
     if (visibleNodes.getNumRootNodes() === undefined) {
-      const subscription = from(nodeLoader.loadNode(visibleNodes.getModel().getRootNode(), 0)).subscribe();
+      const subscription = toRxjsObservable(nodeLoader.loadNode(visibleNodes.getModel().getRootNode(), 0)).subscribe();
       return () => subscription.unsubscribe();
     }
 

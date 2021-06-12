@@ -1,6 +1,6 @@
 {
   "name": "@bentley/reality-data-client",
-  "version": "2.14.0-dev.16",
+  "version": "2.18.0-dev.3",
   "description": "iModel.js Reality Data Client",
   "main": "lib/reality-data-client.js",
   "typings": "lib/reality-data-client",
@@ -36,35 +36,35 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.14.0-dev.16"
+    "@bentley/bentleyjs-core": "workspace:*"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.14.0-dev.16"
+    "@bentley/itwin-client": "workspace:^2.18.0-dev.3"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.14.0-dev.16",
-    "@bentley/certa": "2.14.0-dev.16",
-    "@bentley/config-loader": "2.14.0-dev.16",
-    "@bentley/context-registry-client": "2.14.0-dev.16",
-    "@bentley/eslint-plugin": "2.14.0-dev.16",
-    "@bentley/geometry-core": "2.14.0-dev.16",
-    "@bentley/itwin-client": "2.14.0-dev.16",
-    "@bentley/oidc-signin-tool": "2.14.0-dev.16",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/certa": "workspace:*",
+    "@bentley/config-loader": "workspace:*",
+    "@bentley/context-registry-client": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/geometry-core": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@bentley/oidc-signin-tool": "workspace:*",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
+    "@types/chai-as-promised": "^7",
+    "@types/jsonpath": "^0.2.0",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
+    "chai-as-promised": "^7",
     "eslint": "^7.11.0",
-    "internal-tools": "0.0.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "internal-tools": "workspace:*",
+    "jsonpath": "^1.1.1",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
     "typescript": "~4.1.0",
     "webpack": "4.42.0"
-  },
-  "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

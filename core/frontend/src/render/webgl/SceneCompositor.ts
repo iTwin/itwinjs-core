@@ -8,7 +8,9 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
-import { Feature, PackedFeatureTable, RenderMode, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import {
+  Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
+} from "@bentley/imodeljs-common";
 import { DepthType, RenderType } from "@bentley/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
 import { SceneContext } from "../../ViewContext";
@@ -891,9 +893,13 @@ abstract class Compositor extends SceneCompositor {
     const needComposite = CompositeFlags.None !== compositeFlags;
 
     // Clear output targets
+    this.target.frameStatsCollector.beginTime("opaqueTime");
     this.target.beginPerfMetricRecord("Clear Opaque");
     this.clearOpaque(needComposite);
     this.target.endPerfMetricRecord();
+    this.target.frameStatsCollector.endTime("opaqueTime");
+
+    this.target.frameStatsCollector.beginTime("backgroundTime"); // includes skybox
 
     // Render the background
     this.target.beginPerfMetricRecord("Render Background");
@@ -910,15 +916,21 @@ abstract class Compositor extends SceneCompositor {
     this.renderBackgroundMap(commands, needComposite);
     this.target.endPerfMetricRecord();
 
+    this.target.frameStatsCollector.endTime("backgroundTime");
+
     // Enable clipping
     this.target.beginPerfMetricRecord("Enable Clipping");
     this.target.pushViewClip();
     this.target.endPerfMetricRecord();
 
     // Render volume classification first so that we only classify the reality data
+    this.target.frameStatsCollector.beginTime("classifiersTime");
     this.target.beginPerfMetricRecord("Render VolumeClassification");
     this.renderVolumeClassification(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
+    this.target.frameStatsCollector.endTime("classifiersTime");
+
+    this.target.frameStatsCollector.beginTime("opaqueTime");
 
     // Render layers
     this.target.beginPerfMetricRecord("Render Opaque Layers");
@@ -926,6 +938,7 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     // Render opaque geometry
+    this.target.frameStatsCollector.beginTime("onRenderOpaqueTime");
     IModelFrameLifecycle.onRenderOpaque.raiseEvent({
       commands,
       needComposite,
@@ -933,11 +946,16 @@ abstract class Compositor extends SceneCompositor {
       fbo: this.getBackgroundFbo(needComposite),
       frameBufferStack: System.instance.frameBufferStack,
     });
+    this.target.frameStatsCollector.endTime("onRenderOpaqueTime");
 
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
+
+    this.target.frameStatsCollector.endTime("opaqueTime");
+
+    this.target.frameStatsCollector.beginTime("translucentTime");
 
     // Render translucent layers
     this.target.beginPerfMetricRecord("Render Translucent Layers");
@@ -951,6 +969,8 @@ abstract class Compositor extends SceneCompositor {
       this.renderTranslucent(commands);
       this.target.endPerfMetricRecord();
 
+      this.target.frameStatsCollector.endTime("translucentTime");
+
       this.target.beginPerfMetricRecord("Render Hilite");
       this.renderHilite(commands);
       this.target.endPerfMetricRecord();
@@ -958,12 +978,15 @@ abstract class Compositor extends SceneCompositor {
       this.target.beginPerfMetricRecord("Composite");
       this.composite();
       this.target.endPerfMetricRecord();
-    }
+    } else
+      this.target.frameStatsCollector.endTime("translucentTime");
 
     // Render overlay Layers
+    this.target.frameStatsCollector.beginTime("overlaysTime");
     this.target.beginPerfMetricRecord("Render Overlay Layers");
     this.renderLayers(commands, false, RenderPass.OverlayLayers);
     this.target.endPerfMetricRecord();
+    this.target.frameStatsCollector.endTime("overlaysTime");
 
     this.target.popViewClip();
   }
@@ -1345,10 +1368,10 @@ abstract class Compositor extends SceneCompositor {
     let insideFlags = this.target.activeVolumeClassifierProps.flags.inside;
 
     if (this.target.wantThematicDisplay) {
-      if (outsideFlags !== SpatialClassificationProps.Display.Off)
-        outsideFlags = SpatialClassificationProps.Display.On;
-      if (insideFlags !== SpatialClassificationProps.Display.Off)
-        insideFlags = SpatialClassificationProps.Display.On;
+      if (outsideFlags !== SpatialClassifierOutsideDisplay.Off)
+        outsideFlags = SpatialClassifierOutsideDisplay.On;
+      if (insideFlags !== SpatialClassifierInsideDisplay.Off)
+        insideFlags = SpatialClassifierInsideDisplay.On;
     }
 
     // Render the geometry which we are going to classify.
@@ -1394,9 +1417,9 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
-    const needOutsideDraw = SpatialClassificationProps.Display.On !== outsideFlags;
-    const needInsideDraw = SpatialClassificationProps.Display.On !== insideFlags;
-    const doColorByElement = SpatialClassificationProps.Display.ElementColor === insideFlags || renderForReadPixels;
+    const needOutsideDraw = SpatialClassifierOutsideDisplay.On !== outsideFlags;
+    const needInsideDraw = SpatialClassifierInsideDisplay.On !== insideFlags;
+    const doColorByElement = SpatialClassifierInsideDisplay.ElementColor === insideFlags || renderForReadPixels;
     const doColorByElementForIntersectingVolumes = this.target.vcSupportIntersectingVolumes;
     const needAltZ = (doColorByElement && !doColorByElementForIntersectingVolumes) || needOutsideDraw;
     let zOnlyFbo = this._frameBuffers.stencilSet;
@@ -1591,7 +1614,7 @@ abstract class Compositor extends SceneCompositor {
     const cmdsSelected = extractHilitedVolumeClassifierCommands(this.target.hilites, commands.getCommands(RenderPass.HiliteClassification));
     commands.replaceCommands(RenderPass.HiliteClassification, cmdsSelected); // replace the hilite command list for use in hilite pass as well.
     // if (cmdsSelected.length > 0 && insideFlags !== this.target.activeVolumeClassifierProps!.flags.selected) {
-    if (!doColorByElement && cmdsSelected.length > 0 && insideFlags !== SpatialClassificationProps.Display.Hilite) { // assume selected ones are always hilited
+    if (!doColorByElement && cmdsSelected.length > 0 && insideFlags !== SpatialClassifierInsideDisplay.Hilite) { // assume selected ones are always hilited
       // Set the stencil using just the hilited volume classifiers.
       fbStack.execute(this._frameBuffers.stencilSet, false, this.useMsBuffers, () => {
         this.target.pushState(this._vcBranchState!);

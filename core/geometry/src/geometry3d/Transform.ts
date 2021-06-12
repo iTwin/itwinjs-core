@@ -97,17 +97,32 @@ export class Transform implements BeJSONFunctions {
    * @param other Transform to compare to.
    */
   public isAlmostEqual(other: Transform): boolean { return this._origin.isAlmostEqual(other._origin) && this._matrix.isAlmostEqual(other._matrix); }
-  /** Return a 3 by 4 matrix containing the rows of this Transform
+
+  /**
+   * Test for near equality with other Transform.  Comparison uses the isAlmostEqualAllowZRotation method of Matrix3d
+   * the origin and matrix parts.
+   * @param other Transform to compare to.
+   */
+   public isAlmostEqualAllowZRotation(other: Transform): boolean { return this._origin.isAlmostEqual(other._origin) && this._matrix.isAlmostEqualAllowZRotation(other._matrix); }
+
+   /** Return a 3 by 4 matrix containing the rows of this Transform
    * * This transform's origin is the [3] entry of the json arrays
    */
   public toJSON(): TransformProps {
-    // return { origin: this._origin.toJSON(), matrix: this._matrix.toJSON() };
+    return this.toRows();
+  }
+
+  /** Return a 3 by 4 matrix containing the rows of this Transform
+   * * This transform's origin is the [3] entry of the json arrays
+   */
+  public toRows(): number[][] {
     return [
       [this._matrix.coffs[0], this._matrix.coffs[1], this._matrix.coffs[2], this._origin.x],
       [this._matrix.coffs[3], this._matrix.coffs[4], this._matrix.coffs[5], this._origin.y],
       [this._matrix.coffs[6], this._matrix.coffs[7], this._matrix.coffs[8], this._origin.z],
     ];
   }
+
   /** Return a new Transform initialized by `setFromJSON (json)` */
   public static fromJSON(json?: TransformProps): Transform {
     const result = Transform.createIdentity();

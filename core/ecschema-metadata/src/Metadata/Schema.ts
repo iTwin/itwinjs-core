@@ -14,7 +14,8 @@ import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils"
 import { ECClassModifier, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, AnySchemaItem } from "../Interfaces";
-import { ECName, ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { ECName } from "../ECName";
 import { ECClass, StructClass } from "./Class";
 import { Constant } from "./Constant";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
@@ -31,6 +32,7 @@ import { RelationshipClass } from "./RelationshipClass";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
+import { DOMParser, XMLSerializer } from "xmldom";
 
 const SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
@@ -428,7 +430,7 @@ export class Schema implements CustomAttributeContainerProps {
 
   public *getClasses(): IterableIterator<ECClass> {
     for (const [, value] of this._items) {
-      if (value instanceof ECClass)
+      if (ECClass.isECClass(value))
         yield value;
     }
   }
@@ -481,6 +483,17 @@ export class Schema implements CustomAttributeContainerProps {
       });
     }
     return schemaJson as SchemaProps;
+  }
+
+  /**
+   * Serializes the schema to a string of XML
+   * @alpha
+   */
+  public async toXmlString() {
+    const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
+    const filledDoc = await this.toXml(xmlDoc);
+    const schemaText = new XMLSerializer().serializeToString(filledDoc);
+    return schemaText;
   }
 
   /**
@@ -578,6 +591,15 @@ export class Schema implements CustomAttributeContainerProps {
     schema = reader.readSchemaSync(schema, rawSchema);
 
     return schema;
+  }
+
+  /**
+   * @internal
+   */
+  public static isSchema(object: any): object is Schema {
+    const schema = object as Schema;
+
+    return schema !== undefined && schema.schemaKey !== undefined && schema.context !== undefined;
   }
 
 }

@@ -46,15 +46,11 @@ export function FormatPanel(props: FormatPanelProps) {
   const [formatSpec, setFormatSpec] = React.useState<FormatterSpec>();
   const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit, onFormatChange, provideFormatSpec, enableMinimumProperties } = props;
   const [formatProps, setFormatProps] = React.useState(initialFormat);
-  const initialFormatRef = React.useRef<FormatProps>(initialFormat);
   const [showOptions, setShowOptions] = React.useState(false);
 
   React.useEffect(() => {
-    if (initialFormatRef.current !== initialFormat) {
-      initialFormatRef.current = initialFormat;
-      setFormatProps(initialFormat);
-      setFormatSpec(undefined); // this will trigger the new spec to be created in the useEffect hook
-    }
+    setFormatProps(initialFormat);
+    setFormatSpec(undefined); // this will trigger the new spec to be created in the useEffect hook
   }, [initialFormat]);
 
   const handleUserFormatChanges = React.useCallback((newProps: FormatProps) => {
@@ -62,6 +58,16 @@ export function FormatPanel(props: FormatPanelProps) {
     setFormatSpec(undefined); // this will trigger the new spec to be created in the useEffect hook
     onFormatChange && onFormatChange(newProps);
   }, [onFormatChange]);
+
+  const isMounted = React.useRef (false);
+
+  // runs returned function only when component is unmounted.
+  React.useEffect(() => {
+    isMounted.current = true;
+    return (() => {
+      isMounted.current = false;
+    });
+  }, []);
 
   React.useEffect(() => {
     async function fetchFormatSpec() {
@@ -72,7 +78,7 @@ export function FormatPanel(props: FormatPanelProps) {
       } else {
         newFormatSpec = await generateFormatSpec(formatProps, pu, unitsProvider);
       }
-      setFormatSpec(newFormatSpec);
+      isMounted.current && setFormatSpec(newFormatSpec);
     }
     if (!formatSpec)
       fetchFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises

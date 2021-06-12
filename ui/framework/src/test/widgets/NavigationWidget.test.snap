@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
+exports[`NavigationWidget localStorage Wrapper NavigationWidget NavigationWidget should render correctly 1`] = `
 <NavigationWidgetWithDef
   horizontalToolbar={
     <Toolbar
@@ -24,6 +24,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
   }
   navigationWidgetDef={
     NavigationWidgetDef {
+      "_canPopout": undefined,
       "_classId": undefined,
       "_defaultState": 4,
       "_fillZone": false,

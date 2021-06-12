@@ -48,6 +48,17 @@ describe("<SettingsContainer />", () => {
     { tabId: "tab-page4", itemPriority: 40, label: "page4", subLabel: "disabled page4", isDisabled: true, page: <div>Page 4</div> },
   ];
 
+  it("should render with category header", async () => {
+    // note we are setting current tab to "page 2" to avoid the async tab activation process that would
+    // ensue if the current tab was page 1 that set pageWillHandleCloseRequest to true.
+    const wrapper = render(<SettingsContainer showHeader={true} tabs={tabs} settingsManager={settingsManager} currentSettingsTab={tabs[1]} />);
+    const liPage2 = wrapper.container.querySelector(`li[data-for='page2']`) as HTMLLIElement;
+    expect(liPage2.classList.contains("core-active")).to.be.true;
+
+    const headerDiv = wrapper.container.querySelector(`div.core-settings-container-right-header`);
+    expect(headerDiv).to.not.be.null;
+  });
+
   it("should render", async () => {
     const spyMethod = sinon.spy();
 
@@ -55,6 +66,10 @@ describe("<SettingsContainer />", () => {
     // ensue if the current tab was page 1 that set pageWillHandleCloseRequest to true.
     const wrapper = render(<SettingsContainer tabs={tabs} settingsManager={settingsManager} currentSettingsTab={tabs[1]}
       onSettingsTabSelected={spyMethod} />);
+    // no header should be located since showHeader not specified
+    const headerDiv = wrapper.container.querySelector(`div.core-settings-container-right-header`);
+    expect(headerDiv).to.be.null;
+
     let activePageSelector = `li[data-for='page2']`;
     const liPage2 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
     expect(liPage2.classList.contains("core-active")).to.be.true;

@@ -4,27 +4,28 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Guid, GuidString, Id64, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { Schema } from "@bentley/ecschema-metadata";
 import {
   Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
-  FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator,
-  GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, PlanProjectionSettings,
-  RelatedElement, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
+  AuxCoordSystem2dProps, Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
+  ElementProps, ExternalSourceProps, FontProps, FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps,
+  GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps,
+  Placement3d, PlanProjectionSettings, RelatedElement, RepositoryLinkProps, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance,
+  SubCategoryOverride, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
-  DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingModel,
-  DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects,
-  ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d,
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
+  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingModel, DrawingViewDefinition, ECSqlStatement,
+  Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
+  ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GeometricElement3d,
   GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement,
-  InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition,
-  Platform, Relationship, RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition,
-  SubCategory, Subject, TemplateRecipe2d, TemplateRecipe3d, Texture, ViewDefinition,
+  InformationRecordModel, LinkElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject,
+  PhysicalPartition, Platform, Relationship, RelationshipProps, RenderMaterialElement, RepositoryLink, SnapshotDb, SpatialCategory,
+  SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, TemplateRecipe2d, TemplateRecipe3d, Texture, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -230,6 +231,8 @@ export namespace IModelTransformerUtils {
       commonNavigation: { id: sourcePhysicalCategoryId },
       commonString: "Common",
       commonDouble: 7.3,
+      sourceBinary: new Uint8Array([1, 3, 5, 7]),
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
       extraString: "Extra",
     } as PhysicalElementProps;
     const sourcePhysicalElementId: Id64String = sourceDb.elements.insertElement(sourcePhysicalElementProps);
@@ -242,6 +245,7 @@ export namespace IModelTransformerUtils {
       commonDouble: 1.1,
       commonString: "Unique",
       commonLong: physicalObjectId1,
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
       sourceDouble: 11.1,
       sourceString: "UniqueAspect",
       sourceLong: physicalObjectId1,
@@ -621,6 +625,8 @@ export namespace IModelTransformerUtils {
     assert.equal(physicalElement1.asAny.commonNavigation.id, targetPhysicalCategoryId, "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonString, "Common", "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
+    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.targetBinary), Base64EncodedString.fromUint8Array(new Uint8Array([1, 3, 5, 7])), "Property should have been remapped by onTransformElement override");
+    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])), "Property should have been automatically remapped (same name)");
     assert.notExists(physicalElement1.asAny.extraString, "Property should have been dropped during transformation");
     assert.equal(childObject1A.parent!.id, physicalObjectId1);
     assert.equal(childObject1B.parent!.id, physicalObjectId1);
@@ -630,6 +636,7 @@ export namespace IModelTransformerUtils {
     assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
     assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique");
     assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(Base64EncodedString.fromUint8Array(targetUniqueAspects[0].asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])));
     assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
     assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
     assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
@@ -1141,9 +1148,7 @@ export namespace IModelTransformerUtils {
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in bottom right pixel. The rest of the square is red.
     const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
     const textureData = Base64.btoa(String.fromCharCode(...pngData));
-    const textureWidth = 3;
-    const textureHeight = 3;
-    return Texture.insert(iModelDb, modelId, textureName, ImageSourceFormat.Png, textureData, textureWidth, textureHeight, `Description for ${textureName}`, TextureFlags.None);
+    return Texture.insertTexture(iModelDb, modelId, textureName, ImageSourceFormat.Png, textureData, `Description for ${textureName}`);
   }
 
   export function queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
@@ -1151,6 +1156,30 @@ export namespace IModelTransformerUtils {
       statement.bindString("userLabel", userLabel);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
     });
+  }
+
+  export function insertRepositoryLink(iModelDb: IModelDb, codeValue: string, url: string, format: string): Id64String {
+    const repositoryLinkProps: RepositoryLinkProps = {
+      classFullName: RepositoryLink.classFullName,
+      model: IModel.repositoryModelId,
+      code: LinkElement.createCode(iModelDb, IModel.repositoryModelId, codeValue),
+      url,
+      format,
+    };
+    return iModelDb.elements.insertElement(repositoryLinkProps);
+  }
+
+  export function insertExternalSource(iModelDb: IModelDb, repositoryId: Id64String, userLabel: string): Id64String {
+    const externalSourceProps: ExternalSourceProps = {
+      classFullName: ExternalSource.classFullName,
+      model: IModel.repositoryModelId,
+      code: Code.createEmpty(),
+      userLabel,
+      repository: new ExternalSourceIsInRepository(repositoryId),
+      connectorName: "Connector",
+      connectorVersion: "0.0.1",
+    };
+    return iModelDb.elements.insertElement(externalSourceProps);
   }
 
   export function dumpIModelInfo(iModelDb: IModelDb): void {
@@ -1249,57 +1278,57 @@ export class PhysicalModelConsolidator extends IModelTransformer {
   protected shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
       this.context.remapElement(sourceElement.id, this._targetModelId);
+      // NOTE: must allow export to continue so the PhysicalModel sub-modeling the PhysicalPartition is processed
     }
     return super.shouldExportElement(sourceElement);
   }
 }
 
-/** Test IModelTransformer that uses a ViewDefinition to filter the iModel contents. */
+/** Test IModelTransformer that uses a SpatialViewDefinition to filter the iModel contents. */
 export class FilterByViewTransformer extends IModelTransformer {
   private readonly _exportViewDefinitionId: Id64String;
+  private readonly _exportModelSelectorId: Id64String;
+  private readonly _exportCategorySelectorId: Id64String;
+  private readonly _exportDisplayStyleId: Id64String;
   private readonly _exportModelIds: Id64Set;
   public constructor(sourceDb: IModelDb, targetDb: IModelDb, exportViewDefinitionId: Id64String) {
     super(sourceDb, targetDb);
     this._exportViewDefinitionId = exportViewDefinitionId;
     const exportViewDefinition = sourceDb.elements.getElement<SpatialViewDefinition>(exportViewDefinitionId, SpatialViewDefinition);
+    this._exportCategorySelectorId = exportViewDefinition.categorySelectorId;
+    this._exportModelSelectorId = exportViewDefinition.modelSelectorId;
+    this._exportDisplayStyleId = exportViewDefinition.displayStyleId;
     const exportCategorySelector = sourceDb.elements.getElement<CategorySelector>(exportViewDefinition.categorySelectorId, CategorySelector);
-    this.excludeCategories(Id64.toIdSet(exportCategorySelector.categories));
+    this.excludeCategoriesExcept(Id64.toIdSet(exportCategorySelector.categories));
     const exportModelSelector = sourceDb.elements.getElement<ModelSelector>(exportViewDefinition.modelSelectorId, ModelSelector);
     this._exportModelIds = Id64.toIdSet(exportModelSelector.models);
   }
   /** Excludes categories not referenced by the export view's CategorySelector */
-  private excludeCategories(exportCategoryIds: Id64Set): void {
+  private excludeCategoriesExcept(exportCategoryIds: Id64Set): void {
     const sql = `SELECT ECInstanceId FROM ${SpatialCategory.classFullName}`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const categoryId = statement.getValue(0).getId();
         if (!exportCategoryIds.has(categoryId)) {
-          this.exporter.excludeElementCategory(categoryId);
+          this.exporter.excludeElementsInCategory(categoryId);
         }
       }
     });
   }
-  /** Override of IModelTransformer.shouldExportElement that excludes PhysicalPartitions/Models not referenced by the export view's ModelSelector */
+  /** Override of IModelTransformer.shouldExportElement that excludes other ViewDefinition-related elements that are not associated with the *export* ViewDefinition. */
   protected shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
-      if (!this._exportModelIds.has(sourceElement.id)) {
-        return false;
-      }
+      return this._exportModelIds.has(sourceElement.id);
     } else if (sourceElement instanceof SpatialViewDefinition) {
-      if (sourceElement.id !== this._exportViewDefinitionId) {
-        return false;
-      }
+      return sourceElement.id === this._exportViewDefinitionId;
+    } else if (sourceElement instanceof CategorySelector) {
+      return sourceElement.id === this._exportCategorySelectorId;
+    } else if (sourceElement instanceof ModelSelector) {
+      return sourceElement.id === this._exportModelSelectorId;
+    } else if (sourceElement instanceof DisplayStyle3d) {
+      return sourceElement.id === this._exportDisplayStyleId;
     }
     return super.shouldExportElement(sourceElement);
-  }
-  /** Override of IModelTransformer.processAll that does additional logging after completion. */
-  public async processAll(): Promise<void> {
-    await super.processAll();
-    Logger.logInfo(BackendLoggerCategory.IModelTransformer, `processAll complete with ${this._deferredElementIds.size} deferred elements remaining`);
-  }
-  /** Override of IModelTransformer.processDeferredElements that catches all exceptions and keeps going. */
-  public async processDeferredElements(numRetries: number = 3): Promise<void> {
-    try { await super.processDeferredElements(numRetries); } catch (error) { }
   }
 }
 
@@ -1378,6 +1407,7 @@ export class TestIModelTransformer extends IModelTransformer {
     if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
       targetElementProps.targetString = sourceElement.asAny.sourceString;
       targetElementProps.targetDouble = sourceElement.asAny.sourceDouble;
+      targetElementProps.targetBinary = sourceElement.asAny.sourceBinary;
       targetElementProps.targetNavigation = {
         id: this.context.findTargetElementId(sourceElement.asAny.sourceNavigation.id),
         relClassName: "TestTransformerTarget:TargetPhysicalElementUsesTargetDefinition",
@@ -1583,7 +1613,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeSeparator();
     await this.exporter.exportAll();
   }
-  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
+  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
     this._shouldIndent = false;
     return this.exporter.exportChanges(requestContext, startChangeSetId);
   }
@@ -1620,9 +1650,9 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
     return 1 + this.getIndentLevelForElement(element);
   }
-  protected onExportSchema(schema: Schema): void {
+  protected async onExportSchema(schema: Schema): Promise<void> {
     this.writeLine(`[Schema] ${schema.name}`);
-    super.onExportSchema(schema);
+    return super.onExportSchema(schema);
   }
   protected onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined): void {
     this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}${this.formatOperationName(isUpdate)}`);

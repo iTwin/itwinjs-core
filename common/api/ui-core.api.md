@@ -262,6 +262,7 @@ export interface CheckListBoxItemProps extends CommonProps {
     checked?: boolean;
     disabled?: boolean;
     label: string;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => any;
     onClick?: () => any;
 }
 
@@ -492,6 +493,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     // (undocumented)
     static defaultProps: Partial<DialogProps>;
     // (undocumented)
+    handleRefSet: (containerDiv: HTMLDivElement | null) => void;
+    // (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<DialogState>;
@@ -611,15 +614,17 @@ export interface DivProps extends CommonDivProps {
 // @public
 export const DivWithOutsideClick: {
     new (props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
-        ref: React.RefObject<HTMLDivElement>;
+        outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
         isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
-        handleDocumentPointerUp: (e: PointerEvent) => any;
+        handleDocumentPointerUp: (e: PointerEvent) => void;
+        handleOutsideClickContainerDivSet: (outsideClickContainerDiv: HTMLDivElement | null) => void;
+        getParentDocument(): Document;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
@@ -643,15 +648,17 @@ export const DivWithOutsideClick: {
         UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps, context?: any): {
-        ref: React.RefObject<HTMLDivElement>;
+        outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
         isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
-        handleDocumentPointerUp: (e: PointerEvent) => any;
+        handleDocumentPointerUp: (e: PointerEvent) => void;
+        handleOutsideClickContainerDivSet: (outsideClickContainerDiv: HTMLDivElement | null) => void;
+        getParentDocument(): Document;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
@@ -676,6 +683,12 @@ export const DivWithOutsideClick: {
     };
     contextType?: React.Context<any> | undefined;
 };
+
+// @beta
+export function ElementResizeObserver({ watchedElement, render }: {
+    watchedElement: React.RefObject<HTMLElement>;
+    render: (props: RenderPropsArgs) => JSX.Element;
+}): JSX.Element;
 
 // @public
 export const ElementSeparator: (props: ElementSeparatorProps) => JSX.Element;
@@ -877,10 +890,10 @@ export function getBestBWContrastColor(hexColor: string): "black" | "white";
 // @internal (undocumented)
 export function getButtonTypeClassName(buttonType?: ButtonType): string;
 
-// @internal
+// @public
 export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
 
-// @internal
+// @public
 export function getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number;
 
 // @internal
@@ -899,12 +912,14 @@ export const getToolbarBoxShadow: (opacity: number) => string;
 export function getUserColor(email: string): string;
 
 // @public
-export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps> {
+export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps, GlobalContextMenuState> {
     constructor(props: GlobalContextMenuProps);
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
+    // (undocumented)
+    readonly state: GlobalContextMenuState;
 }
 
 // @public
@@ -916,18 +931,26 @@ export interface GlobalContextMenuProps extends ContextMenuProps {
 }
 
 // @public
-export class GlobalDialog extends React.Component<GlobalDialogProps> {
+export class GlobalDialog extends React.Component<GlobalDialogProps, GlobalDialogState> {
     constructor(props: GlobalDialogProps);
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
+    // (undocumented)
+    readonly state: GlobalDialogState;
 }
 
 // @public
 export interface GlobalDialogProps extends DialogProps {
     // (undocumented)
     identifier?: string;
+}
+
+// @public
+export interface GlobalDialogState {
+    // (undocumented)
+    parentDocument: Document | null;
 }
 
 // @internal
@@ -1247,8 +1270,8 @@ export interface LoadingStatusProps extends CommonProps {
     percent: number;
 }
 
-// @beta
-export class LocalUiSettings implements UiSettings {
+// @public
+export class LocalSettingsStorage implements UiSettingsStorage {
     constructor(w?: Window);
     // (undocumented)
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -1258,6 +1281,11 @@ export class LocalUiSettings implements UiSettings {
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)
     w: Window;
+}
+
+// @beta @deprecated
+export class LocalUiSettings extends LocalSettingsStorage {
+    constructor(w?: Window);
 }
 
 // @public
@@ -1441,7 +1469,7 @@ export enum Orientation {
     Vertical = 1
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;
 
 // @internal
@@ -1827,6 +1855,20 @@ export interface RectangleProps {
     readonly top: number;
 }
 
+// @beta
+export interface RenderPropsArgs {
+    // (undocumented)
+    height?: number;
+    // (undocumented)
+    width?: number;
+}
+
+// @beta
+export function ResizableContainerObserver({ onResize, children }: {
+    onResize: (width: number, height: number) => void;
+    children?: React.ReactNode;
+}): JSX.Element;
+
 // @internal (undocumented)
 export const ResizeObserver: ResizeObserverType;
 
@@ -1886,8 +1928,8 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
     setFocus?: boolean;
 }
 
-// @beta
-export class SessionUiSettings implements UiSettings {
+// @public
+export class SessionSettingsStorage implements UiSettingsStorage {
     constructor(w?: Window);
     // (undocumented)
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -1899,8 +1941,13 @@ export class SessionUiSettings implements UiSettings {
     w: Window;
 }
 
+// @beta @deprecated
+export class SessionUiSettings extends SessionSettingsStorage {
+    constructor(w?: Window);
+}
+
 // @beta
-export const SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager }: SettingsContainerProps) => JSX.Element;
+export const SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element;
 
 // @beta (undocumented)
 export interface SettingsContainerProps {
@@ -1911,6 +1958,8 @@ export interface SettingsContainerProps {
     // (undocumented)
     settingsManager: SettingsManager;
     // (undocumented)
+    showHeader?: boolean;
+    // (undocumented)
     tabs: SettingsTabEntry[];
 }
 
@@ -1918,7 +1967,7 @@ export interface SettingsContainerProps {
 export class SettingsManager {
     activateSettingsTab(settingsTabId: string): void;
     // (undocumented)
-    addSettingsProvider(settingsProvider: SettingsProvider): void;
+    addSettingsProvider(settingsProvider: SettingsTabsProvider): void;
     closeSettingsContainer(closeFunc: (args: any) => void, closeFuncArgs?: any): void;
     getSettingEntries(stageId: string, stageUsage: string): Array<SettingsTabEntry>;
     // @internal
@@ -1929,17 +1978,10 @@ export class SettingsManager {
     readonly onProcessSettingsTabActivation: ProcessSettingsTabActivationEvent;
     readonly onSettingsProvidersChanged: SettingsProvidersChangedEvent;
     // (undocumented)
-    get providers(): ReadonlyArray<SettingsProvider>;
-    set providers(p: ReadonlyArray<SettingsProvider>);
+    get providers(): ReadonlyArray<SettingsTabsProvider>;
+    set providers(p: ReadonlyArray<SettingsTabsProvider>);
     // (undocumented)
     removeSettingsProvider(providerId: string): boolean;
-}
-
-// @beta
-export interface SettingsProvider {
-    // (undocumented)
-    getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined;
-    readonly id: string;
 }
 
 // @beta
@@ -1949,7 +1991,7 @@ export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersCh
 // @beta
 export interface SettingsProvidersChangedEventArgs {
     // (undocumented)
-    readonly providers: ReadonlyArray<SettingsProvider>;
+    readonly providers: ReadonlyArray<SettingsTabsProvider>;
 }
 
 // @beta
@@ -1963,6 +2005,13 @@ export interface SettingsTabEntry {
     readonly subLabel?: string;
     readonly tabId: string;
     readonly tooltip?: string | JSX.Element;
+}
+
+// @beta
+export interface SettingsTabsProvider {
+    // (undocumented)
+    getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined;
+    readonly id: string;
 }
 
 // @internal
@@ -2475,17 +2524,19 @@ export class UiCore {
 export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
 }
 
-// @beta
+// @public
 export class UiSetting<T> {
-    constructor(settingNamespace: string, settingName: string, getValue: () => T, applyValue?: ((v: T) => void) | undefined);
+    constructor(settingNamespace: string, settingName: string, getValue: () => T, applyValue?: ((v: T) => void) | undefined, defaultValue?: T | undefined);
     // (undocumented)
     applyValue?: ((v: T) => void) | undefined;
-    deleteSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
-    getSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
-    getSettingAndApplyValue(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    // (undocumented)
+    defaultValue?: T | undefined;
+    deleteSetting(storage: UiSettingsStorage): Promise<UiSettingsResult>;
+    getSetting(storage: UiSettingsStorage): Promise<UiSettingsResult>;
+    getSettingAndApplyValue(storage: UiSettingsStorage): Promise<UiSettingsResult>;
     // (undocumented)
     getValue: () => T;
-    saveSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    saveSetting(storage: UiSettingsStorage): Promise<UiSettingsResult>;
     // (undocumented)
     settingName: string;
     // (undocumented)
@@ -2493,14 +2544,7 @@ export class UiSetting<T> {
 }
 
 // @public
-export interface UiSettings {
-    // (undocumented)
-    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
-}
+export type UiSettings = UiSettingsStorage;
 
 // @public
 export interface UiSettingsResult {
@@ -2525,6 +2569,16 @@ export enum UiSettingsStatus {
 }
 
 // @public
+export interface UiSettingsStorage {
+    // (undocumented)
+    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
+}
+
+// @public
 export function UnderlinedButton(props: UnderlinedButtonProps): JSX.Element;
 
 // @public
@@ -2543,6 +2597,9 @@ export function useDisposable<TDisposable extends IDisposable>(createDisposable:
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 
 // @internal
+export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onResize?: (width?: number, height?: number) => void): (number | undefined)[];
+
+// @public
 export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
 outsideEventPredicate?: (e: OutsideClickEvent) => boolean): React.RefObject<T>;
 
@@ -2562,7 +2619,7 @@ export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T |
 export function useRefState<T>(): [React.Ref<T>, T | undefined];
 
 // @internal
-export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
+export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: Element | null) => void;
 
 // @beta
 export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void;
@@ -2688,15 +2745,17 @@ export interface WithIsPressedProps {
 // @public
 export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>, defaultOnOutsideClick?: ((event: MouseEvent) => any) | undefined, useCapture?: boolean, usePointerEvents?: boolean) => {
     new (props: Readonly<ComponentProps & WithOnOutsideClickProps>): {
-        ref: React.RefObject<HTMLDivElement>;
+        outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
         isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
-        handleDocumentPointerUp: (e: PointerEvent) => any;
+        handleDocumentPointerUp: (e: PointerEvent) => void;
+        handleOutsideClickContainerDivSet: (outsideClickContainerDiv: HTMLDivElement | null) => void;
+        getParentDocument(): Document;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
@@ -2720,15 +2779,17 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithOnOutsideClickProps, context?: any): {
-        ref: React.RefObject<HTMLDivElement>;
+        outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
         isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
-        handleDocumentPointerUp: (e: PointerEvent) => any;
+        handleDocumentPointerUp: (e: PointerEvent) => void;
+        handleOutsideClickContainerDivSet: (outsideClickContainerDiv: HTMLDivElement | null) => void;
+        getParentDocument(): Document;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;

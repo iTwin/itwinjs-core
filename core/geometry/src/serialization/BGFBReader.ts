@@ -40,6 +40,8 @@ import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { Geometry } from "../Geometry";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
+import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
+import { TaggedNumericData } from "../polyface/TaggedNumericData";
 
 /** * Context to write to a flatbuffer blob.
  *  * This class is internal.
@@ -119,12 +121,26 @@ export class BGFBReader {
       const activeFractionInterval = Segment1d.create(detailHeader.fractionA(),
         detailHeader.fractionB());
       if (!directDetailHeader) {
-        const spiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+        const integratedSpiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
           Segment1d.create(IntegratedSpiral3d.curvatureToRadius(curvature0), IntegratedSpiral3d.curvatureToRadius(curvature1)),
           AngleSweep.createStartEndRadians(bearing0Radians, bearing1Radians),
           activeFractionInterval, localToWorld, spiralTypeName);
-        if (spiral)
-          return spiral;
+        if (integratedSpiral)
+          return integratedSpiral;
+        const radius0 = TransitionSpiral3d.curvatureToRadius(curvature0);
+        const radius1 = TransitionSpiral3d.curvatureToRadius(curvature1);
+        const arcLength = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(radius0, radius1,
+          bearing1Radians - bearing0Radians);
+        const directSpiral = DirectSpiral3d.createFromLengthAndRadius(
+          spiralTypeName!,
+          radius0, radius1,
+          Angle.createRadians(bearing0Radians),
+          Angle.createRadians (bearing1Radians),
+          arcLength,
+          activeFractionInterval,
+          localToWorld);
+        if (directSpiral)
+          return directSpiral;
       }
     }
     return undefined;
@@ -245,6 +261,31 @@ export class BGFBReader {
     }
     return undefined;
   }
+
+  /**
+ * Extract auxData for a mesh
+ * @param variant read position in the flat buffer.
+ */
+  public readTaggedNumericData(accessor: BGFBAccessors.TaggedNumericData | undefined): TaggedNumericData | undefined {
+    if (accessor) {
+      const taggedNumericData = new TaggedNumericData(accessor.tagA(), accessor.tagB());
+      const intDataArray = nullToUndefined<Int32Array>(accessor.intDataArray());
+      const doubleDataArray = nullToUndefined<Float64Array>(accessor.doubleDataArray());
+      if (intDataArray) {
+        taggedNumericData.intData = [];
+        for (const c of intDataArray)
+          taggedNumericData.intData.push(c);
+
+      }
+      if (doubleDataArray) {
+        taggedNumericData.doubleData = [];
+        for (const c of doubleDataArray)
+          taggedNumericData.doubleData.push(c);
+      }
+      return taggedNumericData;
+    }
+    return undefined;
+  }
   /**
  * Extract a mesh
  * @param variant read position in the flat buffer.
@@ -267,6 +308,7 @@ export class BGFBReader {
         const paramIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.paramIndexArray());
         const normalIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.normalIndexArray());
         const colorIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.colorIndexArray());
+        const taggedNumericDataOffset = polyfaceHeader.taggedNumericData();
         // const colorIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.colorIndexArray());
         if (meshStyle === 1 && pointF64 && pointIndexI32) {
           const polyface = IndexedPolyface.create(normalF64 !== undefined, paramF64 !== undefined, intColorU32 !== undefined, twoSided);
@@ -311,6 +353,14 @@ export class BGFBReader {
             }
           }
           polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader.auxData());
+          if (taggedNumericDataOffset) {
+              const taggedNumericDataAccessor = nullToUndefined<BGFBAccessors.TaggedNumericData>(taggedNumericDataOffset);
+              if (taggedNumericDataAccessor !== undefined) {
+                const taggedNumericData = this.readTaggedNumericData(taggedNumericDataAccessor);
+                if (taggedNumericData !== undefined)
+                  polyface.data.setTaggedNumericData(taggedNumericData);
+            }
+          }
           return polyface;
         }
       }

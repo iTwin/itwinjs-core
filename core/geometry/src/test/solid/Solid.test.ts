@@ -114,7 +114,10 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
       const sC = s.clone();
       if (sC instanceof SolidPrimitive) {
         sC.capped = !sC.capped;
-        ck.testFalse(s.isAlmostEqual(sC), "isAlmostEqual should detected cap change");
+        if (s instanceof TorusPipe)
+          ck.testBoolean(s.getSweepAngle().isFullCircle, s.isAlmostEqual(sC), "complete TorusPipe cap status is incidental");
+        else
+          ck.testFalse(s.isAlmostEqual(sC), "isAlmostEqual should detected cap change.");
       }
     }
   }

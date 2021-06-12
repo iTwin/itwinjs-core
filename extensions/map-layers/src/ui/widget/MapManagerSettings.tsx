@@ -6,11 +6,27 @@
 
 import * as React from "react";
 import { NumberInput, Select, Slider, Toggle } from "@bentley/ui-core";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, ViewState3d } from "@bentley/imodeljs-frontend";
-import { BackgroundMapProps, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
+import { ViewState3d } from "@bentley/imodeljs-frontend";
+import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+
+enum MapMaskingOption
+  {
+  None,
+  AllModels
+}
+
+function getMapMaskingFromBackgroundMapSetting(backgroundMapSettings: BackgroundMapSettings): MapMaskingOption {
+  if (backgroundMapSettings.planarClipMask.mode === PlanarClipMaskMode.Priority && backgroundMapSettings.planarClipMask.priority) {
+    if (backgroundMapSettings.planarClipMask.priority >= PlanarClipMaskPriority.BackgroundMap) {
+      return  MapMaskingOption.AllModels;
+    }
+
+  }
+  return MapMaskingOption.None;
+}
 
 function getHeightOriginModeKey(mode: TerrainHeightOriginMode): string {
   if (TerrainHeightOriginMode.Geodetic === mode)
@@ -26,12 +42,6 @@ function getHeightOriginModeFromKey(mode: string): TerrainHeightOriginMode {
   if ("geoid" === mode)
     return TerrainHeightOriginMode.Geoid;
   return TerrainHeightOriginMode.Ground;
-}
-
-function displayElevationError(): void {
-  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error,
-    MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.InvalidElevationError"),
-    MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.InvalidElevationDetails")));
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -53,6 +63,17 @@ export function MapManagerSettings() {
     ground: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGround"),
   });
 
+  const updateMaskingSettings = React.useCallback((option: MapMaskingOption) => {
+    if (option === MapMaskingOption.AllModels) {
+      activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap } });
+    }
+    if (option === MapMaskingOption.None) {
+      activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } });
+    }
+
+    activeViewport!.invalidateRenderPlan();
+  }, [activeViewport]);
+
   const updateTerrainSettings = React.useCallback((props: TerrainProps) => {
     activeViewport!.changeBackgroundMapProps({ terrainSettings: props });
     activeViewport!.invalidateRenderPlan();
@@ -72,14 +93,18 @@ export function MapManagerSettings() {
     }
   }, [updateTerrainSettings]);
 
+  const [masking, setMasking] = React.useState(() => getMapMaskingFromBackgroundMapSetting(backgroundMapSettings));
+
+  const onMaskingToggle = React.useCallback((checked: boolean) => {
+    const maskingOption = checked ? MapMaskingOption.AllModels : MapMaskingOption.None;
+    updateMaskingSettings(maskingOption);
+    setMasking(maskingOption);
+  }, [updateMaskingSettings]);
+
   const handleElevationChange = React.useCallback((value: number | undefined, _stringValue: string) => {
-    if (value === null) {
-      displayElevationError();
-    } else {
-      if (value) {
-        updateBackgroundMap({ groundBias: value });
-        setGroundBias(value);
-      }
+    if (value !== undefined) {
+      updateBackgroundMap({ groundBias: value });
+      setGroundBias(value);
     }
   }, [updateBackgroundMap]);
 
@@ -134,12 +159,14 @@ export function MapManagerSettings() {
 
   const [transparencyLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Transparency"));
   const [terrainLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Terrain"));
+  const [enableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Enable"));
   const [elevationOffsetLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationOffset"));
   const [useDepthBufferLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.UseDepthBuffer"));
   const [modelHeightLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ModelHeight"));
   const [heightOriginLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.HeightOrigin"));
   const [exaggerationLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Exaggeration"));
   const [locatableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Locatable"));
+  const [maskingLabel] =  React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Mask"));
 
   return (
     <>
@@ -151,30 +178,38 @@ export function MapManagerSettings() {
         <span className="map-manager-settings-label">{locatableLabel}</span>
         <Toggle onChange={onLocatableToggle} isOn={isLocatable} />
 
-        <span className="map-manager-settings-label">{terrainLabel}</span>
-        <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />
+        <span className="map-manager-settings-label">{maskingLabel}</span>
+        <Toggle onChange={onMaskingToggle} isOn={masking !== MapMaskingOption.None} />
 
-        {!applyTerrain && (
-          <>
-            <span className="map-manager-settings-label">{elevationOffsetLabel}</span>
-            <NumberInput value={groundBias} onChange={handleElevationChange} onKeyDown={onKeyDown} />
+        <>
+          <span className="map-manager-settings-label">{elevationOffsetLabel}</span>
+          <NumberInput disabled={applyTerrain} value={groundBias} onChange={handleElevationChange} onKeyDown={onKeyDown} />
 
-            <span className="map-manager-settings-label">{useDepthBufferLabel}</span>
-            <Toggle onChange={onToggleUseDepthBuffer} isOn={useDepthBuffer} />
-          </>
-        )}
-        {applyTerrain && (
-          <>
+          <span className="map-manager-settings-label">{useDepthBufferLabel}</span>
+          <Toggle disabled={applyTerrain} onChange={onToggleUseDepthBuffer} isOn={useDepthBuffer} />
+        </>
+
+      </div>
+      <div className="map-manager-settings-terrain-container">
+        <fieldset>
+          <legend>{terrainLabel}</legend>
+
+          <div className="maplayers-settings-container">
+
+            <span className="map-manager-settings-label">{enableLabel}</span>
+            <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />
+
             <span className="map-manager-settings-label">{modelHeightLabel}</span>
-            <NumberInput value={terrainOrigin} onChange={handleHeightOriginChange} onKeyDown={onKeyDown} />
+            <NumberInput value={terrainOrigin} disabled={!applyTerrain} onChange={handleHeightOriginChange} onKeyDown={onKeyDown} />
 
             <span className="map-manager-settings-label">{heightOriginLabel}</span>
-            <Select options={terrainHeightOptions.current} value={heightOriginMode} onChange={handleElevationTypeSelected} />
+            <Select options={terrainHeightOptions.current} disabled={!applyTerrain} value={heightOriginMode} onChange={handleElevationTypeSelected} />
 
             <span className="map-manager-settings-label">{exaggerationLabel}</span>
-            <NumberInput value={exaggeration} onChange={handleExaggerationChange} onKeyDown={onKeyDown} />
-          </>
-        )}
+            <NumberInput value={exaggeration} disabled={!applyTerrain} onChange={handleExaggerationChange} onKeyDown={onKeyDown} />
+          </div>
+
+        </fieldset>
       </div>
     </>
   );

@@ -12,9 +12,9 @@ import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 
 describe("Opening IModelConnection (#integration)", () => {
-  let testProjectId: GuidString;
+  let testContextId: GuidString;
   let testIModelId: GuidString;
-  let testChangeSetId: GuidString;
+  let testChangeSetId: string;
 
   before(async () => {
     await MockRender.App.startup({
@@ -22,15 +22,12 @@ describe("Opening IModelConnection (#integration)", () => {
     });
     Logger.initializeToConsole();
 
-    const testProjectName = "iModelJsIntegrationTest";
-    const testIModelName = "Stadium Dataset 1";
-
-    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
     IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
-    testProjectId = await TestUtility.getTestProjectId(testProjectName);
-    testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+    testContextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    testIModelId = await TestUtility.queryIModelIdbyName(testContextId, TestUtility.testIModelNames.stadium);
 
     // Setup a testChangeSetId somewhere in the middle of the change history
     const authorizedRequestContext = await AuthorizedFrontendRequestContext.create();
@@ -53,7 +50,7 @@ describe("Opening IModelConnection (#integration)", () => {
     let promiseChainWithFullWaits: Promise<any> = Promise.resolve();
     let n = 0;
     while (++n < 10) {
-      const openPromise = RemoteBriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
+      const openPromise = RemoteBriefcaseConnection.open(testContextId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
       const waitPromise = BeDuration.wait(5000); // 5 seconds
       const racePromise = Promise.race([openPromise, waitPromise]);
 

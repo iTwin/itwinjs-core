@@ -1,6 +1,139 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Thu, 03 Jun 2021 18:08:11 GMT and should not be manually modified.
+
+## 2.16.2
+Thu, 03 Jun 2021 18:08:11 GMT
+
+_Version update only_
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+_Version update only_
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Add support for child popup windows.
+- Add ability to not render array/struct property label in virtualized property grid
+- Add support for custom property category renderers.
+- Improved Multi-Value column filtering in the Table component
+- Move `VirtualizedPropertyGrid` related types from @alpha to @beta.
+- Fixed getting distinct values when Table rows are updated
+- Update to latest classnames package 
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+### Updates
+
+- Fixed getting distinct values when Table rows are updated
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Update to use UiSettingsStorage.
+- Fix color picker hue display in DR by removing webkit prefix. Adjust max slider value.
+- 'TreeModel': Fixed 'changeNodeId' to set new id on TreeModelNode
+- 'TreeNodeLoader': Changed nodes loading to avoid removing subtrees of existing expanded nodes
+- Added ability to track rendered nodes in ControlledTree
+- Fix number editor so it can process Enter key and call OnCommit processing.
+- Fix compatibility issue when multiple versions of `rxjs` are in use.
+- Fix a crash when clicking on a `ControlledTree` node when the tree contains placeholder nodes and using `SelectionMode.Multiple`
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:33 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+_Version update only_
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- Lower coverage to 99.98 to avoid CI breaks.
+- Added handling for windows which don't open.
+- Added `UrlPropertyValueRenderer` renders values for properties of `StandardTypeNames.URL` type as URLs without looking at the value
+- Deprecated `onPropertyLinkClick` prop used by `VirtualizedPropertyGridWithDataProvider` and `PropertyGrid`. Behavior of clicks on `PropertyRecord` links should be customized by assigning the `links` attribute.
+- update FormatPanel to ensure state was not set on unmounted component.
+- Fix bug in TimelineComponent's componentDidUpdate method that caused and infinite loop.
+- Support for AccuDraw Ui Settings
+- `TreeModelSource`: Fix `onModelChanged` event sometimes listing same node id multiple times.
+- Improved ui-components test coverage to 100%
+- `TreeModel`: Expose `getChildOffset` method.
+- `MutableTreeModel`: Add `moveNode` method.
+- Better support for Escape key to Home position
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Updates to use new QuantityParserResult
+- Upgrade react-resize-detector to avoid lodash security vulnerability
+- Fixed broken double angle bracket link syntax
+- Fix solar timeline component so that sunTime is properly set for project location.
+- Add ui-components for displaying and editing FormatProps that are used to Format and Parse Quantities.
+- Updated to use TypeScript 4.1
+- Add a captureClicks prop to ColorPickerPopup that will stop propagation of click events from the popup.
+- `MutableTreeModel`: Add `changeNodeId` method.
+- `MutableTreeModel`: Allow `undefined` child count in `setNumChildren`.
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:53 GMT
+
+_Version update only_
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -16,6 +149,16 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - Consider string values starting with `pw:\` or `pw://` to be URLs without checking the rest of the string.
 - `ControlledTree`: Fix calling `scrollToNode` too early triggering an assertion error.
 - Update TimelineComponent.tsx to properly respond to changed props.
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
@@ -58,10 +201,10 @@ Fri, 18 Dec 2020 18:24:01 GMT
 ### Updates
 
 - Add support for onClose function in ColorPickerPopupProps. This allows color value from popup to be used by caller.
-- Added matchesCount attribute to [PropertyDataFilterResult]($ui-components) to optionally tell how many matches there were in a [PropertyRecord]($ui-components). Matches in label and value are separated.
-- Added match counting functionality to [FilteringPropertyDataProvider]($ui-components). The returned [FilteredPropertyData]($ui-components) now has total matches count and a function get information about a match at specific index.
-- Added highlightedRecordProps to [VirtualizedPropertyGridProps]($ui-components) to allow highlighting specific parts of rendered PropertyRecords.
-- Updated [FilteringInput]($ui-components) component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first.
+- Added matchesCount attribute to [[PropertyDataFilterResult]] to optionally tell how many matches there were in a [[PropertyRecord]]. Matches in label and value are separated.
+- Added match counting functionality to [[FilteringPropertyDataProvider]]. The returned [[FilteredPropertyData]] now has total matches count and a function get information about a match at specific index.
+- Added highlightedRecordProps to [[VirtualizedPropertyGridProps]] to allow highlighting specific parts of rendered PropertyRecords.
+- Updated [[FilteringInput]] component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first.
 - fix but in ParsedInput control where formatted text was not updating if underlying parsed value did not change.
 - Refactor DialogItem and Property interfaces to make them eaiser to use.
 - Added support for decimal point in Table numeric filter
@@ -346,7 +489,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Fix toolbar overflow panel display.
-- Update to only show group separators if toolbar is not transparent.
+- Update to only show group separators if toolbar is not transparent. 
 - Fix toolbar error when scaling up UI.
 - Property grid horizontal layout updated according to UX requirements.
 - Fixed Table filter renderers after react-select version upgrade
@@ -818,7 +961,7 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Added DragDrop tests, added component withDragDrop HOC tests
 - Synchronizing navigation aids with view definition changes
 - Simplified property pane tooltips and improved Property Pane performance.
-- Simplified struct and array tooltips in Table component.
+- Simplified struct and array tooltips in Table component. 
 - Fix BeInspireTree's event listening functions to handle array inputs
 - Fix BeInspireTree's muting events with allowed number of triggers
 - Cache BeInspireTree.visible() result for better performance
@@ -948,7 +1091,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it.
+- Deprecated dev-cors-proxy-server and use of it. 
 - Fix: Do not start search if input field is empty
 - Use strongly typed enums for identifying keyboard keys
 - PropertyGrid property editing and unit tests

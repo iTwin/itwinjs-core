@@ -2,9 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Config } from "@bentley/bentleyjs-core";
 import { ChangeState, ECInstance, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
-import { TestConfig } from "./TestConfig";
 
 import nock = require("nock");
 export enum RequestType {
@@ -237,12 +235,18 @@ export class ResponseBuilder {
    * @param requestPath Request path.
    * @param file Path to the file that will be sent as a response.
    * @param times How many times to repeat the same response.
+   * @param fileSize file size for header
    */
-  public static mockFileResponse(host: string, requestPath: string, file: string, times = 1): void {
+  public static mockFileResponse(host: string, requestPath: string, file: string, times = 1, fileSize?: string): void {
     nock(host)
       .get(requestPath)
       .times(times)
       .replyWithFile(200, file);
+
+    nock(host)
+      .head(requestPath)
+      .times(times)
+      .reply(200, undefined, {"content-length": fileSize!, "accept-ranges": "bytes"});
   }
 
   /**
@@ -268,14 +272,5 @@ export class ResponseBuilder {
    */
   public static clearMocks(): void {
     nock.cleanAll();
-  }
-}
-
-export class UrlDiscoveryMock {
-  public static mockGetUrl(searchKey: string, env: number, returnedUrl: string) {
-    if (!TestConfig.enableMocks)
-      return;
-    ResponseBuilder.mockResponse(Config.App.get("imjs_buddi_url"), RequestType.Get,
-      `/GetUrl/?url=${searchKey}&region=${env}`, { result: { url: returnedUrl } });
   }
 }

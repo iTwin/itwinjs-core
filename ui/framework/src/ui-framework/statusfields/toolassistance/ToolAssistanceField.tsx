@@ -16,7 +16,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
-  FillCentered, HorizontalTabs, Icon, LabeledToggle, LocalUiSettings, SvgSprite, UiCore, UiSetting, UiSettings, UiSettingsResult, UiSettingsStatus,
+  FillCentered, HorizontalTabs, Icon, LabeledToggle, LocalSettingsStorage, SvgSprite, UiCore, UiSetting, UiSettingsResult, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import {
   FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceItem,
@@ -57,7 +57,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
   includePromptAtCursor: boolean;
   /** Optional parameter for persistent UI settings. Defaults to UiSettingsContext.
    */
-  uiSettings?: UiSettings;
+  uiSettings?: UiSettingsStorage;
   /** Cursor Prompt Timeout period. Defaults to 5000. */
   cursorPromptTimeout: number;
   /** Fade Out the Cursor Prompt when closed. */
@@ -105,7 +105,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private _indicator = React.createRef<HTMLDivElement>();
   private _cursorPrompt: CursorPrompt;
   private _isMounted = false;
-  private _uiSettings: UiSettings;
+  private _uiSettingsStorage: UiSettingsStorage;
 
   /** @internal */
   public static readonly defaultProps: ToolAssistanceFieldDefaultProps = {
@@ -137,7 +137,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       isPinned: false,
     };
 
-    this._uiSettings = new LocalUiSettings();
+    this._uiSettingsStorage = new LocalSettingsStorage();
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
     this._showPromptAtCursorSetting = new UiSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey,
       () => this.state.showPromptAtCursor);
@@ -153,9 +153,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
     // istanbul ignore else
     if (this.props.uiSettings)
-      this._uiSettings = this.props.uiSettings;
+      this._uiSettingsStorage = this.props.uiSettings;
     else if (this.context)
-      this._uiSettings = this.context;
+      this._uiSettingsStorage = this.context;
 
     await this.restoreSettings();
   }
@@ -171,9 +171,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined;
     // istanbul ignore else
     if (this.props.includePromptAtCursor) {
-      getShowPromptAtCursor = this._showPromptAtCursorSetting.getSetting(this._uiSettings);
+      getShowPromptAtCursor = this._showPromptAtCursorSetting.getSetting(this._uiSettingsStorage);
     }
-    const getMouseTouchTabIndex = this._mouseTouchTabIndexSetting.getSetting(this._uiSettings);
+    const getMouseTouchTabIndex = this._mouseTouchTabIndexSetting.getSetting(this._uiSettingsStorage);
     const [showPromptAtCursorResult, mouseTouchTabIndexResult] = await Promise.all([
       getShowPromptAtCursor,
       getMouseTouchTabIndex,
@@ -286,7 +286,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         showMouseInstructions,
         showTouchInstructions,
       }, async () => {
-        await this._mouseTouchTabIndexSetting.saveSetting(this._uiSettings);
+        await this._mouseTouchTabIndexSetting.saveSetting(this._uiSettingsStorage);
       });
   };
 
@@ -429,7 +429,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       this.setState({
         showPromptAtCursor: checked,
       }, async () => {
-        await this._showPromptAtCursorSetting.saveSetting(this._uiSettings);
+        await this._showPromptAtCursorSetting.saveSetting(this._uiSettingsStorage);
       });
   };
 

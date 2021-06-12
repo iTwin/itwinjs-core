@@ -8,8 +8,11 @@
 
 import { AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField, NotifyMessageDetails, OutputMessagePriority, QuantityType, RotationMode } from "@bentley/imodeljs-frontend";
 import { AccuDrawField, AccuDrawMode, AccuDrawSetFieldValueFromUiEventArgs, AccuDrawUiAdmin, ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { UiFramework } from "../UiFramework";
+import { UiFramework, UserSettingsProvider } from "../UiFramework";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { UiSettings, UiSettingsStatus } from "@bentley/ui-core";
 
 // cspell:ignore dont
 
@@ -44,8 +47,15 @@ const rotationModeToKeyMap = new Map<RotationMode, string>([
 ]);
 
 /** @internal */
-export class FrameworkAccuDraw extends AccuDraw {
+export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> { }
+
+/** @internal */
+export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider {
   private static _displayNotifications = false;
+  private static _uiSettings: AccuDrawUiSettings | undefined;
+  private static _settingsNamespace = "AppUiSettings";
+  private static _notificationsKey = "AccuDrawNotifications";
+  public readonly providerId = "FrameworkAccuDraw";
 
   /** Determines if AccuDraw.rotationMode === RotationMode.Top */
   public static readonly isTopRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Top, [SyncUiEventId.AccuDrawRotationChanged]);
@@ -64,13 +74,33 @@ export class FrameworkAccuDraw extends AccuDraw {
   /** Determines if AccuDraw.compassMode === CompassMode.Rectangular */
   public static readonly isRectangularModeConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.compassMode === CompassMode.Rectangular, [SyncUiEventId.AccuDrawCompassModeChanged]);
 
+  /** AccuDraw Grab Input Focus event. */
+  public static readonly onAccuDrawUiSettingsChangedEvent = new AccuDrawUiSettingsChangedEvent();
+
   /** Determines if notifications should be displayed for AccuDraw changes */
   public static get displayNotifications(): boolean { return FrameworkAccuDraw._displayNotifications; }
-  public static set displayNotifications(v: boolean) { FrameworkAccuDraw._displayNotifications = v; }
+  public static set displayNotifications(v: boolean) {
+    FrameworkAccuDraw._displayNotifications = v;
+    void UiFramework.getUiSettingsStorage().saveSetting (this._settingsNamespace, this._notificationsKey, v);
+  }
+
+  public async loadUserSettings(storage: UiSettings): Promise<void> {
+    const result = await storage.getSetting (FrameworkAccuDraw._settingsNamespace, FrameworkAccuDraw._notificationsKey);
+    if (result.status === UiSettingsStatus.Success)
+      FrameworkAccuDraw._displayNotifications = result.setting;
+  }
+
+  /** AccuDraw User Interface settings */
+  public static get uiSettings(): AccuDrawUiSettings | undefined { return FrameworkAccuDraw._uiSettings; }
+  public static set uiSettings(v: AccuDrawUiSettings | undefined) {
+    FrameworkAccuDraw._uiSettings = v;
+    FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.emit({});
+  }
 
   constructor() {
     super();
     AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.addListener(this.handleSetFieldValueFromUiEvent);
+    UiFramework.registerUserSettingsProvider(this);
   }
 
   private handleSetFieldValueFromUiEvent = async (args: AccuDrawSetFieldValueFromUiEventArgs) => {
@@ -155,9 +185,15 @@ export class FrameworkAccuDraw extends AccuDraw {
       this.setFocusItem(this.newFocus);
   }
 
-  /** @internal */
+  /** Determine if the AccuDraw UI has focus
+   * @internal
+   */
   public get hasInputFocus(): boolean {
-    return IModelApp.uiAdmin.accuDrawUi.hasInputFocus;
+    let hasFocus = false;
+    const el = document.querySelector("div.uifw-accudraw-field-container");
+    if (el)
+      hasFocus = el.contains(document.activeElement);
+    return hasFocus;
   }
 
   /** Implement this method to set focus to the AccuDraw UI.

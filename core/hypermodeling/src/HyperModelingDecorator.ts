@@ -61,10 +61,10 @@ class MarkerToolbarProvider implements PopupToolbarProvider {
  * Hovering over a marker opens a mini toolbar with additional interactions.
  * @see [[SectionMarkerHandler]] to customize the marker interactions.
  * @see [[HyperModeling.startOrStop]] to enable or disable the decorator for a viewport.
- * @beta
+ * @public
  */
 export class HyperModelingDecorator implements Decorator {
-  /** @internal */
+  /** The set of [[SectionMarker]]s controlled by this decorator. */
   public readonly markers: SectionMarkerSet;
   private _config: SectionMarkerConfig;
   private readonly _removeEventListeners = new Array<() => void>();

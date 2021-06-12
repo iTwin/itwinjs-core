@@ -6,45 +6,61 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
 import { BackstageAppButton, ToolWidgetComposer } from "../../ui-framework/widgets/ToolWidgetComposer";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { mount, storageMock } from "../TestUtils";
 
-describe("ToolWidgetComposer", () => {
+describe("FrameworkAccuDraw localStorage Wrapper", () => {
+
+  const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
+  const localStorageMock = storageMock();
 
   before(async () => {
-    await TestUtils.initializeUiFramework();
+    Object.defineProperty(window, "localStorage", {
+      get: () => localStorageMock,
+    });
   });
 
   after(() => {
-    TestUtils.terminateUiFramework();
+    Object.defineProperty(window, "localStorage", localStorageToRestore);
   });
 
-  it("ToolWidgetComposer should render", () => {
-    mount(<ToolWidgetComposer />);
-  });
+  describe("ToolWidgetComposer", () => {
 
-  it("ToolWidgetComposer should render correctly", () => {
-    shallow(<ToolWidgetComposer />).should.matchSnapshot();
-  });
+    before(async () => {
+      await TestUtils.initializeUiFramework();
+    });
 
-  it("ToolWidgetComposer with should render", () => {
-    shallow(<ToolWidgetComposer cornerItem={<BackstageAppButton icon="icon-test" />} />).should.matchSnapshot();
-  });
+    after(() => {
+      TestUtils.terminateUiFramework();
+    });
 
-  it("BackstageAppButtonProps should render", () => {
-    const wrapper = mount(<BackstageAppButton icon={"icon-home"} />);
-    wrapper.setProps({ icon: "icon-bentley" });
-  });
+    it("ToolWidgetComposer should render", () => {
+      mount(<ToolWidgetComposer />);
+    });
 
-  it("BackstageAppButtonProps should update with default icon", () => {
-    const wrapper = mount(<BackstageAppButton icon={"icon-test"} />);
-    wrapper.setProps({ icon: undefined });
-  });
+    it("ToolWidgetComposer should render correctly", () => {
+      shallow(<ToolWidgetComposer />).should.matchSnapshot();
+    });
 
-  it("BackstageAppButton should render in 2.0 mode", () => {
-    mount(
-      <FrameworkVersion version="2">
-        <BackstageAppButton icon={"icon-test"} />
-      </FrameworkVersion>);
-  });
+    it("ToolWidgetComposer with should render", () => {
+      shallow(<ToolWidgetComposer cornerItem={<BackstageAppButton icon="icon-test" />} />).should.matchSnapshot();
+    });
 
+    it("BackstageAppButtonProps should render", () => {
+      const wrapper = mount(<BackstageAppButton icon={"icon-home"} />);
+      wrapper.setProps({ icon: "icon-bentley" });
+    });
+
+    it("BackstageAppButtonProps should update with default icon", () => {
+      const wrapper = mount(<BackstageAppButton icon={"icon-test"} />);
+      wrapper.setProps({ icon: undefined });
+    });
+
+    it("BackstageAppButton should render in 2.0 mode", () => {
+      mount(
+        <FrameworkVersion version="2">
+          <BackstageAppButton icon={"icon-test"} />
+        </FrameworkVersion>);
+    });
+
+  });
 });

@@ -66,6 +66,7 @@ public;ClipStatus
 public;ClipUtilities
 public;ClipVector
 public;ClipVectorProps = ClipPrimitiveProps[]
+public;Cloneable
 internal;ClusterableArray 
 internal;compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number
 internal;Complex 
@@ -104,7 +105,7 @@ internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
 public;DirectSpiral3d 
-public;DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesterAustralian" | "Czech"
+public;DirectSpiralTypeName = "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesternAustralian" | "Czech" | "MXCubicAlongArc" | "Polish" | "Italian"
 public;DuplicateFacetClusterSelector
 public;Ellipsoid 
 public;EllipsoidPatch 
@@ -131,6 +132,7 @@ internal;HalfEdgeMask
 internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
 public;HasZ = Readonly
 public;IModelJson
+internal;ImplicitLineXY
 public;IndexedCollectionInterval
 public;IndexedPolyface 
 public;IndexedPolyfaceSubsetVisitor 
@@ -249,6 +251,8 @@ alpha;StringifiedClipVector
 public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour
+public;TaggedNumericConstants
+public;TaggedNumericData
 internal;TorusImplicit
 public;TorusPipe 
 public;Transform 

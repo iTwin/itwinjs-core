@@ -8,7 +8,7 @@
  */
 
 import {
-  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, ViewFlags,
+  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
@@ -218,5 +218,43 @@ export class ApplyRenderingStyleTool extends DisplayStyleTool {
       vp.overrideDisplayStyle(this._overrides);
 
     return false;
+  }
+}
+
+/** Apply appearance overrides to one or more subcategories in the active viewport.
+ * @beta
+ */
+export class OverrideSubCategoryTool extends DisplayStyleTool {
+  private _overrideProps: SubCategoryAppearance.Props = { };
+  private _subcategoryIds: string[] = [];
+
+  public static toolId = "OverrideSubCategory";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 7; }
+
+  public parse(inArgs: string[]): boolean {
+    const args = parseArgs(inArgs);
+    const ids = args.get("i");
+    if (ids)
+      this._subcategoryIds = ids.split(",");
+
+    const props = this._overrideProps;
+    props.color = args.getInteger("c");
+    props.weight = args.getInteger("w");
+    props.priority = args.getInteger("p");
+    props.transp = args.getFloat("t");
+    props.material = args.get("m");
+
+    const visible = args.getBoolean("v");
+    props.invisible = typeof visible === "boolean" ? !visible : undefined;
+    return true;
+  }
+
+  public execute(vp: Viewport): boolean {
+    const ovr = SubCategoryOverride.fromJSON(this._overrideProps);
+    for (const id of this._subcategoryIds)
+      vp.displayStyle.overrideSubCategory(id, ovr);
+
+    return true;
   }
 }

@@ -28,6 +28,7 @@ internal;CheckpointCreatedEvent
 internal;CheckpointHandler
 internal;CheckpointQuery 
 internal;CheckpointV2 
+internal;CheckpointV2CreatedEvent 
 internal;CheckpointV2ErrorId
 internal;CheckpointV2Handler
 internal;CheckpointV2Query 
@@ -54,9 +55,11 @@ public;EventHandler
 public;EventSAS 
 public;EventSubscription 
 public;EventSubscriptionHandler
-internal;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent"
+internal;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent" | "CheckpointV2CreatedEvent"
+deprecated;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent" | "CheckpointV2CreatedEvent"
 internal;GetEventOperationType
 internal;GlobalCheckpointCreatedEvent 
+internal;GlobalCheckpointV2CreatedEvent 
 internal;GlobalEventHandler 
 internal;GlobalEventSAS 
 internal;GlobalEventSubscription 
@@ -84,7 +87,7 @@ public;IModelHubError
 public;class IModelHubEvent 
 public;IModelHubEventType
 internal;class IModelHubGlobalEvent 
-internal;IModelHubPermission
+internal;IModelPermissions 
 public;IModelQuery 
 public;IModelsHandler
 public;IModelType

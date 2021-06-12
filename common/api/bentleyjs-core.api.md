@@ -17,7 +17,7 @@ export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefin
 // @public
 export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | undefined;
 
-// @beta
+// @public
 export function assert(condition: boolean, msg?: string): asserts condition;
 
 // @alpha
@@ -70,7 +70,7 @@ export class BeEvent<T extends Listener> {
     removeListener(listener: T, scope?: any): boolean;
 }
 
-// @beta
+// @public
 export class BeEventList<T extends Listener> {
     get(name: string): BeEvent<T>;
     remove(name: string): void;
@@ -113,7 +113,7 @@ export class BeTimePoint {
     plus(duration: BeDuration): BeTimePoint;
 }
 
-// @beta
+// @public
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
@@ -135,12 +135,14 @@ export enum BriefcaseStatus {
     // (undocumented)
     CannotUpload = 131074,
     // (undocumented)
+    ContainsDeletedChangeSets = 131080,
+    // (undocumented)
     DownloadCancelled = 131079,
     // (undocumented)
     VersionNotFound = 131077
 }
 
-// @beta
+// @public
 export class ByteStream {
     constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
         byteOffset: number;
@@ -159,7 +161,6 @@ export class ByteStream {
     get nextInt32(): number;
     get nextUint16(): number;
     get nextUint32(): number;
-    // (undocumented)
     nextUint32s(numUint32s: number): Uint32Array;
     get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
@@ -260,20 +261,19 @@ export function compareStringsOrUndefined(lhs?: string, rhs?: string): number;
 // @public
 export function compareWithTolerance(a: number, b: number, tolerance?: number): number;
 
-// @beta
+// @public (undocumented)
 export type CompressedId64Set = string;
 
-// @beta
+// @public
 export namespace CompressedId64Set {
     export function compressArray(ids: Id64Array): CompressedId64Set;
     export function compressIds(ids: OrderedId64Iterable): CompressedId64Set;
     export function compressSet(ids: Id64Set): CompressedId64Set;
     export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array;
     export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
-    // @alpha
     export function iterable(ids: CompressedId64Set): OrderedId64Iterable;
-    // @alpha
     export function iterator(ids: CompressedId64Set): Iterator<Id64String>;
+    export function sortAndCompress(ids: Iterable<Id64String>): CompressedId64Set;
 }
 
 // @public (undocumented)
@@ -618,11 +618,13 @@ export enum HttpStatus {
 
 // @public
 export namespace Id64 {
+    // @deprecated
     export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void;
     export function fromJSON(prop?: string): Id64String;
     export function fromLocalAndBriefcaseIds(localId: number, briefcaseId: number): Id64String;
     export function fromString(val: string): Id64String;
     export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String;
+    export function fromUint32PairObject(pair: Uint32Pair): Id64String;
     export function getBriefcaseId(id: Id64String): number;
     export function getFirst(arg: Id64Arg): Id64String;
     export function getLocalId(id: Id64String): number;
@@ -635,10 +637,13 @@ export namespace Id64 {
     export function isTransient(id: Id64String): boolean;
     export function isTransientId64(id: string): boolean;
     export function isValid(id: Id64String): boolean;
-    const invalid = "0";
     export function isValidId64(id: string): boolean;
     export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
+    const invalid = "0";
+    export function iterable(ids: Id64Arg): Iterable<Id64String>;
+    // @deprecated
     export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean;
+    export function iterator(ids: Id64Arg): Iterator<Id64String>;
     export function sizeOf(arg: Id64Arg): number;
     export function toIdSet(arg: Id64Arg, makeCopy?: boolean): Id64Set;
     export class Uint32Map<T> {
@@ -1002,6 +1007,7 @@ export class IndexMap<T> {
     };
     // (undocumented)
     protected readonly _maximumSize: number;
+    toArray(): T[];
 }
 
 // @internal @deprecated
@@ -1138,7 +1144,12 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
     constructor(limit: number);
 }
 
-// @alpha
+// @public
+export type Mutable<T> = {
+    -readonly [K in keyof T]: T[K];
+};
+
+// @public
 export class MutableCompressedId64Set implements OrderedId64Iterable {
     [Symbol.iterator](): Iterator<string, any, undefined>;
     constructor(ids?: CompressedId64Set);
@@ -1154,7 +1165,7 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     reset(ids?: CompressedId64Set): void;
     }
 
-// @beta
+// @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
     // @internal (undocumented)
@@ -1168,7 +1179,7 @@ export class ObservableSet<T> extends Set<T> {
 
 // @beta
 export class OneAtATimeAction<T> {
-    constructor(run: (...args: any[]) => Promise<T>);
+    constructor(run: (...args: any[]) => Promise<T>, msg?: string);
     // (undocumented)
     msg: string;
     request(...args: any[]): Promise<T>;
@@ -1185,17 +1196,17 @@ export enum OpenMode {
 // @public
 export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
 
-// @alpha (undocumented)
+// @public
 export class OrderedId64Array extends SortedArray<Id64String> {
     constructor();
-    // (undocumented)
+    get array(): ReadonlyArray<Id64String>;
     get ids(): OrderedId64Iterable;
 }
 
-// @beta
+// @public (undocumented)
 export type OrderedId64Iterable = Iterable<Id64String>;
 
-// @beta
+// @public
 export namespace OrderedId64Iterable {
     export function areEqualSets(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): boolean;
     export function compare(lhs: Id64String, rhs: Id64String): number;
@@ -1219,7 +1230,7 @@ export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
     delete(value: T): boolean;
 }
 
-// @beta
+// @public
 export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number;
 
 // @public
@@ -1255,7 +1266,7 @@ export class PriorityQueue<T> implements Iterable<T> {
     protected _swap(a: number, b: number): void;
 }
 
-// @beta
+// @public
 export class ProcessDetector {
     static get isAndroidAppBackend(): boolean;
     static get isAndroidAppFrontend(): boolean;
@@ -1301,12 +1312,10 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     protected readonly _duplicatePolicy: DuplicatePolicy;
     protected _extractArray(): T[];
     findEqual(value: T): T | undefined;
-    // @beta
     findEquivalent(criterion: (element: T) => number): T | undefined;
     forEach(func: (value: T) => void): void;
     get(index: number): T | undefined;
     indexOf(value: T): number;
-    // @beta
     indexOfEquivalent(criterion: (element: T) => number): number;
     protected _insert(value: T, onInsert?: (value: T) => any): number;
     get isEmpty(): boolean;

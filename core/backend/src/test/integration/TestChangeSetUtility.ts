@@ -1,8 +1,8 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { GuidString } from "@bentley/bentleyjs-core";
 import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -14,7 +14,6 @@ import { HubUtility } from "./HubUtility";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {
-  private readonly _projectName: string = "iModelJsIntegrationTest";
   private readonly _iModelName: string;
 
   public projectId!: GuidString;
@@ -28,12 +27,6 @@ export class TestChangeSetUtility {
   constructor(requestContext: AuthorizedClientRequestContext, iModelName: string) {
     this._requestContext = requestContext;
     this._iModelName = HubUtility.generateUniqueName(iModelName); // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
-  }
-
-  private async initialize(): Promise<void> {
-    if (this.projectId)
-      return;
-    this.projectId = await HubUtility.queryProjectIdByName(this._requestContext, this._projectName);
   }
 
   private async addTestModel(): Promise<void> {
@@ -51,14 +44,19 @@ export class TestChangeSetUtility {
   }
 
   private async addTestElements(): Promise<void> {
+    this._requestContext.enter();
+
     this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId));
     this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId));
+
     await this._iModel.concurrencyControl.request(this._requestContext);
+    this._requestContext.enter();
+
     this._iModel.saveChanges("Added test elements");
   }
 
   public async createTestIModel(): Promise<BriefcaseDb> {
-    await this.initialize();
+    this.projectId = await HubUtility.getTestContextId(this._requestContext);
 
     // Re-create iModel on iModelHub
     this.iModelId = await HubUtility.recreateIModel(this._requestContext, this.projectId, this._iModelName);
@@ -70,7 +68,6 @@ export class TestChangeSetUtility {
 
     // Push changes to the hub
     await this._iModel.pushChanges(this._requestContext, "Setup test model");
-
     return this._iModel;
   }
 
@@ -85,6 +82,6 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await IModelTestUtils.closeAndDeleteBriefcaseDb(this._requestContext, this._iModel);
-    await IModelHost.iModelClient.iModels.delete(this._requestContext, this.projectId, this.iModelId);
+    await IModelHost.hubAccess.deleteIModel({ requestContext: this._requestContext, contextId: this.projectId, iModelId: this.iModelId });
   }
 }

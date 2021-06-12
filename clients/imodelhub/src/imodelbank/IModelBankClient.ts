@@ -26,6 +26,6 @@ export class IModelBankClient extends IModelClient {
   }
 
   public get baseUrl(): string {
-    return (this._handler as IModelBankHandler).baseUrl;
+    return (this._handler as IModelBankHandler).baseUrl!;
   }
 }

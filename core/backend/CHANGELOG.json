@@ -2,6 +2,300 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.16.2",
+      "tag": "@bentley/imodeljs-backend_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade to @bentley/imodeljs-native@2.16.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.1",
+      "tag": "@bentley/imodeljs-backend_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.0",
+      "tag": "@bentley/imodeljs-backend_v2.16.0",
+      "date": "Mon, 24 May 2021 15:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Dispatch events when changes are pulled or pushed."
+          },
+          {
+            "comment": "added IModelDb.withStatement for executing ECSQL without statement caching"
+          },
+          {
+            "comment": "Allow RenderGraphic to be created from flatbuffers format geometry as well as json."
+          },
+          {
+            "comment": "Improve exclusion handling in IModelTransformer"
+          },
+          {
+            "comment": "Fix `IModelDb.queryEntityIds` when used with `orderBy` and `limit` params."
+          },
+          {
+            "comment": "IModelExportHandler.onProgress is now async"
+          },
+          {
+            "comment": "Add includeSourceProvenance option to IModelTransformer"
+          },
+          {
+            "comment": "Fixes to desktop/mobile authorization"
+          },
+          {
+            "comment": "return changesetId from pullAndMergeChanges"
+          },
+          {
+            "comment": "Add RenderTimeline element."
+          },
+          {
+            "comment": "Invoke dependency callbacks only when inputs change"
+          },
+          {
+            "comment": "only add listener for shutdown once for IModelDb"
+          },
+          {
+            "comment": "change arguments to protected static methods of Element, Model, ElementAspect. Only affects schema writers."
+          },
+          {
+            "comment": "Update version compare classes for property path support and briefcase rolling"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@bentley/imodeljs-backend_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.5",
+      "tag": "@bentley/imodeljs-backend_v2.15.5",
+      "date": "Thu, 20 May 2021 15:06:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.4",
+      "tag": "@bentley/imodeljs-backend_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@bentley/imodeljs-backend_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@bentley/imodeljs-backend_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@bentley/imodeljs-backend_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/imodeljs-backend_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update test for AzCopyFileHandler"
+          },
+          {
+            "comment": "Fix tests for changed elements processing"
+          },
+          {
+            "comment": "Properly declare changeSetId variables as string."
+          },
+          {
+            "comment": "Promote display-related APIs."
+          },
+          {
+            "comment": "IModelDb.generateElementGraphics can generate graphics for a non-persistent geometry stream."
+          },
+          {
+            "comment": "Add TypeScript wrappers for ExternalSource and related classes and relationships."
+          },
+          {
+            "comment": "Fixes to desktop and iOS apps."
+          },
+          {
+            "comment": "Remove deprecated ElementEditor that was replaced by EditCommands."
+          },
+          {
+            "comment": "rename (deprecate) BriefcaseIdValue.Standalone to BriefcaseIdValue.Unassigned to reduce confusion"
+          },
+          {
+            "comment": "Add onModelsChanged and onModelGeometryChanged events to TxnManager."
+          },
+          {
+            "comment": "Saving & restoring Electron main window size, position & maximized state"
+          },
+          {
+            "comment": "add NativeHost.settingsStore"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@bentley/imodeljs-backend_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@bentley/imodeljs-backend_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/imodeljs-backend_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/imodeljs-backend_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.14.6"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/imodeljs-backend_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "move BriefcaseIdValue to imodeljs-common"
+          },
+          {
+            "comment": "Cherry-pick logout fix"
+          },
+          {
+            "comment": "rework Authentication to use IpcHost"
+          },
+          {
+            "comment": "Detect provenance scope conflicts in IModelTransformer"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.14.0"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.14.4"
+          },
+          {
+            "comment": "Add new exportGraphics options"
+          },
+          {
+            "comment": "add `bindings` member to EntityQueryParams"
+          },
+          {
+            "comment": "Support working in world coords with ElementGeometry.Builder/Iterator. Place line string using ipc command."
+          },
+          {
+            "comment": "Basic proxy support for web backends and electron applications (WIP)"
+          },
+          {
+            "comment": "Add IpcHost.queryConcurrency."
+          },
+          {
+            "comment": "Removed hard coded test values in tile upload integration test"
+          },
+          {
+            "comment": "Add additional metadata to tile upload on cache"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@bentley/imodeljs-backend_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Ensure elements passed to native code are in proper JSON format."
+          },
+          {
+            "comment": "refactor Ipc layers to use IpcHost/IpcApp"
+          },
+          {
+            "comment": "The export methods of IModelExporter and the process methods of IModelTransformer are now async."
+          },
+          {
+            "comment": "IPC shim (WIP) for local webviewer apps."
+          },
+          {
+            "comment": "Add docs and test for CTE support"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.13.1"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.13.3"
+          },
+          {
+            "comment": "Support Node 14"
+          },
+          {
+            "comment": "add notifications for changed elements on SaveChanges"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Undo/Redo shortcuts"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/imodeljs-backend_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/imodeljs-backend_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.12.6"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/imodeljs-backend_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
@@ -59,6 +353,24 @@
       }
     },
     {
+      "version": "2.11.2",
+      "tag": "@bentley/imodeljs-backend_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "NativeApp download cancellation fix"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/imodeljs-backend_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.11.0",
       "tag": "@bentley/imodeljs-backend_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",
@@ -102,9 +414,7 @@
           },
           {
             "comment": "Version compare property checksums"
-          }
-        ],
-        "undefined": [
+          },
           {
             "comment": "return LocalBriefcaseProps from BriefcaseManager.downloadBriefcase"
           }

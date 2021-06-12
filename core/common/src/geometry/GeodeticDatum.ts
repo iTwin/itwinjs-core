@@ -2,13 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Geometry
+ */
 // cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, NADCON, GEOCN
 
 import { Vector3d, XYAndZ } from "@bentley/geometry-core";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
 
 /** Holds 3 components of a Positional Vector rotation definition in arc seconds
- *  @alpha
+ *  @public
  */
 export interface XyzRotationProps {
   /** X rotation component in arc second */
@@ -20,7 +23,7 @@ export interface XyzRotationProps {
 }
 
 /** Hold 3 components data of a Positional Vector rotation definition in arc seconds
- *  @alpha
+ *  @public
  */
 export class XyzRotation implements XyzRotationProps {
   /** X rotation component in arc second */
@@ -38,24 +41,28 @@ export class XyzRotation implements XyzRotationProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Rotations object from JSON representation.
+   * @public */
   public static fromJSON(data: XyzRotationProps): XyzRotation {
     return new XyzRotation(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Rotations definition
+   * @public */
   public toJSON(): XyzRotationProps {
     return { x: this.x, y: this.y, z: this.z };
   }
 
-  /** @internal */
+  /** Compares two geodetic rotations. It is a strict compare operation.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: XyzRotation): boolean {
     return (this.x === other.x && this.y === other.y && this.z === other.z);
   }
 }
 
 /** Type indicating the geodetic transformation method
- *  @alpha
+ *  @public
  */
 export type GeodeticTransformMethod =
   "None" |
@@ -66,35 +73,39 @@ export type GeodeticTransformMethod =
   "Undefined";
 
 /** This interface represents a geocentric (three parameters) geodetic transformation.
- *  @alpha
+ *  @public
  */
 export interface GeocentricTransformProps {
-  /* The frame translation components in meters */
+  /** The frame translation components in meters */
   delta: XYAndZ;
 }
 
 /** This class represents a geocentric (three parameters) geodetic transformation.
- *  @alpha
+ *  @public
  */
 export class GeocentricTransform implements GeocentricTransformProps {
-  /* The frame translation components in meters */
+  /** The frame translation components in meters */
   public readonly delta: Vector3d;
 
   public constructor(data?: GeocentricTransformProps) {
     this.delta = data ? Vector3d.fromJSON(data.delta) : new Vector3d();
   }
 
-  /** @internal */
+  /** Creates a Geocentric Transform from JSON representation.
+   * @public */
   public static fromJSON(data: GeocentricTransformProps): GeocentricTransform {
     return new GeocentricTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geodetic GeocentricTransform definition
+   * @public */
   public toJSON(): GeocentricTransformProps {
     return { delta: { x: this.delta.x, y: this.delta.y, z: this.delta.z } };
   }
 
-  /** @internal */
+  /** Compares two geodetic transforms. It is a strict compare operation not equivalence test.
+   *  It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GeocentricTransform): boolean {
     return (this.delta.x === other.delta.x && this.delta.z === other.delta.z);
   }
@@ -103,12 +114,12 @@ export class GeocentricTransform implements GeocentricTransformProps {
 /** This interface represents a positional vector (seven parameters) geodetic transformation corresponding to
  *  EPSG operation 9606. Beware that the convention relative to rotation direction is different
  *  from the Coordinate Frame operation (epsg 9607).
- *  @alpha
+ *  @public
  */
 export interface PositionalVectorTransformProps {
-  /* The frame translation components in meters */
+  /** The frame translation components in meters */
   delta: XYAndZ;
-  /* The frame rotation components in arc seconds. The rotation sign convention is the one associated with
+  /** The frame rotation components in arc seconds. The rotation sign convention is the one associated with
    * the operation EPSG:9606 following recommendation of ISO 19111 specifications */
   rotation: XyzRotationProps;
   /** Scale in parts per million. The scale effectively applied will be 1 plus scale divided by 1 000 000. */
@@ -118,12 +129,12 @@ export interface PositionalVectorTransformProps {
 /** This class represents a positional vector (seven parameters) geodetic transformation corresponding to
  *  EPSG operation 9606. Beware that the convention relative to rotation direction is different
  *  from the Coordinate Frame operation (epsg 9607).
- *  @alpha
+ *  @public
  */
 export class PositionalVectorTransform implements PositionalVectorTransformProps {
-  /* The frame translation components in meters */
+  /** The frame translation components in meters */
   public readonly delta!: Vector3d;
-  /* The frame rotation components in arc seconds. The rotation sign convention is the one associated with
+  /** The frame rotation components in arc seconds. The rotation sign convention is the one associated with
    * the operation EPSG:9606 following recommendation of ISO 19111 specifications */
   public readonly rotation!: XyzRotation;
   /** Scale in parts per million. The scale effectively applied will be 1 plus scale divided by 1 000 000. */
@@ -137,12 +148,14 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
     }
   }
 
-  /** @internal */
+  /** Creates a Positional Vector Transform from JSON representation.
+   * @public */
   public static fromJSON(data: PositionalVectorTransformProps): PositionalVectorTransform {
     return new PositionalVectorTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Positional Vector Transform definition
+   * @public */
   public toJSON(): PositionalVectorTransformProps {
     return {
       delta: { x: this.delta.x, y: this.delta.y, z: this.delta.z },
@@ -151,7 +164,9 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
     };
   }
 
-  /** @internal */
+  /** Compares two Positional Vector Transforms. It is a strict compare operation not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: PositionalVectorTransform): boolean {
     if (this.delta.x !== other.delta.x || this.delta.z !== other.delta.z || this.scalePPM !== other.scalePPM)
       return false;
@@ -161,7 +176,7 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
 }
 
 /** Type indicating the file format of the grid files.
- *  @alpha
+ *  @public
  */
 export type GridFileFormat =
   "NONE" |
@@ -174,12 +189,12 @@ export type GridFileFormat =
   "GEOCN";
 
 /** type to indicate the grid file application direction.
- *  @alpha
+ *  @public
  */
 export type GridFileDirection = "Direct" | "Inverse";
 
 /** Grid file definition containing name of the file, the format and the direction it should be applied
- *  @alpha
+ *  @public
  */
 export interface GridFileDefinitionProps {
   /** Name of the grid shift file. This name is relative to the expected dictionary root document.
@@ -192,12 +207,14 @@ export interface GridFileDefinitionProps {
    *  Forward slash is always used to separate the path components.
    */
   fileName: string;
+  /** The grid file format */
   format: GridFileFormat;
+  /** The grid file application direction */
   direction: GridFileDirection;
 }
 
 /** Grid file definition containing name of the file, the format and the direction it should be applied
- *  @alpha
+ *  @public
  */
 export class GridFileDefinition implements GridFileDefinitionProps {
   /** Name of the grid shift file. This name is relative to the expected dictionary root document.
@@ -210,7 +227,9 @@ export class GridFileDefinition implements GridFileDefinitionProps {
    *  Forward slash is always used to separate the path components.
    */
   public readonly fileName: string;
+  /** The grid file format */
   public readonly format: GridFileFormat;
+  /** The grid file application direction */
   public readonly direction: GridFileDirection;
 
   public constructor(data?: GridFileDefinitionProps) {
@@ -219,42 +238,51 @@ export class GridFileDefinition implements GridFileDefinitionProps {
     this.direction = data ? data.direction : "Direct";
   }
 
-  /** @internal */
+  /** Creates a Grid File Definition from JSON representation.
+   * @public */
   public static fromJSON(data: GridFileDefinitionProps): GridFileDefinition {
     return new GridFileDefinition(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Grid File Definition
+   * @public */
   public toJSON(): GridFileDefinitionProps {
     return { fileName: this.fileName, format: this.format, direction: this.direction };
   }
 
-  /** @internal */
+  /** Compares two grid file definition. It is a strict compare operation not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GridFileDefinition): boolean {
     return (this.fileName === other.fileName && this.direction === other.direction && this.format === other.format);
   }
 }
 
 /** This interface represents a grid files based geodetic transformation.
- *  @alpha
+ *  @public
  */
 export interface GridFileTransformProps {
-  /** The list of grid files. The order of file is meaningful, the first encountered that covers the area of coordinate
+  /** The list of grid files. The order of file is meaningful, the first encountered that covers the extent of coordinate
    *  transformation will be used. */
   files: GridFileDefinitionProps[];
+  /** The positional vector fallback transformation used for extents not covered by the grid files */
+  fallback?: PositionalVectorTransformProps;
 }
 
 /** This class represents a grid files based geodetic transformation.
- *  @alpha
+ *  @public
  */
 export class GridFileTransform implements GridFileTransformProps {
-  /** The list of grid files. The order of file is meaningful, the first encountered that covers the area of coordinate
+  /** The list of grid files. The order of file is meaningful, the first encountered that covers the extent of coordinate
    *  transformation will be used. */
   public readonly files: GridFileDefinition[];
+  /** The positional vector fallback transformation used for extents not covered by the grid files */
+  public readonly fallback?: PositionalVectorTransform;
 
   public constructor(data?: GridFileTransformProps) {
     this.files = [];
     if (data) {
+      this.fallback = data.fallback ? PositionalVectorTransform.fromJSON(data.fallback) : undefined;
       if (Array.isArray(data.files)) {
         this.files = [];
         for (const item of data.files)
@@ -263,14 +291,17 @@ export class GridFileTransform implements GridFileTransformProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Grid File Transform from JSON representation.
+   * @public */
   public static fromJSON(data: GridFileTransformProps): GridFileTransform {
     return new GridFileTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Grid File Transform definition
+   * @public */
   public toJSON(): GridFileTransformProps {
     const data: GridFileTransformProps = { files: [] };
+    data.fallback = this.fallback ? this.fallback.toJSON() : undefined;
     if (Array.isArray(this.files)) {
       for (const item of this.files)
         data.files.push(item.toJSON());
@@ -278,7 +309,9 @@ export class GridFileTransform implements GridFileTransformProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two Grid File Transforms. It is a strict compare operation not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GridFileTransform): boolean {
     if (this.files.length !== other.files.length)
       return false;
@@ -287,66 +320,107 @@ export class GridFileTransform implements GridFileTransformProps {
       if (!this.files[idx].equals(other.files[idx]))
         return false;
 
+    if ((this.fallback === undefined) !== (other.fallback === undefined))
+      return false;
+
+    if (this.fallback && !this.fallback.equals(other.fallback!))
+      return false;
+
     return true;
   }
 }
 
 /** This interface represents a geodetic transformation that enables transforming longitude/latitude coordinates
  *  from one datum to another.
- *  @alpha
+ *  @public
  */
 export interface GeodeticTransformProps {
-  /* The method used by the geodetic transform */
+  /** The method used by the geodetic transform */
   method: GeodeticTransformMethod;
-  /* When method is Geocentric this property contains the geocentric parameters */
+  /** The complete definition of the source geodetic ellipsoid referred to by ellipsoidId.
+   *  The source ellipsoid identifier enables obtaining the shape of the Earth mathematical model
+   *  for the purpose of performing the transformation.
+  */
+  sourceEllipsoid?: GeodeticEllipsoidProps;
+  /** The complete definition of the target geodetic ellipsoid referred to by ellipsoidId.
+   *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
+   *  for the purpose of performing the transformation.*/
+  targetEllipsoid?: GeodeticEllipsoidProps;
+  /** When method is Geocentric this property contains the geocentric parameters */
   geocentric?: GeocentricTransformProps;
-  /* When method is PositionalVector this property contains the positional vector parameters */
+  /** When method is PositionalVector this property contains the positional vector parameters */
   positionalVector?: PositionalVectorTransformProps;
-  /* When method is GridFiles this property contains the grid files parameters */
+  /** When method is GridFiles this property contains the grid files parameters */
   gridFile?: GridFileTransformProps;
 }
 
 /** This class represents a geodetic transformation that enables transforming longitude/latitude coordinates
  *  from one datum to another.
- *  @alpha
+ *  @public
  */
 export class GeodeticTransform implements GeodeticTransformProps {
-  /* The method used by the geodetic transform */
+  /** The method used by the geodetic transform */
   public readonly method: GeodeticTransformMethod;
-  /* When method is Geocentric this property contains the geocentric parameters */
+  /** The identifier of the source geodetic datum as stored in the dictionary or the service database.
+   *  This identifier is optional and informational only.
+   */
+  public readonly sourceEllipsoid?: GeodeticEllipsoid;
+  /** The complete definition of the target geodetic ellipsoid referred to by ellipsoidId.
+   *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
+   *  for the purpose of performing the transformation.*/
+  public readonly targetEllipsoid?: GeodeticEllipsoid;
+  /** When method is Geocentric this property contains the geocentric parameters */
   public readonly geocentric?: GeocentricTransform;
-  /* When method is PositionalVector this property contains the positional vector parameters */
+  /** When method is PositionalVector this property contains the positional vector parameters */
   public readonly positionalVector?: PositionalVectorTransform;
-  /* When method is GridFiles this property contains the grid files parameters */
+  /** When method is GridFiles this property contains the grid files parameters */
   public readonly gridFile?: GridFileTransform;
 
   public constructor(data?: GeodeticTransformProps) {
     this.method = "None";
     if (data) {
       this.method = data.method;
+      this.sourceEllipsoid = data.sourceEllipsoid ? GeodeticEllipsoid.fromJSON(data.sourceEllipsoid) : undefined;
+      this.targetEllipsoid = data.targetEllipsoid ? GeodeticEllipsoid.fromJSON(data.targetEllipsoid) : undefined;
       this.geocentric = data.geocentric ? GeocentricTransform.fromJSON(data.geocentric) : undefined;
       this.positionalVector = data.positionalVector ? PositionalVectorTransform.fromJSON(data.positionalVector) : undefined;
       this.gridFile = data.gridFile ? GridFileTransform.fromJSON(data.gridFile) : undefined;
     }
   }
 
-  /** @internal */
+  /** Creates a Geodetic Transform from JSON representation.
+   * @public */
   public static fromJSON(data: GeodeticTransformProps): GeodeticTransform {
     return new GeodeticTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geodetic Transform definition
+   * @public */
   public toJSON(): GeodeticTransformProps {
     const data: GeodeticTransformProps = { method: this.method };
+    data.sourceEllipsoid = this.sourceEllipsoid ? this.sourceEllipsoid.toJSON() : undefined;
+    data.targetEllipsoid = this.targetEllipsoid ? this.targetEllipsoid.toJSON() : undefined;
     data.geocentric = this.geocentric ? this.geocentric.toJSON() : undefined;
     data.positionalVector = this.positionalVector ? this.positionalVector.toJSON() : undefined;
     data.gridFile = this.gridFile ? this.gridFile.toJSON() : undefined;
     return data;
   }
 
-  /** @internal */
+  /** Compares two geodetic Transforms. It is a strict compare operation not an equivalence test.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GeodeticTransform): boolean {
     if (this.method !== other.method)
+      return false;
+
+    if ((this.sourceEllipsoid === undefined) !== (other.sourceEllipsoid === undefined))
+      return false;
+    if (this.sourceEllipsoid && !this.sourceEllipsoid.equals(other.sourceEllipsoid!))
+      return false;
+
+    if ((this.targetEllipsoid === undefined) !== (other.targetEllipsoid === undefined))
+      return false;
+    if (this.targetEllipsoid && !this.targetEllipsoid.equals(other.targetEllipsoid!))
       return false;
 
     if ((this.geocentric === undefined) !== (other.geocentric === undefined))
@@ -375,7 +449,7 @@ export class GeodeticTransform implements GeodeticTransformProps {
  *  definition of the transformation path to WGS84.
  *  Sometimes there exists transformation paths direct from one non-WGS84 datum to another non-WGS84. The current model
  *  does not allow specifications of these special paths at the moment.
- *  @alpha
+ *  @public
  */
 export interface GeodeticDatumProps {
   /** GeodeticDatum key name */
@@ -412,7 +486,7 @@ export interface GeodeticDatumProps {
  *  definition of the transformation path to WGS84.
  *  Sometimes there exists transformation paths direct from one non-WGS84 datum to another non-WGS84. The current model
  *  does not allow specifications of these special paths at the moment.
- *  @alpha
+ *  @public
  */
 export class GeodeticDatum implements GeodeticDatumProps {
   /** GeodeticDatum key name */
@@ -423,7 +497,7 @@ export class GeodeticDatum implements GeodeticDatumProps {
    *  If false then the definition is not deprecated. Default is false.
    */
   public readonly deprecated: boolean;
-  /* A textual description of the source of the geodetic datum definition. */
+  /** A textual description of the source of the geodetic datum definition. */
   public readonly source?: string;
   /** The EPSG code of the geodetic datum. If undefined then there is no EPSG code associated. */
   public readonly epsg?: number;
@@ -461,12 +535,14 @@ export class GeodeticDatum implements GeodeticDatumProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Geodetic Datum from JSON representation.
+   * @public */
   public static fromJSON(data: GeodeticDatumProps): GeodeticDatum {
     return new GeodeticDatum(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geodetic Datum definition
+   * @public */
   public toJSON(): GeodeticDatumProps {
     const data: GeodeticDatumProps = {};
     data.id = this.id;
@@ -485,7 +561,10 @@ export class GeodeticDatum implements GeodeticDatumProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two Geodetic Datums. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   * It is useful for tests purposes only.
+   *  @internal */
   public equals(other: GeodeticDatum): boolean {
     if (this.id !== other.id ||
       this.description !== other.description ||

@@ -14,7 +14,7 @@ import { DisplayStyleTool } from "./DisplayStyleTools";
 import { parseArgs } from "./parseArgs";
 
 /** Dumps a JSON representation of the plan projection settings for the current viewport.
- * @alpha
+ * @beta
  */
 export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
   public static toolId = "DumpLayerSettings";
@@ -55,7 +55,7 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
 }
 
 /** Changes subcategory display priority.
- * @alpha
+ * @beta
  */
 export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
   public static toolId = "OverrideSubCategoryPriority";
@@ -95,7 +95,7 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
 }
 
 /** Changes plan projection settings for one or more models.
- * @alpha
+ * @beta
  */
 export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool {
   public static toolId = "ChangeLayerSettings";

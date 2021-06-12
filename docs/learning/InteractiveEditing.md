@@ -18,9 +18,9 @@ Since Txns are created by an application's call to `SaveChanges`, they can be us
 
 While Txns themselves hold net changes for a single transaction, they are stored in the briefcase in the order they were made. This forms a *timeline of the session*, and provides the ordering for undo. Only the most recent Txn in the session may be undone. Once a Txn is undone, and unless it is immediately redone (i.e. any other changes are made to the briefcase), it is abandoned. Txns persist across sessions even if the program crashes. Applications may, but generally don't, permit undo/redo across sessions,
 
-## TxnManager
+## Monitoring Txns
 
-Every [BriefcaseDb]($backend) has a [TxnManager]($backend) associated that is used for operations on Txns. `TxnManager` emits events with information about "what happened" as changes are made to the database, permitting applications to keep in-memory (on the backend) or on-screen (on the frontend) state in sync.
+Every [BriefcaseDb]($backend) has a [TxnManager]($backend) associated that is used for operations on Txns. Likewise, every [BriefcaseConnection]($frontend) has a [BriefcaseTxns]($frontend). `TxnManager` and `BriefcaseTxns` emit events with information about "what happened" as changes are made to the database, permitting applications to remain synchronized with the persistent state of the iModel by, for example, updating in-memory state or (on the frontend) refreshing the contents of [Viewport]($frontend)s and UI components.
 
 ## Pushing ChangeSets to IModelHub
 

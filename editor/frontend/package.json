@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-frontend",
-  "version": "2.14.0-dev.16",
+  "version": "2.18.0-dev.3",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-editor-frontend.js",
   "typings": "lib/imodeljs-editor-frontend",
@@ -34,32 +34,31 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.14.0-dev.16",
-    "@bentley/imodeljs-common": "^2.14.0-dev.16",
-    "@bentley/imodeljs-i18n": "^2.14.0-dev.16"
+    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.3",
+    "@bentley/imodeljs-common": "workspace:^2.18.0-dev.3",
+    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.3"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.14.0-dev.16",
-    "@bentley/build-tools": "2.14.0-dev.16",
-    "@bentley/certa": "2.14.0-dev.16",
-    "@bentley/eslint-plugin": "2.14.0-dev.16",
-    "@bentley/imodeljs-common": "2.14.0-dev.16",
-    "@bentley/imodeljs-i18n": "2.14.0-dev.16",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/certa": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
+    "@bentley/imodeljs-i18n": "workspace:*",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
-    "electron": "^11.1.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
+    "electron": "^11.1.0",
     "eslint": "^7.11.0",
     "glob": "^7.1.2",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
     "typescript": "~4.1.0"
@@ -69,13 +68,10 @@
     "NOTE: imodeljs-editor-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/geometry-core": "2.14.0-dev.16",
-    "@bentley/imodeljs-frontend": "2.14.0-dev.16",
-    "@bentley/ui-abstract": "2.14.0-dev.16",
-    "@bentley/imodeljs-editor-common": "2.14.0-dev.16"
-  },
-  "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "@bentley/geometry-core": "workspace:*",
+    "@bentley/imodeljs-editor-common": "workspace:*",
+    "@bentley/imodeljs-frontend": "workspace:*",
+    "@bentley/ui-abstract": "workspace:*"
   },
   "eslintConfig": {
     "plugins": [

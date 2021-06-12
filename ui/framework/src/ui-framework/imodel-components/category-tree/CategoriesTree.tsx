@@ -77,7 +77,7 @@ export interface CategoryTreeProps {
  * @public
  */
 export function CategoryTree(props: CategoryTreeProps) {
-  const nodeLoader = usePresentationTreeNodeLoader({
+  const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
     ruleset: RULESET_CATEGORIES,

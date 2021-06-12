@@ -6,7 +6,7 @@
  * @module HyperModeling
  */
 
-import { assert, BeEvent } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
 import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import {
@@ -21,7 +21,7 @@ const markerSize = Point2d.create(40, 40);
  * Clicking on the marker toggles display of the section graphics. Mousing over the marker produces a toolbar with additional interactions.
  * @see [[HyperModelingDecorator]] for a [Decorator]($frontend) capable of displaying section markers for each section drawing location.
  * @see [[SectionMarkerHandler]] to customize the marker interactions.
- * @beta
+ * @public
  */
 export class SectionMarker extends Marker {
   /** The section drawing location state associated with the marker. */
@@ -163,7 +163,7 @@ export class SectionMarkerCluster extends Marker {
 
 /** A [MarkerSet]($frontend) containing [[SectionMarker]]s identifying [SectionDrawingLocation]($backend)s within a spatial view.
  * Typically used indirectly via [[HyperModelingDecorator]].
- * @beta
+ * @public
  */
 export class SectionMarkerSet extends MarkerSet<SectionMarker> {
   public minimumClusterSize = 5;
@@ -190,5 +190,14 @@ export class SectionMarkerSet extends MarkerSet<SectionMarker> {
   /** @internal */
   protected getClusterMarker(cluster: Cluster<SectionMarker>): Marker {
     return SectionMarkerCluster.makeFrom(cluster.markers[0], cluster, cluster.markers[0].image);
+  }
+
+  /** Find the SectionMarker corresponding to the specified [SectionDrawingLocation]($backend) Id. */
+  public findMarkerById(sectionDrawingLocationId: Id64String): SectionMarker | undefined {
+    for (const marker of this.markers)
+      if (marker.state.id === sectionDrawingLocationId)
+        return marker;
+
+    return undefined;
   }
 }

@@ -32,7 +32,7 @@ Each package has its own **node_modules** directory that contains symbolic links
 2. Install dependencies: `rush install`
 3. Clean: `rush clean`
 4. Rebuild source: `rush rebuild`
-5. Run tests: `rush test`
+5. Run tests: `rush cover`
 
 The `-v` option for `rush` is short for `--verbose` which results in a more verbose command.
 
@@ -45,19 +45,22 @@ For incremental builds, the `rush build` command can be used to only build packa
 ## Source Code Edit Workflow
 
 1. Make source code changes on a new Git branch
-2. Ensure unit tests pass when run locally: `rush test`
-3. Locally commit changes: `git commit` (or use the Visual Studio Code user interface)
-4. Repeat steps 1-3 until ready to push changes
-5. Add changelog entry (which could potentially cover several commits): `rush change`
-6. Follow prompts to enter a change description or press ENTER if the change does not warrant a changelog entry. If multiple packages have changed, multiple sets of prompts will be presented. If the changes are only to non-published packages (like **display-test-app**), then `rush change` will indicate that a changelog entry is not needed.
-7. Completing the `rush change` prompts will cause new changelog entry JSON files to be created.
-8. Check for API signature changes: `rush extract-api`.  This will update the signature files, located in `common/api`.
-9. Review any diffs to the API signature files in the `common/api` directory to ensure they are compatible with the intended release of the package
-10. Commit the changelog JSON files and any API signature updates.
-11. Publish changes on the branch and open a pull request.
+2. Ensure unit tests pass when run locally: `rush cover`
+3. Ensure linting passes when run locally: `rush lint`
+4. Locally commit changes: `git commit` (or use the Visual Studio Code user interface)
+5. Repeat steps 1-4 until ready to push changes
+6. Check for API signature changes: `rush extract-api`. This will update the signature files, located in `common/api`.
+7. Review any diffs to the API signature files in the `common/api` directory to ensure they are compatible with the intended release of the package.
+    - If any differences are in packages not modified on this branch, revert the changes before committing.
+8. Add changelog entry (which could potentially cover several commits): `rush change`
+9. Follow prompts to enter a change description or press ENTER if the change does not warrant a changelog entry. If multiple packages have changed, multiple sets of prompts will be presented. If the changes are only to non-published packages (like **display-test-app**), then `rush change` will indicate that a changelog entry is not needed.
+10. Completing the `rush change` prompts will cause new changelog entry JSON files to be created.
+11. Add and commit the changelog JSON files and any API signature updates.
+12. Publish changes on the branch and open a pull request.
 
-If using the command line, steps 5 through 7 above can be completed in one step by running `rushchange.bat` from the imodeljs-core root directory.
-> Note: The CI build will break if changes are pushed without running `rush change` and `rush extract-api` (if the API was changed). The fix will be to complete steps 5 through 10.
+If using the command line, steps 8 through 11 above can be completed in one step by running `rushchange.bat` from the imodeljs root directory.
+Only use `rushchange.bat` if none of the changes require a changelog entry.
+> Note: The CI build will break if changes are pushed without running `rush change` and `rush extract-api` (if the API was changed). The fix will be to complete steps 6 through 11.
 
 Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/apps/rush/CHANGELOG.md) to demonstrate the level of detail expected.
 

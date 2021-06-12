@@ -11,9 +11,10 @@ import {
 import { ECInstancesNodeKey, StandardNodeTypes } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeNodeItem } from "@bentley/ui-components";
+import * as UiComponents from "@bentley/ui-components";
+import { renderHook } from "@testing-library/react-hooks";
 import {
-  Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams,
+  Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams, useCategories,
 } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 
 const createKey = (id: Id64String): ECInstancesNodeKey => {
@@ -34,8 +35,8 @@ describe("CategoryVisibilityHandler", () => {
   const subCategoriesCacheMock = moq.Mock.ofType<SubCategoriesCache>();
   const perModelCategoryVisibilityMock = moq.Mock.ofType<PerModelCategoryVisibility.Overrides>();
 
-  const categoryNode: TreeNodeItem = { id: "CategoryId", label: PropertyRecord.fromString("category-node"), autoExpand: true };
-  const subcategoryNode: TreeNodeItem = { id: "SubCategoryId", label: PropertyRecord.fromString("subcategory-node"), parentId: "CategoryId" };
+  const categoryNode = { id: "CategoryId", label: PropertyRecord.fromString("category-node"), autoExpand: true };
+  const subcategoryNode = { id: "SubCategoryId", label: PropertyRecord.fromString("subcategory-node"), parentId: "CategoryId" };
   let categoryKey: ECInstancesNodeKey;
   let subcategoryKey: ECInstancesNodeKey;
   (categoryNode as any).__key = categoryKey = createKey(categoryNode.id);
@@ -61,6 +62,7 @@ describe("CategoryVisibilityHandler", () => {
     viewManagerMock.setup((x) => x.selectedView).returns(() => selectedViewMock.object);
     selectedViewMock.setup((x) => x.view).returns(() => selectedViewStateMock.object);
     selectedViewMock.setup((x) => x.perModelCategoryVisibility).returns(() => perModelCategoryVisibilityMock.object);
+    perModelCategoryVisibilityMock.setup((x) => x[Symbol.iterator]()).returns(() => [][Symbol.iterator]());
   });
 
   interface ViewportMockProps {
@@ -107,8 +109,8 @@ describe("CategoryVisibilityHandler", () => {
     viewManagerMock.reset();
     viewManagerMock.setup((x) => x.selectedView).returns(() => selectedViewMock.object);
     viewManagerMock
-      .setup((x) => x.forEachViewport(moq.It.isAny()))
-      .callback((action) => action(viewport))
+      .setup((x) => x[Symbol.iterator]())
+      .returns(() => [viewport as ScreenViewport][Symbol.iterator]())
       .verifiable(times);
   };
 
@@ -128,6 +130,10 @@ describe("CategoryVisibilityHandler", () => {
   describe("changeVisibility", () => {
 
     it("calls enableCategory", async () => {
+      viewManagerMock
+        .setup((x) => x[Symbol.iterator]())
+        .returns(() => [][Symbol.iterator]());
+
       const enableCategorySpy = sinon.spy(CategoryVisibilityHandler, "enableCategory");
       await using(createHandler({ activeView: mockViewport().object }), async (handler) => {
         await handler.changeVisibility(categoryNode, categoryKey, true);
@@ -302,6 +308,7 @@ describe("CategoryVisibilityHandler", () => {
 
       selectedViewMock.setup((x) => x.view).returns(() => selectedViewStateMock.object);
       selectedViewMock.setup((x) => x.perModelCategoryVisibility).returns(() => perModelCategoryVisibilityMock.object);
+      perModelCategoryVisibilityMock.setup((x) => x[Symbol.iterator]()).returns(() => [][Symbol.iterator]());
     });
 
     it("enables category", () => {
@@ -321,10 +328,9 @@ describe("CategoryVisibilityHandler", () => {
     });
 
     it("removes overrides per model when enabling category", () => {
-      perModelCategoryVisibilityMock
-        .setup((x) => x.forEachOverride(moq.It.isAny()))
-        .callback((action) => action("ModelId", "CategoryId"));
-
+      const ovrs = [{ modelId: "ModelId", categoryId: "CategoryId", visible: false }];
+      perModelCategoryVisibilityMock.reset();
+      perModelCategoryVisibilityMock.setup((x) => x[Symbol.iterator]()).returns(() => ovrs[Symbol.iterator]());
       CategoryVisibilityHandler.enableCategory(viewManagerMock.object, imodelMock.object, ["CategoryId"], true, false, false);
       selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], true, false), moq.Times.once());
       perModelCategoryVisibilityMock.verify((x) => x.setOverride(["ModelId"], ["CategoryId"], PerModelCategoryVisibility.Override.None), moq.Times.once());
@@ -444,6 +450,29 @@ describe("CategoryVisibilityHandler", () => {
       otherViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", false), moq.Times.never());
     });
 
+  });
+
+});
+
+describe("useCategories", () => {
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("returns empty array while categories load", async () => {
+    sinon.stub(UiComponents, "useAsyncValue").returns(undefined);
+
+    const imodelMock = moq.Mock.ofType<IModelConnection>();
+    const viewManagerMock = moq.Mock.ofType<ViewManager>();
+    const { result, rerender } = renderHook(() => useCategories(viewManagerMock.object, imodelMock.object));
+
+    const initialResult = result.current;
+    expect(initialResult).to.deep.eq([]);
+
+    rerender();
+    const resultAfterRerender = result.current;
+    expect(resultAfterRerender).to.eq(initialResult);
   });
 
 });

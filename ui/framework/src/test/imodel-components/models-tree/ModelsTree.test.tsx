@@ -14,7 +14,7 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
-import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
+import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import {
   HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
 } from "@bentley/presentation-testing";
@@ -48,6 +48,7 @@ describe("ModelsTree", () => {
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
     let presentationManagerMock: moq.IMock<PresentationManager>;
+    let rulesetVariablesManagerMock: moq.IMock<RulesetVariablesManager>;
     let dataProvider: IPresentationTreeDataProvider;
 
     beforeEach(() => {
@@ -71,7 +72,9 @@ describe("ModelsTree", () => {
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAny())).returns(() => new KeySet());
       Presentation.setSelectionManager(selectionManagerMock.object);
 
-      presentationManagerMock = mockPresentationManager().presentationManager;
+      const mocks = mockPresentationManager();
+      presentationManagerMock = mocks.presentationManager;
+      rulesetVariablesManagerMock = mocks.rulesetVariablesManager;
       Presentation.setPresentationManager(presentationManagerMock.object);
     });
 
@@ -116,13 +119,6 @@ describe("ModelsTree", () => {
         expect(result.baseElement).to.matchSnapshot();
       });
 
-      it("requests data provider to load the hierarchy if `enablePreloading` is set in props", async () => {
-        const spy = sinon.spy(dataProvider, "loadHierarchy");
-        render(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider}
-          modelsVisibilityHandler={visibilityHandlerMock.object} enablePreloading={true} />);
-        expect(spy).to.be.calledOnce;
-      });
-
       it("renders nodes as unchecked when they're not displayed", async () => {
         setupDataProviderForEachNodeType();
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
@@ -149,7 +145,7 @@ describe("ModelsTree", () => {
         const node = createModelNode();
         setupDataProvider([node]);
 
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden", isDisabled: false })).verifiable(moq.Times.exactly(3));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden", isDisabled: false })).verifiable(moq.Times.exactly(2));
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => {
           const renderedNode = result.getByTestId("tree-node");
@@ -372,6 +368,12 @@ describe("ModelsTree", () => {
           await waitForElement(() => result.getByText("filtered-node"));
 
           expect(spy).to.be.calledOnce;
+        });
+
+        it("filters nodes by element IDs", async () => {
+          const elementIds = ["0x123", "0x456"];
+          render(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider} modelsVisibilityHandler={visibilityHandlerMock.object} filteredElementIds={elementIds} />);
+          rulesetVariablesManagerMock.verify(async (x) => x.setId64s("filtered-element-ids", elementIds), moq.Times.once());
         });
 
       });

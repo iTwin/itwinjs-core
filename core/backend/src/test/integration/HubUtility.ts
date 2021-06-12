@@ -2,62 +2,76 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
+
+import * as path from "path";
+import { BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
+import {
+  Briefcase, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery,
+} from "@bentley/imodelhub-client";
+import { BriefcaseIdValue } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import * as os from "os";
-import * as path from "path";
-import { ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import { ChangesetFileProps, ChangesetId, ChangesetProps } from "../../BackendHubAccess";
+import { IModelDb } from "../../IModelDb";
+import { IModelHost } from "../../IModelHost";
+import { IModelHubBackend } from "../../IModelHubBackend";
+import { IModelJsFs } from "../../IModelJsFs";
+import { assert } from "chai";
+import { HubMock } from "../HubMock";
 
-/** Utility to work with iModelHub */
+/** Utility to work with test iModels in the iModelHub */
 export class HubUtility {
-
   public static logCategory = "HubUtility";
+  public static allowHubBriefcases = false;
 
-  private static makeDirectoryRecursive(dirPath: string) {
-    if (IModelJsFs.existsSync(dirPath))
-      return;
-    HubUtility.makeDirectoryRecursive(path.dirname(dirPath));
-    IModelJsFs.mkdirSync(dirPath);
+  public static testContextName = "iModelJsIntegrationTest";
+  public static testIModelNames = {
+    noVersions: "NoVersionsTest",
+    stadium: "Stadium Dataset 1",
+    readOnly: "ReadOnlyTest",
+    readWrite: "ReadWriteTest",
+  };
+
+  public static contextId: GuidString | undefined = undefined;
+  /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
+  public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
+
+    if (undefined !== HubUtility.contextId)
+      return HubUtility.contextId;
+    return HubUtility.queryProjectIdByName(requestContext, HubUtility.testContextName);
   }
 
-  private static deleteDirectoryRecursive(dirPath: string) {
-    if (!IModelJsFs.existsSync(dirPath))
-      return;
-    try {
-      IModelJsFs.readdirSync(dirPath).forEach((file) => {
-        const curPath = `${dirPath}/${file}`;
-        if (IModelJsFs.lstatSync(curPath)!.isDirectory) {
-          HubUtility.deleteDirectoryRecursive(curPath);
-        } else {
-          // delete file
-          IModelJsFs.unlinkSync(curPath);
-        }
-      });
-      IModelJsFs.rmdirSync(dirPath);
-    } catch (err) {
-      return; // todo: This seems to fail sometimes for no reason
-    }
+  private static imodelCache = new Map<string, GuidString>();
+  /** Returns the iModelId if the iModel exists. Otherwise, returns undefined. */
+  public static async getTestIModelId(requestContext: AuthorizedClientRequestContext, name: string): Promise<GuidString> {
+    requestContext.enter();
+    if (HubUtility.imodelCache.has(name))
+      return HubUtility.imodelCache.get(name)!;
+
+    const projectId = await HubUtility.getTestContextId(requestContext);
+    requestContext.enter();
+
+    const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, name);
+    requestContext.enter();
+
+    HubUtility.imodelCache.set(name, imodelId);
+    return imodelId;
   }
 
-  private static async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
+  private static async queryContextByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string | undefined> {
+    if (undefined !== HubUtility.contextId)
+      return HubUtility.contextId;
+
     const project = await getIModelProjectAbstraction().queryProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });
-    return project;
+    return project.wsgId;
   }
 
-  public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
-    const iModels = await getIModelProjectAbstraction().queryIModels(requestContext, projectId, new IModelQuery().byName(iModelName));
-    if (iModels.length === 0)
-      return undefined;
-    if (iModels.length > 1)
-      throw new Error(`Too many iModels with name ${iModelName} found`);
-    return iModels[0];
+  public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString | undefined> {
+    return IModelHost.hubAccess.queryIModelByName({ requestContext, contextId: projectId, iModelName });
   }
 
   private static async queryIModelById(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
@@ -74,10 +88,10 @@ export class HubUtility {
    * @throws If the project is not found, or there is more than one project with the supplied name
    */
   public static async queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
-    const project = await HubUtility.queryProjectByName(requestContext, projectName);
+    const project = await HubUtility.queryContextByName(requestContext, projectName);
     if (!project)
       throw new Error(`Project ${projectName} not found`);
-    return project.wsgId;
+    return project;
   }
 
   /**
@@ -87,23 +101,22 @@ export class HubUtility {
    * @param iModelName Name of the iModel
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
    */
-  public static async queryIModelIdByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString> {
-    const iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
-    if (!iModel || !iModel.id)
+  public static async queryIModelIdByName(requestContext: AuthorizedClientRequestContext, projectId: GuidString, iModelName: string): Promise<GuidString> {
+    const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+    if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
-    return iModel.id;
+    return iModelId;
   }
 
   /** Query the latest change set (id) of the specified iModel */
-  public static async queryLatestChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<ChangeSet | undefined> {
-    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
-    return (changeSets.length === 0) ? undefined : changeSets[changeSets.length - 1];
+  public static async queryLatestChangeSetId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<ChangesetId> {
+    return IModelHost.hubAccess.getLatestChangesetId({ requestContext, iModelId });
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: string, iModelId: GuidString): Promise<ChangeSet[]> {
+  private static async downloadChangesets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
     // Determine the range of changesets that remain to be downloaded
-    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
+    const changeSets = await IModelHubBackend.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
     if (changeSets.length === 0)
       return changeSets;
     const latestIndex = changeSets.length - 1;
@@ -121,8 +134,8 @@ export class HubUtility {
     const latestChangeSetId = changeSets[latestIndex].id!; // Query results include latest specified change set
     const query = earliestChangeSetId ? new ChangeSetQuery().betweenChangeSets(earliestChangeSetId, latestChangeSetId) : new ChangeSetQuery();
 
-    const perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Download ChangeSets");
-    await IModelHost.iModelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
+    const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download ChangeSets");
+    await IModelHubBackend.iModelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
     perfLogger.dispose();
     return changeSets;
   }
@@ -133,7 +146,7 @@ export class HubUtility {
     query.orderBy("createdDate");
 
     const perfLogger = new PerfLogger("HubUtility.downloadNamedVersions -> Get Version Infos");
-    const versions = await IModelHost.iModelClient.versions.get(requestContext, iModelId, query);
+    const versions = await IModelHubBackend.iModelClient.versions.get(requestContext, iModelId, query);
     perfLogger.dispose();
     if (versions.length === 0)
       return new Array<ChangeSet>();
@@ -147,8 +160,8 @@ export class HubUtility {
     // Recreate the download folder if necessary
     if (reDownload) {
       if (IModelJsFs.existsSync(downloadDir))
-        HubUtility.deleteDirectoryRecursive(downloadDir);
-      HubUtility.makeDirectoryRecursive(downloadDir);
+        IModelJsFs.purgeDirSync(downloadDir);
+      IModelJsFs.recursiveMkDirSync(downloadDir);
     }
 
     const iModel = await HubUtility.queryIModelById(requestContext, projectId, iModelId);
@@ -164,13 +177,13 @@ export class HubUtility {
     const seedPathname = path.join(downloadDir, "seed", iModel.name!.concat(".bim"));
     if (!IModelJsFs.existsSync(seedPathname)) {
       const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
-      await IModelHost.iModelClient.iModels.download(requestContext, iModelId, seedPathname);
+      await IModelHubBackend.iModelClient.iModels.download(requestContext, iModelId, seedPathname);
       perfLogger.dispose();
     }
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
-    const changeSets = await HubUtility.downloadChangeSets(requestContext, changeSetDir, projectId, iModelId);
+    const changeSets = await HubUtility.downloadChangesets(requestContext, changeSetDir, projectId, iModelId);
 
     const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
     const changeSetsJsonPathname = path.join(downloadDir, "changeSets.json");
@@ -189,22 +202,19 @@ export class HubUtility {
   public static async downloadIModelByName(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
     const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
 
-    const iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
-    if (!iModel)
+    const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+    if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
-    const iModelId = iModel.id!;
 
     await HubUtility.downloadIModelById(requestContext, projectId, iModelId, downloadDir, reDownload);
   }
 
-  /** Delete an IModel from the hub
-   * @internal
-   */
+  /** Delete an IModel from the hub */
   public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    const contextId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, contextId, iModelName);
 
-    await IModelHost.iModelClient.iModels.delete(requestContext, projectId, iModelId);
+    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId });
   }
 
   /** Get the pathname of the briefcase in the supplied directory - assumes a standard layout of the supplied directory */
@@ -224,13 +234,10 @@ export class HubUtility {
     HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const result = nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, "Could not open iModel");
-
-    const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
+    nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
+    const changeSets = HubUtility.readChangeSets(iModelDir);
     const endNum: number = endCS ? endCS : changeSets.length;
-    const filteredCS = changeSets.filter((obj) => obj.index >= startCS && obj.index <= endNum);
+    const filteredCS = changeSets.filter((obj) => obj.index! >= startCS && obj.index! <= endNum);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
     const applyOption = ChangeSetApplyOption.Merge;
@@ -239,27 +246,22 @@ export class HubUtility {
     const results = [];
     // Apply change sets one by one to debug any issues
     for (const changeSet of filteredCS) {
-      const tempChangeSets = [changeSet];
-
       const startTime = new Date().getTime();
-      const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(nativeDb, JSON.stringify(tempChangeSets), applyOption);
+      let csResult = ChangeSetStatus.Success;
+      try {
+        nativeDb.applyChangeSet(changeSet, applyOption);
+      } catch (err) {
+        csResult = err.errorNumber;
+      }
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
-
-      if (status === ChangeSetStatus.Success) {
-        Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status, applyOption }));
-      } else {
-        Logger.logError(HubUtility.logCategory, "Error applying ChangeSet", () => ({ ...changeSet, status, applyOption }));
-      }
       results.push({
         csNum: changeSet.index,
         csId: changeSet.id,
         csApplyOption: ChangeSetApplyOption[applyOption],
-        csResult: ChangeSetStatus[status],
+        csResult,
         time: elapsedTime,
       });
-      if (status !== ChangeSetStatus.Success)
-        return results;
     }
 
     perfLogger.dispose();
@@ -268,8 +270,7 @@ export class HubUtility {
     return results;
   }
 
-  /** Validate apply with briefcase on disk
-   */
+  /** Validate apply with briefcase on disk */
   public static validateApplyChangeSetsOnDisk(iModelDir: string) {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
@@ -277,25 +278,20 @@ export class HubUtility {
     HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, false /* =overwrite */);
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const result = nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, "Could not open iModel");
-
+    nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
     const lastAppliedChangeSetId = nativeDb.getParentChangeSetId();
-    assert(!nativeDb.getReversedChangeSetId());
 
-    const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
-    const lastMergedChangeSet = changeSets.find((value: ChangeSetToken) => value.id === lastAppliedChangeSetId);
-    const filteredChangeSets = lastMergedChangeSet ? changeSets.filter((value: ChangeSetToken) => value.index > lastMergedChangeSet.index) : changeSets;
+    const changeSets = HubUtility.readChangeSets(iModelDir);
+    const lastMergedChangeSet = changeSets.find((value) => value.id === lastAppliedChangeSetId);
+    const filteredChangeSets = lastMergedChangeSet ? changeSets.filter((value) => value.index! > lastMergedChangeSet.index!) : changeSets;
 
     // Logger.logInfo(HubUtility.logCategory, "Dumping all available change sets");
     // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    const status: ChangeSetStatus = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
-
+    const status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
     nativeDb.closeIModel();
-    assert(status === ChangeSetStatus.Success, "Error applying change sets");
+    assert.isTrue(status === ChangeSetStatus.Success, "Error applying change sets");
   }
 
   /** Validate all change set operations on an iModel on disk - the supplied directory contains a sub folder
@@ -310,11 +306,8 @@ export class HubUtility {
     HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const result = nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, "Could not open iModel");
-
-    const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
+    nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
+    const changeSets = HubUtility.readChangeSets(iModelDir);
 
     let status: ChangeSetStatus;
 
@@ -326,7 +319,7 @@ export class HubUtility {
 
     // Reverse changes until there's a schema change set (note that schema change sets cannot be reversed)
     const reverseChangeSets = changeSets.reverse();
-    const schemaChangeIndex = reverseChangeSets.findIndex((token: ChangeSetToken) => token.changeType === ChangesType.Schema);
+    const schemaChangeIndex = reverseChangeSets.findIndex((token) => token.changesType === ChangesType.Schema);
     const filteredChangeSets = reverseChangeSets.slice(0, schemaChangeIndex); // exclusive of element at schemaChangeIndex
     if (status === ChangeSetStatus.Success) {
       Logger.logInfo(HubUtility.logCategory, "Reversing all available change sets");
@@ -340,7 +333,7 @@ export class HubUtility {
     }
 
     nativeDb.closeIModel();
-    assert(status === ChangeSetStatus.Success, "Error applying change sets");
+    assert.isTrue(status === ChangeSetStatus.Success, "Error applying change sets");
   }
 
   /** Validate all change set operations by downloading seed files & change sets, creating a standalone iModel,
@@ -367,18 +360,18 @@ export class HubUtility {
 
   /** Push an iModel to the Hub */
   public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that create iModesl");
     // Delete any existing iModels with the same name as the required iModel
     const locIModelName = iModelName || path.basename(pathname, ".bim");
-    let iModel = await HubUtility.queryIModelByName(requestContext, projectId, locIModelName);
-    if (iModel) {
+    const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, locIModelName);
+    if (iModelId) {
       if (!overwrite)
-        return iModel.id!;
-      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, iModel.id!);
+        return iModelId;
+      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId });
     }
 
     // Upload a new iModel
-    iModel = await IModelHost.iModelClient.iModels.create(requestContext, projectId, locIModelName, { path: pathname });
-    return iModel.id!;
+    return IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName: locIModelName, revision0: pathname });
   }
 
   /** Upload an IModel's seed files and change sets to the hub
@@ -389,12 +382,12 @@ export class HubUtility {
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname, iModelName, overwrite);
 
-    let briefcase: HubBriefcase;
-    const hubBriefcases = await IModelHost.iModelClient.briefcases.get(requestContext, iModelId);
+    let briefcase: Briefcase;
+    const hubBriefcases = await IModelHubBackend.iModelClient.briefcases.get(requestContext, iModelId);
     if (hubBriefcases.length > 0)
       briefcase = hubBriefcases[0];
     else
-      briefcase = await IModelHost.iModelClient.briefcases.create(requestContext, iModelId);
+      briefcase = await IModelHubBackend.iModelClient.briefcases.create(requestContext, iModelId);
     if (!briefcase) {
       throw new Error(`Could not acquire a briefcase for the iModel ${iModelId}`);
     }
@@ -405,7 +398,8 @@ export class HubUtility {
     return iModelId;
   }
 
-  private static async pushChangeSets(requestContext: AuthorizedClientRequestContext, briefcase: HubBriefcase, uploadDir: string): Promise<void> {
+  private static async pushChangeSets(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, uploadDir: string): Promise<void> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests push changesets");
     const changeSetJsonPathname = path.join(uploadDir, "changeSets.json");
     if (!IModelJsFs.existsSync(changeSetJsonPathname))
       return;
@@ -414,9 +408,9 @@ export class HubUtility {
     const changeSetsJson = JSON.parse(jsonStr);
 
     // Find the last change set that was already uploaded
-    const lastUploadedChangeSet = await HubUtility.queryLatestChangeSet(requestContext, briefcase.iModelId!);
-    const lastIndex = lastUploadedChangeSet ? changeSetsJson.findIndex((changeSetJson: any) => changeSetJson.id === lastUploadedChangeSet.id) : -1;
-    const filteredChangeSetsJson = lastUploadedChangeSet ? changeSetsJson.slice(lastIndex + 1) : changeSetsJson;
+    const lastUploadedChangeSetId = await HubUtility.queryLatestChangeSetId(requestContext, briefcase.iModelId!);
+    const lastIndex = (lastUploadedChangeSetId === "") ? changeSetsJson.findIndex((changeSetJson: any) => changeSetJson.id === lastUploadedChangeSetId) : -1;
+    const filteredChangeSetsJson = (lastUploadedChangeSetId === "") ? changeSetsJson.slice(lastIndex + 1) : changeSetsJson;
 
     // Upload change sets
     const count = filteredChangeSetsJson.length;
@@ -434,13 +428,14 @@ export class HubUtility {
       changeSet.changesType = changeSetJson.changesType;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
-      await IModelHost.iModelClient.changeSets.create(requestContext, briefcase.iModelId!, changeSet, changeSetPathname);
+      await IModelHubBackend.iModelClient.changeSets.create(requestContext, briefcase.iModelId!, changeSet, changeSetPathname);
       ii++;
       Logger.logInfo(HubUtility.logCategory, `Uploaded Change Set ${ii} of ${count}`, () => ({ ...changeSet }));
     }
   }
 
-  private static async pushNamedVersions(requestContext: AuthorizedClientRequestContext, briefcase: HubBriefcase, uploadDir: string, overwrite?: boolean): Promise<void> {
+  private static async pushNamedVersions(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, uploadDir: string, overwrite?: boolean): Promise<void> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const namedVersionsJsonPathname = path.join(uploadDir, "namedVersions.json");
     if (!IModelJsFs.existsSync(namedVersionsJsonPathname))
       return;
@@ -451,24 +446,26 @@ export class HubUtility {
     for (const namedVersionJson of namedVersionsJson) {
       const query = (new VersionQuery()).byChangeSet(namedVersionJson.changeSetId);
 
-      const versions = await IModelHost.iModelClient.versions.get(requestContext, briefcase.iModelId!, query);
+      const versions = await IModelHubBackend.iModelClient.versions.get(requestContext, briefcase.iModelId!, query);
       if (versions.length > 0 && !overwrite)
         continue;
-      await IModelHost.iModelClient.versions.create(requestContext, briefcase.iModelId!, namedVersionJson.changeSetId, namedVersionJson.name, namedVersionJson.description);
+      await IModelHubBackend.iModelClient.versions.create(requestContext, briefcase.iModelId!, namedVersionJson.changeSetId, namedVersionJson.name, namedVersionJson.description);
     }
   }
 
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-  public static async purgeAcquiredBriefcasesById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, onReachThreshold: () => void, acquireThreshold: number = 16): Promise<void> {
-    const briefcases = await IModelHost.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
+  public static async purgeAcquiredBriefcasesById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
+    assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
     if (briefcases.length > acquireThreshold) {
-      onReachThreshold();
+      if (undefined !== onReachThreshold)
+        onReachThreshold();
 
-      const promises = new Array<Promise<void>>();
-      briefcases.forEach((briefcase: HubBriefcase) => {
-        promises.push(IModelHost.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
+      const promises: Promise<void>[] = [];
+      briefcases.forEach((briefcaseId) => {
+        promises.push(IModelHost.hubAccess.releaseBriefcase({ requestContext, iModelId, briefcaseId }));
       });
       await Promise.all(promises);
     }
@@ -478,6 +475,7 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
+    assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
 
@@ -487,24 +485,22 @@ export class HubUtility {
   }
 
   /** Reads change sets from disk and expects a standard structure of how the folder is organized */
-  public static readChangeSets(iModelDir: string): ChangeSetToken[] {
-    const tokens = new Array<ChangeSetToken>();
+  public static readChangeSets(iModelDir: string): ChangesetFileProps[] {
+    const tokens: ChangesetFileProps[] = [];
 
     const changeSetJsonPathname = path.join(iModelDir, "changeSets.json");
     if (!IModelJsFs.existsSync(changeSetJsonPathname))
       return tokens;
 
     const jsonStr = IModelJsFs.readFileSync(changeSetJsonPathname) as string;
-    const changeSetsJson = JSON.parse(jsonStr);
+    const changesets = JSON.parse(jsonStr) as (ChangesetProps & { fileName: string })[];
 
-    for (const changeSetJson of changeSetsJson) {
-      const changeSetPathname = path.join(iModelDir, "changeSets", changeSetJson.fileName);
-      if (!IModelJsFs.existsSync(changeSetPathname)) {
-        throw new Error(`Cannot find the ChangeSet file: ${changeSetPathname}`);
-      }
-      tokens.push(new ChangeSetToken(changeSetJson.id, changeSetJson.parentId, +changeSetJson.index, changeSetPathname, changeSetJson.changesType!));
+    for (const changeset of changesets) {
+      const pathname = path.join(iModelDir, "changeSets", changeset.fileName);
+      if (!IModelJsFs.existsSync(pathname))
+        throw new Error(`Cannot find the ChangeSet file: ${pathname}`);
+      tokens.push({ ...changeset, pathname });
     }
-
     return tokens;
   }
 
@@ -520,11 +516,9 @@ export class HubUtility {
     }
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(iModelPathname, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not open iModel");
+    nativeDb.openIModel(iModelPathname, OpenMode.ReadWrite);
     nativeDb.deleteAllTxns();
-    nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     if (nativeDb.queryLocalValue("StandaloneEdit"))
       nativeDb.deleteLocalValue("StandaloneEdit");
     nativeDb.saveChanges();
@@ -534,35 +528,34 @@ export class HubUtility {
   }
 
   /** Applies change sets one by one (for debugging) */
-  public static applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: ChangeSetToken[], applyOption: ChangeSetApplyOption): ChangeSetStatus {
+  public static applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: ChangesetFileProps[], applyOption: ChangeSetApplyOption): ChangeSetStatus {
     const perfLogger = new PerfLogger(`Applying change sets for operation ${ChangeSetApplyOption[applyOption]}`);
 
     // Apply change sets one by one to debug any issues
     let count = 0;
     for (const changeSet of changeSets) {
-      const tempChangeSets = [changeSet];
       ++count;
       Logger.logInfo(HubUtility.logCategory, `Started applying change set: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`, () => ({ ...changeSet }));
-      const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(nativeDb, JSON.stringify(tempChangeSets), applyOption);
-      if (status === ChangeSetStatus.Success) {
+      try {
+        nativeDb.applyChangeSet(changeSet, applyOption);
         Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status }));
-      } else {
-        Logger.logError(HubUtility.logCategory, "Error applying ChangeSet", () => ({ ...changeSet, status }));
+      } catch (err) {
+        Logger.logError(HubUtility.logCategory, `Error applying ChangeSet ${err.errorNumber}`, () => ({ ...changeSet }));
+        perfLogger.dispose();
+        return err.errorNumber;
       }
-      if (status !== ChangeSetStatus.Success)
-        return status;
     }
 
     perfLogger.dispose();
     return ChangeSetStatus.Success;
   }
 
-  public static dumpChangeSet(iModel: IModelDb, changeSetToken: ChangeSetToken) {
-    iModel.nativeDb.dumpChangeSet(JSON.stringify(changeSetToken));
+  public static dumpChangeSet(iModel: IModelDb, changeSet: ChangesetFileProps) {
+    iModel.nativeDb.dumpChangeSet(changeSet);
   }
 
   /** Dumps change sets to the log */
-  public static dumpChangeSetsToLog(iModelDb: IModelDb, changeSets: ChangeSetToken[]) {
+  public static dumpChangeSetsToLog(iModelDb: IModelDb, changeSets: ChangesetFileProps[]) {
     let count = 0;
     changeSets.forEach((changeSet) => {
       count++;
@@ -572,7 +565,7 @@ export class HubUtility {
   }
 
   /** Dumps change sets to Db */
-  public static dumpChangeSetsToDb(changeSetDbPathname: string, changeSets: ChangeSetToken[], dumpColumns: boolean = true) {
+  public static dumpChangeSetsToDb(changeSetDbPathname: string, changeSets: ChangesetFileProps[], dumpColumns: boolean = true) {
     let count = 0;
     changeSets.forEach((changeSet) => {
       count++;
@@ -589,28 +582,29 @@ export class HubUtility {
 
   /** Generate a name (for an iModel) that's unique for the user + host */
   public static generateUniqueName(baseName: string) {
-    let username = "AnonymousUser";
-    let hostname = "AnonymousHost";
-    try {
-      hostname = os.hostname();
-      username = os.userInfo().username;
-    } catch (err) {
-    }
-    return `${baseName}_${username}_${hostname}`;
+    return `${baseName} - ${Guid.createValue()}`;
   }
 
-  /** Create  */
-  public static async recreateIModel(requestContext: AuthorizedClientRequestContext, projectId: GuidString, iModelName: string): Promise<GuidString> {
-    // Delete any existing iModel
-    try {
-      const deleteIModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, deleteIModelId);
-    } catch (err) {
-    }
+  /** Deletes and re-creates an iModel with the provided name in the Context.
+   * @returns the iModelId of the newly created iModel.
+  */
+  public static async recreateIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    const deleteIModel = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
+    if (undefined !== deleteIModel)
+      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId: deleteIModel });
 
     // Create a new iModel
-    const iModel = await IModelHost.iModelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for ${iModelName}` });
-    return iModel.wsgId;
+    return IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: `Description for ${iModelName}` });
+  }
+
+  /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
+  public static async createIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    let iModelId = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
+    if (!iModelId)
+      iModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: `Description for iModel` });
+    return iModelId;
   }
 }
 
@@ -620,58 +614,32 @@ class TestIModelHubProject {
   public terminate(): void { }
 
   public get iModelHubClient(): IModelHubClient {
-    return IModelHost.iModelClient as IModelHubClient;
+    return IModelHubBackend.iModelClient as IModelHubClient;
   }
 
   private static _contextRegistryClient?: ContextRegistryClient;
 
-  private static get connectClient(): ContextRegistryClient {
+  private static get contextClient(): ContextRegistryClient {
     if (this._contextRegistryClient === undefined)
       this._contextRegistryClient = new ContextRegistryClient();
     return this._contextRegistryClient;
   }
 
   public async queryProject(requestContext: AuthorizedClientRequestContext, query: any | undefined): Promise<Project> {
-    const client = TestIModelHubProject.connectClient;
+    const client = TestIModelHubProject.contextClient;
     return client.getProject(requestContext, query);
   }
 
-  public async createIModel(requestContext: AuthorizedClientRequestContext, projectId: string, params: any): Promise<HubIModel> {
-    const client = this.iModelHubClient;
-    return client.iModels.create(requestContext, projectId, params.name, { path: params.seedFile, description: params.description, progressCallback: params.tracker });
-  }
-  public async deleteIModel(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString): Promise<void> {
-    const client = this.iModelHubClient;
-    return client.iModels.delete(requestContext, projectId, iModelId);
-  }
   public async queryIModels(requestContext: AuthorizedClientRequestContext, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     const client = this.iModelHubClient;
     return client.iModels.get(requestContext, projectId, query);
   }
 }
 
-let projectAbstraction: any;
-let authorizationAbstraction: any;
-const usingMocks = false;
-
-export function getIModelPermissionAbstraction(): any {
-  if (authorizationAbstraction !== undefined)
-    return authorizationAbstraction;
-
-  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
-    return authorizationAbstraction = {};
-  }
-
-  throw new Error("WIP");
-}
-
-export function getIModelProjectAbstraction(): any {
+let projectAbstraction: TestIModelHubProject;
+export function getIModelProjectAbstraction(): TestIModelHubProject {
   if (projectAbstraction !== undefined)
     return projectAbstraction;
 
-  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
-    return projectAbstraction = new TestIModelHubProject();
-  }
-
-  throw new Error("WIP");
+  return projectAbstraction = new TestIModelHubProject();
 }

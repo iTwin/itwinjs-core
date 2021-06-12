@@ -1,8 +1,0 @@
---require ../scripts/copy-test-setup.js
---require source-map-support/register
---check-leaks
---timeout 60000
---file lib/test/setup.js
---exclude lib/test/coverage/**/*
---reporter node_modules/@bentley/build-tools/mocha-reporter
---reporter-options mochaFile=lib/test/junit_results.xml

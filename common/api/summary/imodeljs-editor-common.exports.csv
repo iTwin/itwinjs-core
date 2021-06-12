@@ -5,3 +5,6 @@ alpha;EditCommandIpc
 alpha;editorBuiltInCmdIds:
 internal;editorChannel = "editor"
 alpha;EditorIpc
+alpha;FlatBufferGeometricElementData
+alpha;FlatBufferGeometryFilter
+alpha;FlatBufferGeometryPartData

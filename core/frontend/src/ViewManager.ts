@@ -27,20 +27,31 @@ export interface Decorator extends ViewportDecorator {
    */
   testDecorationHit?(id: string): boolean;
 
-  /** If [[testDecorationHit]] returned true, implement this method to return the tooltip message for this Decorator.
+  /** If the [[decorate]] method created pickable graphics using a persistent element id instead of a transient id,
+   * return true if the Decorator wants the opportunity to override the default persistent element behavior for
+   * the supplied [[HitDetail]].
+   * - Replace or augment the element's tooltip by implementing [[getDecorationToolTip]].
+   * - Override the element's snap geometry by implementing [[getDecorationGeometry]].
+   * - Handle button events as decorator events by implementing [[onDecorationButtonEvent]].
+   * @param hit The HitDetail of the currently selected persistent element or pickable graphics using a persistent element id.
+   * @returns true if this Decorator wants to override the default persistent element behavior.
+   */
+  overrideElementHit?(hit: HitDetail): boolean;
+
+  /** If [[testDecorationHit]] or [[overrideElementHit]] returned true, implement this method to return the tooltip message for this Decorator.
    * @param hit The HitDetail about the decoration that was picked.
    * @returns A promise with the HTMLElement or string (that may contain HTML) with the tooltip message.
    */
   getDecorationToolTip?(hit: HitDetail): Promise<HTMLElement | string>;
 
-  /** If [[testDecorationHit]] returned true, implement this method to handle a button event for this Decorator.
+  /** If [[testDecorationHit]] or [[overrideElementHit]] returned true, implement this method to handle a button event for this Decorator.
    * @param hit The HitDetail about the decoration that was picked.
    * @param ev The BeButtonEvent that identified this decoration.
    * @returns  A Promise that resolves to Yes if event completely handled by decoration and event should not be processed by the calling tool.
    */
   onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
 
-  /** If [[testDecorationHit]] returned true, implement this method to return the snappable geometry for this Decorator. Geometry that changes with every cursor motion isn't valid for snapping.
+  /** If [[testDecorationHit]] or [[overrideElementHit]] returned true, implement this method to return the snappable geometry for this Decorator. Geometry that changes with every cursor motion isn't valid for snapping.
    * An example would be an InteractiveTool for placing a linestring. It might wish to allow snapping to accepted segments, the segment from the last accepted point to the current cursor position would not be included
    * as snappable geometry and would just be displayed in dynamics.
    * @param hit The HitDetail about the decoration that was picked.
@@ -75,7 +86,7 @@ export interface ToolTipProvider {
  * The ViewManager controls the render loop, which causes the contents of each registered [[Viewport]] to update on the screen.
  * @public
  */
-export class ViewManager {
+export class ViewManager implements Iterable<ScreenViewport> {
   public inDynamicsMode = false;
   public cursor = "default";
   private readonly _viewports: ScreenViewport[] = [];
@@ -84,18 +95,27 @@ export class ViewManager {
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
   private _doIdleWork = false;
+  private _idleWorkTimer?: any;
 
   /** @internal */
   public readonly toolTipProviders: ToolTipProvider[] = [];
 
   private _beginIdleWork() {
     const idleWork = () => {
-      if (this._viewports.length > 0)
+      if (undefined === this._idleWorkTimer)
         return;
+      if (this._viewports.length > 0) {
+        this._idleWorkTimer = undefined;
+        return;
+      }
       if (IModelApp.renderSystem.doIdleWork())
-        setTimeout(idleWork, 1);
+        this._idleWorkTimer = setTimeout(idleWork, 1);
+      else
+        this._idleWorkTimer = undefined;
     };
-    setTimeout(idleWork, 1);
+
+    if (undefined === this._idleWorkTimer)
+      this._idleWorkTimer = setTimeout(idleWork, 1);
   }
 
   /** @internal */
@@ -114,6 +134,10 @@ export class ViewManager {
 
   /** @internal */
   public onShutDown() {
+    if (undefined !== this._idleWorkTimer) {
+      clearTimeout(this._idleWorkTimer);
+      this._idleWorkTimer = undefined;
+    }
     this._viewports.length = 0;
     this.decorators.length = 0;
     this.toolTipProviders.length = 0;
@@ -225,7 +249,8 @@ export class ViewManager {
   /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen. */
   private updateRenderToScreen() {
     const renderToScreen = 1 === this._viewports.length;
-    this.forEachViewport((vp) => vp.rendersToScreen = renderToScreen);
+    for (const vp of this)
+      vp.rendersToScreen = renderToScreen;
   }
 
   /** Add a new Viewport to the list of opened views and create an EventController for it.
@@ -291,7 +316,14 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
-  /** Call the specified function on each [[Viewport]] registered with the ViewManager. */
+  /** Iterate over the viewports registered with the view manager. */
+  public [Symbol.iterator](): Iterator<ScreenViewport> {
+    return this._viewports[Symbol.iterator]();
+  }
+
+  /** Call the specified function on each [[Viewport]] registered with the ViewManager.
+   * @deprecated Use a `for..of` loop.
+   */
   public forEachViewport(func: (vp: ScreenViewport) => void) {
     this._viewports.forEach((vp) => func(vp));
   }
@@ -303,34 +335,40 @@ export class ViewManager {
    */
   public invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void {
     if (decorator.useCachedDecorations)
-      this.forEachViewport((vp) => vp.invalidateCachedDecorations(decorator));
+      for (const vp of this)
+        vp.invalidateCachedDecorations(decorator);
   }
 
   /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
   public invalidateDecorationsAllViews(): void {
-    this.forEachViewport((vp) => vp.invalidateDecorations());
+    for (const vp of this)
+      vp.invalidateDecorations();
   }
 
   /** Force each registered [[Viewport]] to regenerate its [[FeatureSymbology.Overrides]] on the next frame.
    * @alpha
    */
   public invalidateSymbologyOverridesAllViews(): void {
-    this.forEachViewport((vp) => vp.setFeatureOverrideProviderChanged());
+    for (const vp of this)
+      vp.setFeatureOverrideProviderChanged();
   }
 
   /** @internal */
   public onSelectionSetChanged(_iModel: IModelConnection) {
-    this.forEachViewport((vp) => vp.markSelectionSetDirty());
+    for (const vp of this)
+      vp.markSelectionSetDirty();
   }
 
   /** @internal */
   public invalidateViewportScenes(): void {
-    this.forEachViewport((vp) => vp.invalidateScene());
+    for (const vp of this)
+      vp.invalidateScene();
   }
 
   /** @internal */
   public validateViewportScenes(): void {
-    this.forEachViewport((vp) => vp.setValidScene());
+    for (const vp of this)
+      vp.setValidScene();
   }
 
   /** @internal */
@@ -491,6 +529,39 @@ export class ViewManager {
     return undefined;
   }
 
+  /** Allow a pickable decoration created using a persistent element id to augment or replace the the persistent elemennt's tooltip.
+   * @internal
+   */
+  public async overrideElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    for (const decorator of this.decorators) {
+      if (undefined !== decorator.overrideElementHit && undefined !== decorator.getDecorationToolTip && decorator.overrideElementHit(hit))
+        return decorator.getDecorationToolTip(hit);
+    }
+    return this.getElementToolTip(hit);
+  }
+
+  /** Allow a pickable decoration created using a persistent element id to handle a button event that identified it for the SelectTool.
+   * @internal
+   */
+  public async overrideElementButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+    for (const decorator of IModelApp.viewManager.decorators) {
+      if (undefined !== decorator.overrideElementHit && undefined !== decorator.onDecorationButtonEvent && decorator.overrideElementHit(hit))
+        return decorator.onDecorationButtonEvent(hit, ev);
+    }
+    return EventHandled.No;
+  }
+
+  /** Allow a pickable decoration created using a persistent element id to control whether snapping uses the persistent elemennt's geometry.
+   * @internal
+   */
+  public overrideElementGeometry(hit: HitDetail): GeometryStreamProps | undefined {
+    for (const decorator of IModelApp.viewManager.decorators) {
+      if (undefined !== decorator.overrideElementHit && undefined !== decorator.getDecorationGeometry && decorator.overrideElementHit(hit))
+        return decorator.getDecorationGeometry(hit);
+    }
+    return undefined;
+  }
+
   public get crossHairCursor(): string { return "url(cursors/crosshair.cur), crosshair"; }
   public get dynamicsCursor(): string { return "url(cursors/dynamics.cur), move"; }
   public get grabCursor(): string { return "url(cursors/openHand.cur), auto"; }
@@ -521,12 +592,16 @@ export class ViewManager {
       vp.refreshForModifiedModels(modelIds);
   }
 
-  /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.
-   * Setting numSamples to 1 turns it off, setting numSamples > 1 turns it on with that many samples.
-   * @beta
+  /** The number of [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) samples to be used when rendering the contents of all viewports
+   * registered with the ViewManager.
+   * Must be an integer greater than zero. A value of 1 means antialiasing is disabled. A higher number of samples correlates generally to a higher quality image but
+   * is also more demanding on the graphics hardware.
+   * This setting will also be applied to subsequently-registered viewports.
    */
   public setAntialiasingAllViews(numSamples: number): void {
-    this.forEachViewport((vp) => vp.antialiasSamples = numSamples);
+    for (const vp of this)
+      vp.antialiasSamples = numSamples;
+
     System.instance.antialiasSamples = numSamples;
   }
 }

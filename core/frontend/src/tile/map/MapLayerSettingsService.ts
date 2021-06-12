@@ -6,7 +6,7 @@
 import { MapLayerSource } from "./MapLayerSources";
 import { AuthorizedFrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
-import { SettingsMapResult, SettingsStatus } from "@bentley/product-settings-client";
+import { SettingsMapResult, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { BeEvent, GuidString } from "@bentley/bentleyjs-core";
 
@@ -15,14 +15,24 @@ export interface MapLayerSetting {
   url: string;
   name: string;
   formatId: string;
-  maxZoom: number | undefined;
   transparentBackground: boolean | undefined;
 }
 
 /** @internal */
-export class MapLayerSettingsService {
+export enum MapLayerSourceChangeType {
+  Added = 0,
+  Removed = 1,
+  Replaced = 2,
+}
 
-  public static readonly onNewCustomLayerSource = new BeEvent<(source: MapLayerSource) => void>(); // Used to notify the frontend that it needs to update its list of available layers
+/** @internal */
+export class MapLayerSettingsService {
+  // Event raised whenever a source is added, replaced or removed:
+  // changeType : Type of changed occurred.
+  // oldSource : Source that was removed or replaced.
+  // newSource : Source that was added or replacement of oldSource.
+  public static readonly onLayerSourceChanged = new BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource, newSource?: MapLayerSource) => void>(); // Used to notify the frontend that it needs to update its list of available layers
+
   /**
    * Store the source in the settings service. Returns false if the settings object would override some other settings object in a larger scope i.e. storing settings on model when
    * a project setting exists with same name or map layer url.
@@ -36,7 +46,7 @@ export class MapLayerSettingsService {
       url: sourceJSON.url,
       name: sourceJSON.name,
       formatId: sourceJSON.formatId,
-      maxZoom: sourceJSON.maxZoom,
+
       transparentBackground: sourceJSON.transparentBackground,
     };
     const result: boolean = await MapLayerSettingsService.deleteOldSettings(requestContext, sourceJSON.url, sourceJSON.name, projectId, iModelId, storeOnIModel);
@@ -45,13 +55,70 @@ export class MapLayerSettingsService {
       await IModelApp.settings.saveSharedSetting(requestContext, mapLayerSetting, MapLayerSettingsService.SourceNamespace, sourceJSON.name, true,
         projectId, storeOnIModel ? iModelId : undefined);
       requestContext.enter();
-      MapLayerSettingsService.onNewCustomLayerSource.raiseEvent(MapLayerSource.fromJSON(mapLayerSetting)!);
+      MapLayerSettingsService.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Added, undefined, MapLayerSource.fromJSON(mapLayerSetting));
       return true;
     } else {
       return false;
     }
 
   }
+
+  public static async replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean> {
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+
+    let storeOnIModel = false;
+    let result: SettingsResult = new SettingsResult(SettingsStatus.UnknownError);
+    requestContext.enter();
+    result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, oldSource.name, true, projectId, iModelId);
+    requestContext.enter();
+
+    // Make a second attempt at project level
+    if (result.status === SettingsStatus.SettingNotFound) {
+      result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, oldSource.name, true, projectId, undefined);
+      requestContext.enter();
+      if (result.status === SettingsStatus.Success) {
+        storeOnIModel = true;
+      }
+    }
+
+    if (result.status === SettingsStatus.Success) {
+      const mapLayerSetting: MapLayerSetting = {
+        url: newSource.url,
+        name: newSource.name,
+        formatId: newSource.formatId,
+        transparentBackground: newSource.transparentBackground,
+      };
+
+      await IModelApp.settings.saveSharedSetting(requestContext, mapLayerSetting, MapLayerSettingsService.SourceNamespace,
+        newSource.name, true, projectId, storeOnIModel ? iModelId : undefined);
+      requestContext.enter();
+      MapLayerSettingsService.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Replaced, oldSource, newSource);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static async deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean> {
+    let result: SettingsResult = new SettingsResult(SettingsStatus.UnknownError);
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+    result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, source.name, true, projectId, iModelId);
+    requestContext.enter();
+
+    // Make a second attempt at project level
+    if (result.status === SettingsStatus.SettingNotFound) {
+      result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, source.name, true, projectId, undefined);
+      requestContext.enter();
+    }
+
+    if (result.status === SettingsStatus.Success) {
+      MapLayerSettingsService.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Removed, source, undefined);
+
+    }
+    return result.status === SettingsStatus.Success;
+  }
+
   // This method prevents users from overwriting project settings with model settings. If setting to be added is in same scope as the setting that it collides with
   // then it can be overwritten. This method knows scope of setting to be added is model if storeOnIModel is true
   // returns false if we should not save the setting the user added because we output an error to the user here saying it cannot be done
@@ -103,7 +170,7 @@ export class MapLayerSettingsService {
     }
     return true;
   }
-  private static async getSettingFromUrl(requestContext: AuthorizedFrontendRequestContext, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined> {
+  public static async getSettingFromUrl(requestContext: AuthorizedFrontendRequestContext, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined> {
     requestContext.enter();
     const settingResponse = await IModelApp.settings.getSharedSettingsByNamespace(requestContext, MapLayerSettingsService.SourceNamespace, true, projectId, iModelId);
     requestContext.enter();

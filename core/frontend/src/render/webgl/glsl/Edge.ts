@@ -12,7 +12,7 @@ import { IsAnimated, IsInstanced, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addAnimation } from "./Animation";
 import { addColor } from "./Color";
-import { addShaderFlags } from "./Common";
+import { addFrustum, addShaderFlags } from "./Common";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addAdjustWidth, addLineCode } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
@@ -35,15 +35,17 @@ const checkForSilhouetteDiscard = `
   vec3 n0 = MAT_NORM * octDecodeNormal(a_normals.xy);
   vec3 n1 = MAT_NORM * octDecodeNormal(a_normals.zw);
 
-  if (0.0 == MAT_MVP[0].w) {
-    return n0.z * n1.z > 0.0;           // orthographic.
+  if (kFrustumType_Perspective != u_frustum.z) {
+    float perpTol = 4.75e-6;
+    return (n0.z * n1.z > perpTol);      // orthographic.
   } else {
+    float perpTol = 2.5e-4;
     vec4  viewPos = MAT_MV * rawPos;     // perspective
     vec3  toEye = normalize(viewPos.xyz);
     float dot0 = dot(n0, toEye);
     float dot1 = dot(n1, toEye);
 
-    if (dot0 * dot1 > 0.0)
+    if (dot0 * dot1 > perpTol)
       return true;
 
     // Need to discard if either is non-silhouette.
@@ -53,7 +55,7 @@ const checkForSilhouetteDiscard = `
     dot0 = dot(n0, toEye);
     dot1 = dot(n1, toEye);
 
-    return dot0 * dot1 > 0.0;
+    return dot0 * dot1 > perpTol;
   }
 `;
 
@@ -62,16 +64,15 @@ const computePosition = `
   vec4  other = g_otherPos;
   float miterAdjust = 0.0;
   float weight = computeLineWeight();
-  float clipDist;
 
-  g_windowPos = modelToWindowCoordinates(rawPos, other, clipDist);
+  vec4 pos;
+  g_windowPos = modelToWindowCoordinates(rawPos, other, pos, v_eyeSpace);
   if (g_windowPos.w == 0.0) // Clipped out.
     return g_windowPos;
 
-  vec4 clipPos = rawPos + clipDist * (other - rawPos);
-  vec4 pos = MAT_MVP * clipPos;
-
-  vec4 projOther = modelToWindowCoordinates(other, rawPos, clipDist);
+  vec4 otherPos;
+  vec3 otherMvPos;
+  vec4 projOther = modelToWindowCoordinates(other, rawPos, otherPos, otherMvPos);
 
   g_windowDir = projOther.xy - g_windowPos.xy;
 
@@ -117,9 +118,10 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   vert.addGlobal("lineCodeEyePos", VariableType.Vec4);
   vert.addGlobal("lineCodeDist", VariableType.Float, "0.0");
 
-  addModelToWindowCoordinates(vert); // adds u_mvp, u_viewportTransformation
+  addModelToWindowCoordinates(vert); // adds u_mvp, u_viewportTransformation, and sets g_eyeSpace
   addProjectionMatrix(vert);
   addLineCode(builder, lineCodeArgs);
+  builder.addVarying("v_eyeSpace", VariableType.Vec3);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   builder.addVarying("v_lnInfo", VariableType.Vec4);
   addAdjustWidth(vert);
@@ -130,7 +132,8 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   addLineWeight(vert);
 
   if (isSilhouette) {
-    addNormalMatrix(vert);
+    addNormalMatrix(vert, instanced);
+    addFrustum(builder);
     vert.set(VertexShaderComponent.CheckForEarlyDiscard, checkForSilhouetteDiscard);
     vert.addFunction(octDecodeNormal);
   }

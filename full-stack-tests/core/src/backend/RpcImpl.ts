@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
-import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
+import { ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
+import { IModelBankClient } from "@bentley/imodelhub-client";
 import {
   BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs,
 } from "@bentley/imodeljs-backend";
@@ -63,24 +63,6 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     }
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(requestContext);
     return { iModelBank: { url } };
-  }
-
-  public async createIModel(name: string, contextId: string, deleteIfExists: boolean): Promise<string> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-
-    const imodels = await CloudEnv.cloudEnv.imodelClient.iModels.get(requestContext, contextId, new IModelQuery().byName(name));
-
-    if (imodels.length > 0) {
-      if (!deleteIfExists)
-        return imodels[0].id!;
-      await CloudEnv.cloudEnv.imodelClient.iModels.delete(requestContext, contextId, imodels[0].id!);
-      requestContext.enter();
-    }
-
-    const hubIModel = await CloudEnv.cloudEnv.imodelClient.iModels.create(requestContext, contextId, name, { timeOutInMilliseconds: 240000 });
-    if (hubIModel.id === undefined)
-      throw new BentleyError(BentleyStatus.ERROR);
-    return hubIModel.id;
   }
 
   public async purgeCheckpoints(iModelId: string): Promise<void> {

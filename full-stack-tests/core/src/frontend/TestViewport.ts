@@ -170,12 +170,12 @@ function areAllChildTilesLoaded(parent?: Tile): boolean {
 }
 
 function areAllTilesLoaded(vp: Viewport): boolean {
-  if (vp.numRequestedTiles > 0 || !vp.view.areAllTileTreesLoaded)
+  if (vp.numRequestedTiles > 0 || !vp.areAllTileTreesLoaded)
     return false;
 
   // In addition to ViewState.areAllTileTreesLoaded, ensure all child tiles are loaded (for map tiles).
   let allLoaded = true;
-  vp.view.forEachTileTreeRef((ref) => {
+  vp.forEachTileTreeRef((ref) => {
     allLoaded = allLoaded && ref.isLoadingComplete && areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile);
   });
 
@@ -226,7 +226,7 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
   public static async createTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<OffScreenTestViewport> {
     const view = await imodel.views.load(viewId);
     const rect = new ViewRect(0, 0, width, height);
-    const vp = this.create(view, rect) as OffScreenTestViewport;
+    const vp = this.create({ view, viewRect: rect}) as OffScreenTestViewport;
     expect(vp).instanceof(OffScreenTestViewport);
     return vp;
   }

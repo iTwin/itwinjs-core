@@ -24,13 +24,13 @@ import {
   ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw,
   TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
 } from "../TreeDataProvider";
-import { Observable } from "./Observable";
+import { Observable, toRxjsObservable } from "./Observable";
 import { isTreeModelNode, MutableTreeModel, TreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "./TreeModel";
 import { TreeModelSource } from "./TreeModelSource";
 
 /**
  * Data structure that describes node load result
- * @beta
+ * @public
  */
 export interface TreeNodeLoadResult {
   loadedNodes: TreeNodeItem[];
@@ -38,7 +38,7 @@ export interface TreeNodeLoadResult {
 
 /**
  * Tree node loader which is used to load tree nodes.
- * @beta
+ * @public
  */
 export interface ITreeNodeLoader {
   /**
@@ -51,7 +51,7 @@ export interface ITreeNodeLoader {
 
 /**
  * Tree node loader which uses `TreeDataProvider` to load nodes.
- * @beta
+ * @public
  */
 export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvider> extends ITreeNodeLoader {
   /** Returns `TreeDataProvider` used to load nodes. */
@@ -60,7 +60,7 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
 
 /**
  * Abstract node loader implementation which loads nodes into provided model source.
- * @beta
+ * @public
  */
 export abstract class AbstractTreeNodeLoader implements ITreeNodeLoader {
   private _treeModelSource: TreeModelSource;
@@ -74,7 +74,7 @@ export abstract class AbstractTreeNodeLoader implements ITreeNodeLoader {
 
   /** Do not override this method. @see `load` */
   public loadNode(parent: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<TreeNodeLoadResult> {
-    return from(this.load(parent, childIndex)).pipe(
+    return toRxjsObservable(this.load(parent, childIndex)).pipe(
       map((loadedHierarchy) => {
         this.updateModel(loadedHierarchy);
         return { loadedNodes: collectTreeNodeItems(loadedHierarchy.hierarchyItems) };
@@ -99,7 +99,7 @@ export abstract class AbstractTreeNodeLoader implements ITreeNodeLoader {
 
 /**
  * Abstract node loader with tree data provider which loads nodes into provided model source.
- * @beta
+ * @public
  */
 export abstract class AbstractTreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoader implements ITreeNodeLoaderWithProvider<TDataProvider> {
   private _dataProvider: TDataProvider;
@@ -114,7 +114,7 @@ export abstract class AbstractTreeNodeLoaderWithProvider<TDataProvider extends T
 
 /**
  * Default tree node loader with `TreeDataProvider` implementation.
- * @beta
+ * @public
  */
 export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
   private _treeDataSource: TreeDataSource;
@@ -155,7 +155,7 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends Abst
 
 /**
  * Default paged tree node loader with `TreeDataProvider` implementation.
- * @beta
+ * @public
  */
 export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
   private _pageLoader: PageLoader;
@@ -185,7 +185,7 @@ export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends
 
 /**
  * Data structure that describes hierarchy loaded for parent node.
- * @beta
+ * @public
  */
 export interface LoadedNodeHierarchy {
   /** Node id of the parent node for loaded hierarchy. */
@@ -200,7 +200,7 @@ export interface LoadedNodeHierarchy {
 
 /**
  * Data structure that describes one loaded hierarchy item.
- * @beta
+ * @public
  */
 export interface LoadedNodeHierarchyItem {
   /** Loaded tree node item. */
@@ -349,7 +349,7 @@ function updateChildren(
   startIndex: number,
   numChildren?: number,
 ) {
-  /* istanbul ignore else */
+  // numChildren set to undefined indicates that this is not the first request for children
   if (numChildren !== undefined) {
     model.setNumChildren(parentId, numChildren);
   }
@@ -359,16 +359,24 @@ function updateChildren(
     return;
   }
 
-  model.setChildren(
-    parentId,
-    hierarchyItems.map(({ item }) => convertToTreeModelNodeInput(item)),
-    startIndex,
-  );
+  let offset = startIndex;
+  for (const hierarchyItem of hierarchyItems) {
+    const nodeInput = convertToTreeModelNodeInput(hierarchyItem.item);
+    const existingNode = model.getNode(hierarchyItem.item.id);
 
-  for (const item of hierarchyItems) {
-    if (item.children) {
-      updateChildren(model, item.item.id, item.children, 0, item.numChildren);
+    // if same item exists in the same position and is expanded update it without removing it's subtree
+    if (!existingNode || !existingNode.isExpanded || model.getChildOffset(parentId, existingNode.id) !== offset || nodeInput.numChildren === 0) {
+      model.setChildren(parentId, [nodeInput], offset);
+    } else {
+      existingNode.label = nodeInput.label;
+      existingNode.description = nodeInput.description ?? "";
+      existingNode.item = nodeInput.item;
     }
+
+    if (hierarchyItem.children) {
+      updateChildren(model, hierarchyItem.item.id, hierarchyItem.children, 0, hierarchyItem.numChildren);
+    }
+    offset++;
   }
 }
 

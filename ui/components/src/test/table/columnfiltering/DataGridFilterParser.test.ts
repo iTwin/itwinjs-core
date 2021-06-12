@@ -7,13 +7,14 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  DataGridFilterParser, FILTER_PARSER_TIMER_TIMEOUT, NumericExactMatchData, NumericFilterData, NumericFilterType, NumericGreaterThanData,
-  NumericLessThanData, NumericRangeData, ReactDataGridFilter,
+  DataGridFilterParser, FieldFilterData, FILTER_PARSER_TIMER_TIMEOUT, MultiValueFilterData, NumericExactMatchData, NumericFilterData,
+  NumericFilterType, NumericGreaterThanData, NumericLessThanData, NumericRangeData, ReactDataGridFilter,
 } from "../../../ui-components/table/columnfiltering/DataGridFilterParser";
 import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { ColumnDescription, FilterRenderer, RowItem, TableDistinctValue } from "../../../ui-components/table/TableDataProvider";
+import { ColumnDescription, FilterRenderer, RowItem } from "../../../ui-components/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
+import { FilterCompositionLogicalOperator, FilterOperator, TableDistinctValue } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
 
 const columns: ColumnDescription[] = [
   {
@@ -47,6 +48,13 @@ const columns: ColumnDescription[] = [
   {
     key: "lorem2",
     label: "Lorem2",
+  },
+  {
+    key: "multi-value",
+    label: "Multi-Value",
+    sortable: true,
+    resizable: true,
+    filterRenderer: FilterRenderer.MultiValue,
   },
 ];
 
@@ -88,6 +96,10 @@ const createRow = (i: number) => {
   row.cells.push({
     key: columns[4].key,
     record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], columns[4], "text"),
+  });
+  row.cells.push({
+    key: columns[5].key,
+    record: TestUtils.createPropertyRecord(`Multi-Value ${i}`, columns[5], "text"),
   });
   return row;
 };
@@ -541,6 +553,149 @@ describe("DataGridFilterParser", () => {
 
     fakeTimers.tick(100);
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows / loremIpsum.length);
+  });
+
+  /*
+  MultiValue filters
+    distinctValues
+      length: 3
+      0: {value: "Title 1", label: "Title 1"}
+      1: {value: "Title 100", label: "Title 100"}
+      2: {value: "Title 10000", label: "Title 10000"}
+    fieldValues
+      length: 1
+      0: {value: any, operator: FilterOperator, isCaseSensitive?: boolean}
+    logicalOperator: FilterCompositionLogicalOperator
+  */
+
+  it("MultiValue with 0 distinct entries", async () => {
+    const columnDescription = columnDescriptions[5];
+    const reactDataGridColumn: ReactDataGridColumn = {
+      key: columnDescription.key,
+      name: columnDescription.label,
+    };
+    const filterableColumn = new TableColumn(testTable, columnDescription, reactDataGridColumn);
+    const columnFilterDescriptor = filterableColumn.columnFilterDescriptor;
+
+    DataGridFilterParser.timerTimeout = 10;
+
+    const multiValueData: MultiValueFilterData = {
+      distinctValues: new Array<TableDistinctValue>(),
+      fieldValues: new Array<FieldFilterData>(),
+      fieldLogicalOperator: FilterCompositionLogicalOperator.And,
+    };
+
+    const dataGridFilter: ReactDataGridFilter = {
+      columnKey: columnDescription.key,
+      filterTerm: multiValueData as unknown as string,
+      column: filterableColumn,
+    };
+
+    expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
+    await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
+
+    fakeTimers.tick(100);
+    expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
+  });
+
+  it("MultiValue with 1 distinct entry", async () => {
+    const columnDescription = columnDescriptions[5];
+    const reactDataGridColumn: ReactDataGridColumn = {
+      key: columnDescription.key,
+      name: columnDescription.label,
+    };
+    const filterableColumn = new TableColumn(testTable, columnDescription, reactDataGridColumn);
+    const columnFilterDescriptor = filterableColumn.columnFilterDescriptor;
+
+    DataGridFilterParser.timerTimeout = 10;
+
+    const multiValueData: MultiValueFilterData = {
+      distinctValues: [
+        { value: "Multi-Value 1", label: "Multi-Value 1" },
+      ],
+      fieldValues: [],
+      fieldLogicalOperator: FilterCompositionLogicalOperator.And,
+    };
+
+    const dataGridFilter: ReactDataGridFilter = {
+      columnKey: columnDescription.key,
+      filterTerm: multiValueData as unknown as string,
+      column: filterableColumn,
+    };
+
+    expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
+    await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
+
+    fakeTimers.tick(100);
+    expect(await dataProvider.getRowsCount()).to.eq(1);
+  });
+
+  it("MultiValue with multiple distinct entries", async () => {
+    const columnDescription = columnDescriptions[5];
+    const reactDataGridColumn: ReactDataGridColumn = {
+      key: columnDescription.key,
+      name: columnDescription.label,
+    };
+    const filterableColumn = new TableColumn(testTable, columnDescription, reactDataGridColumn);
+    const columnFilterDescriptor = filterableColumn.columnFilterDescriptor;
+
+    DataGridFilterParser.timerTimeout = 10;
+
+    const multiValueData: MultiValueFilterData = {
+      distinctValues: [
+        { value: "Multi-Value 1", label: "Multi-Value 1" },
+        { value: "Multi-Value 100", label: "Multi-Value 100" },
+        { value: "Multi-Value 1000", label: "Multi-Value 1000" },
+      ],
+      fieldValues: [],
+      fieldLogicalOperator: FilterCompositionLogicalOperator.And,
+    };
+
+    const dataGridFilter: ReactDataGridFilter = {
+      columnKey: columnDescription.key,
+      filterTerm: multiValueData as unknown as string,
+      column: filterableColumn,
+    };
+
+    expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
+    await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
+
+    fakeTimers.tick(100);
+    expect(await dataProvider.getRowsCount()).to.eq(3);
+  });
+
+  it("MultiValue with multiple field entries", async () => {
+    const columnDescription = columnDescriptions[5];
+    const reactDataGridColumn: ReactDataGridColumn = {
+      key: columnDescription.key,
+      name: columnDescription.label,
+    };
+    const filterableColumn = new TableColumn(testTable, columnDescription, reactDataGridColumn);
+    const columnFilterDescriptor = filterableColumn.columnFilterDescriptor;
+
+    DataGridFilterParser.timerTimeout = 10;
+
+    const multiValueData: MultiValueFilterData = {
+      distinctValues: [],
+      fieldValues: [
+        {fieldValue: "Multi-Value 1", operator: FilterOperator.IsEqualTo },
+        { fieldValue: "Multi-Value 100", operator: FilterOperator.IsEqualTo },
+        { fieldValue: "Multi-Value 1000", operator: FilterOperator.IsEqualTo },
+      ],
+      fieldLogicalOperator: FilterCompositionLogicalOperator.Or,
+    };
+
+    const dataGridFilter: ReactDataGridFilter = {
+      columnKey: columnDescription.key,
+      filterTerm: multiValueData as unknown as string,
+      column: filterableColumn,
+    };
+
+    expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
+    await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
+
+    fakeTimers.tick(100);
+    expect(await dataProvider.getRowsCount()).to.eq(3);
   });
 
 });

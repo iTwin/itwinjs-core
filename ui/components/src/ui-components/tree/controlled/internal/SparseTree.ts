@@ -7,7 +7,7 @@
  */
 
 import { immerable } from "immer";
-import { compareNumbers, lowerBound } from "@bentley/bentleyjs-core";
+import { assert, compareNumbers, lowerBound } from "@bentley/bentleyjs-core";
 
 /** @internal */
 export interface Node {
@@ -97,6 +97,28 @@ export class SparseTree<T extends Node> {
     }
 
     return true;
+  }
+
+  public moveNode(
+    sourceParentId: string | undefined,
+    sourceNodeId: string,
+    targetParentId: string | undefined,
+    targetIndex: number,
+  ): void {
+    const sourceNodeSiblings = this.getChildren(sourceParentId);
+    assert(sourceNodeSiblings !== undefined);
+
+    const sourceIndex = this.getChildOffset(sourceParentId, sourceNodeId);
+    assert(sourceIndex !== undefined);
+
+    sourceNodeSiblings.remove(sourceIndex);
+    if (targetParentId === sourceParentId && targetIndex > sourceIndex) {
+      targetIndex -= 1;
+    }
+
+    const targetNodeSiblings = this.getChildren(targetParentId, true);
+    assert(targetNodeSiblings !== undefined);
+    targetNodeSiblings.insert(targetIndex, sourceNodeId);
   }
 
   public setNumChildren(parentId: string | undefined, numChildren: number) {

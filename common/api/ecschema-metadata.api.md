@@ -94,7 +94,7 @@ export abstract class BaseSchemaChange implements ISchemaChange {
     set changeType(changeType: ChangeType);
     abstract get defaultChangeType(): ChangeType;
     get diagnostic(): AnyDiagnostic;
-    protected getNameFromArgument(index: number, itemType: typeof SchemaItem | typeof OverrideFormat | typeof Schema, allowUndefined?: boolean, fullName?: boolean): string;
+    protected getNameFromArgument(index: number, allowUndefined?: boolean, fullName?: boolean): string;
     protected getStringFromArgument(index: number): string;
     protected getValueFromArgument(index: number): any;
     abstract get topLevelSchemaItem(): SchemaItem | Schema;
@@ -810,6 +810,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     is(targetClass: string, schemaName: string): Promise<boolean>;
     // (undocumented)
     is(targetClass: ECClass): Promise<boolean>;
+    // @internal (undocumented)
+    static isECClass(object: any): object is ECClass;
     isSync(targetClass: ECClass): boolean;
     // (undocumented)
     protected loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema): Promise<PrimitiveType | Enumeration>;
@@ -826,9 +828,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // (undocumented)
     protected _modifier: ECClassModifier;
     // (undocumented)
-    get properties(): Property[] | undefined;
+    get properties(): IterableIterator<Property> | undefined;
     // (undocumented)
-    protected _properties?: Property[];
+    protected _properties?: Map<string, Property>;
     // @alpha
     protected setModifier(modifier: ECClassModifier): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ClassProps;
@@ -848,13 +850,13 @@ export enum ECClassModifier {
     Sealed = 2
 }
 
-// @beta
+// @public
 export class ECName {
     constructor(name: string);
-    // (undocumented)
+    decode(): string;
+    static encode(input: string): ECName;
     get name(): string;
-    // (undocumented)
-    static validate(newName: string): boolean;
+    static validate(name: string): boolean;
 }
 
 // @internal (undocumented)
@@ -2005,6 +2007,8 @@ export class OverrideFormat {
     hasFormatTrait(formatTrait: FormatTraits): boolean;
     // (undocumented)
     get includeZero(): boolean | undefined;
+    // @internal (undocumented)
+    static isOverrideFormat(object: any): object is OverrideFormat;
     // (undocumented)
     get minWidth(): number | undefined;
     readonly name: string;
@@ -2260,6 +2264,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     isNavigation(): this is NavigationProperty;
     // (undocumented)
     isPrimitive(): this is AnyPrimitiveProperty;
+    // @internal (undocumented)
+    static isProperty(object: any): object is Property;
     // (undocumented)
     get isReadOnly(): boolean;
     // (undocumented)
@@ -2542,6 +2548,8 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     // (undocumented)
     fromJSONSync(relationshipConstraintProps: RelationshipConstraintProps): void;
     get fullName(): string;
+    // @internal (undocumented)
+    static isRelationshipConstraint(object: any): object is RelationshipConstraint;
     get isSource(): boolean;
     // (undocumented)
     get multiplicity(): RelationshipMultiplicity | undefined;
@@ -2734,6 +2742,8 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined;
     getSchemaItemKey(fullName: string): SchemaItemKey;
+    // @internal (undocumented)
+    static isSchema(object: any): object is Schema;
     // (undocumented)
     get label(): string | undefined;
     // (undocumented)
@@ -2757,6 +2767,8 @@ export class Schema implements CustomAttributeContainerProps {
     protected setContext(context: SchemaContext): void;
     toJSON(): SchemaProps;
     toXml(schemaXml: Document): Promise<Document>;
+    // @alpha
+    toXmlString(): Promise<string>;
     // (undocumented)
     get writeVersion(): number;
 }
@@ -3303,6 +3315,8 @@ export abstract class SchemaItem {
     fromJSONSync(schemaItemProps: SchemaItemProps): void;
     // (undocumented)
     get fullName(): string;
+    // @internal (undocumented)
+    static isSchemaItem(object: any): object is SchemaItem;
     // (undocumented)
     get key(): SchemaItemKey;
     // (undocumented)
@@ -3451,6 +3465,7 @@ export class SchemaKey {
     // (undocumented)
     compareByName(rhs: SchemaKey | string | undefined): boolean;
     compareByVersion(rhs: SchemaKey): number;
+    static fromJSON(props: SchemaKeyProps): SchemaKey;
     // (undocumented)
     matches(rhs: SchemaKey, matchType?: SchemaMatchType): boolean;
     // (undocumented)
@@ -3461,6 +3476,7 @@ export class SchemaKey {
     static parseString(fullName: string): SchemaKey;
     // (undocumented)
     get readVersion(): number;
+    toJSON(): SchemaKeyProps;
     toString(padZeroes?: boolean): string;
     // (undocumented)
     get version(): ECVersion;
@@ -3468,6 +3484,14 @@ export class SchemaKey {
     protected _version: ECVersion;
     // (undocumented)
     get writeVersion(): number;
+}
+
+// @beta
+export interface SchemaKeyProps {
+    readonly minor: number;
+    readonly name: string;
+    readonly read: number;
+    readonly write: number;
 }
 
 // @beta (undocumented)
@@ -3740,6 +3764,8 @@ export abstract class SuppressionDiagnosticReporter implements IDiagnosticReport
 // @beta
 export class Unit extends SchemaItem {
     constructor(schema: Schema, name: string);
+    // @alpha
+    static areCompatible(unitA: Unit, unitB: Unit): Promise<boolean>;
     // (undocumented)
     get definition(): string;
     // (undocumented)

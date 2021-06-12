@@ -412,6 +412,16 @@ export class Matrix4d implements BeJSONFunctions {
       + this._coffs[i + 2] * other._coffs[j + 8]
       + this._coffs[i + 3] * other._coffs[j + 12];
   }
+  /** Returns dot product of row rowIndex of this with [x y z w]
+   */
+  public rowDotXYZW(rowIndex: number, x: number, y: number, z: number, w: number): number {
+    const i = rowIndex * 4;
+    return this._coffs[i] * x
+      + this._coffs[i + 1] * y
+      + this._coffs[i + 2] * z
+      + this._coffs[i + 3] * w;
+  }
+
   /** Returns dot product of row rowIndexThis of this with row rowIndexOther of other.
    */
   public rowDotRow(rowIndexThis: number, other: Matrix4d, rowIndexOther: number): number {

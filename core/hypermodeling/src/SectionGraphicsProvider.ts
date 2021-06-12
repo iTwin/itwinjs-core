@@ -122,6 +122,10 @@ class ProxyTreeReference extends TileTreeReference {
     return false;
   }
 
+  public getClipVolume(tree: TileTree) {
+    return true !== HyperModeling.graphicsConfig.ignoreClip ? super.getClipVolume(tree) : undefined;
+  }
+
   public get treeOwner() { return this._owner; }
 
   private get _proxiedRef(): TileTreeReference | undefined {
@@ -172,7 +176,9 @@ abstract class ProxyTree extends TileTree {
 
     this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
     this._viewFlagOverrides.setApplyLighting(false);
-    this._viewFlagOverrides.setShowClipVolume(undefined !== clipVolume);
+
+    // View clip (section clip) should not apply to 2d graphics.
+    this._viewFlagOverrides.setShowClipVolume(false);
 
     this._rootTile = new ProxyTile(this, range);
   }
@@ -188,9 +194,6 @@ abstract class ProxyTree extends TileTree {
   public draw(args: TileDrawArgs): void {
     if (!this.isDisplayed)
       return;
-
-    if (this.clipVolume)
-      this.viewFlagOverrides.setShowClipVolume(true !== HyperModeling.graphicsConfig.ignoreClip);
 
     const tiles = this.selectTiles(args);
     for (const tile of tiles)
@@ -330,11 +333,12 @@ class SectionGraphicsProvider implements TiledGraphicsProvider {
   }
 }
 
-/** Creates a TiledGraphicsProvider that can be associated with a [Viewport]($frontend) to display 2d section graphics and annotations in the context of a [SpatialViewState]($frontend). Typically used indirectly via [[HyperModelingDecorator]].
+/** Creates a TiledGraphicsProvider that can be associated with a [Viewport]($frontend) to display 2d section graphics and annotations in the context of a [SpatialViewState]($frontend).
+ * Typically used indirectly via [[HyperModelingDecorator]].
  * @param state The section drawing location specifying which section drawing to display.
  * @returns A provider suitable for passing to [Viewport.addTiledGraphicsProvider]($frontend).
  * @see [[HyperModelingDecorator.toggleAttachment]] to activate section graphics for a given [[SectionMarker]].
- * @beta
+ * @public
  */
 export async function createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise<TiledGraphicsProvider> {
   let attachment;

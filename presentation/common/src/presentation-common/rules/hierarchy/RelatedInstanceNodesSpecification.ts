@@ -24,7 +24,7 @@ export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesS
 
 /**
  * @public
- * @deprecated Use `RelatedInstanceNodesSpecificationNew`. Will be removed in iModel.js 3.0
+ * @deprecated Use [[RelatedInstanceNodesSpecificationNew]]. Will be removed in iModel.js 3.0
  */
 export interface DEPRECATED_RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer { // eslint-disable-line @typescript-eslint/naming-convention
   /** Used for serializing to JSON. */

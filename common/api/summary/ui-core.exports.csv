@@ -15,6 +15,7 @@ internal;BetaBadge(props: CommonProps): JSX.Element
 public;BlockText(props: TextProps): JSX.Element
 public;BodyText(props: TextProps): JSX.Element
 beta;BoundsFunctionProp = number | (() => number | undefined)
+deprecated;BoundsFunctionProp = number | (() => number | undefined)
 public;Button 
 public;ButtonProps 
 public;ButtonSize
@@ -61,6 +62,7 @@ public;DisabledText(props: TextProps): JSX.Element
 public;Div(props: DivProps): JSX.Element
 public;DivProps 
 public;DivWithOutsideClick:
+beta;ElementResizeObserver({ watchedElement, render }:
 public;ElementSeparator: (props: ElementSeparatorProps) => JSX.Element
 public;ElementSeparatorProps 
 public;ExecuteHandler = (this: void) => void
@@ -93,8 +95,8 @@ beta;FormProps
 beta;GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[]
 internal;getBestBWContrastColor(hexColor: string): "black" | "white"
 internal;getButtonTypeClassName(buttonType?: ButtonType): string
-internal;getCssVariable(variableName: string, htmlElement?: HTMLElement): string
-internal;getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number
+public;getCssVariable(variableName: string, htmlElement?: HTMLElement): string
+public;getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number
 internal;getDisplayName: (component: React.ComponentType
 internal;getToolbarBackdropFilter: (filterBlur: number) => string
 internal;getToolbarBackgroundColor: (opacity: number) => string
@@ -104,6 +106,7 @@ public;GlobalContextMenu
 public;GlobalContextMenuProps 
 public;GlobalDialog 
 public;GlobalDialogProps 
+public;GlobalDialogState
 internal;hasPointerEventsSupport(): boolean
 public;Headline(props: TextProps): JSX.Element
 public;HorizontalAlignment
@@ -155,7 +158,9 @@ public;LoadingSpinner
 public;LoadingSpinnerProps 
 public;LoadingStatus 
 public;LoadingStatusProps 
+public;LocalSettingsStorage 
 beta;LocalUiSettings 
+deprecated;LocalUiSettings 
 public;MainTabsProps 
 internal;mergeRefs
 public;MessageBox 
@@ -178,14 +183,17 @@ beta;NodeCheckboxRenderProps = Omit
 beta;NumberInput: (props: NumberInputProps) => JSX.Element | null
 beta;NumberInputProps 
 beta;NumericInput 
+deprecated;NumericInput 
 internal;NumericInputDefaultProps = Pick
+deprecated;NumericInputDefaultProps = Pick
 beta;NumericInputProps 
+deprecated;NumericInputProps 
 public;Omit
 public;OmitChildrenProp
 beta;OptionsType = Array
 beta;OptionType
 public;Orientation
-internal;OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent
+public;OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent
 internal;percentInRange(percent: number): number
 internal;placementToPosition(placement: TooltipPlacement | undefined): RelativePosition
 internal;Point 
@@ -212,10 +220,15 @@ public;RadioProps
 public;RatioChangeResult
 public;ReactMessage
 internal;ReactNumericInput 
+deprecated;ReactNumericInput 
 beta;ReactNumericInputProps 
+deprecated;ReactNumericInputProps 
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
+deprecated;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
 internal;Rectangle 
 public;RectangleProps
+beta;RenderPropsArgs
+beta;ResizableContainerObserver({ onResize, children }:
 internal;ResizeObserver: ResizeObserverType
 internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
 beta;ScrollPositionMaintainer 
@@ -225,14 +238,16 @@ public;SearchBoxProps
 public;Select: (props: SelectProps) => JSX.Element | null
 public;SelectOption
 public;SelectProps 
+public;SessionSettingsStorage 
 beta;SessionUiSettings 
-beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager }: SettingsContainerProps) => JSX.Element
+deprecated;SessionUiSettings 
+beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element
 beta;SettingsContainerProps
 beta;SettingsManager
-beta;SettingsProvider
 beta;SettingsProvidersChangedEvent 
 beta;SettingsProvidersChangedEventArgs
 beta;SettingsTabEntry
+beta;SettingsTabsProvider
 internal;shallowDiffers: (a:
 internal;Size 
 public;SizeProps
@@ -289,14 +304,16 @@ public;TreeNodeProps
 public;TreeProps 
 public;UiCore
 public;UiEvent
-beta;UiSetting
-public;UiSettings
+public;UiSetting
+public;UiSettings = UiSettingsStorage
 public;UiSettingsResult
 public;UiSettingsStatus
+public;UiSettingsStorage
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable
 public;useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void
+internal;useLayoutResizeObserver(ref: React.RefObject
 public;useOptionalDisposable
 internal;useProximityToMouse: (elementSet: WidgetElementSet, snap?: boolean, threshold?: number) => number
 internal;useRefEffect

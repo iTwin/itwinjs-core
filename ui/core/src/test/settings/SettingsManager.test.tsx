@@ -8,7 +8,7 @@ import { render } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
-import { SettingsManager, SettingsProvider, SettingsTabEntry } from "../../ui-core/settings/SettingsManager";
+import { SettingsManager, SettingsTabEntry, SettingsTabsProvider } from "../../ui-core/settings/SettingsManager";
 
 function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {
 
@@ -25,7 +25,7 @@ function TestModalSettingsPage({ settingsManager, title }: { settingsManager: Se
 describe("<SettingsManager />", () => {
   const settingsManager = new SettingsManager();
 
-  class TestSettingsProvider implements SettingsProvider {
+  class TestSettingsProvider implements SettingsTabsProvider {
     public readonly id = "AppSettingsProvider";
 
     public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {

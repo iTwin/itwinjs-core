@@ -35,6 +35,8 @@ export interface AccuDrawInputFieldProps extends CommonProps {
   labelClassName?: string;
   /** Custom CSS Style for the label */
   labelStyle?: React.CSSProperties;
+  /** Center justified label */
+  labelCentered?: boolean;
   /** Triggered when the content is changed */
   onValueChanged: (stringValue: string) => void;
   /** Frequency to poll for changes in value, in milliseconds */
@@ -49,7 +51,7 @@ export interface AccuDrawInputFieldProps extends CommonProps {
 
 const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInputFieldProps>(
   function ForwardRefAccuDrawInputField(props: AccuDrawInputFieldProps, ref) {
-    const { className, style, id, label, iconSpec, labelClassName, labelStyle, field, isLocked,
+    const { className, style, id, label, iconSpec, labelClassName, labelStyle, labelCentered, field, isLocked,
       onValueChanged, valueChangedDelay, onEnterPressed, onEscPressed, ...inputProps } = props;
     const [stringValue, setStringValue] = React.useState("");
     const timeoutId = React.useRef(0);
@@ -154,10 +156,13 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
     }, [field]);
 
     const inputClassNames = classnames("uifw-accudraw-input-field", className);
-    const labelClassNames = classnames("uifw-accudraw-input-label", labelClassName);
+    const labelClassNames = classnames("uifw-accudraw-input-label",
+      labelCentered && "uifw-label-centered",
+      labelClassName
+    );
 
     return (
-      <div className="uifw-accudraw-input-container">
+      <>
         <label htmlFor={id} className={labelClassNames} style={labelStyle}>
           {label}
           {iconSpec && <Icon iconSpec={iconSpec} />}
@@ -168,7 +173,7 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
         <span className="uifw-accudraw-lock" >
           {isLocked && <Icon iconSpec="icon-lock" />}
         </span>
-      </div>
+      </>
     );
   }
 );

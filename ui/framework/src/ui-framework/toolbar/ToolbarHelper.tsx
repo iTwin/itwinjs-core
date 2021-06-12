@@ -21,7 +21,7 @@ import { GroupButtonItem } from "./GroupButtonItem";
 import { GroupItemDef } from "./GroupItem";
 
 /** Helper functions for defining an ToolbarComposer.
- * @beta
+ * @public
  */
 export class ToolbarHelper {
   /** Construct CustomToolbarItem definitions given a CustomItemDef. */

@@ -21,7 +21,7 @@ import { HyperModelingDecorator } from "./HyperModelingDecorator";
  *    * Open Sheet: Navigates to the [ViewAttachment]($backend) of the section drawing on a [Sheet]($backend). Disabled if no such attachment exists.
  * @see [[HyperModelingConfig]] to override the default handler by supplying a subclass of `SectionMarkerHandler`.
  * @see [[HyperModelingDecorator]] for various methods that might be usefully wired up to marker click or toolbar actions.
- * @beta
+ * @public
  */
 export class SectionMarkerHandler {
   /** Respond to activation of the specified marker. Return true if the marker should become the active marker - i.e., if the marker was successfully activated.

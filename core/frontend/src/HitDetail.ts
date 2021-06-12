@@ -97,7 +97,7 @@ export enum HitDetailType {
  */
 export class HitDetail {
   private readonly _iModel?: IModelConnection;
-  /** @alpha */
+  /** @internal chiefly for debugging. */
   public readonly tileId?: string;
   /** @alpha */
   public readonly isClassifier: boolean;
@@ -145,7 +145,7 @@ export class HitDetail {
     return this.modelId === this.sourceId;
   }
   // return whether the hit point is from map.
-  public get isMapHit(): boolean { return undefined !== this.viewport.displayStyle.mapLayerFromHit(this); }
+  public get isMapHit(): boolean { return undefined !== this.viewport.mapLayerFromHit(this); }
 
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
@@ -154,24 +154,24 @@ export class HitDetail {
   }
 
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
-  public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
+  public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId); }
 
   /** Get the tooltip content for this HitDetail. */
   public async getToolTip(): Promise<HTMLElement | string> {
-    let toolTipPromise = this.isElementHit ? IModelApp.viewManager.getElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
+    let toolTipPromise = this.isElementHit ? IModelApp.viewManager.overrideElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
     for (const toolTipProvider of IModelApp.viewManager.toolTipProviders)
       toolTipPromise = toolTipProvider.augmentToolTip(this, toolTipPromise);
     return toolTipPromise;
   }
 
-  /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport.
+  /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport -
+   * for example, if a [[TiledGraphicsProvider]] is used to display graphics from a different iModel in the viewport.
    * This HitDetail's element, subcategory, and model Ids are defined in the context of this IModelConnection.
-   * @alpha
    */
   public get iModel(): IModelConnection { return undefined !== this._iModel ? this._iModel : this.viewport.iModel; }
 
-  /** Returns true if this hit originated from an IModelConnection other than the one associated with the viewport.
-   * @alpha
+  /** Returns true if this hit originated from an [[IModelConnection]] other than the one associated with the [[Viewport]].
+   * @see [[iModel]].
    */
   public get isExternalIModelHit(): boolean { return this.iModel !== this.viewport.iModel; }
 }
@@ -213,7 +213,7 @@ export class SnapDetail extends HitDetail {
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
   public getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
-  /** Return true if the pick point was closer than [SnapRequestProps.snapAperture]($common) from the generated snap point. */
+  /** Return true if the pick point was closer than the snap aperture from the generated snap point. */
   public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }

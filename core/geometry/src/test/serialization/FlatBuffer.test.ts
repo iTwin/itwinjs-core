@@ -25,6 +25,7 @@ import { PointString3d } from "../../curve/PointString3d";
 import { AuxChannelDataType } from "../../polyface/AuxData";
 import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
+import { TaggedNumericData } from "../../polyface/TaggedNumericData";
 // cSpell:word flatbuffers
 // cSpell:word fbjs
 /* eslint-disable no-console, comma-dangle, quote-props */
@@ -92,6 +93,23 @@ it("HelloMesh", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
+it("HelloSubdivisionSurface", () => {
+  const ck = new Checker();
+  const mesh = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0),
+    Vector3d.unitX(), Vector3d.unitY(), 3, 3);
+  mesh.data.taggedNumericData = new TaggedNumericData(-1000, 0);
+  testGeometryQueryRoundTrip(ck, mesh);
+  const tg1 = new TaggedNumericData(-1000, 1);
+  mesh.data.taggedNumericData = tg1;
+
+  tg1.intData = [1, 2];
+  testGeometryQueryRoundTrip(ck, mesh);
+
+  tg1.doubleData = [0.5];
+  testGeometryQueryRoundTrip(ck, mesh);
+
+    expect(ck.getNumErrors()).equals(0);
+});
 it("HelloSpirals", () => {
   const ck = new Checker();
   const clothoid = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
@@ -104,7 +122,7 @@ it("HelloSpirals", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuery[] | undefined) {
+function testGeometryQueryRoundTripGo(ck: Checker, g: GeometryQuery | GeometryQuery[] | undefined) {
   if (!g)
     return;
   if (Checker.noisy.flatBuffer) {
@@ -120,7 +138,8 @@ function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuer
         ck.announceError("Unexpected array from flat buffer");
       } if (ck.testType<GeometryQuery>(g1 as (GeometryQuery | undefined))) {
         if (!ck.testTrue(g.isAlmostEqual(g1 as GeometryQuery))) {
-          console.log("OUTPUT (mismatch) solid: ", prettyPrint(IModelJson.Writer.toIModelJson(g1)));
+          console.log("input (mismatch): ", prettyPrint(IModelJson.Writer.toIModelJson(g)));
+          console.log("OUTPUT (mismatch): ", prettyPrint(IModelJson.Writer.toIModelJson(g1)));
           const g2 = BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes);
           if (g2 instanceof GeometryQuery)
             ck.testTrue(g.isAlmostEqual(g2));
@@ -135,6 +154,14 @@ function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuer
       ck.testUndefined(BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes, true), "signature state mismatch A");
       ck.testUndefined(BentleyGeometryFlatBuffer.bytesToGeometry(bytesWithSignature, false), "signature state mismatch B");
     }
+
+    const json = IModelJson.Writer.toIModelJson(g);
+    if (ck.testDefined(json, "toJson")) {
+      const g2 = IModelJson.Reader.parse(json);
+      if (ck.testDefined(g2, "to json to geometry") && ck.testTrue(g2 instanceof GeometryQuery) && g2 instanceof GeometryQuery) {
+        ck.testTrue(g.isAlmostEqual(g2), "imjs round trip", g);
+        }
+      }
   } else if (Array.isArray(g)) {
     const justTheBytes = BentleyGeometryFlatBuffer.geometryToBytes(g);
     if (ck.testType<Uint8Array>(justTheBytes)) {
@@ -151,7 +178,15 @@ function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuer
     }
 
   }
-
+}
+// Test imjs and flatbuffer round trips.
+// If errors are noticed (by comparison of ck.getNumErrors()), do it again for debugging opportunity
+export function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuery[] | undefined) {
+  const count0 = ck.getNumErrors();
+  testGeometryQueryRoundTripGo(ck, g);
+  if (count0 !== ck.getNumErrors()) {
+    testGeometryQueryRoundTripGo(ck, g);
+  }
 }
 
 it("HelloSolidPrimitive", () => {

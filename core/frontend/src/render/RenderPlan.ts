@@ -6,13 +6,13 @@
  * @module Rendering
  */
 
-import { Point3d, Vector3d } from "@bentley/geometry-core";
+import { ClipVector, Point3d, Vector3d } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion, AnalysisStyle, ColorDef, Frustum, GlobeMode, Gradient, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
+  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, Gradient, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
   ThematicDisplay, ViewFlags,
 } from "@bentley/imodeljs-common";
+import { FlashSettings } from "../FlashSettings";
 import { Viewport } from "../Viewport";
-import { createViewClipSettings, ViewClipSettings } from "./ViewClipSettings";
 
 const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();
@@ -29,7 +29,9 @@ export interface RenderPlan {
   readonly monochromeMode: MonochromeMode;
   readonly hiliteSettings: Hilite.Settings;
   readonly emphasisSettings: Hilite.Settings;
-  readonly activeClipSettings?: ViewClipSettings;
+  readonly flashSettings: FlashSettings;
+  readonly clip?: ClipVector;
+  readonly clipStyle: ClipStyle;
   readonly hline?: HiddenLine.Settings;
   readonly analysisStyle?: AnalysisStyle;
   readonly ao?: AmbientOcclusion.Settings;
@@ -38,8 +40,6 @@ export interface RenderPlan {
   readonly analysisTexture?: RenderTexture;
   readonly frustum: Frustum;
   readonly fraction: number;
-  readonly terrainTransparency: number;
-  readonly locatableTerrain: boolean;
   readonly globalViewTransition: number;
   readonly isGlobeMode3D: boolean;
   readonly backgroundMapOn: boolean;
@@ -57,11 +57,11 @@ export function createEmptyRenderPlan(): RenderPlan {
     monochromeMode: MonochromeMode.Scaled,
     hiliteSettings: new Hilite.Settings(),
     emphasisSettings: new Hilite.Settings(),
+    flashSettings: new FlashSettings(),
+    clipStyle: ClipStyle.defaults,
     frustum: new Frustum(),
     fraction: 0,
     isFadeOutActive: false,
-    terrainTransparency: 1,
-    locatableTerrain: true,
     globalViewTransition: 0,
     isGlobeMode3D: false,
     backgroundMapOn: false,
@@ -75,13 +75,6 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const style = view.displayStyle;
 
   const is3d = view.is3d();
-  let terrainTransparency = 0;
-  let locatableTerrain = false;
-  const style3d = view.is3d() ? view.getDisplayStyle3d() : undefined;
-  if (style3d) {
-    terrainTransparency = style3d.backgroundMapSettings.transparency || 0;
-    locatableTerrain = style3d.backgroundMapSettings.locatable;
-  }
 
   const globalViewTransition = view.is3d() ? view.globalViewTransition() : 0.0;
   const backgroundMapOn = view.displayStyle.viewFlags.backgroundMap;
@@ -95,10 +88,12 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
 
   const hiliteSettings = vp.hilite;
   const emphasisSettings = vp.emphasisSettings;
+  const flashSettings = vp.flashSettings;
   const lights = vp.lightSettings;
 
   const isFadeOutActive = vp.isFadeOutActive;
-  const activeClipSettings = createViewClipSettings(view.getViewClip(), vp.outsideClipColor, vp.insideClipColor);
+  const clip = view.getViewClip();
+  const clipStyle = view.displayStyle.settings.clipStyle;
   const hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
@@ -127,7 +122,9 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     monochromeMode,
     hiliteSettings,
     emphasisSettings,
-    activeClipSettings,
+    flashSettings,
+    clip,
+    clipStyle,
     hline,
     analysisStyle,
     ao,
@@ -136,8 +133,6 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     analysisTexture,
     frustum,
     fraction,
-    terrainTransparency,
-    locatableTerrain,
     globalViewTransition,
     isGlobeMode3D,
     backgroundMapOn,

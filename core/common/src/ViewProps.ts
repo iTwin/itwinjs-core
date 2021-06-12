@@ -16,7 +16,7 @@ import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
  * @see [[SectionDrawingProps]]
- * @beta
+ * @public
  */
 export interface SectionDrawingViewProps {
   /** The Id of the spatial view from which the SectionDrawing was generated. */
@@ -35,17 +35,13 @@ export interface ViewStateProps {
   categorySelectorProps: CategorySelectorProps;
   modelSelectorProps?: ModelSelectorProps;
   displayStyleProps: DisplayStyleProps;
-  /** @beta */
+  /** Sheet-specific properties, if this is a view of a [SheetModel]($backend). */
   sheetProps?: SheetProps;
-  /** @beta */
+  /** The Ids of the [ViewAttachment]($backend)s contained within the [SheetModel]($backend), if this is a sheet view. */
   sheetAttachments?: Id64Array;
-  /** For drawing views, the extents of the drawing model.
-   * @alpha
-   */
+  /** For a [DrawingViewState]($frontend), the extents of the [DrawingModel]($backend), used for determining the upper limits of the view's extents. */
   modelExtents?: Range3dProps;
-  /** Information about the [SectionDrawing]($backend) relevant to displaying a drawing view.
-   * @beta
-   */
+  /** Information about the [SectionDrawing]($backend) relevant to displaying a drawing view. */
   sectionDrawing?: SectionDrawingViewProps;
 }
 
@@ -85,8 +81,8 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
   categorySelectorId: Id64String;
   displayStyleId: Id64String;
   description?: string;
-  /** @internal */
   jsonProperties?: {
+    /** Additional properties of the view. */
     viewDetails?: ViewDetailsProps;
   };
 }
@@ -105,8 +101,8 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
   angles?: YawPitchRollProps;
   /** The camera used for this view. */
   camera: CameraProps;
-  /** @internal */
   jsonProperties?: {
+    /** Additional properties of the view. */
     viewDetails?: ViewDetails3dProps;
   };
 }

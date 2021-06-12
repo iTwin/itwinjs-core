@@ -14,23 +14,23 @@ import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /**
  * type check for an function that returns a Promise
- * @beta
+ * @public
  */
 export type AsyncFunction = (...args: any) => Promise<any>;
 /**
  * a type that is the list of the asynchronous functions in an interface
- * @beta
+ * @public
  */
 export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P : never }[keyof T];
 /**
  * get the type of the promised value of an asynchronous function
- * @beta
+ * @public
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 /**
  * Options for [[IpcApp.startup]]
- * @beta
+ * @public
  */
 export interface IpcAppOptions {
   iModelApp?: IModelAppOptions;
@@ -38,7 +38,7 @@ export interface IpcAppOptions {
 
 /**
  * The frontend of apps with a dedicated backend that can use [Ipc]($docs/learning/IpcInterface.md).
- * @beta
+ * @public
  */
 export class IpcApp {
   private static _ipc: IpcSocketFrontend | undefined;
@@ -120,12 +120,15 @@ export class IpcApp {
     return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
+  /** start an IpcApp.
+   * @note this should not be called directly. It is called by NativeApp.startup */
   public static async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions) {
     this._ipc = ipc;
     IpcAppNotifyHandler.register(); // receives notifications from backend
     await IModelApp.startup(opts?.iModelApp);
   }
 
+  /** @internal */
   public static async shutdown() {
     this._ipc = undefined;
     await IModelApp.shutdown();
@@ -143,7 +146,7 @@ export class IpcApp {
  * to ensure all method names and signatures are correct. Your methods cannot have a return value.
  *
  * Then, call `MyNotificationHandler.register` at startup to connect your class to your channel.
- * @beta
+ * @public
  */
 export abstract class NotificationHandler {
   /** All subclasses must implement this method to specify their response channel name. */

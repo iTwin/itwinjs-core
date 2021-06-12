@@ -3,21 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { NativeHost } from "../../NativeHost";
 import { NativeAppStorage } from "../../NativeAppStorage";
 
 describe("NativeApp storage backend", () => {
   before(async () => {
-    await IModelHost.shutdown();
-    await NativeHost.startup();
     IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);
-  });
-
-  after(async () => {
-    await NativeHost.shutdown();
-    await IModelHost.startup();
   });
 
   it("Primitive Type", () => {
@@ -77,25 +69,42 @@ describe("NativeApp storage backend", () => {
     test1.setData("key1", 2222);
     assert.isNumber(test1.getData("key1"));
     assert.equal(test1.getData("key1"), 2222);
+    assert.equal(test1.getNumber("key1"), 2222);
+    assert.equal(test1.getString("key1"), undefined);
+    assert.equal(test1.getUint8Array("key1"), undefined);
+    assert.equal(test1.getBoolean("key1"), undefined);
 
     test1.setData("key1", "Hello, World");
     assert.isString(test1.getData("key1"));
     assert.equal(test1.getData("key1"), "Hello, World");
+    assert.equal(test1.getString("key1"), "Hello, World");
+    assert.equal(test1.getUint8Array("key1"), undefined);
+    assert.equal(test1.getBoolean("key1"), undefined);
+    assert.equal(test1.getNumber("key1"), undefined);
 
     test1.setData("key1", true);
     assert.isBoolean(test1.getData("key1"));
     assert.equal(test1.getData("key1"), true);
+    assert.equal(test1.getBoolean("key1"), true);
+    assert.equal(test1.getString("key1"), undefined);
+    assert.equal(test1.getUint8Array("key1"), undefined);
+    assert.equal(test1.getNumber("key1"), undefined);
 
     test1.setData("key1", false);
     assert.isBoolean(test1.getData("key1"));
     assert.equal(test1.getData("key1"), false);
+    assert.equal(test1.getBoolean("key1"), false);
 
     const testArray = new Uint8Array([1, 2, 3, 4, 5]);
     test1.setData("key1", testArray);
     assert.isTrue(test1.getData("key1") instanceof Uint8Array);
-    assert.equal((test1.getData("key1") as Uint8Array).length, testArray.length);
+    assert.equal(test1.getUint8Array("key1")!.length, testArray.length);
+    assert.equal(test1.getBoolean("key1"), undefined);
+    assert.equal(test1.getString("key1"), undefined);
+    assert.equal(test1.getNumber("key1"), undefined);
     test1.removeAll();
     assert.equal(test1.getKeys().length, 0);
+    test1.close(true);
   });
 
   it("Storage open/close test", () => {
@@ -111,4 +120,5 @@ describe("NativeApp storage backend", () => {
       storage.close(true);
     });
   });
+
 });

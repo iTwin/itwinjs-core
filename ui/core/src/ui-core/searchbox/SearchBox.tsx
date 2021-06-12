@@ -17,19 +17,19 @@ import { SpecialKey } from "@bentley/ui-abstract";
  * @public
  */
 export interface SearchBoxProps extends CommonProps {
-  /** value to set SearchBox to initially */
+  /** Value to set SearchBox to initially */
   initialValue?: string;
-  /** placeholder value to show in gray before anything is entered in */
+  /** Placeholder value to show in gray before anything is entered in */
   placeholder?: string;
-  /** triggered when the content of SearchBox is changed */
+  /** Triggered when the content of SearchBox is changed */
   onValueChanged: (value: string) => void;
-  /** frequency to poll for changes in value, in milliseconds */
+  /** Frequency to poll for changes in value, in milliseconds */
   valueChangedDelay?: number;
-  /** listens for <Enter> keypress */
+  /** Listens for <Enter> keypress */
   onEnterPressed?: () => void;
-  /** listens for <Esc> keypress */
+  /** Listens for <Esc> keypress */
   onEscPressed?: () => void;
-  /** listens for onClick event for Clear (x) icon */
+  /** Listens for onClick event for Clear (x) icon */
   onClear?: () => void;
 }
 
@@ -39,7 +39,8 @@ interface SearchBoxState {
 }
 
 /**
- * Input box with builtin icon right justified bounded by the SearchBox
+ * Input box for entering text to search for.
+ * The SearchBox has an icon right-justified and bounded by the box and shows a Search or Clear icon.
  * @public
  */
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
@@ -77,6 +78,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
           onCut={this._trackChange}
           placeholder={this.props.placeholder ? this.props.placeholder : UiCore.translate("general.search")}
           role="searchbox"
+          data-testid="core-searchbox-input"
         ></input>
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <div className="core-searchbox-button" onClick={this._handleIconClick} role="button" tabIndex={-1} title={buttonTitle}>

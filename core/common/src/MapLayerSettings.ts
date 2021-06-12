@@ -8,14 +8,14 @@
 
 import { BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSettings";
 
-/** @alpha */
+/** @beta */
 export type SubLayerId = string | number;
 
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
- * A map sub layer represents a set of objects within the layer that can be controlled seperately.  These
+ * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
  * @see [[MapLayerProps]]
- * @alpha
+ * @beta
  */
 export interface MapSubLayerProps {
   name?: string;
@@ -28,11 +28,11 @@ export interface MapSubLayerProps {
 
 /** Normalized representation of a [[MapSubLayerProps]] for which values
  * have been validated and default values have been applied where explicit values not defined.
- * A map sub layer represents a set of objects within the layer that can be controlled seperately.  These
+ * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
- * [[MapSubLayers]] can represent a hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
+ * This class can represent an hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
  * @see [[MapLayerSettings]]
- * @alpha
+ * @beta
  */
 export class MapSubLayerSettings {
   /** Typically Name is a single word used for machine-to-machine communication while the Title is for the benefit of humans (WMS) */
@@ -106,12 +106,12 @@ export class MapSubLayerSettings {
 
 /** JSON representation of the settings associated with a map layer.  One or more map layers may be included within a [[MapImageryProps]] object.
  * @see [[MapImageryProps]]
- * @alpha
+ * @beta
  */
 export interface MapLayerProps {
-  /** Controls visibility of layer */
+  /** Controls visibility of layer. Defaults to 'true'. */
   visible?: boolean;
-  /** Identifies the map layers source. */
+  /** Identifies the map layers source. Defaults to 'WMS'. */
   formatId?: string;
   /** Name */
   name?: string;
@@ -119,13 +119,13 @@ export interface MapLayerProps {
   url?: string;
   /** Source layers. If undefined all layers are displayed. */
   subLayers?: MapSubLayerProps[];
-  /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: 0. */
+  /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing,
+   * or false to indicate the transparency should not be overridden. Default value: 0.
+   * If omitted, defaults to 0. */
   transparency?: number;
-  /** True to indicate background is tranparent */
+  /** True to indicate background is transparent.  Defaults to 'true'. */
   transparentBackground?: boolean;
-  /** Maximum zoom level */
-  maxZoom?: number;
-  /** Is a base layer */
+  /** Is a base layer.  Defaults to 'false'. */
   isBase?: boolean;
   /** Access Key for the Layer, like a subscription key or access token */
   accessKey?: MapLayerKey;
@@ -142,7 +142,7 @@ export interface MapLayerKey {
 /** Normalized representation of a [[MapLayerProps]] for which values have been  validated and default values have been applied where explicit values not defined.
  * One or more map layers may be included within [[MapImagerySettings]] object.
  * @see [[MapImagerySettings]]
- * @alpha
+ * @beta
  */
 export class MapLayerSettings {
   public readonly visible: boolean;
@@ -162,7 +162,6 @@ export class MapLayerSettings {
     this.password = password;
   }
 
-  // eslint-disable-next-line no-undef-init
   private constructor(url: string, name: string, formatId: string = "WMS", visible = true,
     jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0,
     transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey) {
@@ -219,6 +218,7 @@ export class MapLayerSettings {
       props.transparentBackground = this.transparentBackground;
     if (this.isBase === true)
       props.isBase = this.isBase;
+    props.visible = this.visible;
     return props;
   }
 

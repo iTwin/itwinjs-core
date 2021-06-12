@@ -67,7 +67,11 @@ class TreeOwner implements TileTreeOwner {
 }
 
 /** Provides access to [[TileTree]]s associated with an [[IModelConnection]].
- * @beta
+ * The tile trees are accessed indirectly via their corresponding [[TileTreeOwner]]s.
+ * Loaded tile trees will be discarded after the iModel is closed, after a period of disuse, or when the contents of a [[GeometricModelState]] they represent
+ * change.
+ * @see [[IModelConnection.tiles]].
+ * @public
  */
 export class Tiles {
   private _iModel: IModelConnection;
@@ -77,7 +81,17 @@ export class Tiles {
   /** @internal */
   public get isDisposed() { return this._disposed; }
 
-  constructor(iModel: IModelConnection) { this._iModel = iModel; }
+  /** @internal */
+  constructor(iModel: IModelConnection) {
+    this._iModel = iModel;
+
+    iModel.onEcefLocationChanged.addListener(() => {
+      for (const supplier of this._treesBySupplier.keys()) {
+        if (supplier.isEcefDependent)
+          this.dropSupplier(supplier);
+      }
+    });
+  }
 
   /** @internal */
   public dispose(): void {
@@ -100,7 +114,10 @@ export class Tiles {
     return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
   }
 
-  /** Obtain the owner of a TileTree. The `id` is unique within all tile trees associated with `supplier`; its specific structure is an implementation detail known only to the supplier. */
+  /** Obtain the owner of a TileTree.
+   * The `id` is unique within all tile trees associated with `supplier`; its specific structure is an implementation detail known only to the supplier.
+   * A [[TileTreeReference]] uses this method to obtain the tile tree to which it refers.
+   */
   public getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner {
     let trees = this._treesBySupplier.get(supplier);
     if (undefined === trees) {
@@ -146,7 +163,9 @@ export class Tiles {
     };
   }
 
-  /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */
+  /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees.
+   * @internal
+   */
   public purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void {
     // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTreeReferences exist pointing to a given Owner.
     for (const entry of this._treesBySupplier) {
@@ -157,14 +176,6 @@ export class Tiles {
           if (undefined === exclude || !exclude.has(tree))
             owner.dispose();
       });
-    }
-  }
-
-  /** @internal */
-  public onEcefChanged(): void {
-    for (const supplier of this._treesBySupplier.keys()) {
-      if (supplier.isEcefDependent)
-        this.dropSupplier(supplier);
     }
   }
 }

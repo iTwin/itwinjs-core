@@ -34,6 +34,7 @@ import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addTranslucency } from "./Translucency";
 import { addFeatureAndMaterialLookup, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { wantMaterials } from "../Mesh";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -157,7 +158,7 @@ function addMaterial(builder: ProgramBuilder): void {
   vert.addFunction(decodeMaterialColor);
   vert.addUniform("u_materialColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_materialColor", (uniform, params) => {
-      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+      const info = wantMaterials(params.target.currentViewFlags) ? params.geometry.materialInfo : undefined;
       const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform4fv(mat.rgba);
     });
@@ -165,7 +166,7 @@ function addMaterial(builder: ProgramBuilder): void {
 
   vert.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_materialParams", (uniform, params) => {
-      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+      const info = wantMaterials(params.target.currentViewFlags) ? params.geometry.materialInfo : undefined;
       const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform4fv(mat.fragUniforms);
     });
@@ -430,8 +431,8 @@ export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: b
   });
 }
 
-function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
-  addNormalMatrix(builder.vert);
+function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: IsAnimated) {
+  addNormalMatrix(builder.vert, instanced);
 
   builder.vert.addFunction(octDecodeNormal);
   addChooseWithBitFlagFunctions(builder.vert);
@@ -510,7 +511,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
   addSurfaceDiscard(builder, flags);
-  addNormal(builder, flags.isAnimated);
+  addNormal(builder, flags.isInstanced, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   addChooseWithBitFlagFunctions(builder.frag);

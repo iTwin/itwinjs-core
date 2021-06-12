@@ -9,7 +9,7 @@
 import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { AccuDrawFlags } from "../AccuDraw";
+import { AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -126,10 +126,9 @@ export class ElementAgenda {
   /** Add elements to this agenda. */
   public add(arg: Id64Arg) {
     const groupStart = this.length;
-    Id64.forEach(arg, (id) => {
+    for (const id of Id64.iterable(arg))
       if (!this.has(id))
         this.elements.push(id);
-    });
 
     if (groupStart === this.length)
       return false;
@@ -208,7 +207,9 @@ export class ElementAgenda {
       return false;
 
     let changed = false;
-    Id64.forEach(arg, (elId) => { if (this.removeOne(elId)) changed = true; }); // NOTE: Removes group associated with this element, not just a single entry...
+    for (const elId of Id64.iterable(arg))
+      if (this.removeOne(elId))
+        changed = true; // NOTE: Removes group associated with this element, not just a single entry...
 
     return changed;
   }
@@ -223,7 +224,13 @@ export class ElementAgenda {
 
     const adds: string[] = [];
     const removes: string[] = [];
-    Id64.forEach(arg, (id) => { if (this.has(id)) removes.push(id); else adds.push(id); });
+    for (const id of Id64.iterable(arg)) {
+      if (this.has(id))
+        removes.push(id);
+      else
+        adds.push(id);
+    }
+
     if (adds.length === 0 && removes.length === 0)
       return false;
 
@@ -331,9 +338,6 @@ export abstract class ElementSetTool extends PrimitiveTool {
    * @return true when [[ElementSetTool.allowDragSelect]] and corner points are currently being defined.
    */
   protected get isSelectByPoints(): boolean { return undefined !== this.dragStartPoint; }
-
-  /** Convenience method to check whether control key is currently down w/o having a button event. */
-  protected get isControlDown(): boolean { return IModelApp.toolAdmin.currentInputState.isControlDown; }
 
   /** Whether to continue selection of additional elements by holding the ctrl key down.
    * @return true to continue the element identification phase beyond [[ElementSetTool.requiredElementCount]] by holding down the ctrl key.
@@ -613,16 +617,19 @@ export abstract class ElementSetTool extends PrimitiveTool {
    * @return true if [[ElementSetTool.agenda]] was changed.
    */
   protected async doLocate(ev: BeButtonEvent, newSearch: boolean): Promise<boolean> {
-    if (!newSearch)
-      this.agenda.popGroup();
-
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), newSearch, ev.point, ev.viewport, ev.inputSource);
-    const changed = (undefined !== hit && await this.buildLocateAgenda(hit));
 
-    if (!changed && !newSearch)
+    if (newSearch)
+      return (undefined !== hit && this.buildLocateAgenda(hit));
+
+    // If next element is already in agenda (part of a group, etc.) don't re-add group...
+    const addNext = (undefined !== hit && !this.agenda.has(hit.sourceId));
+    this.agenda.popGroup();
+
+    if (!addNext || !await this.buildLocateAgenda(hit!))
       await this.onAgendaModified(); // only change was popGroup...
 
-    return changed || !newSearch;
+    return true;
   }
 
   /** Whether drag box selection only identifies elements that are wholly inside or also allows those that overlap
@@ -842,7 +849,12 @@ export abstract class ElementSetTool extends PrimitiveTool {
   protected async gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined> {
     if (undefined === this.anchorPoint) {
       this.anchorPoint = ev.point.clone();
-      IModelApp.accuDraw.setContext(AccuDrawFlags.AlwaysSetOrigin, this.anchorPoint);
+
+      const hints = new AccuDrawHintBuilder();
+
+      hints.setOriginAlways = true;
+      hints.setOrigin(this.anchorPoint);
+      hints.sendHints();
     }
 
     if (!this.wantProcessAgenda(ev)) {
@@ -1017,7 +1029,8 @@ export abstract class ElementSetTool extends PrimitiveTool {
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch));
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse));
 
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rghtMsg), false, ToolAssistanceInputMethod.Touch));

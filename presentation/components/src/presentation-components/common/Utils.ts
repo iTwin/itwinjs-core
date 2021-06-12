@@ -7,43 +7,11 @@
  */
 
 import * as React from "react";
-import { Descriptor, Field, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
+import { Descriptor, Field, FIELD_NAMES_SEPARATOR, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { IPropertyValueRenderer, PropertyValueRendererManager } from "@bentley/ui-components";
 import { InstanceKeyValueRenderer } from "../properties/InstanceKeyValueRenderer";
-import { FIELD_NAMES_SEPARATOR } from "./ContentBuilder";
-
-/**
- * An interface of something that has a priority.
- * @internal
- */
-export interface IPrioritized {
-  priority: number;
-}
-
-/**
- * An interface of something that has a name.
- * @internal
- */
-export interface INamed {
-  name: string;
-}
-
-/**
- * A sorting algorithm for `Array.sort` that sorts items by priority and name.
- * Higher priority items appear first in the list. If priorities are equal, then
- * name property is used (in ascending order).
- *
- * @internal
- */
-export const priorityAndNameSortFunction = (a: IPrioritized & INamed, b: IPrioritized & INamed): number => {
-  if (a.priority > b.priority)
-    return -1;
-  if (a.priority < b.priority)
-    return 1;
-  return a.name.localeCompare(b.name);
-};
 
 const localizationNamespaceName = "PresentationComponents";
 

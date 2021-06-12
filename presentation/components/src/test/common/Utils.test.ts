@@ -8,39 +8,18 @@ import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
+import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import {
   createRandomDescriptor, createRandomLabelCompositeValue, createRandomLabelDefinition, createRandomNestedContentField, createRandomPropertiesField,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
-import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 import * as utils from "../../presentation-components/common/Utils";
 
 class TestComponent extends React.Component {
 }
 
 describe("Utils", () => {
-
-  describe("priorityAndNameSortFunction", () => {
-
-    it("sorts by priority and name", () => {
-      const arr = [
-        { priority: 2, name: "d" },
-        { priority: 3, name: "c" },
-        { priority: 3, name: "b" },
-        { priority: 1, name: "a" },
-      ];
-      arr.sort(utils.priorityAndNameSortFunction);
-      expect(arr).to.deep.eq([
-        { priority: 3, name: "b" },
-        { priority: 3, name: "c" },
-        { priority: 2, name: "d" },
-        { priority: 1, name: "a" },
-      ]);
-    });
-
-  });
 
   describe("getDisplayName", () => {
 

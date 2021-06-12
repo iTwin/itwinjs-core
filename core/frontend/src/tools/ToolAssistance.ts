@@ -262,7 +262,7 @@ export class ToolAssistance {
    */
   public static createTouchCursorInstructions(instructions: ToolAssistanceInstruction[]): boolean {
     const accuSnap = IModelApp.accuSnap;
-    if (accuSnap.isSnapEnabled && accuSnap.isSnapEnabledByUser && undefined === accuSnap.touchCursor) {
+    if (undefined === accuSnap.touchCursor && accuSnap.wantVirtualCursor) {
       instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, this.translateTouch("Activate"), false, ToolAssistanceInputMethod.Touch));
       return true;
     } else if (undefined !== accuSnap.touchCursor) {

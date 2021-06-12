@@ -12,14 +12,19 @@ import * as moq from "typemoq";
 import { ClientRequestContext, DbResult, using } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
 import {
-  ArrayTypeDescription, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor,
-  DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory,
-  HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyRequestOptions, InstanceKey, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
-  LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationDataCompareOptions, PresentationError,
-  PresentationUnitSystem, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset,
-  SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  ArrayTypeDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes,
+  Descriptor, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions,
+  HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions,
+  NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PresentationUnitSystem, PrimitiveTypeDescription,
+  PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON, SelectionInfo,
+  SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
+import {
+  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
+} from "@bentley/presentation-common/lib/test/_helpers/Content";
+import { createTestECClassInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
 import {
   createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey,
   createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId,
@@ -28,6 +33,7 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
+import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import {
   HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
 } from "../presentation-backend/PresentationManager";
@@ -36,7 +42,6 @@ import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVari
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { WithClientRequestContext } from "../presentation-backend/Utils";
-import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 describe("PresentationManager", () => {
@@ -251,10 +256,25 @@ describe("PresentationManager", () => {
         addon.reset();
       });
 
-      it("sets up ruleset directories if supplied", () => {
-        const dirs = ["test1", "test2"];
-        addon.setup((x) => x.setupRulesetDirectories(dirs)).verifiable();
+      it("sets up primary ruleset directories if supplied", () => {
+        const dirs = ["test1", "test2", "test2"];
+        const addonDirs = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "primary-presentation-rules"), "test1", "test2"];
+        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
         using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), (pm: PresentationManager) => { pm; });
+        addon.verifyAll();
+      });
+
+      it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot` as string if supplied", () => {
+        const addonDirs = [path.join("/test", "primary-presentation-rules")];
+        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (pm: PresentationManager) => { pm; });
+        addon.verifyAll();
+      });
+
+      it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot.backend` if supplied", () => {
+        const addonDirs = [path.join("/backend-test", "primary-presentation-rules")];
+        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_pm: PresentationManager) => { });
         addon.verifyAll();
       });
 
@@ -581,7 +601,7 @@ describe("PresentationManager", () => {
       addonMock.verifyAll();
     });
 
-    it("sends diagnostic options to native platform and invokes listener with diagnostic results", async () => {
+    it("sends diagnostic options to native platform and invokes handler with diagnostic results", async () => {
       const diagnosticOptions: DiagnosticsOptions = {
         perf: true,
         editor: "info",
@@ -596,9 +616,9 @@ describe("PresentationManager", () => {
         .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics))))
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, listener: diagnosticsListener } });
+      await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
       addonMock.verifyAll();
-      expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
+      expect(diagnosticsListener).to.be.calledOnceWith([diagnosticsResult]);
     });
 
   });
@@ -1154,8 +1174,8 @@ describe("PresentationManager", () => {
     describe("compareHierarchies", () => {
 
       it("[deprecated] addon to compare hierarchies after ruleset change", async () => {
-        const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
-        const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
+        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
         const nodeKey = createRandomECInstancesNodeKey();
 
         // what the addon receives
@@ -1181,7 +1201,7 @@ describe("PresentationManager", () => {
         const addonResponse = setup(unprocessedResponse);
 
         // test
-        const options: PresentationDataCompareOptions<IModelDb, NodeKey> = {
+        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           prev: {
             rulesetOrId: "test",
@@ -1196,8 +1216,8 @@ describe("PresentationManager", () => {
       });
 
       it("requests addon to compare hierarchies based on ruleset and variables' changes", async () => {
-        const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
-        const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
+        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
         const nodeKey = createRandomECInstancesNodeKey();
 
         // what the addon receives
@@ -1223,7 +1243,7 @@ describe("PresentationManager", () => {
         const addonResponse = setup(unprocessedResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1261,7 +1281,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1274,8 +1294,8 @@ describe("PresentationManager", () => {
       });
 
       it("requests addon to compare hierarchies based on ruleset variables' changes", async () => {
-        const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
-        const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
+        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
 
         // what the addon receives
         const expectedParams = {
@@ -1300,7 +1320,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1327,7 +1347,7 @@ describe("PresentationManager", () => {
 
       it("throws when trying to compare hierarchies with different ruleset ids", async () => {
         nativePlatformMock.reset();
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1363,7 +1383,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1399,7 +1419,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -2463,6 +2483,81 @@ describe("PresentationManager", () => {
         };
         const result = await manager.getPagedDistinctValues(options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+    });
+
+    describe("getElementProperties", () => {
+
+      it("returns element properties", async () => {
+        // what the addon receives
+        const elementKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForElementKey(imodelMock, elementKey);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: new KeySet([elementKey]).toJSON(),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            fields: [
+              createTestSimpleContentField({
+                name: "test",
+                label: "Test Field",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                test: "test value",
+              },
+              displayValues: {
+                test: "test display value",
+              },
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>> = {
+          requestContext: ClientRequestContext.current,
+          imodel: imodelMock.object,
+          elementId: elementKey.id,
+        };
+        const expectedResponse: ElementProperties = {
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Test Category"]: {
+              type: "category",
+              items: {
+                ["Test Field"]: {
+                  type: "primitive",
+                  value: "test display value",
+                },
+              },
+            },
+          },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
       });
 
     });

@@ -184,6 +184,64 @@ describe("SparseTree", () => {
     });
   });
 
+  describe("moveNode", () => {
+    beforeEach(() => {
+      sparseTree.setChildren(undefined, [{ id: "root1" }, { id: "root2" }], 0);
+      sparseTree.setChildren("root1", [{ id: "child1" }, { id: "child2" }], 0);
+    });
+
+    describe("when moving node inside another", () => {
+      it("moves root node", () => {
+        sparseTree.moveNode(undefined, "root1", "root2", 0);
+        expect([...sparseTree.getChildren(undefined)!]).to.be.deep.equal(["root2"]);
+        expect([...sparseTree.getChildren("root2")!]).to.be.deep.equal(["root1"]);
+        expect([...sparseTree.getChildren("root1")!]).to.be.deep.equal(["child1", "child2"]);
+      });
+
+      it("moves non-root node", () => {
+        sparseTree.moveNode("root1", "child1", "child2", 0);
+        expect([...sparseTree.getChildren("root1")!]).to.be.deep.equal(["child2"]);
+        expect([...sparseTree.getChildren("child2")!]).to.be.deep.equal(["child1"]);
+      });
+    });
+
+    describe("when moving node into hierarchy root", () => {
+      it("moves root node", () => {
+        sparseTree.moveNode(undefined, "root1", undefined, 2);
+        expect([...sparseTree.getChildren(undefined)!]).to.be.deep.equal(["root2", "root1"]);
+        expect([...sparseTree.getChildren("root1")!]).to.be.deep.equal(["child1", "child2"]);
+      });
+
+      it("moves non-root node", () => {
+        sparseTree.moveNode("root1", "child1", undefined, 1);
+        expect([...sparseTree.getChildren(undefined)!]).to.be.deep.equal(["root1", "child1", "root2"]);
+        expect([...sparseTree.getChildren("root1")!]).to.be.deep.equal(["child2"]);
+      });
+    });
+
+    describe("when moving node among siblings", () => {
+      it("does nothing when target position is same as source", () => {
+        sparseTree.moveNode("root1", "child1", "root1", 0);
+        expect([...sparseTree.getChildren("root1")!]).to.be.deep.equal(["child1", "child2"]);
+      });
+
+      it("does nothing when target position is just past source node", () => {
+        sparseTree.moveNode("root1", "child1", "root1", 1);
+        expect([...sparseTree.getChildren("root1")!]).to.be.deep.equal(["child1", "child2"]);
+      });
+
+      it("moves node into correct position towards beginning", () => {
+        sparseTree.moveNode("root1", "child2", "root1", 0);
+        expect([...sparseTree.getChildren("root1")!]).to.be.deep.equal(["child2", "child1"]);
+      });
+
+      it("moves node into correct position towards ending", () => {
+        sparseTree.moveNode("root1", "child1", "root1", 2);
+        expect([...sparseTree.getChildren("root1")!]).to.be.deep.equal(["child2", "child1"]);
+      });
+    });
+  });
+
   describe("setNumChildren", () => {
     it("sets count for root nodes", () => {
       sparseTree.setNumChildren(undefined, 10);

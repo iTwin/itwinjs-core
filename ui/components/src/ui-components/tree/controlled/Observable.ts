@@ -7,6 +7,7 @@
  */
 
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
+import { Observable as RxjsObservable } from "rxjs/internal/Observable";
 
 /**
  * Helper method that creates an Observable from Iterable or Promise.
@@ -14,6 +15,11 @@ import { from as rxjsFrom } from "rxjs/internal/observable/from";
  */
 export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T> {
   return rxjsFrom(iterable);
+}
+
+/** @internal */
+export function toRxjsObservable<T>(observable: Observable<T>): RxjsObservable<T> {
+  return new RxjsObservable((subscriber) => { observable.subscribe(subscriber); });
 }
 
 /**

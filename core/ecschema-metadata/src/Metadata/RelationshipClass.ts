@@ -371,6 +371,16 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     return false;
   }
 
+  /**
+   * @internal
+   */
+  public static isRelationshipConstraint(object: any): object is RelationshipConstraint {
+    const relationshipConstrait = object as RelationshipConstraint;
+
+    return relationshipConstrait !== undefined && relationshipConstrait.polymorphic !== undefined && relationshipConstrait.multiplicity !== undefined
+            && relationshipConstrait.relationshipEnd !== undefined && relationshipConstrait._relationshipClass !== undefined;
+  }
+
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
       this._customAttributes = new Map<string, CustomAttribute>();

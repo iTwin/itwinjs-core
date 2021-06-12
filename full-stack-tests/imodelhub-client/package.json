@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client-tests",
-  "version": "2.14.0-dev.16",
+  "version": "2.18.0-dev.3",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",
@@ -23,7 +23,7 @@
     "pretest": "npm run copy:test-assets",
     "test": "npm run pretest && betools test --offline=\"mock\" --grep=\"#integration\" --invert --testDir ./lib",
     "test:integration": "npm run pretest && betools test --grep=\"#unit\" --invert --testDir ./lib",
-    "test:imodel-bank": "npm run pretest && betools test --grep=\"#iModelBank\" --testDir ./lib"
+    "test:imodel-bank": "npm run pretest && npm run copy:config && betools test --grep=\"#iModelBank\" --testDir ./lib"
   },
   "keywords": [
     "Bentley",
@@ -36,38 +36,40 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "2.14.0-dev.16",
-    "@bentley/bentleyjs-core": "2.14.0-dev.16",
-    "@bentley/context-registry-client": "2.14.0-dev.16",
-    "@bentley/frontend-authorization-client": "2.14.0-dev.16",
-    "@bentley/imodelhub-client": "2.14.0-dev.16",
-    "@bentley/imodeljs-common": "2.14.0-dev.16",
-    "@bentley/itwin-client": "2.14.0-dev.16",
-    "@bentley/rbac-client": "2.14.0-dev.16",
+    "@bentley/backend-itwin-client": "workspace:*",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/context-registry-client": "workspace:*",
+    "@bentley/frontend-authorization-client": "workspace:*",
+    "@bentley/imodelhub-client": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@bentley/rbac-client": "workspace:*",
     "chai": "^4.1.2",
     "deep-assign": "^2.0.0",
     "fs-extra": "^8.1.0",
     "js-base64": "^2.4.5",
-    "mocha": "^5.2.0",
+    "mocha": "^8.3.2",
     "nock": "^12.0.3"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.14.0-dev.16",
-    "@bentley/config-loader": "2.14.0-dev.16",
-    "@bentley/eslint-plugin": "2.14.0-dev.16",
-    "@bentley/oidc-signin-tool": "2.14.0-dev.16",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/config-loader": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/oidc-signin-tool": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
     "@types/js-base64": "^2.3.1",
-    "@types/mocha": "^5.2.5",
-    "@types/nock": "^11.1.0",
+    "@types/mocha": "^8.2.2",
     "cpx": "^1.5.0",
     "eslint": "^7.11.0",
-    "internal-tools": "0.0.0",
-    "nyc": "^14.0.0",
+    "internal-tools": "workspace:*",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0"
+  },
+  "nyc": {
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

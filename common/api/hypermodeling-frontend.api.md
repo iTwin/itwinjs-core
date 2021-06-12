@@ -29,16 +29,16 @@ import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { XYZProps } from '@bentley/geometry-core';
 
-// @beta
+// @public
 export function createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise<TiledGraphicsProvider>;
 
-// @beta
+// @public
 export class HyperModeling {
     // @internal (undocumented)
     static getMarkerData(type: SectionType): MarkerData;
     static get graphicsConfig(): SectionGraphicsConfig;
     static initialize(config?: HyperModelingConfig): Promise<void>;
-    static isEnabledForViewport(vp: ScreenViewport): boolean;
+    static isEnabledForViewport(viewport: ScreenViewport): boolean;
     static isSupportedForIModel(imodel: IModelConnection): Promise<boolean>;
     static get markerConfig(): SectionMarkerConfig;
     static get markerHandler(): SectionMarkerHandler;
@@ -47,18 +47,20 @@ export class HyperModeling {
     static replaceConfiguration(config?: HyperModelingConfig): void;
     // @internal (undocumented)
     static resources?: Resources;
-    static startOrStop(vp: ScreenViewport, start?: boolean): Promise<HyperModelingDecorator | undefined>;
+    static start(viewport: ScreenViewport): Promise<HyperModelingDecorator | undefined>;
+    static startOrStop(viewport: ScreenViewport, start?: boolean): Promise<HyperModelingDecorator | undefined>;
+    static stop(viewport: ScreenViewport): void;
     static updateConfiguration(config: HyperModelingConfig): void;
 }
 
-// @beta
+// @public
 export interface HyperModelingConfig {
     readonly graphics?: SectionGraphicsConfig;
     readonly markerHandler?: SectionMarkerHandler;
     readonly markers?: SectionMarkerConfig;
 }
 
-// @beta
+// @public
 export class HyperModelingDecorator implements Decorator {
     get activeMarker(): SectionMarker | undefined;
     alignToSpatialView(marker: SectionMarker): Promise<boolean>;
@@ -72,7 +74,6 @@ export class HyperModelingDecorator implements Decorator {
     // @internal (undocumented)
     dispose(): void;
     static getForViewport(vp: ScreenViewport): HyperModelingDecorator | undefined;
-    // @internal (undocumented)
     readonly markers: SectionMarkerSet;
     openSection(marker: SectionMarker): Promise<boolean>;
     openSheet(marker: SectionMarker): Promise<boolean>;
@@ -98,7 +99,7 @@ export interface MarkerData {
     readonly label: string;
 }
 
-// @beta
+// @public
 export class SectionDrawingLocationState {
     // @internal
     constructor(props: SectionDrawingLocationStateData, iModel: IModelConnection);
@@ -162,7 +163,7 @@ export interface SectionDrawingLocationStateData {
     yaw?: number;
 }
 
-// @beta
+// @public
 export interface SectionGraphicsConfig {
     readonly debugClipVolumes?: boolean;
     readonly hideSectionGraphics?: boolean;
@@ -170,7 +171,7 @@ export interface SectionGraphicsConfig {
     readonly ignoreClip?: boolean;
 }
 
-// @beta
+// @public
 export class SectionMarker extends Marker {
     constructor(state: SectionDrawingLocationState);
     // @internal (undocumented)
@@ -204,14 +205,14 @@ export class SectionMarkerCluster extends Marker {
     onMouseButton(_ev: BeButtonEvent): boolean;
 }
 
-// @beta
+// @public
 export interface SectionMarkerConfig {
     readonly hiddenSectionTypes?: SectionType[];
     readonly ignoreCategorySelector?: boolean;
     readonly ignoreModelSelector?: boolean;
 }
 
-// @beta
+// @public
 export class SectionMarkerHandler {
     activateMarker(marker: SectionMarker, decorator: HyperModelingDecorator): Promise<boolean>;
     deactivateMarker(marker: SectionMarker, decorator: HyperModelingDecorator): Promise<void>;
@@ -220,9 +221,10 @@ export class SectionMarkerHandler {
     isMarkerVisible(marker: SectionMarker, decorator: HyperModelingDecorator, config: SectionMarkerConfig): boolean;
 }
 
-// @beta
+// @public
 export class SectionMarkerSet extends MarkerSet<SectionMarker> {
     constructor(viewport: ScreenViewport, markers: SectionMarker[]);
+    findMarkerById(sectionDrawingLocationId: Id64String): SectionMarker | undefined;
     // @internal (undocumented)
     protected getClusterMarker(cluster: Cluster<SectionMarker>): Marker;
     // (undocumented)
@@ -230,7 +232,7 @@ export class SectionMarkerSet extends MarkerSet<SectionMarker> {
     get viewport(): ScreenViewport;
 }
 
-// @beta
+// @public
 export interface SectionViewAttachment {
     readonly clip?: ClipVector;
     readonly id: Id64String;

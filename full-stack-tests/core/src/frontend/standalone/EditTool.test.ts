@@ -8,6 +8,7 @@ import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -37,7 +38,7 @@ if (ProcessDetector.isElectronAppFrontend) {
   describe("EditTools", () => {
 
     before(async () => {
-      await IModelApp.startup();
+      await ElectronApp.startup();
       const testNamespace = IModelApp.i18n.registerNamespace("TestApp");
       IModelApp.tools.register(TestEditTool1, testNamespace);
       iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
@@ -46,7 +47,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     after(async () => {
       await iModel.close();
-      await IModelApp.shutdown();
+      await ElectronApp.shutdown();
     });
 
     it("should start edit commands", async () => {

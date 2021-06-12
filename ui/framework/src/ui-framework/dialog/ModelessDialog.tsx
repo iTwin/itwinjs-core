@@ -15,6 +15,7 @@ import { ModelessDialogManager } from "./ModelessDialogManager";
  */
 export interface ModelessDialogProps extends DialogProps {
   dialogId: string;
+  movable?: boolean;
 }
 
 /** Modeless Dialog React component uses the Dialog component with a modal={false} prop.

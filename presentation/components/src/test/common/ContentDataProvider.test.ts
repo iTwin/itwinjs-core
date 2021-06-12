@@ -10,8 +10,8 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, Item, KeySet, NestedContentField,
-  Paged, RegisteredRuleset, SelectionInfo,
+  Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, FIELD_NAMES_SEPARATOR, Item,
+  KeySet, NestedContentField, Paged, RegisteredRuleset, SelectionInfo,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -21,7 +21,6 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
-import { FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 
@@ -672,6 +671,34 @@ describe("ContentDataProvider", () => {
     it("invalidates cache when related ruleset variables change", () => {
       presentationManagerMock.object.vars("").onVariableChanged.raiseEvent("var_id", "prev", "curr");
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
+    });
+
+  });
+
+  describe("diagnostics", () => {
+
+    it("passes diagnostics options to presentation manager", async () => {
+      const diagnosticsHandler = sinon.stub();
+
+      provider.dispose();
+      provider = new Provider({
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+        displayType,
+        ruleDiagnostics: { severity: "error", handler: diagnosticsHandler },
+      });
+      sinon.stub(provider, "shouldRequestContentForEmptyKeyset").returns(true);
+
+      const descriptor = createRandomDescriptor();
+      const content = new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]);
+      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isObjectWith<Paged<ContentDescriptorRequestOptions<IModelConnection, KeySet>>>({ diagnostics: { editor: "error", handler: diagnosticsHandler } })))
+        .returns(async () => descriptor)
+        .verifiable(moq.Times.once());
+      presentationManagerMock.setup((x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ diagnostics: { editor: "error", handler: diagnosticsHandler } })))
+        .returns(async () => content)
+        .verifiable(moq.Times.once());
+      await provider.getContentSetSize();
+      presentationManagerMock.verifyAll();
     });
 
   });

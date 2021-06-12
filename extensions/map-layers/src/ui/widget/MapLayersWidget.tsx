@@ -23,7 +23,7 @@ export function MapLayersWidget(props: MapLayersWidgetProps) {
   const activeViewport = useActiveViewport();
   const ref = React.useRef<HTMLDivElement>(null);
 
-  if (activeViewport && !!activeViewport?.iModel.isGeoLocated && activeViewport.view.isSpatialView)
+  if (activeViewport && !!activeViewport?.iModel.isGeoLocated && activeViewport.view.isSpatialView())
     return (
       <div ref={ref} className="map-manager-layer-host">
         <MapLayerManager activeViewport={activeViewport} mapLayerOptions={props.mapLayerOptions} getContainerForClone={() => {

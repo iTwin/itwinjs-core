@@ -13,12 +13,17 @@ import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
 
-/** @alpha */
+/** This tool attaches a specified reality model.
+ * @beta
+ */
 export class AttachRealityModelTool extends Tool {
   public static toolId = "AttachRealityModelTool";
   public static get minArgs() { return 1; }
   public static get maxArgs() { return 1; }
 
+  /** This method runs the tool, attaching a specified reality model.
+   * @param data a [[ContextRealityModelProps]] JSON representation
+   */
   public run(data: string): boolean {
     const props = JSON.parse(data);
     const vp = IModelApp.viewManager.selectedView;
@@ -29,23 +34,30 @@ export class AttachRealityModelTool extends Tool {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Properties ${props} are not valid`));
     }
 
-    vp.attachRealityModel(props);
+    vp.displayStyle.attachRealityModel(props);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${props.tilesetUrl} attached`));
 
     return true;
   }
 
+  /** Executes this tool's run method with args[0] containing `data`.
+   * @see [[run]]
+   */
   public parseAndRun(...args: string[]): boolean {
     return this.run(args[0]);
   }
 }
 
-/** @alpha */
+/** This tool saves a reality model's JSON representation to the system clipboard.
+ * @beta */
 export class SaveRealityModelTool extends Tool {
   public static toolId = "SaveRealityModelTool";
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
+  /** This method runs the tool, saving a reality model's JSON representation to the system clipboard.
+   * @param name the name of the reality model to copy; if undefined, copy the last found reality model
+   */
   public run(name: string | undefined): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
@@ -60,14 +72,21 @@ export class SaveRealityModelTool extends Tool {
     return true;
   }
 
+  /** Executes this tool's run method with args[0] containing `name`.
+   * @see [[run]]
+   */
   public parseAndRun(...args: string[]): boolean {
     return this.run(args.length > 0 ? args[0] : undefined);
   }
 }
 
 function changeRealityModelAppearanceOverrides(vp: Viewport, overrides: FeatureAppearanceProps, index: number): boolean {
-  const existingOverrides = vp.getRealityModelAppearanceOverride(index);
-  return vp.overrideRealityModelAppearance(index, existingOverrides ? existingOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides));
+  const model = vp.displayStyle.settings.contextRealityModels.models[index];
+  if (!model)
+    return false;
+
+  model.appearanceOverrides = model.appearanceOverrides ? model.appearanceOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides);
+  return true;
 }
 
 /** Set reality model appearance override for transparency in display style.
@@ -163,7 +182,11 @@ export class DetachRealityModelTool extends Tool {
     if (vp === undefined)
       return false;
 
-    vp.detachRealityModelByIndex(index);
+    const model = vp.displayStyle.settings.contextRealityModels.models[index];
+    if (!model)
+      return false;
+
+    vp.displayStyle.settings.contextRealityModels.delete(model);
     return true;
   }
 
@@ -208,9 +231,14 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
 
   public run(index: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
-    if (vp)
-      vp.dropRealityModelAppearanceOverride(index);
+    if (!vp)
+      return false;
 
+    const model = vp.displayStyle.settings.contextRealityModels.models[index];
+    if (!model)
+      return false;
+
+    model.appearanceOverrides = undefined;
     return true;
   }
 
@@ -231,8 +259,9 @@ export class AttachCesiumAssetTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
+
     const props = { tilesetUrl: getCesiumAssetUrl(assetId, requestKey) };
-    vp.attachRealityModel(props);
+    vp.displayStyle.attachRealityModel(props);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`));
     return true;
   }
@@ -257,11 +286,11 @@ export class ToggleOSMBuildingDisplay extends Tool {
       return false;
 
     if (onOff === undefined)
-      onOff = vp.displayStyle.getOSMBuildingDisplayIndex() < 0;    // Toggle current state.
+      onOff = undefined === vp.displayStyle.getOSMBuildingRealityModel(); // Toggle current state.
 
     const appearanceOverrides = (transparency !== undefined && transparency > 0 && transparency < 1) ? FeatureAppearance.fromJSON({ transparency }) : undefined;
 
-    vp.setOSMBuildingDisplay({ onOff, appearanceOverrides });
+    vp.displayStyle.setOSMBuildingDisplay({ onOff, appearanceOverrides });
     return true;
   }
 

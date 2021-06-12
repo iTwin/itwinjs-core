@@ -51,13 +51,13 @@ describe("<KeyinPalettePanel>", () => {
   });
 
   it("test clearKeyinPaletteHistory", async () => {
-    const uiSettings = UiFramework.getUiSettings();
-    if (uiSettings) {
-      await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["keyin1", "keyin2"]);
-      let settingsResult = await uiSettings.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
+    const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+    if (uiSettingsStorage) {
+      await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["keyin1", "keyin2"]);
+      let settingsResult = await uiSettingsStorage.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
       expect(UiSettingsStatus.Success === settingsResult.status);
       clearKeyinPaletteHistory();
-      settingsResult = await uiSettings.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
+      settingsResult = await uiSettingsStorage.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
       expect(UiSettingsStatus.NotFound === settingsResult.status);
     }
   });
@@ -197,9 +197,9 @@ describe("<KeyinPalettePanel>", () => {
     });
 
     it("Renders and filters out bogus history entry", async () => {
-      const uiSettings = UiFramework.getUiSettings();
-      if (uiSettings) {
-        await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
+      const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+      if (uiSettingsStorage) {
+        await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
       }
       const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
       const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
@@ -212,9 +212,9 @@ describe("<KeyinPalettePanel>", () => {
     });
 
     it("handles key presses in select input ", async () => {
-      const uiSettings = UiFramework.getUiSettings();
-      if (uiSettings) {
-        await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
+      const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+      if (uiSettingsStorage) {
+        await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
       }
       const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
       const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
@@ -233,9 +233,9 @@ describe("<KeyinPalettePanel>", () => {
     });
 
     it("handles ctrl+key presses in select input ", async () => {
-      const uiSettings = UiFramework.getUiSettings();
-      if (uiSettings) {
-        await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
+      const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+      if (uiSettingsStorage) {
+        await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
       }
       const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
       const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
@@ -272,9 +272,9 @@ describe("<KeyinPalettePanel>", () => {
     });
 
     it("Handles listbox click processing", async () => {
-      const uiSettings = UiFramework.getUiSettings();
-      if (uiSettings) {
-        await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
+      const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+      if (uiSettingsStorage) {
+        await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
       }
       const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
       const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
@@ -292,9 +292,9 @@ describe("<KeyinPalettePanel>", () => {
     });
 
     it("Handles listbox CTRL+click processing", async () => {
-      const uiSettings = UiFramework.getUiSettings();
-      if (uiSettings) {
-        await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
+      const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+      if (uiSettingsStorage) {
+        await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
       }
       const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
       const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);

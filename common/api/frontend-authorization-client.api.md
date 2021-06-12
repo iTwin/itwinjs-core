@@ -18,8 +18,8 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
     // (undocumented)
     protected getUserManager(): Promise<UserManager>;
     protected getUserManagerSettings(basicSettings: BrowserAuthorizationCallbackHandlerConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
-    static handleSigninCallback(redirectUrl?: string): Promise<void>;
-}
+    static handleSigninCallback(redirectUrl: string): Promise<void>;
+    }
 
 // @beta (undocumented)
 export interface BrowserAuthorizationCallbackHandlerConfiguration {
@@ -47,7 +47,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     // (undocumented)
     get isAuthorized(): boolean;
     protected loadUser(requestContext: ClientRequestContext): Promise<User | undefined>;
-    protected nonInteractiveSignIn(requestContext: ClientRequestContext): Promise<User | undefined>;
+    protected nonInteractiveSignIn(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<User | undefined>;
     protected _onAccessTokenExpired: () => void;
     protected _onAccessTokenExpiring: () => Promise<void>;
     protected _onSilentRenewError: () => void;
@@ -59,8 +59,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     protected _onUserStateChanged: (user: User | undefined) => void;
     protected _onUserUnloaded: () => void;
     signIn(requestContext?: ClientRequestContext): Promise<void>;
-    signInPopup(requestContext: ClientRequestContext): Promise<void>;
-    signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
+    signInPopup(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<void>;
+    signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string, args?: BrowserAuthorizationClientRequestOptions): Promise<void>;
     signInSilent(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext?: ClientRequestContext): Promise<void>;
     // (undocumented)
@@ -70,13 +70,19 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 }
 
 // @beta (undocumented)
-export interface BrowserAuthorizationClientConfiguration {
+export interface BrowserAuthorizationClientConfiguration extends BrowserAuthorizationClientRequestOptions {
     readonly authority?: string;
     readonly clientId: string;
+    readonly noSilentSignInOnAppStartup?: boolean;
     readonly postSignoutRedirectUri?: string;
     readonly redirectUri: string;
     readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
     readonly scope: string;
+}
+
+// @public
+export interface BrowserAuthorizationClientRequestOptions {
+    prompt?: "none" | "login" | "consent" | "select_account" | string;
 }
 
 // @beta (undocumented)
@@ -89,12 +95,6 @@ export interface FrontendAuthorizationClient extends AuthorizationClient {
 
 // @beta
 export const isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient;
-
-// @internal
-export class Ntlm {
-    static authenticate(url: string): Promise<void>;
-    static setCredentials(domain: string, username: string, password: string): void;
-    }
 
 // @beta (undocumented)
 export enum OidcCallbackResponseMode {

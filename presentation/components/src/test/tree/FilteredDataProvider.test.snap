@@ -39,8 +39,8 @@ Array [
     "parentId": "cdc4f9ac-d3b8-4f1e-99c6-f1f58a7608f8/34960aae-2d01-41c6-b21f-4ebb5ca82efc",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": -675951873,
-        "color": -1539918593,
+        "backgroundColor": 14136778,
+        "color": 10761908,
       },
     },
   },
@@ -83,7 +83,7 @@ Array [
     "parentId": "cdc4f9ac-d3b8-4f1e-99c6-f1f58a7608f8/34960aae-2d01-41c6-b21f-4ebb5ca82efc",
     "style": Object {
       "colorOverrides": Object {
-        "color": 99369471,
+        "color": 388161,
       },
     },
   },
@@ -127,7 +127,7 @@ Array [
     },
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 1890186495,
+        "backgroundColor": 7383540,
       },
     },
   },
@@ -169,7 +169,7 @@ Array [
     },
     "style": Object {
       "colorOverrides": Object {
-        "color": 1183689215,
+        "color": 4623785,
       },
     },
   },

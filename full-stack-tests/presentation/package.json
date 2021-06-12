@@ -16,29 +16,29 @@
     "docs": "npm run extract",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "cross-env NODE_ENV=development mocha --opts ./mocha.opts \"./lib/**/*.js\" --grep \"#with-services\" --invert",
-    "test:integration": "mocha --opts ./mocha.opts \"./lib/**/*.js\" --grep \"#with-services\"",
+    "test": "cross-env NODE_ENV=development mocha \"./lib/**/*.js\" --grep \"#with-services\" --invert",
+    "test:integration": "mocha \"./lib/**/*.js\" --grep \"#with-services\"",
     "copy:config": "internal-tools copy-config",
     "cover": "npm run test"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.14.0-dev.16",
-    "@bentley/geometry-core": "2.14.0-dev.16",
-    "@bentley/imodeljs-i18n": "2.14.0-dev.16",
-    "@bentley/itwin-client": "2.14.0-dev.16",
-    "@bentley/imodeljs-common": "2.14.0-dev.16",
-    "@bentley/imodeljs-backend": "2.14.0-dev.16",
-    "@bentley/imodeljs-frontend": "2.14.0-dev.16",
-    "@bentley/oidc-signin-tool": "2.14.0-dev.16",
-    "@bentley/presentation-common": "2.14.0-dev.16",
-    "@bentley/presentation-backend": "2.14.0-dev.16",
-    "@bentley/presentation-frontend": "2.14.0-dev.16",
-    "@bentley/presentation-components": "2.14.0-dev.16",
-    "@bentley/presentation-testing": "2.14.0-dev.16",
-    "@bentley/product-settings-client": "2.14.0-dev.16",
-    "@bentley/ui-core": "2.14.0-dev.16",
-    "@bentley/ui-components": "2.14.0-dev.16",
-    "@bentley/ui-abstract": "2.14.0-dev.16",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/geometry-core": "workspace:*",
+    "@bentley/imodeljs-i18n": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
+    "@bentley/imodeljs-backend": "workspace:*",
+    "@bentley/imodeljs-frontend": "workspace:*",
+    "@bentley/oidc-signin-tool": "workspace:*",
+    "@bentley/presentation-common": "workspace:*",
+    "@bentley/presentation-backend": "workspace:*",
+    "@bentley/presentation-frontend": "workspace:*",
+    "@bentley/presentation-components": "workspace:*",
+    "@bentley/presentation-testing": "workspace:*",
+    "@bentley/product-settings-client": "workspace:*",
+    "@bentley/ui-core": "workspace:*",
+    "@bentley/ui-components": "workspace:*",
+    "@bentley/ui-abstract": "workspace:*",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -47,7 +47,7 @@
     "@types/cpx": "1.5",
     "@types/deep-equal": "^1",
     "@types/faker": "^4.1.0",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/rimraf": "^2.0.2",
     "@types/sinon": "^9.0.0",
@@ -59,8 +59,8 @@
     "cpx": "^1.5.0",
     "deep-equal": "^1",
     "faker": "^4.1.0",
-    "immer": "^8.0.1",
-    "mocha": "^5.2.0",
+    "immer": "^9.0.1",
+    "mocha": "^8.3.2",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-test-renderer": "^16.13.1",
@@ -71,9 +71,9 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
-    "@bentley/config-loader": "2.14.0-dev.16",
-    "@bentley/build-tools": "2.14.0-dev.16",
-    "@bentley/eslint-plugin": "2.14.0-dev.16",
+    "@bentley/config-loader": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
     "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",
     "@types/testing-library__react-hooks": "^3.1.0",
@@ -81,9 +81,8 @@
     "cross-env": "^5.1.4",
     "eslint": "^7.11.0",
     "ignore-styles": "^5.0.1",
-    "internal-tools": "0.0.0",
+    "internal-tools": "workspace:*",
     "jsdom-global": "3.0.2",
-    "ts-node": "^7.0.1",
     "typescript": "~4.1.0"
   },
   "eslintConfig": {
@@ -91,5 +90,24 @@
       "@bentley"
     ],
     "extends": "plugin:@bentley/imodeljs-recommended"
+  },
+  "mocha": {
+    "require": [
+      "scripts/copy-test-setup.js",
+      "source-map-support/register",
+      "jsdom-global/register",
+      "ignore-styles"
+    ],
+    "checkLeaks": true,
+    "timeout": 60000,
+    "file": [
+      "lib/setup.js"
+    ],
+    "reporter": [
+      "node_modules/@bentley/build-tools/mocha-reporter"
+    ],
+    "reporterOptions": [
+      "mochaFile=lib/test/junit_results.xml"
+    ]
   }
 }

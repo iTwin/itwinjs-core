@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import {
-  BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
+  ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
 } from "@bentley/bentleyjs-core";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
@@ -15,29 +15,27 @@ import {
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
+  DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
-  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
-import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb } from "../../IModelDb";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, Category,
-  ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
-  DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers,
-  ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost,
-  IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel,
-  PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb,
-  SubCategory, Subject, Texture, ViewDefinition,
+  BackendRequestContext, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
+  DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic,
+  ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
+  GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
+  LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory,
+  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
-let lastPushTimeMillis = 0;
-let lastAutoPushEventType: AutoPushEventType | undefined;
+import { IModelHubBackend } from "../../IModelHubBackend";
 
 // spell-checker: disable
 
@@ -62,14 +60,6 @@ function exerciseGc() {
     const fmt = obj.value.toString();
     assert.isTrue(i === parseInt(fmt, 10));
   }
-}
-
-function generateChangeSetId(): string {
-  let result = "";
-  for (let i = 0; i < 20; ++i) {
-    result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
-  }
-  return result;
 }
 
 describe("iModel", () => {
@@ -207,6 +197,7 @@ describe("iModel", () => {
     }
 
     stmt.dispose();
+    Logger.initializeToConsole(); // reset back to console so future tests will log correctly
   });
 
   it("should be able to get properties of an iIModel", () => {
@@ -495,12 +486,9 @@ describe("iModel", () => {
     const testTextureName = "fake texture name";
     const testTextureFormat = ImageSourceFormat.Png;
     const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
-    const testTextureWidth = 3;
-    const testTextureHeight = 3;
     const testTextureDescription = "empty description";
-    const testTextureFlags = TextureFlags.None;
 
-    const texId = Texture.insert(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
+    const texId = Texture.insertTexture(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureDescription);
 
     /* eslint-disable @typescript-eslint/naming-convention */
     const matId = RenderMaterialElement.insert(imodel5, IModel.dictionaryId, "test material name",
@@ -646,9 +634,6 @@ describe("iModel", () => {
       [{ backgroundColor: ColorDef.from(1, 2, 3, 4) }, defaultViewFlags, false],
       [{ backgroundColor: ColorDef.blue.tbgr }, defaultViewFlags, false],
       [{ backgroundColor: ColorDef.from(1, 2, 3, 4).tbgr }, defaultViewFlags, false],
-      [{ scheduleScript: { someRandomProperty: "Not a valid schedule script" } }, defaultViewFlags, false],
-      [{ scheduleScript: [{ modelId: "0xabc", elementTimelines: [] }] }, defaultViewFlags, true],
-      [{ scheduleScript: [{ someRandomProperty: "but still an array" }] }, defaultViewFlags, true],
     ];
 
     let suffix = 123;
@@ -666,8 +651,6 @@ describe("iModel", () => {
       const expectedVf = ViewFlags.fromJSON(test[1]);
       const actualVf = ViewFlags.fromJSON(actual.viewflags);
       expect(actualVf.toJSON()).to.deep.equal(expectedVf.toJSON());
-
-      expect(undefined !== actual.scheduleScript).to.equal(test[2]);
 
       const expectedBGColor = expected.backgroundColor instanceof ColorDef ? expected.backgroundColor.toJSON() : expected.backgroundColor;
       expect(actual.backgroundColor).to.equal(expectedBGColor);
@@ -1176,6 +1159,13 @@ describe("iModel", () => {
 
     imodel5.cartographicToSpatialFromEcef(carto, z2);
     assert.isTrue(z2.isAlmostEqual(center, .001), "cartographicToSpatial");
+
+    assert.isTrue(imodel5.geographicCoordinateSystem !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.horizontalCRS !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.horizontalCRS!.id === "UTM84-53N");
+    assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id === "ELLIPSOID");
   });
 
   function checkClassHasHandlerMetaData(obj: EntityMetaData) {
@@ -1270,6 +1260,7 @@ describe("iModel", () => {
       assert.equal(count, 1);
     });
 
+    let firstCodeValueId: Id64String | undefined;
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
@@ -1280,10 +1271,15 @@ describe("iModel", () => {
         const row = stmt4.getRow();
         // Verify that we got the row that we asked for
         assert.equal(row.codeValue, codeValueToFind);
+        firstCodeValueId = row.id;
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
     });
+
+    // make sure we can use parameterized values for queryEnityId (test on parameterized codevalue)
+    const ids = imodel2.queryEntityIds({ from: "bis.element", where: "codevalue=:cv", bindings: { cv: firstCodeValue } });
+    assert.equal(ids.values().next().value, firstCodeValueId);
 
     imodel2.withPreparedStatement("select ecinstanceid as id, codevalue from bis.element", (stmt5: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt5.step()) {
@@ -1296,6 +1292,9 @@ describe("iModel", () => {
       }
     });
 
+    // make sure queryEnityIds works fine when all params are specified
+    const physicalObjectIds = imodel2.queryEntityIds({ from: "generic.PhysicalObject", where: "codevalue is null", limit: 1, offset: 1, only: true, orderBy: "ecinstanceid desc" });
+    assert.equal(physicalObjectIds.size, 1);
   });
 
   it("validate BisCodeSpecs", async () => {
@@ -1637,7 +1636,7 @@ describe("iModel", () => {
   it("should be able to create a snapshot IModel", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test project" },
-      client: "ABC Manufacturing",
+      client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
       guid: Guid.createValue(),
@@ -1690,10 +1689,218 @@ describe("iModel", () => {
     const testValue = "this is a test";
     const nativeDb = iModel.nativeDb;
     assert.isUndefined(nativeDb.queryLocalValue(testLocal));
-    assert.equal(DbResult.BE_SQLITE_DONE, nativeDb.saveLocalValue(testLocal, testValue));
+    nativeDb.saveLocalValue(testLocal, testValue);
     assert.equal(nativeDb.queryLocalValue(testLocal), testValue);
 
     iModel.close();
+  });
+
+  it("should be able to create a snapshot IModel and set geolocation by GCS", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const gcs = new GeographicCRS({
+      horizontalCRS: {
+        id: "10TM115-27",
+        description: "",
+        source: "Mentor Software Client",
+        deprecated: false,
+        datumId: "NAD27",
+        unit: "Meter",
+        projection: {
+          method: "TransverseMercator",
+          centralMeridian: -115,
+          latitudeOfOrigin: 0,
+          scaleFactor: 0.9992,
+          falseEasting: 0.0,
+          falseNorthing: 0.0,
+        },
+        extent: {
+          southWest: { latitude: 48, longitude: -120.5 },
+          northEast: { latitude: 84, longitude: -109.5 },
+        },
+      },
+      verticalCRS: { id: "GEOID" },
+      additionalTransform: {
+        helmert2DWithZOffset: {
+          translationX: 10.0,
+          translationY: 15.0,
+          translationZ: 0.02,
+          rotDeg: 1.2,
+          scale: 1.0001,
+        },
+      },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot2.bim");
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    let eventListenedTo = false;
+    const gcsListener = (previousGCS: GeographicCRS | undefined) => {
+      assert.equal(previousGCS, undefined);
+      assert.isTrue(iModel.geographicCoordinateSystem !== undefined);
+      assert.isTrue(iModel.geographicCoordinateSystem!.equals(gcs));
+      eventListenedTo = true;
+    };
+    iModel.onGeographicCoordinateSystemChanged.addListener(gcsListener);
+
+    assert.isTrue(iModel.geographicCoordinateSystem === undefined);
+
+    assert.isFalse(eventListenedTo);
+
+    iModel.geographicCoordinateSystem = gcs;
+
+    assert.isTrue(eventListenedTo);
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel2.geographicCoordinateSystem !== undefined);
+
+    // The reloaded gcs will be different as the datum definition will have been expanded
+    assert.isFalse(iModel2.geographicCoordinateSystem!.equals(gcs));
+
+    // But other properties will be identical
+    assert.isTrue(iModel2.geographicCoordinateSystem !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.verticalCRS !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.verticalCRS!.equals(gcs.verticalCRS!));
+    assert.isTrue(iModel2.geographicCoordinateSystem!.additionalTransform !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.additionalTransform!.equals(gcs.additionalTransform!));
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.projection !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.projection!.equals(gcs.horizontalCRS!.projection!));
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.id !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.id === gcs.horizontalCRS!.id!);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.extent !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.extent!.equals(gcs.horizontalCRS!.extent!));
+
+    // When a gcs is present then the ECEF is automatically defined.
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+
+    iModel2.close();
+  });
+
+  it("should be able to create a snapshot IModel and set geolocation by ECEF", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const ecef = new EcefLocation({
+      origin: [42, 21, 0],
+      orientation: { yaw: 1, pitch: 1, roll: -1 },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot3.bim");
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    assert.isTrue(iModel.ecefLocation === undefined);
+
+    iModel.ecefLocation = ecef;
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+    assert.isTrue(iModel2.ecefLocation!.isAlmostEqual(ecef));
+
+    iModel2.close();
+  });
+
+  // Deactivated since change was (temporarily) reverted
+  it.skip("presence of a GCS imposes the ecef value", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const gcs = new GeographicCRS({
+      horizontalCRS: {
+        id: "10TM115-27",
+        description: "",
+        source: "Mentor Software Client",
+        deprecated: false,
+        datumId: "NAD27",
+        unit: "Meter",
+        projection: {
+          method: "TransverseMercator",
+          centralMeridian: -115,
+          latitudeOfOrigin: 0,
+          scaleFactor: 0.9992,
+          falseEasting: 0.0,
+          falseNorthing: 0.0,
+        },
+        extent: {
+          southWest: { latitude: 48, longitude: -120.5 },
+          northEast: { latitude: 84, longitude: -109.5 },
+        },
+      },
+      verticalCRS: { id: "GEOID" },
+      additionalTransform: {
+        helmert2DWithZOffset: {
+          translationX: 10.0,
+          translationY: 15.0,
+          translationZ: 0.02,
+          rotDeg: 1.2,
+          scale: 1.0001,
+        },
+      },
+    });
+
+    const ecef = new EcefLocation({
+      origin: [42, 21, 0],
+      orientation: { yaw: 1, pitch: 1, roll: -1 },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot4.bim");
+
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    iModel.ecefLocation = ecef;
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openForApplyChangesets(testFile);
+
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+    assert.isTrue(iModel2.ecefLocation!.isAlmostEqual(ecef));
+
+    assert.isTrue(iModel2.geographicCoordinateSystem === undefined);
+
+    iModel2.geographicCoordinateSystem = gcs;
+
+    iModel2.updateIModelProps();
+    iModel2.saveChanges();
+    iModel2.close();
+
+    const iModel3 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel3.geographicCoordinateSystem !== undefined);
+
+    // When a gcs is present then ecef value is imposed by the gcs disregarding previous value.
+    assert.isTrue(iModel3.ecefLocation !== undefined);
+    assert.isFalse(iModel3.ecefLocation!.isAlmostEqual(ecef));
+
+    iModel3.close();
   });
 
   it("should be able to open checkpoints", async () => {
@@ -1702,7 +1909,8 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
-    const changeSetId = generateChangeSetId();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
     snapshot.close();
@@ -1717,9 +1925,9 @@ describe("iModel", () => {
       containerAccessKeySAS: "testSAS",
       containerAccessKeyDbName: "testDb",
     };
-    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
+    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
     sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
-    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     // Mock blockcacheVFS daemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
@@ -1749,26 +1957,60 @@ describe("iModel", () => {
     checkpoint.close();
   });
 
-  it("should throw when opening checkpoint without blockcache dir env", async () => {
-    process.env.BLOCKCACHE_DIR = "";
+  it("should throw for invalid v2 checkpoints", async () => {
+    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
+    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
+    const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
+    const contextId = Guid.createValue();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
+    snapshot.saveChanges();
+    snapshot.close();
+
+    // Mock iModelHub
+    const mockCheckpointV2: CheckpointV2 = {
+      wsgId: "INVALID",
+      ecId: "INVALID",
+      changeSetId,
+      containerAccessKeyAccount: "testAccount",
+      containerAccessKeyContainer: `imodelblocks-${iModelId}`,
+      containerAccessKeySAS: "testSAS",
+      containerAccessKeyDbName: "testDb",
+    };
+    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
+    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
+    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+
+    // Mock blockcacheVFS daemon
+    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
+    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
+    sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
-    expectIModelError(IModelStatus.BadRequest, error);
+
+    process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
+
+    process.env.BLOCKCACHE_DIR = "/foo/";
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId }));
+    expectIModelError(IModelStatus.ValidationFailed, error);
   });
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
+    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
-    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
-    expectIModelError(IModelStatus.BadRequest, error);
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    expectIModelError(IModelStatus.NotFound, error);
   });
 
   it("should throw when attempting to re-attach a non-checkpoint snapshot", async () => {
@@ -1778,133 +2020,9 @@ describe("iModel", () => {
     expectIModelError(IModelStatus.WrongIModel, error);
   });
 
-  // This is skipped because it fails unpredictably - the timeouts don't seem to happen as expected
-  it.skip("should test AutoPush", async () => {
-    let idle: boolean = true;
-    const activityMonitor = {
-      isIdle: idle,
-    };
-
-    const fakePushTimeRequired = 1; // pretend that it takes 1/1000 of a second to do the push
-    const millisToWaitForAutoPush = (15 * fakePushTimeRequired); // a long enough wait to ensure that auto-push ran.
-
-    const iModel = {
-      pushChanges: async (_clientAccessToken: AccessToken) => {
-        await new Promise((resolve, _reject) => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, to simulate time spent doing push
-        lastPushTimeMillis = Date.now();
-      },
-      iModelToken: {
-        changeSetId: "",
-        iModelId: "fake",
-      },
-      concurrencyControl: {
-        request: async (_clientAccessToken: AccessToken) => { },
-      },
-      onBeforeClose: new BeEvent<() => void>(),
-      txns: {
-        hasLocalChanges: () => true,
-      },
-    };
-
-    const authorizationClient: AuthorizationClient = {
-      getAccessToken: async (_requestContext: ClientRequestContext): Promise<AccessToken> => {
-        const fakeAccessToken2 = {} as AccessToken;
-        return fakeAccessToken2;
-      },
-      isAuthorized: true,
-    };
-
-    lastPushTimeMillis = 0;
-    lastAutoPushEventType = undefined;
-
-    // Create an autopush in manual-schedule mode.
-    const autoPushParams: AutoPushParams = { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false };
-    IModelHost.authorizationClient = authorizationClient;
-    const autoPush = new AutoPush(iModel as any, autoPushParams, activityMonitor);
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
-    assert.isFalse(autoPush.autoSchedule);
-
-    // Schedule the next push
-    autoPush.scheduleNextPush();
-    assert.equal(autoPush.state, AutoPushState.Scheduled);
-
-    // Wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
-
-    // Verify that push happened during the time that I was asleep.
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to restart automatically");
-    assert.notEqual(lastPushTimeMillis, 0);
-    assert.isAtLeast(autoPush.durationOfLastPushMillis, fakePushTimeRequired);
-    assert.isUndefined(lastAutoPushEventType);  // not listening to events yet.
-
-    // Cancel the next scheduled push
-    autoPush.cancel();
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "cancel does NOT automatically schedule the next push");
-
-    // Register an event handler
-    const autoPushEventHandler: AutoPushEventHandler = (etype: AutoPushEventType, _theAutoPush: AutoPush) => { lastAutoPushEventType = etype; };
-    autoPush.event.addListener(autoPushEventHandler);
-
-    lastPushTimeMillis = 0;
-
-    // Explicitly schedule the next auto-push
-    autoPush.scheduleNextPush();
-    assert.equal(autoPush.state, AutoPushState.Scheduled);
-
-    // wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
-    assert.notEqual(lastPushTimeMillis, 0);
-    assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
-
-    // Just verify that this doesn't blow up.
-    await autoPush.reserveCodes();
-
-    // Now turn on auto-schedule and verify that we get a few auto-pushes
-    lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true;
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0);
-    lastPushTimeMillis = 0;
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0);
-    autoPush.cancel();
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert(autoPush.state === AutoPushState.NotRunning);
-    assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
-
-    // Test auto-push when isIdle returns false
-    idle = false;
-    lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
-    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
-    autoPush.cancel();
-    idle = true;
-
-    // Test auto-push when Txn.hasLocalChanges returns false
-    iModel.txns.hasLocalChanges = () => false;
-    lastPushTimeMillis = 0;
-    autoPush.cancel();
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
-    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
-    autoPush.cancel();
-
-    // ... now turn it back on
-    iModel.txns.hasLocalChanges = () => true;
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0); // AutoPush should have run
-
-    autoPush.cancel();
-  });
-
   function hasClassView(db: IModelDb, name: string): boolean {
     try {
-      return db.withPreparedSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
+      return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
     } catch (e) {
       return false;
     }
@@ -1917,7 +2035,7 @@ describe("iModel", () => {
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
-    assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(standaloneDb1.pathName, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key), "Should be in the list of open StandaloneDbs");
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
@@ -1955,10 +2073,10 @@ describe("iModel", () => {
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
-    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(snapshotDb1.pathName, snapshotFile1);
     assert.equal(snapshotDb2.pathName, snapshotFile2);
     assert.equal(snapshotDb3.pathName, snapshotFile3);
@@ -2038,7 +2156,7 @@ describe("iModel", () => {
 
     // create snapshot from scratch without a password, then unnecessarily specify a password to open
     let snapshotDb1 = SnapshotDb.createFrom(imodel1, snapshotFile1);
-    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     snapshotDb1.close();
     snapshotDb1 = SnapshotDb.openFile(snapshotFile1, { password: "unnecessaryPassword" });
     assert.isTrue(snapshotDb1.isSnapshotDb());
@@ -2049,7 +2167,7 @@ describe("iModel", () => {
 
     // create snapshot from scratch and give it a password
     let snapshotDb2 = SnapshotDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
-    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     const subjectName2 = "TestSubject2";
     const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
     assert.isTrue(Id64.isValidId64(subjectId2));
@@ -2064,7 +2182,7 @@ describe("iModel", () => {
 
     // create a new snapshot from a non-password-protected snapshot and then give it a password
     let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { password: "password" });
-    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     snapshotDb3.close();
     snapshotDb3 = SnapshotDb.openFile(snapshotFile3, { password: "password" });
     assert.isTrue(snapshotDb3.isSnapshotDb());
@@ -2377,6 +2495,12 @@ describe("iModel", () => {
     assert.equal(subject2.description, "Description2");
     assert.equal(subject3.description, ""); // NOTE: different behavior between auto-handled and custom-handled
     assert.isUndefined(subject4.description);
+
+    // Test toJSON
+    assert.equal(subject1.toJSON().description, "Description1");
+    assert.equal(subject2.toJSON().description, "Description2");
+    assert.equal(subject3.toJSON().description, "");
+    assert.isUndefined(subject4.toJSON().description);
 
     // Element.UserLabel is a custom-handled property
     assert.equal(subject1.userLabel, "UserLabel1");

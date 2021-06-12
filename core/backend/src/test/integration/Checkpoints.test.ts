@@ -2,27 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import { assert } from "chai";
+import { ChildProcess } from "child_process";
+import * as fs from "fs-extra";
+import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { assert } from "chai";
-import { ChildProcess } from "child_process";
-import * as path from "path";
-import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelHubBackend } from "../../IModelHubBackend";
+import { AuthorizedBackendRequestContext, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
 // FIXME: Disabled because V2 checkpoints are not in QA yet...
 describe.skip("Checkpoints (#integration)", () => {
-
   let requestContext: AuthorizedBackendRequestContext;
-  const testProjectName = "iModelJsIntegrationTest";
-  const testIModelName = "Stadium Dataset 1";
   let testIModelId: GuidString;
-  let testProjectId: GuidString;
-  let testChangeSetId: GuidString;
+  let testContextId: GuidString;
+  let testChangeSetId: string;
 
   const blockcacheDir = path.join(KnownTestLocations.outputDir, "blockcachevfs");
   let daemonProc: ChildProcess;
@@ -31,16 +30,15 @@ describe.skip("Checkpoints (#integration)", () => {
   before(async () => {
     originalEnv = { ...process.env };
     process.env.BLOCKCACHE_DIR = blockcacheDir;
-    IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testProjectId = await HubUtility.queryProjectIdByName(requestContext, testProjectName);
-    testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
-    testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
+    testContextId = await HubUtility.getTestContextId(requestContext);
+    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
+    testChangeSetId = (await HubUtility.queryLatestChangeSetId(requestContext, testIModelId));
 
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(testChangeSetId).selectContainerAccessKey();
-    const checkpoints = await IModelHost.iModelClient.checkpointsV2.get(requestContext, testIModelId, checkpointQuery);
+    const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(requestContext, testIModelId, checkpointQuery);
     assert.equal(checkpoints.length, 1, "checkpoint missing");
     assert.isDefined(checkpoints[0].containerAccessKeyAccount, "checkpoint storage account is invalid");
 
@@ -63,19 +61,19 @@ describe.skip("Checkpoints (#integration)", () => {
       daemonProc.kill();
       await onDaemonExit;
     }
-    // BriefcaseManager.deleteFolderAndContents(blockcacheDir);
+    fs.removeSync(blockcacheDir);
   });
 
   it("should be able to open and read V2 checkpoint", async () => {
     const iModel = await SnapshotDb.openCheckpointV2({
       requestContext,
-      contextId: testProjectId,
+      contextId: testContextId,
       iModelId: testIModelId,
       changeSetId: testChangeSetId,
     });
     assert.equal(iModel.getGuid(), testIModelId);
     assert.equal(iModel.changeSetId, testChangeSetId);
-    assert.equal(iModel.contextId, testProjectId);
+    assert.equal(iModel.contextId, testContextId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);

@@ -11,13 +11,18 @@ import { ContentRequestOptions } from '@bentley/presentation-common';
 import { ContentUpdateInfo } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { DiagnosticsHandler } from '@bentley/presentation-common';
+import { DiagnosticsScopeLogs } from '@bentley/presentation-common';
 import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
+import { ElementProperties } from '@bentley/presentation-common';
+import { ElementPropertiesRequestOptions } from '@bentley/presentation-common';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
+import { HierarchyCompareOptions } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { HierarchyUpdateInfo } from '@bentley/presentation-common';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -37,8 +42,8 @@ import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { PagedResponse } from '@bentley/presentation-common';
+import { PageOptions } from '@bentley/presentation-common';
 import { PartialHierarchyModification } from '@bentley/presentation-common';
-import { PresentationDataCompareOptions } from '@bentley/presentation-common';
 import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RpcRequestsHandler } from '@bentley/presentation-common';
@@ -47,13 +52,23 @@ import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SetRulesetVariableParams } from '@bentley/presentation-common';
+import { UnsetRulesetVariableParams } from '@bentley/presentation-common';
 import { UpdateHierarchyStateParams } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 
 // @internal (undocumented)
+export const buildPagedResponse: <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>) => Promise<PagedResponse<TItem>>;
+
+// @alpha (undocumented)
+export function consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void;
+
+// @alpha (undocumented)
+export function createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]): (scopeLogs: DiagnosticsScopeLogs[]) => void;
+
+// @internal (undocumented)
 export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
 
-// @beta
+// @public
 export class FavoritePropertiesManager implements IDisposable {
     constructor(props: FavoritePropertiesManagerProps);
     // @deprecated
@@ -78,7 +93,12 @@ export class FavoritePropertiesManager implements IDisposable {
     sortFields: (imodel: IModelConnection, fields: Field[]) => Field[];
     }
 
-// @beta
+// @public
+export interface FavoritePropertiesManagerProps {
+    storage: IFavoritePropertiesStorage;
+}
+
+// @public
 export interface FavoritePropertiesOrderInfo {
     // (undocumented)
     name: PropertyFullName;
@@ -90,7 +110,7 @@ export interface FavoritePropertiesOrderInfo {
     priority: number;
 }
 
-// @beta
+// @public
 export enum FavoritePropertiesScope {
     // (undocumented)
     Global = 0,
@@ -105,6 +125,9 @@ export const getFieldInfos: (field: Field) => Set<PropertyFullName>;
 
 // @public
 export function getScopeId(scope: SelectionScope | string | undefined): string;
+
+// @internal (undocumented)
+export const HILITE_RULESET: Ruleset;
 
 // @public
 export interface HiliteSet {
@@ -128,11 +151,23 @@ export interface HiliteSetProviderProps {
     imodel: IModelConnection;
 }
 
-// @beta
+// @public
 export interface IFavoritePropertiesStorage {
     loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
     loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
     saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+}
+
+// @internal (undocumented)
+export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+    // (undocumented)
+    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    // (undocumented)
+    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    // (undocumented)
+    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    // (undocumented)
     savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
 }
 
@@ -164,10 +199,32 @@ export interface NodeIdentifier {
     key: NodeKey;
 }
 
+// @internal (undocumented)
+export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
+    constructor(props: OfflineCachingFavoritePropertiesStorageProps);
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    loadProperties(projectId?: string, imodelId?: string): Promise<Set<string> | undefined>;
+    // (undocumented)
+    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    // (undocumented)
+    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    // (undocumented)
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+    }
+
+// @internal (undocumented)
+export interface OfflineCachingFavoritePropertiesStorageProps {
+    // (undocumented)
+    connectivityInfo: IConnectivityInformationProvider;
+    // (undocumented)
+    impl: IFavoritePropertiesStorage;
+}
+
 // @public
 export class Presentation {
     static get connectivity(): IConnectivityInformationProvider;
-    // @beta
     static get favoriteProperties(): FavoritePropertiesManager;
     static get i18n(): I18N;
     static initialize(props?: PresentationManagerProps): Promise<void>;
@@ -188,7 +245,7 @@ export class Presentation {
     static terminate(): void;
 }
 
-// @beta
+// @public
 export enum PresentationFrontendLoggerCategory {
     // (undocumented)
     Package = "presentation-frontend"
@@ -198,65 +255,66 @@ export enum PresentationFrontendLoggerCategory {
 export class PresentationManager implements IDisposable {
     activeLocale: string | undefined;
     activeUnitSystem: PresentationUnitSystem | undefined;
-    // @alpha (undocumented)
-    compareHierarchies(props: PresentationDataCompareOptions<IModelConnection, NodeKey>): Promise<PartialHierarchyModification[]>;
+    compareHierarchies(props: HierarchyCompareOptions<IModelConnection, NodeKey>): Promise<PartialHierarchyModification[]>;
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
     dispose(): void;
     // @deprecated
-    getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
-    // @beta (undocumented)
-    getContent(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>): Promise<Content | undefined>;
+    getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection, RulesetVariable>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
+    // (undocumented)
+    getContent(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>>): Promise<Content | undefined>;
     // @deprecated
-    getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{
+    getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, RulesetVariable>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{
         content: Content;
         size: number;
     } | undefined>;
-    // @beta (undocumented)
-    getContentAndSize(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>): Promise<{
+    // (undocumented)
+    getContentAndSize(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>>): Promise<{
         content: Content;
         size: number;
     } | undefined>;
     // @deprecated
-    getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
-    // @beta (undocumented)
-    getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet>): Promise<Descriptor | undefined>;
+    getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
+    // (undocumented)
+    getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<Descriptor | undefined>;
     // @deprecated
-    getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
-    // @beta (undocumented)
-    getContentSetSize(requestOptions: ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<number>;
+    getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
+    // (undocumented)
+    getContentSetSize(requestOptions: ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>): Promise<number>;
     // @deprecated
     getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition>;
-    // @beta (undocumented)
+    // (undocumented)
     getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition>;
     // @deprecated
     getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]>;
-    // @beta (undocumented)
+    // (undocumented)
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
-    getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
-    getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]>;
-    getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
     // @deprecated
-    getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: NodeKey | undefined): Promise<Node[]>;
-    getNodes(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>): Promise<Node[]>;
+    getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
+    // @beta
+    getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
+    getFilteredNodePaths(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never, RulesetVariable>, filterText: string): Promise<NodePathElement[]>;
+    getNodePaths(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never, RulesetVariable>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
     // @deprecated
-    getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: NodeKey | undefined): Promise<{
+    getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, RulesetVariable>>, parentKey: NodeKey | undefined): Promise<Node[]>;
+    getNodes(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<Node[]>;
+    // @deprecated
+    getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, RulesetVariable>>, parentKey: NodeKey | undefined): Promise<{
         count: number;
         nodes: Node[];
     }>;
-    getNodesAndCount(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>): Promise<{
+    getNodesAndCount(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<{
         count: number;
         nodes: Node[];
     }>;
     // @deprecated
-    getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: NodeKey | undefined): Promise<number>;
-    getNodesCount(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>): Promise<number>;
-    // @alpha
-    getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>>;
+    getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, RulesetVariable>, parentKey: NodeKey | undefined): Promise<number>;
+    getNodesCount(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>): Promise<number>;
+    getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
-    // @alpha
-    loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
+    // @alpha @deprecated
+    loadHierarchy(_requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @alpha
     onIModelContentChanged: BeEvent<(args: IModelContentChangeEventArgs) => void>;
     // @alpha
@@ -285,7 +343,7 @@ export interface PresentationManagerProps {
     stateTracker?: StateTracker;
 }
 
-// @beta
+// @public
 export type PropertyFullName = string;
 
 // @public
@@ -300,23 +358,60 @@ export interface RulesetManager {
     remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
 }
 
+// @internal (undocumented)
+export class RulesetManagerImpl implements RulesetManager {
+    add(ruleset: Ruleset): Promise<RegisteredRuleset>;
+    clear(): Promise<void>;
+    // (undocumented)
+    static create(): RulesetManagerImpl;
+    get(id: string): Promise<RegisteredRuleset | undefined>;
+    modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
+    // (undocumented)
+    onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
+    remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
+}
+
 // @public
 export interface RulesetVariablesManager {
     // @internal
-    getAllVariables(): Promise<RulesetVariable[]>;
+    getAllVariables(): RulesetVariable[];
     getBool(variableId: string): Promise<boolean>;
     getId64(variableId: string): Promise<Id64String>;
     getId64s(variableId: string): Promise<Id64String[]>;
     getInt(variableId: string): Promise<number>;
     getInts(variableId: string): Promise<number[]>;
     getString(variableId: string): Promise<string>;
-    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue, currValue: VariableValue) => void>;
+    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue | undefined) => void>;
     setBool(variableId: string, value: boolean): Promise<void>;
     setId64(variableId: string, value: Id64String): Promise<void>;
     setId64s(variableId: string, value: Id64String[]): Promise<void>;
     setInt(variableId: string, value: number): Promise<void>;
     setInts(variableId: string, value: number[]): Promise<void>;
     setString(variableId: string, value: string): Promise<void>;
+    unset(variableId: string): Promise<void>;
+}
+
+// @internal (undocumented)
+export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
+    constructor(rulesetId: string, ipcHandler?: IpcRequestsHandler);
+    // (undocumented)
+    getAllVariables(): RulesetVariable[];
+    getBool(variableId: string): Promise<boolean>;
+    getId64(variableId: string): Promise<Id64String>;
+    getId64s(variableId: string): Promise<Id64String[]>;
+    getInt(variableId: string): Promise<number>;
+    getInts(variableId: string): Promise<number[]>;
+    getString(variableId: string): Promise<string>;
+    // (undocumented)
+    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue | undefined) => void>;
+    setBool(variableId: string, value: boolean): Promise<void>;
+    setId64(variableId: string, value: Id64String): Promise<void>;
+    setId64s(variableId: string, value: Id64String[]): Promise<void>;
+    setInt(variableId: string, value: number): Promise<void>;
+    setInts(variableId: string, value: number[]): Promise<void>;
+    setString(variableId: string, value: string): Promise<void>;
+    // (undocumented)
+    unset(variableId: string): Promise<void>;
 }
 
 // @public
@@ -426,6 +521,19 @@ export class StateTracker {
     // (undocumented)
     onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string): Promise<void>;
     }
+
+// @internal (undocumented)
+export class ToolSelectionSyncHandler implements IDisposable {
+    constructor(imodel: IModelConnection, logicalSelection: SelectionManager);
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    isSuspended?: boolean;
+    get pendingAsyncs(): Set<string>;
+    }
+
+// @internal (undocumented)
+export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
 
 
 // (No @packageDocumentation comment for this package)

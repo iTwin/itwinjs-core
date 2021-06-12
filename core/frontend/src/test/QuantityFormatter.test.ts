@@ -5,8 +5,9 @@
 
 import { Parser } from "@bentley/imodeljs-quantity";
 import { assert } from "chai";
+import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 
-import { QuantityFormatter, QuantityType, QuantityTypeArg } from "../QuantityFormatter";
+import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {
@@ -15,11 +16,108 @@ function withinTolerance(x: number, y: number, tolerance?: number): boolean {
   return z >= -tol && z <= tol;
 }
 
+/** setup a local storage mock that contains a unit system and QuantityType.Length override format */
+const storageMock = () => {
+  const storage: { [key: string]: any } = {
+    "quantityTypeFormat#user#q:QuantityTypeEnumValue-1":`{"metric":{"type":"Decimal","precision":2,"roundFactor":0,"showSignOption":"OnlyNegative","formatTraits":["keepSingleZero","showUnitLabel"],"decimalSeparator":".","thousandSeparator":",","uomSeparator":" ","stationSeparator":"+","composite":{"spacer":"","includeZero":true,"units":[{"name":"Units.CM","label":"cm"}]}}}`,
+    "unitsystem#user":"metric",
+  };
+
+  return {
+    setItem: (key: string, value: string) => {
+      storage[key] = value || "";
+    },
+    getItem: (key: string) => {
+      return key in storage ? storage[key] : null;
+    },
+    removeItem: (key: string) => {
+      delete storage[key];
+    },
+    get length() {
+      return Object.keys(storage).length;
+    },
+    key: (i: number) => {
+      const keys = Object.keys(storage);
+      return keys[i] || null;
+    },
+  };
+};
+
 describe("Quantity formatter", async () => {
   let quantityFormatter: QuantityFormatter;
+  const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
+  const myLocalStorage = storageMock();
+
+  before(async () => {
+    Object.defineProperty(window, "localStorage", {
+      get: () => myLocalStorage,
+    });
+  });
+
   beforeEach(async () => {
     quantityFormatter = new QuantityFormatter();
     await quantityFormatter.onInitialized();
+  });
+
+  after(async () => {
+    // restore the overriden property getter
+    Object.defineProperty(window, "localStorage", propertyDescriptorToRestore);
+  });
+
+  it("Length should honor overrides from LocalUnitFormatProvider", async () => {
+    // set the units settings provider that will set the QuantityFormatter to "metric" and provide overrides to display "cm"
+    await quantityFormatter.setUnitFormattingSettingsProvider (new LocalUnitFormatProvider(quantityFormatter, false));
+
+    const expected = `12345.6 cm`;
+    const newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    assert(newFormatterSpec !== undefined);
+    const actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
+    assert.equal(actual, expected);
+  });
+
+  it("Save overrides to localStorage", async () => {
+    const overrideLengthAndCoordinateEntry = {
+      metric: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "mm", name: "Units.MM" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+
+    };
+
+    // set the units settings provider that will set the QuantityFormatter to "metric" and provide overrides to display "cm"
+    await quantityFormatter.setUnitFormattingSettingsProvider (new LocalUnitFormatProvider(quantityFormatter, false));
+
+    let expected = `12345.6 cm`;
+    let newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    assert(newFormatterSpec !== undefined);
+    let actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
+    assert.equal(actual, expected);
+
+    // update the overrides to display "mm"
+    expected = `123456 mm`;
+    await quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthAndCoordinateEntry);
+    const storedOverride = JSON.parse(localStorage.getItem("quantityTypeFormat#user#q:QuantityTypeEnumValue-1")!) as OverrideFormatEntry;
+    assert (storedOverride.metric?.composite?.units[0].label === "mm");
+    assert (storedOverride.metric?.composite?.units[0].name === "Units.MM");
+
+    newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
+    assert.equal(actual, expected);
+
+    // now delete the overrides to restore to default of "m"
+    expected = `123.456 m`;
+    await quantityFormatter.clearOverrideFormats(QuantityType.Length);
+    newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
+    assert.equal(actual, expected);
+
+    assert (localStorage.getItem("quantityTypeFormat#user#q:QuantityTypeEnumValue-1") === null) ;
   });
 
   it("Length should be cached during onInitialized processing", async () => {
@@ -82,9 +180,9 @@ describe("Quantity formatter", async () => {
     const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(`48"`, overrideImperialParserSpec);
     const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(`48 in`, overrideImperialParserSpec);
     const overrideValueInMeters3 = quantityFormatter.parseToQuantityValue(`4 ft`, overrideImperialParserSpec);
-    assert (Parser.isParsedQuantity(overrideValueInMeters1));
-    assert (Parser.isParsedQuantity(overrideValueInMeters2));
-    assert (Parser.isParsedQuantity(overrideValueInMeters3));
+    assert(Parser.isParsedQuantity(overrideValueInMeters1));
+    assert(Parser.isParsedQuantity(overrideValueInMeters2));
+    assert(Parser.isParsedQuantity(overrideValueInMeters3));
     if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2) &&
       Parser.isParsedQuantity(overrideValueInMeters3)) {
       assert(withinTolerance(overrideValueInMeters1.value, 1.2192));
@@ -148,8 +246,8 @@ describe("Quantity formatter", async () => {
     let overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length, true);
     let overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
     let overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
-    assert (Parser.isParsedQuantity(overrideValueInMeters1));
-    assert (Parser.isParsedQuantity(overrideValueInMeters2));
+    assert(Parser.isParsedQuantity(overrideValueInMeters1));
+    assert(Parser.isParsedQuantity(overrideValueInMeters2));
     if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2)) {
       assert(withinTolerance(overrideValueInMeters1.value, 100000));
       assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
@@ -158,8 +256,8 @@ describe("Quantity formatter", async () => {
     overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Coordinate, true);
     overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
     overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
-    assert (Parser.isParsedQuantity(overrideValueInMeters1));
-    assert (Parser.isParsedQuantity(overrideValueInMeters2));
+    assert(Parser.isParsedQuantity(overrideValueInMeters1));
+    assert(Parser.isParsedQuantity(overrideValueInMeters2));
     if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2)) {
       assert(withinTolerance(overrideValueInMeters1.value, 100000));
       assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
@@ -233,9 +331,9 @@ describe("Quantity formatter", async () => {
     let overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length);
     let overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
     let overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
-    assert (Parser.isParsedQuantity(overrideValueInMeters1));
-    assert (Parser.isParsedQuantity(overrideValueInMeters2));
-    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2) ) {
+    assert(Parser.isParsedQuantity(overrideValueInMeters1));
+    assert(Parser.isParsedQuantity(overrideValueInMeters2));
+    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2)) {
       assert(withinTolerance(overrideValueInMeters1.value, 100000));
       assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
     }
@@ -243,9 +341,9 @@ describe("Quantity formatter", async () => {
     overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Coordinate);
     overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
     overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
-    assert (Parser.isParsedQuantity(overrideValueInMeters1));
-    assert (Parser.isParsedQuantity(overrideValueInMeters2));
-    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2) ) {
+    assert(Parser.isParsedQuantity(overrideValueInMeters1));
+    assert(Parser.isParsedQuantity(overrideValueInMeters2));
+    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2)) {
       assert(withinTolerance(overrideValueInMeters1.value, 100000));
       assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
     }
@@ -308,8 +406,8 @@ describe("Quantity formatter", async () => {
     const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("1076386.7361 sussf", overrideImperialParserSpec);
     // eslint-disable-next-line no-console
     // console.log(`overrideValueInMeters1=${JSON.stringify(overrideValueInMeters1)}`);
-    assert (Parser.isParsedQuantity(overrideValueInMeters1));
-    assert (Parser.isParsedQuantity(overrideValueInMeters2));
+    assert(Parser.isParsedQuantity(overrideValueInMeters1));
+    assert(Parser.isParsedQuantity(overrideValueInMeters2));
     if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2)) {
       assert(withinTolerance(overrideValueInMeters1.value, 100000, 1.0e-5));
       assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
@@ -391,26 +489,26 @@ describe("Test Custom QuantityType", async () => {
     const persistenceUnit = await quantityFormatter.findUnitByName("Units.RAD");
     const quantityTypeDefinition = new BearingQuantityType(persistenceUnit);
 
-    let wasRegistered = await quantityFormatter.registerQuantityType (quantityTypeDefinition);
+    let wasRegistered = await quantityFormatter.registerQuantityType(quantityTypeDefinition);
     assert.equal(wasRegistered, true);
     // only allow a single registration
-    wasRegistered = await quantityFormatter.registerQuantityType (quantityTypeDefinition);
+    wasRegistered = await quantityFormatter.registerQuantityType(quantityTypeDefinition);
     assert.equal(wasRegistered, false);
 
     const formatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("Bearing");
     assert.isDefined(formatterSpec);
 
-    const rad45 = Math.PI/4;
-    const formattedAngle=formatterSpec!.applyFormatting (rad45);
-    assert.equal (formattedAngle, `N 45°0'0" E`);
+    const rad45 = Math.PI / 4;
+    const formattedAngle = formatterSpec!.applyFormatting(rad45);
+    assert.equal(formattedAngle, `N 45°0'0" E`);
 
     const parserSpec = await quantityFormatter.getParserSpecByQuantityType("Bearing");
     assert.isDefined(parserSpec);
 
-    const parsedRadians = parserSpec!.parseToQuantityValue ("n45e");
-    assert (Parser.isParsedQuantity(parsedRadians));
+    const parsedRadians = parserSpec!.parseToQuantityValue("n45e");
+    assert(Parser.isParsedQuantity(parsedRadians));
     if (Parser.isParsedQuantity(parsedRadians))
-      assert.equal (parsedRadians.value, rad45);
+      assert.equal(parsedRadians.value, rad45);
   });
 });
 
@@ -449,7 +547,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "1000 m");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "1000 m");
     await testFormatting(QuantityType.Stationing, 1000.0, "1+000.00");
-    await testFormatting(QuantityType.Stationing, 15918.01 , "15+918.01");
+    await testFormatting(QuantityType.Stationing, 15918.01, "15+918.01");
     await testFormatting(QuantityType.Volume, 1000.0, "1000 m³");
 
     await quantityFormatter.setActiveUnitSystem("usCustomary");

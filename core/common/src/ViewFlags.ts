@@ -10,9 +10,6 @@
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
 
-/** @internal */
-export enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
-
 /** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
  * Generally speaking,
  *  - Wireframe draws only edges.
@@ -80,7 +77,7 @@ export interface ViewFlagProps {
   hidEdges?: boolean;
   /** If true, show shadows. */
   shadows?: boolean;
-  /** If true, use clipping volume. */
+  /** If true, use the view's clipping volume. Has no effect on other types of clips like [[ModelClipGroups]]. */
   clipVol?: boolean;
   /** If true, use hidden line material colors. */
   hlMatColors?: boolean;
@@ -160,7 +157,7 @@ export class ViewFlags {
   public solarLight: boolean = false;
   /** Shows or hides shadows. */
   public shadows: boolean = false;
-  /** Controls whether the clip volume is applied. */
+  /** Controls whether the view's clip volume is applied. Has no effect on other types of clips like [[ModelClipGroups]]. */
   public clipVolume: boolean = true;
   /** Shows or hides construction class geometry. */
   public constructions: boolean = false;
@@ -525,9 +522,7 @@ export class ViewFlagOverrides {
   public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(ViewFlagPresence.RenderMode); }
   public setThematicDisplay(val: boolean) { this._values.thematicDisplay = val; this.setPresent(ViewFlagPresence.ThematicDisplay); }
 
-  /** Return whether these overrides applied to the specified ViewFlags require edges to be drawn.
-   * @beta
-   */
+  /** Return whether these overrides applied to the specified ViewFlags require edges to be drawn. */
   public edgesRequired(viewFlags: ViewFlags): boolean {
     const renderMode = this.isPresent(ViewFlagPresence.RenderMode) ? this._values.renderMode : viewFlags.renderMode;
     const visibleEdges = this.isPresent(ViewFlagPresence.VisibleEdges) ? this._values.visibleEdges : viewFlags.visibleEdges;

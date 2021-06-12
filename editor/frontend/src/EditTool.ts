@@ -9,15 +9,24 @@
 import { editorChannel } from "@bentley/imodeljs-editor-common";
 import { IModelApp, IpcApp } from "@bentley/imodeljs-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
+import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
+import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
+import { CreateArcTool, CreateLineStringTool } from "./SketchTools";
 import { MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
 /** @alpha Options for [[EditTools.initialize]]. */
 export interface EditorOptions {
-  /** If true, default tools for undo/redo will be registered. */
+  /** If true, all tools will be registered. */
+  registerAllTools?: true | undefined;
+  /** If true, tools for undo/redo will be registered. */
   registerUndoRedoTools?: true | undefined;
-  /** If true, default tools for basic manipulation will be registered. */
+  /** If true, tools for updating the project extents and geolocation will be registered. */
+  registerProjectLocationTools?: true | undefined;
+  /** If true, tools for basic manipulation will be registered. */
   registerBasicManipulationTools?: true | undefined;
+  /** If true, tools for sketching will be registered. */
+  registerSketchTools?: true | undefined;
 }
 
 /** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
@@ -54,9 +63,10 @@ export class EditTools {
     this._initialized = true;
 
     const i18n = IModelApp.i18n.registerNamespace(this.namespace);
+    const registerAllTools = options?.registerAllTools;
 
     // Register requested tools...
-    if (undefined !== options?.registerUndoRedoTools) {
+    if (registerAllTools || options?.registerUndoRedoTools) {
       const tools = [
         UndoAllTool,
         UndoTool,
@@ -67,11 +77,36 @@ export class EditTools {
         tool.register(i18n);
     }
 
-    if (undefined !== options?.registerBasicManipulationTools) {
+    if (registerAllTools || options?.registerProjectLocationTools) {
+      const tools = [
+        ProjectLocationShowTool,
+        ProjectLocationHideTool,
+        ProjectLocationCancelTool,
+        ProjectLocationSaveTool,
+        ProjectGeolocationMoveTool,
+        ProjectGeolocationPointTool,
+        ProjectGeolocationNorthTool,
+      ];
+
+      for (const tool of tools)
+        tool.register(i18n);
+    }
+
+    if (registerAllTools || options?.registerBasicManipulationTools) {
       const tools = [
         DeleteElementsTool,
         MoveElementsTool,
         RotateElementsTool,
+      ];
+
+      for (const tool of tools)
+        tool.register(i18n);
+    }
+
+    if (registerAllTools || options?.registerSketchTools) {
+      const tools = [
+        CreateArcTool,
+        CreateLineStringTool,
       ];
 
       for (const tool of tools)

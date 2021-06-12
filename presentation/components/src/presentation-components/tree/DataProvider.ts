@@ -9,9 +9,12 @@
 import memoize from "micro-memoize";
 import { IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ExtendedHierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset } from "@bentley/presentation-common";
+import {
+  DiagnosticsOptionsWithHandler, ExtendedHierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,
+} from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@bentley/ui-components";
+import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
@@ -21,7 +24,7 @@ import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentati
  * Properties for creating a `PresentationTreeDataProvider` instance.
  * @public
  */
-export interface PresentationTreeDataProviderProps {
+export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
   /** IModel to pull data from. */
   imodel: IModelConnection;
 
@@ -48,26 +51,26 @@ export interface PresentationTreeDataProviderProps {
    */
   pagingSize?: number;
 
-  /**
-   * Should grouping nodes have a suffix with grouped nodes count. Defaults to `false`.
-   * @beta
-   */
+  /** Should grouping nodes have a suffix with grouped nodes count. Defaults to `false`. */
   appendChildrenCountForGroupingNodes?: boolean;
 
   /**
-   * By default the provider uses [[PresentationManager]] accessed through `Presentation.presentation` to request
+   * By default the provider uses [PresentationManager]($presentation-frontend) accessed through `Presentation.presentation` to request
    * node counts, nodes and filter them. The overrides allow swapping some or all of the data source entry points thus
    * making the provider request data from custom sources.
-   * @alpha
+   * @beta
    */
   dataSourceOverrides?: Partial<PresentationTreeDataProviderDataSourceEntryPoints>;
 }
 
-/** @alpha */
+/**
+ * Definitions of methods used by [[PresentationTreeDataProvider]] to get nodes' data.
+ * @beta
+ */
 export interface PresentationTreeDataProviderDataSourceEntryPoints {
   getNodesCount: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>) => Promise<number>;
   getNodesAndCount: (requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>) => Promise<{ nodes: Node[], count: number }>;
-  getFilteredNodePaths: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>, filterText: string) => Promise<NodePathElement[]>;
+  getFilteredNodePaths: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never>, filterText: string) => Promise<NodePathElement[]>;
 }
 
 /**
@@ -81,6 +84,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _appendChildrenCountForGroupingNodes?: boolean;
   private _disposeVariablesChangeListener: () => void;
   private _dataSource: PresentationTreeDataProviderDataSourceEntryPoints;
+  private _diagnosticsOptions?: DiagnosticsOptionsWithHandler;
 
   /** Constructor. */
   public constructor(props: PresentationTreeDataProviderProps) {
@@ -91,13 +95,14 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     this._dataSource = {
       getNodesCount: async (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>) => Presentation.presentation.getNodesCount(requestOptions),
       getNodesAndCount: async (requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>) => Presentation.presentation.getNodesAndCount(requestOptions),
-      getFilteredNodePaths: async (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>, filterText: string) => Presentation.presentation.getFilteredNodePaths(requestOptions, filterText),
+      getFilteredNodePaths: async (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never>, filterText: string) => Presentation.presentation.getFilteredNodePaths(requestOptions, filterText),
       ...props.dataSourceOverrides,
     };
     this._disposeVariablesChangeListener = Presentation.presentation.vars(this._rulesetRegistration.rulesetId).onVariableChanged.addListener(() => {
       this._getNodesAndCount.cache.values.length = 0;
       this._getNodesAndCount.cache.keys.length = 0;
     });
+    this._diagnosticsOptions = createDiagnosticsOptions(props);
   }
 
   /** Destructor. Must be called to clean up.  */
@@ -120,11 +125,12 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   public set pagingSize(value: number | undefined) { this._pagingSize = value; }
 
   /** Called to get extended options for node requests */
-  private createRequestOptions(parentKey: NodeKey | undefined): ExtendedHierarchyRequestOptions<IModelConnection, NodeKey> {
+  private createRequestOptions<TNodeKey = NodeKey>(parentKey: TNodeKey | undefined): ExtendedHierarchyRequestOptions<IModelConnection, TNodeKey> {
     return {
       imodel: this._imodel,
       rulesetOrId: this._rulesetRegistration.rulesetId,
       ...(parentKey ? { parentKey } : undefined),
+      ...(this._diagnosticsOptions ? { diagnostics: this._diagnosticsOptions } : undefined),
     };
   }
 
@@ -177,17 +183,15 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
    * @param filter Filter.
    */
   public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
-    return this._dataSource.getFilteredNodePaths(this.createRequestOptions(undefined), filter);
+    return this._dataSource.getFilteredNodePaths(this.createRequestOptions<never>(undefined), filter);
   };
 
   /**
-   * Loads the hierarchy so on-demand requests and filtering works quicker
-   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
+   * A no-op that used to request the whole hierarchy to be loaded on the backend.
+   * @alpha @deprecated Will be removed on 3.0
    */
-  public async loadHierarchy() {
-    return Presentation.presentation.loadHierarchy(this.createRequestOptions(undefined));
-  }
-
+  // istanbul ignore next
+  public async loadHierarchy() { }
 }
 
 class MemoizationHelpers {

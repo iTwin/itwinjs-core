@@ -24,10 +24,9 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
 import { UiDataProvidedDialog } from "../dialog/UiDataProvidedDialog";
-import { FrameworkAccuDrawUiAdmin } from "../accudraw/FrameworkAccuDrawUiAdmin";
 
 /** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
- * @beta
+ * @public
  */
 export enum KeyinFieldLocalization {
   /** Include only non-localized key-in strings. */
@@ -39,7 +38,7 @@ export enum KeyinFieldLocalization {
 }
 
 /** Defines a keyin entry to show/filter in UI
- * @beta
+ * @public
 */
 export interface KeyinEntry {
   /** string that matched a filter string */
@@ -51,15 +50,10 @@ export interface KeyinEntry {
 }
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
- * @beta
+ * @public
  */
 export class FrameworkUiAdmin extends UiAdmin {
   private _localizedKeyinPreference: KeyinFieldLocalization = KeyinFieldLocalization.NonLocalized;
-
-  constructor() {
-    super();
-    this.accuDrawUi = new FrameworkAccuDrawUiAdmin();
-  }
 
   public get localizedKeyinPreference(): KeyinFieldLocalization { return this._localizedKeyinPreference; }
   public set localizedKeyinPreference(preference: KeyinFieldLocalization) { this._localizedKeyinPreference = preference; }
@@ -84,16 +78,17 @@ export class FrameworkUiAdmin extends UiAdmin {
    */
   public showContextMenu(items: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean {
     let position = location;
-
+    let childWindowId: string | undefined;
     if (htmlElement) {
       const anchorOffset = htmlElement.getBoundingClientRect();
       position = { x: anchorOffset.left + location.x, y: anchorOffset.top + location.y };
+      childWindowId = UiFramework.childWindowManager.findChildWindowId(htmlElement.ownerDocument.defaultView);
     }
 
     const offset = -8;
     position = { x: position.x + offset, y: position.y + offset };
 
-    const cursorMenu: CursorMenuData = { position, items };
+    const cursorMenu: CursorMenuData = { position, items, childWindowId };
     UiFramework.openCursorMenu(cursorMenu);
 
     return true;
@@ -102,11 +97,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   /** Resolve location and parent element */
   private resolveHtmlElement(location: XAndY, htmlElement?: HTMLElement): { position: XAndY, el: HTMLElement } {
     const position = location;
-    let el = htmlElement!;
-
-    if (!htmlElement)
-      el = ConfigurableUiManager.getWrapperElement();
-
+    const el = htmlElement ?? ConfigurableUiManager.getWrapperElement();
     return { position, el };
   }
 

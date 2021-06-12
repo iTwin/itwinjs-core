@@ -6,11 +6,16 @@
  * @module NativeApp
  */
 
-import { IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { Range3dProps, XYZProps } from "@bentley/geometry-core";
+import { ChangedEntities } from "./ChangedEntities";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
-import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
+import {
+  EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions,
+} from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
-import { ElementsChanged, ModelGeometryChangesProps } from "./ModelGeometryChanges";
+import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
+import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -20,12 +25,25 @@ export interface TileTreeContentIds {
   contentIds: string[];
 }
 
+/** Specifies a [GeometricModel]($backend)'s Id and a Guid identifying the current state of the geometry contained within the model.
+ * @see [TxnManager.onModelGeometryChanged]($backend) and [BriefcaseTxns.onModelGeometryChanged]($frontend).
+ * @public
+ */
+export interface ModelIdAndGeometryGuid {
+  /** The model's Id. */
+  id: Id64String;
+  /** A unique identifier for the current state of the model's geometry. If the guid differs between two revisions of the same iModel, it indicates that the geometry differs.
+   * This is primarily an implementation detail used to determine whether [Tile]($frontend)s produced for one revision are compatible with another revision.
+   */
+  guid: GuidString;
+}
+
 /** @internal */
 export enum IpcAppChannel {
   Functions = "ipc-app",
   AppNotify = "ipcApp-notify",
-  IModelChanges = "imodel-changes",
-  PushPull = "push-pull",
+  Txns = "txns",
+  EditingScope = "editing-scope",
 }
 
 /**
@@ -36,20 +54,37 @@ export interface IpcAppNotifications {
   notifyApp: () => void;
 }
 
-/**
- * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel
+/** Interface implemented by the frontend [NotificationHandler]($common) to be notified of changes to an iModel.
+ * @see [TxnManager]($backend) for the source of these events.
+ * @see [BriefcaseTxns]($frontend) for the frontend implementation.
  * @internal
  */
-export interface IModelChangeNotifications {
-  notifyElementsChanged: (changes: ElementsChanged) => void;
-  notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
+export interface TxnNotifications {
+  notifyElementsChanged: (changes: ChangedEntities) => void;
+  notifyModelsChanged: (changes: ChangedEntities) => void;
+  notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
+  notifyCommit: () => void;
+  notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
+  notifyChangesApplied: () => void;
+  notifyBeforeUndoRedo: (isUndo: boolean) => void;
+  notifyAfterUndoRedo: (isUndo: boolean) => void;
+  notifyPulledChanges: (parentChangeSetId: string) => void;
+  notifyPushedChanges: (parentChangeSetId: string) => void;
+
+  notifyIModelNameChanged: (name: string) => void;
+  notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
+  notifyProjectExtentsChanged: (extents: Range3dProps) => void;
+  notifyGlobalOriginChanged: (origin: XYZProps) => void;
+  notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
+  notifyGeographicCoordinateSystemChanged: (gcs: GeographicCRSProps | undefined) => void;
 }
 
-/** @internal */
-export interface BriefcasePushAndPullNotifications {
-  notifyPulledChanges: (arg: { parentChangeSetId: string }) => void;
-  notifyPushedChanges: (arg: { parentChangeSetId: string }) => void;
-  notifySavedChanges: (arg: { hasPendingTxns: boolean, time: number }) => void;
+/**
+ * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel during an [GraphicalEditingScope]($frontend).
+ * @internal
+ */
+export interface EditingScopeNotifications {
+  notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
 
 /**
@@ -57,7 +92,6 @@ export interface BriefcasePushAndPullNotifications {
  * @internal
  */
 export interface IpcAppFunctions {
-
   /** Send frontend log to backend.
    * @param _level Specify log level.
    * @param _category Specify log category.
@@ -74,10 +108,19 @@ export interface IpcAppFunctions {
   closeIModel: (key: string) => Promise<void>;
   /** see BriefcaseConnection.saveChanges */
   saveChanges: (key: string, description?: string) => Promise<void>;
-  /** see BriefcaseConnection.hasPendingTxns */
+  /** see BriefcaseTxns.hasPendingTxns */
   hasPendingTxns: (key: string) => Promise<boolean>;
+  /** see BriefcaseTxns.isUndoPossible */
+  isUndoPossible: (key: string) => Promise<boolean>;
+  /** see BriefcaseTxns.isRedoPossible */
+  isRedoPossible: (key: string) => Promise<boolean>;
+  /** see BriefcaseTxns.getUndoString */
+  getUndoString: (key: string) => Promise<string>;
+  /** see BriefcaseTxns.getRedoString */
+  getRedoString: (key: string) => Promise<string>;
+
   /** see BriefcaseConnection.pullAndMergeChanges */
-  pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
+  pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<string>;
   /** see BriefcaseConnection.pushChanges */
   pushChanges: (key: string, description: string) => Promise<string>;
   /** Cancels currently pending or active generation of tile content.  */
@@ -88,11 +131,13 @@ export interface IpcAppFunctions {
    */
   cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
 
-  toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
-  isInteractiveEditingSupported: (key: string) => Promise<boolean>;
-  reverseSingleTxn: (key: string) => Promise<IModelStatus>;
+  toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
+  isGraphicalEditingSupported: (key: string) => Promise<boolean>;
+
+  reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;
   reinstateTxn: (key: string) => Promise<IModelStatus>;
+  restartTxnSession: (key: string) => Promise<void>;
 
   /** Query the number of concurrent threads supported by the host's IO or CPU thread pool. */
   queryConcurrency: (pool: "io" | "cpu") => Promise<number>;

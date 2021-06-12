@@ -77,13 +77,13 @@ export enum TextureUnit {
   ShadowMap = Seven,
   ThematicSensors = Seven,
   // The number of allowable map layers for either background or overlay map is limited to 3 if only 8 texture units is available (IOS)... 6 layers are available if the hardware supports them.
-  TerrainMesh0 = Two,
-  TerrainMesh1 = VertexLUT,                       // Terrain meshes do not use VertexLUT.
-  TerrainMesh2 = ShadowMap,                       //  Shadow map when picking -- PickDepthAndOrder otherwise....
-  TerrainMesh3 = WebGLRenderingContext.TEXTURE8,  // These are used only if available.
-  TerrainMesh4 = WebGLRenderingContext.TEXTURE9,
-  TerrainMesh5 = WebGLRenderingContext.TEXTURE10,
-  TerrainThematicGradient = WebGLRenderingContext.TEXTURE11,
+  RealityMesh0 = Two,
+  RealityMesh1 = VertexLUT,                       // Reality meshes do not use VertexLUT.
+  RealityMesh2 = ShadowMap,                       //  Shadow map when picking -- PickDepthAndOrder otherwise....
+  RealityMesh3 = WebGLRenderingContext.TEXTURE8,  // These are used only if available.
+  RealityMesh4 = WebGLRenderingContext.TEXTURE9,
+  RealityMesh5 = WebGLRenderingContext.TEXTURE10,
+  RealityMeshThematicGradient = WebGLRenderingContext.TEXTURE11,
 }
 
 /**
@@ -197,9 +197,3 @@ export const enum OvrFlags {
 
 /** @internal */
 export const enum IsTranslucent { No, Yes, Maybe }
-
-/** @internal */
-export const enum FlashMode {
-  MixHiliteColor,
-  Brighten,
-}

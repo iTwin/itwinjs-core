@@ -9,7 +9,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
-
+import { query } from "jsonpath";
 chai.should();
 
 describe("RealityServicesClient Normal (#integration)", () => {
@@ -108,38 +108,34 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(url);
   });
 
-  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
-  it.skip("should be able to get model data json", async () => {
+  it("should be able to get model data json", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
     chai.assert(rootData);
 
-    const rootDataJson = JSON.parse(rootData.toString("utf8"));
+    const jsonName = query(rootData.root.children, "$..url").find((u) => u.endsWith(".json"));
 
-    const modelName = rootDataJson.root.children[0].content.url;
-    chai.assert(modelName);
-
-    const modelData: any = await realityData.getModelData(requestContext, modelName);
-
-    chai.assert(modelData);
+    chai.assert(jsonName);
+    const jsonData: any = await realityData.getTileJson(requestContext, jsonName);
+    chai.assert(jsonData);
+    chai.assert(jsonData.asset.version);
   });
 
-  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
-  it.skip("should be able to get model data content", async () => {
+  it("should be able to get model data content", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
+    const decoder = new TextDecoder("utf-8");
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
-    const rootDataJson = JSON.parse(rootData.toString("utf8"));
-
-    const modelName = rootDataJson.root.children[0].content.url;
-
     chai.assert(rootData);
+
+    const modelName = query(rootData.root.children, "$..url").find((u) => u.endsWith(".b3dm"));
     chai.assert(modelName);
 
-    const modelData: any = await realityData.getModelData(requestContext, modelName);
-
+    const modelData: any = await realityData.getTileContent(requestContext, modelName);
     chai.assert(modelData);
+    const modelDataString = decoder.decode(new Uint8Array(modelData)).substring(0,4);
+    chai.assert(modelDataString === "b3dm");
   });
 
   it("should be able to create a reality data (without specific identifier) and delete it", async () => {
@@ -162,9 +158,9 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.listable = true;
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
-    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -201,7 +197,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded1.hidden === false);
 
     const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded1.id as string);
 
@@ -237,9 +232,9 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.listable = true;
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
-    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -277,7 +272,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded1.hidden === false);
 
     const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded1.id as string);
 
@@ -313,9 +307,9 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.listable = true;
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
-    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -353,7 +347,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded1.hidden === false);
 
     // Set to undefined read-only values (that can prevent creation)
     realityDataAdded1.createdTimestamp = undefined;
@@ -410,7 +403,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded2.createdTimestamp && Date.parse(realityDataAdded2.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded2.hidden === false);
 
     const relationships1: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataId1);
 
@@ -451,9 +443,9 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.listable = true;
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
-    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -491,7 +483,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded1.hidden === false);
 
     realityDataAdded1.name = "Test reality data 1 - modified";
     realityDataAdded1.dataSet = "Test Dataset for iModelJS - modified";
@@ -508,12 +499,12 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityDataAdded1.resolutionInMeters = "3.0x3.2";
     //    realityDataAdded1.accuracyInMeters = "10.7x10.7"; currently does not work ... obviously a bug somewhere in schema or WSG
     realityDataAdded1.visibility = "ENTERPRISE";
-    realityDataAdded1.listable = false;
+    realityDataAdded1.listable = true;
     realityDataAdded1.version = "Named Version 1";
     realityDataAdded1.dataAcquirer = "PIPO";
-    realityDataAdded1.dataAcquisitionDate = "2019-05-10T09:46:17.0000000Z";
-    realityDataAdded1.dataAcquisitionStartDate = "2019-05-10T09:46:17.0000000Z";
-    realityDataAdded1.dataAcquisitionEndDate = "2019-05-10T09:46:17.0000000Z";
+    realityDataAdded1.dataAcquisitionDate = "2019-05-10T09:46:17Z";
+    realityDataAdded1.dataAcquisitionStartDate = "2019-05-10T09:46:17Z";
+    realityDataAdded1.dataAcquisitionEndDate = "2019-05-10T09:46:17Z";
     realityDataAdded1.referenceElevation = 42.0;
 
     realityDataAdded1.organizationId = undefined;
@@ -551,7 +542,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded2.dataLocationGuid === realityDataAdded1.dataLocationGuid);
     chai.assert(realityDataAdded2.containerName === realityDataAdded1.containerName);
     // Modified time stamp must have been modifed.
-    chai.assert(realityDataAdded2.modifiedTimestamp && Date.parse(realityDataAdded2.modifiedTimestamp) !== undefined && realityDataAdded2.modifiedTimestamp !== realityDataAdded1.modifiedTimestamp);
+    chai.assert(realityDataAdded2.modifiedTimestamp && Date.parse(realityDataAdded2.modifiedTimestamp) !== undefined);
     // Creation time must be unchanged.
     chai.assert(realityDataAdded2.createdTimestamp && Date.parse(realityDataAdded2.createdTimestamp) !== undefined && realityDataAdded2.createdTimestamp === realityDataAdded1.createdTimestamp);
     // At update the last accessed time stamp remains null.
@@ -567,8 +558,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
   });
 
-  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
-  it.skip("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
+  it("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesIdWithRootDocPath);
 
     // The root document of this reality should not be at the root of the blob
@@ -578,9 +568,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const rootDocPath: string = `${rootParts.join("/")}/`;
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
-    const rootDataJson = JSON.parse(rootData.toString("utf8"));
 
-    const modelName = rootDataJson.root.children[0].children[0].content.url;
+    const modelName = rootData.root.children[0].children[0].content.url;
 
     chai.assert(rootData);
     chai.assert(modelName);
@@ -616,8 +605,7 @@ describe("RealityServicesClient Admin (#integration)", () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.manager);
   });
 
-  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
-  it.skip("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
+  it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.
@@ -640,9 +628,9 @@ describe("RealityServicesClient Admin (#integration)", () => {
     realityData.listable = true;
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
-    realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
-    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, undefined, realityData);
@@ -679,7 +667,6 @@ describe("RealityServicesClient Admin (#integration)", () => {
     chai.assert(realityDataAdded1.createdTimestamp && Date.parse(realityDataAdded1.createdTimestamp) !== undefined);
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
-    chai.assert(realityDataAdded1.hidden === false);
 
     const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, "Server", realityDataAdded1.id as string);
 

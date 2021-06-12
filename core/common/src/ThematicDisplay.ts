@@ -10,7 +10,10 @@ import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@bentley/geo
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
 
-/** @beta */
+/** A thematic gradient mode used to generate and apply a thematic effect to a scene.
+ * @see [[ThematicGradientSettings.mode]]
+ * @public
+ */
 export enum ThematicGradientMode {
   /** Apply a smooth color gradient to the scene. */
   Smooth = 0,
@@ -22,17 +25,30 @@ export enum ThematicGradientMode {
   IsoLines = 3,
 }
 
-/** @beta */
+/** A color scheme used to generate the colors of a thematic gradient within an applied range.
+ * @see [[ThematicGradientSettings.colorScheme]]
+ * @see [[ThematicDisplay.range]]
+ * @public */
 export enum ThematicGradientColorScheme {
+  /** A color gradient scheme that represents a blue-to-red gradation. */
   BlueRed = 0,
+  /** A color gradient scheme that represents a red-to-blue gradation. */
   RedBlue = 1,
+  /** A color gradient scheme that represents a monochrome (black-to-white) gradation. */
   Monochrome = 2,
+  /** A color gradient scheme that suits a topographic gradation. */
   Topographic = 3,
+  /** A color gradient scheme that suits a sea-mountain gradation. */
   SeaMountain = 4,
+  /** A custom color gradient scheme configured by the user.
+   * @see [[ThematicGradientSettings.customKeys]]
+   */
   Custom = 5,
 }
 
-/** @beta */
+/** JSON representation of a [[ThematicGradientSettings]].
+ * @public
+ **/
 export interface ThematicGradientSettingsProps {
   /** The thematic image mode used to generate and apply the thematic gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
   mode?: ThematicGradientMode;
@@ -40,7 +56,7 @@ export interface ThematicGradientSettingsProps {
   stepCount?: number;
   /** The margin color used at the extremes of the gradient, when outside the applied range. Defaults to a black color using [[ColorDef.fromJSON]] with no arguments. */
   marginColor?: ColorDefProps;
-  /** The color scheme used to generate the colors of the gradient color used at the extremes of the gradient, when outside the applied range. Defaults to [[ThematicGradientColorScheme.BlueRed]]. */
+  /** The color scheme used to generate the colors of the gradient within the applied range. Defaults to [[ThematicGradientColorScheme.BlueRed]]. */
   colorScheme?: ThematicGradientColorScheme;
   /** The key color values that must be provided when using a custom thematic color scheme.
    * Defaults to empty, unless using a custom thematic color scheme. In that case, this defaults to two key colors going from white to black.
@@ -53,7 +69,7 @@ export interface ThematicGradientSettingsProps {
 }
 
 /** Thematic settings specific to creating a color gradient used by [[ThematicDisplay]].
- * @beta
+ * @public
  */
 export class ThematicGradientSettings {
   /** The thematic image mode used to generate the gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
@@ -62,7 +78,7 @@ export class ThematicGradientSettings {
   public readonly stepCount: number;
   /** The margin color used at the extremes of the gradient, when outside the applied range. Defaults to a black color using [[ColorDef.fromJSON]] with no arguments. */
   public readonly marginColor: ColorDef;
-  /** The color scheme used to generate the colors of the gradient color used at the extremes of the gradient, when outside the applied range. Defaults to [[ThematicGradientColorScheme.BlueRed]]. */
+  /** The color scheme used to generate the colors of the gradient color within the applied range. Defaults to [[ThematicGradientColorScheme.BlueRed]]. */
   public readonly colorScheme: ThematicGradientColorScheme;
   /** The key color values that must be provided when using a custom thematic color scheme.
    * Defaults to empty, unless using a custom thematic color scheme. In that case, this defaults to two key colors going from white to black.
@@ -180,7 +196,7 @@ export class ThematicGradientSettings {
 }
 
 /** JSON representation of a [[ThematicDisplaySensor]].
- * @alpha
+ * @public
  */
 export interface ThematicDisplaySensorProps {
   /** The world position of the sensor in X, Y, and Z. Defaults to {0,0,0}. */
@@ -190,7 +206,7 @@ export interface ThematicDisplaySensorProps {
 }
 
 /** A sensor in world space, used for [[ThematicDisplayMode.InverseDistanceWeightedSensors]].
- * @alpha
+ * @public
  */
 export class ThematicDisplaySensor {
   /** The world position of the sensor in X, Y, and Z. Defaults to {0,0,0}. */
@@ -229,7 +245,7 @@ export class ThematicDisplaySensor {
 }
 
 /** JSON representation of a [[ThematicDisplaySensorSettings]] for [[ThematicDisplayMode.InverseDistanceWeightedSensors]].
- * @alpha
+ * @public
  */
 export interface ThematicDisplaySensorSettingsProps {
   /** This is the list of sensors. Defaults to an empty array. */
@@ -243,7 +259,7 @@ export interface ThematicDisplaySensorSettingsProps {
 }
 
 /** Settings for sensor-based thematic display for [[ThematicDisplayMode.InverseDistanceWeightedSensors]].
- * @alpha
+ * @public
  */
 export class ThematicDisplaySensorSettings {
   /** This is the list of sensors. Defaults to an empty array. */
@@ -302,14 +318,13 @@ export class ThematicDisplaySensorSettings {
 }
 
 /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry.
- * @beta
+ * @public
  */
 export enum ThematicDisplayMode {
   /** The color gradient will be mapped to surface geometry and point clouds based on world height in meters. */
   Height = 0,
   /** The color gradient will be mapped to surface geometry and point clouds using inverse distance weighting based on world positions and corresponding values from a list of sensors.
-   * @note In its alpha state, this mode has been measured to run at 60 frames per second with 64 sensors, and 30 frames per second with 150 sensors. Performance continues to decrease as more sensors are added. These measurements were recorded using a developer laptop running on a 1080p monitor.
-   * @alpha
+   * @note Performance will decrease as more sensors are added.
    */
   InverseDistanceWeightedSensors = 1,
   /** The color gradient will be mapped to surface geometry based on the slope of the surface. The slope value is calculated based on the angle between the surface and the axis specified in the associated [[ThematicDisplay]] object.
@@ -323,7 +338,7 @@ export enum ThematicDisplayMode {
 }
 
 /** JSON representation of the thematic display setup of a [[DisplayStyle3d]].
- * @beta
+ * @public
  */
 export interface ThematicDisplayProps {
   /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry. Defaults to [[ThematicDisplayMode.Height]]. */
@@ -341,13 +356,15 @@ export interface ThematicDisplayProps {
   /** For [[ThematicDisplayMode.HillShade]], this is the direction of the sun in world space. Defaults to {0,0,0}. */
   sunDirection?: XYZProps;
   /** For [[ThematicDisplayMode.InverseDistanceWeightedSensors]], these are the settings that control the sensors. Defaults to an instantiation using [[ThematicDisplaySensorSettings.fromJSON]] with no arguments.
-   * @alpha
+   * @public
    */
   sensorSettings?: ThematicDisplaySensorSettingsProps;
 }
 
 /** The thematic display setup of a [[DisplayStyle3d]].
- * @beta
+ * Thematic display allows a user to colorize a scene using a color gradient in a way that provides a visual cue about certain attributes of the rendered geometry. This scene colorization will be done based on certain geometric attributes like height, surface slope, position of surfaces relative to a sun position, or geometric position relative to a list of sensors.
+ * The documentation for [[ThematicDisplayMode]] describes how each mode colorizes the scene.
+ * @public
  */
 export class ThematicDisplay {
   /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry. Defaults to [[ThematicDisplayMode.Height]]. */
@@ -365,7 +382,7 @@ export class ThematicDisplay {
   /** For [[ThematicDisplayMode.HillShade]], this is the direction of the sun in world space. Defaults to {0,0,0}. */
   public readonly sunDirection: Vector3d;
   /** For [[ThematicDisplayMode.InverseDistanceWeightedSensors]], these are the settings that control the sensors. Defaults to an instantiation using [[ThematicDisplaySensorSettings.fromJSON]] with no arguments.
-   * @alpha
+   * @public
    */
   public readonly sensorSettings: ThematicDisplaySensorSettings;
 

@@ -4,23 +4,37 @@
 *--------------------------------------------------------------------------------------------*/
 
 .PropertiesWidget {
-  display: flex;
-  flex-direction: column;
   padding: 5px;
+  display: grid;
+  grid-template-columns: auto 100px;
+  grid-template-rows: 24px 36px auto;
 }
 
-.PropertiesWidget>h3 {
+.PropertiesWidget > h3 {
   margin: 0;
 }
 
-.PropertiesWidget>.ContentContainer {
-  flex: 1 0;
-  min-height: 0;
-}
-
-.SearchBar{
+.PropertiesWidget > .SearchBar {
   display: flex;
   align-items: center;
+  grid-column-start: 1;
+  grid-column-end: span 2;
+}
+
+.PropertiesWidget > .SearchBar .components-filtering-input {
+  margin-left: 0;
+}
+
+.PropertiesWidget > .SearchBar .core-toggle {
+  margin-right: 0;
+}
+
+.PropertiesWidget > .ContentContainer {
+  flex: 1 0;
+  min-height: 0;
+  margin-left: -3px;
+  grid-column-start: 1;
+  grid-column-end: span 2;
 }
 
 .favorite-action-button {

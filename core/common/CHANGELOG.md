@@ -1,6 +1,145 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Thu, 03 Jun 2021 18:08:11 GMT and should not be manually modified.
+
+## 2.16.2
+Thu, 03 Jun 2021 18:08:11 GMT
+
+_Version update only_
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+_Version update only_
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Introduced Additional Transform for Geographic Coordinate Systems
+- wip: CreateElementTool. Fix not being able to pick decorations after changing files.
+- Allow RenderGraphic to be created from flatbuffers format geometry as well as json.
+- Fix incorrect transforms applied by schedule scripts.
+- Updated map layers release tags from alpha to beta.
+- Additional properties (source/target ellipsoid) and fallback transform for geodetic transforms"
+- Make changed elements public and add descriptions
+- Fixes to desktop/mobile authorization
+- Add shader based grid display.
+- Add Viewport.queryVisibleFeatures to determine the set of features currently visible in a viewport.
+- Clean up RenderSchedule API.
+- add placement to GeomtricElementProps
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+_Version update only_
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+### Updates
+
+- FeatureOverrides can hide or override the symbology of unanimated nodes.
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Add documentation and links for each BisCodeSpec name.
+- Properly declare changeSetId variables as string.
+- Promote display-related APIs.
+- An ElementGraphicsRequest can supply a non-persistent geometry stream.
+- Add TypeScript wrappers for ExternalSource and related classes and relationships.
+- Fixes to desktop and iOS apps.
+- ClipStyle supports recolorization. Promote ModelClipGroups to public.
+- Promote thematic display API to public.
+- Optimize reality model processing.
+- Remove deprecated ElementEditor that was replaced by EditCommands.
+- rename (deprecate) BriefcaseIdValue.Standalone to BriefcaseIdValue.Unassigned to reduce confusion
+- Update release tags.
+- Add support for forwarding txn events from backend to frontend.
+- Update api tags
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:33 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+_Version update only_
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- added BriefcaseIdValue
+- rework Authentication to use IpcHost
+- add `bindings` member to EntityQueryParams
+- Support working in world coords with ElementGeometry.Builder/Iterator. Place line string using ipc command.
+- Add IpcAppFunctions.queryConcurrency.
+- Memory leak fix
+- Decouple requesting tile content from cloud storage and from backend.
+- Support for transient errors
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Clarify and expand FeatureOverrides documentation.
+- The `Code` constructor now trims leading and trailing whitespace characters from the `value` property
+- The Code.getValue method has been deprecated in favor of the Code.value property
+- Fixed broken double angle bracket link syntax
+- refactor IModelApp/IModelHost startup
+- Add planar clip mask support.
+- Updated to use TypeScript 4.1
+- Undo/Redo shortcuts
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:52 GMT
+
+_Version update only_
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -22,6 +161,16 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - Mobile IPC fix
 - add IpcSocket
 - remove IpcInterface, getVersion() method is not needed
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT

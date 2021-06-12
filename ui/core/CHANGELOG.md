@@ -1,6 +1,123 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Thu, 03 Jun 2021 18:08:11 GMT and should not be manually modified.
+
+## 2.16.2
+Thu, 03 Jun 2021 18:08:11 GMT
+
+_Version update only_
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+_Version update only_
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Wrap resizeObserver in a windows animation frame to prevent loop limit exceeded error.
+- Add support for child popup windows. 
+- Improved Multi-Value column filtering in the Table component
+- Update to latest classnames package 
+- Fix GlobalContextMenu layout issue in presentation-test-app by setting display:none on anchoring div.
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+_Version update only_
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+### Updates
+
+- Wrap resizeObserver in a windows animation frame to prevent loop limit exceeded error.
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+_Version update only_
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Add more descriptive UiSettingsStorage, LocalSettingsStorage, and SessionSettingsStorage and deprecate badly name beta classes.
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:34 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+### Updates
+
+- Fix z-index of statusbar overflow panel to show footer popups.
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- Add SettingsManager and SettingsContainer for displaying app settings UI.
+- fix height in number control.
+- Fix for listbox not rerendering when selectedVaue prop is changed.
+- Add option to show/hide settings category header text.
+- Improved ui-components test coverage to 100%
+- Support for Focus into Tool Settings
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Keep hideIconContainer prop from bleeding into div.
+- Add right mouse click on TreeNode
+- Updated to use TypeScript 4.1
+- Floating widget opacity for UI 2.0. Slider formatMin, formatMax props.
+- Support for conditionally disabling/hiding keyboard shortcuts
+- Add margin and padding top labeled-themed-select.
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:53 GMT
+
+_Version update only_
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -15,6 +132,16 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - Allow target _blank in Message boxes if secure relationships exist on the element
 - AccuDraw bi-directional value updates
 - Wrap the props.valueChanged call in the SearchBox to prevent a state change when the value has not really changed. This generally only happens when a valueChangedDelay is specified.
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT

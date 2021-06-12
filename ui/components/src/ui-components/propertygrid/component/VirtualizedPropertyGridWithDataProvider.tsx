@@ -13,22 +13,26 @@ import { DelayedSpinner } from "../../common/DelayedSpinner";
 import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { FilteredType } from "../dataproviders/filterers/PropertyDataFiltererBase";
 import { usePropertyGridEventHandler, usePropertyGridModel, usePropertyGridModelSource } from "../internal/PropertyGridHooks";
+import { PropertyCategoryRendererManager } from "../PropertyCategoryRendererManager";
 import { IPropertyDataProvider } from "../PropertyDataProvider";
 import { CommonPropertyGridProps } from "./PropertyGridCommons";
 import { VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
 
 /** Properties for [[VirtualizedPropertyGridWithDataProvider]] React component
- * @alpha
+ * @beta
  */
 export interface VirtualizedPropertyGridWithDataProviderProps extends CommonPropertyGridProps {
   dataProvider: IPropertyDataProvider;
-  highlight?: HighlightingComponentProps & {filteredTypes?: FilteredType[]};
+  highlight?: HighlightingComponentProps & {
+    filteredTypes?: FilteredType[];
+  };
+  propertyCategoryRendererManager?: PropertyCategoryRendererManager;
 }
 
 /**
  * VirtualizedPropertyGrid React Component which takes dataProvider and
  * sets up default implementations for IPropertyGridModelSource nad IPropertyGridEventHandler
- * @alpha
+ * @beta
  */
 export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps) {
   // eslint-disable-next-line deprecation/deprecation
@@ -38,7 +42,7 @@ export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedProper
 
   if (!model) {
     return (
-      <div className="components-property-grid-loader">
+      <div className="components-virtualized-property-grid-loader">
         <DelayedSpinner size={SpinnerSize.Large} />
       </div>
     );

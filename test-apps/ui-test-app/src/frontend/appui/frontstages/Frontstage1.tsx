@@ -6,7 +6,7 @@ import * as React from "react";
 import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-components";
 import {
   ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
-  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, WidgetStateChangedEventArgs, Zone, ZoneLocation,
+  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
   ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
@@ -15,7 +15,7 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
-import { UiAdmin } from "@bentley/ui-abstract";
+import { UiAdmin, WidgetState } from "@bentley/ui-abstract";
 
 /* eslint-disable react/jsx-key */
 
@@ -49,7 +49,7 @@ function SampleTimelineComponent() {
   const duration = 20 * 1000;
   const startDate = new Date(2014, 6, 6);
   const endDate = new Date(2016, 8, 12);
-  const [loop, setLoop] = React.useState <boolean> (false);
+  const [loop, setLoop] = React.useState<boolean>(false);
 
   const handleOnSettingsChange = (settings: PlaybackSettings) => {
     if (settings.loop !== undefined) {

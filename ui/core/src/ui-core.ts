@@ -36,6 +36,7 @@ export * from "./ui-core/contextmenu/PopupContextMenu";
 export * from "./ui-core/cube/Cube";
 
 export * from "./ui-core/dialog/Dialog";
+export * from "./ui-core/dialog/GlobalDialog";
 
 export * from "./ui-core/elementseparator/ElementSeparator";
 
@@ -153,9 +154,9 @@ export { Tree, TreeProps } from "./ui-core/tree/Tree";
 export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
 
 export * from "./ui-core/uisettings/UiSetting";
-export * from "./ui-core/uisettings/UiSettings";
-export * from "./ui-core/uisettings/LocalUiSettings";
-export * from "./ui-core/uisettings/SessionUiSettings";
+export * from "./ui-core/uisettings/UiSettingsStorage";
+export * from "./ui-core/uisettings/LocalSettingsStorage";
+export * from "./ui-core/uisettings/SessionSettingsStorage";
 
 export * from "./ui-core/utils/IconHelper";
 export * from "./ui-core/utils/Point";

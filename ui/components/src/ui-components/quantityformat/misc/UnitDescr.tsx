@@ -33,8 +33,8 @@ async function getUnitConversionData(possibleUnits: UnitProps[], toUnit: UnitPro
 }
 
 async function getPossibleUnits(parentUnit: UnitProps, unitsProvider: UnitsProvider, ensureCompatibleComposite: boolean) {
-  const unitFamily = parentUnit.unitFamily;
-  const possibleUnits = await unitsProvider.getUnitsByFamily(unitFamily);
+  const phenomenon = parentUnit.phenomenon;
+  const possibleUnits = await unitsProvider.getUnitsByFamily(phenomenon);
   if (!ensureCompatibleComposite)
     return possibleUnits;
 
