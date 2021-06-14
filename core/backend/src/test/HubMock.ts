@@ -9,7 +9,7 @@ import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetIdArg, ChangesetProps, ChangesetRange, CheckPointArg,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetIdArg, ChangesetIndex, ChangesetIndexArg, ChangesetProps, ChangesetRange, CheckPointArg,
   IModelIdArg, LocalDirName, LocalFileName, LockProps,
 } from "../BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
@@ -138,28 +138,28 @@ export class HubMock {
 
   /** All methods below are mocks of the [[BackendHubAccess]] interface */
 
-  public static async getChangesetIdFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<string> {
+  public static async getChangesetIndexFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<ChangesetIndex> {
     return this.findLocalHub(arg.iModelId).findNamedVersion(arg.versionName);
   }
 
-  public static async getChangesetIdFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<string> {
+  public static async getChangesetIndexFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetIndex> {
     const version = arg.version;
     if (version.isFirst)
-      return "";
+      return 0;
 
     const asOf = version.getAsOfChangeSet();
     if (asOf)
-      return asOf;
+      return this.getChangesetIndexFromId({ ...arg, changeSetId: asOf });
 
     const versionName = version.getName();
     if (versionName)
-      return this.getChangesetIdFromNamedVersion({ ...arg, versionName });
+      return this.getChangesetIndexFromNamedVersion({ ...arg, versionName });
 
-    return this.getLatestChangesetId(arg);
+    return this.getLatestChangesetIndex(arg);
   }
 
-  public static async getLatestChangesetId(arg: IModelIdArg): Promise<string> {
-    return this.findLocalHub(arg.iModelId).getLatestChangesetId();
+  public static async getLatestChangesetIndex(arg: IModelIdArg): Promise<ChangesetIndex> {
+    return this.findLocalHub(arg.iModelId).latestChangesetIndex;
   }
 
   public static async getChangesetIndexFromId(arg: IModelIdArg & { changeSetId: ChangesetId }): Promise<number> {
@@ -181,8 +181,8 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
   }
 
-  public static async downloadChangeset(arg: ChangesetIdArg): Promise<ChangesetFileProps> {
-    return this.findLocalHub(arg.iModelId).downloadChangeset({ changeSetId: arg.changeSetId, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
+  public static async downloadChangeset(arg: ChangesetIndexArg): Promise<ChangesetFileProps> {
+    return this.findLocalHub(arg.iModelId).downloadChangeset({ changesetIndex: arg.changesetIndex, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
   }
 
   public static async downloadChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetFileProps[]> {
@@ -197,7 +197,7 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).queryChangesets(arg.range);
   }
 
-  public static async pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }): Promise<void> {
+  public static async pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }): Promise<ChangesetIndex> {
     return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
   }
 

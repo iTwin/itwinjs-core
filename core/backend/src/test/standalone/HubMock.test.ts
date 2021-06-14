@@ -39,7 +39,7 @@ describe.only("HubMock", () => {
     assert.equal(checkpoints[0], 0);
 
     const cp1 = join(tmpDir, "cp-1.bim");
-    localHub.downloadCheckpoint({ changeSetId: "", targetFile: cp1 });
+    localHub.downloadCheckpoint({ changesetIndex: 0, targetFile: cp1 });
     const stat1 = IModelJsFs.lstatSync(cp1);
     const statRev0 = IModelJsFs.lstatSync(revision0);
     assert.equal(stat1?.size, statRev0?.size);
@@ -75,8 +75,8 @@ describe.only("HubMock", () => {
       id: "changeset0", description: "first changeset", changesType: ChangesType.Regular, parentId: "", briefcaseId: 100, pushDate: "",
       userCreated: "user1", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
     };
-    localHub.addChangeset(cs1);
-    const changesets1 = localHub.getChangesets();
+    cs1.index = localHub.addChangeset(cs1);
+    const changesets1 = localHub.queryChangesets();
     assert.equal(changesets1.length, 1);
     assert.equal(changesets1[0].id, cs1.id);
     assert.equal(changesets1[0].description, cs1.description);
@@ -92,8 +92,8 @@ describe.only("HubMock", () => {
       id: "changeset1", parentId: "changeset0", description: "second changeset", changesType: ChangesType.Schema, briefcaseId: 200, pushDate: "",
       userCreated: "user2", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
     };
-    localHub.addChangeset(cs2);
-    const changesets2 = localHub.getChangesets();
+    cs2.index = localHub.addChangeset(cs2);
+    const changesets2 = localHub.queryChangesets();
     assert.equal(changesets2.length, 2);
     assert.deepEqual(changesets1[0], changesets2[0]);
     assert.equal(changesets2[1].id, cs2.id);
@@ -106,23 +106,23 @@ describe.only("HubMock", () => {
     assert.isDefined(changesets2[1].pushDate);
     assert.equal(cs2.id, localHub.getLatestChangesetId());
 
-    localHub.uploadCheckpoint({ changeSetId: cs2.id, localFile: revision0 });
+    localHub.uploadCheckpoint({ changesetIndex: cs2.index, localFile: revision0 });
     checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 2);
     assert.equal(checkpoints[1], 2);
 
     const version1 = "release 1";
     const version2 = "release 2";
-    localHub.addNamedVersion({ versionName: version1, id: cs1.id });
-    localHub.addNamedVersion({ versionName: version2, id: cs2.id });
-    assert.equal(localHub.findNamedVersion(version1), cs1.id);
+    localHub.addNamedVersion({ versionName: version1, csIndex: cs1.index });
+    localHub.addNamedVersion({ versionName: version2, csIndex: cs2.index });
+    assert.equal(localHub.findNamedVersion(version1), cs1.index);
     expect(() => localHub.findNamedVersion("not there")).throws("not found");
-    expect(() => localHub.addNamedVersion({ versionName: version2, id: cs2.id })).throws("insert");
+    expect(() => localHub.addNamedVersion({ versionName: version2, csIndex: cs2.index! })).throws("insert");
     localHub.deleteNamedVersion(version1);
     expect(() => localHub.findNamedVersion(version1)).throws("not found");
 
     // test for duplicate changeset id
-    const cs3 = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesType.Regular, pathname: cs1.pathname, briefcaseId: 100, userCreated: "", pushDate: "" };
+    const cs3: ChangesetFileProps = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesType.Regular, pathname: cs1.pathname, briefcaseId: 100, userCreated: "", pushDate: "" };
     expect(() => localHub.addChangeset(cs3)).throws("can't insert");
     // now test for valid changeset id, but bad parentId
     const cs4 = { ...cs3, id: "changeset4", parentId: "bad", description: "fourth changeset" };
@@ -130,13 +130,13 @@ describe.only("HubMock", () => {
 
     cs3.id = "changeset3";
     cs3.parentId = cs2.id;
-    localHub.addChangeset(cs3);
-    assert.equal("", localHub.queryPreviousCheckpoint(""));
-    assert.equal("", localHub.queryPreviousCheckpoint(cs1.id));
-    assert.equal(cs2.id, localHub.queryPreviousCheckpoint(cs2.id));
-    assert.equal(cs2.id, localHub.queryPreviousCheckpoint(cs3.id));
+    cs3.index = localHub.addChangeset(cs3);
+    assert.equal(0, localHub.queryPreviousCheckpoint(0));
+    assert.equal(0, localHub.queryPreviousCheckpoint(cs1.index));
+    assert.equal(cs1.index, localHub.queryPreviousCheckpoint(cs2.index));
+    assert.equal(cs2.index, localHub.queryPreviousCheckpoint(cs3.index));
 
-    const cSets = localHub.downloadChangesets({ range: { first: cs1.id, end: cs2.id }, targetDir: tmpDir });
+    const cSets = localHub.downloadChangesets({ range: { first: cs1.index, end: cs2.index }, targetDir: tmpDir });
     assert.equal(cSets.length, 2);
     assert.equal(cSets[0].id, cs1.id);
     assert.equal(cSets[0].changesType, cs1.changesType);

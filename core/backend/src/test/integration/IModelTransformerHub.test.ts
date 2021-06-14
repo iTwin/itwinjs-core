@@ -515,7 +515,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const changeSetBranch1State4 = branchDb1.changeSetId;
       assert.notEqual(changeSetBranch1State4, changeSetBranch1State2);
 
-      const masterDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: masterIModelId, range: { after: "", end: masterDb.changeSetId } });
+      const masterDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: masterIModelId });
       assert.equal(masterDbChangeSets.length, 3);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeSet of masterDbChangeSets) {
@@ -554,7 +554,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assertPhysicalObjects(replayedDb, state4); // should have same ending state as masterDb
 
       // make sure there are no deletes in the replay history (all elements that were eventually deleted from masterDb were excluded)
-      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: replayedIModelId, range: { after: "", end: replayedDb.changeSetId } });
+      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: replayedIModelId });
       assert.isAtLeast(replayedDbChangeSets.length, masterDbChangeSets.length); // replayedDb will have more changeSets when seed contains elements
       const replayedDeletedElementIds = new Set<Id64String>();
       for (const replayedDbChangeSet of replayedDbChangeSets) {

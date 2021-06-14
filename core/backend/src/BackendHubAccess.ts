@@ -54,8 +54,6 @@ export interface ChangesetProps {
  * @internal
  */
 export interface ChangesetFileProps extends ChangesetProps {
-  /** The index (sequence number) from IModelHub for this changeset. Larger index values were pushed later. */
-  index: ChangesetIndex;
   /** The full pathname of the local file holding this changeset. */
   pathname: LocalFileName;
 }
@@ -127,6 +125,12 @@ export interface ChangesetIdArg extends IModelIdArg {
   changeSetId: ChangesetId;
 }
 
+/** Argument for methods that must supply an IModelId and a ChangesetId
+ * @internal
+ */
+export interface ChangesetIndexArg extends IModelIdArg {
+  changesetIndex: ChangesetIndex;
+}
 /** Argument for methods that must supply an IModelId and a range of ChangesetIds.
  * @internal
  */
@@ -162,6 +166,8 @@ export interface BackendHubAccess {
 
   /** Get the index of the change set from its id */
   getChangesetIndexFromId: (arg: ChangesetIdArg) => Promise<ChangesetIndex>;
+  /** Get the index of the change set from its id */
+  getChangesetIdFromIndex: (arg: ChangesetIndexArg) => Promise<ChangesetId>;
   /** Acquire a new briefcaseId for the supplied iModelId
      * @note usually there should only be one briefcase per iModel per user.
      */

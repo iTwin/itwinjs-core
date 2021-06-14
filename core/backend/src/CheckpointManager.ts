@@ -16,7 +16,7 @@ import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imode
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { ChangesetId, ChangesetIndex } from "./BackendHubAccess";
+import { ChangesetId } from "./BackendHubAccess";
 import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelHubBackend } from "./IModelHubBackend";
@@ -24,11 +24,11 @@ import { IModelJsFs } from "./IModelJsFs";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
-export type ChangesetTag =
-  { changeSetId: ChangesetId, changesetIndex?: never } |
-  { changesetIndex: ChangesetIndex, changeSetId?: never };
-
-export interface CheckpointSpec {
+/**
+ * Properties of a checkpoint
+ * @public
+ */
+export interface CheckpointProps {
   expectV2?: boolean;
 
   /** Context (Project or Asset) that the iModel belongs to */
@@ -36,14 +36,14 @@ export interface CheckpointSpec {
 
   /** Id of the iModel */
   iModelId: GuidString;
+
+  /** Id of the change set
+   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
+   */
+  changeSetId: string;
+
   requestContext: AuthorizedClientRequestContext;
 }
-
-/**
- * Properties of a checkpoint
- * @public
- */
-export type CheckpointProps = CheckpointSpec & ChangesetTag;
 
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
  *  @public
@@ -113,11 +113,10 @@ export class Downloads {
 */
 export class V2CheckpointManager {
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
-    const { requestContext, iModelId } = checkpoint;
+    const { requestContext, iModelId, changeSetId } = checkpoint;
 
     try {
       requestContext.enter();
-      const changesetId =  = checkpoint.changeSetId ?? await
       const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
       const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
       requestContext.enter();
@@ -263,7 +262,7 @@ export class CheckpointManager {
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
         if (nativeDb.getParentChangeSetId() !== checkpoint.changeSetId)
-          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, checkpoint.changeSetId);
+          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, { id: checkpoint.changeSetId });
       } finally {
         db.saveChanges();
         db.close();

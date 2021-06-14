@@ -164,7 +164,7 @@ export class LocalHub {
   /** Add a changeset to the timeline
    * @return the changesetIndex of the added changeset
    */
-  public addChangeset(changeset: ChangesetFileProps): number {
+  public addChangeset(changeset: ChangesetFileProps): ChangesetIndex {
     const stats = IModelJsFs.lstatSync(changeset.pathname);
     if (!stats)
       throw new Error(`cannot read changeset file ${changeset.pathname}`);
@@ -212,11 +212,32 @@ export class LocalHub {
     return this.getChangesetByIndex(this.getChangesetIndex(id));
   }
 
+  public getPreviousIndex(index: ChangesetIndex) {
+    return this.db.withPreparedSqliteStatement("SELECT max(csIndex) FROM timeline WHERE csIndex<?", (stmt) => {
+      stmt.bindValue(1, index);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_ROW !== rc)
+        throw new IModelError(rc, `cannot get previous index`);
+
+      return stmt.getValue(0).getInteger();
+    });
+  }
+
+  public getParentId(index: ChangesetIndex): ChangesetId {
+    if (index === 0)
+      return "";
+
+    return this.db.withPreparedSqliteStatement("SELECT id FROM timeline WHERE csIndex=?", (stmt) => {
+      stmt.bindValue(1, this.getPreviousIndex(index));
+      stmt.step();
+      return stmt.getValue(0).getString();
+    });
+  }
+
   /** Get the properties of a changeset by its index */
   public getChangesetByIndex(index: number): ChangesetProps {
     if (index <= 0)
-      return {}
-    throw new Error("invalid changeset index");
+      return { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
 
     return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,id,briefcaseId FROM timeline WHERE csIndex=?", (stmt) => {
       stmt.bindValue(1, index);
@@ -233,9 +254,24 @@ export class LocalHub {
         id: stmt.getValue(6).getString(),
         briefcaseId: stmt.getValue(7).getInteger(),
         index,
-        parentId: this.getChangesetByIndex()
+        parentId: this.getParentId(index),
       };
     });
+  }
+
+  /** Get an array of changesets starting with first to last, by index */
+  public queryChangesets(range?: ChangesetRange): ChangesetProps[] {
+    const changesets: ChangesetProps[] = [];
+    const first = range?.first ?? 0;
+    const last = range?.end ?? this.latestChangesetIndex;
+
+    this.db.withPreparedSqliteStatement("SELECT csIndex FROM timeline WHERE csIndex>=? AND csIndex<=? ORDER BY csIndex", (stmt) => {
+      stmt.bindValue(1, first);
+      stmt.bindValue(2, last);
+      while (DbResult.BE_SQLITE_ROW === stmt.step())
+        changesets.push(this.getChangesetByIndex(stmt.getValue(0).getInteger()));
+    });
+    return changesets;
   }
 
   /** Get the ChangesetId of the latest changeset */
@@ -298,10 +334,15 @@ export class LocalHub {
     return outName;
   }
 
-  /** Get an array of the changeset index for all checkpoints */
-  public getCheckpoints(): number[] {
-    const checkpoints: number[] = [];
-    this.db.withSqliteStatement("SELECT csIndex FROM checkpoints", (stmt) => {
+  /** Get an array of the indexes for a range of checkpoints */
+  public getCheckpoints(range?: ChangesetRange): ChangesetIndex[] {
+    const first = range?.first ?? 0;
+    const last = range?.end ?? this.latestChangesetIndex;
+
+    const checkpoints: ChangesetIndex[] = [];
+    this.db.withSqliteStatement("SELECT csIndex FROM checkpoints WHERE csIndex<=? AND csIndex>=? ORDER BY csIndex", (stmt) => {
+      stmt.bindValue(1, first);
+      stmt.bindValue(2, last);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
         checkpoints.push(stmt.getValue(0).getInteger());
 
@@ -309,7 +350,7 @@ export class LocalHub {
     return checkpoints;
   }
 
-  /** Find the checkpoint that is no newer than a changeSetId */
+  /** Find the checkpoint that is no newer than a changesetIndex */
   public queryPreviousCheckpoint(changesetIndex: ChangesetIndex): ChangesetIndex {
     if (changesetIndex <= 0)
       return 0;
@@ -324,14 +365,15 @@ export class LocalHub {
   }
 
   /** "download" a checkpoint */
-  public downloadCheckpoint(arg: { changesetIndex: ChangesetIndex, targetFile: LocalFileName }) {
-    const prev = this.queryPreviousCheckpoint(arg.changesetIndex);
+  public downloadCheckpoint(arg: { changeSetId: ChangesetId, targetFile: LocalFileName }) {
+    const index = this.getChangesetIndex(arg.changeSetId);
+    const prev = this.queryPreviousCheckpoint(index);
     IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromIndex(prev)), arg.targetFile);
-    return prev;
+    return this.getChangesetByIndex(prev).id;
   }
 
   private copyChangeset(arg: ChangesetFileProps): ChangesetFileProps {
-    IModelJsFs.copySync(join(this.changesetDir, this.checkpointNameFromIndex(arg.index)), arg.pathname);
+    IModelJsFs.copySync(join(this.changesetDir, this.checkpointNameFromIndex(arg.index!)), arg.pathname);
     return arg;
   }
 
@@ -344,14 +386,11 @@ export class LocalHub {
 
   /** "download" all the changesets in a given range */
   public downloadChangesets(arg: { range?: ChangesetRange, targetDir: LocalDirName }): ChangesetFileProps[] {
-    const start = arg.range?.first ?? 0;
-    const end = arg.range?.end ?? this._latestChangesetIndex;
-    const targetDir = arg.targetDir;
-    const cSets: ChangesetFileProps[] = [];
-
-    for (let changesetIndex = start; changesetIndex < end; ++changesetIndex)
-      cSets.push(this.downloadChangeset({ changesetIndex, targetDir }));
-
+    const cSets = this.queryChangesets(arg.range) as ChangesetFileProps[];
+    for (const cs of cSets) {
+      cs.pathname = join(arg.targetDir, cs.id);
+      this.copyChangeset(cs);
+    }
     return cSets;
   }
 
