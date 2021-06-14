@@ -945,13 +945,13 @@ export class TemplateModelCloner extends IModelTransformer {
     predecessorIds.forEach((predecessorId: Id64String) => {
       if (Id64.invalid === this.context.findTargetElementId(predecessorId)) {
         if (this.context.isBetweenIModels) {
-          throw new IModelError(IModelStatus.BadRequest, "Required dependency not found in target iModel", Logger.logError, BackendLoggerCategory.IModelTransformer);
+          throw new IModelError(IModelStatus.BadRequest, `Remapping for source dependency ${predecessorId} not found for target iModel`, Logger.logError, BackendLoggerCategory.IModelTransformer);
         } else {
           const definitionElement = this.sourceDb.elements.tryGetElement<DefinitionElement>(predecessorId, DefinitionElement);
           if (definitionElement && !(definitionElement instanceof RecipeDefinitionElement)) {
             this.context.remapElement(predecessorId, predecessorId); // when in the same iModel, can use existing DefinitionElements without remapping
           } else {
-            throw new IModelError(IModelStatus.BadRequest, "Required dependency not found", Logger.logError, BackendLoggerCategory.IModelTransformer);
+            throw new IModelError(IModelStatus.BadRequest, `Remapping for dependency ${predecessorId} not found`, Logger.logError, BackendLoggerCategory.IModelTransformer);
           }
         }
       }
