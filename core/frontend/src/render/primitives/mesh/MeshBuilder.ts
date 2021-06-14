@@ -103,8 +103,8 @@ export class MeshBuilder {
     assert(!includeParams || paramCount > 0);
     assert(!haveParam || undefined !== mappedTexture);
 
-    const polyfaceVisitorOptions = { ...options, triangleCount, haveParam };
     // The face represented by this visitor should be convex (we request that in facet options) - so we do a simple fan triangulation.
+    const polyfaceVisitorOptions = { ...options, triangleCount, haveParam };
     for (let triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++) {
       const triangle = this.createTriangle(triangleIndex, visitor, polyfaceVisitorOptions);
       if (undefined !== triangle)
@@ -164,9 +164,22 @@ export class MeshBuilder {
       triangleIndex === options.triangleCount - 1 ? edgeVisible[triangleIndex + 2] : false,
     );
 
+    let addVertex: (props: VertexKeyProps) => number;
+    const auxData = visitor.auxData;
+    if (auxData) {
+      addVertex = (props: VertexKeyProps) => {
+        // No deduplication with auxData (for now...)
+        const index = this.mesh.addVertex(props);
+        this.mesh.addAuxChannels(auxData.channels, index);
+        return index;
+      }
+    } else {
+      addVertex = (props: VertexKeyProps) => this.addVertex(props);
+    }
+
     // set each triangle index to the index associated with the vertex key location in the vertex map
     vertices.forEach((vertexProps: VertexKeyProps, i: number) => {
-      const vertexKeyIndex = this.addVertex(vertexProps);
+      const vertexKeyIndex = addVertex(vertexProps);
 
       triangle.indices[i] = vertexKeyIndex;
 
