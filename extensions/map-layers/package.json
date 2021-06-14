@@ -102,8 +102,6 @@
     "@bentley/ui-core": "workspace:*",
     "@bentley/ui-framework": "workspace:*",
     "@bentley/ui-ninezone": "workspace:*",
-    "@itwin/itwinui-css": "^0.20.0",
-    "@itwin/itwinui-react": "^1.7.2",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },

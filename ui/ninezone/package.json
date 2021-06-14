@@ -36,8 +36,6 @@
     "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.2",
     "@bentley/ui-abstract": "workspace:^2.18.0-dev.2",
     "@bentley/ui-core": "workspace:^2.18.0-dev.2",
-    "@itwin/itwinui-css": "^0.20.0",
-    "@itwin/itwinui-react": "^1.7.2",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -52,8 +50,6 @@
     "@bentley/react-scripts": "3.4.9",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-core": "workspace:*",
-    "@itwin/itwinui-css": "^0.20.0",
-    "@itwin/itwinui-react": "^1.7.2",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -96,6 +92,8 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
+    "@itwin/itwinui-css": "^0.20.0",
+    "@itwin/itwinui-react": "^1.7.2",
     "classnames": "^2.3.1",
     "immer": "^9.0.1",
     "svg-sprite-loader": "4.2.1",

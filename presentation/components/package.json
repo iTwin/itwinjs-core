@@ -58,8 +58,6 @@
     "@bentley/ui-abstract": "workspace:^2.18.0-dev.2",
     "@bentley/ui-components": "workspace:^2.18.0-dev.2",
     "@bentley/ui-core": "workspace:^2.18.0-dev.2",
-    "@itwin/itwinui-css": "^0.20.0",
-    "@itwin/itwinui-react": "^1.7.2",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -75,8 +73,6 @@
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-components": "workspace:*",
     "@bentley/ui-core": "workspace:*",
-    "@itwin/itwinui-css": "^0.20.0",
-    "@itwin/itwinui-react": "^1.7.2",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
