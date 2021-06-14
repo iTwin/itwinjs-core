@@ -26,10 +26,7 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
   private readonly _schemaList: Map<string, Object>;
   private readonly _parser: (schemaContent: any, context: SchemaContext) => Schema | Promise<Schema>;
 
-  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema)
-  constructor(parser: (schemaContent: any, context: SchemaContext) => Promise<Schema>)
-  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema | Promise<Schema>)
-  {
+  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema | Promise<Schema>) {
     this._schemaList = new Map();
     this._parser = parser;
   }
@@ -63,7 +60,10 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
 }
 
 export async function deserializeXml(schemaXml: string, context: SchemaContext) {
-  return Promise.resolve(deserializeXmlSync(schemaXml, context));
+  const parser = new DOMParser();
+  const document = parser.parseFromString(schemaXml);
+  const reader = new SchemaReadHelper(XmlParser, context);
+  return reader.readSchema(new Schema(context), document);
 }
 
 export function deserializeXmlSync(schemaXml: string, context: SchemaContext) {

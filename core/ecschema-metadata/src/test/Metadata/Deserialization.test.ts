@@ -212,7 +212,7 @@ describe("Full Schema Deserialization", () => {
 
       context.addLocater(locater);
 
-      let json = {
+      const json = {
         ...baseJson,
         alias: "test",
         references: [
@@ -400,7 +400,7 @@ describe("Full Schema Deserialization", () => {
       await expect(Schema.fromJson(json, context)).not.to.be.rejectedWith(ECObjectsError);
     });
 
-    it("should throw for cyclic references in XML", async () => {
+    it("should throw for cyclic references in XML (sync)", async () => {
       const context = new SchemaContext();
 
       const schemaAXml = `
@@ -415,6 +415,35 @@ describe("Full Schema Deserialization", () => {
       </ECSchema>`;
 
       const locater = new ReferenceSchemaLocater(deserializeXmlSync);
+      locater.addSchema("RefSchemaA", schemaAXml);
+      locater.addSchema("RefSchemaB", schemaBXml);
+
+      context.addLocater(locater);
+      const testSchemaXML = `
+      <?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="test" version="01.02.03" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="RefSchemaA" version="01.00.00" alias="a"/>
+      <ECSchemaReference name="RefSchemaB" version="02.00.00" alias="b"/>
+      </ECSchema>`;
+
+      await expect(deserializeXml(testSchemaXML, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
+    });
+
+    it("should throw for cyclic references in XML (async)", async () => {
+      const context = new SchemaContext();
+
+      const schemaAXml = `
+      <?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="RefSchemaA" alias="a" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      </ECSchema>`;
+
+      const schemaBXml = `
+      <?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="RefSchemaB" alias="b" version="02.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="TestSchema" version="01.02.03" alias="test"/>
+      </ECSchema>`;
+
+      const locater = new ReferenceSchemaLocater(deserializeXml);
       locater.addSchema("RefSchemaA", schemaAXml);
       locater.addSchema("RefSchemaB", schemaBXml);
 
