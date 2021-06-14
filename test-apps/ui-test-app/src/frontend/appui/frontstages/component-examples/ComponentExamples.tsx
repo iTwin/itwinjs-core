@@ -8,6 +8,7 @@ import { CommonProps, VerticalTabs } from "@bentley/ui-core";
 import { ColorTheme, MessageManager, ModalFrontstageInfo, StatusMessageRenderer, UiFramework } from "@bentley/ui-framework";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { ComponentExamplesProvider } from "./ComponentExamplesProvider";
+import { ITwinUIExamplesProvider } from "./ITwinUIExamplesProvider";
 
 export interface ComponentExampleCategory {
   title: string;
@@ -18,7 +19,7 @@ export interface ComponentExampleCategory {
  */
 export class ComponentExamplesModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.examples");
-  public categories: ComponentExampleCategory[] = ComponentExamplesProvider.categories;
+  public categories: ComponentExampleCategory[] = [...ComponentExamplesProvider.categories, ...ITwinUIExamplesProvider.categories];
   public get content(): React.ReactNode {
     MessageManager.maxDisplayedStickyMessages = 6;
     return (<ComponentExamplesPage categories={this.categories} />);

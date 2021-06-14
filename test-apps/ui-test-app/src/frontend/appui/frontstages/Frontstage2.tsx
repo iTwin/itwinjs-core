@@ -15,7 +15,6 @@ import {
 import { AppTools } from "../../tools/ToolSpecifications";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import {
   HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
@@ -92,7 +91,7 @@ export class Frontstage2 extends FrontstageProvider {
         centerRight={
           <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
             widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
             ]}
           />
         }
@@ -106,7 +105,6 @@ export class Frontstage2 extends FrontstageProvider {
         bottomRight={
           <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
             widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               <Widget defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
             ]}
           />
