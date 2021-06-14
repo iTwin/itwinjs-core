@@ -3,56 +3,44 @@ publish: false
 ---
 # NextVersion
 
-## New IModel events
+## UI Changes
 
-[IModel]($common)s now emit events when their properties change.
+Added ability for [UiItemsProvider]($ui-abstract) to provide widgets to [AbstractZoneLocation]($ui-abstract) locations when running is AppUi version 1. Prior to this a widget could only be targeted to a [StagePanelLocation]($ui-abstract) location.
 
-* [IModel.onProjectExtentsChanged]($common)
-* [IModel.onGlobalOriginChanged]($common)
-* [IModel.onEcefLocationChanged]($common)
-* [IModel.onGeographicCoordinateSystemChanged]($common)
-* [IModel.onRootSubjectChanged]($common)
-* [IModel.onNameChanged]($common)
+### Example UiItemsProvider
 
-Within [IpcApp]($frontend)-based applications, [BriefcaseConnection]($frontend)s now automatically synchronize their properties in response to such events produced by changes on the backend. For example, if [BriefcaseDb.projectExtents]($backend) is modified, [BriefcaseConnection.projectExtents]($frontend) will be updated to match and both the BriefcaseDb and BriefcaseConnection will emit an `onProjectExtentsChanged` event.
+The example below, shows how to add a widget to a [StagePanelLocation]($ui-abstract) if UiFramework.uiVersion === "2" and to the "BottomRight" [AbstractZoneLocation]($ui-abstract) if UiFramework.uiVersion === "1".  See [UiItemsProvider.provideWidgets]($ui-abstract) for new `zoneLocation` argument.
 
-## Customizable flash settings
+```tsx
+export class ExtensionUiItemsProvider implements UiItemsProvider {
+  public readonly id = "ExtensionUiItemsProvider";
+  public static i18n: I18N;
+  private _backstageItems?: BackstageItem[];
 
-When the user hovers over an element in a [Viewport]($frontend), the element is "flashed" to indicate that it can be interacted with. Previously this effect was not configurable. Now, an application can supply a [FlashSettings]($frontend) to [Viewport.flashSettings]($frontend) to customize the intensity and duration of the effect, as well as the way in which lit geometry is flashed - either by brightening it, or by mixing it with the viewport's hilite color.
+  public constructor(i18n: I18N) {
+    ExtensionUiItemsProvider.i18n = i18n;
+  }
 
-## Promoted APIs
-
-The following previously `alpha` or `beta` APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of the package.
-
-### [@bentley/bentleyjs-core](https://www.itwinjs.org/reference/bentleyjs-core/)
-
-* [ReadonlySortedArray.findEquivalent]($bentleyjs-core) and [ReadonlySortedArray.indexOfEquivalent]($bentleyjs-core) for locating an element based on a custom criterion.
-
-### [@bentley/imodeljs-common](https://www.itwinjs.org/reference/imodeljs-common/)
-
-* [RenderSchedule]($common) for defining scripts to visualize changes in an iModel over time.
-* [DisplayStyleSettings.renderTimeline]($common) for associating a [RenderTimeline]($backend) with a [DisplayStyle]($backend).
-* [DisplayStyleSettings.timePoint]($common) for specifying the currently-simulated point along a view's [RenderSchedule.Script]($common).
-* [ElementGraphicsRequestProps]($common) for generating [RenderGraphic]($frontend)s from [GeometricElement]($backend)s or arbitrary geometry streams.
-
-### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
-
-* [LookAndMoveTool]($frontend) for using videogame-like mouse and keyboard controls to navigate a 3d view.
-* [SetupCameraTool]($frontend) for defining the camera for a [SpatialViewState]($frontend).
-* [IModelApp.queryRenderCompatibility]($frontend) for determining the set of WebGL features supported by your browser and device.
-* [ToolAdmin.exceptionHandler]($frontend) and [ToolAdmin.exceptionOptions]($frontend) for customizing how your app reacts to unhandled exceptions.
-* [Viewport.antialiasSamples]($frontend) and [ViewManager.setAntialiasingAllViews]($frontend) for applying [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) to make viewport images appear smoother.
-
-### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
-
-* [TxnManager]($backend) for managing local changes to a [BriefcaseDb]($backend).
-* [IModelDb.computeProjectExtents]($backend) for computing default project extents based on the ranges of spatial elements.
-* [IModelDb.generateElementGraphics]($backend) for generating [RenderGraphic]($frontend)s from [GeometricElement]($backend)s or arbitrary geometry streams.
-* [IModelDb.getGeometryContainment]($backend) for computing the containment of a set of [GeometricElement]($backend)s within a [ClipVector]($geometry-core).
-* [IModelDb.getMassProperties]($backend) for computing [GeometricElement]($backend) properties like area and volume.
-* [RenderTimeline]($backend) element for persisting a [RenderSchedule.Script]($common).
-* [SectionDrawingLocation]($backend) element identifying the location of a [SectionDrawing]($backend) in the context of a [SpatialModel]($backend).
-
-## Popout Widgets
-
-IModelApps, that use AppUi version "2", can now specify if a Widget can support being "popped-out" to a child popup window. The child window runs in the same javascript context as the parent application window. See [Child Window Manager]($docs/learning/ui/framework/ChildWindows.md) for more details.
+  /** provideWidgets() is called for each registered UI provider to allow the provider to add widgets to a specific section of a stage panel.
+   *  items to the StatusBar.
+   */
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    // section will be undefined if uiVersion === "1" and in that case we can add widgets to the specified zoneLocation
+    if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
+      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
+      {
+        widgets.push({
+          id: PresentationPropertyGridWidgetControl.id,
+          icon: PresentationPropertyGridWidgetControl.iconSpec,  // icon required if uiVersion === "1"
+          label: PresentationPropertyGridWidgetControl.label,
+          defaultState: WidgetState.Open,
+          getWidgetContent: () => <PresentationPropertyGridWidget />, // eslint-disable-line react/display-name
+          canPopout: true,  // canPopout ignore if uiVersion === "1"
+        });
+      }
+    }
+    return widgets;
+  }
+}
+```

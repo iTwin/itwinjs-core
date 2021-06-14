@@ -91,7 +91,7 @@ export interface FrontstageRuntimeProps {
 
 /** State for the FrontstageComposer component.
  * @internal
- */
+ */
 interface FrontstageComposerState {
   allowPointerUpSelection: boolean;
   modalFrontstageCount: number;
@@ -121,7 +121,7 @@ const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
 
 /** FrontstageComposer React component.
  * @public
- */
+ */
 export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>
   implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler {
 
@@ -381,6 +381,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onPanelSizeChangedEvent.addListener(this._handlePanelSizeChangedEvent);
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+    FrontstageManager.onWidgetDefsUpdatedEvent.addListener(this._handleWidgetStateChangedEvent);
   }
 
   public componentWillUnmount(): void {
@@ -392,6 +393,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onPanelSizeChangedEvent.removeListener(this._handlePanelSizeChangedEvent);
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
+    FrontstageManager.onWidgetDefsUpdatedEvent.removeListener(this._handleWidgetStateChangedEvent);
   }
 
   // istanbul ignore next

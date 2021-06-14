@@ -235,12 +235,18 @@ export class ResponseBuilder {
    * @param requestPath Request path.
    * @param file Path to the file that will be sent as a response.
    * @param times How many times to repeat the same response.
+   * @param fileSize file size for header
    */
-  public static mockFileResponse(host: string, requestPath: string, file: string, times = 1): void {
+  public static mockFileResponse(host: string, requestPath: string, file: string, times = 1, fileSize?: string): void {
     nock(host)
       .get(requestPath)
       .times(times)
       .replyWithFile(200, file);
+
+    nock(host)
+      .head(requestPath)
+      .times(times)
+      .reply(200, undefined, {"content-length": fileSize!, "accept-ranges": "bytes"});
   }
 
   /**

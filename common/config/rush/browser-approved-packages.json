@@ -303,6 +303,12 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "agentkeepalive",
+      "allowedCategories": [
+        "backend"
+      ]
+    },
+    {
       "name": "almost-equal",
       "allowedCategories": [ "common" ]
     },
@@ -384,7 +390,7 @@
     },
     {
       "name": "chai-subset",
-      "allowedCategories": [ "backend", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "chalk",
@@ -532,7 +538,7 @@
     },
     {
       "name": "faker",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "fast-deep-equal",
@@ -671,12 +677,8 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "lint-staged",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "lodash",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "common", "frontend", "tools" ]
     },
     {
       "name": "lolex",
@@ -777,6 +779,12 @@
     {
       "name": "postcss-safe-parser",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "proper-lockfile",
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "puppeteer",
@@ -960,7 +968,7 @@
     },
     {
       "name": "sinon-chai",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "source-map-loader",

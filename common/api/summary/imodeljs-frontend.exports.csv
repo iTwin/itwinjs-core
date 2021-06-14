@@ -32,7 +32,8 @@ internal;AnimatedTreeReference
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 public;Animator
-public;AppearanceOverrideProps
+public;AppearanceOverrideProps = AppearanceOverrideProps_2
+deprecated;AppearanceOverrideProps = AppearanceOverrideProps_2
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
@@ -85,6 +86,7 @@ public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Po
 public;CategorySelectorState 
 internal;ChangeFlag
 public;ChangeFlags
+internal;ChangeSetId = string
 public;ChangeViewedModel2dOptions
 beta;CheckboxFormatPropEditorSpec 
 public;CheckpointConnection 
@@ -92,7 +94,7 @@ public;ClipEventType
 public;Cluster
 internal;CompassMode
 internal;ContextMode
-beta;ContextRealityModelState
+public;ContextRealityModelState 
 public;ContextRotationId
 public;CoordinateLockOverrides
 public;CoordSource
@@ -147,7 +149,8 @@ alpha;class ElementSetTool
 public;ElementState 
 internal;EllipsoidTerrainProvider 
 public;EmphasizeElements 
-public;EmphasizeElementsProps
+public;EmphasizeElementsProps = EmphasizeElementsProps_2
+deprecated;EmphasizeElementsProps = EmphasizeElementsProps_2
 beta;EngineeringLengthDescription 
 public;EntityState 
 public;Environment
@@ -167,7 +170,6 @@ internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeigh
 alpha;FeatureLogBatchClient
 alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
-public;FeatureOverrideType
 public;FeatureSymbology
 alpha;FeatureTrackingManager
 alpha;FeatureTrackingProps
@@ -190,6 +192,7 @@ internal;FrameCameraViewData
 internal;FrameRenderData
 alpha;FrameStats
 internal;FrameStatsCollector
+internal;FrontendHubAccess
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
@@ -279,6 +282,8 @@ public;IModelAppOptions
 public;class IModelConnection 
 public;IModelConnection
 internal;IModelFrameLifecycle
+internal;IModelHubFrontend
+internal;IModelIdArg
 public;IModelRoutingContext
 internal;IModelTile 
 internal;IModelTileContent 
@@ -330,7 +335,7 @@ internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 internal;MapLayerSetting
 internal;MapLayerSettingsService
-internal;MapLayerSource 
+internal;MapLayerSource
 internal;MapLayerSourceChangeType
 internal;MapLayerSources
 internal;MapLayerSourceStatus
@@ -514,8 +519,6 @@ public;SnapHeat
 public;SnapMode
 public;SnapshotConnection 
 public;SnapStatus
-beta;SpatialClassifiers
-internal;SpatialClassifiersContainer
 internal;class SpatialClassifierTileTreeReference 
 public;SpatialLocationModelState 
 public;SpatialModelState 
