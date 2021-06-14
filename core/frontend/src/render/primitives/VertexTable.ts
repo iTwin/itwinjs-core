@@ -67,12 +67,14 @@ export class VertexIndices {
   }
 }
 
-interface Dimensions {
+/** @internal */
+export interface Dimensions {
   width: number;
   height: number;
 }
 
-function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number): Dimensions {
+/** @internal */
+export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number): Dimensions {
   const maxSize = IModelApp.renderSystem.maxTextureSize;
   const nRgba = nEntries * nRgbaPerEntry + nExtraRgba;
 
