@@ -87,8 +87,15 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
         setDisplayStyleId(viewport.displayStyle.id);
         updateShowOverlayState();
       });
+      viewport.onDisplayStyleChanged.addListener(handleDisplayStyleChange);
+      return function cleanup() {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        viewport.onDisplayStyleChanged.removeListener(handleDisplayStyleChange);
+      };
     };
+  }, [displayStyleId, timelineDataProvider, updateDataProviders, updateShowOverlayState, viewport]);
 
+  React.useEffect(() => {
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
       // istanbul ignore if
       if (args.eventIds.has(SyncUiEventId.ActiveContentChanged)) {
@@ -101,20 +108,21 @@ export function DefaultViewOverlay(props: ViewOverlayProps) {
         updateShowOverlayState();
       }
     };
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return function cleanup() {
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+    };
+  }, [updateShowOverlayState]);
 
+  React.useEffect(() => {
     const handleViewChanged = (_vp: Viewport): void => {
       updateDataProviders();
     };
-
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
     viewport.onChangeView.addListener(handleViewChanged);
-    viewport.onDisplayStyleChanged.addListener(handleDisplayStyleChange);
     return function cleanup() {
       viewport.onChangeView.removeListener(handleViewChanged);
-      viewport.onDisplayStyleChanged.removeListener(handleDisplayStyleChange);
-      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
-  }, [displayStyleId, timelineDataProvider, updateDataProviders, updateShowOverlayState, viewport]);
+  }, [updateDataProviders, viewport]);
 
   React.useLayoutEffect(() => {
     updateDataProviders();
