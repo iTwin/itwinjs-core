@@ -13,7 +13,7 @@ import { IModelHostConfiguration } from "./IModelHost";
 
 class LocalTransport extends IpcWebSocketTransport {
   private _server: ws.Server;
-  private _connection: ws | undefined;
+  private _connections: ws[] = [];
 
   public constructor(port: number) {
     super();
@@ -21,9 +21,9 @@ class LocalTransport extends IpcWebSocketTransport {
     this._server = new ws.Server({ port });
 
     this._server.on("connection", (connection) => {
-      this._connection = connection;
+      this._connections.push(connection);
 
-      this._connection.on("message", (data) => {
+      connection.on("message", (data) => {
         for (const listener of IpcWebSocket.receivers)
           listener({} as Event, JSON.parse(data as string));
       });
@@ -31,7 +31,7 @@ class LocalTransport extends IpcWebSocketTransport {
   }
 
   public send(message: IpcWebSocketMessage): void {
-    this._connection!.send(JSON.stringify(message));
+    this._connections.forEach((connection) => connection.send(JSON.stringify(message)));
   }
 }
 
