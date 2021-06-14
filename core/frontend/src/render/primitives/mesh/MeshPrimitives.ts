@@ -126,6 +126,7 @@ export class MeshArgs {
   public hasBakedLighting = false;
   public isVolumeClassifier = false;
   public hasFixedNormals = false;
+  public auxChannels?: ReadonlyArray<AuxChannel>;
 
   public clear() {
     this.edges.clear();
@@ -139,7 +140,9 @@ export class MeshArgs {
     this.material = undefined;
     this.fillFlags = FillFlags.None;
     this.isPlanar = this.is2d = this.hasBakedLighting = this.isVolumeClassifier = this.hasFixedNormals = false;
+    this.auxChannels = undefined;
   }
+
   public init(mesh: Mesh): boolean {
     this.clear();
     if (undefined === mesh.triangles || mesh.triangles.isEmpty)
@@ -171,6 +174,7 @@ export class MeshArgs {
 
     this.edges.width = mesh.displayParams.width;
     this.edges.linePixels = mesh.displayParams.linePixels;
+    this.auxChannels = mesh.auxChannels;
 
     const meshEdges = mesh.edges;
     if (undefined === meshEdges)

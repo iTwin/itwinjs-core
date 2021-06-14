@@ -730,8 +730,9 @@ export class MeshParams {
       material: createSurfaceMaterial(args.material),
     };
 
+    const channels = undefined !== args.auxChannels ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices) : undefined;
     const edges = convertEdges(args);
-    return new MeshParams(vertices, surface, edges, args.isPlanar);
+    return new MeshParams(vertices, surface, edges, args.isPlanar, channels);
   }
 }
 

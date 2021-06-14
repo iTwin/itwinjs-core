@@ -6,6 +6,8 @@
  * @module Rendering
  */
 
+import { AuxChannel as PolyfaceAuxChannel } from "@bentley/geometry-core";
+
 /** @internal */
 export interface AuxChannelProps {
   readonly name: string;
@@ -137,5 +139,9 @@ export class AuxChannelTable {
     }
 
     return undefined !== displacements || undefined !== normals || undefined !== params ? new AuxChannelTable(props, displacements, normals, params) : undefined;
+  }
+
+  public static fromChannels(_channels: ReadonlyArray<PolyfaceAuxChannel>, _numVertices: number): AuxChannelTable | undefined {
+    return undefined; // ###TODO
   }
 }
