@@ -196,6 +196,16 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     return IpcApp.callIpcHost("reinstateTxn", this._iModel.key);
   }
 
+  /** Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed
+   * and reopened.)
+   * @note This can be quite disconcerting to the user expecting to be able to undo previously made changes. It should only be used
+   * under extreme circumstances where damage to the file or session could happen if the currently committed are reversed. Use sparingly and with care.
+   * Probably a good idea to alert the user it happened.
+   */
+  public async restartTxnSession(): Promise<void> {
+    await IpcApp.callIpcHost("restartTxnSession", this._iModel.key);
+  }
+
   /** @internal */
   public notifyElementsChanged(changed: ChangedEntities): void {
     this.onElementsChanged.raiseEvent(changed);
