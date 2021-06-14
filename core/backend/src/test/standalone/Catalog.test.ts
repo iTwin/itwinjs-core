@@ -6,25 +6,30 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64Set, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Cone, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, CodeScopeSpec, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps, Placement3d, RepositoryLinkProps,
+  Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, IModel, PhysicalElementProps, Placement2d, Placement3d, RepositoryLinkProps,
   SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {
-  BackendLoggerCategory, BackendRequestContext, DefinitionContainer, DefinitionModel, ECSqlStatement, Element, EntityClassType, IModelDb, IModelJsFs,
-  IModelTransformer, LinkElement, PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalType, RecipeDefinitionElement, RepositoryLink,
-  SnapshotDb, SpatialCategory, TemplateModelCloner, TemplateRecipe3d, TypeDefinitionElement,
+  BackendLoggerCategory, BackendRequestContext, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
+  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType,
+  IModelDb, IModelJsFs, IModelTransformer, LinkElement, PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType,
+  RecipeDefinitionElement, RepositoryLink, SnapshotDb, SpatialCategory, TemplateModelCloner, TemplateRecipe2d, TemplateRecipe3d,
+  TypeDefinitionElement,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTransformerUtils } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+
+const createClassViews = false; // can set to true to make it easier to debug catalog structure
 
 /** Structure of a Catalog
  * - As with *normal* iModels, the CodeValue of the root Subject is the name of this catalog.
  * - It is expected that a catalog will import the same domain schemas that a domain application would.
  * - A catalog must contain one or more DefinitionContainers (one per product line).
  * - A DefinitionContainer (inserted into the dictionary model) and its DefinitionModel sub-model should contain:
- *   - All TypeDefinitions (properties that vary by Type, not by instance)
+ *   - All TypeDefinitions (properties that vary by component type, not by component instance)
  *   - All template recipes (The elements in the recipe's sub-model is what will be cloned when placing an instance)
  *   - All prerequisite definitions (categories, GeometryParts, etc.) used by the template recipes
  *   - No elements directly in the DefinitionContainer or in a template recipe sub-model should refer to any elements outside of the DefinitionContainer
@@ -40,7 +45,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 
 /** This function mocks a Catalog Connector that reads ACME Equipment product data and outputs a catalog of components. */
 async function createAcmeCatalog(dbFile: string): Promise<void> {
-  const db = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "ACME Equipment" }, createClassViews: true });
+  const db = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "ACME Equipment" }, createClassViews });
   const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
   await db.importSchemas(new BackendRequestContext(), [domainSchemaFilePath]);
   const manufacturerName = "ACME";
@@ -64,25 +69,130 @@ async function createAcmeCatalog(dbFile: string): Promise<void> {
   db.close();
 }
 
-/** This function mocks a Catalog Connector that reads Best Equipment product data and outputs a catalog of components. */
+/** This function mocks a Catalog Connector that reads Best Equipment product data and outputs a catalog of components.
+ * @note This demonstrates multiple containers (mapped to product line in this sample) for a single catalog.
+*/
 async function createBestCatalog(dbFile: string): Promise<void> {
   const db = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "Best Equipment" } });
   const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
   await db.importSchemas(new BackendRequestContext(), [domainSchemaFilePath]);
   const manufacturerName = "Best";
-  const productLineName = `${manufacturerName} Product Line B`;
-  const containerCodeSpecId = db.codeSpecs.insert("Best:Equipment", CodeScopeSpec.Type.Repository);
-  const containerCode = createContainerCode(containerCodeSpecId, productLineName);
+  const containerCodeSpecId = db.codeSpecs.insert(`${manufacturerName}:Equipment`, CodeScopeSpec.Type.Repository);
+
+  // Product Line B
+  const productLineNameB = `${manufacturerName} Product Line B`;
+  const containerCodeB = createContainerCode(containerCodeSpecId, productLineNameB);
+  const containerIdB = DefinitionContainer.insert(db, IModel.dictionaryId, containerCodeB);
+  const categoryIdB = SpatialCategory.insert(db, containerIdB, "Equipment", new SubCategoryAppearance());
+  const seriesB2 = insertBestEquipmentRecipe(db, containerIdB, categoryIdB, 2);
+  const seriesB3 = insertBestEquipmentRecipe(db, containerIdB, categoryIdB, 3);
+  insertEquipmentType(db, containerIdB, "B-201", seriesB2, manufacturerName, productLineNameB);
+  insertEquipmentType(db, containerIdB, "B-202", seriesB2, manufacturerName, productLineNameB);
+  insertEquipmentType(db, containerIdB, "B-301", seriesB3, manufacturerName, productLineNameB);
+  insertEquipmentType(db, containerIdB, "B-302", seriesB3, manufacturerName, productLineNameB);
+  insertEquipmentType(db, containerIdB, "B-303", seriesB3, manufacturerName, productLineNameB);
+  insertEquipmentType(db, containerIdB, "B-304", seriesB3, manufacturerName, productLineNameB);
+
+  // Product Line D
+  const productLineNameD = `${manufacturerName} Product Line D`;
+  const containerCodeD = createContainerCode(containerCodeSpecId, productLineNameD);
+  const containerIdD = DefinitionContainer.insert(db, IModel.dictionaryId, containerCodeD);
+  const categoryIdD = SpatialCategory.insert(db, containerIdD, "Equipment", new SubCategoryAppearance());
+  const seriesD1 = insertBestEquipmentRecipe(db, containerIdD, categoryIdD, 1);
+  const seriesD2 = insertBestEquipmentRecipe(db, containerIdD, categoryIdD, 2);
+  insertEquipmentType(db, containerIdD, "D-101", seriesD1, manufacturerName, productLineNameD);
+  insertEquipmentType(db, containerIdD, "D-102", seriesD1, manufacturerName, productLineNameD);
+  insertEquipmentType(db, containerIdD, "D-201", seriesD2, manufacturerName, productLineNameD);
+  insertEquipmentType(db, containerIdD, "D-202", seriesD2, manufacturerName, productLineNameD);
+
+  db.saveChanges();
+  db.close();
+}
+
+/** This function mocks a Catalog Connector that reads Best Equipment product data and outputs a catalog of components. */
+async function createTestCatalog(dbFile: string): Promise<void> {
+  const db: SnapshotDb = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "Test Catalog" }, createClassViews });
+  const templateGroupCodeSpecId = db.codeSpecs.insert("Test:TemplateGroup", CodeScopeSpec.Type.Model);
+  const containerCodeSpecId = db.codeSpecs.insert("Test:Components", CodeScopeSpec.Type.Repository);
+  const containerCode = createContainerCode(containerCodeSpecId, "Test Components");
   const containerId = DefinitionContainer.insert(db, IModel.dictionaryId, containerCode);
-  const categoryId = SpatialCategory.insert(db, containerId, "Equipment", new SubCategoryAppearance());
-  const series2 = insertBestEquipmentRecipe(db, containerId, categoryId, 2);
-  const series3 = insertBestEquipmentRecipe(db, containerId, categoryId, 3);
-  insertEquipmentType(db, containerId, "B-201", series2, manufacturerName, productLineName);
-  insertEquipmentType(db, containerId, "B-202", series2, manufacturerName, productLineName);
-  insertEquipmentType(db, containerId, "B-301", series3, manufacturerName, productLineName);
-  insertEquipmentType(db, containerId, "B-302", series3, manufacturerName, productLineName);
-  insertEquipmentType(db, containerId, "B-303", series3, manufacturerName, productLineName);
-  insertEquipmentType(db, containerId, "B-304", series3, manufacturerName, productLineName);
+  const spatialCategoryId = SpatialCategory.insert(db, containerId, "Test Components", new SubCategoryAppearance());
+  const drawingCategoryId = DrawingCategory.insert(db, containerId, "Test Components", new SubCategoryAppearance());
+
+  // Cylinder component
+  const cylinderTemplateId = TemplateRecipe3d.insert(db, containerId, "Cylinder Template");
+  const cylinderTemplateModel = db.models.getModel<PhysicalModel>(cylinderTemplateId, PhysicalModel);
+  assert.isTrue(cylinderTemplateModel.isTemplate);
+  const cylinderProps: PhysicalElementProps = {
+    classFullName: PhysicalObject.classFullName,
+    model: cylinderTemplateId,
+    category: spatialCategoryId,
+    code: Code.createEmpty(),
+    userLabel: "Cylinder",
+    placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
+    geom: IModelTransformerUtils.createCylinder(1),
+  };
+  db.elements.insertElement(cylinderProps);
+
+  // Assembly component
+  const assemblyTemplateId = TemplateRecipe3d.insert(db, containerId, "Assembly Template");
+  assert.exists(db.models.getModel<PhysicalModel>(assemblyTemplateId));
+  const assemblyHeadProps: PhysicalElementProps = {
+    classFullName: PhysicalObject.classFullName,
+    model: assemblyTemplateId,
+    category: spatialCategoryId,
+    code: Code.createEmpty(),
+    userLabel: "Assembly Head",
+    placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
+    geom: IModelTransformerUtils.createCylinder(1),
+  };
+  const assemblyHeadId: Id64String = db.elements.insertElement(assemblyHeadProps);
+  const childBoxProps: PhysicalElementProps = {
+    classFullName: PhysicalObject.classFullName,
+    model: assemblyTemplateId,
+    category: spatialCategoryId,
+    parent: new ElementOwnsChildElements(assemblyHeadId),
+    code: Code.createEmpty(),
+    userLabel: "Child",
+    placement: { origin: Point3d.create(2, 0, 0), angles: { yaw: 0, pitch: 0, roll: 0 } },
+    geom: IModelTransformerUtils.createBox(Point3d.create(1, 1, 1)),
+  };
+  db.elements.insertElement(childBoxProps);
+
+  // 2d component
+  const drawingGraphicTemplateId = TemplateRecipe2d.insert(db, containerId, "DrawingGraphic Template");
+  const drawingGraphicTemplateModel = db.models.getModel<DrawingModel>(drawingGraphicTemplateId, DrawingModel);
+  assert.isTrue(drawingGraphicTemplateModel.isTemplate);
+  const drawingGraphicProps: GeometricElement2dProps = {
+    classFullName: DrawingGraphic.classFullName,
+    model: drawingGraphicTemplateId,
+    category: drawingCategoryId,
+    code: Code.createEmpty(),
+    userLabel: "DrawingGraphic",
+    placement: { origin: Point2d.createZero(), angle: 0 },
+    geom: IModelTransformerUtils.createRectangle(Point2d.create(1, 1)),
+  };
+  db.elements.insertElement(drawingGraphicProps);
+
+  // Groups a TemplateRecipe3d to be used for 3d with a TemplateRecipe2d to be used for 2d drawings
+  const groupProps1: DefinitionElementProps = {
+    classFullName: DefinitionGroup.classFullName,
+    model: containerId,
+    code: new Code({ spec: templateGroupCodeSpecId, scope: containerId, value: "Assembly + DrawingGraphic" }),
+  };
+  const groupId1 = db.elements.insertElement(groupProps1);
+  DefinitionGroupGroupsDefinitions.insert(db, groupId1, assemblyTemplateId);
+  DefinitionGroupGroupsDefinitions.insert(db, groupId1, drawingGraphicTemplateId);
+
+  // Groups a TemplateRecipe3d to be used for 3d with a TemplateRecipe2d to be used for 2d drawings
+  const groupProps2: DefinitionElementProps = {
+    classFullName: DefinitionGroup.classFullName,
+    model: containerId,
+    code: new Code({ spec: templateGroupCodeSpecId, scope: containerId, value: "Cylinder + DrawingGraphic" }),
+  };
+  const groupId2 = db.elements.insertElement(groupProps2);
+  DefinitionGroupGroupsDefinitions.insert(db, groupId2, cylinderTemplateId);
+  DefinitionGroupGroupsDefinitions.insert(db, groupId2, drawingGraphicTemplateId);
 
   db.saveChanges();
   db.close();
@@ -101,14 +211,30 @@ function indexCatalog(db: IModelDb, outputFile: string): void {
     const container = db.elements.getElement<DefinitionContainer>(containerId, DefinitionContainer);
     IModelJsFs.appendFileSync(outputFile, `## ${container.code.value}\n`);
     const templateRecipeIds = queryTemplateRecipeIds(db, containerId);
-    for (const templateRecipeId of templateRecipeIds) {
-      const templateRecipe = db.elements.getElement<RecipeDefinitionElement>(templateRecipeId, RecipeDefinitionElement);
-      IModelJsFs.appendFileSync(outputFile, `### ${templateRecipe.code.value}\n`);
-      const typeDefinitionIds = queryTypeDefinitionIds(db, templateRecipeId);
-      for (const typeDefinitionId of typeDefinitionIds) {
-        const typeDefinition = db.elements.getElement<TypeDefinitionElement>(typeDefinitionId, TypeDefinitionElement);
-        IModelJsFs.appendFileSync(outputFile, `- ${typeDefinition.code.value}\n`);
-        // NOTE: you have the TypeDefinitionElement instance here, you could also write out its property values
+    if (templateRecipeIds.size > 0) {
+      IModelJsFs.appendFileSync(outputFile, `### TemplateRecipes\n`);
+      for (const templateRecipeId of templateRecipeIds) {
+        const templateRecipe = db.elements.getElement<RecipeDefinitionElement>(templateRecipeId, RecipeDefinitionElement);
+        IModelJsFs.appendFileSync(outputFile, `#### ${templateRecipe.code.value}\n`);
+        const typeDefinitionIds = queryTypeDefinitionIds(db, templateRecipeId);
+        for (const typeDefinitionId of typeDefinitionIds) {
+          const typeDefinition = db.elements.getElement<TypeDefinitionElement>(typeDefinitionId, TypeDefinitionElement);
+          IModelJsFs.appendFileSync(outputFile, `- ${typeDefinition.code.value}\n`);
+          // NOTE: you have the TypeDefinitionElement instance here, you could also write out its property values
+        }
+      }
+    }
+    const groupIds = queryDefinitionGroupIds(db, containerId);
+    if (groupIds.size > 0) {
+      IModelJsFs.appendFileSync(outputFile, `### DefinitionGroups\n`);
+      for (const groupId of groupIds) {
+        const group = db.elements.getElement<DefinitionGroup>(groupId, DefinitionGroup);
+        IModelJsFs.appendFileSync(outputFile, `#### ${group.code.value}\n`);
+        const memberIds = queryDefinitionGroupMemberIds(db, groupId);
+        for (const memberId of memberIds) {
+          const templateRecipe = db.elements.getElement<RecipeDefinitionElement>(memberId, RecipeDefinitionElement);
+          IModelJsFs.appendFileSync(outputFile, `- ${templateRecipe.code.value}\n`);
+        }
       }
     }
   }
@@ -127,7 +253,7 @@ function insertAcmeEquipmentRecipe(db: IModelDb, modelId: Id64String, categoryId
     code: Code.createEmpty(),
     userLabel: templateCodeValue,
     placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
-    geom: createCylinder(seriesNumber),
+    geom: IModelTransformerUtils.createCylinder(seriesNumber),
   };
   db.elements.insertElement(equipmentProps);
   return templateId;
@@ -146,20 +272,10 @@ function insertBestEquipmentRecipe(db: IModelDb, modelId: Id64String, categoryId
     code: Code.createEmpty(),
     userLabel: templateCodeValue,
     placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
-    geom: createCylinder(seriesNumber),
+    geom: IModelTransformerUtils.createBox(new Point3d(seriesNumber, seriesNumber, seriesNumber)),
   };
   db.elements.insertElement(equipmentProps);
   return templateId;
-}
-
-/** Mocks geometry creation that would be the responsibility of a Catalog Connector. */
-function createCylinder(radius: number): GeometryStreamProps {
-  const pointA = Point3d.create(0, 0, 0);
-  const pointB = Point3d.create(0, 0, 2 * radius);
-  const cylinder = Cone.createBaseAndTarget(pointA, pointB, Vector3d.unitX(), Vector3d.unitY(), radius, radius, true);
-  const geometryStreamBuilder = new GeometryStreamBuilder();
-  geometryStreamBuilder.appendGeometry(cylinder);
-  return geometryStreamBuilder.geometryStream;
 }
 
 function createContainerCode(codeSpecId: Id64String, codeValue: string): Code {
@@ -183,6 +299,34 @@ function queryContainerIds(db: IModelDb): Id64Set {
     }
   });
   return containerIds;
+}
+
+/** Query for DefinitionGroups within a DefinitionContainer.
+ * @note This is one way of grouping related TemplateRecipes together
+ */
+function queryDefinitionGroupIds(db: IModelDb, containerId: Id64String): Id64Set {
+  const sql = `SELECT ECInstanceId FROM ${DefinitionGroup.classFullName} WHERE Model.Id=:modelId`;
+  const groupIds = new Set<Id64String>();
+  db.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    statement.bindId("modelId", containerId);
+    while (DbResult.BE_SQLITE_ROW === statement.step()) {
+      groupIds.add(statement.getValue(0).getId());
+    }
+  });
+  return groupIds;
+}
+
+/** Query for the members of a DefinitionGroup. */
+function queryDefinitionGroupMemberIds(db: IModelDb, groupId: Id64String): Id64Set {
+  const sql = `SELECT TargetECInstanceId FROM ${DefinitionGroupGroupsDefinitions.classFullName} WHERE SourceECInstanceId=:groupId`;
+  const memberIds = new Set<Id64String>();
+  db.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    statement.bindId("groupId", groupId);
+    while (DbResult.BE_SQLITE_ROW === statement.step()) {
+      memberIds.add(statement.getValue(0).getId());
+    }
+  });
+  return memberIds;
 }
 
 /** This mocks the concept of a standard domain category. */
@@ -247,6 +391,13 @@ function queryEquipmentId(db: IModelDb, templateModelId: Id64String): Id64String
   return db.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
     statement.bindId("modelId", templateModelId);
     return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : undefined;
+  });
+}
+
+function countElementsInModel(db: IModelDb, classFullName: string, modelId: Id64String): number {
+  return db.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName} WHERE Model.Id=:modelId`, (statement: ECSqlStatement): number => {
+    statement.bindId("modelId", modelId);
+    return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
   });
 }
 
@@ -327,10 +478,11 @@ class CatalogImporter extends IModelTransformer {
 }
 
 /** Catalog test fixture */
-describe.only("Catalog", () => {
+describe("Catalog", () => {
   const outputDir = path.join(KnownTestLocations.outputDir, "Catalog");
   const acmeCatalogDbFile = IModelTestUtils.prepareOutputFile("Catalog", "AcmeEquipment.catalog"); // WIP: what file extension should catalogs have?
   const bestCatalogDbFile = IModelTestUtils.prepareOutputFile("Catalog", "BestEquipment.catalog"); // WIP: what file extension should catalogs have?
+  const testCatalogDbFile = IModelTestUtils.prepareOutputFile("Catalog", "Test.catalog"); // WIP: what file extension should catalogs have?
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) {
@@ -348,6 +500,7 @@ describe.only("Catalog", () => {
     }
     await createAcmeCatalog(acmeCatalogDbFile);
     await createBestCatalog(bestCatalogDbFile);
+    await createTestCatalog(testCatalogDbFile);
   });
 
   it("should index catalog", async () => {
@@ -358,39 +511,114 @@ describe.only("Catalog", () => {
     const bestCatalogDb = SnapshotDb.openFile(bestCatalogDbFile);
     indexCatalog(bestCatalogDb, `${bestCatalogDb.pathName}.md`);
     bestCatalogDb.close();
+
+    const testCatalogDb = SnapshotDb.openFile(testCatalogDbFile);
+    indexCatalog(testCatalogDb, `${testCatalogDb.pathName}.md`);
+    testCatalogDb.close();
   });
 
   it("should import from catalog", async () => {
     const iModelFile = IModelTestUtils.prepareOutputFile("Catalog", "Facility.bim");
-    const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "Facility" }, createClassViews: true });
+    const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "Facility" }, createClassViews });
     const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await iModelDb.importSchemas(new BackendRequestContext(), [domainSchemaFilePath]);
     const physicalModelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "Physical");
     const categoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Equipment", new SubCategoryAppearance());
     const standardCategories = new Map<string, Id64String>();
     standardCategories.set("Equipment", categoryId);
+    const drawingListModelId = DocumentListModel.insert(iModelDb, IModel.rootSubjectId, "Drawings");
+    const drawingId = Drawing.insert(iModelDb, drawingListModelId, "Drawing1");
 
-    // import catalog
-    const catalogDb = SnapshotDb.openFile(acmeCatalogDbFile);
-    const catalogRepositoryLinkId = insertCatalogRepositoryLink(iModelDb, path.basename(acmeCatalogDbFile), acmeCatalogDbFile);
-    const catalogImporter = new CatalogImporter(catalogDb, iModelDb, catalogRepositoryLinkId, standardCategories);
-    await catalogImporter.importDefinitionContainers();
-    catalogImporter.dispose();
-    catalogDb.close();
+    { // import ACME Equipment catalog
+      const catalogDb = SnapshotDb.openFile(acmeCatalogDbFile);
+      const catalogContainerIds = queryContainerIds(catalogDb);
+      assert.equal(catalogContainerIds.size, 1); // expected value from createAcmeCatalog
+      const catalogContainer = catalogDb.elements.getElement<DefinitionContainer>(catalogContainerIds.values().next().value, DefinitionContainer);
+      const catalogContainerCodeSpec = catalogDb.codeSpecs.getById(catalogContainer.code.spec);
+      const catalogContainerCodeValue = catalogContainer.code.value;
+      const catalogRepositoryLinkId = insertCatalogRepositoryLink(iModelDb, path.basename(acmeCatalogDbFile), acmeCatalogDbFile);
+      const catalogImporter = new CatalogImporter(catalogDb, iModelDb, catalogRepositoryLinkId, standardCategories);
+      await catalogImporter.importDefinitionContainers();
+      catalogImporter.dispose();
+      catalogDb.close();
 
-    // assert catalog was imported properly
-    const containerIds = queryContainerIds(iModelDb);
-    assert.equal(containerIds.size, 1);
-    for (const containerId of containerIds) {
-      // assert that the catalog was imported correctly
-      iModelDb.elements.getElement<DefinitionContainer>(containerId, DefinitionContainer);
-      iModelDb.models.getModel<DefinitionModel>(containerId, DefinitionModel);
-      assert.isUndefined(queryEquipmentCategory(iModelDb, containerId), "Expected category to be remapped");
+      // assert catalog was imported properly
+      assert.isTrue(iModelDb.codeSpecs.hasName(catalogContainerCodeSpec.name));
+      const importedContainerCodeSpec = iModelDb.codeSpecs.getByName(catalogContainerCodeSpec.name);
+      const importedContainerId = iModelDb.elements.queryElementIdByCode(createContainerCode(importedContainerCodeSpec.id, catalogContainerCodeValue))!;
+      iModelDb.elements.getElement<DefinitionContainer>(importedContainerId, DefinitionContainer);
+      iModelDb.models.getModel<DefinitionModel>(importedContainerId, DefinitionModel);
+      assert.isUndefined(queryEquipmentCategory(iModelDb, importedContainerId), "Expected category to be remapped");
       assert.isTrue(Id64.isValidId64(queryEquipmentCategory(iModelDb, IModel.dictionaryId)!));
-      assert.isTrue(Id64.isValidId64(queryEquipmentTypeId(iModelDb, containerId, "A-101")!));
-      assert.isTrue(Id64.isValidId64(queryEquipmentTypeId(iModelDb, containerId, "A-201")!));
-      assert.isTrue(Id64.isValidId64(queryEquipmentTypeId(iModelDb, containerId, "A-301")!));
+      assert.isTrue(Id64.isValidId64(queryEquipmentTypeId(iModelDb, importedContainerId, "A-101")!));
+      assert.isTrue(Id64.isValidId64(queryEquipmentTypeId(iModelDb, importedContainerId, "A-201")!));
+      assert.isTrue(Id64.isValidId64(queryEquipmentTypeId(iModelDb, importedContainerId, "A-301")!));
+      const templateRecipeIds = queryTemplateRecipeIds(iModelDb, importedContainerId);
+      assert.equal(templateRecipeIds.size, 3); // expected value from createAcmeCatalog
     }
+
+    { // import Best Equipment catalog
+      const catalogDb = SnapshotDb.openFile(bestCatalogDbFile);
+      assert.equal(countElementsInModel(catalogDb, DefinitionContainer.classFullName, IModel.dictionaryId), 2); // expected value from createBestCatalog
+      const catalogContainerSql = `SELECT ECInstanceId FROM ${DefinitionContainer.classFullName} WHERE CodeValue=:containerName LIMIT 1`;
+      const catalogContainerId = catalogDb.withPreparedStatement(catalogContainerSql, (statement: ECSqlStatement): Id64String => {
+        statement.bindString("containerName", "Best Product Line B");
+        return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
+      });
+      const catalogContainer = catalogDb.elements.getElement<DefinitionContainer>(catalogContainerId, DefinitionContainer);
+      const catalogContainerCodeSpec = catalogDb.codeSpecs.getById(catalogContainer.code.spec);
+      const catalogContainerCodeValue = catalogContainer.code.value;
+      const catalogRepositoryLinkId = insertCatalogRepositoryLink(iModelDb, path.basename(bestCatalogDbFile), bestCatalogDbFile);
+      const catalogImporter = new CatalogImporter(catalogDb, iModelDb, catalogRepositoryLinkId, standardCategories);
+      await catalogImporter.importDefinitionContainer(catalogContainerId); // only going to import 1 of the 2 containers
+      catalogImporter.dispose();
+      catalogDb.close();
+
+      // assert catalog was imported properly
+      assert.isTrue(iModelDb.codeSpecs.hasName(catalogContainerCodeSpec.name));
+      const importedContainerCodeSpec = iModelDb.codeSpecs.getByName(catalogContainerCodeSpec.name);
+      const importedContainerId = iModelDb.elements.queryElementIdByCode(createContainerCode(importedContainerCodeSpec.id, catalogContainerCodeValue))!;
+      iModelDb.elements.getElement<DefinitionContainer>(importedContainerId, DefinitionContainer);
+      iModelDb.models.getModel<DefinitionModel>(importedContainerId, DefinitionModel);
+      assert.isUndefined(queryEquipmentCategory(iModelDb, importedContainerId), "Expected category to be remapped");
+      assert.isTrue(Id64.isValidId64(queryEquipmentCategory(iModelDb, IModel.dictionaryId)!));
+      assert.isTrue(Id64.isValidId64(queryEquipmentTypeId(iModelDb, importedContainerId, "B-201")!));
+      assert.isTrue(Id64.isValidId64(queryEquipmentTypeId(iModelDb, importedContainerId, "B-304")!));
+      const templateRecipeIds = queryTemplateRecipeIds(iModelDb, importedContainerId);
+      assert.equal(templateRecipeIds.size, 2); // expected value from createBestCatalog
+    }
+
+    let testContainerId;
+    { // import test catalog
+      const catalogDb = SnapshotDb.openFile(testCatalogDbFile);
+      const catalogContainerIds = queryContainerIds(catalogDb);
+      assert.equal(catalogContainerIds.size, 1); // expected value from createTestCatalog
+      const catalogContainer = catalogDb.elements.getElement<DefinitionContainer>(catalogContainerIds.values().next().value, DefinitionContainer);
+      const catalogContainerCodeSpec = catalogDb.codeSpecs.getById(catalogContainer.code.spec);
+      const catalogContainerCodeValue = catalogContainer.code.value;
+      const catalogRepositoryLinkId = insertCatalogRepositoryLink(iModelDb, path.basename(testCatalogDbFile), testCatalogDbFile);
+      const catalogTemplateRecipeIds = queryTemplateRecipeIds(catalogDb, catalogContainer.id);
+      assert.equal(catalogTemplateRecipeIds.size, 3); // expected value from createTestCatalog
+      const catalogImporter = new CatalogImporter(catalogDb, iModelDb, catalogRepositoryLinkId, new Map()); // no standard categories in this case
+      const cylinderTemplateCode = TemplateRecipe3d.createCode(catalogDb, catalogContainer.id, "Cylinder Template");
+      const cylinderTemplateId = catalogDb.elements.queryElementIdByCode(cylinderTemplateCode)!;
+      catalogImporter.exporter.excludeElement(cylinderTemplateId); // one way to implement partial import, another is by overriding shouldExportElement
+      await catalogImporter.importDefinitionContainer(catalogContainer.id);
+      catalogImporter.dispose();
+      catalogDb.close();
+
+      // assert catalog was imported properly
+      assert.isTrue(iModelDb.codeSpecs.hasName(catalogContainerCodeSpec.name));
+      const importedContainerCodeSpec = iModelDb.codeSpecs.getByName(catalogContainerCodeSpec.name);
+      testContainerId = iModelDb.elements.queryElementIdByCode(createContainerCode(importedContainerCodeSpec.id, catalogContainerCodeValue))!;
+      iModelDb.elements.getElement<DefinitionContainer>(testContainerId, DefinitionContainer);
+      iModelDb.models.getModel<DefinitionModel>(testContainerId, DefinitionModel);
+      const importedTemplateRecipeIds = queryTemplateRecipeIds(iModelDb, testContainerId);
+      assert.equal(importedTemplateRecipeIds.size, 2); // excluded the "Cylinder" TemplateRecipe
+    }
+
+    const importedContainerIds = queryContainerIds(iModelDb);
+    assert.equal(importedContainerIds.size, 3, "Expect 1 container from each of ACME, Best, and Test");
 
     // iterate through the imported PhysicalTypes and place instances for each
     const componentPlacer = new TemplateModelCloner(iModelDb);
@@ -420,6 +648,38 @@ describe.only("Catalog", () => {
         }
       }
     }
+
+    const assemblyTemplateCode = TemplateRecipe3d.createCode(iModelDb, testContainerId, "Assembly Template");
+    const assemblyTemplateId = iModelDb.elements.queryElementIdByCode(assemblyTemplateCode)!;
+    const assemblyLocations: Point3d[] = [Point3d.create(-10, 0), Point3d.create(-20, 0), Point3d.create(-30, 0)];
+    for (const location of assemblyLocations) {
+      const placement = new Placement3d(location, new YawPitchRollAngles(), new Range3d());
+      const templateToInstanceMap = await componentPlacer.placeTemplate3d(assemblyTemplateId, physicalModelId, placement);
+      assert.isAtLeast(templateToInstanceMap.size, 2); // parent + child
+      for (const templateElementId of templateToInstanceMap.keys()) {
+        const templateElement = iModelDb.elements.getElement(templateElementId); // the element in the template model
+        const instanceElement = iModelDb.elements.getElement(templateToInstanceMap.get(templateElementId)!); // the element instantiated from the template element
+        assert.isUndefined(templateElement.federationGuid);
+        assert.isDefined(instanceElement.federationGuid);
+        assert.equal(templateElement.classFullName, instanceElement.classFullName);
+        assert.equal(templateElement.parent?.id ? true : false, instanceElement.parent?.id ? true : false);
+      }
+    }
+
+    const drawingGraphicTemplateCode = TemplateRecipe2d.createCode(iModelDb, testContainerId, "DrawingGraphic Template");
+    const drawingGraphicTemplateId = iModelDb.elements.queryElementIdByCode(drawingGraphicTemplateCode)!;
+    const drawingGraphicLocations: Point2d[] = [
+      Point2d.create(10, 10), Point2d.create(20, 10), Point2d.create(30, 10),
+      Point2d.create(10, 20), Point2d.create(20, 20), Point2d.create(30, 20),
+      Point2d.create(10, 30), Point2d.create(20, 30), Point2d.create(30, 30),
+    ];
+    assert.equal(countElementsInModel(iModelDb, DrawingGraphic.classFullName, drawingId), 0);
+    for (const location of drawingGraphicLocations) {
+      const placement = new Placement2d(location, Angle.zero(), new Range2d());
+      await componentPlacer.placeTemplate2d(drawingGraphicTemplateId, drawingId, placement);
+    }
+    assert.equal(countElementsInModel(iModelDb, DrawingGraphic.classFullName, drawingId), drawingGraphicLocations.length);
+
     componentPlacer.dispose();
 
     iModelDb.saveChanges();
@@ -432,7 +692,7 @@ describe.only("Catalog", () => {
   it("should clone catalog", async () => {
     const sourceDb = SnapshotDb.openFile(acmeCatalogDbFile);
     const targetFile = IModelTestUtils.prepareOutputFile("Catalog", "CloneOfAcmeEquipment.bim");
-    const targetDb = SnapshotDb.createEmpty(targetFile, { rootSubject: { name: "Facility" }, createClassViews: true });
+    const targetDb = SnapshotDb.createEmpty(targetFile, { rootSubject: { name: "Facility" }, createClassViews });
     const cloner = new IModelTransformer(sourceDb, targetDb);
     cloner.importer.autoExtendProjectExtents = false; // WIP: how should a catalog handle projectExtents?
     await cloner.processSchemas(new BackendRequestContext());
