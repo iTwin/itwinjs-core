@@ -14,7 +14,7 @@ import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 
 /** Supported Hide, Isolate, and Emphasize Actions. These also serve as FeatureTracking Ids.
- * @alpha
+ * @public
  */
 export enum HideIsolateEmphasizeAction {
   EmphasizeSelectedElements = "EmphasizeSelectedElements",
@@ -43,7 +43,7 @@ const featureIdMap = new Map<HideIsolateEmphasizeAction, GuidString>([
 ]);
 
 /** Selection Context Action Event Argument
- * @alpha
+ * @public
  */
 export interface EmphasizeElementsChangedArgs {
   /** viewport where action was performed */
@@ -53,7 +53,7 @@ export interface EmphasizeElementsChangedArgs {
 }
 
 /** Overrides given models to provide emphasize functionality
- * @alpha
+ * @public
  */
 // istanbul ignore next
 class ModelOverrideProvider implements FeatureOverrideProvider {
@@ -70,7 +70,7 @@ class ModelOverrideProvider implements FeatureOverrideProvider {
 }
 
 /** Overrides given categories to provide emphasize functionality
- *  @alpha
+ *  @public
  */
 // istanbul ignore next
 class SubCategoryOverrideProvider implements FeatureOverrideProvider {
@@ -153,7 +153,7 @@ class SubjectModelIdsCache {
 
 /**
  * Interface for class that handles Hide, Isolate, and Emphasize Actions
- * @alpha
+ * @public
  */
 export abstract class HideIsolateEmphasizeActionHandler {
   public static emphasizeElementsChanged = new BeEvent<(args: EmphasizeElementsChangedArgs) => void>();
@@ -220,7 +220,7 @@ export abstract class HideIsolateEmphasizeActionHandler {
 }
 
 /** Provides helper functions for doing commands on logical selection like categories and subjects.
- * @alpha
+ * @public
  */
 // istanbul ignore next
 export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
@@ -798,7 +798,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   /**
    * Add category ids to the category override cache (hidden or isolated categories)
    */
-  private static updateCategoryOverride(vp: Viewport, ids: string[]) {
+  public static updateCategoryOverride(vp: Viewport, ids: string[]) {
     const prevIds = this._overrideCategoryIds.get(vp);
     const newIds = [...(prevIds || []), ...ids];
     this._overrideCategoryIds.set (vp, new Set(newIds));
@@ -807,10 +807,24 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   /**
    * Add model ids to the model override cache (hidden or isolated models)
    */
-  private static updateModelOverride(vp: Viewport, ids: string[]) {
+  public static updateModelOverride(vp: Viewport, ids: string[]) {
     const prevIds = this._overrideModelIds.get(vp);
     const newIds = [...(prevIds || []), ...ids];
     this._overrideModelIds.set (vp, new Set(newIds));
+  }
+
+  /**
+   * Return the list of category overrides (hidden or isolated categories)
+   */
+  public static getCategoryOverrides(vp: Viewport) {
+    return this._overrideCategoryIds.get(vp);
+  }
+
+  /**
+   * Return the list of model overrides (hidden or isolated models)
+   */
+  public static getModelOverrides(vp: Viewport) {
+    return this._overrideModelIds.get(vp);
   }
 
   /**

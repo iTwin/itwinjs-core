@@ -319,7 +319,7 @@ export async function getIModelId(requestContext: AuthorizedClientRequestContext
 
 export function mockFileResponse(times = 1) {
   if (TestConfig.enableMocks)
-    ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", getMockSeedFilePath(), times);
+    ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", getMockSeedFilePath(), times, getMockFileSize());
 }
 
 export function getMockFileSize(): string {

@@ -14,6 +14,7 @@ import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { DiagnosticsOptions, DiagnosticsScopeLogs } from "./Diagnostics";
 import { InstanceKeyJSON } from "./EC";
+import { ElementProperties } from "./ElementProperties";
 import { PresentationStatus } from "./Error";
 import { NodeKeyJSON } from "./hierarchy/Key";
 import { NodeJSON } from "./hierarchy/Node";
@@ -22,9 +23,10 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, HierarchyRequestOptions, LabelRequestOptions, Paged,
-  SelectionScopeRequestOptions,
+  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, HierarchyRequestOptions,
+  LabelRequestOptions, Paged, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
+import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
 import { HierarchyCompareInfoJSON, PartialHierarchyModificationJSON } from "./Update";
 import { Omit, PagedResponse } from "./Utils";
@@ -34,7 +36,7 @@ import { Omit, PagedResponse } from "./Utils";
  * @public
  */
 export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel" | "diagnostics"> & {
-  /** ID of the client requesting data */
+  /** @internal ID of the client requesting data */
   clientId?: string;
   /** @alpha */
   diagnostics?: DiagnosticsOptions;
@@ -60,38 +62,44 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<{
  * @public
  * @deprecated Use [[ExtendedHierarchyRpcRequestOptions]]
  */
-export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never>>; // eslint-disable-line deprecation/deprecation
+export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never, RulesetVariableJSON>>; // eslint-disable-line deprecation/deprecation
 
 /**
  * Data structure for hierarchy request options.
  * @public
  */
-export type ExtendedHierarchyRpcRequestOptions = PresentationRpcRequestOptions<ExtendedHierarchyRequestOptions<never, NodeKeyJSON>>;
+export type ExtendedHierarchyRpcRequestOptions = PresentationRpcRequestOptions<ExtendedHierarchyRequestOptions<never, NodeKeyJSON, RulesetVariableJSON>>;
 
 /**
  * Data structure for content request options.
  * @public
  * @deprecated Use [[ContentDescriptorRpcRequestOptions]] or [[ExtendedContentRpcRequestOptions]]
  */
-export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequestOptions<never>>; // eslint-disable-line deprecation/deprecation
+export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequestOptions<never, RulesetVariableJSON>>; // eslint-disable-line deprecation/deprecation
 
 /**
  * Data structure for content descriptor RPC request options.
  * @public
  */
-export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<ContentDescriptorRequestOptions<never, KeySetJSON>>;
+export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<ContentDescriptorRequestOptions<never, KeySetJSON, RulesetVariableJSON>>;
 
 /**
  * Data structure for content RPC request options.
  * @public
  */
-export type ExtendedContentRpcRequestOptions = PresentationRpcRequestOptions<ExtendedContentRequestOptions<never, DescriptorJSON, KeySetJSON>>;
+export type ExtendedContentRpcRequestOptions = PresentationRpcRequestOptions<ExtendedContentRequestOptions<never, DescriptorJSON, KeySetJSON, RulesetVariableJSON>>;
+
+/**
+ * Data structure for element properties RPC request options.
+ * @beta
+ */
+export type ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementPropertiesRequestOptions<never>>;
 
 /**
  * Data structure for distinct values' request options.
  * @public
  */
-export type DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions<DistinctValuesRequestOptions<never, DescriptorJSON, KeySetJSON>>;
+export type DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions<DistinctValuesRequestOptions<never, DescriptorJSON, KeySetJSON, RulesetVariableJSON>>;
 
 /**
  * Data structure for label request options.
@@ -122,7 +130,7 @@ export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<Sele
  * Data structure for comparing presentation data after ruleset or ruleset variable changes.
  * @public
  */
-export type HierarchyCompareRpcOptions = PresentationRpcRequestOptions<HierarchyCompareOptions<never, NodeKeyJSON>>;
+export type HierarchyCompareRpcOptions = PresentationRpcRequestOptions<HierarchyCompareOptions<never, NodeKeyJSON, RulesetVariableJSON>>;
 
 /**
  * Interface used for communication between Presentation backend and frontend.
@@ -133,7 +141,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.9.0";
+  public static interfaceVersion = "2.10.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -187,6 +195,9 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getContentAndSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<{ content?: ContentJSON, size: number }> { return this.forward(arguments); }
   public async getPagedContent(_token: IModelRpcProps, _options: Paged<ExtendedContentRpcRequestOptions>): PresentationRpcResponse<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined> { return this.forward(arguments); }
   public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ExtendedContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> { return this.forward(arguments); }
+
+  /** @beta */
+  public async getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties> { return this.forward(arguments); }
 
   /** @deprecated Use [[getPagedDistinctValues]] */
   // eslint-disable-next-line deprecation/deprecation

@@ -16,7 +16,7 @@ import {
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d,
   Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
   SubCategoryOverride, ViewFlags,
@@ -62,6 +62,7 @@ import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
+import { FlashSettings } from "./FlashSettings";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -157,18 +158,6 @@ export interface ChangeViewedModel2dOptions {
  * @public
  */
 export enum ViewUndoEvent { Undo = 0, Redo = 1 }
-
-/** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
- * @see [[Viewport.setOSMBuildingDisplay=]].
-   * @public
- */
-export interface OsmBuildingDisplayOptions {
-  /**  If defined will turn the display of the OpenStreetMap buildings on or off by attaching or detaching the OSM reality model. */
-  /** If `true`, enables display of OpenStreetMap buildings within the viewport. */
-  onOff?: boolean;
-  /** If defined, overrides aspects of the appearance of the OpenStreetMap building meshes. */
-  appearanceOverrides?: FeatureAppearance;
-}
 
 /** @internal */
 export const ELEMENT_MARKED_FOR_REMOVAL = Symbol.for("@bentley/imodeljs/Viewport/__element_marked_for_removal__");
@@ -353,23 +342,18 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public readonly subcategories = new SubCategoriesCache.Queue();
 
-  /** Time the current flash started.
-   * @internal
-   */
-  public flashUpdateTime?: BeTimePoint;
-  /** Current flash intensity from [0..1]
-   * @internal
-   */
-  public flashIntensity = 0;
-  /** The length of time that the flash intensity will increase (in seconds)
-   * @internal
-   */
-  public flashDuration = 0;
-  private _flashedElem?: string;         // id of currently flashed element
-  /** Id of last flashed element.
-   * @internal
-   */
-  public lastFlashedElem?: string;
+  /** Time the current flash started. */
+  private _flashUpdateTime?: BeTimePoint;
+  /** Current flash intensity from [0..this.flashSettings.maxIntensity] */
+  private _flashIntensity = 0;
+  /** Id of the currently flashed element. */
+  private _flashedElem?: string;
+  /** Id of last flashed element. */
+  private _lastFlashedElem?: string;
+  /** The Id of the most recently flashed element, if any. */
+  public get lastFlashedElementId(): Id64String | undefined {
+    return this._lastFlashedElem;
+  }
 
   private _wantViewAttachments = true;
   /** For debug purposes, controls whether or not view attachments are displayed in sheet views.
@@ -424,6 +408,7 @@ export abstract class Viewport implements IDisposable {
   private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+  private _flash = new FlashSettings();
 
   /** @see [DisplayStyle3dSettings.lights]($common) */
   public get lightSettings(): LightSettings | undefined {
@@ -503,11 +488,20 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** The settings that control how emphasized elements are displayed in this Viewport. The default settings apply a thick black silhouette to the emphasized elements.
-   * @see [FeatureSymbology.Appearance.emphasized].
+   * @see [FeatureAppearance.emphasized]($common).
    */
   public get emphasisSettings(): Hilite.Settings { return this._emphasis; }
   public set emphasisSettings(settings: Hilite.Settings) {
     this._emphasis = settings;
+    this.invalidateRenderPlan();
+  }
+
+  /** The settings that control how elements are flashed in this viewport. */
+  public get flashSettings(): FlashSettings {
+    return this._flash;
+  }
+  public set flashSettings(settings: FlashSettings) {
+    this._flash = settings;
     this.invalidateRenderPlan();
   }
 
@@ -621,112 +615,18 @@ export abstract class Viewport implements IDisposable {
   /** Override the appearance of a model when rendered within this viewport.
    * @param id The Id of the model.
    * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
-   * @see [[dropModelAppearanceOverride]]
+   * @see [DisplayStyleSettings.overrideModelAppearance]($common)
    */
   public overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void {
-    this.view.displayStyle.overrideModelAppearance(id, ovr);
+    this.view.displayStyle.settings.overrideModelAppearance(id, ovr);
   }
 
   /** Remove any model appearance override for the specified model.
    * @param id The Id of the model.
-   * @see [[overrideModelAppearance]]
+   * @see [DisplayStyleSettings.dropModelAppearanceOverride]($common)
    */
   public dropModelAppearanceOverride(id: Id64String): void {
-    this.view.displayStyle.dropModelAppearanceOverride(id);
-  }
-
-  /**
-   * Detach a context reality model from its index.
-   * @see [[ContextRealityModelProps]].
-   * @param index The reality model index or -1 to detach all models.
-   * @beta
-   */
-  public detachRealityModelByIndex(index: number): void {
-    // ###TODO events from DisplayStyle
-    this.view.displayStyle.detachRealityModelByIndex(index);
-    this.invalidateRenderPlan();
-  }
-
-  /**
-  * Attach a context reality model
-  * @see [[ContextRealityModelProps]].
-  * @beta
-  */
-  public attachRealityModel(props: ContextRealityModelProps): void {
-    // ###TODO events from DisplayStyle
-    this.view.displayStyle.attachRealityModel(props);
-    this.invalidateRenderPlan();
-  }
-
-  /** Obtain the override applied to a [[Model]] displayed in this viewport.
-   * @param id The reality model index
-   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
-   * @see [[overrideModelAppearance]]
-   * @beta
-   */
-  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
-    return this.displayStyle.getModelAppearanceOverride(id);
-  }
-
-  /** Change the appearance overrides for a "contextual" reality model displayed by this viewport.
-   * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
-   * @param index The reality model index or -1 to apply to all models.
-   * @returns true if overrides are successfully applied.
-   * @beta
-   */
-  public overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean {
-    // ###TODO events from DisplayStyle
-    const changed = this.displayStyle.overrideRealityModelAppearance(index, overrides);
-    if (changed) {
-      this._changeFlags.setDisplayStyle();
-      this.invalidateRenderPlan();
-    }
-    return changed;
-  }
-
-  /** Drop the appearance overrides for a "contextual" reality model displayed by this viewport.
-   * @param index The reality model index or to drop overrides from or -1 to drop overrides from all reality models.
-   * @returns true if overrides are successfully dropped.
-   * @beta
-   */
-  public dropRealityModelAppearanceOverride(index: number) {
-    // ###TODO events from DisplayStyle
-    this.displayStyle.dropRealityModelAppearanceOverride(index);
-    this._changeFlags.setDisplayStyle();
-    this.invalidateRenderPlan();
-  }
-
-  /** Obtain the override applied to a "contextual" reality model displayed in this viewport.
-   * @param index The reality model index
-   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
-   * @see [[overrideRealityModelAppearance]]
-   * @beta
-   */
-  public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
-    return this.displayStyle.getRealityModelAppearanceOverride(index);
-  }
-
-  /** Return the "contextual" reality model index for a transient model ID or -1 if none found
-   * @beta
-   */
-  public getRealityModelIndexFromTransientId(id: Id64String): number {
-    return this.displayStyle.getRealityModelIndexFromTransientId(id);
-  }
-
-  /** Change the display of worldwide [OpenStreetMap Building](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/) meshes within this viewport.
-   * The building meshes are supplied by [Cesium ION](https://cesium.com/content/cesium-osm-buildings/).
-   */
-  public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions) {
-    // ###TODO events from DisplayStyle
-    const originalOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
-    if (this.displayStyle.setOSMBuildingDisplay(options)) {
-      const newOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
-      this._changeFlags.setDisplayStyle();
-      if (newOn !== originalOn)
-        this.synchWithView(false);      // May change frustum depth...
-      if (options.appearanceOverrides)
-        this.invalidateRenderPlan();
-    }
+    this.view.displayStyle.settings.dropModelAppearanceOverride(id);
   }
 
   /** Some changes may or may not require us to invalidate the scene.
@@ -1097,7 +997,15 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
-    removals.push(settings.onRealityModelPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
+
+    removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
+      displayStyleChanged();
+      this.synchWithView(false); // May change frustum depth.
+    }));
 
     const analysisChanged = () => {
       this._changeFlags.setDisplayStyle();
@@ -1502,14 +1410,13 @@ export abstract class Viewport implements IDisposable {
   /** Set or clear the currently *flashed* element.
    * @note This method is not typically invoked directly - [[ToolAdmin]] will invoke it for you when the user hovers over an element.
    * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element.
-   * @param duration The amount of time, in seconds, the flash intensity will increase (see [[flashDuration]]).
+   * @param _duration Ignored - the duration from [[Viewport.flashSettings]] is used.
    */
-  public setFlashed(id: string | undefined, duration: number): void {
+  public setFlashed(id: string | undefined, _duration?: number): void {
     if (id !== this._flashedElem) {
-      this.lastFlashedElem = this._flashedElem;
+      this._lastFlashedElem = this._flashedElem;
       this._flashedElem = id;
     }
-    this.flashDuration = duration;
   }
 
   public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
@@ -2184,17 +2091,21 @@ export abstract class Viewport implements IDisposable {
   private processFlash(): boolean {
     let needsFlashUpdate = false;
 
-    if (this._flashedElem !== this.lastFlashedElem) {
-      this.flashIntensity = 0.0;
-      this.flashUpdateTime = BeTimePoint.now();
-      this.lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
+    if (this._flashedElem !== this._lastFlashedElem) {
+      this._flashIntensity = 0.0;
+      this._flashUpdateTime = BeTimePoint.now();
+      this._lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
       needsFlashUpdate = this._flashedElem === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
     }
 
-    if (this._flashedElem !== undefined && this.flashIntensity < 1.0) {
-      const flashDuration = BeDuration.fromSeconds(this.flashDuration);
-      const flashElapsed = BeTimePoint.now().milliseconds - this.flashUpdateTime!.milliseconds;
-      this.flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds; // how intense do we want the flash effect to be from [0..1]?
+    if (this._flashedElem !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
+      assert(undefined !== this._flashUpdateTime);
+
+      const flashDuration = this.flashSettings.duration;
+      const flashElapsed = BeTimePoint.now().milliseconds - this._flashUpdateTime.milliseconds;
+      this._flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds;
+      this._flashIntensity = Math.min(this._flashIntensity, this.flashSettings.maxIntensity);
+
       needsFlashUpdate = true;
     }
 
@@ -2335,7 +2246,7 @@ export abstract class Viewport implements IDisposable {
 
     let requestNextAnimation = false;
     if (this.processFlash()) {
-      target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this.flashIntensity);
+      target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this._flashIntensity);
       isRedrawNeeded = true;
       requestNextAnimation = undefined !== this._flashedElem;
     }
