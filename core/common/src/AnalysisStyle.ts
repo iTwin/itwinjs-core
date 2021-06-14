@@ -9,6 +9,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { Range1d, Range1dProps } from "@bentley/geometry-core";
 import { ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
+import { Gradient } from "./Gradient";
 
 /** JSON representation of an [[AnalysisStyleDisplacement]].
  * @see [[AnalysisStyleProps.displacement]].
@@ -90,6 +91,7 @@ export class AnalysisStyleScalar {
   public readonly range: Readonly<Range1d>;
   /** Settings used to produce the [[Gradient]] image. */
   public readonly thematicSettings: ThematicGradientSettings;
+  private _gradient?: Gradient.Symb;
 
   /** @internal */
   private constructor(props: AnalysisStyleScalarProps) {
@@ -114,6 +116,14 @@ export class AnalysisStyleScalar {
       props.thematicSettings = this.thematicSettings.toJSON();
 
     return props;
+  }
+
+  /** The gradient computed from [[thematicSettings]]. */
+  public get gradient(): Gradient.Symb {
+    if (!this._gradient)
+      this._gradient = Gradient.Symb.createThematic(this.thematicSettings);
+
+    return this._gradient;
   }
 
   /** Return true if `this` is equivalent to `other`. */

@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { AnalysisStyle, ThematicGradientSettings } from "@bentley/imodeljs-common";
+import { AnalysisStyle, AnalysisStyleDisplacement, AnalysisStyleScalar, ThematicGradientSettings } from "@bentley/imodeljs-common";
 import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
@@ -140,36 +140,31 @@ function getAnimParams(size: 2 | 3, initialValue?: number): Float32Array {
   return array;
 }
 
-function getDisplacementChannel(params: DrawParams): { channel: AuxDisplacementChannel, style: AnalysisStyle } | undefined {
-  const style = params.target.analysisStyle;
-  if (undefined === style || undefined === style.displacementChannelName)
+function getDisplacementChannel(params: DrawParams): { channel: AuxDisplacementChannel, displacement: AnalysisStyleDisplacement } | undefined {
+  const displacement = params.target.analysisStyle?.displacement;
+  if (!displacement)
     return undefined;
 
   const lutGeom = params.geometry.asLUT!;
-  const displacements = undefined !== lutGeom.lut.auxChannels ? lutGeom.lut.auxChannels.displacements : undefined;
-  const channel = undefined !== displacements ? displacements.get(style.displacementChannelName) : undefined;
-  return undefined !== channel ? { channel, style } : undefined;
+  const channel = params.geometry.asLUT?.lut.auxChannels?.displacements?.get(displacement.channelName);
+  return channel ? { channel, displacement } : undefined;
 }
 
 function getNormalChannel(params: DrawParams): AuxChannel | undefined {
-  const style = params.target.analysisStyle;
-  if (undefined === style || undefined === style.normalChannelName)
+  const channelName = params.target.analysisStyle?.normalChannelName;
+  if (undefined === channelName)
     return undefined;
 
-  const lutGeom = params.geometry.asLUT!;
-  const normals = undefined !== lutGeom.lut.auxChannels ? lutGeom.lut.auxChannels.normals : undefined;
-  return undefined !== normals ? normals.get(style.normalChannelName) : undefined;
+  return params.geometry.asLUT?.lut.auxChannels?.normals?.get(channelName);
 }
 
-function getScalarChannel(params: DrawParams): { channel: AuxParamChannel, style: AnalysisStyle } | undefined {
-  const style = params.target.analysisStyle;
-  if (undefined === style || undefined === style.scalarChannelName)
+function getScalarChannel(params: DrawParams): { channel: AuxParamChannel, scalar: AnalysisStyleScalar } | undefined {
+  const scalar = params.target.analysisStyle?.scalar;
+  if (!scalar)
     return undefined;
 
-  const geom = params.geometry.asMesh!;
-  const scalars = undefined !== geom.lut.auxChannels ? geom.lut.auxChannels.params : undefined;
-  const channel = undefined !== scalars ? scalars.get(style.scalarChannelName) : undefined;
-  return undefined !== channel ? { channel, style } : undefined;
+  const channel = params.geometry.asMesh?.lut.auxChannels?.params?.get(scalar.channelName);
+  return channel ? { channel, scalar } : undefined;
 }
 
 function computeAnimParams(params: Float32Array, channel: AuxChannel, fraction: number): void {
@@ -237,11 +232,9 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
     prog.addGraphicUniform("u_qAnimDispScale", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp) {
-        const displacementScale = disp.style.displacementScale ? disp.style.displacementScale : 1.0;
+      if (undefined !== disp)
         for (let i = 0; i < 3; i++)
-          animParams[i] = disp.channel.qScale[i] * displacementScale; // Apply displacement scale.
-      }
+          animParams[i] = disp.channel.qScale[i] * disp.displacement.scale;
 
       uniform.setUniform3fv(animParams);
     });
@@ -250,11 +243,9 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
     prog.addGraphicUniform("u_qAnimDispOrigin", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp) {
-        const displacementScale = disp.style.displacementScale ? disp.style.displacementScale : 1.0;
+      if (undefined !== disp)
         for (let i = 0; i < 3; i++)
-          animParams[i] = disp.channel.qOrigin[i] * displacementScale;   // Apply displacement scale
-      }
+          animParams[i] = disp.channel.qOrigin[i] * disp.displacement.scale;
 
       uniform.setUniform3fv(animParams);
     });
@@ -285,7 +276,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
         prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
           const scalars = getScalarChannel(params);
           const animParams = getAnimParams(3, -1.0);
-          if (undefined !== scalars)
+          if (scalars)
             computeAnimParams(animParams, scalars.channel, params.target.analysisFraction);
 
           uniform.setUniform3fv(animParams);
@@ -296,9 +287,13 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
         prog.addGraphicUniform("u_animScalarQParams", (uniform, params) => {
           const scalars = getScalarChannel(params);
           const animParams = getAnimParams(2, 1.0);
-          if (undefined !== scalars) {
-            const rangeScale = scalars.style.scalarRange!.high - scalars.style.scalarRange!.low;
-            animParams[0] = ThematicGradientSettings.margin + (scalars.channel.qOrigin - scalars.style.scalarRange!.low) / rangeScale;
+          if (scalars) {
+            const range = scalars.scalar.range;
+            let rangeScale = range.high - range.low;
+            if (rangeScale === 0)
+              rangeScale = 1;
+
+            animParams[0] = ThematicGradientSettings.margin + (scalars.channel.qOrigin - range.low) / rangeScale;
             animParams[1] = ThematicGradientSettings.contentRange * scalars.channel.qScale / rangeScale;
           }
 
