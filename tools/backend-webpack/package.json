@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-webpack-tools",
-  "version": "2.18.0-dev.2",
+  "version": "2.18.0-dev.5",
   "description": "Configuration and scripts for iModel.js agents and backends.",
   "license": "MIT",
   "repository": {
