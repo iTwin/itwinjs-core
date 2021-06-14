@@ -32,6 +32,7 @@ export * from "./presentation-common/PresentationIpcInterface";
  */
 export * from "./presentation-common/PresentationRpcInterface";
 export * from "./presentation-common/RpcRequestsHandler";
+export * from "./presentation-common/ElementProperties";
 
 /**
  * @module UnifiedSelection
@@ -58,6 +59,7 @@ export * from "./presentation-common/content/Property";
 export * from "./presentation-common/content/Renderer";
 export * from "./presentation-common/content/TypeDescription";
 export * from "./presentation-common/content/Value";
+export * from "./presentation-common/content/ContentTraverser";
 
 /**
  * @module Hierarchies

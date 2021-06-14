@@ -8,8 +8,17 @@ import { render } from "@testing-library/react";
 import { addPanelWidget, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@bentley/ui-ninezone";
 import { Rectangle } from "@bentley/ui-core";
 import { FrontstageDef, FrontstageManager, WidgetContent, WidgetDef } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("WidgetContent", () => {
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
