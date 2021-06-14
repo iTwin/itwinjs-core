@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Range3d } from "@bentley/geometry-core";
+import { AuxChannel, Point2d, Range3d } from "@bentley/geometry-core";
 import {
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
   OctEncodedNormal, PolylineData, PolylineEdgeArgs, PolylineFlags, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
@@ -213,6 +213,7 @@ export class Mesh {
   public readonly hasBakedLighting: boolean;
   public readonly isVolumeClassifier: boolean;
   public displayParams: DisplayParams;
+  private _auxChannels?: AuxChannel[];
 
   private constructor(props: Mesh.Props) {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
@@ -229,8 +230,46 @@ export class Mesh {
 
   public static create(props: Mesh.Props): Mesh { return new Mesh(props); }
 
-  public get triangles(): TriangleList | undefined { return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined; }
-  public get polylines(): MeshPolylineList | undefined { return Mesh.PrimitiveType.Mesh !== this.type ? this._data as MeshPolylineList : undefined; }
+  public get triangles(): TriangleList | undefined {
+    return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined;
+  }
+
+  public get polylines(): MeshPolylineList | undefined {
+    return Mesh.PrimitiveType.Mesh !== this.type ? this._data as MeshPolylineList : undefined;
+  }
+
+  public get auxChannels(): ReadonlyArray<AuxChannel> | undefined {
+    return this._auxChannels;
+  }
+
+  public addAuxChannels(channels: ReadonlyArray<AuxChannel>, srcIndex: number): void {
+    // The native version of this function appears to assume that all polyfaces added to the Mesh will have
+    // the same number + type of aux channels.
+    // ###TODO We should really produce a separate Mesh for each unique combination. For now just bail on mismatch.
+    if (this._auxChannels) {
+      if (this._auxChannels.length !== channels.length)
+        return;
+
+      for (let i = 0; i < channels.length; i++) {
+        const src = channels[i];
+        const dst = this._auxChannels[i];
+        if (src.dataType !== dst.dataType || src.name !== dst.name || src.inputName !== dst.inputName)
+          return;
+      }
+    }
+
+    if (!this._auxChannels)
+      this._auxChannels = channels.map((x) => new AuxChannel([], x.dataType, x.name, x.inputName));
+
+    for (let channelIndex = 0; channelIndex < channels.length; channelIndex++) {
+      const srcChannel = channels[channelIndex];
+      const dstChannel = this._auxChannels[channelIndex];
+      for (let dataIndex = 0; dataIndex < srcChannel.data.length; dataIndex++) {
+        const dstData = dstChannel.data[dataIndex];
+        dstData.copyValues(srcChannel.data[dataIndex], dstData.values.length, srcIndex, dstChannel.entriesPerValue);
+      }
+    }
+  }
 
   public toFeatureIndex(index: FeatureIndex): void {
     if (undefined !== this.features)
