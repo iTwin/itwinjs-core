@@ -10,12 +10,13 @@ import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@bentley/bent
 import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
-  FieldDescriptorType, HierarchyCompareOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions,
-  isDisplayLabelRequestOptions, isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet,
-  LabelDefinition, LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
-  PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo,
-  UpdateInfo, UpdateInfoJSON, VariableValueTypes,
+  DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
+  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptorType, HierarchyCompareOptions, HierarchyRequestOptions,
+  HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isDisplayLabelsRequestOptions,
+  isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey,
+  NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification, PresentationError, PresentationIpcEvents,
+  PresentationStatus, PresentationUnitSystem, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
+  VariableValueTypes,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
@@ -554,6 +555,15 @@ export class PresentationManager implements IDisposable {
       ...result,
       items: result.items.map(DisplayValueGroup.fromJSON),
     };
+  }
+
+  /**
+   * Retrieves property data in a simplified format for a single element specified by ID.
+   * @beta
+   */
+  public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined> {
+    await this.onConnection(requestOptions.imodel);
+    return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
   }
 
   /**
