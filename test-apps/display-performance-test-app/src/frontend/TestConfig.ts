@@ -200,7 +200,7 @@ export class TestConfig {
     this.numRendersToTime = props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
     this.numRendersToSkip = props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
     this.outputName = props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
-    this.outputPath = prevConfig?.outputPath ?? "D:\\output\\performanceData\\";
+    this.outputPath = prevConfig?.outputPath ?? (process.platform === "darwin" ? "/User/" : "D:\\output\\performanceData\\");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
     this.iModelHubProject = props.iModelHubProject ?? prevConfig?.iModelHubProject ?? "iModel Testing";
@@ -332,9 +332,11 @@ function merge<T extends object>(first: T | undefined, second: T | undefined): T
 
 /** Combine two file paths. e.g., combineFilePaths("images/img.png", "/usr/tmp") returns "/usr/tmp/images/img.png".
  * If additionalPath begins with a drive letter, initialPath is ignored.
+ * If OS is darwin (ie mac) and additionalPath begins with the "user" folder, initialPath is ignored.
  */
 function combineFilePaths(additionalPath: string, initialPath: string): string {
-  if (initialPath.length === 0 || additionalPath[1] === ":")
+  if (initialPath.length === 0 || additionalPath[1] === ":" ||
+    (process.platform === "darwin" && additionalPath && additionalPath.substring(0, 8).toLowerCase().includes("user")))
     return additionalPath;
 
   return path.join(initialPath, additionalPath);
