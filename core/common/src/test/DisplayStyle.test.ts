@@ -354,12 +354,9 @@ describe("DisplayStyleSettings overrides", () => {
 
   const iModelProps: DisplayStyle3dSettingsProps = {
     analysisStyle: {
-      displacementChannelName: "channel2",
-      displacementScale: undefined,
-      normalChannelName: undefined,
-      scalarChannelName: undefined,
-      scalarThematicSettings: undefined,
-      scalarRange: [1, 5],
+      displacement: {
+        channelName: "channel2",
+      },
     },
     analysisFraction: 0.2,
     scheduleScript: [{
@@ -481,12 +478,15 @@ describe("DisplayStyleSettings overrides", () => {
     test({
       viewflags,
       analysisStyle: {
-        displacementChannelName: "displacement",
-        displacementScale: 2.5,
+        displacement: {
+          channelName: "displacement",
+          scale: 2.5,
+        },
         normalChannelName: "normal",
-        scalarChannelName: undefined,
-        scalarThematicSettings: undefined,
-        scalarRange: undefined,
+        scalar: {
+          channelName: "scalar",
+          range: [-1, 2],
+        },
       },
       analysisFraction: 0.8,
     });

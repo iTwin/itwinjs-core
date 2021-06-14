@@ -93,7 +93,7 @@ export class ThematicGradientSettings {
   public static get contentRange(): number { return 1.0 - 2.0 * ThematicGradientSettings.margin; }
   public static get contentMax(): number { return 1.0 - ThematicGradientSettings.margin; }
 
-  public static defaults = ThematicGradientSettings.fromJSON();
+  public static readonly defaults = new ThematicGradientSettings({ });
 
   private static _defaultCustomKeys = [[0.0, 255, 255, 255], [1.0, 0, 0, 0]];
 
@@ -157,7 +157,7 @@ export class ThematicGradientSettings {
   }
 
   public static fromJSON(json?: ThematicGradientSettingsProps) {
-    return new ThematicGradientSettings(json);
+    return json ? new ThematicGradientSettings(json) : this.defaults;
   }
 
   public toJSON(): ThematicGradientSettingsProps {

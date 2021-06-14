@@ -9,22 +9,118 @@
 import { Range1d, Range1dProps } from "@bentley/geometry-core";
 import { ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 
+/** JSON representation of an [[AnalysisStyleDisplacement]].
+ * @see [[AnalysisStyleProps.displacement]].
+ * @beta
+ */
+export interface AnalysisStyleDisplacementProps {
+  /** @see [[AnalysisStyleDisplacement.channelName]]. */
+  channelName: string;
+  /** @see [[AnalysisStyleDisplacement.scale]].
+   * Default value: 1.
+   */
+  scale?: number;
+}
+
+/** Describes how an [[AnalysisStyle]] deforms a [Polyface]($geometry-core) by applying translation to its vertices.
+ * @see [[AnalysisStyle.displacement]].
+ * @beta
+ */
+export class AnalysisStyleDisplacement {
+  /** The name of the [AuxChannel]($geometry-core) supplying the displacements to be applied to the vertices. */
+  public readonly channelName: string;
+  /** A scale applied to the displacements to adjust the magnitude of the effect.
+   * Default value: 1.
+   */
+  public readonly scale: number;
+
+  /** @internal */
+  private constructor(channelName: string, scale = 1) {
+    this.channelName = channelName;
+    this.scale = scale;
+  }
+
+  /** Create from JSON representation. */
+  public static fromJSON(props: AnalysisStyleDisplacementProps): AnalysisStyleDisplacement {
+    return new this(props.channelName, props.scale);
+  }
+
+  /** Convert to JSON representation. */
+  public toJSON(): AnalysisStyleDisplacementProps {
+    const props: AnalysisStyleDisplacementProps = { channelName: this.channelName };
+    if (this.scale !== 1)
+      props.scale = this.scale;
+
+    return props;
+  }
+}
+
+/** JSON representation of an [[AnalysisStyleScalar]].
+ * @see [[AnalysisStyleProps.scalar]].
+ * @beta
+ */
+export interface AnalysisStyleScalarProps {
+  /** @see [[AnalysisStyleScalar.channelName]]. */
+  channelName: string;
+  /** @see [[AnalysisStyleScalar.range]]. */
+  range: Range1dProps;
+  /** @see [[AnalysisStyleScalar.thematicSettings]].
+   * Default value: [[ThematicGradientSettings.defaults]].
+   */
+  thematicSettings?: ThematicGradientSettingsProps;
+}
+
+/** Describes how an [[AnalysisStyle]] recolors [Polyface]($geometry-core) vertices by mapping scalar values supplied
+ * by an [AuxChannel]($geometry-core) to colors supplied by a [[Gradient]] image.
+ * @see [[AnalysisStyle.scalar]].
+ * @beta
+ */
+export class AnalysisStyleScalar {
+  /** The name of the [AuxChannel]($geometry-core) supplying the scalar values from which the vertex colors are computed. */
+  public readonly channelName: string;
+  /** The minimum and maximum scalar values that map to colors in the [[Gradient]] image. Vertices with values outside of
+   * this range are displayed with the gradient's margin color.
+   */
+  public readonly range: Readonly<Range1d>;
+  /** Settings used to produce the [[Gradient]] image. */
+  public readonly thematicSettings: ThematicGradientSettings;
+
+  /** @internal */
+  private constructor(props: AnalysisStyleScalarProps) {
+    this.channelName = props.channelName;
+    this.range = Range1d.fromJSON(props.range);
+    this.thematicSettings = ThematicGradientSettings.fromJSON(props.thematicSettings);
+  }
+
+  /** Create from JSON representation. */
+  public static fromJSON(props: AnalysisStyleScalarProps): AnalysisStyleScalar {
+    return new this(props);
+  }
+
+  /** Convert to JSON representation. */
+  public toJSON(): AnalysisStyleScalarProps {
+    const props: AnalysisStyleScalarProps = {
+      channelName: this.channelName,
+      range: this.range.toJSON(),
+    };
+
+    if (!this.thematicSettings.equals(ThematicGradientSettings.defaults))
+      props.thematicSettings = this.thematicSettings.toJSON();
+
+    return props;
+  }
+}
+
 /** JSON representation of an [[AnalysisStyle]].
  * @beta
  */
 export interface AnalysisStyleProps {
-  /** @see [[AnalysisStyle.displacementChannelName]]. */
-  displacementChannelName?: string;
-  /** @see [[AnalysisStyle.scalarChannelName]]. */
-  scalarChannelName?: string;
+  /** @see [[AnalysisStyle.displacement]]. */
+  displacement?: AnalysisStyleDisplacementProps;
+  /** @see [[AnalysisStyle.scalar]]. */
+  scalar?: AnalysisStyleScalarProps;
   /** @see [[AnalysisStyle.normalChannelName]]. */
   normalChannelName?: string;
-  /** @see [[AnalysisStyle.displacementScale]]. */
-  displacementScale?: number;
-  /** @see [[AnalysisStyle.scalarRange]]. ###TODO delete this? */
-  scalarRange?: Range1dProps;
-  /** @see [[AnalysisStyle.scalarThematicSettings]]. */
-  scalarThematicSettings?: ThematicGradientSettingsProps;
 }
 
 /** As part of a [[DisplayStyleSettings]], describes how to animate meshes in the view that have been augmented with
@@ -35,28 +131,16 @@ export interface AnalysisStyleProps {
  * @beta
  */
 export class AnalysisStyle {
-  /** If defined, the name of the [AuxChannel]($geometry-core) from which to obtain displacements by which to transform vertices.
-   * @see [[displacementScale]] to adjust the magnitude of the displacement.
-   */
-  public readonly displacementChannelName?: string;
-  /** If defined, the name of the [AuxChannel]($geometry-core) from which to obtain scalar values by which to recolor vertices. */
-  public readonly scalarChannelName?: string;
+  public readonly displacement?: AnalysisStyleDisplacement;
+  public readonly scalar?: AnalysisStyleScalar;
   /** If defined, the name of the [AuxChannel]($geometry-core) from which to obtain normal vectors for the vertices. */
   public readonly normalChannelName?: string;
-  /** A scale applied to the displacements specified by [[displacementChannelName]] to adjust the magnitude of displacement. */
-  public readonly displacementScale: number;
-  /** ###TODO delete this? */
-  public scalarRange?: Range1d;
-  /** Settings that define the gradient used to recolor vertices based on the values specified by [[scalarChannelName]].
-   * The scalar values are used to index into the gradient image to obtain the color of each vertex.
-   */
-  public readonly scalarThematicSettings?: ThematicGradientSettings;
 
   /** Create an analysis style from its JSON representation.
    * @note AnalysisStyle is an immutable type - use [[clone]] to produce a modified copy.
    */
   public static fromJSON(props?: AnalysisStyleProps): AnalysisStyle {
-    if (!props || (!props.displacementChannelName && !props.scalarChannelName && !props.normalChannelName && !props.displacementScale && !props.scalarRange && !props.scalarThematicSettings))
+    if (!props || (!props.displacement && !props.scalar && !props.normalChannelName))
       return this._defaults;
 
     return new AnalysisStyle(props);
@@ -64,16 +148,12 @@ export class AnalysisStyle {
 
   /** @internal */
   private constructor(props: AnalysisStyleProps) {
-    this.displacementChannelName = props.displacementChannelName;
-    this.scalarChannelName = props.scalarChannelName;
     this.normalChannelName = props.normalChannelName;
-    this.displacementScale = props.displacementScale ?? 1;
+    if (props.displacement)
+      this.displacement = AnalysisStyleDisplacement.fromJSON(props.displacement);
 
-    if (props.scalarRange)
-      this.scalarRange = Range1d.fromJSON(props.scalarRange);
-
-    if (props.scalarThematicSettings)
-      this.scalarThematicSettings = ThematicGradientSettings.fromJSON(props.scalarThematicSettings);
+    if (props.scalar)
+      this.scalar = AnalysisStyleScalar.fromJSON(props.scalar);
   }
 
   /** Convert this style to its JSON representation. */
@@ -82,23 +162,14 @@ export class AnalysisStyle {
     if (this === AnalysisStyle._defaults)
       return props;
 
-    if (undefined !== this.displacementChannelName)
-      props.displacementChannelName = this.displacementChannelName;
+    if (this.displacement)
+      props.displacement = this.displacement.toJSON();
 
-    if (undefined !== this.scalarChannelName)
-      props.scalarChannelName = this.scalarChannelName;
+    if (this.scalar)
+      props.scalar = this.scalar.toJSON();
 
-    if (undefined !== this.normalChannelName)
+    if (this.normalChannelName)
       props.normalChannelName = this.normalChannelName;
-
-    if (1 !== this.displacementScale)
-      props.displacementScale = this.displacementScale;
-
-    if (undefined !== this.scalarRange)
-      props.scalarRange = this.scalarRange.toJSON();
-
-    if (undefined !== this.scalarThematicSettings)
-      props.scalarThematicSettings = this.scalarThematicSettings.toJSON();
 
     return props;
   }
