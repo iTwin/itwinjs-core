@@ -6,7 +6,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as webpack from "webpack";
 const MODULE = require("module");
-let { usedDeps } = require("../utils/resolve-recurse/resolve");
+const { usedDeps } = require("../utils/resolve-recurse/resolve");
 
 function createTestCompiler(web: any, config: any, vol?: any) {
   let compiler: any;

@@ -7,7 +7,7 @@ import { Volume } from "memfs";
 import { expect } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { clearCache, clearFileSystem, getTestConfig, runWebpack, fsFromJson } from "./TestUtils";
+import { clearCache, clearFileSystem, fsFromJson, getTestConfig, runWebpack } from "./TestUtils";
 import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExternals, RequireMagicCommentsPlugin } from "../plugins/RequireMagicCommentsPlugin";
 import { ExternalsPlugin } from "webpack";
 import { setApplicationDir } from "../utils/paths";

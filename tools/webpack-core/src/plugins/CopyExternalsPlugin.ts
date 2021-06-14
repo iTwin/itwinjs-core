@@ -5,7 +5,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
-import { getAppRelativePath, getPaths } from "../utils/paths";
+import { getAppRelativePath } from "../utils/paths";
 const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */

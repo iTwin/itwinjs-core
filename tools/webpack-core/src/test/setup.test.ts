@@ -14,7 +14,7 @@ before(function () {
 beforeEach(function () {
   const currentTest = (this as any).currentTest;
   const sourceFilePath = currentTest.file.replace("lib\\test", "src\\test").replace(/\.(jsx?|tsx?)$/, "");
-  const snapPath = sourceFilePath + ".snap";
+  const snapPath = `${sourceFilePath}.snap`;
   chaiJestSnapshot.setFilename(snapPath);
   chaiJestSnapshot.setTestName(currentTest.fullTitle());
 });
