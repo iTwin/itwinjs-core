@@ -315,12 +315,8 @@ describe("DisplayStyleSettings overrides", () => {
       sensorSettings: undefined,
       sunDirection: [1, 0, -1],
       gradientSettings: {
-        mode: 0,
-        colorScheme: 0,
-        customKeys: [],
         stepCount: 2,
         marginColor: ColorByName.magenta,
-        colorMix: 0,
       },
     },
   };
@@ -404,12 +400,8 @@ describe("DisplayStyleSettings overrides", () => {
     thematic: {
       displayMode: ThematicDisplayMode.Height,
       gradientSettings: {
-        mode: 0,
         stepCount: 2,
         marginColor: ColorByName.magenta,
-        colorScheme: 0,
-        customKeys: [],
-        colorMix: 0,
       },
       axis: [-1, 0, 1],
       sunDirection: [1, 0, -1],
@@ -579,7 +571,7 @@ describe("DisplayStyleSettings overrides", () => {
         gradientSettings: {
           mode: 1,
           colorScheme: 1,
-          customKeys: [],
+          customKeys: [{ value: 0.5, color: 1234 }],
           stepCount: 3,
           marginColor: ColorByName.pink,
           colorMix: 0.5,
