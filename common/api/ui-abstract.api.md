@@ -100,21 +100,13 @@ export interface AbstractWidgetProps extends ProvidedItem {
 // @public
 export enum AbstractZoneLocation {
     // (undocumented)
-    BottomCenter = 8,
-    // (undocumented)
     BottomLeft = 7,
     // (undocumented)
     BottomRight = 9,
     // (undocumented)
     CenterLeft = 4,
     // (undocumented)
-    CenterRight = 6,
-    // (undocumented)
-    TopCenter = 2,
-    // (undocumented)
-    TopLeft = 1,
-    // (undocumented)
-    TopRight = 3
+    CenterRight = 6
 }
 
 // @alpha
