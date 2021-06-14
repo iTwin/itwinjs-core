@@ -718,14 +718,11 @@ export class DisplayStyleSettings {
   public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
   public set analysisStyle(style: AnalysisStyle | undefined) {
     this.onAnalysisStyleChanged.raiseEvent(style);
-    if (!style) {
-      this._json.analysisStyle = undefined;
-      this._analysisStyle = undefined;
-      return;
-    }
-
-    this._analysisStyle = style.clone(this._analysisStyle);
-    this._json.analysisStyle = style.toJSON();
+    this._analysisStyle = style;
+    if (style)
+      this._json.analysisStyle = style.toJSON();
+    else
+      delete this._json.analysisStyle;
   }
 
   /** @alpha */

@@ -354,8 +354,6 @@ describe("DisplayStyleSettings overrides", () => {
 
   const iModelProps: DisplayStyle3dSettingsProps = {
     analysisStyle: {
-      inputName: "channel1",
-      inputRange: undefined,
       displacementChannelName: "channel2",
       displacementScale: undefined,
       normalChannelName: undefined,
@@ -483,8 +481,6 @@ describe("DisplayStyleSettings overrides", () => {
     test({
       viewflags,
       analysisStyle: {
-        inputName: undefined,
-        inputRange: [2, 4],
         displacementChannelName: "displacement",
         displacementScale: 2.5,
         normalChannelName: "normal",
