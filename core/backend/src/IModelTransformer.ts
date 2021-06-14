@@ -956,7 +956,7 @@ export class TemplateModelCloner extends IModelTransformer {
       }
     });
     const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
-    targetElementProps.federationGuid = undefined; // clone from template should not maintain federationGuid
+    targetElementProps.federationGuid = Guid.createValue(); // clone from template should create a new federationGuid
     targetElementProps.code = Code.createEmpty(); // clone from template should not maintain codes
     if (sourceElement instanceof GeometricElement3d) {
       const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
