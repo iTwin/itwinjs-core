@@ -248,18 +248,17 @@ export class WidgetManager {
       // istanbul ignore else
       if (location in ZoneLocation) {
         const panelLocation = this.getStagePanelLocationFromZoneLocation(location as ZoneLocation);
-        if (panelLocation) {
-          if (location in AbstractZoneLocation) {
-            const widgets = UiItemsManager.getWidgets(stageId, stageUsage, panelLocation, undefined, location as unknown as AbstractZoneLocation);
-            const updatedWidgets = UiItemsArbiter.updateWidgets(widgets);
-            updatedWidgets.forEach((abstractProps, index) => {
-              const props = WidgetDef.createWidgetPropsFromAbstractProps(abstractProps);
-              const stableId = getAddonStableWidgetId(stageUsage, location as StagePanelLocation, definedSection, index);
-              const stableProps = getStableWidgetProps(props, stableId);
-              const wd = new WidgetDef(stableProps);
-              widgetDefs.push(wd);
-            });
-          }
+        // istanbul ignore else
+        if (panelLocation && location in AbstractZoneLocation) {
+          const widgets = UiItemsManager.getWidgets(stageId, stageUsage, panelLocation, undefined, location as unknown as AbstractZoneLocation);
+          const updatedWidgets = UiItemsArbiter.updateWidgets(widgets);
+          updatedWidgets.forEach((abstractProps, index) => {
+            const props = WidgetDef.createWidgetPropsFromAbstractProps(abstractProps);
+            const stableId = getAddonStableWidgetId(stageUsage, location as StagePanelLocation, definedSection, index);
+            const stableProps = getStableWidgetProps(props, stableId);
+            const wd = new WidgetDef(stableProps);
+            widgetDefs.push(wd);
+          });
         }
       }
     }
