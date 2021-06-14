@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { assert, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64Array, Id64String, ProcessDetector } from "@bentley/bentleyjs-core";
 import {
   BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -200,7 +200,7 @@ export class TestConfig {
     this.numRendersToTime = props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
     this.numRendersToSkip = props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
     this.outputName = props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
-    this.outputPath = prevConfig?.outputPath ?? (process.platform === "darwin" ? "/User/" : "D:\\output\\performanceData\\");
+    this.outputPath = prevConfig?.outputPath ?? (ProcessDetector.isIOSAppFrontend ? "/User/" : "D:\\output\\performanceData\\");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
     this.iModelHubProject = props.iModelHubProject ?? prevConfig?.iModelHubProject ?? "iModel Testing";
