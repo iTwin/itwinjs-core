@@ -6,6 +6,7 @@
  * @module DisplayStyles
  */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { Range1d, Range1dProps } from "@bentley/geometry-core";
 import { ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 
@@ -52,6 +53,11 @@ export class AnalysisStyleDisplacement {
       props.scale = this.scale;
 
     return props;
+  }
+
+  /** Return true if `this` is equivalent to `other`. */
+  public equals(other: AnalysisStyleDisplacement): boolean {
+    return this.channelName === other.channelName && this.scale === other.scale;
   }
 }
 
@@ -109,6 +115,11 @@ export class AnalysisStyleScalar {
 
     return props;
   }
+
+  /** Return true if `this` is equivalent to `other`. */
+  public equals(other: AnalysisStyleScalar): boolean {
+    return this.channelName === other.channelName && this.range.isAlmostEqual(other.range) && this.thematicSettings.equals(other.thematicSettings);
+  }
 }
 
 /** JSON representation of an [[AnalysisStyle]].
@@ -140,8 +151,8 @@ export class AnalysisStyle {
    * @note AnalysisStyle is an immutable type - use [[clone]] to produce a modified copy.
    */
   public static fromJSON(props?: AnalysisStyleProps): AnalysisStyle {
-    if (!props || (!props.displacement && !props.scalar && !props.normalChannelName))
-      return this._defaults;
+    if (!props || (!props.displacement && !props.scalar && undefined === props.normalChannelName))
+      return this.defaults;
 
     return new AnalysisStyle(props);
   }
@@ -159,7 +170,7 @@ export class AnalysisStyle {
   /** Convert this style to its JSON representation. */
   public toJSON(): AnalysisStyleProps {
     const props: AnalysisStyleProps = { };
-    if (this === AnalysisStyle._defaults)
+    if (this === AnalysisStyle.defaults)
       return props;
 
     if (this.displacement)
@@ -168,7 +179,7 @@ export class AnalysisStyle {
     if (this.scalar)
       props.scalar = this.scalar.toJSON();
 
-    if (this.normalChannelName)
+    if (undefined !== this.normalChannelName)
       props.normalChannelName = this.normalChannelName;
 
     return props;
@@ -182,5 +193,21 @@ export class AnalysisStyle {
     });
   }
 
-  private static _defaults = new AnalysisStyle({ });
+  /** Return true if this style is equivalent to `other`. */
+  public equals(other: AnalysisStyle): boolean {
+    if (this.normalChannelName !== other.normalChannelName)
+      return false;
+
+    if ((undefined === this.displacement) !== (undefined === other.displacement))
+      return false;
+    else if (this.displacement && !this.displacement.equals(other.displacement!))
+      return false;
+
+    if ((undefined === this.scalar) !== (undefined === other.scalar))
+      return false;
+
+    return undefined === this.scalar || this.scalar.equals(other.scalar!);
+  }
+
+  public static readonly defaults = new AnalysisStyle({ });
 }
