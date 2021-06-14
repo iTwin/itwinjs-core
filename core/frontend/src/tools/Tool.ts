@@ -649,13 +649,13 @@ export abstract class InteractiveTool extends Tool {
       toolAdmin.setLocateCursor(enableLocate);
     }
 
-    // Always set the one that is true first, otherwise AccuSnap will clear the TouchCursor. 
+    // Always set the one that is true first, otherwise AccuSnap will clear the TouchCursor.
     if (enableLocate) {
       accuSnap.enableLocate(true);
       accuSnap.enableSnap(true === enableSnap);
     } else {
       accuSnap.enableSnap(true === enableSnap);
-      accuSnap.enableLocate(false); 
+      accuSnap.enableLocate(false);
     }
 
     if (undefined !== coordLockOvr) {
