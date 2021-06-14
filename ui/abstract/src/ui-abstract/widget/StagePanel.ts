@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-/** Enum for [[Zone]] Location used to specify zone location using AppUi 1.0 designations.
+/** Enum for AppUi 1 `Zone` locations that can have widgets added to them at run-time via [[UiItemsProvider]].
  * @public
  */
 export enum AbstractZoneLocation {
