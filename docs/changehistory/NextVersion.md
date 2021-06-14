@@ -5,11 +5,11 @@ publish: false
 
 ## UI Changes
 
-Added ability for UiItemsProvider to provide widgets to "zone" locations when running is AppUi version 1. Prior to this a widget could only be targeted to a "stage panel" location.
+Added ability for [UiItemsProvider]($ui-abstract) to provide widgets to [AbstractZoneLocation]($ui-abstract) locations when running is AppUi version 1. Prior to this a widget could only be targeted to a [StagePanelLocation]($ui-abstract) location.
 
 ### Example UiItemsProvider
 
-The example below, shows how to add a widget to a StagePanelLocation if UiFramework.uiVersion === "2" and to the "BottomRight" zone location if UiFramework.uiVersion === "1".  See [UiItemsProvider.provideWidgets]($ui-abstract) for new `zoneLocation` argument.
+The example below, shows how to add a widget to a [StagePanelLocation]($ui-abstract) if UiFramework.uiVersion === "2" and to the "BottomRight" [AbstractZoneLocation]($ui-abstract) if UiFramework.uiVersion === "1".  See [UiItemsProvider.provideWidgets]($ui-abstract) for new `zoneLocation` argument.
 
 ```tsx
 export class ExtensionUiItemsProvider implements UiItemsProvider {
