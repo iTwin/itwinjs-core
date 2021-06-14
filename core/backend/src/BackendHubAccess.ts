@@ -129,7 +129,7 @@ export interface ChangesetIdArg extends IModelIdArg {
  * @internal
  */
 export interface ChangesetIndexArg extends IModelIdArg {
-  changesetIndex: ChangesetIndex;
+  index: ChangesetIndex;
 }
 /** Argument for methods that must supply an IModelId and a range of ChangesetIds.
  * @internal
@@ -150,19 +150,21 @@ export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
   downloadChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetFileProps[]>;
   /** Download a single changeset. */
-  downloadChangeset: (arg: ChangesetIdArg) => Promise<ChangesetFileProps>;
+  downloadChangeset: (arg: ChangesetIndexArg) => Promise<ChangesetFileProps>;
   /** Query the changeset properties given a ChangesetId  */
   queryChangeset: (arg: ChangesetIdArg) => Promise<ChangesetProps>;
   /** Query an array of changeset properties given a range of ChangesetIds  */
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
   /** Query an array of changeset properties given a range of ChangesetIds  */
-  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<void>;
+  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<ChangesetIndex>;
   /** Get the changeSetId of the most recent changeset */
-  getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangesetId>;
-  /** Get the changeSetId for an IModelVersion */
+  getLatestChangesetIndex: (arg: IModelIdArg) => Promise<ChangesetIndex>;
+  /** Get the ChangesetIndex for an IModelVersion */
+  getChangesetIndexFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetIndex>;
+  /** Get the ChangesetId for an IModelVersion */
   getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetId>;
   /** Get the changeSetId for a named version */
-  getChangesetIdFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetId>;
+  getChangesetIndexFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetIndex>;
 
   /** Get the index of the change set from its id */
   getChangesetIndexFromId: (arg: ChangesetIdArg) => Promise<ChangesetIndex>;
@@ -194,7 +196,7 @@ export interface BackendHubAccess {
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
   /** release all currently held locks */
-  releaseAllLocks: (arg: BriefcaseIdArg) => Promise<void>;
+  releaseAllLocks: (arg: BriefcaseIdArg & ChangesetIdArg) => Promise<void>;
 
   /** Query codes */
   queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;

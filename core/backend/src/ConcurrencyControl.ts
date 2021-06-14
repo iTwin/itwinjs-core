@@ -15,7 +15,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Element, Subject } from "./Element";
 import { ChannelRootAspect } from "./ElementAspect";
-import { LockProps } from "./BackendHubAccess";
+import { BriefcaseIdArg, ChangesetIdArg, LockProps } from "./BackendHubAccess";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelHubBackend } from "./IModelHubBackend";
@@ -446,7 +446,7 @@ export class ConcurrencyControl {
 
     this.abandonRequest();
     this._cache.deleteFile();
-    const arg = { requestContext, briefcaseId: this.iModel.briefcaseId, iModelId: this.iModel.iModelId };
+    const arg: BriefcaseIdArg & ChangesetIdArg = { requestContext, briefcaseId: this.iModel.briefcaseId, iModelId: this.iModel.iModelId, changeSetId: this.iModel.changeSetId };
     await Promise.all([IModelHost.hubAccess.releaseAllLocks(arg), IModelHost.hubAccess.releaseAllCodes(arg)]);
     requestContext.enter();
     return this.openOrCreateCache(requestContext); // re-create after we know that locks and codes were deleted.

@@ -39,7 +39,7 @@ describe.only("HubMock", () => {
     assert.equal(checkpoints[0], 0);
 
     const cp1 = join(tmpDir, "cp-1.bim");
-    localHub.downloadCheckpoint({ changesetIndex: 0, targetFile: cp1 });
+    localHub.downloadCheckpoint({ changeset: { index: 0 }, targetFile: cp1 });
     const stat1 = IModelJsFs.lstatSync(cp1);
     const statRev0 = IModelJsFs.lstatSync(revision0);
     assert.equal(stat1?.size, statRev0?.size);

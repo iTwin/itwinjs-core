@@ -8,7 +8,7 @@ import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMo
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, LocalDirName, LocalFileName, LockProps } from "../BackendHubAccess";
-import { BriefcaseId, BriefcaseManager } from "../BriefcaseManager";
+import { BriefcaseId, BriefcaseManager, ChangesetIndexOrId } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
@@ -259,6 +259,10 @@ export class LocalHub {
     });
   }
 
+  public getChangesetId(index: ChangesetIndex): ChangesetId {
+    return this.getChangesetByIndex(index).id;
+  }
+
   /** Get an array of changesets starting with first to last, by index */
   public queryChangesets(range?: ChangesetRange): ChangesetProps[] {
     const changesets: ChangesetProps[] = [];
@@ -365,8 +369,8 @@ export class LocalHub {
   }
 
   /** "download" a checkpoint */
-  public downloadCheckpoint(arg: { changeSetId: ChangesetId, targetFile: LocalFileName }) {
-    const index = this.getChangesetIndex(arg.changeSetId);
+  public downloadCheckpoint(arg: { changeset: ChangesetIndexOrId, targetFile: LocalFileName }) {
+    const index = arg.changeset.index ?? this.getChangesetIndex(arg.changeset.id);
     const prev = this.queryPreviousCheckpoint(index);
     IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromIndex(prev)), arg.targetFile);
     return this.getChangesetByIndex(prev).id;
@@ -378,9 +382,9 @@ export class LocalHub {
   }
 
   /** "download" a changeset */
-  public downloadChangeset(arg: { changesetIndex: ChangesetIndex, targetDir: LocalDirName }) {
-    const cs = this.getChangesetByIndex(arg.changesetIndex);
-    const csProps = { ...cs, pathname: join(arg.targetDir, cs.id), index: arg.changesetIndex };
+  public downloadChangeset(arg: { index: ChangesetIndex, targetDir: LocalDirName }) {
+    const cs = this.getChangesetByIndex(arg.index);
+    const csProps = { ...cs, pathname: join(arg.targetDir, cs.id), index: arg.index };
     return this.copyChangeset(csProps);
   }
 
