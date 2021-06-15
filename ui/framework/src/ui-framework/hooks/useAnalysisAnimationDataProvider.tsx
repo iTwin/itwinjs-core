@@ -40,7 +40,7 @@ function useSupportsAnalysisAnimation(viewport: Viewport | undefined) {
 }
 
 /** Hook that returns either a AnalysisAnimationTimelineDataProvider or undefined based on if the supplied viewport contains analysis data.
- * @beta
+ * @public
  **/
 // istanbul ignore next
 export function useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined) {

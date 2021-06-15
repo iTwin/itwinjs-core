@@ -40,7 +40,7 @@ function useSupportsScheduleScript(viewport: Viewport | undefined) {
 }
 
 /** Hook that returns either a ScheduleAnimationTimelineDataProvider or undefined based on if the supplied viewport contains schedule script.
- * @beta
+ * @public
  **/
 // istanbul ignore next
 export function useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined) {

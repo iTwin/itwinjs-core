@@ -142,7 +142,6 @@ import { StringGetter } from '@bentley/ui-abstract';
 import { Tab } from '@bentley/ui-ninezone';
 import { TabMode } from '@bentley/ui-ninezone';
 import { TabState } from '@bentley/ui-ninezone';
-import { TimelineDataProvider } from '@bentley/ui-components';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAdmin } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
@@ -450,7 +449,7 @@ export function addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageD
 // @internal (undocumented)
 export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: PanelSide, widgetId: WidgetIdTypes): NineZoneState;
 
-// @alpha
+// @public
 export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
     // (undocumented)
@@ -1713,16 +1712,8 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     updateToolSettingsNodes(): void;
 }
 
-// @alpha
-export class DefaultViewOverlay extends React.Component<Props, State> {
-    constructor(props: any);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React.ReactNode;
-    }
+// @public
+export function DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps): JSX.Element;
 
 // @public
 export class DialogChangedEvent extends UiEvent<DialogChangedEventArgs> {
@@ -1943,7 +1934,7 @@ export const expandWidget: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: PanelSide;
+            readonly side: "left" | "right" | "bottom" | "top";
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -1959,7 +1950,7 @@ export const expandWidget: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
+                    readonly side: "left" | "right" | "bottom" | "top";
                 };
             };
         };
@@ -1978,7 +1969,7 @@ export const expandWidget: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
+                    readonly side: "left" | "right" | "bottom" | "top";
                 };
             };
         };
@@ -2051,7 +2042,7 @@ export const expandWidget: (base: {
                 readonly y: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly allowedPanelTargets?: readonly ("left" | "right" | "bottom" | "top")[] | undefined;
             readonly canPopout?: boolean | undefined;
         };
     };
@@ -4471,7 +4462,7 @@ export interface ProjectServices {
 }
 
 // @public @deprecated
-export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "className" | "isInFooterMode" | "openWidget" | "key" | "onOpenWidget">>;
 
 // @public
 export class PropsHelper {
@@ -4697,10 +4688,10 @@ export class SelectionContextToolDefinitions {
 }
 
 // @public
-export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "className" | "isInFooterMode" | "openWidget" | "key" | "onOpenWidget">>;
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "className" | "isInFooterMode" | "openWidget" | "key" | "onOpenWidget">>;
 
 // @public
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -4826,7 +4817,7 @@ export const setPanelSize: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: PanelSide;
+            readonly side: "left" | "right" | "bottom" | "top";
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4842,7 +4833,7 @@ export const setPanelSize: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
+                    readonly side: "left" | "right" | "bottom" | "top";
                 };
             };
         };
@@ -4861,7 +4852,7 @@ export const setPanelSize: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
+                    readonly side: "left" | "right" | "bottom" | "top";
                 };
             };
         };
@@ -4934,7 +4925,7 @@ export const setPanelSize: (base: {
                 readonly y: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly allowedPanelTargets?: readonly ("left" | "right" | "bottom" | "top")[] | undefined;
             readonly canPopout?: boolean | undefined;
         };
     };
@@ -4955,7 +4946,7 @@ export const setPanelSize: (base: {
         readonly width: number;
         readonly height: number;
     };
-}, side: PanelSide, size: number | undefined) => import("immer/dist/internal").WritableDraft<NineZoneState>;
+}, side: "left" | "right" | "bottom" | "top", size: number | undefined) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @beta
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
@@ -4990,7 +4981,7 @@ export const setWidgetLabel: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: PanelSide;
+            readonly side: "left" | "right" | "bottom" | "top";
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -5006,7 +4997,7 @@ export const setWidgetLabel: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
+                    readonly side: "left" | "right" | "bottom" | "top";
                 };
             };
         };
@@ -5025,7 +5016,7 @@ export const setWidgetLabel: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
+                    readonly side: "left" | "right" | "bottom" | "top";
                 };
             };
         };
@@ -5098,7 +5089,7 @@ export const setWidgetLabel: (base: {
                 readonly y: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly allowedPanelTargets?: readonly ("left" | "right" | "bottom" | "top")[] | undefined;
             readonly canPopout?: boolean | undefined;
         };
     };
@@ -5132,7 +5123,7 @@ export const setWidgetState: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: PanelSide;
+            readonly side: "left" | "right" | "bottom" | "top";
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -5148,7 +5139,7 @@ export const setWidgetState: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
+                    readonly side: "left" | "right" | "bottom" | "top";
                 };
             };
         };
@@ -5167,7 +5158,7 @@ export const setWidgetState: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
+                    readonly side: "left" | "right" | "bottom" | "top";
                 };
             };
         };
@@ -5240,7 +5231,7 @@ export const setWidgetState: (base: {
                 readonly y: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly allowedPanelTargets?: readonly ("left" | "right" | "bottom" | "top")[] | undefined;
             readonly canPopout?: boolean | undefined;
         };
     };
@@ -5338,7 +5329,7 @@ export const showWidget: (base: {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: PanelSide;
+            readonly side: "left" | "right" | "bottom" | "top";
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -5354,7 +5345,7 @@ export const showWidget: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
+                    readonly side: "left" | "right" | "bottom" | "top";
                 };
             };
         };
@@ -5373,7 +5364,7 @@ export const showWidget: (base: {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: PanelSide;
+                    readonly side: "left" | "right" | "bottom" | "top";
                 };
             };
         };
@@ -5446,7 +5437,7 @@ export const showWidget: (base: {
                 readonly y: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
+            readonly allowedPanelTargets?: readonly ("left" | "right" | "bottom" | "top")[] | undefined;
             readonly canPopout?: boolean | undefined;
         };
     };
@@ -5499,7 +5490,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     }
 
 // @public
-export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "className" | "isInFooterMode" | "openWidget" | "key" | "onOpenWidget">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -6225,12 +6216,12 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
 }
 
 // @internal
-export class Toolbar extends React.Component<ToolbarProps, State_2> {
+export class Toolbar extends React.Component<ToolbarProps, State> {
     constructor(props: ToolbarProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentDidUpdate(prevProps: ToolbarProps, _prevState: State_2): void;
+    componentDidUpdate(prevProps: ToolbarProps, _prevState: State): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -6822,6 +6813,9 @@ export function useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined;
 // @public
 export function useActiveViewport(): ScreenViewport | undefined;
 
+// @public
+export function useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined;
+
 // @internal
 export function useAvailableUiItemsProviders(): readonly string[];
 
@@ -6899,6 +6893,12 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
 export function useSaveFrontstageSettings(frontstageDef: FrontstageDef): void;
+
+// @public
+export function useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined;
+
+// @beta
+export function useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined;
 
 // @internal (undocumented)
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
@@ -6982,6 +6982,14 @@ export interface ViewLayout {
     contentLayoutDef: ContentLayoutDef;
     // (undocumented)
     viewStates: Array<ViewState | undefined>;
+}
+
+// @public
+export interface ViewOverlayProps {
+    // (undocumented)
+    onPlayPause?: (playing: boolean) => void;
+    // (undocumented)
+    viewport: ScreenViewport;
 }
 
 // @public

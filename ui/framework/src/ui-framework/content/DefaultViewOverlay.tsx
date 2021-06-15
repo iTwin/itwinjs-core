@@ -16,6 +16,7 @@ import { useSolarDataProvider } from "../hooks/useSolarDataProvider";
 import { useAnalysisAnimationDataProvider } from "../hooks/useAnalysisAnimationDataProvider";
 
 /** Props of Viewport Overlay Control that show timelines
+ * @public
  */
 export interface ViewOverlayProps {
   viewport: ScreenViewport;
@@ -24,6 +25,7 @@ export interface ViewOverlayProps {
 
 /**
  * Default viewport overlay that shows a schedule timeline for views containing a schedule script or a solar timeline for views with solar shadow info
+ * @public
  */
 // istanbul ignore next
 export function DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps) {
