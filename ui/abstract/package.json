@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-abstract",
-  "version": "2.18.0-dev.2",
+  "version": "2.18.0-dev.6",
   "description": "iModel.js UI abstractions",
   "main": "lib/ui-abstract.js",
   "typings": "lib/ui-abstract",
@@ -33,9 +33,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.2",
-    "@bentley/geometry-core": "workspace:^2.18.0-dev.2",
-    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.2"
+    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.6",
+    "@bentley/geometry-core": "workspace:^2.18.0-dev.6",
+    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.6"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
