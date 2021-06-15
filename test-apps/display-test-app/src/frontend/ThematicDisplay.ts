@@ -5,7 +5,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider } from "@bentley/frontend-devtools";
-import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Range1d } from "@bentley/geometry-core";
 import {
   calculateSolarDirectionFromAngles, ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps,
   ThematicDisplaySensorProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
@@ -726,7 +726,7 @@ export class ThematicDisplayEditor {
       this._thematicSensorX.input.value = pos.x.toString();
       this._thematicSensorY.input.value = pos.y.toString();
       this._thematicSensorZ.input.value = pos.z.toString();
-      this._thematicSensorValue.input.value = sensors[selectedSensor].value!.toString();
+      this._thematicSensorValue.input.value = sensors[selectedSensor].value.toString();
     }
   }
 
