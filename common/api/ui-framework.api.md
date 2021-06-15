@@ -2639,6 +2639,8 @@ export class FrontstageManager {
     static readonly onToolPanelOpenedEvent: UiEvent<void>;
     static readonly onToolSettingsReloadEvent: UiEvent<void>;
     // @internal (undocumented)
+    static readonly onWidgetDefsUpdatedEvent: UiEvent<void>;
+    // @internal (undocumented)
     static readonly onWidgetExpandEvent: UiEvent<WidgetEventArgs>;
     // @internal (undocumented)
     static readonly onWidgetLabelChangedEvent: UiEvent<WidgetChangedEventArgs>;

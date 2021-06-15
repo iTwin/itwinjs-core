@@ -542,12 +542,13 @@ export class FrontstageDef {
     // Tracks provided widgets to prevent duplicates.
     const widgetDefs: WidgetDef[] = [];
 
-    this.zoneDefs.forEach((zoneDef: ZoneDef) => {
-      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, widgetDefs);
-    });
-
+    // Process panels before zones so in uiVersion="2" extension can explicitly target a widget for a StagePanelSection
     this.panelDefs.forEach((panelDef: StagePanelDef) => {
       panelDef.updateDynamicWidgetDefs(this.id, this.usage, panelDef.location, undefined, widgetDefs);
+    });
+
+    this.zoneDefs.forEach((zoneDef: ZoneDef) => {
+      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, widgetDefs);
     });
   }
 
