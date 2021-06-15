@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { assert, Id64Array, Id64String, ProcessDetector } from "@bentley/bentleyjs-core";
+import { assert, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import {
   BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -156,6 +156,8 @@ export interface TestConfigProps {
 
 export const defaultHilite = new Hilite.Settings();
 export const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+export const isWindows = window.navigator.userAgent.toLowerCase().includes("win");
+
 
 /** Configures how one or more tests are run. A Test belongs to a TestSet and can test multiple iModels and views thereof.
  * A single base config is supplied by the backend.
@@ -201,7 +203,7 @@ export class TestConfig {
     this.numRendersToTime = props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
     this.numRendersToSkip = props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
     this.outputName = props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
-    this.outputPath = prevConfig?.outputPath ?? (ProcessDetector.isIOSAppFrontend ? "/Users/" : "D:\\output\\performanceData\\");
+    this.outputPath = prevConfig?.outputPath ?? (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
     this.iModelHubProject = props.iModelHubProject ?? prevConfig?.iModelHubProject ?? "iModel Testing";
@@ -214,23 +216,6 @@ export class TestConfig {
     this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
-    void this.logToConsole(`outputPath ${this.outputPath}`); // qqq temp debug, and following line
-    console.log (`outputPath ${this.outputPath}`);  // eslint-disable-line no-console
-    void this.logToConsole(`isIOSAppFrontEnd ${ProcessDetector.isIOSAppFrontend}`); // qqq temp debug, and following line
-    console.log (`isIOSAppFrontEnd ${ProcessDetector.isIOSAppFrontend}`); // eslint-disable-line no-console
-    void this.logToConsole(`window ${window}`); // qqq temp debug, and following line
-    console.log (`window ${window}`); // eslint-disable-line no-console
-    void this.logToConsole(`window.location ${window.location}`); // qqq temp debug, and following line
-    console.log (`window.location ${window.location}`); // eslint-disable-line no-console
-    void this.logToConsole(`window.location.hash ${window.location.hash}`); // qqq temp debug, and following line
-    console.log (`window.location.hash ${window.location.hash}`); // eslint-disable-line no-console
-    void this.logToConsole(`path.delimiter ${path.delimiter}`); // qqq temp debug, and following line
-    console.log (`path.delimiter ${path.delimiter}`); // eslint-disable-line no-console
-    void this.logToConsole(`path.isAbsolute(${this.outputPath}) ${path.isAbsolute(this.outputPath)}`); // qqq temp debug, and following line
-    console.log (`path.isAbsolute(${this.outputPath}) ${path.isAbsolute(this.outputPath)}`); // eslint-disable-line no-console
-    void this.logToConsole(`window.navigator.userAgent ${window.navigator.userAgent}`); // qqq temp debug, and following line
-    console.log (`window.navigator.userAgent ${window.navigator.userAgent}`); // eslint-disable-line no-console
-    const isWindows = window.navigator.userAgent.toLowerCase().includes("win");
     void this.logToConsole(`isWindows ${isWindows}`); // qqq temp debug, and following line
     console.log (`isWindows ${isWindows}`); // eslint-disable-line no-console
 
@@ -355,12 +340,11 @@ function merge<T extends object>(first: T | undefined, second: T | undefined): T
 }
 
 /** Combine two file paths. e.g., combineFilePaths("images/img.png", "/usr/tmp") returns "/usr/tmp/images/img.png".
- * If additionalPath begins with a drive letter, initialPath is ignored.
- * If OS is darwin (ie mac) and additionalPath begins with the "user" folder, initialPath is ignored.
+ * If isWindows & additionalPath begins with a drive letter, initialPath is ignored.
+ * If !isWindows & additionalPath begins with "/", initialPath is ignored.
  */
 function combineFilePaths(additionalPath: string, initialPath: string): string {
-  if (initialPath.length === 0 || additionalPath[1] === ":" ||
-    (process.platform === "darwin" && additionalPath && additionalPath.substring(0, 8).toLowerCase().includes("user")))
+  if (initialPath.length === 0 || (isWindows && additionalPath[1] === ":") || (!isWindows && additionalPath[0] === "/"))
     return additionalPath;
 
   return path.join(initialPath, additionalPath);
