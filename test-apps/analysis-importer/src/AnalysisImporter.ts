@@ -44,23 +44,30 @@ export class AnalysisImporter {
         displacementChannels.set(channel.inputName!, channel);
 
     for (const channel of polyface.data.auxData.channels) {
+      if (undefined === channel.name)
+        continue;
+
       if (channel.isScalar) {
-        const thematicSettingsJSON: ThematicGradientSettingsProps = {};
+        const thematicSettings: ThematicGradientSettingsProps = {};
         const displacementChannel = displacementChannels.get(channel.inputName!);
         /**  If this channel ends with "Height" assign it a "Sea to Mountain" Gradient rather than the default (green-red) gradient. */
-        if (channel.name && channel.name.endsWith("Height")) {
-          thematicSettingsJSON.colorScheme = ThematicGradientColorScheme.SeaMountain;
-          thematicSettingsJSON.mode = ThematicGradientMode.SteppedWithDelimiter;
+        if (channel.name.endsWith("Height")) {
+          thematicSettings.colorScheme = ThematicGradientColorScheme.SeaMountain;
+          thematicSettings.mode = ThematicGradientMode.SteppedWithDelimiter;
         }
-        /** create the [[AnalysisStyle]] and add to the array. */
-        analysisStyleProps.push({
-          displacementChannelName: displacementChannel ? displacementChannel.name : undefined,
-          displacementScale: displacementScaleValue,
-          scalarRange: channel.scalarRange,
-          scalarChannelName: channel.name,
-          scalarThematicSettings: thematicSettingsJSON,
-          inputName: channel.inputName,
-        });
+
+        const props: AnalysisStyleProps = {
+          scalar: {
+            channelName: channel.name,
+            range: channel.scalarRange!,
+            thematicSettings,
+          },
+        };
+
+        if (undefined !== displacementChannel?.name)
+          props.displacement = { channelName: displacementChannel.name, scale: displacementScaleValue };
+
+        analysisStyleProps.push(props);
       }
     }
     return analysisStyleProps;
@@ -91,10 +98,10 @@ export class AnalysisImporter {
     const displayStyleIds: Id64Array = [];
     const names = [];
     for (const analysisStyleProp of analysisStyleProps) {
-      let name = analysisStyleProp.scalarChannelName!;
-      if (undefined !== analysisStyleProp.displacementChannelName) {
-        const exaggeration = (analysisStyleProp.displacementScale === 1.0) ? "" : (` X ${analysisStyleProp.displacementScale}`);
-        name = `${modelName}: ${name} and ${analysisStyleProp.displacementChannelName}${exaggeration}`;
+      let name = analysisStyleProp.scalar!.channelName;
+      if (undefined !== analysisStyleProp.displacement) {
+        const exaggeration = (analysisStyleProp.displacement.scale === 1.0) ? "" : (` X ${analysisStyleProp.displacement.scale}`);
+        name = `${modelName}: ${name} and ${analysisStyleProp.displacement.channelName}${exaggeration}`;
       }
       names.push(name);
       displayStyleIds.push(DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, name, { viewFlags: vf, backgroundColor: bgColor, analysisStyle: analysisStyleProp }));
