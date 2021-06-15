@@ -24,7 +24,7 @@ interface DisplayStyleFieldState {
 /**
  * Shadow Field React component. This component is designed to be specified in a status bar definition.
  * It is used to enable/disable display of shadows.
- */
+ */
 export class DisplayStyleField extends React.Component<StatusFieldProps, DisplayStyleFieldState> {
   private _label = IModelApp.i18n.translate("SampleApp:statusFields.displayStyle.label");
   private _tooltip = IModelApp.i18n.translate("SampleApp:statusFields.displayStyle.tooltip");
@@ -86,12 +86,16 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
     FrontstageManager.onContentControlActivatedEvent.removeListener(this._handleContentControlActivatedEvent);
   }
 
-  private _handleDisplayStyleSelected = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+  private _handleDisplayStyleSelected = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     if (!this.state.viewport)
       return;
 
     const viewport = this.state.viewport;
-    viewport.displayStyle = this.state.displayStyles.get(event.target.value)!.clone();
+    const style = this.state.displayStyles.get(event.target.value)!.clone();
+    if (style)
+      await style.load();
+
+    viewport.displayStyle = style;
     viewport.invalidateScene();
     viewport.synchWithView();
     this.setState({ viewport });
