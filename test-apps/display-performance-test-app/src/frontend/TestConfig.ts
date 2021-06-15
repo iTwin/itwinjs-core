@@ -201,7 +201,7 @@ export class TestConfig {
     this.numRendersToTime = props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
     this.numRendersToSkip = props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
     this.outputName = props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
-    this.outputPath = prevConfig?.outputPath ?? (ProcessDetector.isIOSAppFrontend ? "/User/" : "D:\\output\\performanceData\\");
+    this.outputPath = prevConfig?.outputPath ?? (ProcessDetector.isIOSAppFrontend ? "/Users/" : "D:\\output\\performanceData\\");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
     this.iModelHubProject = props.iModelHubProject ?? prevConfig?.iModelHubProject ?? "iModel Testing";
@@ -228,6 +228,11 @@ export class TestConfig {
     console.log (`path.delimiter ${path.delimiter}`); // eslint-disable-line no-console
     void this.logToConsole(`path.isAbsolute(${this.outputPath}) ${path.isAbsolute(this.outputPath)}`); // qqq temp debug, and following line
     console.log (`path.isAbsolute(${this.outputPath}) ${path.isAbsolute(this.outputPath)}`); // eslint-disable-line no-console
+    void this.logToConsole(`window.navigator.userAgent ${window.navigator.userAgent}`); // qqq temp debug, and following line
+    console.log (`window.navigator.userAgent ${window.navigator.userAgent}`); // eslint-disable-line no-console
+    const isWindows = window.navigator.userAgent.toLowerCase().includes("win");
+    void this.logToConsole(`isWindows ${isWindows}`); // qqq temp debug, and following line
+    console.log (`isWindows ${isWindows}`); // eslint-disable-line no-console
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
