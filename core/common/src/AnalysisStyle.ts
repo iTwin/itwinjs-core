@@ -144,6 +144,50 @@ export interface AnalysisStyleProps {
   normalChannelName?: string;
 }
 
+/** At time of writing, the only iModel in existence that uses AnalysisStyle is the one created by the analysis-importer test app.
+ * To avoid breaking existing saved views of that iModel, AnalysisStyle.fromJSON() continues  to accept the old JSON representation -
+ * but that representation is not part of the public API.
+ * @internal exported strictly for tests.
+ */
+export interface LegacyAnalysisStyleProps {
+  displacementChannelName?: string;
+  scalarChannelName?: string;
+  normalChannelName?: string;
+  displacementScale?: number;
+  scalarRange?: Range1dProps;
+  scalarThematicSettings?: ThematicGradientSettingsProps;
+}
+
+function tryConvertLegacyProps(input: AnalysisStyleProps): AnalysisStyleProps {
+  if (input.displacement || input.scalar)
+    return input;
+
+  const legacy = input as LegacyAnalysisStyleProps;
+  if (undefined === legacy.displacementChannelName && undefined === legacy.scalarChannelName)
+    return input;
+
+  const output: AnalysisStyleProps = {
+    normalChannelName: input.normalChannelName,
+  };
+
+  if (undefined !== legacy.displacementChannelName) {
+    output.displacement = {
+      channelName: legacy.displacementChannelName,
+      scale: legacy.displacementScale,
+    };
+  }
+
+  if (undefined !== legacy.scalarChannelName && undefined !== legacy.scalarRange) {
+    output.scalar = {
+      channelName: legacy.scalarChannelName,
+      range: legacy.scalarRange,
+      thematicSettings: legacy.scalarThematicSettings,
+    };
+  }
+
+  return output;
+}
+
 /** As part of a [[DisplayStyleSettings]], describes how to animate meshes in the view that have been augmented with
  * [PolyfaceAuxData]($geometry-core). The style specifies which channels to use, and can deform the meshes by
  * translating vertices and/or recolor vertices using [[ThematicDisplay]].
@@ -161,7 +205,11 @@ export class AnalysisStyle {
    * @note AnalysisStyle is an immutable type - use [[clone]] to produce a modified copy.
    */
   public static fromJSON(props?: AnalysisStyleProps): AnalysisStyle {
-    if (!props || (!props.displacement && !props.scalar && undefined === props.normalChannelName))
+    if (!props)
+      return this.defaults;
+
+    props = tryConvertLegacyProps(props);
+    if (!props.displacement && !props.scalar && undefined === props.normalChannelName)
       return this.defaults;
 
     return new AnalysisStyle(props);

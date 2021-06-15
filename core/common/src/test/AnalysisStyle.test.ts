@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ThematicGradientSettings } from "../ThematicDisplay";
 import {
-  AnalysisStyle, AnalysisStyleDisplacement, AnalysisStyleProps, AnalysisStyleScalar,
+  AnalysisStyle, AnalysisStyleDisplacement, AnalysisStyleProps, AnalysisStyleScalar, LegacyAnalysisStyleProps,
 } from "../AnalysisStyle";
 
 describe("AnalysisStyle", () => {
@@ -73,5 +73,36 @@ describe("AnalysisStyle", () => {
       { scalar: { channelName: "s", range: [-5, 15], thematicSettings: { stepCount: 1234 } } },
       { scalar: { channelName: "s", range: [-5, 15], thematicSettings: { stepCount: 1234 } }, displacement: props.displacement, normalChannelName: "normals" }
     );
+  });
+
+  it("accepts legacy JSON representation", () => {
+    function roundTrip(props: LegacyAnalysisStyleProps, expected: AnalysisStyleProps): void {
+      const style = AnalysisStyle.fromJSON(props as AnalysisStyleProps);
+      const actual = style.toJSON();
+      expect(actual).to.deep.equal(expected);
+    }
+
+    roundTrip({ }, { });
+    roundTrip({ normalChannelName: "normals" }, { normalChannelName: "normals" });
+    roundTrip(
+      { displacementChannelName: "disp" },
+      { displacement: { channelName: "disp" } }
+    );
+    roundTrip({ displacementScale: 42 }, { });
+    roundTrip(
+      { displacementChannelName: "disp", displacementScale: 42 },
+      { displacement: { channelName: "disp", scale: 42 } }
+    );
+    roundTrip(
+      { scalarChannelName: "scalar", scalarRange: [1, 2] },
+      { scalar: { channelName: "scalar", range: [1, 2] } }
+    );
+    roundTrip(
+      { scalarChannelName: "scalar", scalarRange: [1, 2], scalarThematicSettings: { stepCount: 6 } },
+      { scalar: { channelName: "scalar", range: [1, 2], thematicSettings: { stepCount: 6 } } }
+    );
+    roundTrip({ scalarChannelName: "scalar" }, { });
+    roundTrip({ scalarRange: [0, 1] }, { });
+    roundTrip({ scalarThematicSettings: { stepCount: 6 } }, { });
   });
 });
