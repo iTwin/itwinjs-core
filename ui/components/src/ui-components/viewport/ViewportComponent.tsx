@@ -78,7 +78,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     };
   }
 
-  public async componentDidMount() {
+  public override async componentDidMount() {
     this._mounted = true;
 
     // istanbul ignore next
@@ -116,7 +116,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       this.props.viewportRef(this._vp);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._mounted = false;
 
     /* istanbul ignore else */
@@ -131,7 +131,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     ViewportComponentEvents.onStandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent);
   }
 
-  public async componentDidUpdate(prevProps: ViewportProps) {
+  public override async componentDidUpdate(prevProps: ViewportProps) {
     if (this.props.imodel === prevProps.imodel &&
       this.props.viewState === prevProps.viewState &&
       this.props.viewDefinitionId === prevProps.viewDefinitionId)
@@ -279,7 +279,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     return false;
   };
 
-  public render() {
+  public override render() {
     const viewOverlay = this._vp && this.props.getViewOverlay ? this.props.getViewOverlay(this._vp) : null;
 
     const parentDivStyle: React.CSSProperties = {

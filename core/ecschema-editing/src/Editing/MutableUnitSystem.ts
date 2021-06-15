@@ -9,5 +9,5 @@ import { UnitSystem } from "@bentley/ecschema-metadata";
  * Used for schema editing.
  */
 export abstract class MutableUnitSystem extends UnitSystem {
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }

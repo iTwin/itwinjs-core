@@ -9,7 +9,7 @@ import { InvertedUnit, LazyLoadedUnit, LazyLoadedUnitSystem } from "@bentley/ecs
  * An abstract class used for schema editing.
  */
 export abstract class MutableInvertedUnit extends InvertedUnit {
-  public abstract setInvertsUnit(invertsUnit: LazyLoadedUnit): void;
-  public abstract setUnitSystem(unitSystem: LazyLoadedUnitSystem): void;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override setInvertsUnit(invertsUnit: LazyLoadedUnit): void;
+  public abstract override setUnitSystem(unitSystem: LazyLoadedUnitSystem): void;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }

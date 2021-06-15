@@ -29,7 +29,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManag
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
-import {RenderScheduleState } from "./RenderScheduleState";
+import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
@@ -104,7 +104,7 @@ class GridDecorator {
  */
 export abstract class ViewState extends ElementState {
   /** @internal */
-  public static get className() { return "ViewDefinition"; }
+  public static override get className() { return "ViewDefinition"; }
 
   private _auxCoordSystem?: AuxCoordSystemState;
   private _extentLimits?: ExtentLimits;
@@ -232,10 +232,10 @@ export abstract class ViewState extends ElementState {
   public get globeMode(): GlobeMode { return this.displayStyle.globeMode; }
 
   /** Determine whether this ViewState exactly matches another. */
-  public equals(other: this): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
+  public override equals(other: this): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
   /** Convert to JSON representation. */
-  public toJSON(): ViewDefinitionProps {
+  public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelector.id;
     json.displayStyleId = this.displayStyle.id;
@@ -1147,7 +1147,7 @@ export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
   private readonly _modelClips: Array<RenderClipVolume | undefined> = [];
   /** @internal */
-  public static get className() { return "ViewDefinition3d"; }
+  public static override get className() { return "ViewDefinition3d"; }
   /** True if the camera is valid. */
   protected _cameraOn: boolean;
   /** The lower left back corner of the view frustum. */
@@ -1228,7 +1228,7 @@ export abstract class ViewState3d extends ViewState {
     return this;
   }
 
-  public toJSON(): ViewDefinition3dProps {
+  public override toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this._cameraOn;
     val.origin = this.origin;
@@ -1259,7 +1259,7 @@ export abstract class ViewState3d extends ViewState {
   /** A value that represents the global scope of the view -- a value greater than one indicates that the scope of this view is global.
    * @see [[isGlobalView]].
    */
-  public get globalScopeFactor(): number {
+  public override get globalScopeFactor(): number {
     const eyeHeight = this.getEyeCartographicHeight();
     return (undefined === eyeHeight) ? (this.extents.magnitudeXY() / Constant.earthRadiusWGS84.equator) : (eyeHeight / ViewState3d._minGlobeEyeHeight);
   }
@@ -1404,7 +1404,7 @@ export abstract class ViewState3d extends ViewState {
     return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDbFromGcs(cartographic, result) : undefined;
   }
 
-  public setupFromFrustum(frustum: Frustum, opts?: ViewChangeOptions): ViewStatus {
+  public override setupFromFrustum(frustum: Frustum, opts?: ViewChangeOptions): ViewStatus {
     const stat = super.setupFromFrustum(frustum, opts);
     if (ViewStatus.Success !== stat)
       return stat;
@@ -1484,11 +1484,11 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** The style that controls how the contents of the view are displayed. */
-  public get displayStyle(): DisplayStyle3dState {
+  public override get displayStyle(): DisplayStyle3dState {
     return this.getDisplayStyle3d();
   }
 
-  public set displayStyle(style: DisplayStyle3dState) {
+  public override set displayStyle(style: DisplayStyle3dState) {
     assert(style instanceof DisplayStyle3dState);
     super.displayStyle = style;
   }
@@ -1515,7 +1515,7 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** Get the target point of the view. If there is no camera, view center is returned. */
-  public getTargetPoint(result?: Point3d): Point3d {
+  public override getTargetPoint(result?: Point3d): Point3d {
     if (!this._cameraOn)
       return super.getTargetPoint(result);
 
@@ -1822,7 +1822,7 @@ export abstract class ViewState3d extends ViewState {
   }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     super.decorate(context);
     this.drawSkyBox(context);
     this.drawGroundPlane(context);
@@ -1943,7 +1943,7 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** @internal */
-  public getModelElevation(modelId: Id64String): number {
+  public override getModelElevation(modelId: Id64String): number {
     const settings = this.getDisplayStyle3d().settings.getPlanProjectionSettings(modelId);
     return settings && settings.elevation ? settings.elevation : 0;
   }
@@ -1955,7 +1955,7 @@ export abstract class ViewState3d extends ViewState {
 export abstract class ViewState2d extends ViewState {
   private readonly _details: ViewDetails;
   /** @internal */
-  public static get className() { return "ViewDefinition2d"; }
+  public static override get className() { return "ViewDefinition2d"; }
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
@@ -1984,7 +1984,7 @@ export abstract class ViewState2d extends ViewState {
     this._details = new ViewDetails(this.jsonProperties);
   }
 
-  public toJSON(): ViewDefinition2dProps {
+  public override toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
     val.origin = this.origin;
     val.delta = this.delta;
@@ -2042,7 +2042,7 @@ export abstract class ViewState2d extends ViewState {
    * @deprecated
    */
   public onRenderFrame(_viewport: Viewport): void { }
-  public async load(): Promise<void> {
+  public override async load(): Promise<void> {
     await super.load();
     return this.iModel.models.load(this.baseModelId);
   }

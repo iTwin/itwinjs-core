@@ -9,8 +9,8 @@ import { LazyLoadedPhenomenon, LazyLoadedUnitSystem, Unit } from "@bentley/ecsch
  * An abstract class used for schema editing.
  */
 export abstract class MutableUnit extends Unit {
-  public abstract setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
-  public abstract setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
-  public abstract setDefinition(definition: string): Promise<void>;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
+  public abstract override setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
+  public abstract override setDefinition(definition: string): Promise<void>;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }

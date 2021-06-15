@@ -27,20 +27,20 @@ import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
  */
 export class ModelSelector extends DefinitionElement implements ModelSelectorProps {
   /** @internal */
-  public static get className(): string { return "ModelSelector"; }
+  public static override get className(): string { return "ModelSelector"; }
 
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
   public models: Id64String[];
   /** @internal */
   constructor(props: ModelSelectorProps, iModel: IModelDb) { super(props, iModel); this.models = props.models; }
   /** @internal */
-  public toJSON(): ModelSelectorProps {
+  public override toJSON(): ModelSelectorProps {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
     return val;
   }
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     this.models.forEach((modelId: Id64String) => predecessorIds.add(modelId));
   }
@@ -94,19 +94,19 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
  */
 export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
   /** @internal */
-  public static get className(): string { return "CategorySelector"; }
+  public static override get className(): string { return "CategorySelector"; }
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: Id64String[];
   /** @internal */
   constructor(props: CategorySelectorProps, iModel: IModelDb) { super(props, iModel); this.categories = props.categories; }
   /** @internal */
-  public toJSON(): CategorySelectorProps {
+  public override toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
     return val;
   }
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     this.categories.forEach((categoryId: Id64String) => predecessorIds.add(categoryId));
   }
@@ -169,7 +169,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
  */
 export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
   /** @internal */
-  public static get className(): string { return "ViewDefinition"; }
+  public static override get className(): string { return "ViewDefinition"; }
   /** The element Id of the [[CategorySelector]] for this ViewDefinition */
   public categorySelectorId: Id64String;
   /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
@@ -183,7 +183,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   }
 
   /** @internal */
-  public toJSON(): ViewDefinitionProps {
+  public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelectorId;
     json.displayStyleId = this.displayStyleId;
@@ -191,7 +191,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   }
 
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.categorySelectorId);
     predecessorIds.add(this.displayStyleId);
@@ -202,7 +202,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   }
 
   /** @internal */
-  protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
+  protected static override onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.viewDetails) {
       const acsId: Id64String = Id64.fromJSON(targetElementProps.jsonProperties.viewDetails.acs);
@@ -259,7 +259,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
 export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
   private readonly _details: ViewDetails3d;
   /** @internal */
-  public static get className(): string { return "ViewDefinition3d"; }
+  public static override get className(): string { return "ViewDefinition3d"; }
   /** If true, camera is used. Otherwise, use an orthographic projection. */
   public cameraOn: boolean;
   /** The lower left back corner of the view frustum. */
@@ -283,7 +283,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   }
 
   /** @internal */
-  public toJSON(): ViewDefinition3dProps {
+  public override toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this.cameraOn;
     val.origin = this.origin;
@@ -314,19 +314,19 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
  */
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
   /** @internal */
-  public static get className(): string { return "SpatialViewDefinition"; }
+  public static override get className(): string { return "SpatialViewDefinition"; }
   /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public modelSelectorId: Id64String;
   /** @internal */
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); this.modelSelectorId = Id64.fromJSON(props.modelSelectorId); }
   /** @internal */
-  public toJSON(): SpatialViewDefinitionProps {
+  public override toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
     return json;
   }
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.modelSelectorId);
   }
@@ -397,7 +397,7 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   /** @internal */
-  public static get className(): string { return "OrthographicViewDefinition"; }
+  public static override get className(): string { return "OrthographicViewDefinition"; }
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
   /**
    * Create an OrthographicViewDefinition
@@ -466,7 +466,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
   private readonly _details: ViewDetails;
 
   /** @internal */
-  public static get className(): string { return "ViewDefinition2d"; }
+  public static override get className(): string { return "ViewDefinition2d"; }
   /** The Id of the Model displayed by this view. */
   public baseModelId: Id64String;
   /** The lower-left corner of this view in Model coordinates. */
@@ -487,7 +487,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
   }
 
   /** @internal */
-  public toJSON(): ViewDefinition2dProps {
+  public override toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
     val.baseModelId = this.baseModelId;
     val.origin = this.origin;
@@ -497,7 +497,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
   }
 
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.baseModelId);
   }
@@ -514,7 +514,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
  */
 export class DrawingViewDefinition extends ViewDefinition2d {
   /** @internal */
-  public static get className(): string { return "DrawingViewDefinition"; }
+  public static override get className(): string { return "DrawingViewDefinition"; }
   /** @internal */
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -566,7 +566,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
  */
 export class SheetViewDefinition extends ViewDefinition2d {
   /** @internal */
-  public static get className(): string { return "SheetViewDefinition"; }
+  public static override get className(): string { return "SheetViewDefinition"; }
 }
 
 /** A ViewDefinition used to display a 2d template model.
@@ -574,7 +574,7 @@ export class SheetViewDefinition extends ViewDefinition2d {
  */
 export class TemplateViewDefinition2d extends ViewDefinition2d {
   /** @internal */
-  public static get className(): string { return "TemplateViewDefinition2d"; }
+  public static override get className(): string { return "TemplateViewDefinition2d"; }
 }
 
 /** A ViewDefinition used to display a 3d template model.
@@ -582,7 +582,7 @@ export class TemplateViewDefinition2d extends ViewDefinition2d {
  */
 export class TemplateViewDefinition3d extends ViewDefinition3d {
   /** @internal */
-  public static get className(): string { return "TemplateViewDefinition3d"; }
+  public static override get className(): string { return "TemplateViewDefinition3d"; }
 }
 
 /** An auxiliary coordinate system element. Auxiliary coordinate systems can be used by views to show
@@ -591,7 +591,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
  */
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
   /** @internal */
-  public static get className(): string { return "AuxCoordSystem"; }
+  public static override get className(): string { return "AuxCoordSystem"; }
   public type!: number;
   public description?: string;
   public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
@@ -602,7 +602,7 @@ export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoo
  */
 export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
   /** @internal */
-  public static get className(): string { return "AuxCoordSystem2d"; }
+  public static override get className(): string { return "AuxCoordSystem2d"; }
   public origin?: Point2d;
   public angle!: number;
   public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
@@ -623,7 +623,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
  */
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
   /** @internal */
-  public static get className(): string { return "AuxCoordSystem3d"; }
+  public static override get className(): string { return "AuxCoordSystem3d"; }
   public origin?: Point3d;
   public yaw!: number;
   public pitch!: number;
@@ -646,13 +646,13 @@ export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3d
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
   /** @internal */
-  public static get className(): string { return "AuxCoordSystemSpatial"; }
+  public static override get className(): string { return "AuxCoordSystemSpatial"; }
   /** Create a Code for a AuxCoordSystemSpatial element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystemSpatial element and provides the scope for its name.
    * @param codeValue The AuxCoordSystemSpatial name
    */
-  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+  public static override createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystemSpatial);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
@@ -663,7 +663,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  */
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
   /** @internal */
-  public static get className(): string { return "ViewAttachment"; }
+  public static override get className(): string { return "ViewAttachment"; }
   public view: RelatedElement;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
@@ -671,7 +671,7 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.view.id);
   }
@@ -682,7 +682,7 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
   /** @internal */
-  public static get className(): string { return "LightLocation"; }
+  public static override get className(): string { return "LightLocation"; }
   /** Whether this light is currently turned on. */
   public enabled!: boolean;
   /** @internal */

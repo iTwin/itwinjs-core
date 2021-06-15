@@ -149,7 +149,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: VirtualizedPropertyGridProps, prevState: VirtualizedPropertyGridState) {
+  public override componentDidUpdate(prevProps: VirtualizedPropertyGridProps, prevState: VirtualizedPropertyGridState) {
     if (this.props.orientation !== prevProps.orientation
       || this.props.isOrientationFixed !== prevProps.isOrientationFixed
       || this.props.horizontalOrientationMinWidth !== prevProps.horizontalOrientationMinWidth)
@@ -296,7 +296,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
   };
 
   /** @internal */
-  public render() {
+  public override render() {
     return <ColumnResizingPropertyListPropsSupplier
       orientation={this.state.orientation}
       minLabelWidth={this.props.minLabelWidth}

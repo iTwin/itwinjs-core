@@ -278,9 +278,9 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public static get className() { return "SheetViewDefinition"; }
+  public static override get className() { return "SheetViewDefinition"; }
 
-  public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
+  public static override createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
     const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
 
@@ -288,7 +288,7 @@ export class SheetViewState extends ViewState2d {
     return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
   }
 
-  public toProps(): ViewStateProps {
+  public override toProps(): ViewStateProps {
     const props = super.toProps();
 
     props.sheetAttachments = this._attachmentsInfo.toJSON();
@@ -338,7 +338,7 @@ export class SheetViewState extends ViewState2d {
     }
   }
 
-  public getOrigin() {
+  public override getOrigin() {
     const origin = super.getOrigin();
     if (this._attachments)
       origin.z = -this._attachments.maxDepth;
@@ -346,7 +346,7 @@ export class SheetViewState extends ViewState2d {
     return origin;
   }
 
-  public getExtents() {
+  public override getExtents() {
     const extents = super.getExtents();
     if (this._attachments)
       extents.z = this._attachments.maxDepth + Frustum2d.minimumZDistance;
@@ -357,14 +357,14 @@ export class SheetViewState extends ViewState2d {
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal override
    */
-  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     if (this._attachments)
       trees.disclose(this._attachments);
   }
 
   /** @internal override */
-  public collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void {
+  public override collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void {
     super.collectNonTileTreeStatistics(stats);
     if (this._attachments)
       this._attachments.collectStatistics(stats);
@@ -383,20 +383,20 @@ export class SheetViewState extends ViewState2d {
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics.
    * @internal override
    */
-  public async load(): Promise<void> {
+  public override async load(): Promise<void> {
     await super.load();
     await this._attachmentsInfo.load(this.iModel);
   }
 
   /** @internal override */
-  public createScene(context: SceneContext): void {
+  public override createScene(context: SceneContext): void {
     super.createScene(context);
     if (this._attachments)
       this._attachments.addToScene(context);
   }
 
   /** @internal override */
-  public get secondaryViewports(): Iterable<Viewport> {
+  public override get secondaryViewports(): Iterable<Viewport> {
     const attachments = this._attachments;
     if (!attachments)
       return super.secondaryViewports;
@@ -425,7 +425,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal override */
-  public async changeViewedModel(modelId: Id64String): Promise<void> {
+  public override async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const attachmentIds = await this.queryAttachmentIds();
     this._attachmentsInfo = ViewAttachmentsInfo.fromJSON(attachmentIds);
@@ -434,20 +434,20 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal override */
-  public attachToViewport(): void {
+  public override attachToViewport(): void {
     super.attachToViewport();
     assert(undefined === this._attachments);
     this._attachments = this._attachmentsInfo.createAttachments(this);
   }
 
   /** @internal override */
-  public detachFromViewport(): void {
+  public override detachFromViewport(): void {
     super.detachFromViewport();
     this._attachments = dispose(this._attachments);
   }
 
   /** @internal override */
-  public get areAllTileTreesLoaded(): boolean {
+  public override get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
   }
 
@@ -460,7 +460,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal override */
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     super.decorate(context);
     if (this.sheetSize !== undefined) {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
@@ -469,7 +469,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal override */
-  public computeFitRange(): Range3d {
+  public override computeFitRange(): Range3d {
     const size = this.sheetSize;
     if (0 >= size.x || 0 >= size.y)
       return super.computeFitRange();
@@ -490,11 +490,11 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
     this._attachment = attachment;
   }
 
-  public changeScene(scene: Scene): void {
+  public override changeScene(scene: Scene): void {
     this._attachment.scene = scene;
   }
 
-  public overrideFeatureSymbology(ovrs: FeatureSymbology.Overrides): void {
+  public override overrideFeatureSymbology(ovrs: FeatureSymbology.Overrides): void {
     this._attachment.symbologyOverrides = ovrs;
   }
 }
@@ -792,14 +792,14 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
       this.changeView(view);
     }
 
-    public createSceneContext(): SceneContext {
+    public override createSceneContext(): SceneContext {
       assert(!this._isSceneReady);
 
       this._sceneContext = super.createSceneContext();
       return this._sceneContext;
     }
 
-    public renderFrame(): void {
+    public override renderFrame(): void {
       assert(!this._isSceneReady);
 
       this.clearSceneContext();
@@ -818,7 +818,7 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
       this._sceneContext = undefined;
     }
 
-    public addDecorations(_decorations: Decorations): void {
+    public override addDecorations(_decorations: Decorations): void {
       // ###TODO: skybox, ground plane, possibly grid. DecorateContext requires a ScreenViewport...
     }
   }
