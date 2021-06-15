@@ -224,6 +224,10 @@ export class TestConfig {
     console.log (`window.location ${window.location}`); // eslint-disable-line no-console
     void this.logToConsole(`window.location.hash ${window.location.hash}`); // qqq temp debug, and following line
     console.log (`window.location.hash ${window.location.hash}`); // eslint-disable-line no-console
+    void this.logToConsole(`path.delimiter ${path.delimiter}`); // qqq temp debug, and following line
+    console.log (`path.delimiter ${path.delimiter}`); // eslint-disable-line no-console
+    void this.logToConsole(`path.isAbsolute(${this.outputPath}) ${path.isAbsolute(this.outputPath)}`); // qqq temp debug, and following line
+    console.log (`path.isAbsolute(${this.outputPath}) ${path.isAbsolute(this.outputPath)}`); // eslint-disable-line no-console
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
