@@ -82,8 +82,7 @@ export class PropertyRecord {
         return this.value.items;
       /* istanbul ignore next */
       default:
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        const unhandledFormat: never = this.value!.valueFormat;
+        const unhandledFormat = (this.value as any).valueFormat;
         throw new Error(`Failed getting PropertyRecord children because of unhandled value format: ${unhandledFormat}`);
     }
   }

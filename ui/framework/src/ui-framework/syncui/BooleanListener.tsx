@@ -69,13 +69,13 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
 
   public componentDidMount() {
     /* istanbul ignore else */
-    if (this.props.boolFunc && this.props.eventIds.length > 0)
+    if (this.props.boolFunc() && this.props.eventIds.length > 0)
       SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleVisibilitySyncUiEvent);
   }
 
   public componentWillUnmount() {
     /* istanbul ignore else */
-    if (this.props.boolFunc && this.props.eventIds.length > 0) {
+    if (this.props.boolFunc() && this.props.eventIds.length > 0) {
       this._componentUnmounting = true;
       SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleVisibilitySyncUiEvent);
     }

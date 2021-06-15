@@ -65,7 +65,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.1.0",
+    "typescript": "~4.3.0",
     "webpack": "4.42.0"
   },
   "nyc": {

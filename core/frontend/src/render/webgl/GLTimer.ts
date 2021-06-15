@@ -8,6 +8,7 @@ import { IModelError } from "@bentley/imodeljs-common";
 import { GLTimerResult, GLTimerResultCallback } from "../RenderSystem";
 import { System } from "./System";
 
+type WebGLObject = WebGLBuffer | WebGLFramebuffer | WebGLProgram | WebGLQuery | WebGLRenderbuffer | WebGLSampler | WebGLShader | WebGLSync | WebGLTexture | WebGLTransformFeedback | WebGLVertexArrayObject | WebGLVertexArrayObjectOES;
 abstract class DisjointTimerExtension {
   public abstract get isSupported(): boolean;
   public abstract didDisjointEventHappen(): boolean;

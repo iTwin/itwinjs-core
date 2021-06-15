@@ -502,8 +502,7 @@ const FlatGridItemNode = React.memo(
           );
         /* istanbul ignore next */
         default:
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-          const unhandledType: never = node!.type;
+          const unhandledType = (node as any).type;
           throw new Error(`Unhandled item type: ${unhandledType}`);
       }
     }

@@ -47,7 +47,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.1.0"
+    "typescript": "~4.3.0"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.2"

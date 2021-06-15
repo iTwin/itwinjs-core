@@ -71,7 +71,7 @@ function makeViewableGeometry(): GeometryQuery[] {
 function collectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number, topNoneBottom: number, xShift: number, yShift: number, expectedIndex: StandardViewIndex) {
   const geometry0 = makeViewableGeometry();
   const axes0 = Matrix3d.createViewedAxes(rightVector, upVector, leftNoneRight, topNoneBottom)!;
-  if (expectedIndex !== 0) {
+  if ((expectedIndex as number) !== 0) {
     const standardAxes = Matrix3d.createStandardWorldToView(expectedIndex, true);
     ck.testMatrix3d(axes0, standardAxes, "standard view axis check");
   }
