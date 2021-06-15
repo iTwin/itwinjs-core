@@ -191,7 +191,7 @@ function tryConvertLegacyProps(input: AnalysisStyleProps): AnalysisStyleProps {
  * [PolyfaceAuxData]($geometry-core). The style specifies which channels to use, and can deform the meshes by
  * translating vertices and/or recolor vertices using [[ThematicDisplay]].
  * @see [[DisplayStyleSettings.analysisStyle]] to define the analysis style for a [DisplayStyle]($backend).
- * @see [Viewport.analysisFraction]($frontend) to control playback of the animation.
+ * @see [[DisplayStyleSettings.analysisFraction]] to control playback of the animation.
  * @public
  */
 export class AnalysisStyle {
