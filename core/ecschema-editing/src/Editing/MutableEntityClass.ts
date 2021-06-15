@@ -2,17 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  DelayedPromiseWithProps,
-  ECClass,
-  ECObjectsError,
-  ECObjectsStatus,
-  EntityClass,
-  Mixin,
-  NavigationProperty,
-  parseStrengthDirection,
-  RelationshipClass,
-  StrengthDirection,
+import { DelayedPromiseWithProps, ECClass, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, NavigationProperty,
+  parseStrengthDirection, RelationshipClass, StrengthDirection, 
 } from "@bentley/ecschema-metadata";
 
 /**

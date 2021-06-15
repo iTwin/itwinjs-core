@@ -2,20 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  CustomAttribute,
-  ECClass,
-  ECClassModifier,
-  Enumeration,
-  EnumerationArrayProperty,
-  EnumerationProperty,
-  PrimitiveArrayProperty,
-  PrimitiveProperty,
-  PrimitiveType,
-  Property,
-  StructArrayProperty,
-  StructClass,
-  StructProperty,
+import { CustomAttribute, ECClass, ECClassModifier, Enumeration, EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
+  PrimitiveProperty, PrimitiveType, Property, StructArrayProperty, StructClass, StructProperty,
 } from "@bentley/ecschema-metadata";
 
 /**
