@@ -1,6 +1,6 @@
 # ECObjects Information Modeling Language Overview
 
-The ECObjects language is comprised of items that have attributes. Items are grouped into 'domain's via an 'ECSchema', which provides the container and namespace for the items it that domain. There are several types of items in an ECSchema that describe objects, relationships, value types and quantities.  Each item type is described below in more detail.
+The ECObjects language is comprised of items that have attributes. Items are grouped into "domains" via an "ECSchema", which provides the container and namespace for the items it that domain. There are several types of items in an ECSchema that describe objects, relationships, value types and quantities.  Each item type is described below in more detail.
 
 The root of any domain is an *ECSchema* itself.
 
