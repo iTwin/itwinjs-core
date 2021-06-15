@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-framework",
-      "comment": "Ensure redux stays in sync with FrameworkVersion context and convenience updates that take UI initialization burder off IModelApp as suggested by Arun.",
+      "comment": "Ensure redux stays in sync with FrameworkVersion context and convenience updates that take UI initialization burden off IModelApp.",
       "type": "none"
     }
   ],
