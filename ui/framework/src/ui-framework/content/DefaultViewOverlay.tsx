@@ -8,196 +8,12 @@
 
 import "./DefaultViewOverlay.scss";
 import * as React from "react";
-import { IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
-import { SolarDataProvider, SolarTimeline, TimelineComponent } from "@bentley/ui-components";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { AnalysisAnimationTimelineDataProvider } from "../timeline/AnalysisAnimationProvider";
-import { ScheduleAnimationTimelineDataProvider } from "../timeline/ScheduleAnimationProvider";
-import { SolarTimelineDataProvider } from "../timeline/SolarTimelineDataProvider";
-import { ContentViewManager } from "./ContentViewManager";
-
-function useCurrentContentViewport() {
-  const [viewport, setViewport] = React.useState<ScreenViewport | undefined>(() => {
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    return activeContentControl && activeContentControl.viewport;
-  });
-
-  React.useEffect(() => {
-    const syncIdsOfInterest = [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ContentControlActivated, SyncUiEventId.FrontstageReady];
-    const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-      // istanbul ignore else
-      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-        setViewport(activeContentControl && activeContentControl.viewport);
-      }
-    };
-
-    return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
-  }, []);
-
-  return viewport;
-}
-
-function useSupportsShadowDisplay(viewport: ScreenViewport | undefined) {
-  const [supportsShadows, setSupportsShadows] = React.useState(!!viewport?.displayStyle?.wantShadows && !!IModelApp.renderSystem.options.displaySolarShadows);
-
-  React.useEffect(() => {
-    setSupportsShadows(!!viewport?.displayStyle?.wantShadows && !!IModelApp.renderSystem.options.displaySolarShadows);
-  }, [viewport]);
-
-  React.useEffect(() => {
-    const handleViewChanged = (vp: Viewport): void => {
-      setSupportsShadows(!!vp?.displayStyle?.wantShadows && !!IModelApp.renderSystem.options.displaySolarShadows);
-    };
-    return viewport?.onChangeView.addListener(handleViewChanged);
-  }, [viewport]);
-
-  React.useEffect(() => {
-    const handleViewChanged = (vp: Viewport): void => {
-      const wantShadows = !!vp.displayStyle?.wantShadows && !!IModelApp.renderSystem.options.displaySolarShadows;
-      if (wantShadows !== supportsShadows)
-        setSupportsShadows(wantShadows);
-    };
-    return viewport?.onChangeView.addListener(handleViewChanged);
-  }, [viewport, supportsShadows]);
-
-  React.useEffect(() => {
-    const handleDisplayStyleChange = (vp: Viewport): void => {
-      const wantShadows = !!vp.displayStyle?.wantShadows && !!IModelApp.renderSystem.options.displaySolarShadows;
-      if (wantShadows !== supportsShadows)
-        setSupportsShadows(wantShadows);
-    };
-    return viewport?.onDisplayStyleChanged.addListener(handleDisplayStyleChange);
-  }, [viewport, supportsShadows]);
-
-  return supportsShadows;
-}
-
-function useSupportsScheduleScript(viewport: Viewport | undefined) {
-  const [supportsScheduleScript, setSupportsScheduleScript] = React.useState(!!viewport?.view?.scheduleScript);
-
-  React.useEffect(() => {
-    setSupportsScheduleScript(!!viewport?.view?.scheduleScript);
-  }, [viewport]);
-
-  React.useEffect(() => {
-    const handleViewChanged = (vp: Viewport): void => {
-      const hasScheduleScript = !!vp?.view?.scheduleScript;
-      if (hasScheduleScript !== supportsScheduleScript)
-        setSupportsScheduleScript(hasScheduleScript);
-    };
-    return viewport?.onChangeView.addListener(handleViewChanged);
-  }, [supportsScheduleScript, viewport]);
-
-  React.useEffect(() => {
-    const handleDisplayStyleChange = (vp: Viewport): void => {
-      const hasScheduleScript = !!vp?.view?.scheduleScript;
-      if (hasScheduleScript !== supportsScheduleScript)
-        setSupportsScheduleScript(hasScheduleScript);
-    };
-    return viewport?.onDisplayStyleChanged.addListener(handleDisplayStyleChange);
-  }, [viewport, supportsScheduleScript]);
-  return supportsScheduleScript;
-}
-
-function useSupportsAnalysisAnimation(viewport: Viewport | undefined) {
-  const [supportsAnalysisAnimation, setSupportsAnalysisAnimation] = React.useState(!!viewport?.view?.analysisStyle);
-
-  React.useEffect(() => {
-    setSupportsAnalysisAnimation(!!viewport?.view?.analysisStyle);
-  }, [viewport]);
-
-  React.useEffect(() => {
-    const handleViewChanged = (vp: Viewport): void => {
-      const hasAnalysisData = !!vp?.view?.analysisStyle;
-      if (hasAnalysisData !== supportsAnalysisAnimation)
-        setSupportsAnalysisAnimation(hasAnalysisData);
-    };
-    return viewport?.onChangeView.addListener(handleViewChanged);
-  }, [supportsAnalysisAnimation, viewport]);
-
-  React.useEffect(() => {
-    const handleDisplayStyleChange = (vp: Viewport): void => {
-      const hasAnalysisData = !!vp?.view?.analysisStyle;
-      if (hasAnalysisData !== supportsAnalysisAnimation)
-        setSupportsAnalysisAnimation(hasAnalysisData);
-    };
-    return viewport?.onDisplayStyleChanged.addListener(handleDisplayStyleChange);
-  }, [viewport, supportsAnalysisAnimation]);
-  return supportsAnalysisAnimation;
-}
-
-function useScheduleAnimationTimelineDataProvider(viewport: ScreenViewport | undefined) {
-  const supportsScheduleScript = useSupportsScheduleScript(viewport);
-  const [scheduleAnimationTimelineDataProvider, setScheduleAnimationTimelineDataProvider] = React.useState<ScheduleAnimationTimelineDataProvider | undefined>();
-  const isMountedRef = React.useRef(false);
-
-  React.useEffect(() => {
-    isMountedRef.current = true;
-    return () => { isMountedRef.current = false; };
-  }, []);
-
-  React.useEffect(() => {
-    async function fetchNewDataProvider(vp: ScreenViewport) {
-      let newProvider: ScheduleAnimationTimelineDataProvider | undefined = new ScheduleAnimationTimelineDataProvider(vp.view, vp);
-      if (newProvider?.supportsTimelineAnimation) {
-        const dataLoaded = await newProvider.loadTimelineData();
-        if (!dataLoaded)
-          newProvider = undefined;
-      }
-      isMountedRef.current && setScheduleAnimationTimelineDataProvider(newProvider);
-    }
-    if (supportsScheduleScript && viewport)
-      void fetchNewDataProvider(viewport);
-    else
-      isMountedRef.current && setScheduleAnimationTimelineDataProvider(undefined);
-  }, [supportsScheduleScript, viewport]);
-
-  return scheduleAnimationTimelineDataProvider;
-}
-
-function useAnalysisAnimationTimelineDataProvider(viewport: ScreenViewport | undefined) {
-  const supportsAnalysisAnimation = useSupportsAnalysisAnimation(viewport);
-  const [analysisAnimationTimelineDataProvider, setAnalysisAnimationTimelineDataProvider] = React.useState<AnalysisAnimationTimelineDataProvider | undefined>();
-  const isMountedRef = React.useRef(false);
-
-  React.useEffect(() => {
-    isMountedRef.current = true;
-    return () => { isMountedRef.current = false; };
-  }, []);
-
-  React.useEffect(() => {
-    async function fetchNewDataProvider(vp: ScreenViewport) {
-      let newProvider: AnalysisAnimationTimelineDataProvider | undefined = new AnalysisAnimationTimelineDataProvider(vp.view, vp);
-      if (newProvider?.supportsTimelineAnimation) {
-        const dataLoaded = await newProvider.loadTimelineData();
-        if (!dataLoaded)
-          newProvider = undefined;
-      }
-      isMountedRef.current && setAnalysisAnimationTimelineDataProvider(newProvider);
-    }
-    if (supportsAnalysisAnimation && viewport)
-      void fetchNewDataProvider(viewport);
-    else
-      isMountedRef.current && setAnalysisAnimationTimelineDataProvider(undefined);
-  }, [supportsAnalysisAnimation, viewport]);
-
-  return analysisAnimationTimelineDataProvider;
-}
-
-function useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined {
-  const supportsShadowDisplay = useSupportsShadowDisplay(viewport);
-  const [solarDataProvider, setSolarDataProvider] = React.useState(() => {
-    return (supportsShadowDisplay && viewport) ? new SolarTimelineDataProvider(viewport.view, viewport) : undefined;
-  });
-
-  React.useEffect(() => {
-    const newSolarDataProvider = (supportsShadowDisplay && viewport) ? new SolarTimelineDataProvider(viewport.view, viewport) : undefined;
-    setSolarDataProvider(newSolarDataProvider);
-  }, [supportsShadowDisplay, viewport]);
-
-  return solarDataProvider;
-}
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { SolarTimeline, TimelineComponent } from "@bentley/ui-components";
+import { useScheduleAnimationDataProvider } from "../hooks/useScheduleAnimationDataProvider";
+import { useActiveViewport } from "../hooks/useActiveViewport";
+import { useSolarDataProvider } from "../hooks/useSolarDataProvider";
+import { useAnalysisAnimationDataProvider } from "../hooks/useAnalysisAnimationDataProvider";
 
 /** Props of Viewport Overlay Control that show timelines
  */
@@ -212,9 +28,9 @@ export interface ViewOverlayProps {
 // istanbul ignore next
 export function DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps) {
   const solarDataTimelineProvider = useSolarDataProvider(viewport);
-  const analysisAnimationTimelineDataProvider = useAnalysisAnimationTimelineDataProvider(viewport);
-  const scheduleTimelineDataProvider = useScheduleAnimationTimelineDataProvider(viewport);
-  const currentViewport = useCurrentContentViewport();
+  const analysisAnimationTimelineDataProvider = useAnalysisAnimationDataProvider(viewport);
+  const scheduleTimelineDataProvider = useScheduleAnimationDataProvider(viewport);
+  const currentViewport = useActiveViewport();
   const timelineDataProvider = scheduleTimelineDataProvider ? scheduleTimelineDataProvider : analysisAnimationTimelineDataProvider;
   const isCurrentViewport = currentViewport === viewport;
   return (
