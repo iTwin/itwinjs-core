@@ -246,7 +246,7 @@ export class MapTileTree extends RealityTileTree {
     return childCorners;
   }
 
-  public getCachedReprojectedPoints(gridPoints: Point3d[]): Point3d[] | undefined {
+  public getCachedReprojectedPoints(gridPoints: Point3d[]): (Point3d | undefined)[] | undefined {
     const requestProps = [];
     for (const gridPoint of gridPoints)
       requestProps.push({
@@ -260,7 +260,7 @@ export class MapTileTree extends RealityTileTree {
     if (iModelCoordinates.missing)
       return undefined;
 
-    return iModelCoordinates.result.map((result) => Point3d.fromJSON(result!.p));
+    return iModelCoordinates.result.map((result) => !result || result.s ? undefined  : Point3d.fromJSON(result.p));
   }
 
   // Minimize reprojection requests by requesting this corners tile and a grid that will include all points for 4 levels of descendants.
@@ -293,12 +293,15 @@ export class MapTileTree extends RealityTileTree {
 
   // Get the corners for planar children -- This generally will resolve immediately, but may require an asynchronous request for reprojecting the corners.
   public getPlanarChildCorners(tile: MapTile, columnCount: number, rowCount: number, resolve: (childCorners: Point3d[][]) => void) {
-    const resolveCorners = (points: Point3d[], reprojected: Point3d[] | undefined = undefined) => {
+    const resolveCorners = (points: Point3d[], reprojected: (Point3d | undefined)[] | undefined = undefined) => {
       for (let i = 0; i < points.length; i++) {
         const gridPoint = points[i];
         this._mercatorFractionToDb.multiplyPoint3d(gridPoint, scratchCorner);
         if (this.globeMode !== GlobeMode.Ellipsoid || this.cartesianRange.containsPoint(scratchCorner)) {
-          (reprojected ? reprojected[i] : scratchCorner).clone(gridPoint);
+          if (reprojected !== undefined && reprojected[i] !== undefined)
+            reprojected[i]!.clone(gridPoint);
+          else
+            scratchCorner.clone(gridPoint);
         } else {
           this._mercatorTilingScheme.fractionToCartographic(gridPoint.x, gridPoint.y, MapTileTree._scratchCarto);
           this.earthEllipsoid.radiansToPoint(MapTileTree._scratchCarto.longitude, Cartographic.parametricLatitudeFromGeodeticLatitude(MapTileTree._scratchCarto.latitude), gridPoint);
@@ -310,7 +313,7 @@ export class MapTileTree extends RealityTileTree {
       resolve(this.getChildCornersFromGridPoints(points, columnCount, rowCount));
     };
 
-    let reprojectedPoints: Point3d[] | undefined;
+    let reprojectedPoints: (Point3d | undefined)[] | undefined;
     const gridPoints = this.getMercatorFractionChildGridPoints(tile, columnCount, rowCount);
     if (this.doReprojectChildren(tile)) {
       reprojectedPoints = this.getCachedReprojectedPoints(gridPoints);
