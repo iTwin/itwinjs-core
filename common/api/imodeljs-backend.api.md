@@ -380,31 +380,30 @@ export interface BackendHubAccess {
     deleteIModel: (arg: IModelIdArg & {
         contextId: GuidString;
     }) => Promise<void>;
-    downloadChangeset: (arg: ChangesetIdArg) => Promise<ChangesetFileProps>;
+    downloadChangeset: (arg: ChangesetIndexArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetFileProps[]>;
     downloadV1Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
     downloadV2Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
-    getChangesetIdFromNamedVersion: (arg: IModelIdArg & {
+    getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
-    }) => Promise<ChangesetId>;
-    getChangesetIdFromVersion: (arg: IModelIdArg & {
+    }) => Promise<ChangesetProps>;
+    getChangesetFromVersion: (arg: IModelIdArg & {
         version: IModelVersion;
-    }) => Promise<ChangesetId>;
+    }) => Promise<ChangesetProps>;
     getChangesetIndexFromId: (arg: ChangesetIdArg) => Promise<ChangesetIndex>;
-    getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangesetId>;
+    getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
     getMyBriefcaseIds: (arg: IModelIdArg) => Promise<number[]>;
     pushChangeset: (arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
-        releaseLocks: boolean;
-    }) => Promise<void>;
+    }) => Promise<ChangesetIndex>;
     queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;
     queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
-    queryChangeset: (arg: ChangesetIdArg) => Promise<ChangesetProps>;
+    queryChangeset: (arg: ChangesetIndexArg) => Promise<ChangesetProps>;
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
     querySchemaLock: (arg: BriefcaseDbArg) => Promise<boolean>;
     releaseAllCodes: (arg: BriefcaseIdArg) => Promise<void>;
-    releaseAllLocks: (arg: BriefcaseIdArg) => Promise<void>;
+    releaseAllLocks: (arg: BriefcaseIdArg & ChangesetIndexArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 }
 
@@ -446,6 +445,9 @@ export enum BackendLoggerCategory {
 export class BackendRequestContext extends ClientRequestContext {
     constructor(activityId?: string);
 }
+
+// @public
+export type BindParameter = number | string;
 
 // @public
 export class BisCoreSchema extends Schema {
@@ -527,10 +529,7 @@ export class BriefcaseManager {
     static acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number>;
     static get cacheDir(): string;
     // @internal (undocumented)
-    static changesetFromVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<{
-        changesetId: ChangesetId;
-        changesetIndex: ChangesetIndex;
-    }>;
+    static changesetFromVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<ChangesetProps>;
     // @beta
     static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
     static deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void>;
@@ -559,7 +558,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps): void;
     // @internal
-    static processChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex?: number): Promise<void>;
+    static processChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, target: ChangesetIndexOrId): Promise<void>;
     // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, mergeToVersion?: IModelVersion): Promise<void>;
     // @internal
@@ -649,11 +648,34 @@ export type ChangesetId = string;
 // @internal
 export interface ChangesetIdArg extends IModelIdArg {
     // (undocumented)
-    changesetId: ChangesetId;
+    csId: ChangesetId;
 }
 
 // @internal (undocumented)
 export type ChangesetIndex = number;
+
+// @internal
+export interface ChangesetIndexAndId {
+    // (undocumented)
+    id: ChangesetId;
+    // (undocumented)
+    index: ChangesetIndex;
+}
+
+// @internal
+export interface ChangesetIndexArg extends IModelIdArg {
+    // (undocumented)
+    csIndex: ChangesetIndex;
+}
+
+// @internal
+export type ChangesetIndexOrId = ChangesetIndexAndId | {
+    index: ChangesetIndex;
+    id?: never;
+} | {
+    id: ChangesetId;
+    index?: never;
+};
 
 // @internal
 export interface ChangesetProps {
@@ -661,7 +683,7 @@ export interface ChangesetProps {
     changesType: ChangesType;
     description: string;
     id: ChangesetId;
-    index?: ChangesetIndex;
+    index: ChangesetIndex;
     parentId: ChangesetId;
     pushDate: string;
     size?: number;
@@ -669,15 +691,10 @@ export interface ChangesetProps {
 }
 
 // @internal
-export type ChangesetRange = {
-    first: ChangesetId;
-    after?: never;
-    end?: ChangesetId;
-} | {
-    after: ChangesetId;
-    first?: never;
-    end?: ChangesetId;
-};
+export interface ChangesetRange {
+    end?: ChangesetIndex;
+    first: ChangesetIndex;
+}
 
 // @internal
 export interface ChangesetRangeArg extends IModelIdArg {
@@ -727,7 +744,7 @@ export class ChangeSummaryManager {
     // @deprecated
     static detachChangeCache(iModel: IModelDb): void;
     // @internal (undocumented)
-    static downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: ChangesetId, end: ChangesetId): Promise<ChangesetFileProps[]>;
+    static downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, firstId: ChangesetId, endId: ChangesetId): Promise<ChangesetFileProps[]>;
     static extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
@@ -2933,7 +2950,7 @@ export class IModelHubBackend {
         contextId: GuidString;
     }): Promise<void>;
     // (undocumented)
-    static downloadChangeset(arg: ChangesetIdArg): Promise<ChangesetFileProps>;
+    static downloadChangeset(arg: ChangesetIndexArg): Promise<ChangesetFileProps>;
     static downloadChangesets(arg: IModelIdArg & {
         range?: ChangesetRange;
     }): Promise<ChangesetFileProps[]>;
@@ -2942,25 +2959,23 @@ export class IModelHubBackend {
     // (undocumented)
     static downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
     // (undocumented)
-    static getChangesetIdFromNamedVersion(arg: IModelIdArg & {
+    static getChangesetFromNamedVersion(arg: IModelIdArg & {
         versionName: string;
-    }): Promise<string>;
+    }): Promise<ChangesetProps>;
     // (undocumented)
-    static getChangesetIdFromVersion(arg: IModelIdArg & {
+    static getChangesetFromVersion(arg: IModelIdArg & {
         version: IModelVersion;
-    }): Promise<string>;
+    }): Promise<ChangesetProps>;
     // (undocumented)
-    static getChangesetIndexFromId(arg: IModelIdArg & {
-        changesetId: ChangesetId;
-    }): Promise<number>;
+    static getChangesetIndexFromId(arg: ChangesetIdArg): Promise<number>;
     // (undocumented)
-    static getLatestChangesetId(arg: IModelIdArg): Promise<string>;
+    static getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
     // (undocumented)
     static getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
     // (undocumented)
     static getRequestContext(arg: {
         requestContext?: AuthorizedClientRequestContext;
-    }): Promise<AuthorizedBackendRequestContext | AuthorizedClientRequestContext>;
+    }): Promise<AuthorizedClientRequestContext | AuthorizedBackendRequestContext>;
     // (undocumented)
     static get iModelClient(): IModelClient;
     // (undocumented)
@@ -2968,18 +2983,13 @@ export class IModelHubBackend {
     // (undocumented)
     static pushChangeset(arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
-        releaseLocks: boolean;
-    }): Promise<void>;
+    }): Promise<ChangesetIndex>;
     // (undocumented)
     static queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
     // (undocumented)
     static queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
     // (undocumented)
-    static queryChangeset(arg: ChangesetIdArg): Promise<ChangesetProps>;
-    // (undocumented)
-    static queryChangeSetProps(arg: IModelIdArg & {
-        changesetId: ChangesetId;
-    }): Promise<ChangesetProps>;
+    static queryChangeset(arg: ChangesetIndexArg): Promise<ChangesetProps>;
     static queryChangesets(arg: IModelIdArg & {
         range?: ChangesetRange;
     }): Promise<ChangesetProps[]>;
@@ -4291,13 +4301,25 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
     [Symbol.iterator](): IterableIterator<any>;
     constructor(_sql: string);
-    bindValue(parameter: number | string, value: any): void;
+    bindBlob(parameter: BindParameter, blob: Uint8Array): void;
+    bindDouble(parameter: BindParameter, val: number): void;
+    bindGuid(parameter: BindParameter, guid: GuidString): void;
+    bindId(parameter: BindParameter, id: Id64String): void;
+    bindInteger(parameter: BindParameter, val: number): void;
+    bindString(parameter: BindParameter, val: string): void;
+    bindValue(parameter: BindParameter, value: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;
     dispose(): void;
     getColumnCount(): number;
     getRow(): any;
     getValue(columnIx: number): SqliteValue;
+    getValueBlob(colIndex: number): Uint8Array;
+    getValueDouble(colIndex: number): number;
+    getValueGuid(colIndex: number): GuidString;
+    getValueId(colIndex: number): Id64String;
+    getValueInteger(colIndex: number): number;
+    getValueString(colIndex: number): string;
     get isPrepared(): boolean;
     get isReadonly(): boolean;
     next(): IteratorResult<any>;

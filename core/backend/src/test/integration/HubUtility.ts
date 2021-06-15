@@ -33,7 +33,7 @@ export class HubUtility {
     readWrite: "ReadWriteTest",
   };
 
-  public static contextId: GuidString | undefined = undefined;
+  public static contextId: GuidString | undefined;
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
   public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
 
@@ -45,16 +45,11 @@ export class HubUtility {
   private static imodelCache = new Map<string, GuidString>();
   /** Returns the iModelId if the iModel exists. Otherwise, returns undefined. */
   public static async getTestIModelId(requestContext: AuthorizedClientRequestContext, name: string): Promise<GuidString> {
-    requestContext.enter();
     if (HubUtility.imodelCache.has(name))
       return HubUtility.imodelCache.get(name)!;
 
     const projectId = await HubUtility.getTestContextId(requestContext);
-    requestContext.enter();
-
     const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, name);
-    requestContext.enter();
-
     HubUtility.imodelCache.set(name, imodelId);
     return imodelId;
   }

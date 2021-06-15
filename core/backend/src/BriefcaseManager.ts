@@ -31,10 +31,14 @@ import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
-/** supply *both* changeset index and id */
+/** supply *both* changeset index and id
+ * @internal
+ */
 export interface ChangesetIndexAndId { index: ChangesetIndex, id: ChangesetId }
 
-/** supply either changeset index, id, or both */
+/** supply either changeset index, id, or both
+ * @internal
+ */
 export type ChangesetIndexOrId = ChangesetIndexAndId | { index: ChangesetIndex, id?: never } | { id: ChangesetId, index?: never };
 
 /** The Id assigned to a briefcase by iModelHub, or a [[BriefcaseIdValue]] that identify special kinds of iModels.

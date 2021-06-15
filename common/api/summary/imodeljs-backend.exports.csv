@@ -25,6 +25,7 @@ deprecated;BackendActivityMonitor
 internal;BackendHubAccess
 public;BackendLoggerCategory
 public;BackendRequestContext 
+public;BindParameter = number | string
 public;BisCoreSchema 
 public;BriefcaseDb 
 internal;BriefcaseDbArg
@@ -42,8 +43,11 @@ internal;ChangesetFileProps
 internal;ChangesetId = string
 internal;ChangesetIdArg 
 internal;ChangesetIndex = number
+internal;ChangesetIndexAndId
+internal;ChangesetIndexArg 
+internal;ChangesetIndexOrId = ChangesetIndexAndId |
 internal;ChangesetProps
-internal;ChangesetRange =
+internal;ChangesetRange
 internal;ChangesetRangeArg 
 beta;ChangeSummary
 beta;ChangeSummaryExtractContext

@@ -146,7 +146,7 @@ export class LocalHub {
     return briefcases;
   }
 
-  /** Get an array of all of the currently assigned BriefcaseIds*/
+  /** Get an array of all of the currently assigned BriefcaseIds for a user */
   public getBriefcaseIds(user: string): number[] {
     const briefcases: number[] = [];
     this.db.withSqliteStatement("SELECT id FROM briefcases WHERE user=?", (stmt) => {
@@ -171,7 +171,7 @@ export class LocalHub {
 
     const parentIndex = this.getChangesetById(changeset.parentId).index;
     if (parentIndex !== this.latestChangesetIndex)
-      throw new IModelError(IModelStatus.InvalidParent, "changeset parent is latest changeset");
+      throw new IModelError(IModelStatus.InvalidParent, "changeset parent is not latest changeset");
 
     const db = this.db;
     changeset.index = this._latestChangesetIndex + 1;
@@ -188,7 +188,7 @@ export class LocalHub {
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert changeset into mock db");
     });
-    ++this._latestChangesetIndex; // only increment this after insert succeeds
+    this._latestChangesetIndex = changeset.index; // only change this after insert succeeds
     db.saveChanges();
     IModelJsFs.copySync(changeset.pathname, this.getChangesetFileName(changeset.index));
     return changeset.index;
