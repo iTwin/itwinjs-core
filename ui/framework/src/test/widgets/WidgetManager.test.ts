@@ -5,23 +5,30 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
+import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
 import { WidgetDef, WidgetManager, WidgetProvider, ZoneLocation } from "../../ui-framework";
 import { TestUtils } from "../TestUtils";
 
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "TestUiProvider-Widget";
 
-  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, _section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
+  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, _section?: StagePanelSection, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
-    if (stageId === "TestStage" && location === StagePanelLocation.Right)
+    if (stageId === "TestStage" && location === StagePanelLocation.Right) {
       widgets.push({
         id: "test2",
         getWidgetContent: () => "Hello World!",
         saveTransientState: () => { },
         restoreTransientState: () => false,
       });
-
+    } else if (stageId === "TestStage" && zoneLocation === AbstractZoneLocation.BottomRight) {
+      widgets.push({
+        id: "test3",
+        getWidgetContent: () => "Hello World!",
+        saveTransientState: () => { },
+        restoreTransientState: () => false,
+      });
+    }
     return widgets;
   }
 }
@@ -162,6 +169,11 @@ describe("WidgetManager", () => {
     expect(widgetDefs).to.not.be.undefined;
     if (widgetDefs)
       expect(widgetDefs.length).to.eq(2);
+
+    const zoneWidgetDefs = widgetManager.getWidgetDefs("TestStage", StageUsage.General, ZoneLocation.BottomRight);
+    expect(zoneWidgetDefs).to.not.be.undefined;
+    if (zoneWidgetDefs)
+      expect(zoneWidgetDefs.length).to.eq(1);
 
     UiItemsManager.unregister(testUiProvider.id);
   });
