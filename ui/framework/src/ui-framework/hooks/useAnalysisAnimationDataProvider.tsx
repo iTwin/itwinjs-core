@@ -11,6 +11,7 @@ import { AnalysisAnimationTimelineDataProvider } from "../timeline/AnalysisAnima
 import { ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 
 /** @internal */
+// istanbul ignore next
 function useSupportsAnalysisAnimation(viewport: Viewport | undefined) {
   const [supportsAnalysisAnimation, setSupportsAnalysisAnimation] = React.useState(!!viewport?.view?.analysisStyle);
 
@@ -41,6 +42,7 @@ function useSupportsAnalysisAnimation(viewport: Viewport | undefined) {
 /** Hook that returns either a AnalysisAnimationTimelineDataProvider or undefined based on if the supplied viewport contains analysis data.
  * @beta
  **/
+// istanbul ignore next
 export function useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined) {
   const supportsAnalysisAnimation = useSupportsAnalysisAnimation(viewport);
   const [analysisAnimationTimelineDataProvider, setAnalysisAnimationTimelineDataProvider] = React.useState<AnalysisAnimationTimelineDataProvider | undefined>();

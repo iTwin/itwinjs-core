@@ -14,6 +14,7 @@ import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui
 /** React hook that maintains the active viewport.
  * @public
  */
+// istanbul ignore next
 export function useActiveViewport(): ScreenViewport | undefined {
   const [activeViewport, setActiveViewport] = useState(IModelApp.viewManager.selectedView);
   useEffect(() => {
