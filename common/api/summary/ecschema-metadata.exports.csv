@@ -101,7 +101,9 @@ beta;IRule
 beta;IRuleSet
 deprecated;IRuleSet
 beta;IRuleSuppressionMap
+deprecated;IRuleSuppressionMap
 beta;IRuleSuppressionSet
+deprecated;IRuleSuppressionSet
 beta;ISchemaItemLocater
 beta;ISchemaLocater
 beta;ISchemaPartVisitor
@@ -186,6 +188,7 @@ deprecated;SchemaCompareDiagnostics:
 beta;SchemaContext 
 beta;class SchemaDiagnostic
 deprecated;class SchemaDiagnostic
+beta;SchemaGraph
 internal;SchemaGraphUtil
 beta;class SchemaItem
 beta;class SchemaItemDiagnostic

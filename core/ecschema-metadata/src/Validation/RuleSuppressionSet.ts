@@ -66,6 +66,7 @@ export interface BaseRuleSuppressionMap<T extends AnyECType, U extends AnyECType
 
 /**
  * Interface used to represent logical collection of [[ISuppressionRule]] instances.
+ * @beta
  * @deprecated Moved to the ecschema-editing package.
  */
 export interface IRuleSuppressionSet {
