@@ -28,8 +28,9 @@ interface SelectionScopeFieldProps extends StatusFieldProps {
 /**
  * Status Field React component. This component is designed to be specified in a status bar definition.
  * It is used to display the number of selected items based on the Presentation Rules Selection Manager.
- * The IModelApp should call SyncUiEventDispatcher.initializeConnectionEvents with the active iModelConnection each time a new iModel is
- * opened so the selection scope data is properly updated in the Redux state.
+ * The IModelApp should call either UiFramework.setIModelConnection or SyncUiEventDispatcher.initializeConnectionEvents
+ * with the active iModelConnection each time a new iModel is opened so the selection scope data is properly updated
+ * in the Redux state.
  * @public
  */
 class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldProps> {

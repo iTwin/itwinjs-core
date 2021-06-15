@@ -65,14 +65,13 @@ import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 export class AppUi {
 
   public static initialize() {
-    ConfigurableUiManager.initialize();
-
     AppUi.defineFrontstages();
     AppUi.defineContentGroups();
     AppUi.defineContentLayouts();
     AppUi.defineTasksAndWorkflows();
     AppUi.defineKeyboardShortcuts();
 
+    // use to test WidgetProvider API - Note: this is different from UiItemsProvider
     AppUi.defineDynamicWidgets();
 
     // AppUi.setAccuDrawUiSettings();
