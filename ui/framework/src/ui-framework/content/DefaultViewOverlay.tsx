@@ -138,17 +138,19 @@ function useScheduleAnimationTimelineDataProvider(viewport: ScreenViewport | und
   }, []);
 
   React.useEffect(() => {
-    async function fetchNewDataProvider() {
-      const newProvider = (supportsScheduleScript && viewport) ? new ScheduleAnimationTimelineDataProvider(viewport.view, viewport) : undefined;
+    async function fetchNewDataProvider(vp: ScreenViewport) {
+      let newProvider: ScheduleAnimationTimelineDataProvider | undefined = new ScheduleAnimationTimelineDataProvider(vp.view, vp);
       if (newProvider?.supportsTimelineAnimation) {
         const dataLoaded = await newProvider.loadTimelineData();
-        if (isMountedRef.current)
-          setScheduleAnimationTimelineDataProvider(dataLoaded ? newProvider : undefined);
-      } else {
-        setScheduleAnimationTimelineDataProvider(undefined);
+        if (!dataLoaded)
+          newProvider = undefined;
       }
+      isMountedRef.current && setScheduleAnimationTimelineDataProvider(newProvider);
     }
-    void fetchNewDataProvider();
+    if (supportsScheduleScript && viewport)
+      void fetchNewDataProvider(viewport);
+    else
+      isMountedRef.current && setScheduleAnimationTimelineDataProvider(undefined);
   }, [supportsScheduleScript, viewport]);
 
   return scheduleAnimationTimelineDataProvider;
@@ -165,15 +167,19 @@ function useAnalysisAnimationTimelineDataProvider(viewport: ScreenViewport | und
   }, []);
 
   React.useEffect(() => {
-    async function fetchNewDataProvider() {
-      const newProvider = (supportsAnalysisAnimation && viewport) ? new AnalysisAnimationTimelineDataProvider(viewport.view, viewport) : undefined;
+    async function fetchNewDataProvider(vp: ScreenViewport) {
+      let newProvider: AnalysisAnimationTimelineDataProvider | undefined = new AnalysisAnimationTimelineDataProvider(vp.view, vp);
       if (newProvider?.supportsTimelineAnimation) {
         const dataLoaded = await newProvider.loadTimelineData();
-        if (isMountedRef.current)
-          setAnalysisAnimationTimelineDataProvider(dataLoaded ? newProvider : undefined);
+        if (!dataLoaded)
+          newProvider = undefined;
       }
+      isMountedRef.current && setAnalysisAnimationTimelineDataProvider(newProvider);
     }
-    void fetchNewDataProvider();
+    if (supportsAnalysisAnimation && viewport)
+      void fetchNewDataProvider(viewport);
+    else
+      isMountedRef.current && setAnalysisAnimationTimelineDataProvider(undefined);
   }, [supportsAnalysisAnimation, viewport]);
 
   return analysisAnimationTimelineDataProvider;
@@ -199,6 +205,7 @@ export interface ViewOverlayProps {
   viewport: ScreenViewport;
   onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
 }
+
 /**
  * Default viewport overlay that shows a schedule timeline for views containing a schedule script or a solar timeline for views with solar shadow info
  */
@@ -207,15 +214,12 @@ export function DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps) 
   const solarDataTimelineProvider = useSolarDataProvider(viewport);
   const analysisAnimationTimelineDataProvider = useAnalysisAnimationTimelineDataProvider(viewport);
   const scheduleTimelineDataProvider = useScheduleAnimationTimelineDataProvider(viewport);
-
-  // const [dataProvider, setDataProvider] = React.useState<TimelineDataProvider | SolarDataProvider | undefined>();
   const currentViewport = useCurrentContentViewport();
-  const showSolarTimeline = solarDataTimelineProvider && !scheduleTimelineDataProvider && !analysisAnimationTimelineDataProvider;
   const timelineDataProvider = scheduleTimelineDataProvider ? scheduleTimelineDataProvider : analysisAnimationTimelineDataProvider;
   const isCurrentViewport = currentViewport === viewport;
   return (
     <div className="uifw-view-overlay">
-      {isCurrentViewport && showSolarTimeline && solarDataTimelineProvider &&
+      {isCurrentViewport && !timelineDataProvider && solarDataTimelineProvider &&
         <div className="uifw-animation-overlay">
           <SolarTimeline dataProvider={solarDataTimelineProvider} />
         </div>
