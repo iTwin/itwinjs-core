@@ -8,8 +8,9 @@
 
 import { AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
   ECStringConstants, EntityClass, Enumeration, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
-  Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaItemType, schemaItemTypeToString,
-  StrengthDirection, strengthDirectionToString, SchemaGraph } from "@bentley/ecschema-metadata";
+  Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
+  schemaItemTypeToString, StrengthDirection, strengthDirectionToString,
+} from "@bentley/ecschema-metadata";
 import {
   ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
   createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic,
