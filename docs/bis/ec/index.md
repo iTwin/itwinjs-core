@@ -6,9 +6,9 @@ The root of any domain is an *ECSchema* itself.
 
 - An **[ECSchema](./ec-schema.md)** describes one "domain"—its primary contents are a closely related set of "ECClasses" of various kinds. The name attribute of the ECSchema serves as a namespace for all items defined within it. All items within an ECSchema have a unique name.
 
-ECSchemas cannot contain other ECSchemas but they can reference other schemas:
+ECSchemas cannot contain other ECSchemas but they can reference ECSchemas:
 
-- **ECSchemaReference** is a member of an ECSchema that expresses that the ECSchema references another ECSchema. ECSchemaReferences are necessary when an ECSchema contains items that depend on the referenced ECSchema in some way (e.g., its ECClasses subclass from ECClasses in the referenced ECSchema.)
+- **ECSchemaReference** is a member of an ECSchema that expresses a reference another ECSchema. ECSchemaReferences are necessary when an ECSchema contains items that depend on the referenced ECSchema in some way (e.g., its ECClasses subclass from ECClasses in the referenced ECSchema.)
 
 ECObjects has a fixed set of items and those items have a fixed set of attributes, the attributes of ECSchema and its items can be extended via custom attributes:
 
