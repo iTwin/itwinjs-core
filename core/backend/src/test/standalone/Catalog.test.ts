@@ -109,7 +109,7 @@ async function createBestCatalog(dbFile: string): Promise<void> {
   db.close();
 }
 
-/** This function mocks a Catalog Connector that reads Best Equipment product data and outputs a catalog of components. */
+/** This function creates test catalog components. */
 async function createTestCatalog(dbFile: string): Promise<void> {
   const db: SnapshotDb = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "Test Catalog" }, createClassViews });
   const templateGroupCodeSpecId = db.codeSpecs.insert("Test:TemplateGroup", CodeScopeSpec.Type.Model);
@@ -445,7 +445,7 @@ class CatalogImporter extends IModelTransformer {
       const targetContainerCodeSpec = this.targetDb.codeSpecs.getByName(sourceContainerCodeSpec.name);
       const targetContainerCode = new Code({
         spec: targetContainerCodeSpec.id,
-        scope: IModel.dictionaryId,
+        scope: IModel.rootSubjectId,
         value: sourceContainer.code.value,
       });
       targetContainerId = this.targetDb.elements.queryElementIdByCode(targetContainerCode);
