@@ -456,8 +456,6 @@ export class BriefcaseManager {
   }
 
   private static async applyChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
-    requestContext.enter();
-
     const currentChangeSetId = db.changeSetId!;
     const currentChangeSetIndex = await IModelHost.hubAccess.getChangesetIndexFromId({ requestContext, iModelId: db.iModelId, csId: currentChangeSetId });
     if (targetChangeSetIndex === currentChangeSetIndex)

@@ -13,7 +13,7 @@ import {
 import { BriefcaseIdValue } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangesetFileProps, ChangesetIndex, ChangesetProps } from "../../BackendHubAccess";
+import { ChangesetFileProps, ChangesetProps } from "../../BackendHubAccess";
 import { IModelDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { IModelHubBackend } from "../../IModelHubBackend";

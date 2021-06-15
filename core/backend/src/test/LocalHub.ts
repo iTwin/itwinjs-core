@@ -110,8 +110,8 @@ export class LocalHub {
     const db = this.db;
     const newId = this._nextBriefcaseId++;
     db.withSqliteStatement("INSERT INTO briefcases(id,user) VALUES (?,?)", (stmt) => {
-      stmt.bindValue(1, newId);
-      stmt.bindValue(2, user);
+      stmt.bindInteger(1, newId);
+      stmt.bindString(2, user);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't update briefcaseId in mock database");
@@ -124,7 +124,7 @@ export class LocalHub {
   public releaseBriefcaseId(id: number) {
     const db = this.db;
     db.withSqliteStatement("DELETE FROM briefcases WHERE id=?", (stmt) => {
-      stmt.bindValue(1, id);
+      stmt.bindInteger(1, id);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, `briefcaseId ${id} was not reserved`);
@@ -138,8 +138,8 @@ export class LocalHub {
     this.db.withSqliteStatement("SELECT id,user FROM briefcases", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         briefcases.push({
-          id: stmt.getValue(0).getInteger(),
-          user: stmt.getValue(1).getString(),
+          id: stmt.getValueInteger(0),
+          user: stmt.getValueString(1),
         });
       }
     });
@@ -150,9 +150,9 @@ export class LocalHub {
   public getBriefcaseIds(user: string): number[] {
     const briefcases: number[] = [];
     this.db.withSqliteStatement("SELECT id FROM briefcases WHERE user=?", (stmt) => {
-      stmt.bindValue(1, user);
+      stmt.bindString(1, user);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        briefcases.push(stmt.getValue(0).getInteger());
+        briefcases.push(stmt.getValueInteger(0));
     });
     return briefcases;
   }
@@ -174,24 +174,24 @@ export class LocalHub {
       throw new IModelError(IModelStatus.InvalidParent, "changeset parent is latest changeset");
 
     const db = this.db;
-    const index = this._latestChangesetIndex + 1;
+    changeset.index = this._latestChangesetIndex + 1;
     db.withSqliteStatement("INSERT INTO timeline(csIndex,csId,description,size,type,pushDate,user,briefcaseId) VALUES (?,?,?,?,?,?,?,?)", (stmt) => {
-      stmt.bindValue(1, index);
-      stmt.bindValue(2, changeset.id);
-      stmt.bindValue(3, changeset.description);
-      stmt.bindValue(4, stats.size);
-      stmt.bindValue(5, changeset.changesType ?? 0);
-      stmt.bindValue(6, changeset.pushDate ?? new Date().toString());
-      stmt.bindValue(7, changeset.userCreated ?? "");
-      stmt.bindValue(8, changeset.briefcaseId);
+      stmt.bindInteger(1, changeset.index);
+      stmt.bindString(2, changeset.id);
+      stmt.bindString(3, changeset.description);
+      stmt.bindInteger(4, stats.size);
+      stmt.bindInteger(5, changeset.changesType ?? 0);
+      stmt.bindString(6, changeset.pushDate ?? new Date().toString());
+      stmt.bindString(7, changeset.userCreated ?? "");
+      stmt.bindInteger(8, changeset.briefcaseId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert changeset into mock db");
     });
-    ++this._latestChangesetIndex;
+    ++this._latestChangesetIndex; // only increment this after insert succeeds
     db.saveChanges();
-    IModelJsFs.copySync(changeset.pathname, this.getChangesetFileName(index));
-    return index;
+    IModelJsFs.copySync(changeset.pathname, this.getChangesetFileName(changeset.index));
+    return changeset.index;
   }
 
   /** Get the index of a changeset by its Id */
@@ -200,12 +200,12 @@ export class LocalHub {
       return 0;
 
     return this.db.withPreparedSqliteStatement("SELECT csIndex FROM timeline WHERE csId=?", (stmt) => {
-      stmt.bindValue(1, id);
+      stmt.bindString(1, id);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
         throw new IModelError(rc, `changeset ${id} not found`);
 
-      return stmt.getValue(0).getInteger();
+      return stmt.getValueInteger(0);
     });
   }
 
@@ -216,12 +216,12 @@ export class LocalHub {
 
   public getPreviousIndex(index: ChangesetIndex) {
     return this.db.withPreparedSqliteStatement("SELECT max(csIndex) FROM timeline WHERE csIndex<?", (stmt) => {
-      stmt.bindValue(1, index);
+      stmt.bindInteger(1, index);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
         throw new IModelError(rc, `cannot get previous index`);
 
-      return stmt.getValue(0).getInteger();
+      return stmt.getValueInteger(0);
     });
   }
 
@@ -230,9 +230,9 @@ export class LocalHub {
       return "";
 
     return this.db.withPreparedSqliteStatement("SELECT csId FROM timeline WHERE csIndex=?", (stmt) => {
-      stmt.bindValue(1, this.getPreviousIndex(index));
+      stmt.bindInteger(1, this.getPreviousIndex(index));
       stmt.step();
-      return stmt.getValue(0).getString();
+      return stmt.getValueString(0);
     });
   }
 
@@ -242,19 +242,19 @@ export class LocalHub {
       return { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
 
     return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,csId,briefcaseId FROM timeline WHERE csIndex=?", (stmt) => {
-      stmt.bindValue(1, index);
+      stmt.bindInteger(1, index);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
         throw new IModelError(rc, `changeset at index ${index} not found`);
 
       return {
-        description: stmt.getValue(0).getString(),
-        size: stmt.getValue(1).getDouble(),
-        changesType: stmt.getValue(2).getInteger(),
-        pushDate: stmt.getValue(3).getString(),
-        userCreated: stmt.getValue(4).getString(),
-        id: stmt.getValue(5).getString(),
-        briefcaseId: stmt.getValue(6).getInteger(),
+        description: stmt.getValueString(0),
+        size: stmt.getValueDouble(1),
+        changesType: stmt.getValueInteger(2),
+        pushDate: stmt.getValueString(3),
+        userCreated: stmt.getValueString(4),
+        id: stmt.getValueString(5),
+        briefcaseId: stmt.getValueInteger(6),
         index,
         parentId: this.getParentId(index),
       };
@@ -276,10 +276,10 @@ export class LocalHub {
     const last = range?.end ?? this.latestChangesetIndex;
 
     this.db.withPreparedSqliteStatement("SELECT csIndex FROM timeline WHERE csIndex>=? AND csIndex<=? ORDER BY csIndex", (stmt) => {
-      stmt.bindValue(1, first);
-      stmt.bindValue(2, last);
+      stmt.bindInteger(1, first);
+      stmt.bindInteger(2, last);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        changesets.push(this.getChangesetByIndex(stmt.getValue(0).getInteger()));
+        changesets.push(this.getChangesetByIndex(stmt.getValueInteger(0)));
     });
     return changesets;
   }
@@ -288,8 +288,8 @@ export class LocalHub {
   public addNamedVersion(arg: { versionName: string, csIndex: ChangesetIndex }) {
     const db = this.db;
     db.withSqliteStatement("INSERT INTO versions(name,csIndex) VALUES (?,?)", (stmt) => {
-      stmt.bindValue(1, arg.versionName);
-      stmt.bindValue(2, arg.csIndex);
+      stmt.bindString(1, arg.versionName);
+      stmt.bindInteger(2, arg.csIndex);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert named version");
@@ -301,7 +301,7 @@ export class LocalHub {
   public deleteNamedVersion(versionName: string) {
     const db = this.db;
     db.withSqliteStatement("DELETE FROM versions WHERE name=?", (stmt) => {
-      stmt.bindValue(1, versionName);
+      stmt.bindString(1, versionName);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't delete named version");
@@ -312,11 +312,11 @@ export class LocalHub {
   /** find the changeset for a named version */
   public findNamedVersion(versionName: string): ChangesetProps {
     const index = this.db.withSqliteStatement("SELECT csIndex FROM versions WHERE name=?", (stmt) => {
-      stmt.bindValue(1, versionName);
+      stmt.bindString(1, versionName);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
         throw new IModelError(IModelStatus.NotFound, `Named version ${versionName} not found`);
-      return stmt.getValue(0).getInteger();
+      return stmt.getValueInteger(0);
     });
     return this.getChangesetByIndex(index);
   }
@@ -329,7 +329,7 @@ export class LocalHub {
   public uploadCheckpoint(arg: { changesetIndex: ChangesetIndex, localFile: LocalFileName }) {
     const db = this.db;
     db.withSqliteStatement("INSERT INTO checkpoints(csIndex) VALUES (?)", (stmt) => {
-      stmt.bindValue(1, arg.changesetIndex);
+      stmt.bindInteger(1, arg.changesetIndex);
       const res = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== res)
         throw new IModelError(res, "can't insert checkpoint into mock db");
@@ -347,10 +347,10 @@ export class LocalHub {
 
     const checkpoints: ChangesetIndex[] = [];
     this.db.withSqliteStatement("SELECT csIndex FROM checkpoints WHERE csIndex>=? AND csIndex<=? ORDER BY csIndex", (stmt) => {
-      stmt.bindValue(1, first);
-      stmt.bindValue(2, last);
+      stmt.bindInteger(1, first);
+      stmt.bindInteger(2, last);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        checkpoints.push(stmt.getValue(0).getInteger());
+        checkpoints.push(stmt.getValueInteger(0));
 
     });
     return checkpoints;
@@ -362,11 +362,11 @@ export class LocalHub {
       return 0;
 
     return this.db.withSqliteStatement("SELECT max(csIndex) FROM checkpoints WHERE csIndex <= ? ", (stmt) => {
-      stmt.bindValue(1, changesetIndex);
+      stmt.bindInteger(1, changesetIndex);
       const res = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== res)
         throw new IModelError(res, "can't get previous checkpoint");
-      return stmt.getValue(0).getInteger();
+      return stmt.getValueInteger(0);
     });
   }
 
@@ -405,7 +405,7 @@ export class LocalHub {
       stmt.bindId(1, elementId);
       const briefcases = new Set<BriefcaseId>();
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        briefcases.add(stmt.getValue(0).getInteger());
+        briefcases.add(stmt.getValueInteger(0));
       return briefcases;
     });
   }
@@ -413,14 +413,14 @@ export class LocalHub {
   public queryAllLocks(briefcaseId: number) {
     const locks: LockProps[] = [];
     this.db.withPreparedSqliteStatement("SELECT entityId FROM locks WHERE briefcaseId=?", (stmt) => {
-      stmt.bindValue(1, briefcaseId);
+      stmt.bindInteger(1, briefcaseId);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        locks.push({ objectId: stmt.getValue(0).getString(), level: LockLevel.Exclusive, type: LockType.Element });
+        locks.push({ objectId: stmt.getValueString(0), level: LockLevel.Exclusive, type: LockType.Element });
     });
     this.db.withPreparedSqliteStatement("SELECT lockId FROM sharedLocks WHERE briefcaseId=?", (stmt) => {
-      stmt.bindValue(1, briefcaseId);
+      stmt.bindInteger(1, briefcaseId);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        locks.push({ objectId: stmt.getValue(0).getString(), level: LockLevel.Shared, type: LockType.Model });
+        locks.push({ objectId: stmt.getValueString(0), level: LockLevel.Shared, type: LockType.Model });
     });
     return locks;
   }
@@ -434,13 +434,13 @@ export class LocalHub {
       const lastCsVal = stmt.getValue(0);
       const state = {
         lastCsIndex: lastCsVal.isNull ? undefined : lastCsVal.getInteger(),
-        level: stmt.getValue(1).getInteger(),
+        level: stmt.getValueInteger(1),
       };
       switch (state.level) {
         case LockLevel.None:
           return state;
         case LockLevel.Exclusive:
-          return { ...state, briefcaseId: stmt.getValue(2).getInteger() };
+          return { ...state, briefcaseId: stmt.getValueInteger(2) };
         case LockLevel.Shared:
           return { ...state, sharedBy: this.querySharedLockHolders(elementId) };
         default:
@@ -459,7 +459,7 @@ export class LocalHub {
 
     this.db.withPreparedSqliteStatement("INSERT INTO locks(entityId,level,briefcaseId) VALUES(?,?,?) ON CONFLICT(entityId) DO UPDATE SET briefcaseId=excluded.briefcaseId,level=excluded.level", (stmt) => {
       stmt.bindId(1, props.objectId);
-      stmt.bindValue(2, props.level);
+      stmt.bindInteger(2, props.level);
       stmt.bindValue(3, wantShared ? undefined : briefcase.briefcaseId);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
@@ -469,7 +469,7 @@ export class LocalHub {
     if (wantShared) {
       this.db.withPreparedSqliteStatement("INSERT INTO sharedLocks(lockId,briefcaseId) VALUES(?,?)", (stmt) => {
         stmt.bindId(1, props.objectId);
-        stmt.bindValue(2, briefcase.briefcaseId);
+        stmt.bindInteger(2, briefcase.briefcaseId);
         const rc = stmt.step();
         if (rc !== DbResult.BE_SQLITE_DONE)
           throw new Error("cannot insert shared lock");
@@ -491,7 +491,7 @@ export class LocalHub {
       return;
 
     this.db.withPreparedSqliteStatement("UPDATE locks SET lastCSetIndex=?1 WHERE entityId=?2", (stmt) => {
-      stmt.bindValue(1, index);
+      stmt.bindInteger(1, index);
       stmt.bindId(2, id);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
@@ -541,7 +541,7 @@ export class LocalHub {
 
         this.db.withPreparedSqliteStatement("DELETE FROM sharedLocks WHERE lockId=? AND briefcaseId=?", (stmt) => {
           stmt.bindId(1, lockId);
-          stmt.bindValue(2, arg.briefcaseId);
+          stmt.bindInteger(2, arg.briefcaseId);
           const rc = stmt.step();
           if (rc !== DbResult.BE_SQLITE_DONE)
             throw new Error("can't remove shared lock");
