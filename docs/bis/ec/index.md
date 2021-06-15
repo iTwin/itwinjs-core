@@ -1,6 +1,6 @@
 # ECObjects Information Modeling Language Overview
 
-The ECObjects language is comprised of items that have attributes. Items are grouped into "domains" via an "ECSchema", which provides the container and namespace for the items it that domain. There are several types of items in an ECSchema that describe objects, relationships, value types and quantities.  Each item type is described below in more detail.
+The ECObjects language is comprised of items that have attributes. Items are grouped into "domains" via an "ECSchema", which provides the container and namespace for the items in that domain. There are several types of items in an ECSchema that describe objects, relationships, value types and quantities.  Each item type is described below in more detail.
 
 The root of any domain is an *ECSchema* itself.
 
@@ -10,9 +10,9 @@ ECSchemas cannot contain other ECSchemas but they can reference other schemas:
 
 - **ECSchemaReference** is a member of an ECSchema that expresses that the ECSchema references another ECSchema. ECSchemaReferences are necessary when an ECSchema contains items that depend on the referenced ECSchema in some way (e.g., its ECClasses subclass from ECClasses in the referenced ECSchema.)
 
-ECObjects has a fixed set of items and those items have a fixed set of attributes, the attributes of ECSchema and it's items can be extended via custom attributes:
+ECObjects has a fixed set of items and those items have a fixed set of attributes, the attributes of ECSchema and its items can be extended via custom attributes:
 
-- **[ECCustomAttributes](./ec-custom-attributes.md)** is an optional child of ECSchema and some schema items that holds instances of ECCustomAttributeClasses. The ECCustomAttributeClasses define strongly typed extended attributes and the instances hold the extended attribute values for the parent they are applied to. The ECCustomAttributes can be directly applied to most (but not all) kinds of items in an ECSchema, including ECSchema, ECClass and ECProperty.
+- **[ECCustomAttributes](./ec-custom-attributes.md)** is an optional child of ECSchema and some schema items that hold extended attribute values for the parent they are applied to.  ECCustomAttributes can be directly applied to most (but not all) kinds of items in an ECSchema, including ECSchema, ECClass and ECProperty.
 
 The next 5 kinds of items are direct members of ECSchema and define different kinds of ECClasses. All of the ECClasses can contain **[ECProperties](./ec-property.md)** that define named properties with data types that are "primitives", "structs", arrays or navigation.
 
