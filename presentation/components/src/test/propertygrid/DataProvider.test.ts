@@ -35,8 +35,8 @@ import { mockPresentationManager } from "../_helpers/UiComponents";
  */
 class Provider extends PresentationPropertyDataProvider {
   public override invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public override shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); }
-  public override isFieldHidden(field: Field) { return super.isFieldHidden(field); }
+  public override shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); } // eslint-disable-line deprecation/deprecation
+  public override isFieldHidden(field: Field) { return super.isFieldHidden(field); } // eslint-disable-line deprecation/deprecation
   public override getDescriptorOverrides() { return super.getDescriptorOverrides(); }
   public override sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
   public override isFieldFavorite!: (field: Field) => boolean;

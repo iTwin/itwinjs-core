@@ -24,7 +24,7 @@ import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
  * @public
  */
 export class SpatialViewState extends ViewState3d {
-  /** @internal override */
+  /** @internal */
   public static override get className() { return "SpatialViewDefinition"; }
 
   private readonly _treeRefs: SpatialTileTreeReferences;
@@ -99,7 +99,7 @@ export class SpatialViewState extends ViewState3d {
     this._treeRefs = SpatialTileTreeReferences.create(this);
   }
 
-  /** @internal override */
+  /** @internal */
   public isSpatialView(): this is SpatialViewState { return true; }
 
   public override equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
@@ -167,26 +167,26 @@ export class SpatialViewState extends ViewState3d {
     }
   }
 
-  /** @internal override */
+  /** @internal */
   public forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
     for (const ref of this._treeRefs)
       func(ref);
   }
 
-  /** @internal override */
+  /** @internal */
   public override createScene(context: SceneContext): void {
     super.createScene(context);
     context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
     context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
   }
 
-  /** @internal override */
+  /** @internal */
   public override attachToViewport(): void {
     super.attachToViewport();
     this.registerModelSelectorListeners();
   }
 
-  /** @internal override */
+  /** @internal */
   public override detachFromViewport(): void {
     super.detachFromViewport();
     this.unregisterModelSelectorListeners();
@@ -213,7 +213,7 @@ export class SpatialViewState extends ViewState3d {
  * @public
  */
 export class OrthographicViewState extends SpatialViewState {
-  /** @internal override */
+  /** @internal */
   public static override get className() { return "OrthographicViewDefinition"; }
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }

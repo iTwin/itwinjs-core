@@ -1086,7 +1086,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     return this._json3d;
   }
 
-  /** @internal override */
+  /** @internal */
   public override toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps {
     const props = super.toOverrides(options) as DisplayStyle3dSettingsProps;
     if (options?.includeAll)

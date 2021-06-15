@@ -2948,7 +2948,7 @@ export class ScreenViewport extends Viewport {
     this.canvas.style.cursor = cursor;
   }
 
-  /** @internal override */
+  /** @internal */
   public override synchWithView(options?: ViewChangeOptions | boolean): void {
     options = (undefined === options) ? {} :
       (typeof options !== "boolean") ? options : { noSaveInUndo: !options }; // for backwards compatibility, was "saveInUndo"
@@ -3226,12 +3226,12 @@ export class OffScreenViewport extends Viewport {
     return vp;
   }
 
-  /** @internal override */
+  /** @internal */
   public override get isAspectRatioLocked(): boolean {
     return this._isAspectRatioLocked;
   }
 
-  /** @internal override */
+  /** @internal */
   public get viewRect(): ViewRect {
     return this.target.viewRect;
   }

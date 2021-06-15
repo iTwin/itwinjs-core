@@ -233,7 +233,7 @@ describe("ContentDataProvider", () => {
     it("excludes fields from result descriptor", () => {
       const source = createRandomDescriptor();
       provider.shouldExcludeFromDescriptor = () => true;
-      const result = provider.configureContentDescriptor(source);
+      const result = provider.configureContentDescriptor(source); // eslint-disable-line deprecation/deprecation
       expect(source.fields.length).to.be.greaterThan(0);
       expect(result.fields.length).to.eq(0);
     });

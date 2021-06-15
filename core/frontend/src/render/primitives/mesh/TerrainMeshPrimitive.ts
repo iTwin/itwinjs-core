@@ -56,7 +56,7 @@ export class TerrainMeshPrimitive extends RealityMeshPrimitive {
     }
     const realityMeshProps = {
       indices: new Uint16Array(totalIndices), pointQParams: props.pointQParams, points: new Uint16Array(3 * totalPoints),
-      uvQParams: QParams2d.fromZeroToOne(), uvs: new Uint16Array(2 * totalPoints), normals: props.wantNormals ? new Uint16Array(totalPoints) : undefined, featureID: 0
+      uvQParams: QParams2d.fromZeroToOne(), uvs: new Uint16Array(2 * totalPoints), normals: props.wantNormals ? new Uint16Array(totalPoints) : undefined, featureID: 0,
     };
     return new TerrainMeshPrimitive(realityMeshProps, totalPoints, totalIndices);
   }

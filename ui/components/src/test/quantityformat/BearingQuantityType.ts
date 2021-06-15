@@ -6,7 +6,7 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import {
   CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp,
-  TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec, UnitSystemKey
+  TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec, UnitSystemKey,
 } from "@bentley/imodeljs-frontend";
 import {
   CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider,
