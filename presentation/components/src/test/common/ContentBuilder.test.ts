@@ -3,728 +3,104 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { NestedContentValue, PropertyValueFormat, StructTypeDescription } from "@bentley/presentation-common";
+import { EnumerationInfo, FieldHierarchy, traverseContentItem } from "@bentley/presentation-common";
 import {
-  createTestContentItem, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,
+  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
+  createTestSimpleContentField,
 } from "@bentley/presentation-common/lib/test/_helpers/Content";
 import { createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import { PrimitiveValue } from "@bentley/ui-abstract";
-import { ContentBuilder, FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
+import { ArrayValue, PropertyRecord, StructValue } from "@bentley/ui-abstract";
+import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../../presentation-components/common/ContentBuilder";
 
-describe("ContentBuilder", () => {
+class TestPropertyRecordsBuilder extends PropertyRecordsBuilder {
+  public entries: Array<{ record: PropertyRecord, fieldHierarchy: FieldHierarchy }> = [];
+  protected createRootPropertiesAppender(): IPropertiesAppender {
+    return {
+      append: (record: FieldHierarchyRecord) => { this.entries.push(record); },
+    };
+  }
+}
 
-  describe("createPropertyDescription", () => {
+describe("PropertyRecordsBuilder", () => {
 
-    it("creates simple description", () => {
-      const field = createTestSimpleContentField();
-      const descr = ContentBuilder.createPropertyDescription(field);
-      expect(descr).to.matchSnapshot();
-    });
+  let builder: TestPropertyRecordsBuilder;
 
-    it("creates description with name prefix", () => {
-      const field = createTestSimpleContentField();
-      const descr = ContentBuilder.createPropertyDescription(field, { namePrefix: "test" });
-      expect(descr.name).to.eq(`test${FIELD_NAMES_SEPARATOR}${field.name}`);
-    });
-
-    it("creates description with renderer", () => {
-      const field = createTestSimpleContentField({
-        renderer: {
-          name: "RendererName",
-        },
-      });
-      const descr = ContentBuilder.createPropertyDescription(field);
-      expect(descr).to.matchSnapshot();
-    });
-
-    it("creates description with editor", () => {
-      const field = createTestSimpleContentField({
-        editor: {
-          name: "EditorName",
-          params: [],
-        },
-      });
-      const descr = ContentBuilder.createPropertyDescription(field);
-      expect(descr).to.matchSnapshot();
-    });
-
-    it("creates description with choices", () => {
-      const field = createTestPropertiesContentField({
-        type: {
-          valueFormat: PropertyValueFormat.Primitive,
-          typeName: "enum",
-        },
-        properties: [{
-          property: createTestPropertyInfo({
-            enumerationInfo: {
-              choices: [
-                { label: "Enum 1", value: 1 },
-                { label: "Enum 2", value: 2 },
-              ],
-              isStrict: true,
-            },
-          }),
-          relatedClassPath: [],
-        }],
-      });
-      const descr = ContentBuilder.createPropertyDescription(field);
-      expect(descr).to.matchSnapshot();
-    });
-
+  beforeEach(() => {
+    builder = new TestPropertyRecordsBuilder();
   });
 
-  describe("createPropertyRecord", () => {
-
-    describe("with primitives", () => {
-
-      it("creates record with primitive value", () => {
-        const field = createTestSimpleContentField();
-        const values = {
-          [field.name]: "some value",
-        };
-        const displayValues = {
-          [field.name]: "some display value",
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with undefined primitive value", () => {
-        const field = createTestSimpleContentField();
-        const values = {};
-        const displayValues = {};
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with merged primitive value", () => {
-        const field = createTestSimpleContentField();
-        const values = {
-          [field.name]: undefined,
-        };
-        const displayValues = {
-          [field.name]: "merged",
-        };
-        const item = createTestContentItem({ values, displayValues, mergedFieldNames: [field.name] });
-        const record = ContentBuilder.createPropertyRecord({ field }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with nested primitive value", () => {
-        const nestedField = createTestSimpleContentField();
-        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [field.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: "some value 1",
-            },
-            displayValues: {
-              [nestedField.name]: "some display value 1",
-            },
-            mergedFieldNames: [],
-          }, {
-            primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-            values: {
-              [nestedField.name]: "some value 2",
-            },
-            displayValues: {
-              [nestedField.name]: "some display value 2",
-            },
-            mergedFieldNames: [],
-          }],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field: nestedField }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with nested primitive value when nested content value is not set", () => {
-        const nestedField = createTestSimpleContentField({ name: "nested-field" });
-        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [field.name]: undefined,
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field: nestedField }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with deeply nested primitive value", () => {
-        const deeplyNestedField = createTestSimpleContentField({ name: "deeply-nested-field" });
-        const nestedField = createTestNestedContentField({ name: "nested-field", nestedFields: [deeplyNestedField] });
-        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [field.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: [{
-                primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-                values: {
-                  [deeplyNestedField.name]: "some value 1",
-                },
-                displayValues: {
-                  [deeplyNestedField.name]: "some display value 1",
-                },
-                mergedFieldNames: [],
-              }, {
-                primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-                values: {
-                  [deeplyNestedField.name]: "some value 2",
-                },
-                displayValues: {
-                  [deeplyNestedField.name]: "some display value 2",
-                },
-                mergedFieldNames: [],
-              }],
-            },
-            displayValues: {
-              [nestedField.name]: undefined,
-            },
-            mergedFieldNames: [],
-          }],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field: deeplyNestedField }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with deeply nested primitive value when nested value is not set", () => {
-        const deeplyNestedField = createTestSimpleContentField({ name: "deeply-nested-field" });
-        const nestedField = createTestNestedContentField({ name: "nested-field", nestedFields: [deeplyNestedField] });
-        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [field.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: undefined,
-            },
-            displayValues: {
-              [nestedField.name]: undefined,
-            },
-            mergedFieldNames: [],
-          }],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field: deeplyNestedField }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
+  it("sets enum props", () => {
+    const enumerationInfo: EnumerationInfo = {
+      choices: [{ value: 1, label: "One" }],
+      isStrict: true,
+    };
+    const descriptor = createTestContentDescriptor({
+      fields: [createTestPropertiesContentField({
+        properties: [{
+          property: createTestPropertyInfo({ enumerationInfo }),
+          relatedClassPath: [],
+        }],
+      })],
     });
-
-    describe("with arrays", () => {
-
-      it("creates record with array value", () => {
-        const field = createTestSimpleContentField({
-          type: {
-            valueFormat: PropertyValueFormat.Array,
-            typeName: "MyArray[]",
-            memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "MyType" },
-          },
-        });
-        const values = {
-          [field.name]: ["some value 1", "some value 2"],
-        };
-        const displayValues = {
-          [field.name]: ["some display value 1", "some display value 2"],
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with undefined array value", () => {
-        const field = createTestSimpleContentField({
-          type: {
-            valueFormat: PropertyValueFormat.Array,
-            typeName: "MyArray[]",
-            memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "MyType" },
-          },
-        });
-        const values = {};
-        const displayValues = {};
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with merged array value", () => {
-        const field = createTestSimpleContentField({
-          type: {
-            valueFormat: PropertyValueFormat.Array,
-            typeName: "MyArray[]",
-            memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "MyType" },
-          },
-        });
-        const values = {
-          [field.name]: undefined,
-        };
-        const displayValues = {
-          [field.name]: "merged",
-        };
-        const item = createTestContentItem({ values, displayValues, mergedFieldNames: [field.name] });
-        const record = ContentBuilder.createPropertyRecord({ field }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with nested array value", () => {
-        const nestedField = createTestSimpleContentField({
-          name: "nested-array-field",
-          type: {
-            valueFormat: PropertyValueFormat.Array,
-            typeName: "MyArray[]",
-            memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "MyType" },
-          },
-        });
-        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [field.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: ["some value 1", "some value 2"],
-            },
-            displayValues: {
-              [nestedField.name]: ["some display value 1", "some display value 2"],
-            },
-            mergedFieldNames: [],
-          }, {
-            primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-            values: {
-              [nestedField.name]: ["some value 3", "some value 4"],
-            },
-            displayValues: {
-              [nestedField.name]: ["some display value 3", "some display value 4"],
-            },
-            mergedFieldNames: [],
-          }],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field: nestedField }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
+    const item = createTestContentItem({
+      values: {},
+      displayValues: {},
     });
+    traverseContentItem(builder, descriptor, item);
+    expect(builder.entries.length).to.eq(1);
+    expect(builder.entries[0].record.property.enum).to.deep.eq(enumerationInfo);
+  });
 
-    describe("with structs", () => {
-
-      it("creates record with struct value", () => {
-        const typeDescription: StructTypeDescription = {
-          valueFormat: PropertyValueFormat.Struct,
-          typeName: "MyStruct[]",
-          members: [{
-            name: "MyProperty",
-            label: "My Property",
-            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "MyType" },
-          }],
-        };
-        const field = createTestSimpleContentField({ type: typeDescription });
-        const values = {
-          [field.name]: {
-            [typeDescription.members[0].name]: "some value",
-          },
-        };
-        const displayValues = {
-          [field.name]: {
-            [typeDescription.members[0].name]: "some display value",
-          },
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with undefined struct value", () => {
-        const typeDescription: StructTypeDescription = {
-          valueFormat: PropertyValueFormat.Struct,
-          typeName: "MyStruct[]",
-          members: [{
-            name: "MyProperty",
-            label: "My Property",
-            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "MyType" },
-          }],
-        };
-        const field = createTestSimpleContentField({ type: typeDescription });
-        const values = {};
-        const displayValues = {};
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with merged struct value", () => {
-        const typeDescription: StructTypeDescription = {
-          valueFormat: PropertyValueFormat.Struct,
-          typeName: "MyStruct[]",
-          members: [{
-            name: "MyProperty",
-            label: "My Property",
-            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "MyType" },
-          }],
-        };
-        const field = createTestSimpleContentField({ type: typeDescription });
-        const values = {
-          [field.name]: undefined,
-        };
-        const displayValues = {
-          [field.name]: "merged",
-        };
-        const item = createTestContentItem({ values, displayValues, mergedFieldNames: [field.name] });
-        const record = ContentBuilder.createPropertyRecord({ field }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record with nested struct value", () => {
-        const typeDescription: StructTypeDescription = {
-          valueFormat: PropertyValueFormat.Struct,
-          typeName: "MyStruct[]",
-          members: [{
-            name: "MyProperty",
-            label: "My Property",
-            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "MyType" },
-          }],
-        };
-        const nestedField = createTestSimpleContentField({ name: "nested-struct-field", type: typeDescription });
-        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [field.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: {
-                [typeDescription.members[0].name]: "some value 1",
-              },
-            },
-            displayValues: {
-              [nestedField.name]: {
-                [typeDescription.members[0].name]: "some display value 1",
-              },
-            },
-            mergedFieldNames: [],
-          }, {
-            primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-            values: {
-              [nestedField.name]: {
-                [typeDescription.members[0].name]: "some value 2",
-              },
-            },
-            displayValues: {
-              [nestedField.name]: {
-                [typeDescription.members[0].name]: "some display value 2",
-              },
-            },
-            mergedFieldNames: [],
-          }],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field: nestedField }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
+  it("sets extended data", () => {
+    const descriptor = createTestContentDescriptor({
+      fields: [createTestSimpleContentField()],
     });
-
-    describe("with nested content", () => {
-
-      it("creates record for nested content value with single deeply nested content value", () => {
-        const deeplyNestedField = createTestPropertiesContentField({
-          name: "deeply-nested-field",
-          properties: [{
-            property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 1, label: "One" }], isStrict: true } }),
-            relatedClassPath: [],
-          }],
-          renderer: {
-            name: "test-renderer",
-          },
-          editor: {
-            name: "test-editor",
-            params: undefined,
-          },
-        });
-        const nestedField = createTestNestedContentField({ name: "nested-field", nestedFields: [deeplyNestedField] });
-        const field = createTestNestedContentField({
-          name: "root-field",
-          nestedFields: [nestedField],
-          autoExpand: true,
-          isReadonly: true,
-        });
-        const values = {
-          [field.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: [{
-                primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-                values: {
-                  [deeplyNestedField.name]: "some value",
-                },
-                displayValues: {
-                  [deeplyNestedField.name]: "some display value",
-                },
-                mergedFieldNames: [],
-              }],
-            },
-            displayValues: {
-              [nestedField.name]: undefined,
-            },
-            mergedFieldNames: [],
-          }],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues, extendedData: { test: "extended-data" } });
-        const record = ContentBuilder.createPropertyRecord({ field, childFields: [{ field: nestedField, childFields: [{ field: deeplyNestedField }] }] }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record for a single deeply nested content value", () => {
-        const deeplyNestedField = createTestPropertiesContentField({
-          name: "deeply-nested-field",
-          properties: [{
-            property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 1, label: "One" }], isStrict: true } }),
-            relatedClassPath: [],
-          }],
-          renderer: {
-            name: "test-renderer",
-          },
-          editor: {
-            name: "test-editor",
-            params: undefined,
-          },
-        });
-        const nestedField = createTestNestedContentField({ name: "nested-field", nestedFields: [deeplyNestedField] });
-        const rootfield = createTestNestedContentField({
-          name: "root-field",
-          nestedFields: [nestedField],
-          autoExpand: true,
-          isReadonly: true,
-        });
-        const values = {
-          [rootfield.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: [{
-                primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-                values: {
-                  [deeplyNestedField.name]: "some value",
-                },
-                displayValues: {
-                  [deeplyNestedField.name]: "some display value",
-                },
-                mergedFieldNames: [],
-              }],
-            },
-            displayValues: {
-              [nestedField.name]: undefined,
-            },
-            mergedFieldNames: [],
-          }],
-        };
-        const displayValues = {
-          [rootfield.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues, extendedData: { test: "extended-data" } });
-        const record = ContentBuilder.createPropertyRecord({ field: deeplyNestedField }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record for nested content value with multiple nested content values", () => {
-        const nestedField = createTestPropertiesContentField({
-          name: "nested-field",
-          properties: [{
-            property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 1, label: "One" }], isStrict: true } }),
-            relatedClassPath: [],
-          }],
-          renderer: {
-            name: "test-renderer",
-          },
-          editor: {
-            name: "test-editor",
-            params: undefined,
-          },
-        });
-        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [field.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: "some value 1",
-            },
-            displayValues: {
-              [nestedField.name]: "some display value 1",
-            },
-            mergedFieldNames: [],
-          }, {
-            primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-            values: {
-              [nestedField.name]: "some value 2",
-            },
-            displayValues: {
-              [nestedField.name]: "some display value 2",
-            },
-            mergedFieldNames: [],
-          }] as NestedContentValue[],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field, childFields: [{ field: nestedField }] }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record for multiple nested content values", () => {
-        const nestedField = createTestPropertiesContentField({
-          name: "nested-field",
-          properties: [{
-            property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 1, label: "One" }], isStrict: true } }),
-            relatedClassPath: [],
-          }],
-          renderer: {
-            name: "test-renderer",
-          },
-          editor: {
-            name: "test-editor",
-            params: undefined,
-          },
-        });
-        const rootField = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [rootField.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: "some value 1",
-            },
-            displayValues: {
-              [nestedField.name]: "some display value 1",
-            },
-            mergedFieldNames: [],
-          }, {
-            primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-            values: {
-              [nestedField.name]: "some value 2",
-            },
-            displayValues: {
-              [nestedField.name]: "some display value 2",
-            },
-            mergedFieldNames: [],
-          }] as NestedContentValue[],
-        };
-        const displayValues = {
-          [rootField.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field: nestedField }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record for empty root nested content value", () => {
-        const nestedField = createTestNestedContentField({ name: "nested-field", nestedFields: [] });
-        const rootField = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [rootField.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: [{
-                primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-                values: {
-                },
-                displayValues: {
-                },
-                mergedFieldNames: [],
-              }],
-            },
-            displayValues: {
-              [nestedField.name]: undefined,
-            },
-            mergedFieldNames: [],
-          }],
-        };
-        const displayValues = {
-          [rootField.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field: rootField, childFields: [{ field: nestedField }] }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record for empty nested content value", () => {
-        const nestedField = createTestNestedContentField({ name: "nested-field", nestedFields: [] });
-        const rootField = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [rootField.name]: [{
-            primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
-            values: {
-              [nestedField.name]: [{
-                primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
-                values: {
-                },
-                displayValues: {
-                },
-                mergedFieldNames: [],
-              }],
-            },
-            displayValues: {
-              [nestedField.name]: undefined,
-            },
-            mergedFieldNames: [],
-          }],
-        };
-        const displayValues = {
-          [rootField.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues });
-        const record = ContentBuilder.createPropertyRecord({ field: nestedField }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("creates record for merged nesting content value", () => {
-        const nestedField = createTestSimpleContentField({ name: "nested-field" });
-        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [field.name]: undefined,
-        };
-        const displayValues = {
-          [field.name]: "merged",
-        };
-        const item = createTestContentItem({ values, displayValues, mergedFieldNames: [field.name] });
-        const record = ContentBuilder.createPropertyRecord({ field: nestedField }, item);
-        expect({ field: record.field.name, record: record.record }).to.matchSnapshot();
-      });
-
-      it("handles undefined display value of merged nested content value", async () => {
-        const nestedField = createTestSimpleContentField({ name: "nested-field" });
-        const field = createTestNestedContentField({ name: "root-field", nestedFields: [nestedField] });
-        const values = {
-          [field.name]: undefined,
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const item = createTestContentItem({ values, displayValues, mergedFieldNames: [field.name] });
-        const record = ContentBuilder.createPropertyRecord({ field, childFields: [{ field: nestedField }] }, item);
-        expect((record.record.value as PrimitiveValue).displayValue).to.eq("");
-      });
-
+    const extendedData = {
+      test: 123,
+    };
+    const item = createTestContentItem({
+      values: {},
+      displayValues: {},
+      extendedData,
     });
+    traverseContentItem(builder, descriptor, item);
+    expect(builder.entries.length).to.eq(1);
+    expect(builder.entries[0].record.extendedData).to.deep.eq(extendedData);
+  });
 
+  it("sets `autoExpand` flag for nested content field based property records", () => {
+    const category = createTestCategoryDescription();
+    const descriptor = createTestContentDescriptor({
+      fields: [createTestNestedContentField({
+        name: "parent",
+        category,
+        autoExpand: true,
+        nestedFields: [
+          createTestSimpleContentField({ name: "child", category }),
+        ],
+      })],
+    });
+    const item = createTestContentItem({
+      values: {
+        parent: [{
+          primaryKeys: [createTestECInstanceKey()],
+          values: {
+            child: "value",
+          },
+          displayValues: {
+            child: "display value",
+          },
+          mergedFieldNames: [],
+        }],
+      },
+      displayValues: {},
+    });
+    traverseContentItem(builder, descriptor, item);
+    expect(builder.entries.length).to.eq(1);
+    const record = builder.entries[0].record;
+    expect(record.autoExpand).to.be.true;
+    expect((record.value as ArrayValue).items[0].autoExpand).to.be.true;
+    expect(((record.value as ArrayValue).items[0].value as StructValue).members.child.autoExpand).to.be.undefined;
   });
 
 });
