@@ -41,7 +41,7 @@ export interface ChangesetIndexAndId { index: ChangesetIndex, id: ChangesetId }
  */
 export type ChangesetIndexOrId = ChangesetIndexAndId | { index: ChangesetIndex, id?: never } | { id: ChangesetId, index?: never };
 
-/** The Id assigned to a briefcase by iModelHub, or a [[BriefcaseIdValue]] that identify special kinds of iModels.
+/** The Id assigned to a briefcase by iModelHub, or [[BriefcaseIdValue.Unassigned]] .
  * @public
  */
 export type BriefcaseId = number;
