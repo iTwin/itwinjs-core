@@ -47,7 +47,7 @@ export interface ChangesetProps {
   /** The size, in bytes, of this changeset */
   size?: number;
   /** The index (sequence number) from IModelHub for this changeset. Larger index values were pushed later. */
-  index?: ChangesetIndex;
+  index: ChangesetIndex;
 }
 
 /** Properties of a changeset file
@@ -122,14 +122,14 @@ export interface BriefcaseIdArg extends IModelIdArg {
  * @internal
  */
 export interface ChangesetIdArg extends IModelIdArg {
-  changeSetId: ChangesetId;
+  csId: ChangesetId;
 }
 
 /** Argument for methods that must supply an IModelId and a ChangesetId
  * @internal
  */
 export interface ChangesetIndexArg extends IModelIdArg {
-  index: ChangesetIndex;
+  csIndex: ChangesetIndex;
 }
 /** Argument for methods that must supply an IModelId and a range of ChangesetIds.
  * @internal
@@ -151,25 +151,22 @@ export interface BackendHubAccess {
   downloadChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetFileProps[]>;
   /** Download a single changeset. */
   downloadChangeset: (arg: ChangesetIndexArg) => Promise<ChangesetFileProps>;
-  /** Query the changeset properties given a ChangesetId  */
-  queryChangeset: (arg: ChangesetIdArg) => Promise<ChangesetProps>;
-  /** Query an array of changeset properties given a range of ChangesetIds  */
+  /** Query the changeset properties given a ChangesetIndex  */
+  queryChangeset: (arg: ChangesetIndexArg) => Promise<ChangesetProps>;
+  /** Query an array of changeset properties given a range of ChangesetIndexes  */
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
-  /** Query an array of changeset properties given a range of ChangesetIds  */
-  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<ChangesetIndex>;
-  /** Get the changeSetId of the most recent changeset */
-  getLatestChangesetIndex: (arg: IModelIdArg) => Promise<ChangesetIndex>;
-  /** Get the ChangesetIndex for an IModelVersion */
-  getChangesetIndexFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetIndex>;
-  /** Get the ChangesetId for an IModelVersion */
-  getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetId>;
-  /** Get the changeSetId for a named version */
-  getChangesetIndexFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetIndex>;
+  /** push a changeset to iMOdelHub. Returns the newly pushed changeSet's index */
+  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps }) => Promise<ChangesetIndex>;
+  /** Get the ChangesetProps of the most recent changeset */
+  getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
+  /** Get the ChangesetProps for an IModelVersion */
+  getChangesetFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetProps>;
+  /** Get the ChangesetProps for a named version */
+  getChangesetFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetProps>;
 
   /** Get the index of the change set from its id */
   getChangesetIndexFromId: (arg: ChangesetIdArg) => Promise<ChangesetIndex>;
-  /** Get the index of the change set from its id */
-  getChangesetIdFromIndex: (arg: ChangesetIndexArg) => Promise<ChangesetId>;
+
   /** Acquire a new briefcaseId for the supplied iModelId
      * @note usually there should only be one briefcase per iModel per user.
      */
@@ -196,7 +193,7 @@ export interface BackendHubAccess {
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
   /** release all currently held locks */
-  releaseAllLocks: (arg: BriefcaseIdArg & ChangesetIdArg) => Promise<void>;
+  releaseAllLocks: (arg: BriefcaseIdArg & ChangesetIndexArg) => Promise<void>;
 
   /** Query codes */
   queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;

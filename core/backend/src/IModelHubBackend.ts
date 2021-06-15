@@ -10,26 +10,27 @@ import { join } from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import { BriefcaseStatus, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient, IModelHubClient, IModelQuery,
-  Lock, LockLevel, LockQuery, LockType, VersionQuery,
+  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient,
+  IModelHubClient, IModelQuery, Lock, LockLevel, LockQuery, LockType, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { CodeProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import {
+  BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetIdArg, ChangesetIndex, ChangesetIndexArg, ChangesetProps, ChangesetRange, CheckPointArg,
+  IModelIdArg, LockProps,
+} from "./BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
-import {
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetIdArg, ChangesetProps, ChangesetRange, CheckPointArg, IModelIdArg,
-  LockProps,
-} from "./BackendHubAccess";
+import { ConcurrencyControl } from "./ConcurrencyControl";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { ConcurrencyControl } from "./ConcurrencyControl";
 
 /** @internal */
 export class IModelHubBackend {
 
   private static _imodelClient?: IModelClient;
   private static _isIModelBankClient = false;
+  private static changeSet0 = { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
 
   public static setIModelClient(client?: IModelClient) {
     this._imodelClient = client;
@@ -51,34 +52,35 @@ export class IModelHubBackend {
     return arg.requestContext ?? AuthorizedBackendRequestContext.create();
   }
 
-  public static async getLatestChangesetId(arg: IModelIdArg): Promise<string> {
+  public static async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps> {
     const requestContext = await this.getRequestContext(arg);
     const changeSets: ChangeSet[] = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, new ChangeSetQuery().top(1).latest());
-    return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
+    return (changeSets.length === 0) ? this.changeSet0 : this.toChangeSetProps(changeSets[changeSets.length - 1]);
   }
 
-  public static async getChangesetIdFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<string> {
+  public static async getChangesetFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<ChangesetProps> {
     const requestContext = await this.getRequestContext(arg);
     const versions = await this.iModelClient.versions.get(requestContext, arg.iModelId, new VersionQuery().select("ChangeSetId").byName(arg.versionName));
     if (!versions[0] || !versions[0].changeSetId)
       throw new IModelError(IModelStatus.NotFound, `Named version ${arg.versionName} not found`);
-    return versions[0].changeSetId;
+
+    return this.queryChangesetById({ ...arg, csId: versions[0].changeSetId });
   }
 
-  public static async getChangesetIdFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<string> {
+  public static async getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetProps> {
     const version = arg.version;
     if (version.isFirst)
-      return "";
+      return this.queryChangeset({ ...arg, csIndex: 0 });
 
     const asOf = version.getAsOfChangeSet();
     if (asOf)
-      return asOf;
+      return this.queryChangesetById({ ...arg, csId: asOf });
 
     const versionName = version.getName();
     if (versionName)
-      return this.getChangesetIdFromNamedVersion({ ...arg, versionName });
+      return this.getChangesetFromNamedVersion({ ...arg, versionName });
 
-    return this.getLatestChangesetId(arg);
+    return this.getLatestChangeset(arg);
   }
 
   public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: string }): Promise<GuidString> {
@@ -105,7 +107,7 @@ export class IModelHubBackend {
     return iModels.length === 0 ? undefined : iModels[0].id!;
   }
 
-  public static async pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) {
+  public static async pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps }): Promise<ChangesetIndex> {
     const changeset = new ChangeSet();
     const changesetProps = arg.changesetProps;
     changeset.id = changesetProps.id;
@@ -120,11 +122,7 @@ export class IModelHubBackend {
     }
 
     const requestContext = await this.getRequestContext(arg);
-    requestContext.enter();
-    await this.iModelClient.changeSets.create(requestContext, arg.iModelId, changeset, changesetProps.pathname);
-    if (arg.releaseLocks)
-      return this.iModelClient.locks.deleteAll(requestContext, arg.iModelId, arg.changesetProps.briefcaseId);
-
+    return +(await this.iModelClient.changeSets.create(requestContext, arg.iModelId, changeset, changesetProps.pathname)).index!;
   }
 
   /** Releases a briefcaseId from iModelHub. After this call it is illegal to generate changesets for the released briefcaseId.
@@ -166,12 +164,12 @@ export class IModelHubBackend {
     return briefcase.briefcaseId!;
   }
 
-  public static async getChangesetIndexFromId(arg: IModelIdArg & { changeSetId: ChangesetId }): Promise<number> {
-    if (arg.changeSetId === "")
+  public static async getChangesetIndexFromId(arg: ChangesetIdArg): Promise<number> {
+    if (arg.csId === "")
       return 0; // the first version
 
     const requestContext = await this.getRequestContext(arg);
-    const changeSet = (await this.iModelClient.changeSets.get(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.changeSetId)))[0];
+    const changeSet = (await this.iModelClient.changeSets.get(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.csId)))[0];
     requestContext.enter();
     return +changeSet.index!;
   }
@@ -180,6 +178,7 @@ export class IModelHubBackend {
     return {
       id: cs.wsgId, parentId: cs.parentId ? cs.parentId : "", briefcaseId: cs.briefcaseId!, pushDate: cs.pushDate!,
       description: cs.description ?? "", changesType: cs.changesType ?? ChangesType.Regular, userCreated: cs.userCreated!,
+      index: +cs.index!,
     };
   }
   private static toChangeSetFileProps(cs: ChangeSet, basePath: string): ChangesetFileProps {
@@ -188,36 +187,34 @@ export class IModelHubBackend {
     return csProps;
   }
 
-  public static async queryChangeSetProps(arg: IModelIdArg & { changeSetId: ChangesetId }): Promise<ChangesetProps> {
-    const query = new ChangeSetQuery();
-    query.byId(arg.changeSetId);
-
-    const requestContext = await this.getRequestContext(arg);
-    const changeSets = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, query);
-    if (changeSets.length === 0)
-      throw new Error(`Unable to find change set ${arg.changeSetId} for iModel ${arg.iModelId}`);
-
-    return this.toChangeSetProps(changeSets[0]);
-  }
-
-  public static async queryChangeset(arg: ChangesetIdArg): Promise<ChangesetProps> {
-    const requestContext = await this.getRequestContext(arg);
-    const changeSets = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.changeSetId));
-    if (undefined === changeSets)
-      throw new IModelError(IModelStatus.NotFound, `ChangeSet ${arg.changeSetId} not found`);
-
-    return this.toChangeSetProps(changeSets[0]);
-  }
-
-  public static async downloadChangeset(arg: ChangesetIdArg): Promise<ChangesetFileProps> {
+  public static async downloadChangeset(arg: ChangesetIndexArg): Promise<ChangesetFileProps> {
     const requestContext = await this.getRequestContext(arg);
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(arg.iModelId);
 
-    const changeSets = await this.iModelClient.changeSets.download(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.changeSetId), changeSetsPath);
+    // NEEDS_WORK - allow download by index
+    const cSet = await this.queryChangeset(arg);
+    const changeSets = await this.iModelClient.changeSets.download(requestContext, arg.iModelId, new ChangeSetQuery().byId(cSet.id), changeSetsPath);
     if (undefined === changeSets)
-      throw new IModelError(IModelStatus.NotFound, `ChangeSet ${arg.changeSetId} not found`);
+      throw new IModelError(IModelStatus.NotFound, `ChangeSet ${arg.csIndex} not found`);
 
     return this.toChangeSetFileProps(changeSets[0], BriefcaseManager.getChangeSetsPath(arg.iModelId));
+  }
+
+  private static async queryChangesetById(arg: ChangesetIdArg): Promise<ChangesetProps> {
+    const requestContext = await this.getRequestContext(arg);
+    const changeSets = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, new ChangeSetQuery().byId(arg.csId));
+    if (undefined === changeSets)
+      throw new IModelError(IModelStatus.NotFound, `ChangeSet ${arg.csId} not found`);
+
+    return this.toChangeSetProps(changeSets[0]);
+  }
+  public static async queryChangeset(arg: ChangesetIndexArg): Promise<ChangesetProps> {
+    if (arg.csIndex <= 0)
+      return this.changeSet0;
+
+    const requestContext = await this.getRequestContext(arg);
+    const query = new ChangeSetQuery().filter(`Index+eq+${arg.csIndex}`);
+    return this.toChangeSetProps((await this.iModelClient.changeSets.get(requestContext, arg.iModelId, query))[0]);
   }
 
   private static async getQueryFromRange(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangeSetQuery | undefined> {
@@ -226,14 +223,16 @@ export class IModelHubBackend {
       return query; // returns all changesets
 
     const range = arg.range;
-    const after = range.after ?? (range.first === "" ? "" : (await this.queryChangeSetProps({ ...arg, changeSetId: range.first })).parentId);
-    if (range.end === "" || after === range.end)
-      return undefined;
+    const after = range.first === 0 ? "" : (await this.queryChangeset({ ...arg, csIndex: range.first })).parentId;
 
     if (!range.end)
       query.fromId(after); //
-    else
-      query.betweenChangeSets(range.end, after); // note: weird order is necessary because second arg being blank means "from start"
+    else {
+      const last = (await this.queryChangeset({ ...arg, csIndex: range.end })).id;
+      if (range.end === 0 || after === last)
+        return undefined;
+      query.betweenChangeSets(last, after); // note: weird order is necessary because second arg being blank means "from start"
+    }
 
     return query;
   }

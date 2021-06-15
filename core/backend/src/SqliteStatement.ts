@@ -129,6 +129,12 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       throw new IModelError(stat, "Error in bindValue");
   }
 
+  public bindId(parameter: number | string, id: Id64String) {
+    const stat = this._stmt!.bindId(parameter, id);
+    if (stat !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(stat, "Error in bindId");
+  }
+
   /** Bind values to all parameters in the statement.
    * @param values The values to bind to the parameters.
    * Pass an *array* of values if the parameters are *positional*.
