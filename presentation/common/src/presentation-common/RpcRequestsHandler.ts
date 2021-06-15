@@ -13,6 +13,7 @@ import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { DiagnosticsScopeLogs } from "./Diagnostics";
 import { InstanceKeyJSON } from "./EC";
+import { ElementProperties } from "./ElementProperties";
 import { PresentationError, PresentationStatus } from "./Error";
 import { NodeKeyJSON } from "./hierarchy/Key";
 import { NodeJSON } from "./hierarchy/Node";
@@ -21,7 +22,8 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, Paged, RequestOptions, SelectionScopeRequestOptions,
+  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, Paged, RequestOptions,
+  SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { RulesetVariableJSON } from "./RulesetVariables";
@@ -163,6 +165,11 @@ export class RpcRequestsHandler implements IDisposable {
   public async getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON, RulesetVariableJSON>): Promise<PagedResponse<DisplayValueGroupJSON>> {
     return this.request<PagedResponse<DisplayValueGroupJSON>, DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON, RulesetVariableJSON>>(
       this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
+  }
+
+  public async getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined> {
+    return this.request<ElementProperties | undefined, ElementPropertiesRequestOptions<IModelRpcProps>>(
+      this.rpcClient.getElementProperties.bind(this.rpcClient), options);
   }
 
   public async getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON> {

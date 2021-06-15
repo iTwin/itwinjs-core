@@ -464,8 +464,8 @@ export class SelectionTool extends PrimitiveTool {
     if (undefined === currHit)
       currHit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
 
-    if (undefined !== currHit && !currHit.isElementHit)
-      return IModelApp.viewManager.onDecorationButtonEvent(currHit, ev);
+    if (undefined !== currHit)
+      return (currHit.isElementHit ? IModelApp.viewManager.overrideElementButtonEvent(currHit, ev) : IModelApp.viewManager.onDecorationButtonEvent(currHit, ev));
 
     return EventHandled.No;
   }
