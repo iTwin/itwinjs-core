@@ -792,8 +792,12 @@
       "program": "${workspaceFolder}/presentation/testing/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        ".mocharc.json",
+        "../.mocharc.json",
         "--no-timeouts",
+        "-r",
+        "ignore-styles",
+        "-r",
+        "jsdom-global/register",
         "lib/test/**/*.test.js"
       ],
       "outFiles": [

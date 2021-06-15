@@ -394,7 +394,7 @@
     },
     {
       "name": "chai-subset",
-      "allowedCategories": [ "backend", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "chalk",
@@ -542,7 +542,7 @@
     },
     {
       "name": "faker",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "fast-deep-equal",
@@ -972,7 +972,7 @@
     },
     {
       "name": "sinon-chai",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "source-map-loader",
