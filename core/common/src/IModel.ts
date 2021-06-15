@@ -256,6 +256,15 @@ export class EcefLocation implements EcefLocationProps {
     if (!this.origin.isAlmostEqual(other.origin) || !this.orientation.isAlmostEqual(other.orientation))
       return false;
 
+    if ((this.xVector === undefined) !== (other.xVector === undefined) || (this.yVector === undefined) !== (other.yVector === undefined))
+      return false;
+
+    if (this.xVector !== undefined && other.xVector !== undefined && !this.xVector.isAlmostEqual(other.xVector))
+      return false;
+
+    if (this.yVector !== undefined && other.yVector !== undefined && !this.yVector.isAlmostEqual(other.yVector))
+      return false;
+
     const thisCarto = this.cartographicOrigin;
     const otherCarto = other.cartographicOrigin;
     if (undefined === thisCarto || undefined === otherCarto)
@@ -272,6 +281,12 @@ export class EcefLocation implements EcefLocationProps {
 
     if (this.cartographicOrigin)
       props.cartographicOrigin = this.cartographicOrigin.toJSON();
+
+    if (this.xVector)
+      props.xVector = this.xVector.toJSON();
+
+    if (this.yVector)
+      props.yVector = this.yVector.toJSON();
 
     return props;
   }
