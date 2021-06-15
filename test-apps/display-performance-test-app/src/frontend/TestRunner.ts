@@ -472,10 +472,7 @@ export class TestRunner {
       await BeDuration.wait(100);
     }
 
-    const extTexLoader = ExternalTextureLoader.instance;
-    while (extTexLoader.numActiveRequests > 0 || extTexLoader.numPendingRequests > 0) {
-      await BeDuration.wait(100);
-    }
+    await System.instance.waitForAllExternalTextures();
 
     viewport.renderFrame();
     timer.stop();

@@ -64,6 +64,8 @@ class System extends MockRender.System {
     addIsDisposed(ret);
     return ret;
   }
+
+  public async waitForAllExternalTextures(): Promise<void> { return Promise.resolve(); }
 }
 
 function isDisposed(disposable: any): boolean {

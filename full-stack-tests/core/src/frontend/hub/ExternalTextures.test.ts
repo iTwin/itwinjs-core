@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/webgl";
+import { ExternalTextureLoader, ExternalTextureRequest, GL, System, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestUtility } from "./TestUtility";
 
@@ -88,9 +88,7 @@ describe("external texture requests (#integration)", () => {
 
     loadTextures();
 
-    await waitUntil(() => {
-      return extTexLoader.numActiveRequests === 0 && extTexLoader.numPendingRequests === 0;
-    });
+    await System.instance.waitForAllExternalTextures();
 
     const numExpectedGoodRequests = texNames.length - numExpectedBadRequests;
     expect(finishedTexRequests.length).to.equal(numExpectedGoodRequests);
@@ -137,11 +135,3 @@ describe("external texture requests (#integration)", () => {
     await testDownsamplingTextures();
   });
 });
-
-async function waitUntil(condition: () => boolean): Promise<void> {
-  if (condition())
-    return;
-
-  await new Promise<void>((resolve: any) => setTimeout(resolve, 100));
-  return waitUntil(condition);
-}

@@ -138,6 +138,8 @@ export namespace MockRender {
     public createPolyline(_params: PolylineParams) { return new Graphic(); }
     public createPointString(_params: PointStringParams) { return new Graphic(); }
     public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) { return new Graphic(); }
+
+    public async waitForAllExternalTextures(): Promise<void> { return Promise.resolve(); }
   }
 
   /** @internal */

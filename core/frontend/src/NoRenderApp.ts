@@ -56,6 +56,7 @@ export class NullRenderSystem extends RenderSystem {
   public createGraphicBranch() { return undefined as any; }
   public createBatch() { return undefined as any; }
   public dispose() { }
+  public async waitForAllExternalTextures(): Promise<void> { return Promise.resolve(); }
   public constructor() { super(); }
 }
 

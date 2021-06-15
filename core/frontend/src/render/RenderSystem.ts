@@ -391,6 +391,9 @@ export abstract class RenderSystem implements IDisposable {
    */
   public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
 
+  /** Return a Promise which when resolved indicates that all pending external textures have finished loading from the backend. */
+  public abstract waitForAllExternalTextures(): Promise<void>;
+
   /** Create a graphic that assumes ownership of another graphic.
    * @param ownedGraphic The RenderGraphic to be owned.
    * @returns The owning graphic that exposes a `disposeGraphic` method for explicitly disposing of the owned graphic.
