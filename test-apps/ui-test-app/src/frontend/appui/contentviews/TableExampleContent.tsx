@@ -15,7 +15,7 @@ import {
   Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget, TypeConverter, TypeConverterManager,
 } from "@bentley/ui-components";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
-import { ToggleSwitch } from "@itwin/itwinui-react";
+import { Input, Select, SelectOption, ToggleSwitch } from "@itwin/itwinui-react";
 import { BodyText, Gap } from "@bentley/ui-core";
 
 class TableExampleContentControl extends ContentControl {
@@ -301,34 +301,12 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
     this.loadData(this.state.useUtc);
   }
 
-  private _onChangeSelectionMode = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    let selectionMode: SelectionMode;
-
-    switch (e.target.value) {
-      case "1":
-        selectionMode = SelectionMode.Single;
-        break;
-      case "5":
-        selectionMode = SelectionMode.SingleAllowDeselect;
-        break;
-      case "6":
-        selectionMode = SelectionMode.Multiple;
-        break;
-      case "12":
-        selectionMode = SelectionMode.Extended;
-        break;
-      default: selectionMode = SelectionMode.Single;
-    }
-    this.setState({ selectionMode });
+  private _onChangeSelectionMode = (newValue: SelectionMode) => {
+    this.setState({ selectionMode: newValue });
   };
 
-  private _onChangeTableSelectionTarget = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (e.target.value === "0") {
-      this.setState({ tableSelectionTarget: TableSelectionTarget.Row });
-      return;
-    }
-
-    this.setState({ tableSelectionTarget: TableSelectionTarget.Cell });
+  private _onChangeTableSelectionTarget = (newValue: TableSelectionTarget) => {
+    this.setState({ tableSelectionTarget: newValue });
   };
 
   private _updatePropertyRecord(record: PropertyRecord, newValue: PropertyValue): PropertyRecord {
@@ -389,26 +367,30 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
     }
   };
 
+  private _selectionModes: SelectOption<SelectionMode>[] = [
+    { value: SelectionMode.Single, label: "Single" },
+    { value: SelectionMode.SingleAllowDeselect, label: "Single Allow Deselect" },
+    { value: SelectionMode.Multiple, label: "Multiple" },
+    { value: SelectionMode.Extended, label: "Extended" },
+  ];
+
+  private _selectionTargets: SelectOption<TableSelectionTarget>[] = [
+    { value: TableSelectionTarget.Row, label: "Row" },
+    { value: TableSelectionTarget.Cell, label: "Cell" },
+  ];
+
   public render(): React.ReactNode {
     return (
       <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
         <div style={{ display: "flex", alignItems: "center", height: "32px" }}>
-          <select onChange={this._onChangeSelectionMode} aria-label="Selection Mode">
-            <option value={SelectionMode.Single}>Single</option>
-            <option value={SelectionMode.SingleAllowDeselect}>SingleAllowDeselect</option>
-            <option value={SelectionMode.Multiple}>Multiple</option>
-            <option value={SelectionMode.Extended}>Extended</option>
-          </select>
+          <Select onChange={this._onChangeSelectionMode} aria-label="Selection Mode" value={this.state.selectionMode} options={this._selectionModes} />
           <Gap />
-          <select onChange={this._onChangeTableSelectionTarget} aria-label="Selection Target">
-            <option value={TableSelectionTarget.Row}>Row</option>
-            <option value={TableSelectionTarget.Cell}>Cell</option>
-          </select>
+          <Select onChange={this._onChangeTableSelectionTarget} aria-label="Selection Target" value={this.state.tableSelectionTarget} options={this._selectionTargets} />
           <Gap />
           <label>
             <BodyText>Top row:</BodyText>
             &nbsp;
-            <input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
+            <Input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
             &nbsp;
             <span>({this.state.topRow})</span>
           </label>

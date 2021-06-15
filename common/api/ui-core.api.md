@@ -1142,13 +1142,13 @@ export function LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Elemen
 export interface LabeledThemedSelectProps extends ThemedSelectProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @public
+// @public @deprecated
 export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface LabeledToggleProps extends ToggleSwitchProps {
     label?: string;
     labelClassName?: string;

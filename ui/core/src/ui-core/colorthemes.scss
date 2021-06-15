@@ -11,8 +11,8 @@
  */
 
 @mixin light-theme {
-  --buic-button-gradient1:            rgba(var(--buic-foreground-body-reverse-rgb), 0.65);
-  --buic-button-gradient2:            rgba(var(--buic-foreground-body-reverse-rgb), 0.00);
+  --buic-button-gradient1:            rgba(var(--iui-color-foreground-body-invert-rgb), 0.65);
+  --buic-button-gradient2:            rgba(var(--iui-color-foreground-body-invert-rgb), 0.00);
 
   --buic-background-editable:         #{mix($iui-color-background-1--light, $iui-color-background-primary--light, 70%)};
   --buic-row-selection:               #{mix($iui-color-background-1--light, $iui-color-background-primary--light, 80%)};
@@ -20,8 +20,8 @@
 }
 
 @mixin dark-theme {
-  --buic-button-gradient1:            rgba(var(--buic-foreground-body-reverse-rgb), 0.00);
-  --buic-button-gradient2:            rgba(var(--buic-foreground-body-reverse-rgb), 0.25);
+  --buic-button-gradient1:            rgba(var(--iui-color-foreground-body-invert-rgb), 0.00);
+  --buic-button-gradient2:            rgba(var(--iui-color-foreground-body-invert-rgb), 0.25);
 
   --buic-background-editable:         #{mix($iui-color-background-1--dark, $iui-color-background-primary--dark, 70%)};
   --buic-row-selection:               #{mix($iui-color-background-1--dark, $iui-color-background-primary--dark, 80%)};

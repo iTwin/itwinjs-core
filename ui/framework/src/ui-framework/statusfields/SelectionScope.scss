@@ -23,7 +23,7 @@
   }
 
   > .uifw-statusFields-selectionScope-selector {
-    @include uicore-inputs-select;
+    min-width: 130px;
 
     @include for-tablet-portrait-down {
       font-size: $font-size-medium;

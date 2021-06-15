@@ -162,7 +162,9 @@ deprecated;LabeledTextareaProps
 beta;LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element
 beta;LabeledThemedSelectProps 
 public;LabeledToggle 
+deprecated;LabeledToggle 
 public;LabeledToggleProps 
+deprecated;LabeledToggleProps 
 public;LeadingText(props: TextProps): JSX.Element
 deprecated;LeadingText(props: TextProps): JSX.Element
 public;LeadingText2(props: TextProps): JSX.Element

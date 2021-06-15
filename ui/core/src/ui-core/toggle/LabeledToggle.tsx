@@ -13,6 +13,7 @@ import { ToggleSwitch, ToggleSwitchProps } from "@itwin/itwinui-react";
 
 /** Properties for [[LabeledToggle]]
  * @public
+ * @deprecated Use ToggleSwitchProps from itwinui-react instead
  */
 export interface LabeledToggleProps extends ToggleSwitchProps {
   /** Text that will be shown next to the Toggle. */
@@ -25,8 +26,9 @@ export interface LabeledToggleProps extends ToggleSwitchProps {
 
 /** Toggle component with a Label to the right
  * @public
+ * @deprecated Use ToggleSwitch from itwinui-react with `labelPosition="right"` instead
  */
-export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
+export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {  // eslint-disable-line deprecation/deprecation
   public render(): JSX.Element {
     const { label, labelClassName, className, style, ...props } = this.props;
 
