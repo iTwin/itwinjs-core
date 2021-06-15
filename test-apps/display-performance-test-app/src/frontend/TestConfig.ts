@@ -218,6 +218,12 @@ export class TestConfig {
     console.log (`outputPath ${this.outputPath}`);  // eslint-disable-line no-console
     void this.logToConsole(`isIOSAppFrontEnd ${ProcessDetector.isIOSAppFrontend}`); // qqq temp debug, and following line
     console.log (`isIOSAppFrontEnd ${ProcessDetector.isIOSAppFrontend}`); // eslint-disable-line no-console
+    void this.logToConsole(`window ${window}`); // qqq temp debug, and following line
+    console.log (`window ${window}`); // eslint-disable-line no-console
+    void this.logToConsole(`window.location ${window.location}`); // qqq temp debug, and following line
+    console.log (`window.location ${window.location}`); // eslint-disable-line no-console
+    void this.logToConsole(`window.location.hash ${window.location.hash}`); // qqq temp debug, and following line
+    console.log (`window.location.hash ${window.location.hash}`); // eslint-disable-line no-console
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
