@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { AnalysisStyle, AnalysisStyleDisplacement, AnalysisStyleScalar, ThematicGradientSettings } from "@bentley/imodeljs-common";
+import { AnalysisStyleDisplacement, AnalysisStyleScalar, ThematicGradientSettings } from "@bentley/imodeljs-common";
 import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
@@ -145,7 +145,6 @@ function getDisplacementChannel(params: DrawParams): { channel: AuxDisplacementC
   if (!displacement)
     return undefined;
 
-  const lutGeom = params.geometry.asLUT!;
   const channel = params.geometry.asLUT?.lut.auxChannels?.displacements?.get(displacement.channelName);
   return channel ? { channel, displacement } : undefined;
 }

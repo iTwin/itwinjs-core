@@ -6,14 +6,13 @@
  * @module DisplayStyles
  */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { Range1d, Range1dProps } from "@bentley/geometry-core";
 import { ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 import { Gradient } from "./Gradient";
 
 /** JSON representation of an [[AnalysisStyleDisplacement]].
  * @see [[AnalysisStyleProps.displacement]].
- * @beta
+ * @public
  */
 export interface AnalysisStyleDisplacementProps {
   /** @see [[AnalysisStyleDisplacement.channelName]]. */
@@ -26,7 +25,7 @@ export interface AnalysisStyleDisplacementProps {
 
 /** Describes how an [[AnalysisStyle]] deforms a [Polyface]($geometry-core) by applying translation to its vertices.
  * @see [[AnalysisStyle.displacement]].
- * @beta
+ * @public
  */
 export class AnalysisStyleDisplacement {
   /** The name of the [AuxChannel]($geometry-core) supplying the displacements to be applied to the vertices. */
@@ -64,7 +63,7 @@ export class AnalysisStyleDisplacement {
 
 /** JSON representation of an [[AnalysisStyleScalar]].
  * @see [[AnalysisStyleProps.scalar]].
- * @beta
+ * @public
  */
 export interface AnalysisStyleScalarProps {
   /** @see [[AnalysisStyleScalar.channelName]]. */
@@ -80,7 +79,7 @@ export interface AnalysisStyleScalarProps {
 /** Describes how an [[AnalysisStyle]] recolors [Polyface]($geometry-core) vertices by mapping scalar values supplied
  * by an [AuxChannel]($geometry-core) to colors supplied by a [[Gradient]] image.
  * @see [[AnalysisStyle.scalar]].
- * @beta
+ * @public
  */
 export class AnalysisStyleScalar {
   /** The name of the [AuxChannel]($geometry-core) supplying the scalar values from which the vertex colors are computed. */
@@ -133,7 +132,7 @@ export class AnalysisStyleScalar {
 }
 
 /** JSON representation of an [[AnalysisStyle]].
- * @beta
+ * @public
  */
 export interface AnalysisStyleProps {
   /** @see [[AnalysisStyle.displacement]]. */
@@ -193,7 +192,7 @@ function tryConvertLegacyProps(input: AnalysisStyleProps): AnalysisStyleProps {
  * translating vertices and/or recolor vertices using [[ThematicDisplay]].
  * @see [[DisplayStyleSettings.analysisStyle]] to define the analysis style for a [DisplayStyle]($backend).
  * @see [Viewport.analysisFraction]($frontend) to control playback of the animation.
- * @beta
+ * @public
  */
 export class AnalysisStyle {
   public readonly displacement?: AnalysisStyleDisplacement;

@@ -100,13 +100,9 @@ export interface DisplayStyleSettingsProps {
   monochromeColor?: ColorDefProps;
   /** The style in which the monochrome color is applied. Default: [[MonochromeMode.Scaled]]. */
   monochromeMode?: MonochromeMode;
-  /** Settings controlling display of analytical models.
-   * @alpha
-   */
+  /** Settings controlling display of analytical models. */
   analysisStyle?: AnalysisStyleProps;
-  /** A floating point value in [0..1] representing the animation state of this style's [[analysisStyle]]. Default: 0.0.
-   * @alpha
-   */
+  /** A floating point value in [0..1] representing the animation state of this style's [[analysisStyle]]. Default: 0.0. */
   analysisFraction?: number;
   /** A schedule script embedded into the display style settings. This is how schedule scripts were stored prior to the introduction of
    * [RenderTimeline]($backend) elements. It should no longer be used - instead, set [[renderTimeline]] to the Id of the RenderTimeline element
@@ -500,13 +496,9 @@ export class DisplayStyleSettings {
   public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
   /** Event raised just prior to assignment to the [[timePoint]] property. */
   public readonly onTimePointChanged = new BeEvent<(newTimePoint: number | undefined) => void>();
-  /** Event raised just prior to assignment to the [[analysisStyle]] property.
-   * @alpha
-   */
+  /** Event raised just prior to assignment to the [[analysisStyle]] property. */
   public readonly onAnalysisStyleChanged = new BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>();
-  /** Event raised just prior to assignment to the [[analysisFraction]] property.
-   * @alpha
-   */
+  /** Event raised just prior to assignment to the [[analysisFraction]] property. */
   public readonly onAnalysisFractionChanged = new BeEvent<(newFraction: number) => void>();
   /** Event raised when the contents of [[excludedElementIds]] changes. */
   public readonly onExcludedElementsChanged = new BeEvent<() => void>();
@@ -712,8 +704,7 @@ export class DisplayStyleSettings {
   }
 
   /** Settings controlling the display of analytical models.
-   * @note Do not modify this object directly. Instead, create a clone and pass it to the setter.
-   * @alpha
+   * @see [[analysisFraction]] to control playback of the animation.
    */
   public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
   public set analysisStyle(style: AnalysisStyle | undefined) {
@@ -725,7 +716,9 @@ export class DisplayStyleSettings {
       delete this._json.analysisStyle;
   }
 
-  /** @alpha */
+  /** A value in [0..1] indicating the current point in animation of the [[analysisStyle]], where 0 corresponds to the beginning of
+   * the animation and 1 to the end.
+   */
   public get analysisFraction(): number {
     const fraction = this._json.analysisFraction ?? 0;
     return Math.max(0, Math.min(1, fraction));

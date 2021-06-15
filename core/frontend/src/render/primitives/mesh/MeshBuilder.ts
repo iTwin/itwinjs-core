@@ -172,7 +172,7 @@ export class MeshBuilder {
         const index = this.mesh.addVertex(props);
         this.mesh.addAuxChannels(auxData.channels, index);
         return index;
-      }
+      };
     } else {
       addVertex = (props: VertexKeyProps) => this.addVertex(props);
     }

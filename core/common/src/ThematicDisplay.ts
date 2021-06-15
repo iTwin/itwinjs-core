@@ -179,7 +179,7 @@ export class ThematicGradientSettings {
       props.colorMix = this.colorMix;
 
     if (this.customKeys.length > 0)
-      props.customKeys = this.customKeys.map((key) => { return { value: key.value, color: key.color.toJSON() } });
+      props.customKeys = this.customKeys.map((key) => { return { value: key.value, color: key.color.toJSON() }; });
 
     return props;
   }

@@ -8,9 +8,9 @@
 
 import { assert, Mutable } from "@bentley/bentleyjs-core";
 import {
-  AuxChannel as PolyfaceAuxChannel, AuxChannelDataType, Point3d, Range1d, Range3d, Vector3d,
+  AuxChannelDataType, AuxChannel as PolyfaceAuxChannel, Point3d, Range1d, Range3d, Vector3d,
 } from "@bentley/geometry-core";
-import { QParams3d, QPoint3d, Quantization, OctEncodedNormal } from "@bentley/imodeljs-common";
+import { OctEncodedNormal, QParams3d, QPoint3d, Quantization } from "@bentley/imodeljs-common";
 import { computeDimensions } from "./VertexTable";
 
 /** @internal */
@@ -160,7 +160,7 @@ class AuxChannelTableBuilder {
     this._props = props;
     this._numBytesPerVertex = numBytesPerVertex;
     this._view = new DataView(props.data);
-    }
+  }
 
   public static buildAuxChannelTable(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {
     const numBytesPerVertex = channels.reduce((accum, channel) => accum + computeNumBytesPerVertex(channel), 0);
@@ -173,7 +173,7 @@ class AuxChannelTableBuilder {
 
     // We don't want any unused bytes. If we've got 2 extra, make every other vertex's channel start in the middle of the first texel.
     let dimensions;
-    if (0 != nUnusedBytesPerVertex)
+    if (0 !== nUnusedBytesPerVertex)
       dimensions = computeDimensions(Math.floor((numVertices + 1) / 2), numBytesPerVertex / 2, 0); // twice as many RGBA for half as many vertices.
     else
       dimensions = computeDimensions(numVertices, nRgbaPerVertex, 0);
@@ -254,10 +254,9 @@ class AuxChannelTableBuilder {
       let byteIndex = byteOffset + i * 2; // 2 bytes per double
       indices.push(byteIndex / 2); // indices aligned to 2-byte intervals
 
-      const data = channel.data[i];
-      for (let j = 0; j < data.values.length; j++) {
-        const value = Quantization.quantize(data.values[j], range.low, qScale);
-        this._view.setUint16(byteIndex, value, true);
+      for (const value of channel.data[i].values) {
+        const quantized = Quantization.quantize(value, range.low, qScale);
+        this._view.setUint16(byteIndex, quantized, true);
         byteIndex += this._numBytesPerVertex;
       }
     }
