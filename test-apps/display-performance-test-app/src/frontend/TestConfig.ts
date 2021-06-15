@@ -9,7 +9,6 @@ import {
   BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { RenderSystem, TileAdmin } from "@bentley/imodeljs-frontend";
-import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface"; // qqq temp dbg
 
 /** Dimensions of the Viewport for a TestConfig. */
 export interface ViewSize {
@@ -158,7 +157,6 @@ export const defaultHilite = new Hilite.Settings();
 export const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
 export const isWindows = window.navigator.userAgent.toLowerCase().includes("win");
 
-
 /** Configures how one or more tests are run. A Test belongs to a TestSet and can test multiple iModels and views thereof.
  * A single base config is supplied by the backend.
  * Each TestSet can override aspects of that base config.
@@ -216,8 +214,6 @@ export class TestConfig {
     this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
-    void this.logToConsole(`isWindows ${isWindows}`); // qqq temp debug, and following line
-    console.log (`isWindows ${isWindows}`); // eslint-disable-line no-console
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
@@ -275,10 +271,6 @@ export class TestConfig {
 
     if (props.emphasis)
       this.emphasis = hiliteSettings(this.emphasis ?? defaultEmphasis, props.emphasis);
-  }
-
-  private async logToConsole(message: string): Promise<void> { // qqq temp dbg function
-    return DisplayPerfRpcInterface.getClient().consoleLog(message);
   }
 
   /** Returns true if IModelApp must be restarted when transitioning from this config to the specified config. */
