@@ -9,6 +9,7 @@ import {
   BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { RenderSystem, TileAdmin } from "@bentley/imodeljs-frontend";
+import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface"; // qqq temp dbg
 
 /** Dimensions of the Viewport for a TestConfig. */
 export interface ViewSize {
@@ -213,6 +214,10 @@ export class TestConfig {
     this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
+    void this.logToConsole(`outputPath ${this.outputPath}`); // qqq temp debug, and following line
+    console.log (`outputPath ${this.outputPath}`);  // eslint-disable-line no-console
+    void this.logToConsole(`isIOSAppFrontEnd ${ProcessDetector.isIOSAppFrontend}`); // qqq temp debug, and following line
+    console.log (`isIOSAppFrontEnd ${ProcessDetector.isIOSAppFrontend}`); // eslint-disable-line no-console
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
@@ -270,6 +275,10 @@ export class TestConfig {
 
     if (props.emphasis)
       this.emphasis = hiliteSettings(this.emphasis ?? defaultEmphasis, props.emphasis);
+  }
+
+  private async logToConsole(message: string): Promise<void> { // qqq temp dbg function
+    return DisplayPerfRpcInterface.getClient().consoleLog(message);
   }
 
   /** Returns true if IModelApp must be restarted when transitioning from this config to the specified config. */
