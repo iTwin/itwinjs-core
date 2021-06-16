@@ -37,7 +37,7 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
  */
 export type BriefcaseId = number;
 
-/** The argument for [[BriefcaseManager.downloadBriefcase]
+/** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @public
 */
 export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
@@ -240,7 +240,7 @@ export class BriefcaseManager {
     try {
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getParentChangeSetId() !== args.checkpoint.changeSetId)
-        throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changeSetId: ${fileName}`);
+        throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);
     } finally {
       nativeDb.closeIModel();
     }
