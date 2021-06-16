@@ -316,9 +316,7 @@
     },
     {
       "name": "agentkeepalive",
-      "allowedCategories": [
-        "backend"
-      ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "almost-equal",
@@ -705,6 +703,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "memfs",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "micro-memoize",
       "allowedCategories": [ "frontend" ]
     },
@@ -739,6 +741,10 @@
     {
       "name": "nock",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+    },
+    {
+      "name": "node-fetch",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "nodemon",
@@ -794,9 +800,7 @@
     },
     {
       "name": "proper-lockfile",
-      "allowedCategories": [
-        "backend"
-      ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "puppeteer",
@@ -983,6 +987,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
+      "name": "snap-shot-it",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "source-map-loader",
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -1093,6 +1101,10 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "unionfs",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "url-loader",
