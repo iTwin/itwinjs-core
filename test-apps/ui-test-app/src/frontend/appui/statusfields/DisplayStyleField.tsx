@@ -86,15 +86,20 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
     FrontstageManager.onContentControlActivatedEvent.removeListener(this._handleContentControlActivatedEvent);
   }
 
-  private _handleDisplayStyleSelected = (newValue: string): void => {
+  private _handleDisplayStyleSelected = async (newValue: string) => {
     if (!this.state.viewport)
       return;
 
     const viewport = this.state.viewport;
-    viewport.displayStyle = this.state.displayStyles.get(newValue)!.clone();
-    viewport.invalidateScene();
-    viewport.synchWithView();
-    this.setState({ viewport });
+    const style = this.state.displayStyles.get(newValue)!.clone();
+    if (style) {
+      await style.load();
+
+      viewport.displayStyle = style;
+      viewport.invalidateScene();
+      viewport.synchWithView();
+      this.setState({ viewport });
+    }
   };
 
   public render(): React.ReactNode {

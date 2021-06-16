@@ -1,14 +1,14 @@
 # Write A Web Agent
 
-A [Web Agent](../learning/App.md#imodel-agents) is backend code.
+A [Web Agent](./App.md#imodel-agents) is backend code.
 
-[iModel Query Agent](https://github.com/imodeljs/imodel-query-agent) is a complete example of an agent.
+Follow the [Agent Starter Tutorial](https://github.com/imodeljs/agent-starter) for a complete example of an agent.
 
 See [how to write backend code](./backend/index.md).
 
-Typically, a Web Agent will not implement and expose RpcInterfaces, although it may call on services that do.
+Typically, an Agent will not implement and expose RpcInterfaces, although it may call on services that do.
 
 To develop a Web Agent, you will also:
 
-- Register for iModelHub events
+- [Register for iModelHub events](./iModelHub/Events.md)
 - [Package and deploy to the Web](./PackageAndDeployToTheWeb.md)

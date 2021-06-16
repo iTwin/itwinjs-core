@@ -32,7 +32,7 @@ public;ActivityMessageUpdatedEvent
 internal;addMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState
 internal;addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, side: PanelSide): NineZoneState
 internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray
-alpha;AnalysisAnimationTimelineDataProvider 
+public;AnalysisAnimationTimelineDataProvider 
 public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 internal;appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray
@@ -178,7 +178,7 @@ deprecated;DefaultNavigationProps
 beta;DefaultNavigationWidget 
 deprecated;DefaultNavigationWidget 
 internal;DefaultToolSettingsProvider 
-alpha;DefaultViewOverlay 
+public;DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps): JSX.Element
 public;DialogChangedEvent 
 public;DialogChangedEventArgs
 internal;DialogGridContainer({ componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element
@@ -660,6 +660,7 @@ beta;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
 internal;useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined
 public;useActiveViewport(): ScreenViewport | undefined
+public;useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined
 internal;useAvailableUiItemsProviders(): readonly string[]
 beta;useBackstageManager: () => BackstageManager
 internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
@@ -680,6 +681,8 @@ beta;UserSettingsProvider
 public;UserSettingsStorage 
 internal;useSavedFrontstageState(frontstageDef: FrontstageDef): void
 internal;useSaveFrontstageSettings(frontstageDef: FrontstageDef): void
+public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined
+beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
 internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
 internal;useToolSettingsNode(): React.ReactNode
@@ -696,6 +699,7 @@ alpha;ValidationTextbox
 internal;VersionInfo
 beta;ViewAttributesStatusField 
 public;ViewLayout
+public;ViewOverlayProps
 public;ViewportContentControl 
 beta;ViewSelector 
 beta;ViewSelectorChangedEvent 
