@@ -16,7 +16,7 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
   const vol = new Volume();
 
   beforeEach(() => {
-    testConfig = getTestConfig("assets/copy-bentley-static-resources-plugin-test/test.js", [new CopyBentleyStaticResourcesPlugin(["assets"])]);
+    testConfig = getTestConfig("assets/copy-bentley-static-resources-plugin-test/test.js", [new CopyBentleyStaticResourcesPlugin(["assets"])]); // eslint-disable-line deprecation/deprecation
     vol.fromJSON({
       "lib/test/assets/copy-bentley-static-resources-plugin-test/test.js": "",
     });
@@ -30,7 +30,7 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
     setApplicationDir(path.join(__dirname, "assets/copy-bentley-static-resources-plugin-test"));
     const result = await runWebpack(testConfig, vol);
     expect(result.logging).to.not.have.property("CopyBentleyStaticResourcesPlugin");
-    expect(fs.readFileSync(path.join(__dirname, "dist/assets/staticResourcePlugin.js"), "utf8")).to.equal(`console.log("Fake resource");`)
+    expect(fs.readFileSync(path.join(__dirname, "dist/assets/staticResourcePlugin.js"), "utf8")).to.equal(`console.log("Fake resource");`);
   });
 
   it("should log warning when unable to find node_modules/@bentley directory", async () => {
