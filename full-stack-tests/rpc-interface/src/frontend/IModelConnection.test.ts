@@ -6,7 +6,7 @@ import * as chai from "chai";
 import { Id64, Id64Set } from "@bentley/bentleyjs-core";
 import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, MassPropertiesOperation,
+  EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation,
   MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps,
 } from "@bentley/imodeljs-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
@@ -78,8 +78,9 @@ describe("IModel Connection with client credentials", () => {
   it("should successfully open an IModelConnection for read", async () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
+    const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeSetId;
 
-    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId);
+    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId, undefined === changeSetId ? IModelVersion.latest() : IModelVersion.asOfChangeSet(changeSetId));
 
     expect(iModel).to.exist.and.be.not.empty;
 
