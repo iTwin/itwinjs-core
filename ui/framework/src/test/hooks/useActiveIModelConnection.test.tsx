@@ -6,15 +6,19 @@ import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
 import * as moq from "typemoq";
-import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
+import * as sinon from "sinon";
+
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { IModelConnection, MockRender, SelectionSet } from "@bentley/imodeljs-frontend";
 import { render } from "@testing-library/react";
+import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { SyncUiEventDispatcher, UiFramework, useActiveIModelConnection } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
 describe("useActiveIModelConnection", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
-    SyncUiEventDispatcher.initialize();   // To process Backstage events
+    await initializePresentationTesting();
 
     // use mock renderer so standards tools are registered.
     await MockRender.App.startup();
@@ -23,11 +27,20 @@ describe("useActiveIModelConnection", () => {
   after(async () => {
     await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
+    await terminatePresentationTesting();
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   describe("useActiveIModelConnection Hook", () => {
     const imodelMock = moq.Mock.ofType<IModelConnection>();
+    const imodelToken: IModelRpcProps = { key: "" };
     imodelMock.setup((x) => x.name).returns(() => "Fake");
+    imodelMock.setup((x) => x.getRpcProps()).returns(() => imodelToken);
+    const ss = new SelectionSet(imodelMock.object);
+    imodelMock.setup((x) => x.selectionSet).returns(() => ss);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const HookTester = () => {
@@ -53,7 +66,24 @@ describe("useActiveIModelConnection", () => {
       const initialLabel = result.getByTestId("mylabel");
       expect(initialLabel.innerHTML).to.be.eq("NoConnection");
 
+      const initEventStub = sinon.stub(SyncUiEventDispatcher, "initializeConnectionEvents");
+      const clearEventStub = sinon.stub(SyncUiEventDispatcher, "clearConnectionEvents");
+
+      // should trigger dispatch action
       UiFramework.setIModelConnection(imodelMock.object, true);
+      expect(initEventStub).to.be.called;
+      expect(clearEventStub).not.to.be.called;
+      initEventStub.resetHistory();
+
+      // already set, so should not trigger dispatch action
+      UiFramework.setIModelConnection(imodelMock.object, true);
+      expect(initEventStub).not.to.be.called;
+      expect(clearEventStub).not.to.be.called;
+
+      // should trigger clearing action
+      UiFramework.setIModelConnection(undefined, true);
+      expect(clearEventStub).to.be.called;
+      expect(initEventStub).not.to.be.called;
 
       // --- the following does not work yet
       // const updatedLabel = result.getByTestId("mylabel");

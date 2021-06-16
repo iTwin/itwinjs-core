@@ -721,12 +721,18 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
-    return this.nativeDb.reverseTxns(numOperations, allowCrossSessions);
+  public reverseTxns(numOperations: number): IModelStatus {
+    return this.nativeDb.reverseTxns(numOperations);
   }
+
   /** @internal */
   public reinstateTxn(): IModelStatus {
     return this.nativeDb.reinstateTxn();
+  }
+
+  /** @internal */
+  public restartTxnSession(): void {
+    return this.nativeDb.restartTxnSession();
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.

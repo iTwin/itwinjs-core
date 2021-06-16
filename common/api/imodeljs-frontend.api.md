@@ -1669,7 +1669,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     dispose(): void;
     getRedoString(): Promise<string>;
-    getUndoString(allowCrossSessions?: boolean): Promise<string>;
+    getUndoString(): Promise<string>;
     hasPendingTxns(): Promise<boolean>;
     isRedoPossible(): Promise<boolean>;
     isUndoPossible(): Promise<boolean>;
@@ -1716,9 +1716,10 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
     reinstateTxn(): Promise<IModelStatus>;
+    restartTxnSession(): Promise<void>;
     reverseAll(): Promise<IModelStatus>;
     reverseSingleTxn(): Promise<IModelStatus>;
-    reverseTxns(numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus>;
+    reverseTxns(numOperations: number): Promise<IModelStatus>;
 }
 
 // @internal (undocumented)
@@ -2193,6 +2194,7 @@ export interface Decorator extends ViewportDecorator {
     getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined;
     getDecorationToolTip?(hit: HitDetail): Promise<HTMLElement | string>;
     onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    overrideElementHit?(hit: HitDetail): boolean;
     testDecorationHit?(id: string): boolean;
 }
 
@@ -5383,8 +5385,6 @@ export interface MapLayerSetting {
     // (undocumented)
     formatId: string;
     // (undocumented)
-    maxZoom: number | undefined;
-    // (undocumented)
     name: string;
     // (undocumented)
     transparentBackground: boolean | undefined;
@@ -5409,7 +5409,7 @@ export class MapLayerSettingsService {
 }
 
 // @internal
-export class MapLayerSource implements MapLayerProps {
+export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
     // (undocumented)
@@ -5417,31 +5417,26 @@ export class MapLayerSource implements MapLayerProps {
     // (undocumented)
     static fromBackgroundMapProps(props: BackgroundMapProps): MapLayerSource | undefined;
     // (undocumented)
-    static fromJSON(json: any): MapLayerSource | undefined;
-    // (undocumented)
-    maxZoom?: number | undefined;
+    static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined;
     // (undocumented)
     name: string;
     // (undocumented)
-    password?: string | undefined;
-    // (undocumented)
-    subLayers?: MapSubLayerProps[];
+    password?: string;
     // (undocumented)
     toJSON(): {
         url: string;
         name: string;
         formatId: string;
-        maxZoom: number | undefined;
         transparentBackground: boolean | undefined;
     };
     // (undocumented)
-    toLayerSettings(): MapLayerSettings | undefined;
+    toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined;
     // (undocumented)
-    transparentBackground?: boolean | undefined;
+    transparentBackground?: boolean;
     // (undocumented)
     url: string;
     // (undocumented)
-    userName?: string | undefined;
+    userName?: string;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
@@ -11875,6 +11870,12 @@ export class ViewManager implements Iterable<ScreenViewport> {
     readonly onViewOpen: BeUiEvent<ScreenViewport>;
     readonly onViewResume: BeUiEvent<ScreenViewport>;
     readonly onViewSuspend: BeUiEvent<ScreenViewport>;
+    // @internal
+    overrideElementButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    // @internal
+    overrideElementGeometry(hit: HitDetail): GeometryStreamProps | undefined;
+    // @internal
+    overrideElementToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     // @internal
     purgeTileTrees(olderThan: BeTimePoint): void;
     // @internal

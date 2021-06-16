@@ -62,6 +62,7 @@ import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IconProps } from '@bentley/ui-core';
 import { IconSpec } from '@bentley/ui-core';
+import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IFilteredPresentationTreeDataProvider } from '@bentley/presentation-components';
@@ -2638,6 +2639,8 @@ export class FrontstageManager {
     static readonly onToolPanelOpenedEvent: UiEvent<void>;
     static readonly onToolSettingsReloadEvent: UiEvent<void>;
     // @internal (undocumented)
+    static readonly onWidgetDefsUpdatedEvent: UiEvent<void>;
+    // @internal (undocumented)
     static readonly onWidgetExpandEvent: UiEvent<WidgetEventArgs>;
     // @internal (undocumented)
     static readonly onWidgetLabelChangedEvent: UiEvent<WidgetChangedEventArgs>;
@@ -2979,6 +2982,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     static clearOverrideModels(vp: Viewport): void;
     static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
     static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
+    static getCategoryOverrides(vp: Viewport): Set<string> | undefined;
+    static getModelOverrides(vp: Viewport): Set<string> | undefined;
     static hideCommand(vp: Viewport): Promise<void>;
     static hideSelected(vp: Viewport): void;
     static hideSelectedElementsCategory(vp: Viewport): Promise<void>;
@@ -3002,7 +3007,9 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     processIsolateSelected(): Promise<void>;
     processIsolateSelectedElementsCategory(): Promise<void>;
     processIsolateSelectedElementsModel(): Promise<void>;
-    }
+    static updateCategoryOverride(vp: Viewport, ids: string[]): void;
+    static updateModelOverride(vp: Viewport, ids: string[]): void;
+}
 
 // @alpha
 export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
@@ -3986,6 +3993,8 @@ export interface ModelsTreeProps {
     enableHierarchyAutoUpdate?: boolean;
     // @deprecated
     enablePreloading?: boolean;
+    // @alpha
+    filteredElementIds?: Id64Array;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
     iModel: IModelConnection;

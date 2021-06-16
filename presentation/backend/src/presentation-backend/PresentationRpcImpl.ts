@@ -12,12 +12,13 @@ import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions,
   DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,
-  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyCompareInfo,
-  HierarchyCompareInfoJSON, HierarchyCompareRpcOptions, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON, isContentDescriptorRequestOptions,
-  isDisplayLabelRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition,
-  LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse,
-  PageOptions, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcResponse,
-  PresentationStatus, Ruleset, RulesetVariable, RulesetVariableJSON, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
+  DistinctValuesRpcRequestOptions, ElementProperties, ElementPropertiesRpcRequestOptions, ExtendedContentRpcRequestOptions,
+  ExtendedHierarchyRpcRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareRpcOptions, HierarchyRpcRequestOptions,
+  InstanceKey, InstanceKeyJSON, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isExtendedContentRequestOptions,
+  isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON,
+  NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
+  PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset,
+  RulesetVariable, RulesetVariableJSON, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
@@ -303,6 +304,12 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.successResponse(content.result ? content.result.contentSet : { total: 0, items: [] });
   }
 
+  public async getElementProperties(token: IModelRpcProps, requestOptions: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> {
+    return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
+      return this.getManager(requestOptions.clientId).getElementProperties(options);
+    });
+  }
+
   // eslint-disable-next-line deprecation/deprecation
   public async getDistinctValues(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, descriptor: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON, fieldName: string, maximumValueCount: number): PresentationRpcResponse<string[]> {
     return this.makeRequest(token, "getDistinctValues", requestOptions, async (options) => {
@@ -374,6 +381,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
       options = {
         ...options,
         ...(options.expandedNodeKeys ? { expandedNodeKeys: options.expandedNodeKeys.map(NodeKey.fromJSON) } : undefined),
+        prev: {
+          ...options.prev,
+          ...(options.prev.rulesetVariables ? { rulesetVariables: options.prev.rulesetVariables.map(RulesetVariable.fromJSON) } : {}),
+        },
       };
       const result = await this.getManager(requestOptions.clientId).compareHierarchies(options);
       return result.changes.map(PartialHierarchyModification.toJSON);
@@ -385,6 +396,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
       options = {
         ...options,
         ...(options.expandedNodeKeys ? { expandedNodeKeys: options.expandedNodeKeys.map(NodeKey.fromJSON) } : undefined),
+        prev: {
+          ...options.prev,
+          ...(options.prev.rulesetVariables ? { rulesetVariables: options.prev.rulesetVariables.map(RulesetVariable.fromJSON) } : undefined),
+        },
         resultSetSize: getValidPageSize(requestOptions.resultSetSize),
       };
       const result = await this.getManager(requestOptions.clientId).compareHierarchies(options);
