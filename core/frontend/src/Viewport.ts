@@ -442,6 +442,14 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
 
+  /** @see [DisplayStyleSettings.analysisFraction]($common). */
+  public get analysisFraction(): number {
+    return this.displayStyle.settings.analysisFraction;
+  }
+  public set analysisFraction(fraction: number) {
+    this.displayStyle.settings.analysisFraction = fraction;
+  }
+
   /** @see [DisplayStyleSettings.timePoint]($common) */
   public get timePoint(): number | undefined {
     return this.displayStyle.settings.timePoint;
