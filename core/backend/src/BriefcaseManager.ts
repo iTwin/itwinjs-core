@@ -10,11 +10,11 @@
 
 import {
   assert, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, PerfLogger,
-  WSStatus
+  WSStatus,
 } from "@bentley/bentleyjs-core";
 import { ChangesType, IModelHubError } from "@bentley/imodelhub-client";
 import {
-  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps
+  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";

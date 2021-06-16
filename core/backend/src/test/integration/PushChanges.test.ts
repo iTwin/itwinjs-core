@@ -6,7 +6,7 @@ import { ClientRequestContext, GuidString, Id64String } from "@bentley/bentleyjs
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   Code, ColorDef, GeometryParams, GeometryPartProps,
-  GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance
+  GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext, IncludePrefix } from "@bentley/itwin-client";
 import { assert } from "chai";
@@ -89,8 +89,8 @@ describe("PushChangesTest (#integration)", () => {
 
     IModelHost.authorizationClient = {
       isAuthorized: true,
-      getAccessToken: (_requestContext?: ClientRequestContext) => Promise.resolve(requestContext.accessToken),
-    }
+      getAccessToken: async (_requestContext?: ClientRequestContext) => requestContext.accessToken,
+    };
   });
 
   after(async () => {
