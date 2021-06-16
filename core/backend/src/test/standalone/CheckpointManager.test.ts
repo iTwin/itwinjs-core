@@ -15,7 +15,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelHubBackend } from "../../IModelHubBackend";
 
-describe.only("V1 Checkpoint Manager", () => {
+describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
     const props = {
       contextId: "",
@@ -90,7 +90,7 @@ describe.only("V1 Checkpoint Manager", () => {
   });
 });
 
-describe.only("Checkpoint Manager", () => {
+describe("Checkpoint Manager", () => {
 
   afterEach(() => {
     sinon.restore();
