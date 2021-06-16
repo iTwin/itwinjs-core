@@ -7,7 +7,7 @@
  */
 
 import { BeUiEvent, Logger } from "@bentley/bentleyjs-core";
-import { StagePanelLocation, StagePanelSection, UiItemsArbiter, UiItemsManager } from "@bentley/ui-abstract";
+import { AbstractZoneLocation, StagePanelLocation, StagePanelSection, UiItemsArbiter, UiItemsManager } from "@bentley/ui-abstract";
 import { UiFramework } from "../UiFramework";
 import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
 import { WidgetDef } from "./WidgetDef";
@@ -190,6 +190,23 @@ export class WidgetManager {
     return result;
   }
 
+  // Used when WidgetDefs are requested from UiItemProviders when uiVersion="1"
+  private getStagePanelLocationFromZoneLocation(location: ZoneLocation): StagePanelLocation | undefined {
+    switch (location) {
+      case ZoneLocation.BottomCenter:
+      case ZoneLocation.TopCenter:
+      case ZoneLocation.TopRight:
+      case ZoneLocation.TopLeft:
+        return undefined; // an existing stage does not support appending widgets to these zones
+      case ZoneLocation.BottomLeft:
+      case ZoneLocation.CenterLeft:
+        return StagePanelLocation.Left;
+      case ZoneLocation.BottomRight:
+      case ZoneLocation.CenterRight:
+        return StagePanelLocation.Right;
+    }
+  }
+
   /** Gets WidgetDefs for a Frontstage location.
    */
   public getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): ReadonlyArray<WidgetDef> | undefined {
@@ -227,6 +244,23 @@ export class WidgetManager {
         const wd = new WidgetDef(stableProps);
         widgetDefs.push(wd);
       });
+    } else {
+      // istanbul ignore else
+      if (location in ZoneLocation) {
+        const panelLocation = this.getStagePanelLocationFromZoneLocation(location as ZoneLocation);
+        // istanbul ignore else
+        if (panelLocation && location in AbstractZoneLocation) {
+          const widgets = UiItemsManager.getWidgets(stageId, stageUsage, panelLocation, undefined, location as unknown as AbstractZoneLocation);
+          const updatedWidgets = UiItemsArbiter.updateWidgets(widgets);
+          updatedWidgets.forEach((abstractProps, index) => {
+            const props = WidgetDef.createWidgetPropsFromAbstractProps(abstractProps);
+            const stableId = getAddonStableWidgetId(stageUsage, location as StagePanelLocation, definedSection, index);
+            const stableProps = getStableWidgetProps(props, stableId);
+            const wd = new WidgetDef(stableProps);
+            widgetDefs.push(wd);
+          });
+        }
+      }
     }
 
     return widgetDefs.length > 0 ? widgetDefs : undefined;
