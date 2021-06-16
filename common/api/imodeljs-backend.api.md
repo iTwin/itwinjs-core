@@ -3004,7 +3004,7 @@ export class IModelHubBackend {
     // (undocumented)
     static releaseAllCodes(arg: BriefcaseIdArg): Promise<void>;
     // (undocumented)
-    static releaseAllLocks(arg: BriefcaseIdArg): Promise<void>;
+    static releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg): Promise<void>;
     static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
     // (undocumented)
     static setIModelClient(client?: IModelClient): void;

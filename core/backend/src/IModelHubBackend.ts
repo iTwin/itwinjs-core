@@ -326,12 +326,11 @@ export class IModelHubBackend {
   public static async releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg) {
     const requestContext = await this.getRequestContext(arg);
     return this.iModelClient.locks.deleteAll(requestContext, arg.iModelId, arg.briefcaseId);
-
   }
+
   public static async releaseAllCodes(arg: BriefcaseIdArg) {
     const requestContext = await this.getRequestContext(arg);
     return this.iModelClient.codes.deleteAll(requestContext, arg.iModelId, arg.briefcaseId);
-
   }
 
   public static async queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]> {
