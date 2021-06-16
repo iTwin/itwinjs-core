@@ -10,7 +10,7 @@ import { join } from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient, IModelHubClient, IModelHubError, IModelQuery,
+  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient, IModelHubClient, IModelQuery,
   Lock, LockLevel, LockQuery, LockType, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { CodeProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
