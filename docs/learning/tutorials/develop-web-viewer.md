@@ -15,7 +15,8 @@
   5. Give your application a Name
   6. Select the **Visualization** API
   7. Select application type **SPA** (Single Page Web Application)
-  8. Enter **Redirect URL** `https://localhost:3000/signin-callback`
+  8. Enter **Redirect URL** `http://localhost:3000/signin-callback`
+
   9. Leave post logout redirect URIs empty.
   10. Click the **Save** button
 - Once your new application is saved and a clientId is generated, add the clientId, list of scopes, and redirect url to the following variables in the .env file within the application's root directory: `IMJS_AUTH_CLIENT_CLIENT_ID`, `IMJS_AUTH_CLIENT_SCOPES`
