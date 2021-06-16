@@ -15,6 +15,9 @@ import { StrokesPrimitivePointLists } from "../Strokes";
 import { VertexKey, VertexKeyProps, VertexMap } from "../VertexKey";
 import { Mesh } from "./MeshPrimitives";
 
+// Describes a vertex along with the index of the source vertex in the source PolyfaceVisitor.
+type VertexKeyPropsWithIndex = VertexKeyProps & { sourceIndex: number };
+
 /** @internal */
 export class MeshBuilder {
   private _vertexMap?: VertexMap;
@@ -112,7 +115,7 @@ export class MeshBuilder {
     }
   }
 
-  public createTriangleVertices(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions): VertexKeyProps[] | undefined {
+  public createTriangleVertices(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions): VertexKeyPropsWithIndex[] | undefined {
     const { point, requireNormals } = visitor;
     const { fillColor, haveParam } = options;
     const qPointParams = this.mesh.points.params;
@@ -134,7 +137,7 @@ export class MeshBuilder {
       const position = QPoint3d.create(point.getPoint3dAtUncheckedPointIndex(vertexIndex), qPointParams);
       const normal = requireNormals ? OctEncodedNormal.fromVector(visitor.getNormal(vertexIndex)!) : undefined;
       const uvParam: Point2d | undefined = params ? params[vertexIndex] : undefined;
-      vertices[i] = { position, fillColor, normal, uvParam };
+      vertices[i] = { position, fillColor, normal, uvParam, sourceIndex: vertexIndex };
     }
 
     // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
@@ -164,28 +167,22 @@ export class MeshBuilder {
       triangleIndex === options.triangleCount - 1 ? edgeVisible[triangleIndex + 2] : false,
     );
 
-    let addVertex: (props: VertexKeyProps) => number;
-    const auxData = visitor.auxData;
-    if (auxData) {
-      addVertex = (props: VertexKeyProps) => {
-        // No deduplication with auxData (for now...)
-        const index = this.mesh.addVertex(props);
-        this.mesh.addAuxChannels(auxData.channels, index);
-        return index;
-      };
-    } else {
-      addVertex = (props: VertexKeyProps) => this.addVertex(props);
-    }
-
     // set each triangle index to the index associated with the vertex key location in the vertex map
-    vertices.forEach((vertexProps: VertexKeyProps, i: number) => {
-      const vertexKeyIndex = addVertex(vertexProps);
+    vertices.forEach((vertexProps, i: number) => {
+      let vertexKeyIndex;
+      if (visitor.auxData) {
+        // No deduplication with auxData (for now...)
+        vertexKeyIndex = this.mesh.addVertex(vertexProps);
+        this.mesh.addAuxChannels(visitor.auxData.channels, vertexProps.sourceIndex);
+      } else {
+        vertexKeyIndex = this.addVertex(vertexProps);
+      }
 
       triangle.indices[i] = vertexKeyIndex;
 
       // if the current polyface exists, map the vertex key index to the visitor's client point index
       if (this.currentPolyface !== undefined)
-        this.currentPolyface.vertexIndexMap.set(vertexKeyIndex, visitor.clientPointIndex(i));
+        this.currentPolyface.vertexIndexMap.set(vertexKeyIndex, visitor.clientPointIndex(vertexProps.sourceIndex));
     });
 
     return triangle;
