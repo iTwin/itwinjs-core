@@ -19,7 +19,8 @@ They should run on most Windows, Linux and MacOS versions with [Tier 1 support](
 | Node 10.x* | ✔️ |
 | Node <10.17 | ❌ |
 
-> \* Node 10.x is no longer in LTS and thus is no routinely tested.
+> \* Node 10.x is no longer in LTS and thus is not routinely tested.
+
 
 ### Backend Prerequisites
 
