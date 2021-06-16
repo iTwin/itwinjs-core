@@ -37,7 +37,7 @@ describe("RbacClient (#integration)", () => {
 
     const iModelHubServiceGPRId = 2485;
     const permissions: Permission[] = await rbacClient.getPermissions(requestContext, project.wsgId, iModelHubServiceGPRId);
-    expect(permissions.length).equals(9);
+    expect(permissions.length).equals(10);
   });
 
   it("should get the permissions relevant to iModelHub for the specified project (#integration)", async () => {
