@@ -64,6 +64,15 @@ describe("RulesetVariablesManager", () => {
 
   });
 
+  describe("unset", () => {
+
+    it("calls addon's unsetRulesetVariableValue", async () => {
+      manager.unset(variableId);
+      addonMock.verify((x) => x.unsetRulesetVariableValue(rulesetId, variableId), moq.Times.once());
+    });
+
+  });
+
   describe("getValue", () => {
 
     it("calls addon's getRulesetVariableValue with boolean", async () => {

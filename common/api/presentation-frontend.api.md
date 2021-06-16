@@ -17,6 +17,8 @@ import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
+import { ElementProperties } from '@bentley/presentation-common';
+import { ElementPropertiesRequestOptions } from '@bentley/presentation-common';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
@@ -50,6 +52,7 @@ import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SetRulesetVariableParams } from '@bentley/presentation-common';
+import { UnsetRulesetVariableParams } from '@bentley/presentation-common';
 import { UpdateHierarchyStateParams } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 
@@ -288,6 +291,8 @@ export class PresentationManager implements IDisposable {
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
     // @deprecated
     getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
+    // @beta
+    getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
     getFilteredNodePaths(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never, RulesetVariable>, filterText: string): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never, RulesetVariable>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
     // @deprecated
@@ -376,13 +381,14 @@ export interface RulesetVariablesManager {
     getInt(variableId: string): Promise<number>;
     getInts(variableId: string): Promise<number[]>;
     getString(variableId: string): Promise<string>;
-    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue, currValue: VariableValue) => void>;
+    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue | undefined) => void>;
     setBool(variableId: string, value: boolean): Promise<void>;
     setId64(variableId: string, value: Id64String): Promise<void>;
     setId64s(variableId: string, value: Id64String[]): Promise<void>;
     setInt(variableId: string, value: number): Promise<void>;
     setInts(variableId: string, value: number[]): Promise<void>;
     setString(variableId: string, value: string): Promise<void>;
+    unset(variableId: string): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -397,14 +403,16 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     getInts(variableId: string): Promise<number[]>;
     getString(variableId: string): Promise<string>;
     // (undocumented)
-    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue) => void>;
+    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue | undefined) => void>;
     setBool(variableId: string, value: boolean): Promise<void>;
     setId64(variableId: string, value: Id64String): Promise<void>;
     setId64s(variableId: string, value: Id64String[]): Promise<void>;
     setInt(variableId: string, value: number): Promise<void>;
     setInts(variableId: string, value: number[]): Promise<void>;
     setString(variableId: string, value: string): Promise<void>;
-    }
+    // (undocumented)
+    unset(variableId: string): Promise<void>;
+}
 
 // @public
 export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> {

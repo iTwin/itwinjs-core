@@ -335,7 +335,7 @@ internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 internal;MapLayerSetting
 internal;MapLayerSettingsService
-internal;MapLayerSource 
+internal;MapLayerSource
 internal;MapLayerSourceChangeType
 internal;MapLayerSources
 internal;MapLayerSourceStatus

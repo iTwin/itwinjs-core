@@ -207,8 +207,8 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async isRedoPossible(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.isRedoPossible();
   }
-  public async getUndoString(key: string, allowCrossSessions?: boolean): Promise<string> {
-    return IModelDb.findByKey(key).nativeDb.getUndoString(allowCrossSessions);
+  public async getUndoString(key: string): Promise<string> {
+    return IModelDb.findByKey(key).nativeDb.getUndoString();
   }
   public async getRedoString(key: string): Promise<string> {
     return IModelDb.findByKey(key).nativeDb.getUndoString();
@@ -237,14 +237,17 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
   }
 
-  public async reverseTxns(key: string, numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus> {
-    return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations, allowCrossSessions);
+  public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {
+    return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations);
   }
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
     return IModelDb.findByKey(key).nativeDb.reverseAll();
   }
   public async reinstateTxn(key: string): Promise<IModelStatus> {
     return IModelDb.findByKey(key).nativeDb.reinstateTxn();
+  }
+  public async restartTxnSession(key: string): Promise<void> {
+    return IModelDb.findByKey(key).nativeDb.restartTxnSession();
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {

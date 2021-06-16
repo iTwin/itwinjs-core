@@ -1669,7 +1669,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     dispose(): void;
     getRedoString(): Promise<string>;
-    getUndoString(allowCrossSessions?: boolean): Promise<string>;
+    getUndoString(): Promise<string>;
     hasPendingTxns(): Promise<boolean>;
     isRedoPossible(): Promise<boolean>;
     isUndoPossible(): Promise<boolean>;
@@ -1716,9 +1716,10 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
     reinstateTxn(): Promise<IModelStatus>;
+    restartTxnSession(): Promise<void>;
     reverseAll(): Promise<IModelStatus>;
     reverseSingleTxn(): Promise<IModelStatus>;
-    reverseTxns(numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus>;
+    reverseTxns(numOperations: number): Promise<IModelStatus>;
 }
 
 // @internal (undocumented)
@@ -2193,6 +2194,7 @@ export interface Decorator extends ViewportDecorator {
     getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined;
     getDecorationToolTip?(hit: HitDetail): Promise<HTMLElement | string>;
     onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    overrideElementHit?(hit: HitDetail): boolean;
     testDecorationHit?(id: string): boolean;
 }
 
@@ -11868,6 +11870,12 @@ export class ViewManager implements Iterable<ScreenViewport> {
     readonly onViewOpen: BeUiEvent<ScreenViewport>;
     readonly onViewResume: BeUiEvent<ScreenViewport>;
     readonly onViewSuspend: BeUiEvent<ScreenViewport>;
+    // @internal
+    overrideElementButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    // @internal
+    overrideElementGeometry(hit: HitDetail): GeometryStreamProps | undefined;
+    // @internal
+    overrideElementToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     // @internal
     purgeTileTrees(olderThan: BeTimePoint): void;
     // @internal

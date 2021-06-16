@@ -62,6 +62,7 @@ import { ElementGeometryUpdate } from '@bentley/imodeljs-common';
 import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
 import { ElementLoadProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
+import { EntityIdAndClassIdIterable } from '@bentley/imodeljs-common';
 import { EntityMetaData } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
@@ -2635,7 +2636,9 @@ export abstract class IModelDb extends IModel {
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     // @internal (undocumented)
-    reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus;
+    restartTxnSession(): void;
+    // @internal (undocumented)
+    reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
     // (undocumented)
@@ -4563,9 +4566,15 @@ export enum TxnAction {
 
 // @public
 export interface TxnChangedEntities {
+    // @deprecated
     deleted: OrderedId64Array;
+    readonly deletes: EntityIdAndClassIdIterable;
+    // @deprecated
     inserted: OrderedId64Array;
+    readonly inserts: EntityIdAndClassIdIterable;
+    // @deprecated
     updated: OrderedId64Array;
+    readonly updates: EntityIdAndClassIdIterable;
 }
 
 // @public
@@ -4576,14 +4585,15 @@ export class TxnManager {
     // @internal
     constructor(_iModel: BriefcaseDb | StandaloneDb);
     beginMultiTxnOperation(): DbResult;
-    cancelTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus;
-    checkUndoPossible(allowCrossSessions?: boolean): boolean;
+    cancelTo(txnId: TxnIdString): IModelStatus;
+    // @deprecated
+    checkUndoPossible(): boolean;
     endMultiTxnOperation(): DbResult;
     getCurrentTxnId(): TxnIdString;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
-    getUndoString(allowCrossSessions?: boolean): string;
+    getUndoString(): string;
     get hasFatalError(): boolean;
     get hasLocalChanges(): boolean;
     get hasPendingTxns(): boolean;
@@ -4631,15 +4641,16 @@ export class TxnManager {
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
-    queryFirstTxnId(allowCrossSessions?: boolean): TxnIdString;
+    queryFirstTxnId(): TxnIdString;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;
     reportError(error: ValidationError): void;
+    restartSession(): void;
     reverseAll(): IModelStatus;
     reverseSingleTxn(): IModelStatus;
-    reverseTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus;
-    reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus;
+    reverseTo(txnId: TxnIdString): IModelStatus;
+    reverseTxns(numOperations: number): IModelStatus;
     readonly validationErrors: ValidationError[];
 }
 

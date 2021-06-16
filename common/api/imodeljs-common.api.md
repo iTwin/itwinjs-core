@@ -2379,6 +2379,15 @@ export interface EmphasizeElementsProps {
     wantEmphasis?: boolean;
 }
 
+// @public
+export interface EntityIdAndClassId {
+    classId: Id64String;
+    id: Id64String;
+}
+
+// @public
+export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;
+
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
@@ -4419,7 +4428,7 @@ export interface IpcAppFunctions {
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
     getRedoString: (key: string) => Promise<string>;
-    getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
+    getUndoString: (key: string) => Promise<string>;
     hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
     isGraphicalEditingSupported: (key: string) => Promise<boolean>;
@@ -4434,9 +4443,11 @@ export interface IpcAppFunctions {
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
+    restartTxnSession: (key: string) => Promise<void>;
+    // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
-    reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
+    reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
