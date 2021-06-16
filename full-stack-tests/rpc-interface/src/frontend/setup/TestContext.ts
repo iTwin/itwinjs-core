@@ -12,7 +12,7 @@ import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
 } from "@bentley/oidc-signin-tool/lib/frontend";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
-import { getProcessEnvFromBackend } from "../../common/SideChannels";
+import { getClientAccessTokenFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 
 declare const PACKAGE_VERSION: string;
@@ -22,6 +22,7 @@ declare const PACKAGE_VERSION: string;
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
+  public clientAccessToken?: AccessToken;
 
   public iModelWithChangesets?: IModelSession;
   public iModelForWrite?: IModelSession;
@@ -73,6 +74,9 @@ export class TestContext {
         scope: this.settings.oidcScopes,
       } as TestBrowserAuthorizationClientConfiguration);
     }
+
+    if (undefined !== this.settings.clientConfiguration)
+      this.clientAccessToken = await getClientAccessTokenFromBackend(this.settings.clientConfiguration);
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 

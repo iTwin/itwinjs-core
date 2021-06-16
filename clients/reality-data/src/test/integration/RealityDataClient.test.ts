@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Range2d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -11,6 +11,11 @@ import { RealityData, RealityDataClient, RealityDataRelationship } from "../../R
 import { TestConfig } from "../TestConfig";
 import { query } from "jsonpath";
 chai.should();
+
+const LOG_CATEGORY: string = "RealityDataClient.Test";
+
+Logger.initializeToConsole();
+Logger.setLevel(LOG_CATEGORY, LogLevel.Info);
 
 describe("RealityServicesClient Normal (#integration)", () => {
   const realityDataServiceClient: RealityDataClient = new RealityDataClient();
@@ -23,7 +28,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
   before(async () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
-
+    Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
     chai.assert.isDefined(projectId);
   });
@@ -603,6 +608,7 @@ describe("RealityServicesClient Admin (#integration)", () => {
 
   before(async () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.manager);
+    Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
   });
 
   it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {

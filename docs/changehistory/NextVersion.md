@@ -5,9 +5,11 @@ publish: false
 
 ## UI Changes
 
+### @bentley/ui-abstract package
+
 Added ability for [UiItemsProvider]($ui-abstract) to provide widgets to [AbstractZoneLocation]($ui-abstract) locations when running is AppUi version 1. Prior to this a widget could only be targeted to a [StagePanelLocation]($ui-abstract) location.
 
-### Example UiItemsProvider
+#### Example UiItemsProvider
 
 The example below, shows how to add a widget to a [StagePanelLocation]($ui-abstract) if UiFramework.uiVersion === "2" and to the "BottomRight" [AbstractZoneLocation]($ui-abstract) if UiFramework.uiVersion === "1".  See [UiItemsProvider.provideWidgets]($ui-abstract) for new `zoneLocation` argument.
 
@@ -44,6 +46,14 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
   }
 }
 ```
+
+### @bentley/ui-framework package
+
+- The need for an IModelApp to explicitly call [ConfigurableUiManager.initialize]($ui-framework) has been removed. This call is now made when processing [UiFramework.initialize]($ui-framework). This will not break any existing applications as subsequent calls to `ConfigurableUiManager.initialize()` are ignored.
+
+- If an application calls [UiFramework.setIModelConnection]($ui-framework) it will no longer need to explicitly call [SyncUiEventDispatcher.initializeConnectionEvents]($ui-framework) as `UiFramework.setIModelConnection` will call that method as it update the redux store.
+
+- The `version` prop passed to [FrameworkVersion]($ui-framework) component will update the [UiFramework.uiVersion] if necessary keeping the redux state matching the value defined by the prop.
 
 ## [@bentley/ecschema-metadata](https://www.itwinjs.org/reference/ecschema-metadata/) changes
 
