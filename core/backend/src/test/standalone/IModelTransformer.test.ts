@@ -947,6 +947,13 @@ describe("IModelTransformer", () => {
     }
     assert.isUndefined(error);
 
+    targetDb.saveChanges();
+    const targetImportedSchemasLoader = new IModelSchemaLoader(targetDb);
+    const schema1 = targetImportedSchemasLoader.getSchema("TestSchema1");
+    assert.isDefined(schema1);
+    const schema2 = targetImportedSchemasLoader.getSchema("TestSchema2");
+    assert.isDefined(schema2);
+
     sourceDb.close();
     targetDb.close();
   });
