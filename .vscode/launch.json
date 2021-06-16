@@ -1010,6 +1010,22 @@
         "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
       ]
     },
+    {
+      "name": "Webpack Plugin Tests",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/webpack-core",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
+      ]
+    },
     // TEST APPS
     { /* PARTIAL */
       "name": "[BACKEND] ui-test-app (electron)",
