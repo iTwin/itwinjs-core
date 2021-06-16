@@ -9,7 +9,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Logger } from "@bentley/bentleyjs-core";
-import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
+import { StagePanelLocation, UiItemProviderRegisteredEventArgs, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
 import {
   HorizontalAnchor, Zones as NZ_Zones, StagePanels, StagePanelsManager, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManagerProps,
@@ -141,6 +141,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
     UiFramework.widgetManager.onWidgetsChanged.addListener(this._handleWidgetsChanged);
     UiFramework.widgetManager.onWidgetProvidersChanged.addListener(this._handleWidgetProvidersChanged);
+    UiItemsManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
   }
 
   public componentDidUpdate() {
@@ -161,6 +162,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
     UiFramework.widgetManager.onWidgetsChanged.removeListener(this._handleWidgetsChanged);
     UiFramework.widgetManager.onWidgetProvidersChanged.removeListener(this._handleWidgetProvidersChanged);
+    UiItemsManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
@@ -175,12 +177,17 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     this.updateWidgetDefs();
   };
 
+  private _handleUiProviderRegisteredEvent = (_args: UiItemProviderRegisteredEventArgs): void => {
+    this.updateWidgetDefs();
+  };
+
   private updateWidgetDefs() {
     if (!this.props.runtimeProps)
       return;
 
     const frontstageDef = this.props.runtimeProps.frontstageDef;
     frontstageDef.updateWidgetDefs();
+    FrontstageManager.onWidgetDefsUpdatedEvent.emit();
     this.forceUpdate();
   }
 
