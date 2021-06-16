@@ -304,9 +304,7 @@
     },
     {
       "name": "agentkeepalive",
-      "allowedCategories": [
-        "backend"
-      ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "almost-equal",
@@ -390,7 +388,7 @@
     },
     {
       "name": "chai-subset",
-      "allowedCategories": [ "backend", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "chalk",
@@ -538,7 +536,7 @@
     },
     {
       "name": "faker",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "fast-deep-equal",
@@ -693,6 +691,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "memfs",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "micro-memoize",
       "allowedCategories": [ "frontend" ]
     },
@@ -786,9 +788,7 @@
     },
     {
       "name": "proper-lockfile",
-      "allowedCategories": [
-        "backend"
-      ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "puppeteer",
@@ -972,7 +972,11 @@
     },
     {
       "name": "sinon-chai",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "snap-shot-it",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "source-map-loader",
@@ -1085,6 +1089,10 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "unionfs",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "url-loader",

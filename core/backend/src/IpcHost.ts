@@ -246,6 +246,9 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async reinstateTxn(key: string): Promise<IModelStatus> {
     return IModelDb.findByKey(key).nativeDb.reinstateTxn();
   }
+  public async restartTxnSession(key: string): Promise<void> {
+    return IModelDb.findByKey(key).nativeDb.restartTxnSession();
+  }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
     return IModelHost.platform.queryConcurrency(pool);
