@@ -156,6 +156,8 @@ export class IModelTestUtils {
           },
           organization: this.testOrg,
         },
+        startsAt: new Date(Date.now()).toJSON(),
+        expiresAt: new Date(Date.now() + 60 * 60 * 100).toJSON(), /* 1 hour from now */
       };
       return new AuthorizedClientRequestContext(AccessToken.fromJson(props));
     }

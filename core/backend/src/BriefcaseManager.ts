@@ -8,22 +8,22 @@
 
 // cspell:ignore cset csets ecchanges
 
-import * as os from "os";
-import * as path from "path";
 import {
   assert, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, PerfLogger,
-  WSStatus,
+  WSStatus
 } from "@bentley/bentleyjs-core";
 import { ChangesType, IModelHubError } from "@bentley/imodelhub-client";
 import {
-  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
+  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
+import * as os from "os";
+import * as path from "path";
+import { ChangesetFileProps, ChangesetId, ChangesetIndex } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
-import { ChangesetFileProps, ChangesetId, ChangesetIndex } from "./BackendHubAccess";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -573,6 +573,11 @@ export class BriefcaseManager {
     changesetProps.size = IModelJsFs.lstatSync(changesetProps.pathname)!.size;
 
     try {
+      // Refresh the access token if necessary
+      // Note: pushChanges could be a long running operations and should never be called through RPC, and we can use IModelHost's authorization client to fetch the access token
+      if (requestContext.accessToken.isExpired(5 * 60) && IModelHost.authorizationClient !== undefined) {
+        requestContext.accessToken = await IModelHost.authorizationClient.getAccessToken(requestContext);
+      }
       await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: db.iModelId, changesetProps, releaseLocks });
       requestContext.enter();
     } catch (error) {
