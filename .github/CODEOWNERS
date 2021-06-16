@@ -96,8 +96,8 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/orbitgt-core/                          @imodeljs/display
 /common/**/perf-tools.*                           @calebmshafer @wgoehrig
 /common/**/perf-tools/                            @calebmshafer @wgoehrig
-/common/**/physical-material-backend.*            @bbastings @mgooding
-/common/**/physical-material-backend/             @bbastings @mgooding
+/common/**/physical-material-backend.*            @bbastings @jchick-bentley
+/common/**/physical-material-backend/             @bbastings @jchick-bentley
 /common/**/presentation-*.*                       @imodeljs/presentation
 /common/**/presentation-*/                        @imodeljs/presentation
 /common/**/rpcinterface-full-stack-tests/         @calebmshafer @wgoehrig
@@ -140,7 +140,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /domains                      @imodeljs/admins
 /domains/analytical           @calebmshafer @diegoalexdiaz
 /domains/linear-referencing   @calebmshafer @diegoalexdiaz
-/domains/physical-material    @bbastings @mgooding
+/domains/physical-material    @bbastings @jchick-bentley
 
 /editor                               @bbastings @kabentley @pmconne
 
@@ -162,8 +162,8 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /test-apps/analysis-importer                @RBBentley @pmconne
 /test-apps/display-performance-test-app     @imodeljs/display @hnn0003
 /test-apps/display-test-app                 @bbastings @kabentley @imodeljs/display
-/test-apps/export-gltf                      @mgooding @pmconne
-/test-apps/export-obj                       @mgooding @pmconne
+/test-apps/export-gltf                      @mgooding @MichaelBelousov
+/test-apps/export-obj                       @mgooding @MichaelBelousov
 /test-apps/imjs-importer                    @EarlinLutz
 /test-apps/imodel-from-geojson              @mgooding @pmconne
 /test-apps/imodel-from-orbitgt              @imodeljs/display
