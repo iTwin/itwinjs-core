@@ -271,9 +271,9 @@ export class PolyfaceData {
             const thisData = thisChannel.data[iData];
             const otherData = otherChannel.data[iData];
             for (let i = 0; i < numEdge; i++)
-              thisData.copyValues(otherData, i, index0 + i, blockSize);
+              thisData.copyValues(otherData, i, other.auxData.indices[index0 + i], blockSize);
             for (let i = 0; i < numWrap; i++)
-              thisData.copyValues(thisData, numEdge + i, i, blockSize);
+              thisData.copyValues(thisData, other.auxData.indices[numEdge + i], i, blockSize);
           }
         }
       }
