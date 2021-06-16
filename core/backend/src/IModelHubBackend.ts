@@ -16,7 +16,7 @@ import {
 import { CodeProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRangeArg, CheckPointArg,
+  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexArg, ChangesetProps, ChangesetRangeArg, CheckPointArg,
   IModelIdArg, LocalDirName, LockProps,
 } from "./BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
@@ -323,7 +323,7 @@ export class IModelHubBackend {
     return checkpoints[0].changeSetId!;
   }
 
-  public static async releaseAllLocks(arg: BriefcaseIdArg) {
+  public static async releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg) {
     const requestContext = await this.getRequestContext(arg);
     return this.iModelClient.locks.deleteAll(requestContext, arg.iModelId, arg.briefcaseId);
 
