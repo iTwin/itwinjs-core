@@ -472,7 +472,8 @@ export class TestRunner {
       await BeDuration.wait(100);
     }
 
-    await System.instance.waitForAllExternalTextures();
+    // await System.instance.waitForAllExternalTextures();
+    await IModelApp.renderSystem.waitForAllExternalTextures();
 
     viewport.renderFrame();
     timer.stop();

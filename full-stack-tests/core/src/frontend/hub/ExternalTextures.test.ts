@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { ExternalTextureLoader, ExternalTextureRequest, GL, System, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/webgl";
+import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestUtility } from "./TestUtility";
 
@@ -88,7 +88,7 @@ describe("external texture requests (#integration)", () => {
 
     loadTextures();
 
-    await System.instance.waitForAllExternalTextures();
+    await IModelApp.renderSystem.waitForAllExternalTextures();
 
     const numExpectedGoodRequests = texNames.length - numExpectedBadRequests;
     expect(finishedTexRequests.length).to.equal(numExpectedGoodRequests);
