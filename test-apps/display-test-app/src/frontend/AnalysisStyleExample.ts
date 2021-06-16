@@ -3,96 +3,76 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { compareStrings } from "@bentley/bentleyjs-core";
-import { IndexedPolyface, Range3d, Transform } from "@bentley/geometry-core";
-import { AnalysisStyle, Cartographic, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { assert } from "@bentley/bentleyjs-core";
+import { IModelJson, Polyface } from "@bentley/geometry-core";
+import { AnalysisStyle } from "@bentley/imodeljs-common";
 import {
-  IModelConnection, Tile, TileTree, TileTreeReference, TileTreeSupplier, Viewport,
+  DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { Viewer } from "./Viewer";
 
-/*
-type ContentType = "Cantilever" | "Flat";
+type AnalysisMeshType = "Cantilever" | "Flat";
 
-interface Content {
-  type: ContentType,
-  readonly mesh: IndexedPolyface;
-  readonly range: Range3d;
-  readonly styles: AnalysisStyle[];
+interface AnalysisMesh {
+  readonly type: AnalysisMeshType;
+  readonly polyface: Polyface;
+  readonly styles: Map<string, AnalysisStyle | undefined>;
 }
 
-async function createContent(_type: ContentType): Promise<Content> {
-  throw new Error("###TODO");
+async function createCantilever(): Promise<AnalysisMesh> {
+  const response = await fetch("Cantilever.json");
+  const polyface = IModelJson.Reader.parse(await response.json()) as Polyface;
+  assert(polyface instanceof Polyface);
+  return {
+    type: "Cantilever",
+    polyface,
+    styles: new Map<string, AnalysisStyle | undefined>(), // ###TODO styles
+  };
 }
 
-const supplier: TileTreeSupplier = {
-  compareTileTreeIds: (lhs: ContentType, rhs: ContentType) => compareStrings(lhs, rhs),
-  createTileTree: async (id: ContentType, iModel: IModelConnection) => {
-    const content = await createContent(id);
-    return new Tree(content, iModel);
-  },
-}
+class AnalysisDecorator {
+  public readonly mesh: AnalysisMesh;
+  private readonly _viewport: Viewport;
+  private _graphic?: RenderGraphicOwner;
+  private _dispose?: () => void;
 
-class Reference extends TileTreeReference {
-  public constructor(
-    private readonly _type: ContentType,
-    private readonly _iModel: IModelConnection
-  ) { }
+  public constructor(viewport: Viewport, mesh: AnalysisMesh) {
+    this._viewport = viewport;
+    this.mesh = mesh;
+    this._dispose = viewport.onDisposed.addOnce(() => this.dispose());
+    IModelApp.viewManager.addDecorator(this);
+  }
 
-  public get treeOwner() {
-    return this._iModel.tiles.getTileTreeOwner(this._type, supplier);
+  public dispose(): void {
+    if (!this._dispose) {
+      assert(undefined === this._graphic);
+      return;
+    }
+
+    this._graphic?.disposeGraphic();
+    this._graphic = undefined;
+    this._dispose();
+    this._dispose = undefined;
+    IModelApp.viewManager.dropDecorator(this);
+  }
+
+  public decorate(context: DecorateContext): void {
+    if (context.viewport !== this._viewport)
+      return;
+
+    if (!this._graphic) {
+      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+      builder.addPolyface(this.mesh.polyface, false);
+      this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
+    }
+
+    context.addDecoration(GraphicType.WorldDecoration, this._graphic);
   }
 }
 
-class Tree extends TileTree {
-  private readonly _rootTile: RootTile;
-  private readonly _viewFlagOverrides = new ViewFlagOverrides();
-  public readonly styles: AnalysisStyle[];
+export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
+  const cantilever = await createCantilever();
+  // const flat = await createAnalysisMesh("Flat")
 
-  public constructor(content: Content, iModel: IModelConnection) {
-    super({
-      id: content.type,
-      modelId: iModel.transientIds.next,
-      iModel,
-      location: Transform.createIdentity(),
-      priority: TileLoadPriority.Primary,
-    });
-
-    this._rootTile = new RootTile(content, this);
-  }
-
-  public get rootTile(): RootTile { return this._rootTile; }
-  public get is3d() { return true; }
-  public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return this._viewFlagOverrides; }
-
-  protected _selectTiles(_args: TileDrawArgs): Tile[] {
-    // ###TODO
-    return [this.rootTile];
-  }
-
-  public draw(_args: TileDrawArgs): void {
-    // ###TODO
-  }
-
-  public prune(): void {
-    // ###TODO
-  }
-}
-
-class RootTile extends Tile {
-
-  public constructor(mesh: IndexedPolyface, tree: Tree) {
-    super({
-      isLeaf: true,
-      contentId: tree.id,
-      range: content.range,
-      maximumSize: 512,
-    });
-
-    const builder = IModelApp.renderSystem.createGraphicBuilder(
-  }
-}
-*/
-export function openAnalysisStyleExample(_viewer: Viewer): void {
+  /* let decorator = */ new AnalysisDecorator(viewer.viewport, cantilever);
 }

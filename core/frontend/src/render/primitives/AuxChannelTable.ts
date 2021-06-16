@@ -159,7 +159,7 @@ class AuxChannelTableBuilder {
   private constructor(props: Mutable<AuxChannelTableProps>, numBytesPerVertex: number) {
     this._props = props;
     this._numBytesPerVertex = numBytesPerVertex;
-    this._view = new DataView(props.data);
+    this._view = new DataView(props.data.buffer);
   }
 
   public static buildAuxChannelTable(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {

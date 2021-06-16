@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { AuxChannel, Point2d, Range3d } from "@bentley/geometry-core";
+import { AuxChannel, AuxChannelData, Point2d, Range3d } from "@bentley/geometry-core";
 import {
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
   OctEncodedNormal, PolylineData, PolylineEdgeArgs, PolylineFlags, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
@@ -262,15 +262,19 @@ export class Mesh {
       }
     }
 
-    if (!this._auxChannels)
-      this._auxChannels = channels.map((x) => new AuxChannel([], x.dataType, x.name, x.inputName));
+    if (!this._auxChannels) {
+      // Copy the channels, leaving each AuxData's values array empty.
+      this._auxChannels = channels.map((x) => new AuxChannel(x.data.map((y) => new AuxChannelData(y.input, [])), x.dataType, x.name, x.inputName));
+    }
 
+    // Append the value at srcIndex from each source channel's data to our channels.
     for (let channelIndex = 0; channelIndex < channels.length; channelIndex++) {
       const srcChannel = channels[channelIndex];
       const dstChannel = this._auxChannels[channelIndex];
+      const dstIndex = dstChannel.valueCount;
       for (let dataIndex = 0; dataIndex < srcChannel.data.length; dataIndex++) {
         const dstData = dstChannel.data[dataIndex];
-        dstData.copyValues(srcChannel.data[dataIndex], dstData.values.length, srcIndex, dstChannel.entriesPerValue);
+        dstData.copyValues(srcChannel.data[dataIndex], dstIndex, srcIndex, dstChannel.entriesPerValue);
       }
     }
   }

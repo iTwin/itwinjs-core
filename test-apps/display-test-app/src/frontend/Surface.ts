@@ -153,6 +153,7 @@ export class Surface {
       name,
     });
 
+    await iModel.backgroundMapLocation.initialize(iModel);
     const viewer = await this.createViewer({ iModel });
     viewer.dock(Dock.Full);
     return viewer;
