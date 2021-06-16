@@ -5,9 +5,9 @@
 
 import { assert, expect } from "chai";
 import * as semver from "semver";
-import { DbOpcode, DbResult, GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery } from "@bentley/imodelhub-client";
-import { CodeScopeSpec, CodeSpec, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { DbOpcode, DbResult, GuidString, Id64, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { ChangesType, CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery } from "@bentley/imodelhub-client";
+import { Code, CodeScopeSpec, CodeSpec, ColorDef, GeometryStreamProps, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { WsgError } from "@bentley/itwin-client";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import {
@@ -17,6 +17,9 @@ import {
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType, Timer } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { DrawingCategory } from "../../Category";
+import { Arc3d, IModelJson, Point3d } from "@bentley/geometry-core";
+import { ECSqlStatement } from "../../ECSqlStatement";
 
 export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -1070,5 +1073,409 @@ describe("IModelWriteTest (#integration)", () => {
     /* Cleanup after test */
     await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, contextId: projectId, iModelId });
   });
+  it("changeset size and ec schema version change", async () => {
+    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
+    const iModelName = HubUtility.generateUniqueName("changeset_size");
+    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
+    rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+    const oldSchemaVersion = rwIModel.nativeDb.getEcSchemaVersion();
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="s" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings(adminRequestContext, [schema]);
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "schema changeset" }));
+    const newSchemaVersion = rwIModel.nativeDb.getEcSchemaVersion();
+    assert.equal(oldSchemaVersion, 2); // schema import change this
+    assert.equal(newSchemaVersion, 3);
+    if ("push changes") {
+      // Push the changes to the hub
+      const prePushChangeSetId = rwIModel.changeSetId;
+      await rwIModel.pushChanges(adminRequestContext, "schema changeset", ChangesType.Schema);
+      const postPushChangeSetId = rwIModel.changeSetId;
+      assert(!!postPushChangeSetId);
+      expect(prePushChangeSetId !== postPushChangeSetId);
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, requestContext: superRequestContext });
+      assert.equal(changesets.length, 1);
+    }
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    let totalEl = 0;
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
+    const insertElements = (imodel: BriefcaseDb, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
+      for (let m = 0; m < noOfElements; ++m) {
+        const geomArray: Arc3d[] = [
+          Arc3d.createXY(Point3d.create(0, 0), 5),
+          Arc3d.createXY(Point3d.create(5, 5), 2),
+          Arc3d.createXY(Point3d.create(-5, -5), 20),
+        ];
+        const geometryStream: GeometryStreamProps = [];
+        for (const geom of geomArray) {
+          const arcData = IModelJson.Writer.toIModelJson(geom);
+          geometryStream.push(arcData);
+        }
+        const prop = userProp(++totalEl);
+        // Create props
+        const geomElement = {
+          classFullName: `TestDomain:${className}`,
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+          geom: geometryStream,
+          ...prop,
+        };
+        const id = imodel.elements.insertElement(geomElement);
+        assert.isTrue(Id64.isValidId64(id), "insert worked");
+      }
+    };
+    const str = new Array(1024).join("x");
+    insertElements(rwIModel, "Test2dElement", 1024, () => {
+      return { s: str};
+    });
+    assert.equal(1340202, rwIModel.nativeDb.getChangesetSize());
+    await rwIModel.concurrencyControl.request(adminRequestContext);
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "data" }));
+    assert.equal(13, rwIModel.nativeDb.getChangesetSize());
+    await rwIModel.pushChanges(adminRequestContext, "schema changeset", ChangesType.Schema);
+    rwIModel.close();
+  });
+  it("clear cache on schema changes", async () => {
+    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
+    const userRequestContext = await IModelTestUtils.getUserContext(TestUserType.Super);
+    // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
+    const iModelName = HubUtility.generateUniqueName("SchemaChanges");
+
+    // Create a new empty iModel on the Hub & obtain a briefcase
+    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
+
+    const rwIModel2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: userRequestContext, contextId: testContextId, iModelId: rwIModelId });
+
+    // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
+    // Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.
+    // The app still has to reserve codes.
+    rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    rwIModel2.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+
+    // enable change tracking
+    assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+    assert.equal(rwIModel2.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="s" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings(adminRequestContext, [schema]);
+
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "schema changeset" }));
+    if ("push changes") {
+      // Push the changes to the hub
+      const prePushChangeSetId = rwIModel.changeSetId;
+      await rwIModel.pushChanges(adminRequestContext, "schema changeset", ChangesType.Schema);
+      const postPushChangeSetId = rwIModel.changeSetId;
+      assert(!!postPushChangeSetId);
+      expect(prePushChangeSetId !== postPushChangeSetId);
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, requestContext: superRequestContext });
+      assert.equal(changesets.length, 1);
+    }
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    let totalEl = 0;
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    const insertElements = (imodel: BriefcaseDb, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
+      for (let m = 0; m < noOfElements; ++m) {
+        const geomArray: Arc3d[] = [
+          Arc3d.createXY(Point3d.create(0, 0), 5),
+          Arc3d.createXY(Point3d.create(5, 5), 2),
+          Arc3d.createXY(Point3d.create(-5, -5), 20),
+        ];
+        const geometryStream: GeometryStreamProps = [];
+        for (const geom of geomArray) {
+          const arcData = IModelJson.Writer.toIModelJson(geom);
+          geometryStream.push(arcData);
+        }
+        const prop = userProp(++totalEl);
+        // Create props
+        const geomElement = {
+          classFullName: `TestDomain:${className}`,
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+          geom: geometryStream,
+          ...prop,
+        };
+        const id = imodel.elements.insertElement(geomElement);
+        assert.isTrue(Id64.isValidId64(id), "insert worked");
+      }
+    };
+
+    insertElements(rwIModel, "Test2dElement", 10, (n: number) => {
+      return { s: `s-${n}` };
+    });
+
+    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
+    // Reserve all of the codes that are required by the new model and category.
+    try {
+      await rwIModel.concurrencyControl.request(adminRequestContext);
+    } catch (err) {
+      if (err instanceof IModelHubError) {
+        assert.fail(JSON.stringify(err));
+      }
+    }
+    assert.equal(3681, rwIModel.nativeDb.getChangesetSize());
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "data changeset" }));
+
+    if ("push changes") {
+      // Push the changes to the hub
+      const prePushChangeSetId = rwIModel.changeSetId;
+      await rwIModel.pushChanges(adminRequestContext, "10 instances of test2dElement", ChangesType.SpatialData);
+      const postPushChangeSetId = rwIModel.changeSetId;
+      assert(!!postPushChangeSetId);
+      expect(prePushChangeSetId !== postPushChangeSetId);
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, requestContext: superRequestContext });
+      assert.equal(changesets.length, 2);
+    }
+    let rows: any[] = [];
+    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
+      }
+    });
+    assert.equal(rows.length, 10);
+    assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
+    rows = [];
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement")) {
+      rows.push(row);
+    }
+    assert.equal(rows.length, 10);
+    assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
+    // ====================================================================================================
+    if ("user pull/merge") {
+      // pull and merge changes
+      await rwIModel2.pullAndMergeChanges(userRequestContext);
+      rows = [];
+      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
+        }
+      });
+      assert.equal(rows.length, 10);
+      assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
+      rows = [];
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement")) {
+        rows.push(row);
+      }
+      assert.equal(rows.length, 10);
+      assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
+      // create some element and push those changes
+      insertElements(rwIModel2, "Test2dElement", 10, (n: number) => {
+        return { s: `s-${n}` };
+      });
+      assert.equal(13, rwIModel.nativeDb.getChangesetSize());
+      rwIModel2.saveChanges(JSON.stringify({ userid: "user2", description: "data changeset" }));
+
+      if ("push changes") {
+        // Push the changes to the hub
+        const prePushChangeSetId = rwIModel2.changeSetId;
+        await rwIModel2.pushChanges(userRequestContext, "10 instances of test2dElement", ChangesType.SpatialData);
+        const postPushChangeSetId = rwIModel2.changeSetId;
+        assert(!!postPushChangeSetId);
+        expect(prePushChangeSetId !== postPushChangeSetId);
+        const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, requestContext: userRequestContext });
+        assert.equal(changesets.length, 3);
+      }
+    }
+    await rwIModel.pullAndMergeChanges(adminRequestContext);
+    // second schema import ==============================================================
+    const schemaV2 = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="s" typeName="string"/>
+            <ECProperty propertyName="v" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="Test2dElement2nd">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="t" typeName="string"/>
+            <ECProperty propertyName="r" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings(adminRequestContext, [schemaV2]);
+    assert.equal(13, rwIModel.nativeDb.getChangesetSize());
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "schema changeset2" }));
+    if ("push changes") {
+      // Push the changes to the hub
+      const prePushChangeSetId = rwIModel.changeSetId;
+      await rwIModel.pushChanges(adminRequestContext, "schema changeset", ChangesType.Schema);
+      const postPushChangeSetId = rwIModel.changeSetId;
+      assert(!!postPushChangeSetId);
+      expect(prePushChangeSetId !== postPushChangeSetId);
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, requestContext: superRequestContext });
+      assert.equal(changesets.length, 4);
+    }
+    // create some element and push those changes
+    insertElements(rwIModel, "Test2dElement", 10, (n: number) => {
+      return {
+        s: `s-${n}`, v: `v-${n}`,
+      };
+    });
+
+    // create some element and push those changes
+    insertElements(rwIModel, "Test2dElement2nd", 10, (n: number) => {
+      return {
+        t: `t-${n}`, r: `r-${n}`,
+      };
+    });
+    assert.equal(5939, rwIModel.nativeDb.getChangesetSize());
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "data changeset" }));
+
+    if ("push changes") {
+      // Push the changes to the hub
+      const prePushChangeSetId = rwIModel.changeSetId;
+      await rwIModel.pushChanges(adminRequestContext, "10 instances of test2dElement", ChangesType.SpatialData);
+      const postPushChangeSetId = rwIModel.changeSetId;
+      assert(!!postPushChangeSetId);
+      expect(prePushChangeSetId !== postPushChangeSetId);
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, requestContext: superRequestContext });
+      assert.equal(changesets.length, 5);
+    }
+    rows = [];
+    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
+      }
+    });
+    assert.equal(rows.length, 30);
+    assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
+    assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
+    rows = [];
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement")) {
+      rows.push(row);
+    }
+    assert.equal(rows.length, 30);
+    assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
+    assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
+
+    rows = [];
+    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement2nd", (stmt: ECSqlStatement) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
+      }
+    });
+    assert.equal(rows.length, 10);
+    assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
+    assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
+    rows = [];
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd")) {
+      rows.push(row);
+    }
+    assert.equal(rows.length, 10);
+    assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
+    assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
+
+    // ====================================================================================================
+    if ("user pull/merge") {
+      // pull and merge changes
+      await rwIModel2.pullAndMergeChanges(userRequestContext);
+      rows = [];
+      // Following fail without the fix in briefcase manager where we clear statement cache on schema changeset apply
+      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
+        }
+      });
+      assert.equal(rows.length, 30);
+      assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
+      assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
+      rows = [];
+      // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement")) {
+        rows.push(row);
+      }
+      assert.equal(rows.length, 30);
+      assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
+      assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
+      for(const row of rows) {
+        const el: any = rwIModel2.elements.getElementProps(row.id);
+        assert.isDefined(el);
+        if (row.s) {
+          assert.equal(row.s, el.s);
+        } else {
+          assert.isUndefined(el.s);
+        }
+        if (row.v) {
+          assert.equal(row.v, el.v);
+        } else {
+          assert.isUndefined(el.v);
+        }
+      }
+      rows = [];
+      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement2nd", (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
+        }
+      });
+      assert.equal(rows.length, 10);
+      assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
+      assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
+      for(const row of rows) {
+        const el: any = rwIModel2.elements.getElementProps(row.id);
+        assert.isDefined(el);
+        if (row.s) {
+          assert.equal(row.s, el.s);
+        } else {
+          assert.isUndefined(el.s);
+        }
+        if (row.v) {
+          assert.equal(row.v, el.v);
+        } else {
+          assert.isUndefined(el.v);
+        }
+      }
+      rows = [];
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd")) {
+        rows.push(row);
+      }
+      assert.equal(rows.length, 10);
+      assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
+      assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
+      for(const row of rows) {
+        const el: any = rwIModel2.elements.getElementProps(row.id);
+        assert.isDefined(el);
+        if (row.t) {
+          assert.equal(row.t, el.t);
+        } else {
+          assert.isUndefined(el.t);
+        }
+        if (row.r) {
+          assert.equal(row.r, el.r);
+        } else {
+          assert.isUndefined(el.r);
+        }
+      }
+    }
+    rwIModel.close();
+    rwIModel2.close();
+  });
 });

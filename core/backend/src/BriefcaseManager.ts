@@ -487,6 +487,10 @@ export class BriefcaseManager {
     for (const changeSet of changeSets)
       await this.applySingleChangeset(db, changeSet, processOption);
 
+    // clear statement cache if there was at least on schema changeset applied
+    if (changeSets.find((c)=> c.changesType === ChangesType.Schema))
+      db.clearCaches();
+
     // notify listeners
     db.notifyChangesetApplied();
   }
