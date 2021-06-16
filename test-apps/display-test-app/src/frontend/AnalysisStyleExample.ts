@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core";
-import { IModelJson, Polyface } from "@bentley/geometry-core";
-import { AnalysisStyle } from "@bentley/imodeljs-common";
+import { AuxChannelDataType, IModelJson, Polyface } from "@bentley/geometry-core";
+import {
+  AnalysisStyle, AnalysisStyleProps, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
+} from "@bentley/imodeljs-common";
 import {
   DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, Viewport,
 } from "@bentley/imodeljs-frontend";
@@ -19,6 +21,42 @@ interface AnalysisMesh {
   readonly styles: Map<string, AnalysisStyle | undefined>;
 }
 
+function populateAnalysisStyles(mesh: AnalysisMesh, displacementScale: number): void {
+  const auxdata = mesh.polyface.data.auxData;
+  if (!auxdata)
+    return;
+
+  for (const channel of auxdata.channels) {
+    if (undefined === channel.name || !channel.isScalar)
+      continue;
+
+    const displacementChannel = auxdata.channels.find((x) => x.inputName === channel.inputName && x.dataType === AuxChannelDataType.Vector);
+    const thematicSettings: ThematicGradientSettingsProps = {};
+    if (channel.name.endsWith("Height")) {
+      thematicSettings.colorScheme = ThematicGradientColorScheme.SeaMountain;
+      thematicSettings.mode = ThematicGradientMode.SteppedWithDelimiter;
+    }
+
+    assert(undefined !== channel.scalarRange);
+    const props: AnalysisStyleProps = {
+      scalar: {
+        channelName: channel.name,
+        range: channel.scalarRange,
+        thematicSettings,
+      },
+    };
+
+    let name = channel.name;
+    if (undefined !== displacementChannel?.name) {
+      props.displacement = { channelName: displacementChannel.name, scale: displacementScale };
+      const exaggeration = 1 !== displacementScale ? "" : ` X ${displacementScale}`;
+      name = `${name} and ${displacementChannel.name}${exaggeration}`;
+    }
+
+    mesh.styles.set(name, AnalysisStyle.fromJSON(props));
+  }
+}
+
 async function createCantilever(): Promise<AnalysisMesh> {
   const response = await fetch("Cantilever.json");
   const polyface = IModelJson.Reader.parse(await response.json()) as Polyface;
@@ -28,6 +66,17 @@ async function createCantilever(): Promise<AnalysisMesh> {
     polyface,
     styles: new Map<string, AnalysisStyle | undefined>(), // ###TODO styles
   };
+}
+
+async function createMesh(type: AnalysisMeshType, displacementScale = 1): Promise<AnalysisMesh> {
+  let mesh;
+  if ("Flat" === type)
+    throw new Error("###TODO");
+  else
+    mesh = await createCantilever();
+
+  populateAnalysisStyles(mesh, displacementScale);
+  return mesh;
 }
 
 class AnalysisDecorator {
@@ -71,8 +120,13 @@ class AnalysisDecorator {
 }
 
 export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
-  const cantilever = await createCantilever();
+  const cantilever = await createMesh("Cantilever", 100);
   // const flat = await createAnalysisMesh("Flat")
 
   /* let decorator = */ new AnalysisDecorator(viewer.viewport, cantilever);
+
+  for (const style of cantilever.styles.values()) {
+    viewer.viewport.displayStyle.settings.analysisStyle = style;
+    break;
+  }
 }
