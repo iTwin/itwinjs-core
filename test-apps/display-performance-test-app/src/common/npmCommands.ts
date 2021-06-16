@@ -6,6 +6,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import * as child_process from "child_process";
+import { isWindows } from "../frontend/TestConfig";
 
 const execSync = child_process.execSync;
 let args = "";
@@ -20,7 +21,7 @@ execSync(`npm run start:web ${args}`, { stdio: [0, 1, 2] });
 
 switch (browser) {
   case "chrome":
-    if (process.platform === "darwin") { // Ie, if running on Mac
+    if (!isWindows) { // Ie, if running on Mac
       execSync("killall \"Google Chrome\"");
     }
     break;
@@ -31,7 +32,7 @@ switch (browser) {
     execSync("killall Safari");
     break;
   case "firefox":
-    if (process.platform === "darwin") { // Ie, if running on Mac
+    if (!isWindows) { // Ie, if running on Mac
       execSync("killall firefox");
     } else {
       execSync("taskkill /f /im firefox.exe /t >nul");
