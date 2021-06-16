@@ -8,9 +8,9 @@
 
 import { join } from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
-import { BriefcaseStatus, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient, IModelHubClient, IModelQuery,
+  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient, IModelHubClient, IModelHubError, IModelQuery,
   Lock, LockLevel, LockQuery, LockType, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { CodeProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
@@ -292,7 +292,15 @@ export class IModelHubBackend {
     let checkpointQuery = new CheckpointV2Query();
     checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeSetId).selectContainerAccessKey();
     const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const checkpoints = await this.iModelClient.checkpointsV2.get(requestContext, checkpoint.iModelId, checkpointQuery);
+    let checkpoints: CheckpointV2[] = [];
+    try {
+      checkpoints = await this.iModelClient.checkpointsV2.get(requestContext, checkpoint.iModelId, checkpointQuery);
+    } catch (error) {
+      if (error instanceof BentleyError && error.errorNumber === IModelHubStatus.Unknown)
+        throw new IModelError(IModelStatus.NotFound, "V2 checkpoints not supported");
+      throw error;
+    }
+
     if (checkpoints.length !== 1)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 

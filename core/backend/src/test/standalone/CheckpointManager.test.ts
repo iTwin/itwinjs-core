@@ -6,15 +6,16 @@
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { ClientRequestContext, Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../imodeljs-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelHubBackend } from "../../IModelHubBackend";
 
-describe("V1 Checkpoint Manager", () => {
+describe.only("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
     const props = {
       contextId: "",
@@ -85,10 +86,11 @@ describe("V1 Checkpoint Manager", () => {
     await CheckpointManager.downloadCheckpoint(request);
     const db = SnapshotDb.openCheckpointV1(localFile, request.checkpoint);
     assert.equal(iModelId, db.nativeDb.getDbGuid(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
+    db.close();
   });
 });
 
-describe("Checkpoint Manager", () => {
+describe.only("Checkpoint Manager", () => {
 
   afterEach(() => {
     sinon.restore();
@@ -137,4 +139,31 @@ describe("Checkpoint Manager", () => {
     assert.isUndefined(db);
   });
 
+  it("downloadCheckpoint should fall back to use v1 checkpoints if v2 checkpoints are not enabled", async () => {
+    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
+    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
+    const iModelId = snapshot.getGuid();
+    const contextId = Guid.createValue();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
+    snapshot.saveChanges();
+    snapshot.close();
+
+    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
+    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => { throw new WsgError(IModelHubStatus.Unknown, "Feature is disabled."); });
+    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+
+    const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
+      IModelJsFs.copySync(dbPath, arg.localFile);
+      return changeSetId;
+    });
+
+    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
+
+    const request = { localFile, checkpoint: { requestContext: ctx, contextId, iModelId, changeSetId } };
+    await CheckpointManager.downloadCheckpoint(request);
+    assert.isTrue(v1Spy.calledOnce);
+  });
 });
