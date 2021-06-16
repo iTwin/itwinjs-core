@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webgl-compatibility",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webgl-compatibility",
+  "email": "3418768+a-gagnon@users.noreply.github.com"
+}

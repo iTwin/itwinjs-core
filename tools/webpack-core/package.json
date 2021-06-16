@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools-core",
-  "version": "2.18.0-dev.1",
+  "version": "2.18.0-dev.7",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -18,8 +18,8 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "",
-    "cover": ""
+    "test": "mocha \"./lib/test/**/*.test.js\"",
+    "cover": "nyc npm test"
   },
   "dependencies": {
     "chalk": "^3.0.0",
@@ -45,11 +45,21 @@
     "@types/node": "10.14.1",
     "@types/webpack": "^4.41.2",
     "@types/webpack-sources": "^0.1.6",
-    "cpx": "^1.5.0",
+    "@types/mocha": "^8.2.2",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/chai-jest-snapshot": "^1.3.0",
     "eslint": "^6.8.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0",
-    "webpack": "4.42.0"
+    "webpack": "4.42.0",
+    "cpx": "^1.5.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "memfs": "^3.2.2",
+    "chai-jest-snapshot": "^2.0.0"
   },
   "eslintConfig": {
     "plugins": [
@@ -62,5 +72,21 @@
       "@typescript-eslint/unbound-method": "off",
       "no-console": "off"
     }
+  },
+  "mocha": {
+    "checkLeaks": false,
+    "timeout": 15000,
+    "exclude": [
+      "lib/test/coverage/**/*"
+    ],
+    "reporter": [
+      "node_modules/@bentley/build-tools/mocha-reporter"
+    ],
+    "reporterOptions": [
+      "mochaFile=lib/test/junit_results.xml"
+    ]
+  },
+  "nyc": {
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
   }
 }
