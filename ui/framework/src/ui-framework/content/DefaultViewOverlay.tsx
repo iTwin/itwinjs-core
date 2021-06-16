@@ -24,7 +24,8 @@ export interface ViewOverlayProps {
 }
 
 /**
- * Default viewport overlay that shows a schedule timeline for views containing a schedule script or a solar timeline for views with solar shadow info
+ * Default viewport overlay that examines ViewState of the active view for a schedule script, analysis data, or solar data. If one of these is detected, the corresponding
+ * data provider is attached to the TimelineComponent and the overlay is made visible.
  * @public
  */
 // istanbul ignore next
