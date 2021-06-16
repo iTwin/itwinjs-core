@@ -16,7 +16,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BackendRequestContext } from "./BackendRequestContext";
 import { ECSqlStatement } from "./ECSqlStatement";
 import {
   DefinitionElement, DefinitionPartition, Element, FolderLink, GeometricElement2d, GeometricElement3d, InformationPartitionElement,
