@@ -12,7 +12,7 @@ import * as React from "react";
 import { Input, InputProps, WebFontIcon } from "@bentley/ui-core";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@bentley/imodeljs-frontend";
-import { FormatterSpec, FormatTraits, FormatType, Parser, ParserSpec, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
+import { DecimalPrecision, FormatterSpec, FormatTraits, FormatType, Parser, ParserSpec, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
 
 /** Step function prototype for [[NumberInput]] component
  * @beta
@@ -52,17 +52,12 @@ function adjustFormatterSpec(formatterSpec: FormatterSpec | undefined) {
     return formatterSpec;
   const singleUnitConversion: UnitConversionSpec[] = [];
   singleUnitConversion.push(formatterSpec.unitConversions[0]);
-  const newFormat = formatterSpec.format.clone();
-  if (FormatType.Decimal !== newFormat.type) {
-    newFormat.type = FormatType.Decimal;
-    newFormat.precision = newFormat.precision;
-  }
-  // clear the formatting label
-  newFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
-  // only copy the primary unit
-  if (newFormat.units && newFormat.units.length > 1)
-    newFormat.units.length = 1;
-
+  const newFormat = formatterSpec.format.clone({
+    showOnlyPrimaryUnit: true,
+    traits: formatterSpec.format.formatTraits & ~FormatTraits.ShowUnitLabel,
+    type: FormatType.Decimal,
+    precision: FormatType.Decimal !== formatterSpec.format.type ? DecimalPrecision.Four : formatterSpec.format.precision,
+  });
   return new FormatterSpec("single-value", newFormat, singleUnitConversion, formatterSpec.persistenceUnit);
 }
 

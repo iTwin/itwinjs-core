@@ -9,7 +9,7 @@ import { Formatter } from "../Formatter/Formatter";
 import { BasicUnit } from "../Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { FormatTraits, FormatType } from "../imodeljs-quantity";
-import { FractionalPrecision, ScientificType, ShowSignOption } from "../Formatter/FormatEnums";
+import { DecimalPrecision, FractionalPrecision, ScientificType, ShowSignOption } from "../Formatter/FormatEnums";
 import { UnitProps } from "../Interfaces";
 
 describe("Numeric Formats tests:", () => {
@@ -105,9 +105,11 @@ describe("Numeric Formats tests:", () => {
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(!format.hasUnits);
 
-    const clonedFormat = format.clone();
-    clonedFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
-    clonedFormat.precision = 2;
+    const clonedFormat = format.clone({
+      showOnlyPrimaryUnit: true,
+      traits: format.formatTraits & ~FormatTraits.ShowUnitLabel,
+      precision: DecimalPrecision.Two,
+    });
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.54" },
       { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.54" },
@@ -636,11 +638,12 @@ describe("Numeric Formats tests:", () => {
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(!format.hasUnits);
 
-    const clonedFormat = format.clone();
-    clonedFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
-    clonedFormat.type = FormatType.Decimal;
-    clonedFormat.precision = 4;
-
+    const clonedFormat = format.clone({
+      showOnlyPrimaryUnit: true,
+      traits: format.formatTraits & ~FormatTraits.ShowUnitLabel,
+      type: FormatType.Decimal,
+      precision: DecimalPrecision.Four,
+    });
     const testQuantityData = [
       { magnitude: -12.125, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.125" },
       { magnitude: 12.125, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.125" },
@@ -677,11 +680,12 @@ describe("Numeric Formats tests:", () => {
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(!format.hasUnits);
 
-    const clonedFormat = format.clone();
-    clonedFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
-    clonedFormat.type = FormatType.Decimal;
-    clonedFormat.precision = 2;
-
+    const clonedFormat = format.clone({
+      showOnlyPrimaryUnit: true,
+      traits: format.formatTraits & ~FormatTraits.ShowUnitLabel,
+      type: FormatType.Decimal,
+      precision: DecimalPrecision.Two,
+    });
     const testQuantityData = [
       { magnitude: -12.125, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.13" },
       { magnitude: 12.125, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.13" },
@@ -718,66 +722,6 @@ describe("Numeric Formats tests:", () => {
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(!format.hasUnits);
 
-    const clonedFormat = format.clone();
-    clonedFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
-    clonedFormat.type = FormatType.Decimal;
-    clonedFormat.precision = 2;
-
-    const formatName = "clone-test";
-    clonedFormat.name = formatName;
-    assert.strictEqual(clonedFormat.name, formatName);
-
-    const roundFactor = 0.5;
-    clonedFormat.roundFactor = roundFactor;
-    assert.strictEqual(clonedFormat.roundFactor, roundFactor);
-
-    clonedFormat.type = FormatType.Fractional;
-    assert.strictEqual(clonedFormat.type, FormatType.Fractional);
-
-    clonedFormat.precision = FractionalPrecision.OneHundredTwentyEight;
-    assert.strictEqual(clonedFormat.precision, FractionalPrecision.OneHundredTwentyEight);
-
-    const minWidth = 3;
-    clonedFormat.minWidth = minWidth;
-    assert.strictEqual(clonedFormat.minWidth, minWidth);
-
-    clonedFormat.scientificType = ScientificType.ZeroNormalized;
-    assert.strictEqual(clonedFormat.scientificType, ScientificType.ZeroNormalized);
-
-    clonedFormat.showSignOption = ShowSignOption.SignAlways;
-    assert.strictEqual(clonedFormat.showSignOption, ShowSignOption.SignAlways);
-
-    const thousandSeparator = ".";
-    clonedFormat.thousandSeparator = thousandSeparator;
-    assert.strictEqual(clonedFormat.thousandSeparator, thousandSeparator);
-
-    const decimalSeparator = ",";
-    clonedFormat.decimalSeparator = decimalSeparator;
-    assert.strictEqual(clonedFormat.decimalSeparator, decimalSeparator);
-
-    const stationSeparator = "*";
-    clonedFormat.stationSeparator = stationSeparator;
-    assert.strictEqual(clonedFormat.stationSeparator, stationSeparator);
-
-    const uomSeparator = "-";
-    clonedFormat.uomSeparator = uomSeparator;
-    assert.strictEqual(clonedFormat.uomSeparator, uomSeparator);
-
-    const stationOffsetSize = 3;
-    clonedFormat.stationOffsetSize = stationOffsetSize;
-    assert.strictEqual(clonedFormat.stationOffsetSize, stationOffsetSize);
-
-    clonedFormat.formatTraits &= ~FormatTraits.ShowUnitLabel;
-    assert.strictEqual(clonedFormat.formatTraits & FormatTraits.ShowUnitLabel, 0);
-
-    const spacer = "-";
-    clonedFormat.spacer = spacer;
-    assert.strictEqual(clonedFormat.spacer, spacer);
-
-    const includeZero = false;
-    clonedFormat.includeZero = includeZero;
-    assert.strictEqual(clonedFormat.includeZero, includeZero);
-
     const primaryUnit: UnitProps = {
       name: "Units.FT",
       label: "ft",
@@ -787,9 +731,18 @@ describe("Numeric Formats tests:", () => {
       system: "Units.USCUSTOM",
     };
 
-    const newUnits = new Array<[UnitProps, string | undefined]>();
-    newUnits.push([primaryUnit, `'`]);
-    clonedFormat.units = newUnits;
-    assert.strictEqual(clonedFormat.units.length, 1);
+    const clonedFormat = format.clone({
+      showOnlyPrimaryUnit: true,
+      traits: format.formatTraits & ~FormatTraits.ShowUnitLabel,
+      type: FormatType.Decimal,
+      precision: DecimalPrecision.Two,
+      primaryUnit: {
+        unit: primaryUnit,
+        label: "foot",
+      },
+    });
+
+    assert.strictEqual(clonedFormat.units?.length, 1);
+    assert.strictEqual(clonedFormat.units![0][1], "foot");
   });
 });
