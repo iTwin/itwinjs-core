@@ -260,9 +260,9 @@ export class ChangeSummaryManager {
   /** @internal */
   public static async downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, firstId: ChangesetId, endId: ChangesetId): Promise<ChangesetFileProps[]> {
     const iModelId = ctx.iModelId;
-    const first = await IModelHost.hubAccess.getChangesetIndexFromId({ iModelId, csId: firstId, requestContext });
-    const end = await IModelHost.hubAccess.getChangesetIndexFromId({ iModelId, csId: endId, requestContext });
-    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end } });
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstId }, requestContext })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: endId }, requestContext })).index;
+    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
     return changeSetInfos;
   }
 

@@ -9,11 +9,10 @@ import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetFileProps, ChangesetId, ChangesetIdArg, ChangesetIndex, ChangesetIndexArg, ChangesetProps,
-  ChangesetRange, CheckPointArg, IModelIdArg, LocalDirName, LocalFileName, LockProps,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexArg, ChangesetProps,
+  ChangesetRange, ChangesetRangeArg, CheckPointArg, IModelIdArg, LocalDirName, LocalFileName, LockProps,
 } from "../BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
-import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelHubBackend } from "../IModelHubBackend";
@@ -142,6 +141,10 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).findNamedVersion(arg.versionName);
   }
 
+  private static changesetIndexFromArg(arg: ChangesetArg) {
+    return (undefined !== arg.changeset.index) ? arg.changeset.index : this.findLocalHub(arg.iModelId).getChangesetIndex(arg.changeset.id);
+  }
+
   public static async getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetProps> {
     const hub = this.findLocalHub(arg.iModelId);
     const version = arg.version;
@@ -163,14 +166,6 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).getLatestChangeset();
   }
 
-  public static async getChangesetIdFromIndex(arg: IModelIdArg & { index: ChangesetIndex }): Promise<ChangesetId> {
-    return this.findLocalHub(arg.iModelId).getChangesetId(arg.index);
-  }
-
-  public static async getChangesetIndexFromId(arg: ChangesetIdArg): Promise<ChangesetIndex> {
-    return this.findLocalHub(arg.iModelId).getChangesetIndex(arg.csId);
-  }
-
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
     const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
     return this.findLocalHub(arg.iModelId).getBriefcaseIds(requestContext.accessToken.getUserInfo()!.id);
@@ -186,16 +181,16 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
   }
 
-  public static async downloadChangeset(arg: ChangesetIndexArg): Promise<ChangesetFileProps> {
-    return this.findLocalHub(arg.iModelId).downloadChangeset({ index: arg.csIndex, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
+  public static async downloadChangeset(arg: ChangesetArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps> {
+    return this.findLocalHub(arg.iModelId).downloadChangeset({ index: this.changesetIndexFromArg(arg), targetDir: arg.targetDir });
   }
 
-  public static async downloadChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetFileProps[]> {
-    return this.findLocalHub(arg.iModelId).downloadChangesets({ range: arg.range, targetDir: BriefcaseManager.getChangeSetsPath(arg.iModelId) });
+  public static async downloadChangesets(arg: ChangesetRangeArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps[]> {
+    return this.findLocalHub(arg.iModelId).downloadChangesets({ range: arg.range, targetDir: arg.targetDir });
   }
 
-  public static async queryChangeset(arg: ChangesetIndexArg): Promise<ChangesetProps> {
-    return this.findLocalHub(arg.iModelId).getChangesetByIndex(arg.csIndex);
+  public static async queryChangeset(arg: ChangesetArg): Promise<ChangesetProps> {
+    return this.findLocalHub(arg.iModelId).getChangesetByIndex(this.changesetIndexFromArg(arg));
   }
 
   public static async queryChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetProps[]> {
@@ -218,7 +213,7 @@ export class HubMock {
     const hub = this.findLocalHub(arg.iModelId);
     const locks = hub.queryAllLocks(arg.briefcaseId);
     for (const props of locks)
-      hub.releaseLock({ props, ...arg });
+      hub.releaseLock({ props, csIndex: arg.csIndex, briefcaseId: arg.briefcaseId });
   }
 
   public static async releaseAllCodes(_arg: BriefcaseIdArg) {

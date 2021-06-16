@@ -2352,7 +2352,7 @@ export class BriefcaseDb extends IModelDb {
 
     await this.concurrencyControl.onPushChanges(requestContext);
 
-    await BriefcaseManager.pushChanges(requestContext, this, description, changeType);
+    await BriefcaseManager.pushChanges(requestContext, this, description, changeType as number);
     requestContext.enter();
     this.changeSetId = this.nativeDb.getParentChangeSetId();
     this.initializeIModelDb();

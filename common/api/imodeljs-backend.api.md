@@ -116,8 +116,6 @@ import { LinePixels } from '@bentley/imodeljs-common';
 import { LineStyleProps } from '@bentley/imodeljs-common';
 import { LocalBriefcaseProps } from '@bentley/imodeljs-common';
 import { Lock } from '@bentley/imodelhub-client';
-import { LockLevel } from '@bentley/imodelhub-client';
-import { LockType } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
@@ -380,8 +378,12 @@ export interface BackendHubAccess {
     deleteIModel: (arg: IModelIdArg & {
         contextId: GuidString;
     }) => Promise<void>;
-    downloadChangeset: (arg: ChangesetIndexArg) => Promise<ChangesetFileProps>;
-    downloadChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetFileProps[]>;
+    downloadChangeset: (arg: ChangesetArg & {
+        targetDir: LocalDirName;
+    }) => Promise<ChangesetFileProps>;
+    downloadChangesets: (arg: ChangesetRangeArg & {
+        targetDir: LocalDirName;
+    }) => Promise<ChangesetFileProps[]>;
     downloadV1Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
     downloadV2Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
@@ -390,7 +392,6 @@ export interface BackendHubAccess {
     getChangesetFromVersion: (arg: IModelIdArg & {
         version: IModelVersion;
     }) => Promise<ChangesetProps>;
-    getChangesetIndexFromId: (arg: ChangesetIdArg) => Promise<ChangesetIndex>;
     getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
     getMyBriefcaseIds: (arg: IModelIdArg) => Promise<number[]>;
     pushChangeset: (arg: IModelIdArg & {
@@ -398,7 +399,7 @@ export interface BackendHubAccess {
     }) => Promise<ChangesetIndex>;
     queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;
     queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
-    queryChangeset: (arg: ChangesetIndexArg) => Promise<ChangesetProps>;
+    queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
     querySchemaLock: (arg: BriefcaseDbArg) => Promise<boolean>;
@@ -562,7 +563,7 @@ export class BriefcaseManager {
     // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, mergeToVersion?: IModelVersion): Promise<void>;
     // @internal
-    static pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType?: ChangesType, relinquishCodesLocks?: boolean): Promise<void>;
+    static pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType?: ChangesetType, relinquishCodesLocks?: boolean): Promise<void>;
     // @internal @deprecated (undocumented)
     static reinstateChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reinstateToVersion?: IModelVersion): Promise<void>;
     static releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void>;
@@ -638,6 +639,12 @@ export class ChangedElementsDb implements IDisposable {
 }
 
 // @internal
+export interface ChangesetArg extends IModelIdArg {
+    // (undocumented)
+    changeset: ChangesetIndexOrId;
+}
+
+// @internal
 export interface ChangesetFileProps extends ChangesetProps {
     pathname: LocalFileName;
 }
@@ -645,31 +652,20 @@ export interface ChangesetFileProps extends ChangesetProps {
 // @internal
 export type ChangesetId = string;
 
-// @internal
-export interface ChangesetIdArg extends IModelIdArg {
-    // (undocumented)
-    csId: ChangesetId;
-}
-
 // @internal (undocumented)
 export type ChangesetIndex = number;
 
-// @internal
-export interface ChangesetIndexAndId {
-    // (undocumented)
-    id: ChangesetId;
-    // (undocumented)
-    index: ChangesetIndex;
-}
-
-// @internal
+// @internal (undocumented)
 export interface ChangesetIndexArg extends IModelIdArg {
     // (undocumented)
     csIndex: ChangesetIndex;
 }
 
 // @internal
-export type ChangesetIndexOrId = ChangesetIndexAndId | {
+export type ChangesetIndexOrId = {
+    index: ChangesetIndex;
+    id: ChangesetId;
+} | {
     index: ChangesetIndex;
     id?: never;
 } | {
@@ -680,7 +676,7 @@ export type ChangesetIndexOrId = ChangesetIndexAndId | {
 // @internal
 export interface ChangesetProps {
     briefcaseId: number;
-    changesType: ChangesType;
+    changesType: ChangesetType;
     description: string;
     id: ChangesetId;
     index: ChangesetIndex;
@@ -699,6 +695,12 @@ export interface ChangesetRange {
 // @internal
 export interface ChangesetRangeArg extends IModelIdArg {
     range?: ChangesetRange;
+}
+
+// @public
+export enum ChangesetType {
+    Regular = 0,
+    Schema = 1
 }
 
 // @beta
@@ -912,7 +914,7 @@ export class ConcurrencyControl {
     get codes(): ConcurrencyControl.CodesManager;
     endBulkMode(rqctx: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
-    getHeldLock0(type: LockType, objectId: Id64String): LockLevel;
+    getHeldLock0(objectId: Id64String): LockScope;
     // @internal (undocumented)
     getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
     get hasPendingRequests(): boolean;
@@ -1027,11 +1029,11 @@ export namespace ConcurrencyControl {
         // @internal
         constructor(_iModel: BriefcaseDb);
         // @alpha
-        getHeldElementLock(elementId: Id64String): LockLevel;
+        getHeldElementLock(elementId: Id64String): LockScope;
         // @alpha
-        getHeldLock(type: LockType, objectId: Id64String): LockLevel;
+        getHeldLock(objectId: Id64String): LockScope;
         // @alpha
-        getHeldModelLock(modelId: Id64String): LockLevel;
+        getHeldModelLock(modelId: Id64String): LockScope;
         get hasCodeSpecsLock(): boolean;
         get hasSchemaLock(): boolean;
         holdsLock(lock: LockProps): boolean;
@@ -1085,15 +1087,15 @@ export namespace ConcurrencyControl {
         // (undocumented)
         static get dbLock(): LockProps;
         // (undocumented)
-        static getElementLock(objectId: Id64String, level: LockLevel): LockProps;
+        static getElementLock(entityId: Id64String, scope: LockScope): LockProps;
         // (undocumented)
         static getHubCodeSpecsLock(concurrencyControl: ConcurrencyControl): Lock;
         // (undocumented)
         static getHubSchemaLock(concurrencyControl: ConcurrencyControl): Lock;
         // (undocumented)
-        getLockByKey(type: LockType, objectId: string): LockProps | undefined;
+        getLockByKey(entityId: string): LockProps | undefined;
         // (undocumented)
-        static getModelLock(objectId: Id64String, level: LockLevel): LockProps;
+        static getModelLock(entityId: Id64String, scope: LockScope): LockProps;
         // (undocumented)
         get isEmpty(): boolean;
         // (undocumented)
@@ -1131,7 +1133,7 @@ export namespace ConcurrencyControl {
         // (undocumented)
         deleteLocksForTxn(txnId: string): void;
         // (undocumented)
-        getHeldLock(type: LockType, objectId: string): LockLevel;
+        getHeldLock(entityId: string): LockScope;
         // (undocumented)
         insertCodes(codes: CodeProps[]): void;
         // (undocumented)
@@ -2950,9 +2952,11 @@ export class IModelHubBackend {
         contextId: GuidString;
     }): Promise<void>;
     // (undocumented)
-    static downloadChangeset(arg: ChangesetIndexArg): Promise<ChangesetFileProps>;
-    static downloadChangesets(arg: IModelIdArg & {
-        range?: ChangesetRange;
+    static downloadChangeset(arg: ChangesetArg & {
+        targetDir: LocalDirName;
+    }): Promise<ChangesetFileProps>;
+    static downloadChangesets(arg: ChangesetRangeArg & {
+        targetDir: LocalDirName;
     }): Promise<ChangesetFileProps[]>;
     // (undocumented)
     static downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
@@ -2967,15 +2971,13 @@ export class IModelHubBackend {
         version: IModelVersion;
     }): Promise<ChangesetProps>;
     // (undocumented)
-    static getChangesetIndexFromId(arg: ChangesetIdArg): Promise<number>;
-    // (undocumented)
     static getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
     // (undocumented)
     static getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
     // (undocumented)
     static getRequestContext(arg: {
         requestContext?: AuthorizedClientRequestContext;
-    }): Promise<AuthorizedBackendRequestContext | AuthorizedClientRequestContext>;
+    }): Promise<AuthorizedClientRequestContext | AuthorizedBackendRequestContext>;
     // (undocumented)
     static get iModelClient(): IModelClient;
     // (undocumented)
@@ -2989,10 +2991,8 @@ export class IModelHubBackend {
     // (undocumented)
     static queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
     // (undocumented)
-    static queryChangeset(arg: ChangesetIndexArg): Promise<ChangesetProps>;
-    static queryChangesets(arg: IModelIdArg & {
-        range?: ChangesetRange;
-    }): Promise<ChangesetProps[]>;
+    static queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
+    static queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
     // (undocumented)
     static queryIModelByName(arg: {
         requestContext?: AuthorizedClientRequestContext;
@@ -3527,9 +3527,15 @@ export class LocalhostIpcHost {
 
 // @beta
 export interface LockProps {
-    level: LockLevel;
-    objectId: Id64String;
-    type: LockType;
+    entityId: Id64String;
+    scope: LockScope;
+}
+
+// @public
+export enum LockScope {
+    Exclusive = 2,
+    None = 0,
+    Shared = 1
 }
 
 // @internal
