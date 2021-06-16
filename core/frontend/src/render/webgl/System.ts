@@ -410,7 +410,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     if (extTexLoader.numActiveRequests < 1 && extTexLoader.numPendingRequests < 1)
       return Promise.resolve();
     const promise = new Promise<void>((resolve: any) => {
-      extTexLoader.onTexturesLoaded.addListener(() => {
+      extTexLoader.onTexturesLoaded.addOnce(() => {
         resolve();
       });
     });
