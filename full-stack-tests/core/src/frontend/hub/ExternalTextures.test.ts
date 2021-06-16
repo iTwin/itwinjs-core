@@ -89,6 +89,9 @@ describe("external texture requests (#integration)", () => {
     loadTextures();
 
     await IModelApp.renderSystem.waitForAllExternalTextures();
+    expect(extTexLoader.numActiveRequests).to.equal(0);
+    expect(extTexLoader.numPendingRequests).to.equal(0);
+    await IModelApp.renderSystem.waitForAllExternalTextures(); // check that the wait method works properly when no requests exist.
 
     const numExpectedGoodRequests = texNames.length - numExpectedBadRequests;
     expect(finishedTexRequests.length).to.equal(numExpectedGoodRequests);
