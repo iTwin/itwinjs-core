@@ -735,6 +735,10 @@
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
+      "name": "node-fetch",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "nodemon",
       "allowedCategories": [ "tools" ]
     },
