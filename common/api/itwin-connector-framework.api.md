@@ -70,7 +70,7 @@ export enum ItemState {
 }
 
 // @beta
-export abstract class ItwinConnector {
+export abstract class ITwinConnector {
     // (undocumented)
     abstract getApplicationId(): string;
     // (undocumented)

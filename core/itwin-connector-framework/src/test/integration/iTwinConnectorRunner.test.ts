@@ -16,9 +16,7 @@ import { HubUtility } from "./HubUtility";
 
 describe("iTwin Connector Fwk (#integration)", () => {
   let testProjectId: string;
-
   let readWriteTestIModel: TestIModelInfo;
-
   let requestContext: AuthorizedClientRequestContext;
   let managerRequestContext: AuthorizedClientRequestContext;
 

@@ -4,17 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-
 import { ConnectorTestUtils } from "../ConnectorTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ConnectorJobDefArgs, ConnectorRunner } from "../../ConnectorRunner";
 
 import * as path from "path";
 
-describe("IModelConnectorFwkStandAlone", () => {
+describe("iTwin Connector Fwk StandAlone", () => {
 
   before(async () => {
     ConnectorTestUtils.setupLogging();
