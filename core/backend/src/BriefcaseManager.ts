@@ -577,7 +577,6 @@ export class BriefcaseManager {
     requestContext.accessToken = await IModelHost.authorizationClient?.getAccessToken(requestContext) ?? requestContext.accessToken;
 
     try {
-
       await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: db.iModelId, changesetProps, releaseLocks });
       requestContext.enter();
     } catch (error) {
