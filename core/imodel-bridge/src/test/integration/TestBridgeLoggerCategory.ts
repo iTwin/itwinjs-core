@@ -11,10 +11,10 @@
  * @see [Logger]($bentley)
  * @public
  */
-export enum TestBridgeLoggerCategory {
+export enum TestConnectorLoggerCategory {
   /** The logger category used by the following classes:
-   * - [[BridgeSynchronizer]]
+   * - [[ConnectorSynchronizer]]
    */
-  Bridge = "TestBridge.Bridge",
+  Connector = "TestBridge.Bridge",
   Geometry = "TestBridge.Geometry",
 }

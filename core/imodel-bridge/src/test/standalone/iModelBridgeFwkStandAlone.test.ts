@@ -8,24 +8,24 @@ import { expect } from "chai";
 import { IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 
-import { BridgeTestUtils } from "../BridgeTestUtils";
+import { ConnectorTestUtils } from "../BridgeTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { BridgeJobDefArgs, BridgeRunner } from "../../BridgeRunner";
+import { ConnectorJobDefArgs, ConnectorRunner } from "../../BridgeRunner";
 
 import * as path from "path";
 
 describe("IModelBridgeFwkStandAlone", () => {
 
   before(async () => {
-    BridgeTestUtils.setupLogging();
-    BridgeTestUtils.setupDebugLogLevels();
+    ConnectorTestUtils.setupLogging();
+    ConnectorTestUtils.setupDebugLogLevels();
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
-    await BridgeTestUtils.startBackend();
+    await ConnectorTestUtils.startBackend();
   });
 
   after(async () => {
-    await BridgeTestUtils.shutdownBackend();
+    await ConnectorTestUtils.shutdownBackend();
   });
 
   it("Parse response file", async () => {
@@ -36,20 +36,20 @@ describe("IModelBridgeFwkStandAlone", () => {
   });
 
   it("Should create empty snapshot and synchronize source data", async () => {
-    const bridgeJobDef = new BridgeJobDefArgs();
+    const bridgeJobDef = new ConnectorJobDefArgs();
     const assetFile = path.join(KnownTestLocations.assetsDir, "TestBridge.json");
     bridgeJobDef.sourcePath = assetFile;
-    bridgeJobDef.bridgeModule = "./test/integration/TestiModelBridge.js";
+    bridgeJobDef.connectorModule = "./test/integration/TestiModelBridge.js";
     bridgeJobDef.outputDir = KnownTestLocations.outputDir;
     bridgeJobDef.isSnapshot = true;
 
-    const runner = new BridgeRunner(bridgeJobDef);
+    const runner = new ConnectorRunner(bridgeJobDef);
     const fileName = `${path.basename(assetFile, path.extname(assetFile))}.bim`;
     const filePath = path.join(KnownTestLocations.outputDir, fileName);
     const status = await runner.synchronize();
     expect(status === BentleyStatus.SUCCESS);
     const imodel = SnapshotDb.openFile(filePath);
-    BridgeTestUtils.verifyIModel(imodel, bridgeJobDef);
+    ConnectorTestUtils.verifyIModel(imodel, bridgeJobDef);
     imodel.close();
   });
 });

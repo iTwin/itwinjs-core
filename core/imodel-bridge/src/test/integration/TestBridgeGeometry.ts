@@ -8,9 +8,9 @@ import { Categories, GeometryParts, Materials } from "./TestBridgeElements";
 import { GeometryPart, IModelDb, RenderMaterialElement, SubCategory } from "@bentley/imodeljs-backend";
 import { ColorByName, ColorDef, GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
 import { Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { TestBridgeLoggerCategory } from "./TestBridgeLoggerCategory";
+import { TestConnectorLoggerCategory } from "./TestBridgeLoggerCategory";
 
-const loggerCategory: string = TestBridgeLoggerCategory.Geometry;
+const loggerCategory: string = TestConnectorLoggerCategory.Geometry;
 
 export enum Casings {
   SmallWidth = 0.1,

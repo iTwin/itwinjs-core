@@ -9,10 +9,10 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import * as elementsModule from "./TestBridgeElements";
 import * as modelsModule from "./TestBridgeModels";
 
-/** Schema class for the TestBridge domain.
+/** Schema class for the TestConnector domain.
  * @beta
  */
-export class TestBridgeSchema extends Schema {
+export class TestConnectorSchema extends Schema {
   public static get schemaName(): string { return "TestBridge"; }
   public static get schemaFilePath(): string {
     return path.join(KnownTestLocations.assetsDir, "TestBridge.ecschema.xml");

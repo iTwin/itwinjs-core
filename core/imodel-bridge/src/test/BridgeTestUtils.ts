@@ -14,8 +14,8 @@ import {
 } from "@bentley/imodeljs-backend";
 import { IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { BridgeLoggerCategory } from "../BridgeLoggerCategory";
-import { BridgeJobDefArgs } from "../imodel-bridge";
+import { ConnectorLoggerCategory } from "../BridgeLoggerCategory";
+import { ConnectorJobDefArgs } from "../imodel-bridge";
 import { IModelBankArgs, IModelBankUtils } from "../IModelBankUtils";
 import { IModelHubUtils } from "../IModelHubUtils";
 import { HubUtility } from "./integration/HubUtility";
@@ -60,7 +60,7 @@ function getCount(imodel: IModelDb, className: string) {
   return count;
 }
 
-export class BridgeTestUtils {
+export class ConnectorTestUtils {
   public static setupLogging() {
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
@@ -83,7 +83,7 @@ export class BridgeTestUtils {
     Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
     Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
     Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(BridgeLoggerCategory.Framework, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ConnectorLoggerCategory.Framework, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(ITwinClientLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Warning);
     Logger.setLevel(IModelHubClientLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Warning);
     Logger.setLevel(ITwinClientLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Warning);
@@ -95,11 +95,11 @@ export class BridgeTestUtils {
   // Setup typical programmatic log level overrides here
   // Convenience method used to debug specific tests/fixtures
   public static setupDebugLogLevels() {
-    BridgeTestUtils.initDebugLogLevels(false);
+    ConnectorTestUtils.initDebugLogLevels(false);
   }
 
   public static resetDebugLogLevels() {
-    BridgeTestUtils.initDebugLogLevels(true);
+    ConnectorTestUtils.initDebugLogLevels(true);
   }
 
   public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
@@ -123,7 +123,7 @@ export class BridgeTestUtils {
     await IModelHost.shutdown();
   }
 
-  public static verifyIModel(imodel: IModelDb, bridgeJobDef: BridgeJobDefArgs, isUpdate: boolean = false) {
+  public static verifyIModel(imodel: IModelDb, connectorJobDef: ConnectorJobDefArgs, isUpdate: boolean = false) {
     // Confirm the schema was imported simply by trying to get the meta data for one of the classes.
     assert.isDefined(imodel.getMetaData("TestBridge:TestBridgeGroup"));
     assert.equal(1, getCount(imodel, "BisCore:RepositoryLink"));
@@ -142,7 +142,7 @@ export class BridgeTestUtils {
     assert.equal(8, getCount(imodel, "TestBridge:SmallSquareTile"));
 
     assert.isTrue(imodel.codeSpecs.hasName(CodeSpecs.Group));
-    const jobSubjectName = `TestiModelBridge:${bridgeJobDef.sourcePath!}`;
+    const jobSubjectName = `TestiModelBridge:${connectorJobDef.sourcePath!}`;
     const subjectId: Id64String = imodel.elements.queryElementIdByCode(Subject.createCode(imodel, IModel.rootSubjectId, jobSubjectName))!;
     assert.isTrue(Id64.isValidId64(subjectId));
 

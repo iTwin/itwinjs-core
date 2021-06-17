@@ -12,7 +12,7 @@ export * from "./Synchronizer";
  */
 
 /** @docs-group-description Framework
- * Classes for supporting independent IModelBridge implementations.
+ * Classes for supporting independent iTwin Connector implementations.
  */
 /** @docs-group-description Logging
  * Logger categories used by this package.

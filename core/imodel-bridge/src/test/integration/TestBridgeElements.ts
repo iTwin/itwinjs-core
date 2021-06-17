@@ -6,7 +6,7 @@
 import { GroupInformationElement, IModelDb, PhysicalElement, SpatialCategory } from "@bentley/imodeljs-backend";
 import { AxisAlignedBox3d, Code, CodeScopeProps, CodeSpec, ElementProps, IModelError, PhysicalElementProps, Placement3d, Placement3dProps } from "@bentley/imodeljs-common";
 import { Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { TestBridgeLoggerCategory } from "./TestBridgeLoggerCategory";
+import { TestConnectorLoggerCategory } from "./TestBridgeLoggerCategory";
 import { Point3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
 import { EquilateralTriangleTileBuilder, IsoscelesTriangleTileBuilder, LargeSquareTileBuilder, RectangleTileBuilder, RightTriangleTileBuilder, SmallSquareTileBuilder, TileBuilder } from "./TestBridgeGeometry";
 
@@ -36,7 +36,7 @@ export enum Materials {
   MagnetizedFerrite = "MagnetizedFerrite",
 }
 
-const loggerCategory: string = TestBridgeLoggerCategory.Bridge;
+const loggerCategory: string = TestConnectorLoggerCategory.Connector;
 
 export class TestBridgePhysicalElement extends PhysicalElement implements TestBridgePhysicalProps {
   /** @internal */
