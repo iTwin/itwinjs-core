@@ -15,7 +15,7 @@ import { Synchronizer } from "./Synchronizer";
 /** Abstract implementation of the iTwin Connector.
  * @beta
  */
-export abstract class ItwinConnector {
+export abstract class ITwinConnector {
   private _synchronizer: Synchronizer | undefined;
   private _jobSubject?: Subject;
 

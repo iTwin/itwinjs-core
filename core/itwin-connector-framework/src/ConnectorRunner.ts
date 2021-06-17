@@ -22,7 +22,7 @@ import { IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, SubjectPr
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ConnectorLoggerCategory } from "./ConnectorLoggerCategory";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
-import { ItwinConnector } from "./iTwinConnector";
+import { ITwinConnector } from "./iTwinConnector";
 import { ServerArgs } from "./IModelHubUtils";
 import { Synchronizer } from "./Synchronizer";
 
@@ -65,7 +65,7 @@ class StaticTokenStore {
  * @beta
  */
 export class ConnectorRunner {
-  private _connector?: ItwinConnector;
+  private _connector?: ITwinConnector;
 
   private _connectorArgs: ConnectorJobDefArgs;
   private _serverArgs?: ServerArgs | IModelBankArgs;
@@ -214,7 +214,7 @@ abstract class IModelDbBuilder {
   protected _jobSubjectName: string;
   protected _jobSubject?: Subject;
 
-  constructor(protected readonly _connector: ItwinConnector, protected readonly _connectorArgs: ConnectorJobDefArgs) {
+  constructor(protected readonly _connector: ITwinConnector, protected readonly _connectorArgs: ConnectorJobDefArgs) {
     // this._jobSubjectName = this.connector.getConnectorName() + ":" + this._connectorArgs.sourcePath!;
     this._jobSubjectName = this._connector.getJobSubjectName(this._connectorArgs.sourcePath!);
   }
@@ -323,7 +323,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
   private _activityId: GuidString;
   private _serverArgs: ServerArgs | IModelBankArgs;
 
-  constructor(connector: ItwinConnector, connectorArgs: ConnectorJobDefArgs, serverArgs: ServerArgs | IModelBankArgs) {
+  constructor(connector: ITwinConnector, connectorArgs: ConnectorJobDefArgs, serverArgs: ServerArgs | IModelBankArgs) {
     super(connector, connectorArgs);
     this._serverArgs = serverArgs;
     this._activityId = Guid.createValue();

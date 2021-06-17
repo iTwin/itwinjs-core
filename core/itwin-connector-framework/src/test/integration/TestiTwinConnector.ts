@@ -13,7 +13,7 @@ import { CodeScopeSpec, CodeSpec, ColorByName, ColorDef, ColorDefProps, Geometry
 import { Box, Cone, LinearSweep, Loop, Point3d, SolidPrimitive, StandardViewIndex, Vector3d } from "@bentley/geometry-core";
 
 import { ItemState, SourceItem, SynchronizationResults } from "../../Synchronizer";
-import { ItwinConnector } from "../../iTwinConnector";
+import { ITwinConnector } from "../../iTwinConnector";
 import { TestConnectorLoggerCategory } from "./TestConnectorLoggerCategory";
 import { TestConnectorSchema } from "./TestConnectorSchema";
 import { TestConnectorGroupModel } from "./TestConnectorModels";
@@ -28,7 +28,7 @@ import * as fs from "fs";
 
 const loggerCategory: string = TestConnectorLoggerCategory.Connector;
 
-class TestConnector extends ItwinConnector {
+class TestConnector extends ITwinConnector {
   private _data: any;
   private _sourceDataState: ItemState = ItemState.New;
   private _sourceData?: string;
