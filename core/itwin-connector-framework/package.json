@@ -1,7 +1,7 @@
 {
   "name": "@bentley/itwin-connector-framework",
   "version": "2.18.0-dev.8",
-  "description": "iModel.js bridge components",
+  "description": "iTwin Connector Framework",
   "main": "lib/itwin-connector-framework.js",
   "typings": "lib/itwin-connector-framework",
   "license": "MIT",
@@ -26,8 +26,8 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "cpx ./src/test/logging.config.json ./lib/test",
     "test": "betools test --offline=\"mock\" --grep=\"#integration|#WebGLPerformance\" --invert",
-    "test:all": "npm run pretest && betools test --grep=\"IModelConnectorFwk\"",
-    "test:standalone": "npm run pretest && betools test --offline=\"mock\" --grep=\"IModelConnectorFwkStandAlone\"",
+    "test:all": "npm run pretest && betools test --grep=\"iTwinConnectorFwk\"",
+    "test:standalone": "npm run pretest && betools test --offline=\"mock\" --grep=\"iTwinConnectorFwkStandAlone\"",
     "test:integration": "npm run pretest && betools test --testDir=\"./lib/test/integration\""
   },
   "keywords": [

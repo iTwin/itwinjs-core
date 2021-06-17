@@ -249,12 +249,12 @@ abstract class IModelDbBuilder {
   protected insertJobSubject(): Subject {
     assert(this._imodel !== undefined);
     const connectorProps: any = {};
-    connectorProps.BridgeVersion = this._connector.getApplicationVersion();
-    /// bridgeProps.BridgeType = ???;
+    connectorProps.ConnectorVersion = this._connector.getApplicationVersion();
+    /// connectorProps.ConnectorType = ???;
 
     const jobProps: any = {};
     jobProps.Properties = connectorProps;
-    jobProps.Bridge = this._connector.getConnectorName();
+    jobProps.Connector = this._connector.getConnectorName();
     // jobProps.Comments = ???;
 
     const subjProps: any = {};
