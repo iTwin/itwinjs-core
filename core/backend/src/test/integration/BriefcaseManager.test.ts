@@ -59,9 +59,9 @@ describe("BriefcaseManager (#integration)", () => {
     // Validate that the IModelDb is readonly
     assert(iModel.isReadonly, "iModel not set to Readonly mode");
 
-    const expectedChangeSetId = await IModelHost.hubAccess.getChangesetIdFromVersion({ version: IModelVersion.first(), requestContext, iModelId: readOnlyTestIModelId });
-    assert.strictEqual(iModel.changeSetId!, expectedChangeSetId);
-    assert.strictEqual(iModel.changeSetId!, expectedChangeSetId);
+    const expectedChangeSet = await IModelHost.hubAccess.getChangesetFromVersion({ version: IModelVersion.first(), requestContext, iModelId: readOnlyTestIModelId });
+    assert.strictEqual(iModel.changeSetId!, expectedChangeSet.id);
+    assert.strictEqual(iModel.changeSetId!, expectedChangeSet.id);
 
     const pathname = iModel.pathName;
     assert.isTrue(IModelJsFs.existsSync(pathname));
