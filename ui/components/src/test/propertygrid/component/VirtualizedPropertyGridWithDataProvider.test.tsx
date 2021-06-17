@@ -452,6 +452,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       it("uses property category renderer manager from props when available", async () => {
         dataProvider = setupDataProvider("test_category", { expandCustomCategory: true });
         const rendererManager = new PropertyCategoryRendererManager();
+        // eslint-disable-next-line react/display-name
         rendererManager.addRenderer("test_renderer", () => () => <>Test renderer from props</>);
         const { findByText } = render(
           <VirtualizedPropertyGridWithDataProvider
