@@ -9,7 +9,7 @@ import { Formatter } from "../Formatter/Formatter";
 import { BasicUnit } from "../Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { FormatTraits, FormatType } from "../imodeljs-quantity";
-import { DecimalPrecision, FractionalPrecision, ScientificType, ShowSignOption } from "../Formatter/FormatEnums";
+import { DecimalPrecision } from "../Formatter/FormatEnums";
 import { UnitProps } from "../Interfaces";
 
 describe("Numeric Formats tests:", () => {
