@@ -17,8 +17,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 import { ChangesetProps } from "../../BackendHubAccess";
 
-// FIXME: Disabled because V2 checkpoints are not in QA yet...
-describe.skip("Checkpoints (#integration)", () => {
+describe("Checkpoints (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
   let testContextId: GuidString;
@@ -44,6 +43,7 @@ describe.skip("Checkpoints (#integration)", () => {
     assert.isDefined(checkpoints[0].containerAccessKeyAccount, "checkpoint storage account is invalid");
 
     // Start daemon process and wait for it to be ready
+    fs.chmodSync((BlobDaemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
     daemonProc = BlobDaemon.start({
       daemonDir: blockcacheDir,
       storageType: "azure?sas=1",
@@ -84,5 +84,5 @@ describe.skip("Checkpoints (#integration)", () => {
     assert.equal(numModels, 32);
 
     iModel.close();
-  }).timeout(60000);
+  }).timeout(120000);
 });
