@@ -2629,7 +2629,7 @@ export abstract class IModelDb extends IModel {
     querySchemaVersion(schemaName: string): string | undefined;
     // (undocumented)
     readFontJson(): string;
-    // (undocumented)
+    // @internal (undocumented)
     reattachDaemon(_requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
     reinstateTxn(): IModelStatus;
@@ -4187,7 +4187,7 @@ export class SnapshotDb extends IModelDb {
     static findByKey(key: string): SnapshotDb;
     // (undocumented)
     get isSnapshot(): boolean;
-    // (undocumented)
+    // @beta (undocumented)
     get isV2Checkpoint(): boolean;
     // @internal
     static openCheckpointV1(fileName: string, checkpoint: CheckpointProps): SnapshotDb;
