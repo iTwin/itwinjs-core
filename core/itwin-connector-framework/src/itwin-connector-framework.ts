@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./ConnectorLoggerCategory";
 export * from "./ConnectorRunner";
-export * from "./iTwinConnector";
+export * from "./ITwinConnector";
 export * from "./Synchronizer";
 
 /** @docs-package-description

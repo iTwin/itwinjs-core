@@ -20,7 +20,7 @@ import { IModelBankArgs, IModelBankUtils } from "../IModelBankUtils";
 import { IModelHubUtils } from "../IModelHubUtils";
 import { HubUtility } from "./integration/HubUtility";
 import { CodeSpecs, RectangleTile, SmallSquareTile } from "./integration/TestConnectorElements";
-import { ModelNames } from "./integration/TestiTwinConnector";
+import { ModelNames } from "./integration/TestITwinConnector";
 import { KnownTestLocations } from "./KnownTestLocations";
 
 export class TestIModelInfo {

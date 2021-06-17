@@ -22,7 +22,7 @@ import { IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, SubjectPr
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ConnectorLoggerCategory } from "./ConnectorLoggerCategory";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
-import { ITwinConnector } from "./iTwinConnector";
+import { ITwinConnector } from "./ITwinConnector";
 import { ServerArgs } from "./IModelHubUtils";
 import { Synchronizer } from "./Synchronizer";
 

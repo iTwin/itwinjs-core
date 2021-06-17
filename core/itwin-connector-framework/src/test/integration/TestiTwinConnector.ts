@@ -13,7 +13,7 @@ import { CodeScopeSpec, CodeSpec, ColorByName, ColorDef, ColorDefProps, Geometry
 import { Box, Cone, LinearSweep, Loop, Point3d, SolidPrimitive, StandardViewIndex, Vector3d } from "@bentley/geometry-core";
 
 import { ItemState, SourceItem, SynchronizationResults } from "../../Synchronizer";
-import { ITwinConnector } from "../../iTwinConnector";
+import { ITwinConnector } from "../../ITwinConnector";
 import { TestConnectorLoggerCategory } from "./TestConnectorLoggerCategory";
 import { TestConnectorSchema } from "./TestConnectorSchema";
 import { TestConnectorGroupModel } from "./TestConnectorModels";
