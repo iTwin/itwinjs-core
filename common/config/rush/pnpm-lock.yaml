@@ -43,7 +43,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../clients/context-registry:
@@ -88,7 +88,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../clients/extension:
@@ -133,7 +133,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../clients/frontend-application-insights:
@@ -174,7 +174,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../clients/frontend-authorization:
@@ -198,7 +198,7 @@ importers:
       '@types/node': 10.14.1
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../clients/imodelhub:
     specifiers:
@@ -233,7 +233,7 @@ importers:
       '@types/node': 10.14.1
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../clients/itwin:
     specifiers:
@@ -297,7 +297,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../clients/product-settings:
@@ -343,7 +343,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../clients/projectshare:
@@ -385,7 +385,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../clients/rbac:
@@ -428,7 +428,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../clients/reality-data:
@@ -481,7 +481,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../clients/telemetry:
@@ -518,7 +518,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../clients/usage-logging:
@@ -561,7 +561,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../core/backend:
@@ -577,7 +577,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 2.17.5
+      '@bentley/imodeljs-native': 2.18.0
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -628,7 +628,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 2.17.5
+      '@bentley/imodeljs-native': 2.18.0
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -684,7 +684,7 @@ importers:
       sinon: 9.2.4
       source-map-loader: 1.1.3_webpack@4.42.0
       source-map-support: 0.5.19
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../core/backend-itwin-client:
@@ -788,7 +788,7 @@ importers:
       sinon: 9.2.4
       source-map-support: 0.5.19
       stream-buffers: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/bentley:
     specifiers:
@@ -818,7 +818,7 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/common:
     specifiers:
@@ -869,7 +869,7 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/ecschema-locaters:
     specifiers:
@@ -911,7 +911,7 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
       xmldom: 0.5.0
 
   ../../core/ecschema-metadata:
@@ -971,7 +971,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
-      typescript: 4.1.5
+      typescript: 4.1.6
       xmldom: 0.5.0
       xmlhttprequest: 1.8.0
 
@@ -997,7 +997,7 @@ importers:
       '@bentley/itwin-client': link:../../../clients/itwin
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/ecschema-rpc/impl:
     specifiers:
@@ -1027,7 +1027,7 @@ importers:
       '@bentley/itwin-client': link:../../../clients/itwin
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/electron-manager:
     specifiers:
@@ -1064,7 +1064,7 @@ importers:
       electron: 11.4.8
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/express-server:
     specifiers:
@@ -1109,7 +1109,7 @@ importers:
       sinon: 9.2.4
       source-map-support: 0.5.19
       supertest: 3.4.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/frontend:
     specifiers:
@@ -1205,7 +1205,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../core/frontend-devtools:
@@ -1245,7 +1245,7 @@ importers:
       cpx: 1.5.0
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/geometry:
     specifiers:
@@ -1282,7 +1282,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       semver: 5.7.1
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/hypermodeling:
     specifiers:
@@ -1329,7 +1329,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../core/i18n:
@@ -1359,7 +1359,7 @@ importers:
       '@types/node': 10.14.1
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/imodel-bridge:
     specifiers:
@@ -1416,7 +1416,7 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/logger-config:
     specifiers:
@@ -1446,7 +1446,7 @@ importers:
       request: 2.88.2
       request-promise: 4.2.6_request@2.88.2
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/markup:
     specifiers:
@@ -1494,7 +1494,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../core/mobile-manager:
@@ -1548,7 +1548,7 @@ importers:
       js-base64: 2.6.4
       mocha: 8.4.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
       ws: 7.5.0
 
   ../../core/orbitgt:
@@ -1583,7 +1583,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       semver: 5.7.1
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/quantity:
     specifiers:
@@ -1621,7 +1621,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../core/webgl-compatibility:
     specifiers:
@@ -1654,7 +1654,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../domains/analytical/backend:
@@ -1696,7 +1696,7 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../domains/linear-referencing/backend:
     specifiers:
@@ -1734,7 +1734,7 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../domains/linear-referencing/common:
     specifiers:
@@ -1766,7 +1766,7 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../domains/physical-material/backend:
     specifiers:
@@ -1802,7 +1802,7 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../editor/backend:
     specifiers:
@@ -1855,7 +1855,7 @@ importers:
       sinon: 9.2.4
       source-map-loader: 1.1.3
       source-map-support: 0.5.19
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../editor/common:
     specifiers:
@@ -1887,7 +1887,7 @@ importers:
       eslint: 6.8.0
       mocha: 8.4.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../editor/frontend:
     specifiers:
@@ -1938,7 +1938,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../example-code/app:
     specifiers:
@@ -2024,7 +2024,7 @@ importers:
       eslint: 6.8.0
       mocha: 8.4.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
       xmlhttprequest: 1.8.0
 
   ../../example-code/snippets:
@@ -2108,7 +2108,7 @@ importers:
       eslint: 6.8.0
       mocha: 8.4.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../extensions/geonames:
     specifiers:
@@ -2147,7 +2147,7 @@ importers:
       cpx: 1.5.0
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../extensions/map-layers:
     specifiers:
@@ -2219,7 +2219,7 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.5
+      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
@@ -2253,7 +2253,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
-      typescript: 4.1.5
+      typescript: 4.1.6
       xmlhttprequest: 1.8.0
 
   ../../full-stack-tests/core:
@@ -2353,7 +2353,7 @@ importers:
       rimraf: 3.0.2
       serve-handler: 6.1.3
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
       webpack-core: 0.6.9
 
@@ -2444,7 +2444,7 @@ importers:
       null-loader: 0.1.1
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
       webpack-cli: 3.3.12_webpack@4.42.0
 
@@ -2509,7 +2509,7 @@ importers:
       internal-tools: link:../../tools/internal
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../full-stack-tests/native-app:
     specifiers:
@@ -2589,7 +2589,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../full-stack-tests/presentation:
@@ -2715,7 +2715,7 @@ importers:
       ignore-styles: 5.0.1
       internal-tools: link:../../tools/internal
       jsdom-global: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../full-stack-tests/rpc:
     specifiers:
@@ -2777,7 +2777,7 @@ importers:
       null-loader: 0.1.1
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../full-stack-tests/rpc-interface:
@@ -2869,7 +2869,7 @@ importers:
       null-loader: 0.1.1
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
       webpack-cli: 3.3.12_webpack@4.42.0
 
@@ -2954,7 +2954,7 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       typemoq: 2.1.0
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../presentation/common:
     specifiers:
@@ -3024,7 +3024,7 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       typemoq: 2.1.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       typescript-json-schema: 0.43.0
       yargs: 16.2.0
 
@@ -3138,7 +3138,7 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       typemoq: 2.1.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       xmlhttprequest: 1.8.0
 
   ../../presentation/frontend:
@@ -3214,7 +3214,7 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       typemoq: 2.1.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       xmlhttprequest: 1.8.0
 
   ../../presentation/testing:
@@ -3298,7 +3298,7 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       typemoq: 2.1.0
-      typescript: 4.1.5
+      typescript: 4.1.6
     devDependencies:
       cpx: 1.5.0
 
@@ -3341,7 +3341,7 @@ importers:
       express: 4.17.1
       null-loader: 0.1.1
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../test-apps/display-performance-test-app:
     specifiers:
@@ -3410,7 +3410,7 @@ importers:
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/perf-tools': link:../../tools/perf-tools
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.5
+      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
       '@types/body-parser': 1.19.0
       '@types/express': 4.17.12
       '@types/node': 10.14.1
@@ -3425,7 +3425,7 @@ importers:
       null-loader: 0.1.1
       react: 16.14.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../test-apps/display-test-app:
@@ -3511,7 +3511,7 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 3.4.9_sass@1.35.1+typescript@4.1.5
+      '@bentley/react-scripts': 3.4.9_sass@1.35.1+typescript@4.1.6
       '@types/body-parser': 1.19.0
       '@types/express': 4.17.12
       '@types/fs-extra': 4.0.11
@@ -3530,7 +3530,7 @@ importers:
       rimraf: 3.0.2
       sass: 1.35.1
       semver: 5.7.1
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../test-apps/export-gltf:
@@ -3562,7 +3562,7 @@ importers:
       '@types/yargs': 12.0.19
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../test-apps/export-obj:
     specifiers:
@@ -3593,7 +3593,7 @@ importers:
       '@types/yargs': 12.0.19
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../test-apps/imjs-importer:
     specifiers:
@@ -3640,7 +3640,7 @@ importers:
       eslint: 6.8.0
       mocha: 8.4.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../test-apps/imodel-from-geojson:
     specifiers:
@@ -3681,7 +3681,7 @@ importers:
       '@types/yargs': 12.0.19
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../test-apps/imodel-from-orbitgt:
     specifiers:
@@ -3724,7 +3724,7 @@ importers:
       '@types/yargs': 12.0.19
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../test-apps/imodel-from-reality-model:
     specifiers:
@@ -3767,7 +3767,7 @@ importers:
       '@types/yargs': 12.0.19
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../test-apps/imodel-transformer:
     specifiers:
@@ -3820,7 +3820,7 @@ importers:
       eslint: 6.8.0
       mocha: 8.4.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../test-apps/ninezone-test-app:
     specifiers:
@@ -3859,11 +3859,11 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.5
+      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.13
       '@types/react-router-dom': 5.1.7
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../test-apps/presentation-test-app:
     specifiers:
@@ -3934,7 +3934,7 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 3.4.9_sass@1.35.1+typescript@4.1.5
+      '@bentley/react-scripts': 3.4.9_sass@1.35.1+typescript@4.1.6
       '@types/bunyan': 1.8.6
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.13
@@ -3950,7 +3950,7 @@ importers:
       rimraf: 3.0.2
       sass: 1.35.1
       symlink-dir: 4.0.3
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../test-apps/ui-test-app:
     specifiers:
@@ -4091,7 +4091,7 @@ importers:
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/logger-config': link:../../core/logger-config
-      '@bentley/react-scripts': 3.4.9_sass@1.35.1+typescript@4.1.5
+      '@bentley/react-scripts': 3.4.9_sass@1.35.1+typescript@4.1.6
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -4112,7 +4112,7 @@ importers:
       null-loader: 0.1.1
       rimraf: 3.0.2
       sass: 1.35.1
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../test-apps/ui-test-extension:
@@ -4178,7 +4178,7 @@ importers:
       eslint: 6.8.0
       rimraf: 3.0.2
       svg-sprite-loader: 4.2.1
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../tools/backend-webpack:
     specifiers:
@@ -4259,15 +4259,15 @@ importers:
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
       tslib: 1.14.1
-      tslint: 5.20.1_typescript@4.1.5
-      tslint-consistent-codestyle: 1.16.0_tslint@5.20.1+typescript@4.1.5
-      tslint-eslint-rules: 5.4.0_tslint@5.20.1+typescript@4.1.5
-      tslint-etc: 1.13.10_tslint@5.20.1+typescript@4.1.5
-      tsutils: 3.17.1_typescript@4.1.5
+      tslint: 5.20.1_typescript@4.1.6
+      tslint-consistent-codestyle: 1.16.0_tslint@5.20.1+typescript@4.1.6
+      tslint-eslint-rules: 5.4.0_tslint@5.20.1+typescript@4.1.6
+      tslint-etc: 1.13.10_tslint@5.20.1+typescript@4.1.6
+      tsutils: 3.17.1_typescript@4.1.6
       typedoc: 0.16.11
       typedoc-plugin-external-module-name: 3.0.0_typedoc@0.16.11
       typedoc-plugin-internal-external: 2.1.1_typedoc@0.16.11
-      typescript: 4.1.5
+      typescript: 4.1.6
       yargs: 16.2.0
     devDependencies:
       '@bentley/eslint-plugin': link:../eslint-plugin
@@ -4327,7 +4327,7 @@ importers:
       eslint: 6.8.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../tools/config-loader:
     specifiers:
@@ -4354,7 +4354,7 @@ importers:
       '@types/node': 10.14.1
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../tools/ecschema2ts:
     specifiers:
@@ -4423,7 +4423,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-support: 0.5.19
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../tools/eslint-plugin:
     specifiers:
@@ -4442,11 +4442,11 @@ importers:
       require-dir: ^1.2.0
       typescript: ~4.1.0
     dependencies:
-      '@typescript-eslint/eslint-plugin': 4.11.1_2c8775c659f30a6f114aeb366fcb50dc
-      '@typescript-eslint/parser': 4.11.1_typescript@4.1.5
+      '@typescript-eslint/eslint-plugin': 4.11.1_5bb6d651947a5d0d4c5e76ecb03ac09a
+      '@typescript-eslint/parser': 4.11.1_typescript@4.1.6
       eslint-import-resolver-node: 0.3.4
       eslint-import-resolver-typescript: 2.0.0_eslint-plugin-import@2.20.1
-      eslint-plugin-deprecation: 1.1.0_typescript@4.1.5
+      eslint-plugin-deprecation: 1.1.0_typescript@4.1.6
       eslint-plugin-import: 2.20.1
       eslint-plugin-jam3: 0.2.3
       eslint-plugin-jsdoc: 30.6.2
@@ -4455,7 +4455,7 @@ importers:
       eslint-plugin-react: 7.19.0
       eslint-plugin-react-hooks: 3.0.0
       require-dir: 1.2.0
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../tools/extension-cli:
     specifiers:
@@ -4530,7 +4530,7 @@ importers:
       chai: 4.3.4
       eslint: 6.8.0
       mocha: 8.4.0
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../tools/extension-webpack:
     specifiers:
@@ -4605,8 +4605,8 @@ importers:
       style-loader: 1.3.0_webpack@4.42.0
       svg-sprite-loader: 4.2.1_webpack@4.42.0
       terser-webpack-plugin: 3.0.7_webpack@4.42.0
-      ts-loader: 6.2.2_typescript@4.1.5
-      typescript: 4.1.5
+      ts-loader: 6.2.2_typescript@4.1.6
+      typescript: 4.1.6
       url-loader: 1.1.2_webpack@4.42.0
       webpack: 4.42.0
       webpack-sources: 1.4.3
@@ -4666,7 +4666,7 @@ importers:
       internal-tools: link:../internal
       mocha: 8.4.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../tools/perf-tools:
     specifiers:
@@ -4685,7 +4685,7 @@ importers:
       '@types/fs-extra': 4.0.11
       eslint: 6.8.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   ../../tools/webpack-core:
     specifiers:
@@ -4755,7 +4755,7 @@ importers:
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 4.1.5
+      typescript: 4.1.6
       webpack: 4.42.0
 
   ../../ui/abstract:
@@ -4826,7 +4826,7 @@ importers:
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       xmlhttprequest: 1.8.0
 
   ../../ui/components:
@@ -5003,7 +5003,7 @@ importers:
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
       typemoq: 2.1.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       xmlhttprequest: 1.8.0
 
   ../../ui/core:
@@ -5084,7 +5084,7 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-i18n': link:../../core/i18n
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.5
+      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
       '@bentley/ui-abstract': link:../abstract
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
@@ -5128,7 +5128,7 @@ importers:
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
       typemoq: 2.1.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       xmlhttprequest: 1.8.0
 
   ../../ui/framework:
@@ -5248,7 +5248,7 @@ importers:
       '@bentley/presentation-testing': link:../../presentation/testing
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/rbac-client': link:../../clients/rbac
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.5
+      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-components': link:../components
@@ -5299,7 +5299,7 @@ importers:
       ts-node: 7.0.1
       tsconfig-paths: 3.9.0
       typemoq: 2.1.0
-      typescript: 4.1.5
+      typescript: 4.1.6
       xmlhttprequest: 1.8.0
 
   ../../ui/ninezone:
@@ -5359,7 +5359,7 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.5
+      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-core': link:../core
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
@@ -5397,7 +5397,7 @@ importers:
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
       typemoq: 2.1.0
-      typescript: 4.1.5
+      typescript: 4.1.6
 
 packages:
 
@@ -7395,12 +7395,12 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/2.17.5:
-    resolution: {integrity: sha512-OBnT89gqiXiXIvnodNrjXGGuwK62N1W40U6Rkd0CSkiYoSq8jolGGFopmqfvP4gW+hcNNHjudRsPuMakjx82qg==}
+  /@bentley/imodeljs-native/2.18.0:
+    resolution: {integrity: sha512-NYaBaK2/HB0dYSgfKjYNhrAfL9bBSKsuTIfyb4T5YW77OJS4NTclgtOUQ7bQGYHoaVeD756U/+T5aXOM2Tr1Ag==}
     requiresBuild: true
     dev: false
 
-  /@bentley/react-scripts/3.4.9_sass@1.35.1+typescript@4.1.5:
+  /@bentley/react-scripts/3.4.9_sass@1.35.1+typescript@4.1.6:
     resolution: {integrity: sha512-hgopwXROuw8iES05mxF1gylvVMOuqYfLR88YjDz1D0CUP6g5ZycSUuV0zwjN32XySKDdZi0OmerbITRj1VgwOA==}
     engines: {node: '>=8.10'}
     hasBin: true
@@ -7413,8 +7413,8 @@ packages:
       '@babel/core': 7.9.0
       '@bentley/webpack-tools-core': 2.16.3_webpack@4.42.0
       '@svgr/webpack': 4.3.3
-      '@typescript-eslint/eslint-plugin': 4.11.1_d0bf3c0366a0d1edd9673f55e63a15b1
-      '@typescript-eslint/parser': 4.11.1_eslint@6.8.0+typescript@4.1.5
+      '@typescript-eslint/eslint-plugin': 4.11.1_d4628b9f137fbf8cb2afc53fac53b781
+      '@typescript-eslint/parser': 4.11.1_eslint@6.8.0+typescript@4.1.6
       babel-eslint: 10.1.0_eslint@6.8.0
       babel-jest: 24.9.0_@babel+core@7.9.0
       babel-loader: 8.1.0_@babel+core@7.9.0+webpack@4.42.0
@@ -7446,7 +7446,7 @@ packages:
       jest-watch-typeahead: 0.4.2
       mini-css-extract-plugin: 0.9.0_webpack@4.42.0
       optimize-css-assets-webpack-plugin: 5.0.3_webpack@4.42.0
-      pnp-webpack-plugin: 1.6.4_typescript@4.1.5
+      pnp-webpack-plugin: 1.6.4_typescript@4.1.6
       postcss-flexbugs-fixes: 4.1.0
       postcss-loader: 3.0.0
       postcss-normalize: 8.0.1
@@ -7464,8 +7464,8 @@ packages:
       svg-sprite-loader: 4.2.1_webpack@4.42.0
       terser-webpack-plugin: 3.0.7_webpack@4.42.0
       ts-jest: 24.3.0_jest@24.9.0
-      ts-pnp: 1.1.6_typescript@4.1.5
-      typescript: 4.1.5
+      ts-pnp: 1.1.6_typescript@4.1.6
+      typescript: 4.1.6
       url-loader: 2.3.0_file-loader@4.3.0+webpack@4.42.0
       webpack: 4.42.0
       webpack-dev-server: 3.11.0_webpack@4.42.0
@@ -7482,7 +7482,7 @@ packages:
       - webpack-cli
     dev: true
 
-  /@bentley/react-scripts/3.4.9_typescript@4.1.5:
+  /@bentley/react-scripts/3.4.9_typescript@4.1.6:
     resolution: {integrity: sha512-hgopwXROuw8iES05mxF1gylvVMOuqYfLR88YjDz1D0CUP6g5ZycSUuV0zwjN32XySKDdZi0OmerbITRj1VgwOA==}
     engines: {node: '>=8.10'}
     hasBin: true
@@ -7495,8 +7495,8 @@ packages:
       '@babel/core': 7.9.0
       '@bentley/webpack-tools-core': 2.16.3_webpack@4.42.0
       '@svgr/webpack': 4.3.3
-      '@typescript-eslint/eslint-plugin': 4.11.1_d0bf3c0366a0d1edd9673f55e63a15b1
-      '@typescript-eslint/parser': 4.11.1_eslint@6.8.0+typescript@4.1.5
+      '@typescript-eslint/eslint-plugin': 4.11.1_d4628b9f137fbf8cb2afc53fac53b781
+      '@typescript-eslint/parser': 4.11.1_eslint@6.8.0+typescript@4.1.6
       babel-eslint: 10.1.0_eslint@6.8.0
       babel-jest: 24.9.0_@babel+core@7.9.0
       babel-loader: 8.1.0_@babel+core@7.9.0+webpack@4.42.0
@@ -7528,7 +7528,7 @@ packages:
       jest-watch-typeahead: 0.4.2
       mini-css-extract-plugin: 0.9.0_webpack@4.42.0
       optimize-css-assets-webpack-plugin: 5.0.3_webpack@4.42.0
-      pnp-webpack-plugin: 1.6.4_typescript@4.1.5
+      pnp-webpack-plugin: 1.6.4_typescript@4.1.6
       postcss-flexbugs-fixes: 4.1.0
       postcss-loader: 3.0.0
       postcss-normalize: 8.0.1
@@ -7546,8 +7546,8 @@ packages:
       svg-sprite-loader: 4.2.1_webpack@4.42.0
       terser-webpack-plugin: 3.0.7_webpack@4.42.0
       ts-jest: 24.3.0_jest@24.9.0
-      ts-pnp: 1.1.6_typescript@4.1.5
-      typescript: 4.1.5
+      ts-pnp: 1.1.6_typescript@4.1.6
+      typescript: 4.1.6
       url-loader: 2.3.0_file-loader@4.3.0+webpack@4.42.0
       webpack: 4.42.0
       webpack-dev-server: 3.11.0_webpack@4.42.0
@@ -7697,21 +7697,21 @@ packages:
     resolution: {integrity: sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==}
     dev: false
 
-  /@fimbul/bifrost/0.21.0_tslint@5.20.1+typescript@4.1.5:
+  /@fimbul/bifrost/0.21.0_tslint@5.20.1+typescript@4.1.6:
     resolution: {integrity: sha512-ou8VU+nTmOW1jeg+FT+sn+an/M0Xb9G16RucrfhjXGWv1Q97kCoM5CG9Qj7GYOSdu7km72k7nY83Eyr53Bkakg==}
     peerDependencies:
       tslint: ^5.0.0
       typescript: '>= 3.3.0 || >= 3.6.0-dev || >= 3.7.0-dev'
     dependencies:
-      '@fimbul/ymir': 0.21.0_tsutils@3.17.1+typescript@4.1.5
+      '@fimbul/ymir': 0.21.0_tsutils@3.17.1+typescript@4.1.6
       get-caller-file: 2.0.5
       tslib: 1.14.1
-      tslint: 5.20.1_typescript@4.1.5
-      tsutils: 3.17.1_typescript@4.1.5
-      typescript: 4.1.5
+      tslint: 5.20.1_typescript@4.1.6
+      tsutils: 3.17.1_typescript@4.1.6
+      typescript: 4.1.6
     dev: false
 
-  /@fimbul/ymir/0.21.0_tsutils@3.17.1+typescript@4.1.5:
+  /@fimbul/ymir/0.21.0_tsutils@3.17.1+typescript@4.1.6:
     resolution: {integrity: sha512-T/y7WqPsm4n3zhT08EpB5sfdm2Kvw3gurAxr2Lr5dQeLi8ZsMlNT/Jby+ZmuuAAd1PnXYzKp+2SXgIkQIIMCUg==}
     peerDependencies:
       tsutils: '>=2.29.0'
@@ -7720,8 +7720,8 @@ packages:
       inversify: 5.1.1
       reflect-metadata: 0.1.13
       tslib: 1.14.1
-      tsutils: 3.17.1_typescript@4.1.5
-      typescript: 4.1.5
+      tsutils: 3.17.1_typescript@4.1.6
+      typescript: 4.1.6
     dev: false
 
   /@hapi/address/2.1.4:
@@ -8103,13 +8103,13 @@ packages:
     resolution: {integrity: sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==}
     engines: {node: '>=10.13.0'}
 
-  /@phenomnomnominal/tsquery/4.1.1_typescript@4.1.5:
+  /@phenomnomnominal/tsquery/4.1.1_typescript@4.1.6:
     resolution: {integrity: sha512-jjMmK1tnZbm1Jq5a7fBliM4gQwjxMU7TFoRNwIyzwlO+eHPRCFv/Nv+H/Gi1jc3WR7QURG8D5d0Tn12YGrUqBQ==}
     peerDependencies:
       typescript: ^3 || ^4
     dependencies:
       esquery: 1.4.0
-      typescript: 4.1.5
+      typescript: 4.1.6
     dev: false
 
   /@react-dnd/asap/4.0.0:
@@ -8589,7 +8589,7 @@ packages:
   /@types/i18next-node-fs-backend/2.1.0:
     resolution: {integrity: sha512-bOOeT89UO/bYLJoQHdN5S3pggj7mMmFfQMBpDdUQOQIQkENGpnTwhNsIM/kjl1NE2HEihjlRZUNVV60Ze86UZA==}
     dependencies:
-      i18next: 20.3.1
+      i18next: 20.3.2
     dev: true
 
   /@types/i18next/8.4.6:
@@ -9063,7 +9063,7 @@ packages:
     dev: false
     optional: true
 
-  /@typescript-eslint/eslint-plugin/4.11.1_2c8775c659f30a6f114aeb366fcb50dc:
+  /@typescript-eslint/eslint-plugin/4.11.1_5bb6d651947a5d0d4c5e76ecb03ac09a:
     resolution: {integrity: sha512-fABclAX2QIEDmTMk6Yd7Muv1CzFLwWM4505nETzRHpP3br6jfahD9UUJkhnJ/g2m7lwfz8IlswcwGGPGiq9exw==}
     engines: {node: ^10.12.0 || >=12.0.0}
     peerDependencies:
@@ -9074,20 +9074,20 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/experimental-utils': 4.11.1_typescript@4.1.5
-      '@typescript-eslint/parser': 4.11.1_typescript@4.1.5
+      '@typescript-eslint/experimental-utils': 4.11.1_typescript@4.1.6
+      '@typescript-eslint/parser': 4.11.1_typescript@4.1.6
       '@typescript-eslint/scope-manager': 4.11.1
       debug: 4.3.1
       functional-red-black-tree: 1.0.1
       regexpp: 3.2.0
       semver: 7.3.5
-      tsutils: 3.17.1_typescript@4.1.5
-      typescript: 4.1.5
+      tsutils: 3.17.1_typescript@4.1.6
+      typescript: 4.1.6
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@typescript-eslint/eslint-plugin/4.11.1_d0bf3c0366a0d1edd9673f55e63a15b1:
+  /@typescript-eslint/eslint-plugin/4.11.1_d4628b9f137fbf8cb2afc53fac53b781:
     resolution: {integrity: sha512-fABclAX2QIEDmTMk6Yd7Muv1CzFLwWM4505nETzRHpP3br6jfahD9UUJkhnJ/g2m7lwfz8IlswcwGGPGiq9exw==}
     engines: {node: ^10.12.0 || >=12.0.0}
     peerDependencies:
@@ -9098,21 +9098,21 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/experimental-utils': 4.11.1_eslint@6.8.0+typescript@4.1.5
-      '@typescript-eslint/parser': 4.11.1_eslint@6.8.0+typescript@4.1.5
+      '@typescript-eslint/experimental-utils': 4.11.1_eslint@6.8.0+typescript@4.1.6
+      '@typescript-eslint/parser': 4.11.1_eslint@6.8.0+typescript@4.1.6
       '@typescript-eslint/scope-manager': 4.11.1
       debug: 4.3.1
       eslint: 6.8.0
       functional-red-black-tree: 1.0.1
       regexpp: 3.2.0
       semver: 7.3.5
-      tsutils: 3.17.1_typescript@4.1.5
-      typescript: 4.1.5
+      tsutils: 3.17.1_typescript@4.1.6
+      typescript: 4.1.6
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@typescript-eslint/experimental-utils/3.10.1_typescript@4.1.5:
+  /@typescript-eslint/experimental-utils/3.10.1_typescript@4.1.6:
     resolution: {integrity: sha512-DewqIgscDzmAfd5nOGe4zm6Bl7PKtMG2Ad0KG8CUZAHlXfAKTF9Ol5PXhiMh39yRL2ChRH1cuuUGOcVyyrhQIw==}
     engines: {node: ^10.12.0 || >=12.0.0}
     peerDependencies:
@@ -9120,7 +9120,7 @@ packages:
     dependencies:
       '@types/json-schema': 7.0.7
       '@typescript-eslint/types': 3.10.1
-      '@typescript-eslint/typescript-estree': 3.10.1_typescript@4.1.5
+      '@typescript-eslint/typescript-estree': 3.10.1_typescript@4.1.6
       eslint-scope: 5.1.1
       eslint-utils: 2.1.0
     transitivePeerDependencies:
@@ -9128,7 +9128,7 @@ packages:
       - typescript
     dev: false
 
-  /@typescript-eslint/experimental-utils/4.11.1_eslint@6.8.0+typescript@4.1.5:
+  /@typescript-eslint/experimental-utils/4.11.1_eslint@6.8.0+typescript@4.1.6:
     resolution: {integrity: sha512-mAlWowT4A6h0TC9F+J5pdbEhjNiEMO+kqPKQ4sc3fVieKL71dEqfkKgtcFVSX3cjSBwYwhImaQ/mXQF0oaI38g==}
     engines: {node: ^10.12.0 || >=12.0.0}
     peerDependencies:
@@ -9137,7 +9137,7 @@ packages:
       '@types/json-schema': 7.0.7
       '@typescript-eslint/scope-manager': 4.11.1
       '@typescript-eslint/types': 4.11.1
-      '@typescript-eslint/typescript-estree': 4.11.1_typescript@4.1.5
+      '@typescript-eslint/typescript-estree': 4.11.1_typescript@4.1.6
       eslint: 6.8.0
       eslint-scope: 5.1.1
       eslint-utils: 2.1.0
@@ -9146,7 +9146,7 @@ packages:
       - typescript
     dev: true
 
-  /@typescript-eslint/experimental-utils/4.11.1_typescript@4.1.5:
+  /@typescript-eslint/experimental-utils/4.11.1_typescript@4.1.6:
     resolution: {integrity: sha512-mAlWowT4A6h0TC9F+J5pdbEhjNiEMO+kqPKQ4sc3fVieKL71dEqfkKgtcFVSX3cjSBwYwhImaQ/mXQF0oaI38g==}
     engines: {node: ^10.12.0 || >=12.0.0}
     peerDependencies:
@@ -9155,7 +9155,7 @@ packages:
       '@types/json-schema': 7.0.7
       '@typescript-eslint/scope-manager': 4.11.1
       '@typescript-eslint/types': 4.11.1
-      '@typescript-eslint/typescript-estree': 4.11.1_typescript@4.1.5
+      '@typescript-eslint/typescript-estree': 4.11.1_typescript@4.1.6
       eslint-scope: 5.1.1
       eslint-utils: 2.1.0
     transitivePeerDependencies:
@@ -9163,7 +9163,7 @@ packages:
       - typescript
     dev: false
 
-  /@typescript-eslint/parser/4.11.1_eslint@6.8.0+typescript@4.1.5:
+  /@typescript-eslint/parser/4.11.1_eslint@6.8.0+typescript@4.1.6:
     resolution: {integrity: sha512-BJ3jwPQu1jeynJ5BrjLuGfK/UJu6uwHxJ/di7sanqmUmxzmyIcd3vz58PMR7wpi8k3iWq2Q11KMYgZbUpRoIPw==}
     engines: {node: ^10.12.0 || >=12.0.0}
     peerDependencies:
@@ -9175,15 +9175,15 @@ packages:
     dependencies:
       '@typescript-eslint/scope-manager': 4.11.1
       '@typescript-eslint/types': 4.11.1
-      '@typescript-eslint/typescript-estree': 4.11.1_typescript@4.1.5
+      '@typescript-eslint/typescript-estree': 4.11.1_typescript@4.1.6
       debug: 4.3.1
       eslint: 6.8.0
-      typescript: 4.1.5
+      typescript: 4.1.6
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@typescript-eslint/parser/4.11.1_typescript@4.1.5:
+  /@typescript-eslint/parser/4.11.1_typescript@4.1.6:
     resolution: {integrity: sha512-BJ3jwPQu1jeynJ5BrjLuGfK/UJu6uwHxJ/di7sanqmUmxzmyIcd3vz58PMR7wpi8k3iWq2Q11KMYgZbUpRoIPw==}
     engines: {node: ^10.12.0 || >=12.0.0}
     peerDependencies:
@@ -9195,9 +9195,9 @@ packages:
     dependencies:
       '@typescript-eslint/scope-manager': 4.11.1
       '@typescript-eslint/types': 4.11.1
-      '@typescript-eslint/typescript-estree': 4.11.1_typescript@4.1.5
+      '@typescript-eslint/typescript-estree': 4.11.1_typescript@4.1.6
       debug: 4.3.1
-      typescript: 4.1.5
+      typescript: 4.1.6
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -9218,7 +9218,7 @@ packages:
     resolution: {integrity: sha512-5kvd38wZpqGY4yP/6W3qhYX6Hz0NwUbijVsX2rxczpY6OXaMxh0+5E5uLJKVFwaBM7PJe1wnMym85NfKYIh6CA==}
     engines: {node: ^8.10.0 || ^10.13.0 || >=11.10.1}
 
-  /@typescript-eslint/typescript-estree/3.10.1_typescript@4.1.5:
+  /@typescript-eslint/typescript-estree/3.10.1_typescript@4.1.6:
     resolution: {integrity: sha512-QbcXOuq6WYvnB3XPsZpIwztBoquEYLXh2MtwVU+kO8jgYCiv4G5xrSP/1wg4tkvrEE+esZVquIPX/dxPlePk1w==}
     engines: {node: ^10.12.0 || >=12.0.0}
     peerDependencies:
@@ -9234,13 +9234,13 @@ packages:
       is-glob: 4.0.1
       lodash: 4.17.21
       semver: 7.3.5
-      tsutils: 3.17.1_typescript@4.1.5
-      typescript: 4.1.5
+      tsutils: 3.17.1_typescript@4.1.6
+      typescript: 4.1.6
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@typescript-eslint/typescript-estree/4.11.1_typescript@4.1.5:
+  /@typescript-eslint/typescript-estree/4.11.1_typescript@4.1.6:
     resolution: {integrity: sha512-tC7MKZIMRTYxQhrVAFoJq/DlRwv1bnqA4/S2r3+HuHibqvbrPcyf858lNzU7bFmy4mLeIHFYr34ar/1KumwyRw==}
     engines: {node: ^10.12.0 || >=12.0.0}
     peerDependencies:
@@ -9256,8 +9256,8 @@ packages:
       is-glob: 4.0.1
       lodash: 4.17.21
       semver: 7.3.5
-      tsutils: 3.17.1_typescript@4.1.5
-      typescript: 4.1.5
+      tsutils: 3.17.1_typescript@4.1.6
+      typescript: 4.1.6
     transitivePeerDependencies:
       - supports-color
 
@@ -12685,8 +12685,8 @@ packages:
       eslint-plugin-react: 7.x
       eslint-plugin-react-hooks: 1.x || 2.x
     dependencies:
-      '@typescript-eslint/eslint-plugin': 4.11.1_d0bf3c0366a0d1edd9673f55e63a15b1
-      '@typescript-eslint/parser': 4.11.1_eslint@6.8.0+typescript@4.1.5
+      '@typescript-eslint/eslint-plugin': 4.11.1_d4628b9f137fbf8cb2afc53fac53b781
+      '@typescript-eslint/parser': 4.11.1_eslint@6.8.0+typescript@4.1.6
       babel-eslint: 10.1.0_eslint@6.8.0
       confusing-browser-globals: 1.0.10
       eslint: 6.8.0
@@ -12744,16 +12744,16 @@ packages:
       debug: 3.2.7
       pkg-dir: 2.0.0
 
-  /eslint-plugin-deprecation/1.1.0_typescript@4.1.5:
+  /eslint-plugin-deprecation/1.1.0_typescript@4.1.6:
     resolution: {integrity: sha512-+oDa6JbdZXyh7Bx2zx7VoDFZvFnV1pZVPVo/bEGVkuXlLih/evX0LQG2/nSuNg83CmwZTcAFZXXpLgsX4ctIDQ==}
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0
       typescript: ^3.7.5
     dependencies:
-      '@typescript-eslint/experimental-utils': 3.10.1_typescript@4.1.5
+      '@typescript-eslint/experimental-utils': 3.10.1_typescript@4.1.6
       tslib: 1.14.1
-      tsutils: 3.17.1_typescript@4.1.5
-      typescript: 4.1.5
+      tsutils: 3.17.1_typescript@4.1.6
+      typescript: 4.1.6
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -14568,8 +14568,8 @@ packages:
     resolution: {integrity: sha1-kP/Z+bxhfzS5oS4DcmD1JERfdoQ=}
     dev: false
 
-  /i18next/20.3.1:
-    resolution: {integrity: sha512-WTY07KreR5z2LBSzAIKs05zpR5tgUT98C4fD96e7Risbc/HZePwF6AEnb9VkjdeSeRn9PDqQBay7ZkphuXt0Xw==}
+  /i18next/20.3.2:
+    resolution: {integrity: sha512-e8CML2R9Ng2sSQOM80wb/PrM2j8mDm84o/T4Amzn9ArVyNX5/ENWxxAXkRpZdTQNDaxKImF93Wep4mAoozFrKw==}
     dependencies:
       '@babel/runtime': 7.14.6
     dev: true
@@ -15809,8 +15809,8 @@ packages:
     dependencies:
       argparse: 2.0.1
 
-  /jsbi/3.1.4:
-    resolution: {integrity: sha512-52QRRFSsi9impURE8ZUbzAMCLjPm4THO7H2fcuIvaaeFTbSysvkodbQQXIVsNgq/ypDbq6dJiuGKL0vZ/i9hUg==}
+  /jsbi/3.1.5:
+    resolution: {integrity: sha512-w2BY0VOYC1ahe+w6Qhl4SFoPvPsZ9NPHY4bwass+LCgU7RK3PBoVQlQ3G1s7vI8W3CYyJiEXcbKF7FIM/L8q3Q==}
     dev: true
 
   /jsbn/0.1.1:
@@ -18080,11 +18080,11 @@ packages:
     resolution: {integrity: sha512-2qHaIQr2VLRFoxe2nASzsV6ef4yOOH+Fi9FBOVH6cqeSgUnoyySPZkxzLuzd+RYOQTRpROA0ztTMqxROKSb/nA==}
     dev: true
 
-  /pnp-webpack-plugin/1.6.4_typescript@4.1.5:
+  /pnp-webpack-plugin/1.6.4_typescript@4.1.6:
     resolution: {integrity: sha512-7Wjy+9E3WwLOEL30D+m8TSTF7qJJUJLONBnwQp0518siuMxUQUbgZwssaFX+QKlZkjHZcw/IpZCt/H0srrntSg==}
     engines: {node: '>=6'}
     dependencies:
-      ts-pnp: 1.1.6_typescript@4.1.5
+      ts-pnp: 1.1.6_typescript@4.1.6
     transitivePeerDependencies:
       - typescript
     dev: true
@@ -18543,7 +18543,7 @@ packages:
   /postcss-prefix-selector/1.10.0:
     resolution: {integrity: sha512-VcC/zCXVfFdGyn+Fo9+mxnxBu+hT61uMJJBdfWBbIeDrcE6g8s+26SUPTMpz8kc9wfoLpJGAZZ4QwbVqwxpNRA==}
     dependencies:
-      postcss: 8.3.4
+      postcss: 8.3.5
 
   /postcss-preset-env/6.7.0:
     resolution: {integrity: sha512-eU4/K5xzSFwUFJ8hTdTQzo2RBLbDVt83QZrAvI07TULOkmyQlnYlpwep+2yIK+K+0KlZO4BvFcleOCCcUtwchg==}
@@ -18728,8 +18728,8 @@ packages:
       source-map: 0.6.1
       supports-color: 6.1.0
 
-  /postcss/8.3.4:
-    resolution: {integrity: sha512-/tZY0PXExXXnNhKv3TOvZAOUYRyuqcCbBm2c17YMDK0PlVII3K7/LKdt3ScHL+hhouddjUWi+1sKDf9xXW+8YA==}
+  /postcss/8.3.5:
+    resolution: {integrity: sha512-NxTuJocUhYGsMiMFHDUkmjSKT3EdH4/WbGF6GCi1NDGk+vbcUTun4fpbOqaPtD8IIsztA2ilZm2DhYCuyN58gA==}
     engines: {node: ^10 || ^12 || >=14}
     dependencies:
       colorette: 1.2.2
@@ -19686,7 +19686,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.14.6
+      '@babel/runtime': 7.9.0
 
   /regex-cache/0.4.4:
     resolution: {integrity: sha512-nVIZwtCjkC9YgvWkpM55B5rBhBYRZhAaJbgcFYXXsHnbZ9UZI9nnVWYZpBlCqv9ho2eZryPnWrZGsOdPwVWXWQ==}
@@ -21433,7 +21433,7 @@ packages:
       bl: 3.0.1
       depd: 2.0.0
       iconv-lite: 0.6.3
-      jsbi: 3.1.4
+      jsbi: 3.1.5
       native-duplexpair: 1.0.0
       punycode: 2.1.1
       readable-stream: 3.6.0
@@ -21707,7 +21707,7 @@ packages:
     resolution: {integrity: sha512-i5K1p6o5J2EMNS3DVpVdpsJnFMWNE01kBjnw5evS/XgBYiu/oo/mxamOOEVYn/uPbIaxl5iDVSbAcFCDY55tmw==}
     dev: false
 
-  /ts-loader/6.2.2_typescript@4.1.5:
+  /ts-loader/6.2.2_typescript@4.1.6:
     resolution: {integrity: sha512-HDo5kXZCBml3EUPcc7RlZOV/JGlLHwppTLEHb3SHnr5V7NXD4klMEkrhJe5wgRbaWsSXi+Y1SIBN/K9B6zWGWQ==}
     engines: {node: '>=8.6'}
     peerDependencies:
@@ -21718,7 +21718,7 @@ packages:
       loader-utils: 1.4.0
       micromatch: 4.0.4
       semver: 6.3.0
-      typescript: 4.1.5
+      typescript: 4.1.6
     dev: false
 
   /ts-node/7.0.1:
@@ -21735,7 +21735,7 @@ packages:
       source-map-support: 0.5.19
       yn: 2.0.0
 
-  /ts-pnp/1.1.6_typescript@4.1.5:
+  /ts-pnp/1.1.6_typescript@4.1.6:
     resolution: {integrity: sha512-CrG5GqAAzMT7144Cl+UIFP7mz/iIhiy+xQ6GGcnjTezhALT02uPMRw7tgDSESgB5MsfKt55+GPWw4ir1kVtMIQ==}
     engines: {node: '>=6'}
     peerDependencies:
@@ -21744,7 +21744,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      typescript: 4.1.5
+      typescript: 4.1.6
     dev: true
 
   /tsconfig-paths/3.9.0:
@@ -21765,20 +21765,20 @@ packages:
   /tslib/2.3.0:
     resolution: {integrity: sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==}
 
-  /tslint-consistent-codestyle/1.16.0_tslint@5.20.1+typescript@4.1.5:
+  /tslint-consistent-codestyle/1.16.0_tslint@5.20.1+typescript@4.1.6:
     resolution: {integrity: sha512-ebR/xHyMEuU36hGNOgCfjGBNYxBPixf0yU1Yoo6s3BrpBRFccjPOmIVaVvQsWAUAMdmfzHOCihVkcaMfimqvHw==}
     peerDependencies:
       tslint: ^5.0.0
       typescript: '>=2.1.4 || >=2.1.0-dev || >=2.2.0-dev || >=2.3.0-dev || >=2.4.0-dev || >=2.5.0-dev || >=2.6.0-dev || >=2.7.0-dev || >=2.8.0-dev || >=2.9.0-dev || >=3.0.0-dev || >=3.1.0-dev || >=3.2.0-dev || >=3.3.0-dev || >=3.4.0-dev'
     dependencies:
-      '@fimbul/bifrost': 0.21.0_tslint@5.20.1+typescript@4.1.5
+      '@fimbul/bifrost': 0.21.0_tslint@5.20.1+typescript@4.1.6
       tslib: 1.14.1
-      tslint: 5.20.1_typescript@4.1.5
-      tsutils: 2.29.0_typescript@4.1.5
-      typescript: 4.1.5
+      tslint: 5.20.1_typescript@4.1.6
+      tsutils: 2.29.0_typescript@4.1.6
+      typescript: 4.1.6
     dev: false
 
-  /tslint-eslint-rules/5.4.0_tslint@5.20.1+typescript@4.1.5:
+  /tslint-eslint-rules/5.4.0_tslint@5.20.1+typescript@4.1.6:
     resolution: {integrity: sha512-WlSXE+J2vY/VPgIcqQuijMQiel+UtmXS+4nvK4ZzlDiqBfXse8FAvkNnTcYhnQyOTW5KFM+uRRGXxYhFpuBc6w==}
     peerDependencies:
       tslint: ^5.0.0
@@ -21786,26 +21786,26 @@ packages:
     dependencies:
       doctrine: 0.7.2
       tslib: 1.9.0
-      tslint: 5.20.1_typescript@4.1.5
-      tsutils: 3.17.1_typescript@4.1.5
-      typescript: 4.1.5
+      tslint: 5.20.1_typescript@4.1.6
+      tsutils: 3.17.1_typescript@4.1.6
+      typescript: 4.1.6
     dev: false
 
-  /tslint-etc/1.13.10_tslint@5.20.1+typescript@4.1.5:
+  /tslint-etc/1.13.10_tslint@5.20.1+typescript@4.1.6:
     resolution: {integrity: sha512-6Rt6zaE9jw4iBkrnpVTlnbnjax/4LyTRrXkm/+nLuuJ6HQzZ/+TmHDAtA6C/VOkSqeOHRXCIen3B38hmIMlxow==}
     peerDependencies:
       tslint: ^5.0.0 || ^6.0.0
       typescript: ^2.3.0 || ^3.0.0 || ^4.0.0
     dependencies:
-      '@phenomnomnominal/tsquery': 4.1.1_typescript@4.1.5
+      '@phenomnomnominal/tsquery': 4.1.1_typescript@4.1.6
       tslib: 2.3.0
-      tslint: 5.20.1_typescript@4.1.5
-      tsutils: 3.17.1_typescript@4.1.5
+      tslint: 5.20.1_typescript@4.1.6
+      tsutils: 3.17.1_typescript@4.1.6
       tsutils-etc: 1.3.4_tsutils@3.17.1
-      typescript: 4.1.5
+      typescript: 4.1.6
     dev: false
 
-  /tslint/5.20.1_typescript@4.1.5:
+  /tslint/5.20.1_typescript@4.1.6:
     resolution: {integrity: sha512-EcMxhzCFt8k+/UP5r8waCf/lzmeSyVlqxqMEDQE7rWYiQky8KpIBz1JAoYXfROHrPZ1XXd43q8yQnULOLiBRQg==}
     engines: {node: '>=4.8.0'}
     hasBin: true
@@ -21824,8 +21824,8 @@ packages:
       resolve: 1.19.0
       semver: 5.7.1
       tslib: 1.14.1
-      tsutils: 2.29.0_typescript@4.1.5
-      typescript: 4.1.5
+      tsutils: 2.29.0_typescript@4.1.6
+      typescript: 4.1.6
     dev: false
 
   /tsutils-etc/1.3.4_tsutils@3.17.1:
@@ -21835,27 +21835,27 @@ packages:
       tsutils: ^3.0.0
     dependencies:
       '@types/yargs': 17.0.0
-      tsutils: 3.17.1_typescript@4.1.5
+      tsutils: 3.17.1_typescript@4.1.6
       yargs: 17.0.1
     dev: false
 
-  /tsutils/2.29.0_typescript@4.1.5:
+  /tsutils/2.29.0_typescript@4.1.6:
     resolution: {integrity: sha512-g5JVHCIJwzfISaXpXE1qvNalca5Jwob6FjI4AoPlqMusJ6ftFE7IkkFoMhVLRgK+4Kx3gkzb8UZK5t5yTTvEmA==}
     peerDependencies:
       typescript: '>=2.1.0 || >=2.1.0-dev || >=2.2.0-dev || >=2.3.0-dev || >=2.4.0-dev || >=2.5.0-dev || >=2.6.0-dev || >=2.7.0-dev || >=2.8.0-dev || >=2.9.0-dev || >= 3.0.0-dev || >= 3.1.0-dev'
     dependencies:
       tslib: 1.14.1
-      typescript: 4.1.5
+      typescript: 4.1.6
     dev: false
 
-  /tsutils/3.17.1_typescript@4.1.5:
+  /tsutils/3.17.1_typescript@4.1.6:
     resolution: {integrity: sha512-kzeQ5B8H3w60nFY2g8cJIuH7JDpsALXySGtwGJ0p2LSjLgay3NdIpqq5SoOBe46bKDW2iq25irHCr8wjomUS2g==}
     engines: {node: '>= 6'}
     peerDependencies:
       typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
     dependencies:
       tslib: 1.14.1
-      typescript: 4.1.5
+      typescript: 4.1.6
 
   /tty-browserify/0.0.0:
     resolution: {integrity: sha1-oVe6QC2iTpv5V/mqadUk7tQpAaY=}
@@ -21994,8 +21994,8 @@ packages:
     hasBin: true
     dev: true
 
-  /typescript/4.1.5:
-    resolution: {integrity: sha512-6OSu9PTIzmn9TCDiovULTnET6BgXtDYL4Gg4szY+cGsc3JP1dQL8qvE8kShTRx1NIw4Q9IBHlwODjkjWEtMUyA==}
+  /typescript/4.1.6:
+    resolution: {integrity: sha512-pxnwLxeb/Z5SP80JDRzVjh58KsM6jZHRAOtTpS7sXLS4ogXNKC9ANxHHZqLLeVHZN35jCtI4JdmLLbLiC1kBow==}
     engines: {node: '>=4.2.0'}
     hasBin: true
 
