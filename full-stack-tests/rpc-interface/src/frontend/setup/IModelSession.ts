@@ -8,17 +8,23 @@ import { AuthorizedFrontendRequestContext, CheckpointConnection } from "@bentley
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
+import { IModelVersion } from "@bentley/imodeljs-common";
 
 export class IModelSession {
 
   public contextId: string;
   public iModelId: string;
+  public changesetId?: string;
+  private _imodelVersion: IModelVersion;
 
   private _iModel?: CheckpointConnection;
 
-  private constructor(contextId: string, imodelId: string) {
+  private constructor(contextId: string, imodelId: string, changesetId?: string) {
     this.contextId = contextId;
     this.iModelId = imodelId;
+    this.changesetId = changesetId;
+
+    this._imodelVersion = changesetId ? IModelVersion.asOfChangeSet(changesetId) : IModelVersion.latest();
   }
 
   public static async create(requestContext: AuthorizedFrontendRequestContext, iModelData: IModelData): Promise<IModelSession> {
@@ -47,7 +53,7 @@ export class IModelSession {
 
     console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line no-console
 
-    return new IModelSession(contextId, imodelId);
+    return new IModelSession(contextId, imodelId, iModelData.changeSetId);
   }
 
   public async getConnection(): Promise<CheckpointConnection> {
@@ -59,7 +65,7 @@ export class IModelSession {
       const env = Config.App.get("imjs_buddi_resolve_url_using_region");
       // eslint-disable-next-line no-console
       console.log(`Environment: ${env}`);
-      this._iModel = await CheckpointConnection.openRemote(this.contextId, this.iModelId);
+      this._iModel = await CheckpointConnection.openRemote(this.contextId, this.iModelId, this._imodelVersion);
       expect(this._iModel).to.exist;
     } catch (e) {
       throw new Error(`Failed to open test iModel. Error: ${e.message}`);

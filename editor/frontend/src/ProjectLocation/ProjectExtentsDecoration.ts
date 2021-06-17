@@ -8,7 +8,7 @@
 
 import { Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { Cartographic, ColorDef, EcefLocation, EcefLocationProps } from "@bentley/imodeljs-common";
-import { BeButton, BeButtonEvent, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport, Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport } from "@bentley/imodeljs-frontend";
+import { BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport, Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport } from "@bentley/imodeljs-frontend";
 import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
 import { EditTools } from "../EditTool";
@@ -922,6 +922,8 @@ export class ProjectLocationCancelTool extends Tool {
 }
 
 /** Save modified project extents and geolocation. Updates decoration to reflect saved state.
+ * @note Allowing this change to be undone is both problematic and undesirable.
+ * Warns the user if called with previous changes to cancel restarting the TxnManager session.
  * @beta
  */
 export class ProjectLocationSaveTool extends Tool {
@@ -931,8 +933,22 @@ export class ProjectLocationSaveTool extends Tool {
     return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
   }
 
+  protected async allowRestartTxnSession(iModel: BriefcaseConnection): Promise<boolean> {
+    if (!await iModel.txns.isUndoPossible())
+      return true;
+
+    // NOTE: Default if openMessageBox isn't implemented is MessageBoxValue.Ok, so we'll check No instead of Yes...
+    if (MessageBoxValue.No === await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo, translateMessage("RestartTxn"), MessageBoxIconType.Question))
+      return false;
+
+    return true;
+  }
+
   protected async saveChanges(deco: ProjectExtentsClipDecoration, extents?: Range3dProps, ecefLocation?: EcefLocationProps): Promise<void> {
     if (!deco.iModel.isBriefcaseConnection())
+      return;
+
+    if (!await this.allowRestartTxnSession(deco.iModel))
       return;
 
     try {
@@ -945,6 +961,7 @@ export class ProjectLocationSaveTool extends Tool {
         await ProjectLocationSaveTool.callCommand("updateEcefLocation", ecefLocation);
 
       await deco.iModel.saveChanges(this.toolId);
+      await deco.iModel.txns.restartTxnSession();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }

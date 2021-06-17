@@ -1429,6 +1429,8 @@ importers:
       bunyan: ^1.8.12
       bunyan-seq: ^0.2.0
       eslint: ^6.8.0
+      request: ^2.88.0
+      request-promise: ^4.2.0
       rimraf: ^3.0.2
       typescript: ~4.1.0
     devDependencies:
@@ -1441,6 +1443,8 @@ importers:
       bunyan: 1.8.15
       bunyan-seq: 0.2.0
       eslint: 6.8.0
+      request: 2.88.2
+      request-promise: 4.2.6_request@2.88.2
       rimraf: 3.0.2
       typescript: 4.1.5
 
@@ -2778,6 +2782,7 @@ importers:
 
   ../../full-stack-tests/rpc-interface:
     specifiers:
+      '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
@@ -2822,6 +2827,7 @@ importers:
       webpack: 4.42.0
       webpack-cli: ^3.1.0
     dependencies:
+      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
@@ -2960,6 +2966,7 @@ importers:
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
+      '@types/chai-subset': 1.3.1
       '@types/deep-equal': ^1
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
@@ -2969,6 +2976,7 @@ importers:
       chai: ^4.1.2
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
+      chai-subset: 1.6.0
       cpx: ^1.5.0
       cross-env: ^5.1.4
       deep-equal: ^1
@@ -2993,6 +3001,7 @@ importers:
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
+      '@types/chai-subset': 1.3.1
       '@types/deep-equal': 1.0.1
       '@types/faker': 4.1.12
       '@types/mocha': 8.2.2
@@ -3002,6 +3011,7 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
+      chai-subset: 1.6.0
       cpx: 1.5.0
       cross-env: 5.2.1
       deep-equal: 1.1.1
@@ -3226,16 +3236,19 @@ importers:
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
+      '@types/faker': ^4.1.0
       '@types/jsdom': ^12.2.0
       '@types/mocha': ^8.2.2
       '@types/rimraf': ^2.0.2
       '@types/sinon': ^9.0.0
+      '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       cpx: ^1.5.0
       cross-env: ^5.1.4
       eslint: ^6.8.0
+      faker: ^4.1.0
       ignore-styles: ^5.0.1
       jsdom-global: 3.0.2
       make-dir: ^1.3.0
@@ -3243,6 +3256,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
+      sinon-chai: ^3.2.0
       typemoq: ^2.1.0
       typescript: ~4.1.0
     dependencies:
@@ -3263,15 +3277,18 @@ importers:
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
+      '@types/faker': 4.1.12
       '@types/jsdom': 12.2.4
       '@types/mocha': 8.2.2
       '@types/rimraf': 2.0.4
       '@types/sinon': 9.0.11
+      '@types/sinon-chai': 3.2.5
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       cross-env: 5.2.1
       eslint: 6.8.0
+      faker: 4.1.0
       ignore-styles: 5.0.1
       jsdom-global: 3.0.2
       make-dir: 1.3.0
@@ -3279,6 +3296,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
+      sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       typemoq: 2.1.0
       typescript: 4.1.5
     devDependencies:
@@ -4008,6 +4026,7 @@ importers:
       react-redux: ^7.2.0
       react-select: 3.1.0
       redux: ^4.0.3
+      request: ^2.88.0
       request-promise: ^4.2.0
       rimraf: ^3.0.2
       sass: ^1.29.0
@@ -4063,7 +4082,8 @@ importers:
       react-redux: 7.2.4_react-dom@16.14.0+react@16.14.0
       react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
       redux: 4.1.0
-      request-promise: 4.2.6
+      request: 2.88.2
+      request-promise: 4.2.6_request@2.88.2
       semver: 5.7.1
     devDependencies:
       '@axe-core/react': 4.2.1
@@ -4456,6 +4476,7 @@ importers:
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
+      '@types/node-fetch': ^2.5.10
       '@types/rimraf': ^2.0.2
       '@types/semver': ^5.5.0
       '@types/tar': ^4.0.0
@@ -4465,6 +4486,7 @@ importers:
       eslint: ^6.8.0
       fast-sha256: 1.3.0
       mocha: ^8.3.2
+      node-fetch: ^2.6.1
       rimraf: ^3.0.2
       semver: ^5.5.0
       tar: ^4.4.8
@@ -4487,6 +4509,7 @@ importers:
       '@bentley/telemetry-client': link:../../clients/telemetry
       electron: 11.4.8
       fast-sha256: 1.3.0
+      node-fetch: 2.6.1
       rimraf: 3.0.2
       semver: 5.7.1
       tar: 4.4.13
@@ -4497,6 +4520,7 @@ importers:
       '@types/chai': 4.2.18
       '@types/mocha': 8.2.2
       '@types/node': 10.14.1
+      '@types/node-fetch': 2.5.10
       '@types/rimraf': 2.0.4
       '@types/semver': 5.5.0
       '@types/tar': 4.0.4
@@ -4665,11 +4689,18 @@ importers:
     specifiers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
+      '@types/chai': ^4.1.4
+      '@types/chai-as-promised': ^7
+      '@types/chai-jest-snapshot': ^1.3.0
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
+      '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/webpack': ^4.41.2
       '@types/webpack-sources': ^0.1.6
+      chai: ^4.1.2
+      chai-as-promised: ^7
+      chai-jest-snapshot: ^2.0.0
       chalk: ^3.0.0
       copy-webpack-plugin: ^6.2.1
       cpx: ^1.5.0
@@ -4679,6 +4710,9 @@ importers:
       fs-extra: ^8.1.0
       glob: ^7.1.2
       lodash: ^4.17.10
+      memfs: ^3.2.2
+      mocha: ^8.3.2
+      nyc: ^15.1.0
       resolve: 1.19.0
       rimraf: ^3.0.2
       source-map-loader: ^1.0.0
@@ -4701,13 +4735,23 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../build
       '@bentley/eslint-plugin': link:../eslint-plugin
+      '@types/chai': 4.2.18
+      '@types/chai-as-promised': 7.1.4
+      '@types/chai-jest-snapshot': 1.3.6
       '@types/fs-extra': 4.0.11
       '@types/glob': 5.0.36
+      '@types/mocha': 8.2.2
       '@types/node': 10.14.1
       '@types/webpack': 4.41.29
       '@types/webpack-sources': 0.1.8
+      chai: 4.3.4
+      chai-as-promised: 7.1.1_chai@4.3.4
+      chai-jest-snapshot: 2.0.0_chai@4.3.4
       cpx: 1.5.0
       eslint: 6.8.0
+      memfs: 3.2.2
+      mocha: 8.4.0
+      nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.1.5
       webpack: 4.42.0
@@ -7912,7 +7956,7 @@ packages:
       '@types/base64-js': 1.3.0
       '@types/jquery': 3.5.5
       base64-js: 1.5.1
-      follow-redirects: 1.14.1
+      follow-redirects: 1.14.1_debug@4.3.1
       form-data: 4.0.0
       opener: 1.5.2
     transitivePeerDependencies:
@@ -8527,6 +8571,13 @@ packages:
     resolution: {integrity: sha1-MB/S2wWl1PNAhhPrW5ZSzWELeeI=}
     dependencies:
       '@types/node': 10.14.1
+    dev: true
+
+  /@types/node-fetch/2.5.10:
+    resolution: {integrity: sha512-IpkX0AasN44hgEad0gEF/V6EgR5n69VEqPEgnmoM8GsIGro3PowbWs4tR6IhxUTyPLpOn+fiGG6nrQhcmoCuIQ==}
+    dependencies:
+      '@types/node': 10.14.1
+      form-data: 3.0.1
     dev: true
 
   /@types/node/10.14.1:
@@ -9780,7 +9831,7 @@ packages:
   /axios/0.21.1:
     resolution: {integrity: sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==}
     dependencies:
-      follow-redirects: 1.14.1
+      follow-redirects: 1.14.1_debug@4.3.1
     transitivePeerDependencies:
       - debug
     dev: true
@@ -13412,7 +13463,7 @@ packages:
     resolution: {integrity: sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==}
     dev: true
 
-  /follow-redirects/1.14.1:
+  /follow-redirects/1.14.1_debug@4.3.1:
     resolution: {integrity: sha512-HWqDgT7ZEkqRzBvc2s64vSZ/hfOceEol3ac/7tKwzuvEyWx3/4UegXh5oBOIotkGsObyk3xznnSRVADBgWSQVg==}
     engines: {node: '>=4.0'}
     peerDependencies:
@@ -13420,6 +13471,8 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
+    dependencies:
+      debug: 4.3.1_supports-color@6.1.0
 
   /for-each/0.3.3:
     resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}
@@ -13486,7 +13539,6 @@ packages:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       mime-types: 2.1.31
-    dev: false
 
   /form-data/4.0.0:
     resolution: {integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==}
@@ -13577,6 +13629,10 @@ packages:
     engines: {node: '>= 8'}
     dependencies:
       minipass: 3.1.3
+
+  /fs-monkey/1.0.3:
+    resolution: {integrity: sha512-cybjIfiiE+pTWicSCLFHSrXZ6EilF30oh91FDP9S2B051prEa7QWfrVTQm10/dDpswBDXZugPa1Ogu8Yh+HV0Q==}
+    dev: true
 
   /fs-write-stream-atomic/1.0.10:
     resolution: {integrity: sha1-tH31NJPvkR33VzHnCp3tAYnbQMk=}
@@ -14317,7 +14373,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.14.1
+      follow-redirects: 1.14.1_debug@4.3.1
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
@@ -16398,6 +16454,13 @@ packages:
       mimic-fn: 2.1.0
       p-is-promise: 2.1.0
     dev: false
+
+  /memfs/3.2.2:
+    resolution: {integrity: sha512-RE0CwmIM3CEvpcdK3rZ19BC4E6hv9kADkMN5rPduRak58cNArWLi/9jFLsa4rhsjfVxMP3v0jO7FHXq7SvFY5Q==}
+    engines: {node: '>= 4.0.0'}
+    dependencies:
+      fs-monkey: 1.0.3
+    dev: true
 
   /memoize-one/4.0.3:
     resolution: {integrity: sha512-QmpUu4KqDmX0plH4u+tf0riMc1KHE1+lw95cMrLlXQAFOx/xnBtwhZ52XJxd9X2O6kwKBqX32kmhbhlobD0cuw==}
@@ -19667,7 +19730,7 @@ packages:
       stealthy-require: 1.1.1
       tough-cookie: 2.5.0
 
-  /request-promise/4.2.6:
+  /request-promise/4.2.6_request@2.88.2:
     resolution: {integrity: sha512-HCHI3DJJUakkOr8fNoCc73E5nU5bqITjOYFMDrKHYOXWXrgD/SBaC7LjwuPymUprRyuF06UK7hd/lMHkmUXglQ==}
     engines: {node: '>=0.10.0'}
     deprecated: request-promise has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142
@@ -19675,10 +19738,10 @@ packages:
       request: ^2.34
     dependencies:
       bluebird: 3.7.2
-      request-promise-core: 1.1.4
+      request: 2.88.2
+      request-promise-core: 1.1.4_request@2.88.2
       stealthy-require: 1.1.1
       tough-cookie: 2.5.0
-    dev: false
 
   /request/2.88.2:
     resolution: {integrity: sha512-MsvtOrfG9ZcrOwAW+Qi+F6HbD0CWXEh9ou77uOb7FM2WPhwT7smM833PzanhJLsgXjN89Ir6V2PczXNnMpwKhw==}
