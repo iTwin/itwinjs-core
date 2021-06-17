@@ -52,7 +52,7 @@ describe("<QuantityNumberInput />", () => {
     const wrapper = render(<QuantityNumberInput persistenceValue={value} quantityType={QuantityType.Length} step={undefined} onChange={handleChange} />);
     const input = wrapper.container.querySelector("input");
     expect(input).not.to.be.null;
-    expect((input as HTMLInputElement).value).to.eq("3.2808399");
+    expect((input as HTMLInputElement).value).to.eq("3.280");
   });
 
   it("value should update with up/down buttons", () => {
@@ -472,8 +472,6 @@ describe("<QuantityNumberInput />", () => {
       const wrapper = render(<QuantityNumberInput persistenceValue={value} quantityType={QuantityType.Length} step={.25} onChange={handleChange} />);
       const input = wrapper.container.querySelector("input");
       expect(input).not.to.be.null;
-      wrapper.debug();
-
       expect((input as HTMLInputElement).value).to.eq("1.");
 
       fireEvent.change(input!, { target: { value: "2" } });
