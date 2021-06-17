@@ -6,13 +6,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import * as child_process from "child_process";
-import { isWindows } from "../frontend/TestConfig";
 
 const execSync = child_process.execSync;
 let args = "";
 let browser = "";
+let isWindows = true;
 for (let i = 2; i < process.argv.length; i++) {
   const curArg = process.argv[i];
+  if (curArg === "nonwin") {
+    isWindows = false;
+    break;
+  }
   args += `${curArg} `;
   if (curArg === "chrome" || curArg === "edge" || curArg === "firefox" || curArg === "safari")
     browser = curArg;
