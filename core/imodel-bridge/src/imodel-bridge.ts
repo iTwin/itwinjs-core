@@ -5,16 +5,15 @@
 export * from "./BridgeLoggerCategory";
 export * from "./BridgeRunner";
 export * from "./IModelBridge";
+export * from "./Synchronizer";
 
 /** @docs-package-description
- * Contains classes for supporting bridges to synchronize data into an imodel
+ * Contains classes for supporting Connectors to synchronize data into an iTwin
  */
 
-/**
- * @docs-group-description Framework
+/** @docs-group-description Framework
  * Classes for supporting independent IModelBridge implementations.
  */
-/**
- * @docs-group-description Logging
+/** @docs-group-description Logging
  * Logger categories used by this package.
  */
