@@ -7,12 +7,12 @@
  */
 import { assert, ClientRequestContext, DbOpcode, GuidString, Id64, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3dProps, Code, CodeProps, ElementProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface,
   RelatedElement, RpcInterface, RpcManager, SubCategoryAppearance, SyncMode, ThumbnailProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { LockLevel } from "@bentley/imodelhub-client";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { SpatialCategory } from "../Category";
 import { ConcurrencyControl } from "../ConcurrencyControl";
@@ -117,7 +117,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const request = new ConcurrencyControl.Request();
-    request.addLocks([{ type: LockType.Model, objectId: modelId, level }]);
+    request.addLocks([{ entityId: modelId, scope: level as number }]);
     return iModelDb.concurrencyControl.request(requestContext, request);
   }
 

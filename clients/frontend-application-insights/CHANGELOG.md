@@ -1,6 +1,11 @@
 # Change Log - @bentley/frontend-application-insights-client
 
-This log was last generated on Thu, 03 Jun 2021 18:08:11 GMT and should not be manually modified.
+This log was last generated on Wed, 16 Jun 2021 20:29:32 GMT and should not be manually modified.
+
+## 2.16.3
+Wed, 16 Jun 2021 20:29:32 GMT
+
+_Version update only_
 
 ## 2.16.2
 Thu, 03 Jun 2021 18:08:11 GMT
