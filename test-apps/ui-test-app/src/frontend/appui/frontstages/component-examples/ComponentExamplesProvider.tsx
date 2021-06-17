@@ -121,6 +121,7 @@ async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: Unit
 }
 
 function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persistenceUnitName: string, initialMagnitude: number }) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialFormatProps: FormatProps = {
     formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
     precision: 4,
@@ -165,7 +166,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
 
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
-      { (formatterSpec && formattedValue) &&
+      {(formatterSpec && formattedValue) &&
         <>
           <span>{formattedValue}</span>
           <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
@@ -1182,7 +1183,9 @@ export class ComponentExamplesProvider {
     return {
       title: "Deprecated Components",
       examples: [
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
       ],
     };

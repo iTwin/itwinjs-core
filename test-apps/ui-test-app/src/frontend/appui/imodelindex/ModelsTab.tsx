@@ -573,7 +573,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     } else {
       return (
         <div className="models-tree-container">
-          {/* eslint-disable-next-line react/jsx-pascal-case */}
+          {/* eslint-disable-next-line react/jsx-pascal-case, deprecation/deprecation */}
           {<DEPRECATED_Tree selectedNodes={this._getSelectedNodes()} dataProvider={this._dataProvider} onCheckboxClick={this._onCheckboxClick} />}
         </div>
       );
