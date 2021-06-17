@@ -6399,8 +6399,6 @@ export namespace MockRender {
         get isValid(): boolean;
         // (undocumented)
         get maxTextureSize(): number;
-        // (undocumented)
-        waitForAllExternalTextures(): Promise<void>;
     }
     // (undocumented)
     export type SystemFactory = () => RenderSystem;
@@ -6679,8 +6677,6 @@ export class NullRenderSystem extends RenderSystem {
     doIdleWork(): boolean;
     // (undocumented)
     get isValid(): boolean;
-    // (undocumented)
-    waitForAllExternalTextures(): Promise<void>;
 }
 
 // @internal
@@ -8171,7 +8167,7 @@ export abstract class RenderSystem implements IDisposable {
     get supportsLogZBuffer(): boolean;
     // @internal (undocumented)
     get supportsNonuniformScaledInstancing(): boolean;
-    abstract waitForAllExternalTextures(): Promise<void>;
+    waitForAllExternalTextures(): Promise<void>;
 }
 
 // @public
