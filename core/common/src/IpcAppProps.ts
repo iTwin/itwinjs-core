@@ -6,8 +6,9 @@
  * @module NativeApp
  */
 
-import { CompressedId64Set, GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3dProps, XYZProps } from "@bentley/geometry-core";
+import { ChangedEntities } from "./ChangedEntities";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import {
   EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions,
@@ -35,22 +36,6 @@ export interface ModelIdAndGeometryGuid {
    * This is primarily an implementation detail used to determine whether [Tile]($frontend)s produced for one revision are compatible with another revision.
    */
   guid: GuidString;
-}
-
-/** The set of elements or models that were changed by a [Txn]($docs/learning/InteractiveEditing.md)
- * @note this object holds lists of ids of elements or models that were modified somehow during the Txn. Any modifications to an [[ElementAspect]]($backend) will
- * cause its element to appear in these lists.
- * @see [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend).
- * @see [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend).
- * @public
- */
-export interface ChangedEntities {
-  /** The ids of entities that were inserted during this Txn */
-  inserted?: CompressedId64Set;
-  /** The ids of entities that were deleted during this Txn */
-  deleted?: CompressedId64Set;
-  /** The ids of entities that were modified during this Txn */
-  updated?: CompressedId64Set;
 }
 
 /** @internal */
@@ -152,6 +137,7 @@ export interface IpcAppFunctions {
   reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;
   reinstateTxn: (key: string) => Promise<IModelStatus>;
+  restartTxnSession: (key: string) => Promise<void>;
 
   /** Query the number of concurrent threads supported by the host's IO or CPU thread pool. */
   queryConcurrency: (pool: "io" | "cpu") => Promise<number>;

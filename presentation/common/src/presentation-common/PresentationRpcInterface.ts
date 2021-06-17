@@ -14,6 +14,7 @@ import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { DiagnosticsOptions, DiagnosticsScopeLogs } from "./Diagnostics";
 import { InstanceKeyJSON } from "./EC";
+import { ElementProperties } from "./ElementProperties";
 import { PresentationStatus } from "./Error";
 import { NodeKeyJSON } from "./hierarchy/Key";
 import { NodeJSON } from "./hierarchy/Node";
@@ -22,8 +23,8 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, HierarchyRequestOptions, LabelRequestOptions, Paged,
-  SelectionScopeRequestOptions,
+  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, HierarchyRequestOptions,
+  LabelRequestOptions, Paged, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -35,7 +36,7 @@ import { Omit, PagedResponse } from "./Utils";
  * @public
  */
 export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel" | "diagnostics"> & {
-  /** ID of the client requesting data */
+  /** @internal ID of the client requesting data */
   clientId?: string;
   /** @alpha */
   diagnostics?: DiagnosticsOptions;
@@ -87,6 +88,12 @@ export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<C
  * @public
  */
 export type ExtendedContentRpcRequestOptions = PresentationRpcRequestOptions<ExtendedContentRequestOptions<never, DescriptorJSON, KeySetJSON, RulesetVariableJSON>>;
+
+/**
+ * Data structure for element properties RPC request options.
+ * @beta
+ */
+export type ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementPropertiesRequestOptions<never>>;
 
 /**
  * Data structure for distinct values' request options.
@@ -188,6 +195,9 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getContentAndSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<{ content?: ContentJSON, size: number }> { return this.forward(arguments); }
   public async getPagedContent(_token: IModelRpcProps, _options: Paged<ExtendedContentRpcRequestOptions>): PresentationRpcResponse<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined> { return this.forward(arguments); }
   public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ExtendedContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> { return this.forward(arguments); }
+
+  /** @beta */
+  public async getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties> { return this.forward(arguments); }
 
   /** @deprecated Use [[getPagedDistinctValues]] */
   // eslint-disable-next-line deprecation/deprecation

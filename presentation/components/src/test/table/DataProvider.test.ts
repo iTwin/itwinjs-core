@@ -11,13 +11,15 @@ import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError, SortDirection as PresentationSortDirection, RelationshipMeaning,
-  ValuesDictionary,
+  Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError,
+  SortDirection as PresentationSortDirection, RelationshipMeaning, ValuesDictionary,
 } from "@bentley/presentation-common";
 import { createTestContentDescriptor, createTestSimpleContentField } from "@bentley/presentation-common/lib/test/_helpers/Content";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomDescriptor, createRandomECInstanceKey, createRandomNestedContentField, createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
+import {
+  createRandomDescriptor, createRandomECInstanceKey, createRandomNestedContentField, createRandomPrimitiveField,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { RowItem } from "@bentley/ui-components";
 import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
