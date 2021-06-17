@@ -552,9 +552,7 @@ export class ConcurrencyControl {
     await IModelHost.hubAccess.acquireLocks({ requestContext, briefcase: this._iModel, locks });
   }
 
-  /** Abandon any *pending* requests for locks or codes.
- * This is called automatically by BriefcaseDb.abandonChanges.
-*/
+  /** Abandon any *pending* requests for locks or codes. This is called automatically by BriefcaseDb.abandonChanges. */
   public abandonRequest() {
     this._pendingRequest.clear();
     this._cache.deleteLocksForTxn(this.iModel.txns.getCurrentTxnId());
