@@ -15,5 +15,5 @@ export enum ConnectorLoggerCategory {
   /** The logger category used by the following classes:
    * - [[ConnectorSynchronizer]]
    */
-  Framework = "imodel-bridge.Framework",
+  Framework = "itwin-connector.Framework",
 }
