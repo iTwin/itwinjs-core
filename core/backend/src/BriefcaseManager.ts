@@ -574,8 +574,7 @@ export class BriefcaseManager {
 
     // Refresh the access token since consolidation of the change set may have taken a significant time
     // Note: pushChanges should never be called through RPC - it's only to be called in Agents and IPC applications
-    if (IModelHost.authorizationClient !== undefined)
-      requestContext.accessToken = await IModelHost.getAccessToken(requestContext);
+    requestContext.accessToken = await IModelHost.authorizationClient?.getAccessToken(requestContext) ?? requestContext.accessToken;
 
     try {
 
