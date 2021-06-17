@@ -65,4 +65,4 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
 
 ### Quantity package
 
-The Format class now provides the method [Format.clone]($quantity) to clone an existing Format. [CloneOptions]($quantity) may optionally passed into the clone method to adjust the format.
+The Format class now provides the method [Format.clone]($quantity) to clone an existing Format. [CloneOptions]($quantity) may be optionally passed into the clone method to adjust the format.
