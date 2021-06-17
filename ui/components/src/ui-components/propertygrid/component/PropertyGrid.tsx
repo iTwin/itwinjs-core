@@ -222,7 +222,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       >
         {(selectionContext) => (
           <div className={classnames("components-property-grid-wrapper", this.props.className)} style={this.props.style}>
-            <div className="components-property-grid">
+            <div className={classnames("components-property-grid", "components-smallEditor-host")}>
               <div className="property-categories">
                 {
                   this.state.categories.map((categorizedRecords: CategorizedPropertyGridRecords) => (

@@ -270,7 +270,10 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
 
   return (
     <TreeRendererContextProvider value={rendererContext}>
-      <CoreTree ref={coreTreeRef} className="components-controlledTree" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+      <CoreTree ref={coreTreeRef}
+        className={classnames("components-controlledTree", "components-smallEditor-host")}
+        onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}
+      >
         <VirtualizedList
           ref={virtualizedListRef}
           className={"ReactWindow__VariableSizeList"}

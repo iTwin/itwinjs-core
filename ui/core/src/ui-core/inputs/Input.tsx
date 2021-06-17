@@ -19,6 +19,7 @@ import { CommonProps } from "../utils/Props";
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
   /** Indicates whether to set focus to the input element */
   setFocus?: boolean;
+  /** Native keydown event handler */
   nativeKeyHandler?: (e: KeyboardEvent) => void;
   /** Provides ability to return reference to HTMLInputElement */
   ref?: React.Ref<HTMLInputElement>;

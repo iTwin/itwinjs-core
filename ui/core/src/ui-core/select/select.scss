@@ -13,7 +13,7 @@
   $uicore-select-padding-bordered:  $uicore-inputs-padding-bordered;
 
   display:            inline-block;
-  min-height:         24px;
+  min-height:         $uicore-component-height-normal;
   padding:            $uicore-select-padding-bordered ($uicore-bordered-padding - 3px);
   margin:             $uicore-inputs-margin 0;
   font-size:          $iui-font-size;

@@ -5,7 +5,7 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
-$components-color-editor-item-height: 100%;
+$components-weight-editor-item-height: 100%;
 
 .components-weight-editor {
   font-family: $iui-font-family;
@@ -13,5 +13,5 @@ $components-color-editor-item-height: 100%;
   color: $buic-foreground-body;
   border: none;
   box-sizing: border-box;
-  height: $components-color-editor-item-height;
+  height: $components-weight-editor-item-height;
 }

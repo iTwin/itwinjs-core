@@ -1673,6 +1673,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const visibleColumns = this._getVisibleColumns();
     const tableClassName = classnames(
       "components-table",
+      "components-smallEditor-host",
       this.props.className,
       {
         "hide-header": this.props.hideHeader,

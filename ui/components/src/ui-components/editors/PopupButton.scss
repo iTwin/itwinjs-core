@@ -6,11 +6,12 @@
 @import "~@bentley/ui-core/lib/ui-core/inputs/variables";
 @import "~@bentley/ui-core/lib/ui-core/style/baseline";
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/style/variables";
 @import "~@itwin/itwinui-css/scss/style/variables";
 
 .components-popup-button {
   min-width:          100%;
-  min-height:         23px;
+  min-height:         $uicore-component-height-normal;
   height:             100%;
   margin:             0;
   padding:            0;
@@ -72,6 +73,12 @@
     }
   }
 
+}
+
+.components-smallEditor-host {
+  .components-popup-button {
+    min-height:         $uicore-component-height-small;
+  }
 }
 
 .components-popup-button-popup {

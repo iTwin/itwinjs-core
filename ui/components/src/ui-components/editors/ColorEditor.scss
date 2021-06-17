@@ -14,4 +14,6 @@ $components-color-editor-item-height: 100%;
   border: none;
   box-sizing: border-box;
   height: $components-color-editor-item-height;
+  display: flex;
+  align-items: center;
 }

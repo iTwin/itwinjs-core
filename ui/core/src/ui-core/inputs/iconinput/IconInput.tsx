@@ -14,13 +14,15 @@ import { Input, InputProps } from "../Input";   // NEEDSWORK - for nativeKeyHand
 /** Properties for the [[IconInput]] component
  * @public
  */
-export interface IconInputProps extends InputProps {    // eslint-disable-line deprecation/deprecation
+export interface IconInputProps extends Omit<InputProps, "size"> {    // eslint-disable-line deprecation/deprecation
   /** Icon displayed to the left of the Input field within the IconInput component */
   icon: React.ReactNode;
   /** CSS class name for the IconInput component container div */
   containerClassName?: string;
   /** Provides ability to return reference to HTMLInputElement */
   ref?: React.Ref<HTMLInputElement>;
+  /** Modify size of the input. */
+  size?: "small" | "large";
 }
 
 /** Input component with icon to the left of the input field
@@ -28,7 +30,8 @@ export interface IconInputProps extends InputProps {    // eslint-disable-line d
  */
 const ForwardRefIconInput = React.forwardRef<HTMLInputElement, IconInputProps>(
   function ForwardRefIconInput(props, ref) {
-    const { icon, containerClassName, ...otherProps } = props;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { icon, containerClassName, size, ...otherProps } = props;
 
     return (
       <div className={classnames("core-iconInput-container", containerClassName)} >

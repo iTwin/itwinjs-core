@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/scrollbar";
 @import "~@bentley/ui-core/lib/ui-core/inputs/variables";
+@import "~@bentley/ui-core/lib/ui-core/style/variables";
 @import "~@itwin/itwinui-css/scss/inputs/input";
 
 .components-table {
@@ -19,7 +20,7 @@
       display: none;
     }
 
-    $filter-height: 24px;
+    $filter-height: $uicore-component-height-small;
 
     .form-control.input-sm {
       @include iui-input;

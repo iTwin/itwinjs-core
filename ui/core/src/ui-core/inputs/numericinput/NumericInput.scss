@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../variables";
 @import "../../style/opacity";
+@import "../../style/variables";
 @import "~@itwin/itwinui-css/scss/style/speed";
 @import "~@itwin/itwinui-css/scss/style/typography";
 @import "~@itwin/itwinui-css/scss/style/variables";
@@ -29,6 +30,7 @@
       box-shadow:             $buic-inputs-boxshadow 0px 1px 1px inset !important;
       box-sizing:             border-box;
       transition:             border-color $iui-speed-fast ease-in-out, box-shadow $iui-speed-fast ease-in-out !important;
+      min-height:             $uicore-component-height-normal;
 
       &:-ms-input-placeholder {       color: $buic-foreground-disabled; }
       &::-webkit-input-placeholder {  color: $buic-foreground-disabled; }

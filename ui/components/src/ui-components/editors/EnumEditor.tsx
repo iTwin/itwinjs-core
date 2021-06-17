@@ -158,7 +158,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 
     // set min-width to show about 4 characters + down arrow
     const minWidthStyle: React.CSSProperties = {
-      minWidth: `${6 * 0.75}em`,
+      minWidth: `6em`,
     };
 
     return (

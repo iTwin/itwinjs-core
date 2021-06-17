@@ -953,7 +953,12 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
 
     return (
       <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown}
-        className={classnames("components-tree", this.props.className)} style={this.props.style}
+        className={classnames(
+          "components-tree",
+          "components-smallEditor-host",
+          this.props.className
+        )}
+        style={this.props.style}
       >
         <AutoSizer>
           {({ width, height }: Size) => (

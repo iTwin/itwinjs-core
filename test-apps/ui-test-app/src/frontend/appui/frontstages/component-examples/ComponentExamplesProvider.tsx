@@ -17,6 +17,8 @@ import {
   IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
 } from "@bentley/ui-components";
 import {
+  AutoSuggest,
+  AutoSuggestData,
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableList, FeaturedTile, Headline, HorizontalAlignment, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
@@ -415,6 +417,37 @@ export const createComponentExample = (title: string, description: string | unde
 
 /** Provides Component Examples */
 export class ComponentExamplesProvider {
+
+  private static get autoSuggestSamples(): ComponentExampleCategory {
+    const options: AutoSuggestData[] = [];
+
+    for (let index = 0; index < 100; index++) {
+      options.push({ value: index.toString(), label: `Option ${index}` });
+    }
+
+    const getSuggestions = async (value: string): Promise<AutoSuggestData[]> => {
+      const inputValue = value.trim().toLowerCase();
+      const inputLength = inputValue.length;
+
+      return Promise.resolve(
+        inputLength === 0 ?
+        /* istanbul ignore next */[] :
+          options.filter((data: AutoSuggestData) => {
+            return data.label.toLowerCase().includes(inputValue) || data.value.toLowerCase().includes(inputValue);
+          })
+      );
+    };
+
+    return {
+      title: "AutoSuggest",
+      examples: [
+        createComponentExample("AutoSuggest", undefined,
+          <AutoSuggest placeholder="Type..." onSuggestionSelected={() => { }} getSuggestions={getSuggestions} />
+        ),
+      ],
+    };
+  }
+
   private static get badgeSamples(): ComponentExampleCategory {
     return {
       title: "Badge",
@@ -1233,6 +1266,7 @@ export class ComponentExamplesProvider {
       ],
     };
   }
+
   private static get deprecatedComponentSamples(): ComponentExampleCategory {
     return {
       title: "Deprecated Components",
@@ -1267,6 +1301,7 @@ export class ComponentExamplesProvider {
 
   public static get categories(): ComponentExampleCategory[] {
     return [
+      ComponentExamplesProvider.autoSuggestSamples,
       ComponentExamplesProvider.badgeSamples,
       ComponentExamplesProvider.buttonSamples,
       ComponentExamplesProvider.checkListBoxSamples,

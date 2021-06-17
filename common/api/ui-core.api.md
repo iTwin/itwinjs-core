@@ -1003,10 +1003,11 @@ export class IconHelper {
 export const IconInput: (props: IconInputProps) => JSX.Element | null;
 
 // @public
-export interface IconInputProps extends InputProps {
+export interface IconInputProps extends Omit<InputProps, "size"> {
     containerClassName?: string;
     icon: React.ReactNode;
     ref?: React.Ref<HTMLInputElement>;
+    size?: "small" | "large";
 }
 
 // @public
@@ -1054,7 +1055,6 @@ export interface InputLabelProps extends LabeledComponentProps, MessagedComponen
 
 // @public @deprecated
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
-    // (undocumented)
     nativeKeyHandler?: (e: KeyboardEvent) => void;
     ref?: React.Ref<HTMLInputElement>;
     setFocus?: boolean;

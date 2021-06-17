@@ -5,6 +5,7 @@
 @import "~@bentley/ui-core/lib/ui-core/icons/variables";
 @import "~@bentley/ui-core/lib/ui-core/inputs/variables";
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/style/variables";
 @import "~@itwin/itwinui-css/scss/inputs/input";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
@@ -18,6 +19,8 @@
   .ValidationTextbox-input {
     position: absolute;
     @include iui-input;
+    min-height: $uicore-component-height-normal;
+    padding: $uicore-iui-input-padding;
     width: 12em;
     left: 0px;
     top: 0px;
