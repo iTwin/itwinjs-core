@@ -17,9 +17,9 @@ import {
 } from "@bentley/imodeljs-backend";
 import { IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ConnectorLoggerCategory } from "./BridgeLoggerCategory";
+import { ConnectorLoggerCategory } from "./ConnectorLoggerCategory";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
-import { ItwinConnector } from "./IModelBridge";
+import { ItwinConnector } from "./iTwinConnector";
 import { ServerArgs } from "./IModelHubUtils";
 import { Synchronizer } from "./Synchronizer";
 

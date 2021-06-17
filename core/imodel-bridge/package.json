@@ -26,8 +26,8 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "cpx ./src/test/logging.config.json ./lib/test",
     "test": "betools test --offline=\"mock\" --grep=\"#integration|#WebGLPerformance\" --invert",
-    "test:all": "npm run pretest && betools test --grep=\"IModelBridgeFwk\"",
-    "test:standalone": "npm run pretest && betools test --offline=\"mock\" --grep=\"IModelBridgeFwkStandAlone\"",
+    "test:all": "npm run pretest && betools test --grep=\"IModelConnectorFwk\"",
+    "test:standalone": "npm run pretest && betools test --offline=\"mock\" --grep=\"IModelConnectorFwkStandAlone\"",
     "test:integration": "npm run pretest && betools test --testDir=\"./lib/test/integration\""
   },
   "keywords": [

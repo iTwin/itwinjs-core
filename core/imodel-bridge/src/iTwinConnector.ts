@@ -9,7 +9,7 @@
 import { assert, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Subject } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ConnectorJobDefArgs } from "./BridgeRunner";
+import { ConnectorJobDefArgs } from "./ConnectorRunner";
 import { Synchronizer } from "./Synchronizer";
 
 /** Abstract implementation of the iTwin Connector.

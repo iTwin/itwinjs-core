@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-export * from "./BridgeLoggerCategory";
-export * from "./BridgeRunner";
-export * from "./IModelBridge";
+export * from "./ConnectorLoggerCategory";
+export * from "./ConnectorRunner";
+export * from "./iTwinConnector";
 export * from "./Synchronizer";
 
 /** @docs-package-description

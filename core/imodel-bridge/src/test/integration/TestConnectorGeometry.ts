@@ -4,11 +4,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Angle, AxisIndex, AxisOrder, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Categories, GeometryParts, Materials } from "./TestBridgeElements";
+import { Categories, GeometryParts, Materials } from "./TestConnectorElements";
 import { GeometryPart, IModelDb, RenderMaterialElement, SubCategory } from "@bentley/imodeljs-backend";
 import { ColorByName, ColorDef, GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
 import { Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { TestConnectorLoggerCategory } from "./TestBridgeLoggerCategory";
+import { TestConnectorLoggerCategory } from "./TestConnectorLoggerCategory";
 
 const loggerCategory: string = TestConnectorLoggerCategory.Geometry;
 

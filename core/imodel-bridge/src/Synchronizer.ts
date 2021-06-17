@@ -9,7 +9,7 @@ import { BriefcaseDb, ECSqlStatement, Element, ElementOwnsChildElements, Externa
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { assert, DbOpcode, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Code, ExternalSourceAspectProps, IModel, IModelError, RelatedElement, RepositoryLinkProps } from "@bentley/imodeljs-common";
-import { ConnectorLoggerCategory } from "./BridgeLoggerCategory";
+import { ConnectorLoggerCategory } from "./ConnectorLoggerCategory";
 
 /** The state of the given SourceItem against the iModelDb
  * @beta

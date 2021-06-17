@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ConnectorRunner } from "./BridgeRunner";
+import { ConnectorRunner } from "./ConnectorRunner";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { Logger } from "@bentley/bentleyjs-core";
 

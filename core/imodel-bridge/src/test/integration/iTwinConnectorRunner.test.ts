@@ -8,9 +8,9 @@ import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-clie
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { expect } from "chai";
 import * as path from "path";
-import { ConnectorJobDefArgs, ConnectorRunner } from "../../BridgeRunner";
+import { ConnectorJobDefArgs, ConnectorRunner } from "../../ConnectorRunner";
 import { ServerArgs } from "../../IModelHubUtils";
-import { ConnectorTestUtils, TestIModelInfo } from "../BridgeTestUtils";
+import { ConnectorTestUtils, TestIModelInfo } from "../ConnectorTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
@@ -37,7 +37,7 @@ describe("iTwin Connector Fwk (#integration)", () => {
     }
 
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
-    const imodelName = `TestBridge_ReadWrite_${Guid.createValue()}`;
+    const imodelName = `TestConnector_ReadWrite_${Guid.createValue()}`;
     const targetIModelId = await HubUtility.recreateIModel(requestContext, testProjectId, imodelName);
     expect(undefined !== targetIModelId);
     readWriteTestIModel = await ConnectorTestUtils.getTestModelInfo(requestContext, testProjectId, imodelName);
@@ -72,11 +72,11 @@ describe("iTwin Connector Fwk (#integration)", () => {
 
   it("should download and perform updates", async () => {
     const connectorJobDef = new ConnectorJobDefArgs();
-    const sourcePath = path.join(KnownTestLocations.assetsDir, "TestBridge.json");
-    const targetPath = path.join(KnownTestLocations.assetsDir, "TestBridge_.json");
+    const sourcePath = path.join(KnownTestLocations.assetsDir, "TestConnector.json");
+    const targetPath = path.join(KnownTestLocations.assetsDir, "TestConnector_.json");
     IModelJsFs.copySync(sourcePath, targetPath, { overwrite: true });
     connectorJobDef.sourcePath = targetPath;
-    connectorJobDef.connectorModule = "./test/integration/TestiModelBridge.js";
+    connectorJobDef.connectorModule = "./test/integration/TestiTwinConnector.js";
 
     const serverArgs = new ServerArgs();  // TODO have an iModelBank version of this test
     serverArgs.contextId = testProjectId;
@@ -91,7 +91,7 @@ describe("iTwin Connector Fwk (#integration)", () => {
     await runConnector(connectorJobDef, serverArgs, false);
 
     // verify that a changed source changes the imodel
-    IModelJsFs.copySync(path.join(KnownTestLocations.assetsDir, "TestBridge_v2.json"), targetPath, { overwrite: true });
+    IModelJsFs.copySync(path.join(KnownTestLocations.assetsDir, "TestConnector_v2.json"), targetPath, { overwrite: true });
     await runConnector(connectorJobDef, serverArgs, true);
 
     IModelJsFs.purgeDirSync(KnownTestLocations.outputDir);

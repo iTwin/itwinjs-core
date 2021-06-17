@@ -14,13 +14,13 @@ import {
 } from "@bentley/imodeljs-backend";
 import { IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { ConnectorLoggerCategory } from "../BridgeLoggerCategory";
+import { ConnectorLoggerCategory } from "../ConnectorLoggerCategory";
 import { ConnectorJobDefArgs } from "../imodel-bridge";
 import { IModelBankArgs, IModelBankUtils } from "../IModelBankUtils";
 import { IModelHubUtils } from "../IModelHubUtils";
 import { HubUtility } from "./integration/HubUtility";
-import { CodeSpecs, RectangleTile, SmallSquareTile } from "./integration/TestBridgeElements";
-import { ModelNames } from "./integration/TestiModelBridge";
+import { CodeSpecs, RectangleTile, SmallSquareTile } from "./integration/TestConnectorElements";
+import { ModelNames } from "./integration/TestiTwinConnector";
 import { KnownTestLocations } from "./KnownTestLocations";
 
 export class TestIModelInfo {
@@ -125,24 +125,24 @@ export class ConnectorTestUtils {
 
   public static verifyIModel(imodel: IModelDb, connectorJobDef: ConnectorJobDefArgs, isUpdate: boolean = false) {
     // Confirm the schema was imported simply by trying to get the meta data for one of the classes.
-    assert.isDefined(imodel.getMetaData("TestBridge:TestBridgeGroup"));
+    assert.isDefined(imodel.getMetaData("TestConnector:TestConnectorGroup"));
     assert.equal(1, getCount(imodel, "BisCore:RepositoryLink"));
     assert.equal(1, getCount(imodel, "BisCore:PhysicalModel"));
-    assert.equal(1, getCount(imodel, "TestBridge:TestBridgeGroupModel"));
+    assert.equal(1, getCount(imodel, "TestConnector:TestConnectorGroupModel"));
     assert.equal(8, getCount(imodel, "BisCore:GeometryPart"));
     assert.equal(1, getCount(imodel, "BisCore:SpatialCategory"));
     assert.equal(2, getCount(imodel, "BisCore:RenderMaterial"));
-    assert.equal(2, getCount(imodel, "TestBridge:TestBridgeGroup"));
-    assert.equal(41, getCount(imodel, "TestBridge:TestBridgePhysicalElement"));
-    assert.equal(6, getCount(imodel, "TestBridge:EquilateralTriangleTile"));
-    assert.equal(8, getCount(imodel, "TestBridge:IsoscelesTriangleTile"));
-    assert.equal(isUpdate ? 7 : 8, getCount(imodel, "TestBridge:LargeSquareTile"));
-    assert.equal(isUpdate ? 2 : 1, getCount(imodel, "TestBridge:RectangleTile"));
-    assert.equal(10, getCount(imodel, "TestBridge:RightTriangleTile"));
-    assert.equal(8, getCount(imodel, "TestBridge:SmallSquareTile"));
+    assert.equal(2, getCount(imodel, "TestConnector:TestConnectorGroup"));
+    assert.equal(41, getCount(imodel, "TestConnector:TestConnectorPhysicalElement"));
+    assert.equal(6, getCount(imodel, "TestConnector:EquilateralTriangleTile"));
+    assert.equal(8, getCount(imodel, "TestConnector:IsoscelesTriangleTile"));
+    assert.equal(isUpdate ? 7 : 8, getCount(imodel, "TestConnector:LargeSquareTile"));
+    assert.equal(isUpdate ? 2 : 1, getCount(imodel, "TestConnector:RectangleTile"));
+    assert.equal(10, getCount(imodel, "TestConnector:RightTriangleTile"));
+    assert.equal(8, getCount(imodel, "TestConnector:SmallSquareTile"));
 
     assert.isTrue(imodel.codeSpecs.hasName(CodeSpecs.Group));
-    const jobSubjectName = `TestiModelBridge:${connectorJobDef.sourcePath!}`;
+    const jobSubjectName = `TestiTwinConnector:${connectorJobDef.sourcePath!}`;
     const subjectId: Id64String = imodel.elements.queryElementIdByCode(Subject.createCode(imodel, IModel.rootSubjectId, jobSubjectName))!;
     assert.isTrue(Id64.isValidId64(subjectId));
 
