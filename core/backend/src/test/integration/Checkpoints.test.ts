@@ -42,6 +42,7 @@ describe("Checkpoints (#integration)", () => {
     assert.isDefined(checkpoints[0].containerAccessKeyAccount, "checkpoint storage account is invalid");
 
     // Start daemon process and wait for it to be ready
+    fs.chmodSync((BlobDaemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
     daemonProc = BlobDaemon.start({
       daemonDir: blockcacheDir,
       storageType: "azure?sas=1",
