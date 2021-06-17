@@ -949,10 +949,10 @@ describe("IModelTransformer", () => {
 
     targetDb.saveChanges();
     const targetImportedSchemasLoader = new IModelSchemaLoader(targetDb);
-    const schema1 = targetImportedSchemasLoader.getSchema("TestSchema1");
-    assert.isDefined(schema1);
-    const schema2 = targetImportedSchemasLoader.getSchema("TestSchema2");
-    assert.isDefined(schema2);
+    const schema1InTarget = targetImportedSchemasLoader.getSchema("TestSchema1");
+    assert.isDefined(schema1InTarget);
+    const schema2InTarget = targetImportedSchemasLoader.getSchema("TestSchema2");
+    assert.isDefined(schema2InTarget);
 
     sourceDb.close();
     targetDb.close();
