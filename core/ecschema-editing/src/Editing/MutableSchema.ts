@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Constant, CustomAttribute, CustomAttributeClass, ECClassModifier, EntityClass, Enumeration,
+import { Constant, CustomAttribute, CustomAttributeClass, ECClassModifier, ECVersion, EntityClass, Enumeration,
   Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveType, PropertyCategory,
   RelationshipClass, Schema, SchemaContext, SchemaItem, StructClass, Unit, UnitSystem,
 } from "@bentley/ecschema-metadata";
@@ -47,4 +47,5 @@ export abstract class MutableSchema extends Schema {
   public abstract addReference(refSchema: Schema): Promise<void>;
   public abstract addReferenceSync(refSchema: Schema): void;
   public abstract setContext(schemaContext: SchemaContext): void;
+  public abstract setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void;
 }
