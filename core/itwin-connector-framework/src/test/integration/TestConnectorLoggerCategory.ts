@@ -7,7 +7,7 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `itwin-connector` prefix.
+ * @note All logger categories in this package start with the `itwin-connector-framework` prefix.
  * @see [Logger]($bentley)
  * @public
  */
