@@ -38,6 +38,23 @@ export class BasicUnit implements UnitProps {
 }
 
 // @beta
+export interface CloneOptions {
+    precision?: DecimalPrecision | FractionalPrecision;
+    primaryUnit?: CloneUnit;
+    showOnlyPrimaryUnit?: boolean;
+    traits?: FormatTraits;
+    type?: FormatType;
+}
+
+// @beta
+export interface CloneUnit {
+    // (undocumented)
+    label?: string;
+    // (undocumented)
+    unit?: UnitProps;
+}
+
+// @beta
 export interface CustomFormatProps extends FormatProps {
     // (undocumented)
     readonly custom: any;
@@ -76,6 +93,7 @@ export enum DecimalPrecision {
 // @beta
 export class Format {
     constructor(name: string);
+    clone(options?: CloneOptions): Format;
     static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
     // (undocumented)
     get customProps(): any;
@@ -97,7 +115,7 @@ export class Format {
     // (undocumented)
     get hasUnits(): boolean;
     // (undocumented)
-    get includeZero(): boolean | undefined;
+    get includeZero(): boolean;
     // (undocumented)
     protected _includeZero: boolean;
     // (undocumented)
@@ -136,7 +154,7 @@ export class Format {
     protected _showSignOption: ShowSignOption;
     static showSignOptionToString(showSign: ShowSignOption): string;
     // (undocumented)
-    get spacer(): string | undefined;
+    get spacer(): string;
     // (undocumented)
     protected _spacer: string;
     // (undocumented)

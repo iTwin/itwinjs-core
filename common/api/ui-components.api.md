@@ -38,6 +38,7 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { immerable } from 'immer';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
+import { InputProps } from '@bentley/ui-core';
 import * as Inspire from 'inspire-tree';
 import { LinkElementsInfo } from '@bentley/ui-abstract';
 import { Matrix3d } from '@bentley/geometry-core';
@@ -3813,6 +3814,23 @@ export interface QuantityFormatPanelProps extends CommonProps {
 export function QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element;
 
 // @beta
+export const QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null;
+
+// @beta
+export interface QuantityNumberInputProps extends Omit<InputProps, "value" | "min" | "max" | "step" | "onFocus" | "onChange"> {
+    containerClassName?: string;
+    max?: number;
+    min?: number;
+    onChange?: (value: number) => void;
+    persistenceValue?: number;
+    quantityType: QuantityTypeArg;
+    ref?: React.Ref<HTMLInputElement>;
+    showTouchButtons?: boolean;
+    snap?: boolean;
+    step?: StepFunctionProp;
+}
+
+// @beta
 export interface QuantityProps extends CommonProps {
     initialValue: number;
     onQuantityChange: (newQuantityValue: number) => void;
@@ -4390,6 +4408,9 @@ export enum StandardTypeNames {
     // (undocumented)
     Text = "text"
 }
+
+// @beta
+export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
 // @public
 export interface StringOperatorProcessor {
