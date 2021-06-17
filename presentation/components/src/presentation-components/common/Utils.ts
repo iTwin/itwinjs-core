@@ -7,12 +7,11 @@
  */
 
 import * as React from "react";
-import { Descriptor, Field, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
+import { Descriptor, Field, FIELD_NAMES_SEPARATOR, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { IPropertyValueRenderer, PropertyValueRendererManager } from "@bentley/ui-components";
 import { InstanceKeyValueRenderer } from "../properties/InstanceKeyValueRenderer";
-import { FIELD_NAMES_SEPARATOR } from "./ContentBuilder";
 
 const localizationNamespaceName = "PresentationComponents";
 

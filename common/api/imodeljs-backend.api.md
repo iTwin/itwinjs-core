@@ -2636,6 +2636,8 @@ export abstract class IModelDb extends IModel {
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     // @internal (undocumented)
+    restartTxnSession(): void;
+    // @internal (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
@@ -4448,7 +4450,7 @@ export class SynchronizationConfigSpecifiesRootSources extends SynchronizationCo
 
 // @beta
 export class TemplateModelCloner extends IModelTransformer {
-    constructor(sourceDb: IModelDb, targetDb: IModelDb);
+    constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     protected onTransformElement(sourceElement: Element): ElementProps;
     placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Promise<Map<Id64String, Id64String>>;
     placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Promise<Map<Id64String, Id64String>>;

@@ -6,6 +6,7 @@
  * @module iModels
  */
 import * as path from "path";
+import * as Semver from "semver";
 import { ClientRequestContext, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as ECSchemaMetaData from "@bentley/ecschema-metadata";
 import { Point3d, Transform } from "@bentley/geometry-core";
@@ -15,8 +16,12 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BackendRequestContext } from "./BackendRequestContext";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DefinitionPartition, Element, FolderLink, GeometricElement2d, GeometricElement3d, InformationPartitionElement, Subject } from "./Element";
+import {
+  DefinitionElement, DefinitionPartition, Element, FolderLink, GeometricElement2d, GeometricElement3d, InformationPartitionElement,
+  RecipeDefinitionElement, Subject,
+} from "./Element";
 import { ChannelRootAspect, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { ExternalSource, ExternalSourceAttachment, SynchronizationConfigLink } from "./ExternalSource";
 import { IModelCloneContext } from "./IModelCloneContext";
@@ -28,8 +33,6 @@ import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
-import * as Semver from "semver";
-import { BackendRequestContext } from "./BackendRequestContext";
 import { Schema } from "./Schema";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
@@ -889,10 +892,12 @@ export class TemplateModelCloner extends IModelTransformer {
   private _sourceIdToTargetIdMap?: Map<Id64String, Id64String>;
   /** Construct a new TemplateModelCloner
    * @param sourceDb The source IModelDb that contains the templates to clone
-   * @param targetDb The target IModelDb where the cloned template will be inserted
+   * @param targetDb Optionally specify the target IModelDb where the cloned template will be inserted. Typically should be left `undefined`.
+   * @note The expectation is that the template definitions are within the same iModel where instances will be placed.
    */
-  public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
-    super(sourceDb, targetDb, { noProvenance: true });
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb = sourceDb) {
+    super(sourceDb, targetDb, { noProvenance: true }); // WIP: need to decide the proper way to handle provenance
+    this.importer.autoExtendProjectExtents = false; // autoExtendProjectExtents is intended for transformation service use cases, not template --> instance cloning
   }
   /** Place a template from the sourceDb at the specified placement in the target model within the targetDb.
    * @param sourceTemplateModelId The Id of the template model in the sourceDb
@@ -939,11 +944,20 @@ export class TemplateModelCloner extends IModelTransformer {
     const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
     predecessorIds.forEach((predecessorId: Id64String) => {
       if (Id64.invalid === this.context.findTargetElementId(predecessorId)) {
-        throw new IModelError(IModelStatus.BadRequest, "Required dependency not found in target iModel", Logger.logError, BackendLoggerCategory.IModelTransformer);
+        if (this.context.isBetweenIModels) {
+          throw new IModelError(IModelStatus.BadRequest, `Remapping for source dependency ${predecessorId} not found for target iModel`, Logger.logError, BackendLoggerCategory.IModelTransformer);
+        } else {
+          const definitionElement = this.sourceDb.elements.tryGetElement<DefinitionElement>(predecessorId, DefinitionElement);
+          if (definitionElement && !(definitionElement instanceof RecipeDefinitionElement)) {
+            this.context.remapElement(predecessorId, predecessorId); // when in the same iModel, can use existing DefinitionElements without remapping
+          } else {
+            throw new IModelError(IModelStatus.BadRequest, `Remapping for dependency ${predecessorId} not found`, Logger.logError, BackendLoggerCategory.IModelTransformer);
+          }
+        }
       }
     });
     const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
-    targetElementProps.federationGuid = undefined; // clone from template should not maintain federationGuid
+    targetElementProps.federationGuid = Guid.createValue(); // clone from template should create a new federationGuid
     targetElementProps.code = Code.createEmpty(); // clone from template should not maintain codes
     if (sourceElement instanceof GeometricElement3d) {
       const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);

@@ -106,13 +106,6 @@ describe("default NativePlatform", () => {
       addonMock.verify((x) => x.pollResponse(guid), moq.Times.exactly(3));
     });
 
-    it("throws on invalid queueRequest response", async () => {
-      addonMock
-        .setup((x) => x.queueRequest(moq.It.isAny(), ""))
-        .returns(() => undefined as any);
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError);
-    });
-
     it("throws on cancellation response", async () => {
       const guid = faker.random.uuid();
       addonMock
@@ -175,13 +168,6 @@ describe("default NativePlatform", () => {
       .verifiable();
     nativePlatform.setupSupplementalRulesetDirectories([]);
     addonMock.verifyAll();
-  });
-
-  it("throws on invalid void response", async () => {
-    addonMock
-      .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
-      .returns(() => (undefined as any));
-    expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(PresentationError);
   });
 
   it("throws on void error response", async () => {
