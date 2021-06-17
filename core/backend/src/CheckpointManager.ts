@@ -262,7 +262,7 @@ export class CheckpointManager {
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
         if (nativeDb.getParentChangeSetId() !== checkpoint.changeSetId)
-          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, checkpoint.changeSetId);
+          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, { id: checkpoint.changeSetId });
       } finally {
         db.saveChanges();
         db.close();
@@ -317,7 +317,7 @@ export class CheckpointManager {
 
     const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
     if (dbContextGuid !== Guid.normalize(checkpoint.contextId))
-      throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly setup in the checkpoint", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
+      throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly set up in the checkpoint");
   }
 
   /** @returns true if the file is the checkpoint requested */
