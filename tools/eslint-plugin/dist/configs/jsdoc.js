@@ -21,6 +21,7 @@ module.exports = {
     "jsdoc/check-alignment": "off",
     "jsdoc/check-tag-names": "off",
     "jsdoc/empty-tags": "off",
+    "jsdoc/multiline-blocks": "off",
     "jsdoc/require-param": "off",
     "jsdoc/require-param-type": "off",
     "jsdoc/require-returns": "off",
