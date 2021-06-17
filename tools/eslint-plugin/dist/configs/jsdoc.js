@@ -22,6 +22,7 @@ module.exports = {
     "jsdoc/check-tag-names": "off",
     "jsdoc/empty-tags": "off",
     "jsdoc/multiline-blocks": "off",
+    "jsdoc/no-multi-asterisks": "off",
     "jsdoc/require-param": "off",
     "jsdoc/require-param-type": "off",
     "jsdoc/require-returns": "off",
@@ -45,6 +46,7 @@ module.exports = {
         ]
       }
     ],
-
+    "jsdoc/require-yields": "off",
+    "jsdoc/tag-lines": "off",
   }
 }
