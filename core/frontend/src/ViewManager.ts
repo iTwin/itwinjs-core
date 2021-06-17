@@ -27,20 +27,31 @@ export interface Decorator extends ViewportDecorator {
    */
   testDecorationHit?(id: string): boolean;
 
-  /** If [[testDecorationHit]] returned true, implement this method to return the tooltip message for this Decorator.
+  /** If the [[decorate]] method created pickable graphics using a persistent element id instead of a transient id,
+   * return true if the Decorator wants the opportunity to override the default persistent element behavior for
+   * the supplied [[HitDetail]].
+   * - Replace or augment the element's tooltip by implementing [[getDecorationToolTip]].
+   * - Override the element's snap geometry by implementing [[getDecorationGeometry]].
+   * - Handle button events as decorator events by implementing [[onDecorationButtonEvent]].
+   * @param hit The HitDetail of the currently selected persistent element or pickable graphics using a persistent element id.
+   * @returns true if this Decorator wants to override the default persistent element behavior.
+   */
+  overrideElementHit?(hit: HitDetail): boolean;
+
+  /** If [[testDecorationHit]] or [[overrideElementHit]] returned true, implement this method to return the tooltip message for this Decorator.
    * @param hit The HitDetail about the decoration that was picked.
    * @returns A promise with the HTMLElement or string (that may contain HTML) with the tooltip message.
    */
   getDecorationToolTip?(hit: HitDetail): Promise<HTMLElement | string>;
 
-  /** If [[testDecorationHit]] returned true, implement this method to handle a button event for this Decorator.
+  /** If [[testDecorationHit]] or [[overrideElementHit]] returned true, implement this method to handle a button event for this Decorator.
    * @param hit The HitDetail about the decoration that was picked.
    * @param ev The BeButtonEvent that identified this decoration.
    * @returns  A Promise that resolves to Yes if event completely handled by decoration and event should not be processed by the calling tool.
    */
   onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
 
-  /** If [[testDecorationHit]] returned true, implement this method to return the snappable geometry for this Decorator. Geometry that changes with every cursor motion isn't valid for snapping.
+  /** If [[testDecorationHit]] or [[overrideElementHit]] returned true, implement this method to return the snappable geometry for this Decorator. Geometry that changes with every cursor motion isn't valid for snapping.
    * An example would be an InteractiveTool for placing a linestring. It might wish to allow snapping to accepted segments, the segment from the last accepted point to the current cursor position would not be included
    * as snappable geometry and would just be displayed in dynamics.
    * @param hit The HitDetail about the decoration that was picked.
@@ -513,6 +524,39 @@ export class ViewManager implements Iterable<ScreenViewport> {
   public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined {
     for (const decorator of IModelApp.viewManager.decorators) {
       if (undefined !== decorator.testDecorationHit && undefined !== decorator.getDecorationGeometry && decorator.testDecorationHit(hit.sourceId))
+        return decorator.getDecorationGeometry(hit);
+    }
+    return undefined;
+  }
+
+  /** Allow a pickable decoration created using a persistent element id to augment or replace the the persistent elemennt's tooltip.
+   * @internal
+   */
+  public async overrideElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    for (const decorator of this.decorators) {
+      if (undefined !== decorator.overrideElementHit && undefined !== decorator.getDecorationToolTip && decorator.overrideElementHit(hit))
+        return decorator.getDecorationToolTip(hit);
+    }
+    return this.getElementToolTip(hit);
+  }
+
+  /** Allow a pickable decoration created using a persistent element id to handle a button event that identified it for the SelectTool.
+   * @internal
+   */
+  public async overrideElementButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+    for (const decorator of IModelApp.viewManager.decorators) {
+      if (undefined !== decorator.overrideElementHit && undefined !== decorator.onDecorationButtonEvent && decorator.overrideElementHit(hit))
+        return decorator.onDecorationButtonEvent(hit, ev);
+    }
+    return EventHandled.No;
+  }
+
+  /** Allow a pickable decoration created using a persistent element id to control whether snapping uses the persistent elemennt's geometry.
+   * @internal
+   */
+  public overrideElementGeometry(hit: HitDetail): GeometryStreamProps | undefined {
+    for (const decorator of IModelApp.viewManager.decorators) {
+      if (undefined !== decorator.overrideElementHit && undefined !== decorator.getDecorationGeometry && decorator.overrideElementHit(hit))
         return decorator.getDecorationGeometry(hit);
     }
     return undefined;

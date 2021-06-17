@@ -15,6 +15,8 @@ import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
+import { ElementProperties } from '@bentley/presentation-common';
+import { ElementPropertiesRequestOptions } from '@bentley/presentation-common';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FormatProps } from '@bentley/imodeljs-quantity';
@@ -184,6 +186,8 @@ export class PresentationManager {
     getDisplayLabelDefinitions(requestOptions: WithClientRequestContext<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]>;
     // @deprecated
     getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
+    // @beta
+    getElementProperties(requestOptions: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
     // @deprecated
     getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]>;
     getFilteredNodePaths(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb> & {

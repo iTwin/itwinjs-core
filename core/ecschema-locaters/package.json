@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-locaters",
-  "version": "2.17.0-dev.30",
+  "version": "2.18.0-dev.8",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/ecschema-locaters.js",
@@ -54,7 +54,7 @@
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@bentley/ecschema-metadata": "workspace:^2.17.0-dev.30"
+    "@bentley/ecschema-metadata": "workspace:^2.18.0-dev.8"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",

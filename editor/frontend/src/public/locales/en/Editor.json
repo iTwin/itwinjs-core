@@ -109,6 +109,7 @@
         "AcceptHandle": "Accept project extents or handle"
       },
       "Message": {
+        "RestartTxn": "Undo of prior changes will no longer be possible, continue?",
         "NotActive": "Enable geolocation tools with 'editor project location show' first",
         "NotAllowed": "A valid geographic coordinate reference system already exists",
         "NotGeolocated": "Not geolocated",
