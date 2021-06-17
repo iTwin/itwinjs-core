@@ -10,11 +10,19 @@ import {
   AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement2d, Placement3d,
 } from "@bentley/imodeljs-common";
 import {
+<<<<<<< HEAD
   BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionPartition, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
   ECSqlStatement, Element, ElementMultiAspect, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   IModelCloneContext, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs, IModelTransformer, InformationRecordModel,
   InformationRecordPartition, LinkElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition,
   PhysicalType, Relationship, RepositoryLink, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe2d, TemplateRecipe3d,
+=======
+  BackendLoggerCategory, BackendRequestContext, CategorySelector, DisplayStyle3d, ECSqlStatement, Element, ElementMultiAspect,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter,
+  IModelExportHandler, IModelJsFs, IModelSchemaLoader, IModelTransformer, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
+  OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, SnapshotDb,
+  SpatialCategory, Subject,
+>>>>>>> 7f4e23e779 (don't import schemas as they are individually exported to keep processSchemas schema-import order independent  (#1645))
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
@@ -970,4 +978,71 @@ describe("IModelTransformer", () => {
     IModelTransformerUtils.dumpIModelInfo(mergedDb);
     mergedDb.close();
   });
+
+  it("processSchemas should handle out-of-order exported schemas", async () => {
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="TestElement1">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECProperty propertyName="MyProp1" typeName="string"/>
+          </ECEntityClass>
+      </ECSchema>`
+    );
+
+    const testSchema2Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema2.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchema2Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema2" alias="ts2" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+          <ECSchemaReference name="TestSchema1" version="01.00.00" alias="ts1"/>
+          <ECEntityClass typeName="TestElement2">
+            <BaseClass>ts1:TestElement1</BaseClass>
+            <ECProperty propertyName="MyProp2" typeName="string"/>
+          </ECEntityClass>
+      </ECSchema>`
+    );
+
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "OrderTestSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "Order Test" } });
+
+    const requestContext = new BackendRequestContext();
+    await sourceDb.importSchemas(requestContext, [testSchema1Path, testSchema2Path]);
+    sourceDb.saveChanges();
+
+    class OrderedExporter extends IModelExporter {
+      public async exportSchemas() {
+        const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+        const schema1 = schemaLoader.getSchema("TestSchema1");
+        const schema2 = schemaLoader.getSchema("TestSchema2");
+        // by importing schema2 (which references schema1) first, we
+        // prove that the import order in processSchemas does not matter
+        await this.handler.callProtected.onExportSchema(schema2);
+        await this.handler.callProtected.onExportSchema(schema1);
+      }
+    }
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "OrderTestTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "Order Test" } });
+    const transformer = new IModelTransformer(new OrderedExporter(sourceDb), targetDb);
+
+    let error: any;
+    try {
+      await transformer.processSchemas(new BackendRequestContext());
+    } catch (_error) {
+      error = _error;
+    }
+    assert.isUndefined(error);
+
+    targetDb.saveChanges();
+    const targetImportedSchemasLoader = new IModelSchemaLoader(targetDb);
+    const schema1InTarget = targetImportedSchemasLoader.getSchema("TestSchema1");
+    assert.isDefined(schema1InTarget);
+    const schema2InTarget = targetImportedSchemasLoader.getSchema("TestSchema2");
+    assert.isDefined(schema2InTarget);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
 });
