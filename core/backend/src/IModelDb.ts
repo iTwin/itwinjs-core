@@ -2337,6 +2337,8 @@ export class BriefcaseDb extends IModelDb {
     return this.changeset.id;
   }
 
+  /* changeType argument is unused and will be removed in 3.0*/
+
   /** Push changes to iModelHub. Locks are released and codes are marked as used as part of a successful push.
    * If there are no changes, then locks are released and reserved codes are released.
    * @param requestContext Context used for authorization to push change sets
@@ -2344,8 +2346,7 @@ export class BriefcaseDb extends IModelDb {
    * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
    * @note This function is a no-op if there are no changes to push.
    */
-  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType: ChangesType = ChangesType.Regular): Promise<void> {
-    requestContext.enter();
+  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string, _unused?: any): Promise<void> {
     if (this.nativeDb.hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes");
     if (!this.allowLocalChanges)
@@ -2357,8 +2358,7 @@ export class BriefcaseDb extends IModelDb {
 
     await this.concurrencyControl.onPushChanges(requestContext);
 
-    await BriefcaseManager.pushChanges(requestContext, this, description, changeType as number);
-    requestContext.enter();
+    await BriefcaseManager.pushChanges(requestContext, this, description);
     this._changeset = this.nativeDb.getParentChangeset();
     this.initializeIModelDb();
 

@@ -546,12 +546,11 @@ export class BriefcaseManager {
   }
 
   /** Attempt to push a ChangeSet to iModelHub */
-  private static async pushChangeset(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesetType, releaseLocks: boolean): Promise<void> {
+  private static async pushChangeset(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, releaseLocks: boolean): Promise<void> {
     requestContext.enter();
 
     const changesetProps = db.nativeDb.startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
-    changesetProps.changesType = changesetProps.changesType === ChangesetType.Schema ? ChangesetType.Schema : changeType;
     changesetProps.description = description;
     changesetProps.size = IModelJsFs.lstatSync(changesetProps.pathname)!.size;
 
@@ -562,12 +561,12 @@ export class BriefcaseManager {
   }
 
   /** Attempt to pull merge and push once */
-  private static async pushChangesOnce(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesetType, relinquishCodesLocks: boolean): Promise<void> {
+  private static async pushChangesOnce(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, relinquishCodesLocks: boolean): Promise<void> {
     await BriefcaseManager.pullAndMergeChanges(requestContext, db, IModelVersion.latest());
     requestContext.enter();
 
     try {
-      await BriefcaseManager.pushChangeset(requestContext, db, description, changeType, relinquishCodesLocks);
+      await BriefcaseManager.pushChangeset(requestContext, db, description, relinquishCodesLocks);
       requestContext.enter();
     } catch (err) {
       requestContext.enter();
@@ -594,10 +593,10 @@ export class BriefcaseManager {
    * @param requestContext The client request context
    * @param briefcase Identifies the IModelDb that contains the pending changes.
    * @param description a description of the changeset that is to be pushed.
-   * @param relinquishCodesLocks release locks held and codes reserved (but not used) after pushing?
+   * @param relinquishCodesLocks release locks held after pushing?
    * @internal
    */
-  public static async pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesetType = ChangesetType.Regular, relinquishCodesLocks: boolean = true): Promise<void> {
+  public static async pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, _changeType: ChangesetType = ChangesetType.Regular, relinquishCodesLocks: boolean = true): Promise<void> {
     requestContext.enter();
 
     const retryCount = 5;
@@ -605,7 +604,7 @@ export class BriefcaseManager {
       let pushed = false;
       let error: any;
       try {
-        await BriefcaseManager.pushChangesOnce(requestContext, db, description, changeType, relinquishCodesLocks);
+        await BriefcaseManager.pushChangesOnce(requestContext, db, description, relinquishCodesLocks);
         requestContext.enter();
         pushed = true;
       } catch (err) {
