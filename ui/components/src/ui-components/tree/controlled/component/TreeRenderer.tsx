@@ -243,6 +243,7 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
     virtualizedListRef.current.scrollToItem(index);
   }, [nodeHighlightingProps]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const innerElementType = React.useCallback(
     // eslint-disable-next-line react/display-name
     React.forwardRef(({ style, ...rest }: ListChildComponentProps, innerRef: React.Ref<HTMLDivElement>) => (

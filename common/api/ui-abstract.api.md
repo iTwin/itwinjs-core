@@ -1084,6 +1084,8 @@ export class DialogProperty<T> {
     get isDisabled(): boolean;
     set isDisabled(val: boolean);
     // (undocumented)
+    get item(): DialogPropertyItem;
+    // (undocumented)
     get name(): string;
     // (undocumented)
     get syncItem(): DialogPropertySyncItem;
@@ -1443,7 +1445,6 @@ export namespace Primitives {
     export type ShortDate = string | Date;
     export type String = string;
     export type Text = string;
-    // (undocumented)
     export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
 }
 
@@ -1497,21 +1498,14 @@ export interface PropertyDescription {
 
 // @beta
 export class PropertyDescriptionHelper {
-    // @alpha
     static buildCheckboxDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildEnumPicklistEditorDescription(name: string, label: string, choices: Promise<EnumerationChoice[]> | EnumerationChoice[], additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
+    static buildLockPropertyDescription(name: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
     static buildNumberEditorDescription(name: string, label: string, overrideParams?: RangeEditorParams, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildTextEditorDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildToggleDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildWeightPickerDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
     static bumpEnumProperty(description: PropertyDescription, value: string | number): Promise<string | number>;
 }

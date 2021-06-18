@@ -21,7 +21,7 @@ import {
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue, WidgetState } from "@bentley/ui-abstract";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage2 extends FrontstageProvider {
 

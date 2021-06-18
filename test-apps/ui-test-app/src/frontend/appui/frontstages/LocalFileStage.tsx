@@ -80,6 +80,7 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
 class FrontstageToolWidget extends React.Component {
   public render() {
     return (
+      // eslint-disable-next-line deprecation/deprecation
       <ToolWidget
         appButton={AppTools.backstageToggleCommand}
       />
