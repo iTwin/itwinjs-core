@@ -10,7 +10,7 @@ exports[`<EnumEditor /> renders correctly 1`] = `
     options={Array []}
     style={
       Object {
-        "minWidth": "4.5em",
+        "minWidth": "6em",
       }
     }
     value=""
