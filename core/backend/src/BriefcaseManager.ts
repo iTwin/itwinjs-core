@@ -8,6 +8,8 @@
 
 // cspell:ignore cset csets ecchanges
 
+import * as os from "os";
+import * as path from "path";
 import {
   assert, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, PerfLogger,
   WSStatus,
@@ -20,9 +22,7 @@ import {
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
-import * as os from "os";
-import * as path from "path";
-import { ChangesetFileProps, ChangesetId, ChangesetIndex } from "./BackendHubAccess";
+import { ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetType } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
