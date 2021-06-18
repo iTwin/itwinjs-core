@@ -11,6 +11,7 @@ import { Range3dProps, XYZProps } from "@bentley/geometry-core";
 import { ChangedEntities } from "./ChangedEntities";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import {
+  ChangesetIndexAndId,
   EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions,
 } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
@@ -68,8 +69,8 @@ export interface TxnNotifications {
   notifyChangesApplied: () => void;
   notifyBeforeUndoRedo: (isUndo: boolean) => void;
   notifyAfterUndoRedo: (isUndo: boolean) => void;
-  notifyPulledChanges: (parentChangeSetId: string) => void;
-  notifyPushedChanges: (parentChangeSetId: string) => void;
+  notifyPulledChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
+  notifyPushedChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
 
   notifyIModelNameChanged: (name: string) => void;
   notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
@@ -120,9 +121,9 @@ export interface IpcAppFunctions {
   getRedoString: (key: string) => Promise<string>;
 
   /** see BriefcaseConnection.pullAndMergeChanges */
-  pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<string>;
+  pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<ChangesetIndexAndId>;
   /** see BriefcaseConnection.pushChanges */
-  pushChanges: (key: string, description: string) => Promise<string>;
+  pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
   /** Cancels currently pending or active generation of tile content.  */
   cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
 

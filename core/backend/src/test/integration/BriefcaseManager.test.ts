@@ -105,7 +105,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isFalse(IModelJsFs.existsSync(pathname3));
   });
 
-  it("should open iModels of specific versions from the Hub", async () => {
+  it.only("should open iModels of specific versions from the Hub", async () => {
     const iModelFirstVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON() });
     assert.exists(iModelFirstVersion);
     assert.strictEqual(iModelFirstVersion.changeSetId!, "");
@@ -135,7 +135,8 @@ describe("BriefcaseManager (#integration)", () => {
     const iModelLatestVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     assert.isDefined(iModelLatestVersion);
     assert.isUndefined(iModelLatestVersion.nativeDb.getReversedChangeSetId());
-    assert.strictEqual(iModelLatestVersion.nativeDb.getParentChangeSetId(), changeSets[3].id);
+    assert.strictEqual(iModelLatestVersion.nativeDb.getParentChangeset().id, changeSets[3].id);
+    assert.equal(iModelLatestVersion.nativeDb.getParentChangeset().index, changeSets[3].index);
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelFirstVersion);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelLatestVersion);
@@ -234,7 +235,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should set appropriate briefcase ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
-    HubMock.startup("briefcaseids");
+    HubMock.startup("briefcaseIds");
     const iModelId = await HubUtility.createIModel(requestContext, testContextId, "imodel1");
     const args = { requestContext, contextId: testContextId, iModelId, deleteFirst: true };
     const iModel1 = await IModelTestUtils.openCheckpointUsingRpc(args);
@@ -282,12 +283,12 @@ describe("BriefcaseManager (#integration)", () => {
     const args = { requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId };
     const iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const briefcaseIdPullAndPush: number = iModelPullAndPush.briefcaseId;
-    const changeSetIdPullAndPush = iModelPullAndPush.changeSetId;
+    const changesetPullAndPush = iModelPullAndPush.changeset;
     iModelPullAndPush.close();
 
     const iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
     const briefcaseIdPullOnly: number = iModelPullOnly.briefcaseId;
-    const changeSetIdPullOnly = iModelPullOnly.changeSetId;
+    const changesetPullOnly = iModelPullOnly.changeset;
     iModelPullOnly.close();
 
     // User1 pushes a change set
@@ -297,15 +298,15 @@ describe("BriefcaseManager (#integration)", () => {
     const iModelPullAndPush2 = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const briefcaseIdPullAndPush2: number = iModelPullAndPush2.briefcaseId;
     assert.strictEqual(briefcaseIdPullAndPush2, briefcaseIdPullAndPush);
-    const changeSetIdPullAndPush2 = iModelPullAndPush2.changeSetId;
-    assert.notStrictEqual(changeSetIdPullAndPush2, changeSetIdPullAndPush);
+    const changesetPullAndPush2 = iModelPullAndPush2.changeset;
+    assert.notStrictEqual(changesetPullAndPush2, changesetPullAndPush);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(userContext2, iModelPullAndPush2);
 
     const iModelPullOnly2 = await IModelTestUtils.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
     const briefcaseIdPullOnly2: number = iModelPullOnly2.briefcaseId;
     assert.strictEqual(briefcaseIdPullOnly2, briefcaseIdPullOnly);
-    const changeSetIdPullOnly2 = iModelPullOnly2.changeSetId;
-    assert.notStrictEqual(changeSetIdPullOnly2, changeSetIdPullOnly);
+    const changesetPullOnly2 = iModelPullOnly2.changeset;
+    assert.notStrictEqual(changesetPullOnly2, changesetPullOnly);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(userContext2, iModelPullOnly2);
 
     // Delete iModel from the Hub and disk
@@ -345,7 +346,7 @@ describe("BriefcaseManager (#integration)", () => {
 
     // User2 should be able to re-open the iModel pullOnly again
     iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc(args);
-    const changeSetIdPullAndPush = iModelPullOnly.changeSetId;
+    const changesetPullAndPush = iModelPullOnly.changeset;
     assert.strictEqual(iModelPullOnly.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullOnly.pathName, pathname);
     assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
@@ -358,8 +359,8 @@ describe("BriefcaseManager (#integration)", () => {
     // - the briefcase will be upgraded to the newer version since it was closed and re-opened.
     iModelPullOnly.close();
     iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc(args);
-    const changeSetIdPullAndPush3 = iModelPullOnly.changeSetId;
-    assert.notStrictEqual(changeSetIdPullAndPush3, changeSetIdPullAndPush);
+    const changeSetIdPullAndPush3 = iModelPullOnly.changeset;
+    assert.notStrictEqual(changeSetIdPullAndPush3, changesetPullAndPush);
     assert.strictEqual(iModelPullOnly.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullOnly.pathName, pathname);
     assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
@@ -370,7 +371,7 @@ describe("BriefcaseManager (#integration)", () => {
 
     // User2 should be able pull and merge changes
     await iModelPullOnly.pullAndMergeChanges(userContext2, IModelVersion.latest());
-    const changeSetIdPullAndPush4 = iModelPullOnly.changeSetId;
+    const changeSetIdPullAndPush4 = iModelPullOnly.changeset;
     assert.notStrictEqual(changeSetIdPullAndPush4, changeSetIdPullAndPush3);
 
     // User2 should NOT be able to push the changes
@@ -415,7 +416,7 @@ describe("BriefcaseManager (#integration)", () => {
     // User2 should be able to re-open the iModel pullAndPush again
     // - the changes will still be there
     iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
-    const changeSetIdPullAndPush = iModelPullAndPush.changeSetId;
+    const changesetPullAndPush = iModelPullAndPush.changeset;
     assert.strictEqual(iModelPullAndPush.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullAndPush.pathName, pathname);
     assert.isFalse(iModelPullAndPush.nativeDb.hasUnsavedChanges());
@@ -432,8 +433,8 @@ describe("BriefcaseManager (#integration)", () => {
     // - the briefcase will be upgraded to the newer version since it was closed and re-opened.
     iModelPullAndPush.close();
     iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
-    const changeSetIdPullAndPush3 = iModelPullAndPush.changeSetId;
-    assert.notStrictEqual(changeSetIdPullAndPush3, changeSetIdPullAndPush);
+    const changesetPullAndPush3 = iModelPullAndPush.changeset;
+    assert.notStrictEqual(changesetPullAndPush3, changesetPullAndPush);
     assert.strictEqual(iModelPullAndPush.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullAndPush.pathName, pathname);
     assert.isFalse(iModelPullAndPush.nativeDb.hasUnsavedChanges());
@@ -441,8 +442,8 @@ describe("BriefcaseManager (#integration)", () => {
 
     // User2 should be able to push the changes now
     await iModelPullAndPush.pushChanges(userContext2, "test change");
-    const changeSetIdPullAndPush4 = iModelPullAndPush.changeSetId;
-    assert.notStrictEqual(changeSetIdPullAndPush4, changeSetIdPullAndPush3);
+    const changesetPullAndPush4 = iModelPullAndPush.changeset;
+    assert.notStrictEqual(changesetPullAndPush4, changesetPullAndPush3);
 
     // Delete iModel from the Hub and disk
     await IModelTestUtils.closeAndDeleteBriefcaseDb(userContext2, iModelPullAndPush);

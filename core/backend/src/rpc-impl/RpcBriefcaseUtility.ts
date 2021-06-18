@@ -121,6 +121,7 @@ export class RpcBriefcaseUtility {
       iModelId: tokenProps.iModelId!,
       contextId: tokenProps.contextId!,
       changeSetId: tokenProps.changeSetId!,
+      changesetIndex: tokenProps.changesetIndex,
       requestContext,
     };
 

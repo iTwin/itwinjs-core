@@ -7,7 +7,7 @@
  */
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
+import { ChangesetId, ChangesetIndex, ChangesetIndexAndId, CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { DownloadRequest } from "./CheckpointManager";
 
@@ -16,19 +16,10 @@ export type LocalFileName = string;
 /** @internal */
 export type LocalDirName = string;
 
-/** A string that identifies a changeset.
- * @note this string is *not* a Guid. It is generated internally based on the content of the changeset.
- * @internal
- */
-export type ChangesetId = string;
-
-/** @internal */
-export type ChangesetIndex = number;
-
 /** supply either changeset index, id, or both
   * @internal
   */
-export type ChangesetIndexOrId = { index: ChangesetIndex, id: ChangesetId } | { index: ChangesetIndex, id?: never } | { id: ChangesetId, index?: never };
+export type ChangesetIndexOrId = ChangesetIndexAndId | { index: ChangesetIndex, id?: never } | { id: ChangesetId, index?: never };
 
 /** Value to indicate whether a changeset contains schema changes or not
  * @public */

@@ -94,17 +94,17 @@ class SyncManager {
       }
     });
 
-    txns.onChangesPushed.addListener((parentChangeSetId) => {
+    txns.onChangesPushed.addListener((parentChangeset) => {
       // In case I got the changeSetSubscription event first, remove the changeset that I pushed from the list of server changes waiting to be merged.
-      const allChangesOnServer = this.state.changesOnServer.filter((cs) => cs !== parentChangeSetId);
+      const allChangesOnServer = this.state.changesOnServer.filter((cs) => cs !== parentChangeset.id);
       this.state.mustPush = false;
       this.state.changesOnServer = allChangesOnServer;
-      this.state.parentChangesetId = parentChangeSetId;
+      this.state.parentChangesetId = parentChangeset.id;
       this.onStateChange.raiseEvent();
     });
 
-    txns.onChangesPulled.addListener((parentChangeSetId) => {
-      this.updateParentChangesetId(parentChangeSetId);
+    txns.onChangesPulled.addListener((parentChangeset) => {
+      this.updateParentChangesetId(parentChangeset.id);
       this.onStateChange.raiseEvent();
     });
   }

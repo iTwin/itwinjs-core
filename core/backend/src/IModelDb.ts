@@ -15,7 +15,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, ChangesetIndexAndId, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps,
   ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps,
   EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
@@ -27,7 +27,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangesetId } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseId, BriefcaseManager } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -115,7 +114,7 @@ export abstract class IModelDb extends IModel {
   public readonly onChangesetApplied = new BeEvent<() => void>();
   /** @internal */
   public notifyChangesetApplied() {
-    this._changeset = this.nativeDb.getParentChangeset();
+    this.changeset = this.nativeDb.getParentChangeset();
     this.onChangesetApplied.raiseEvent();
   }
 
@@ -2171,16 +2170,6 @@ export class BriefcaseDb extends IModelDb {
   /** The Guid that identifies the *context* that owns this iModel. */
   public get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
 
-  /** Id of the last ChangeSet that was applied to this iModel.
-   * @note An empty string indicates the first version.
-   * @deprecated use changeset.id
-   */
-  public get changeSetId(): string { return super.changeSetId!; } // string | undefined for the superclass, but required for BriefcaseDb
-  /** @deprecated  use changeset.id*/
-  public set changeSetId(csId: string) { this._changeset!.id = csId; }
-
-  public get changeset() { return this._changeset!; }
-
   /** Get the ConcurrencyControl for this iModel.
    * The concurrency control is used available *only* if the briefcase has been setup to synchronize changes with iModelHub (i.e., syncMode = SyncMode.PullAndPush),
    * and has been opened ReadWrite (i.e., openMode = OpenMode.ReadWrite)
@@ -2238,7 +2227,7 @@ export class BriefcaseDb extends IModelDb {
       // Sync the concurrencyControl cache so that it includes the schema lock we requested before the open
       await briefcaseDb.concurrencyControl.syncCache(requestContext);
       await briefcaseDb.pushChanges(requestContext, arg.description, ChangesType.Schema);
-      arg.briefcase.changeSetId = briefcaseDb.changeSetId;
+      arg.briefcase.changeSetId = briefcaseDb.changeset.id;
     } finally {
       briefcaseDb.close();
       requestContext.enter();
@@ -2276,11 +2265,13 @@ export class BriefcaseDb extends IModelDb {
     const file = { path: args.fileName, key: args.key };
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode);
+    const changeset = nativeDb.getParentChangeset();
     const token: IModelRpcProps = {
       key: file.key ?? Guid.createValue(),
       iModelId: nativeDb.getDbGuid(),
       contextId: nativeDb.queryProjectGuid(),
-      changeSetId: nativeDb.getReversedChangeSetId() ?? nativeDb.getParentChangeSetId(),
+      changeSetId: changeset.id,
+      changesetIndex: changeset.index,
       openMode,
     };
 
@@ -2317,7 +2308,7 @@ export class BriefcaseDb extends IModelDb {
    * @throws [[IModelError]] If the pull and merge fails.
    * @returns the new changeSetId of this BriefcaseDb after pulling
    */
-  public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<ChangesetId> {
+  public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<ChangesetIndexAndId> {
     if (this.allowLocalChanges)
       this.concurrencyControl.onMergeChanges();
 
@@ -2330,11 +2321,11 @@ export class BriefcaseDb extends IModelDb {
         this.closeAndReopen(OpenMode.Readonly);
     }
 
-    this._changeset = this.nativeDb.getParentChangeset();
-    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset.id);
+    this.changeset = this.nativeDb.getParentChangeset();
+    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset);
 
     this.initializeIModelDb();
-    return this.changeset.id;
+    return this.changeset;
   }
 
   /* changeType argument is unused and will be removed in 3.0*/
@@ -2359,10 +2350,10 @@ export class BriefcaseDb extends IModelDb {
     await this.concurrencyControl.onPushChanges(requestContext);
 
     await BriefcaseManager.pushChanges(requestContext, this, description);
-    this._changeset = this.nativeDb.getParentChangeset();
+    this.changeset = this.nativeDb.getParentChangeset();
     this.initializeIModelDb();
 
-    IpcHost.notifyTxns(this, "notifyPushedChanges", this.changeset.id);
+    IpcHost.notifyTxns(this, "notifyPushedChanges", this.changeset);
     return this.concurrencyControl.onPushedChanges(requestContext);
   }
 
@@ -2408,7 +2399,8 @@ export class SnapshotDb extends IModelDb {
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId: nativeDb.getParentChangeSetId(), openMode };
+    const changeset = nativeDb.getParentChangeset();
+    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId: changeset.id, changesetIndex: changeset.index, openMode };
     super(nativeDb, iModelRpcProps, openMode);
   }
 
@@ -2539,9 +2531,9 @@ export class SnapshotDb extends IModelDb {
    * @internal
    */
   public async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this._changeset)
+    if (!this.changeset.id)
       throw new IModelError(IModelStatus.WrongIModel, `SnapshotDb is not a checkpoint`);
-    await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId });
+    await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this.changeset.id });
   }
 
   /** @internal */
@@ -2591,9 +2583,6 @@ export class StandaloneDb extends IModelDb {
     const db = super.tryFindByKey(key);
     return db?.isStandaloneDb() ? db : undefined;
   }
-
-  /** This property is always undefined as a StandaloneDb does not accept nor generate changesets. */
-  public get changeSetId() { return undefined; } // string | undefined for the superclass, but always undefined for StandaloneDb
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;

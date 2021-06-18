@@ -267,10 +267,10 @@ export class HubUtility {
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    const lastAppliedChangeSetId = nativeDb.getParentChangeSetId();
+    const lastAppliedChangeset = nativeDb.getParentChangeset();
 
     const changeSets = HubUtility.readChangeSets(iModelDir);
-    const lastMergedChangeSet = changeSets.find((value) => value.id === lastAppliedChangeSetId);
+    const lastMergedChangeSet = changeSets.find((value) => value.id === lastAppliedChangeset.id);
     const filteredChangeSets = lastMergedChangeSet ? changeSets.filter((value) => value.index > lastMergedChangeSet.index) : changeSets;
 
     // Logger.logInfo(HubUtility.logCategory, "Dumping all available change sets");
@@ -473,22 +473,23 @@ export class HubUtility {
 
   /** Reads change sets from disk and expects a standard structure of how the folder is organized */
   public static readChangeSets(iModelDir: string): ChangesetFileProps[] {
-    const tokens: ChangesetFileProps[] = [];
+    const props: ChangesetFileProps[] = [];
 
     const changeSetJsonPathname = path.join(iModelDir, "changeSets.json");
     if (!IModelJsFs.existsSync(changeSetJsonPathname))
-      return tokens;
+      return props;
 
     const jsonStr = IModelJsFs.readFileSync(changeSetJsonPathname) as string;
-    const changesets = JSON.parse(jsonStr) as (ChangesetProps & { fileName: string })[];
+    const changesets = JSON.parse(jsonStr);
 
     for (const changeset of changesets) {
+      changeset.index = parseInt(changeset.index, 10); // it's a string from iModelHub
       const pathname = path.join(iModelDir, "changeSets", changeset.fileName);
       if (!IModelJsFs.existsSync(pathname))
         throw new Error(`Cannot find the ChangeSet file: ${pathname}`);
-      tokens.push({ ...changeset, pathname });
+      props.push({ ...changeset, pathname });
     }
-    return tokens;
+    return props;
   }
 
   /** Creates a standalone iModel from the seed file (version 0) */

@@ -18,6 +18,22 @@ import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
 
+/** A string that identifies a changeset.
+ * @note this string is *not* a Guid. It is generated internally based on the content of the changeset.
+ * @public
+ */
+export type ChangesetId = string;
+
+/** The index of a changeset, assigned by iModelHub. Values >= 0 are invalid.
+ * @public
+ */
+export type ChangesetIndex = number;
+
+/** The index *and* Id of a changeset
+ * @public
+ */
+export interface ChangesetIndexAndId { index: ChangesetIndex, id: ChangesetId }
+
 /** The properties to open a connection to an iModel for RPC operations.
  * @public
  */
@@ -30,9 +46,10 @@ export interface IModelRpcOpenProps {
   /** Id of the last ChangeSet that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub. An empty string indicates the first version.
    * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
    */
-  changeSetId?: string;
-  /** The index of the last changeset */
-  changesetIndex?: number;
+  changeSetId?: ChangesetId;
+
+  /** The index of the last changeset. If <= 0, must be determined by changeSetId */
+  changesetIndex?: ChangesetIndex;
 
   /** Mode used to open the iModel */
   openMode?: OpenMode;
@@ -439,12 +456,14 @@ export abstract class IModel implements IModelProps {
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString | undefined { return this._iModelId; }
 
-  /** @internal */
-  protected _changeset: { id: string, index: number } | undefined;
+  /** @public */
+  public changeset: { id: string, index: number };
+
   /** The Id of the last changeset that was applied to this iModel.
-   * @note An empty string indicates the first version while `undefined` mean no changeset information is available.
+   * @note An empty string indicates the first version
+   * @deprecated use changeset.id
    */
-  public get changeSetId() { return this._changeset?.id; }
+  public get changeSetId() { return this.changeset.id; }
 
   /** The [[OpenMode]] used for this IModel. */
   public readonly openMode: OpenMode;
@@ -458,17 +477,21 @@ export abstract class IModel implements IModelProps {
       key: this._fileKey,
       contextId: this.contextId,
       iModelId: this.iModelId,
-      changeSetId: this.changeSetId,
+      changeSetId: this.changeset.id,
       openMode: this.openMode,
     };
   }
 
   /** @internal */
   protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode) {
-    this._fileKey = tokenProps?.key ?? "";
-    this._contextId = tokenProps?.contextId;
-    this._iModelId = tokenProps?.iModelId;
-    this._changeSetId = tokenProps?.changeSetId;
+    if (tokenProps) {
+      this._fileKey = tokenProps.key;
+      this._contextId = tokenProps.contextId;
+      this._iModelId = tokenProps.iModelId;
+    } else {
+      this._fileKey = "";
+    }
+    this.changeset = { id: tokenProps?.changeSetId ?? "", index: tokenProps?.changesetIndex ?? -1 };
     this.openMode = openMode; // Note: The open mode passed through the RPC layer is ignored in the case of IModelDb-s
   }
 

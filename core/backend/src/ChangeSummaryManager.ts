@@ -8,9 +8,9 @@
 
 import * as path from "path";
 import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
-import { ChangedValueState, ChangeOpCode, IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { ChangedValueState, ChangeOpCode, ChangesetId, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangesetFileProps, ChangesetId } from "./BackendHubAccess";
+import { ChangesetFileProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
@@ -149,8 +149,7 @@ export class ChangeSummaryManager {
 
     const ctx = new ChangeSummaryExtractContext(iModel);
 
-    const endChangeSetId = iModel.changeSetId;
-    assert(endChangeSetId.length !== 0);
+    const endChangeset = iModel.changeset;
 
     let startChangeSetId = "";
     if (options) {
@@ -158,19 +157,19 @@ export class ChangeSummaryManager {
         startChangeSetId = (await IModelHost.hubAccess.getChangesetFromVersion({ version: options.startVersion, requestContext, iModelId: ctx.iModelId })).id;
         requestContext.enter();
       } else if (options.currentVersionOnly) {
-        startChangeSetId = endChangeSetId;
+        startChangeSetId = endChangeset.id;
       }
     }
 
-    Logger.logInfo(loggerCategory, "Started Change Summary extraction...", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId }));
-    const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [ChangeSets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${ctx.iModelId}]`);
+    Logger.logInfo(loggerCategory, "Started Change Summary extraction...", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeset }));
+    const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [ChangeSets: ${startChangeSetId} through ${endChangeset}, iModel: ${ctx.iModelId}]`);
 
     // download necessary changesets if they were not downloaded before and retrieve infos about those changesets
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download ChangeSets from Hub");
-    const changeSetInfos = await ChangeSummaryManager.downloadChangesets(requestContext, ctx, startChangeSetId, endChangeSetId);
+    const changeSetInfos = await ChangeSummaryManager.downloadChangesets(requestContext, ctx, startChangeSetId, endChangeset.id);
     requestContext.enter();
     perfLogger.dispose();
-    Logger.logTrace(loggerCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId, changeSets: changeSetInfos }));
+    Logger.logTrace(loggerCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeset, changeSets: changeSetInfos }));
 
     // Detach change cache as it's being written to during the extraction
     const isChangeCacheAttached = this.isChangeCacheAttached(iModel);
@@ -181,7 +180,7 @@ export class ChangeSummaryManager {
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Change Cache file");
     const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);
     perfLogger.dispose();
-    Logger.logTrace(loggerCategory, "Opened or created Changes Cachefile.", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId }));
+    Logger.logTrace(loggerCategory, "Opened or created Changes Cachefile.", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeset }));
 
     if (!changesFile || !changesFile.nativeDb) {
       assert(false, "Should not happen as an exception should have been thrown in that case");
@@ -246,14 +245,14 @@ export class ChangeSummaryManager {
         ChangeSummaryManager.attachChangeCache(iModel);
 
       perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
-      if (iModel.changeSetId !== endChangeSetId)
-        await iModel.reinstateChanges(requestContext, IModelVersion.asOfChangeSet(endChangeSetId));// eslint-disable-line deprecation/deprecation
+      if (iModel.changeset.id !== endChangeset.id)
+        await iModel.reinstateChanges(requestContext, IModelVersion.asOfChangeSet(endChangeset.id));// eslint-disable-line deprecation/deprecation
       requestContext.enter();
       perfLogger.dispose();
-      Logger.logTrace(loggerCategory, "Moved iModel to initial changeset (the end changeset).", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId }));
+      Logger.logTrace(loggerCategory, "Moved iModel to initial changeset (the end changeset).", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeset }));
 
       totalPerf.dispose();
-      Logger.logInfo(loggerCategory, "Finished Change Summary extraction.", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId }));
+      Logger.logInfo(loggerCategory, "Finished Change Summary extraction.", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeset }));
     }
   }
 

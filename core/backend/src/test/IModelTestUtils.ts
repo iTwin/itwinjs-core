@@ -231,11 +231,13 @@ export class IModelTestUtils {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
+    const changeset = await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId);
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
         contextId: args.contextId,
         iModelId: args.iModelId,
-        changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).id,
+        changeSetId: changeset.id,
+        changesetIndex: changeset.index,
       },
       requestContext: args.requestContext,
       syncMode: SyncMode.FixedVersion,
