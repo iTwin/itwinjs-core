@@ -17,6 +17,7 @@ import { ClipVector } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { DialogItem } from '@bentley/ui-abstract';
+import { DialogProperty } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
 import { EcefLocation } from '@bentley/imodeljs-common';
@@ -87,8 +88,6 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected getArcNormal(ev: BeButtonEvent): Vector3d;
     // (undocumented)
-    protected _getMethodDescription: () => PropertyDescription;
-    // (undocumented)
     static iconSpec: string;
     // (undocumented)
     protected isComplete(_ev: BeButtonEvent): boolean;
@@ -97,6 +96,8 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     get method(): ArcMethod;
     set method(method: ArcMethod);
+    // (undocumented)
+    get methodProperty(): DialogProperty<number>;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
@@ -110,6 +111,8 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     get radius(): number;
     set radius(value: number);
     // (undocumented)
+    get radiusProperty(): DialogProperty<number>;
+    // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
     protected showConstructionGraphics(ev: BeButtonEvent, context: DynamicsContext): boolean;
@@ -119,13 +122,19 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     get sweep(): number;
     set sweep(value: number);
     // (undocumented)
+    get sweepProperty(): DialogProperty<number>;
+    // (undocumented)
     static toolId: string;
     // (undocumented)
     get useRadius(): boolean;
     set useRadius(value: boolean);
     // (undocumented)
+    get useRadiusProperty(): DialogProperty<boolean>;
+    // (undocumented)
     get useSweep(): boolean;
     set useSweep(value: boolean);
+    // (undocumented)
+    get useSweepProperty(): DialogProperty<boolean>;
     }
 
 // @alpha
