@@ -1445,7 +1445,6 @@ export namespace Primitives {
     export type ShortDate = string | Date;
     export type String = string;
     export type Text = string;
-    // (undocumented)
     export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
 }
 

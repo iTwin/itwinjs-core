@@ -36,6 +36,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
 import { IModelHubBackend } from "../../IModelHubBackend";
+import { V2CheckpointManager } from "../../CheckpointManager";
 
 // spell-checker: disable
 
@@ -2013,11 +2014,12 @@ describe("iModel", () => {
     expectIModelError(IModelStatus.NotFound, error);
   });
 
-  it("should throw when attempting to re-attach a non-checkpoint snapshot", async () => {
+  it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(imodel1.reattachDaemon(ctx));
-    expectIModelError(IModelStatus.WrongIModel, error);
+    const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
+    await imodel1.reattachDaemon(ctx)
+    assert.isTrue(attachMock.notCalled);
   });
 
   function hasClassView(db: IModelDb, name: string): boolean {

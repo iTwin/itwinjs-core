@@ -25,7 +25,6 @@ function mockPostNewChangeSet(imodelId: GuidString, changeSet: ChangeSet) {
 
   const cs = new ChangeSet();
   deepAssign(cs, changeSet);
-  cs.id! = cs.id!;
   cs.uploadUrl = `${utils.IModelHubUrlMock.getUrl()}/imodelhub-${imodelId}/123456`;
   const requestResponse = ResponseBuilder.generatePostResponse(cs);
 
@@ -38,7 +37,6 @@ function mockPostUpdatedChangeSet(imodelId: GuidString, changeSet: ChangeSet) {
   const cs = new ChangeSet();
   deepAssign(cs, changeSet);
   cs.isUploaded = true;
-  cs.id! = changeSet.id!;
   const postBody = ResponseBuilder.generatePostBody(cs);
 
   const requestResponse = ResponseBuilder.generatePostResponse(cs);
