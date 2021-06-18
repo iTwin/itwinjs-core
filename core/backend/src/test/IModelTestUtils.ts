@@ -118,9 +118,7 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
   public static onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
 }
 
-/** the types of users available for tests
- * @beta
- */
+/** the types of users available for tests */
 export enum TestUserType {
   Regular,
   Manager,
@@ -136,7 +134,7 @@ export class IModelTestUtils {
   /** get an AuthorizedClientRequestContext for a [[TestUserType]].
      * @note if the current test is using [[HubMock]], calling this method multiple times with the same type will return users from the same organization,
      * but with different credentials. This can be useful for simulating more than one user of the same type on the same project.
-     * However, if a real IModelHub is used, the credentials are supplied externally and will always return the same value (because otherwise they would be valid.)
+     * However, if a real IModelHub is used, the credentials are supplied externally and will always return the same value (because otherwise they would not be valid.)
      */
   public static async getUserContext(user: TestUserType): Promise<AuthorizedClientRequestContext> {
     if (HubMock.isValid) {
@@ -197,7 +195,7 @@ export class IModelTestUtils {
       tokenProps: {
         contextId: args.contextId,
         iModelId: args.iModelId,
-        changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changesetId,
+        changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).id,
       },
       requestContext: args.requestContext,
       syncMode: args.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush,
@@ -224,7 +222,7 @@ export class IModelTestUtils {
       contextId: args.contextId,
       iModelId: args.iModelId,
       requestContext: args.requestContext,
-      changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changesetId,
+      changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).id,
     };
 
     return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
@@ -240,7 +238,7 @@ export class IModelTestUtils {
       tokenProps: {
         contextId: args.contextId,
         iModelId: args.iModelId,
-        changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changesetId,
+        changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).id,
       },
       requestContext: args.requestContext,
       syncMode: SyncMode.FixedVersion,
