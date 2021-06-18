@@ -36,7 +36,7 @@ Creating a named version is required to view the iModel on iModelHub.
 
 Edit one of the source files with its native design tool, save, and sync the changes with iModelHub using the iTwin Synchronizer. Review the evolving timeline of the iModel. When you get to a point you want others to see, create a new Named Version.
 
-Build and run the [query-agent](https://github.com/imodeljs/imodeljs-samples/tree/master/agent-app/query-agent) which will listen to changesets pushed to iModelHub. Pull the changeset information, and parse useful details contained in them. Take a specific action if the changeset meets certain criteria.
+Build and run the [agent-starter](./develop-agent) which will listen to changesets pushed to iModelHub. Pull the changeset information, and parse useful details contained in them. Take a specific action if the changeset meets certain criteria.
 
 ---
 

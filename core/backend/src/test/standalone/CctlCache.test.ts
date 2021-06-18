@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import { CodeProps } from "@bentley/imodeljs-common";
-import { ConcurrencyControl, IModelJsFs } from "../../imodeljs-backend";
+import { ConcurrencyControl, IModelJsFs, LockScope } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("ConcurrencyControl.StateCache", () => {
@@ -35,22 +34,22 @@ describe("ConcurrencyControl.StateCache", () => {
     const code: CodeProps = { scope: "1", spec: "2", value: "3" };
     const code2: CodeProps = { scope: "1", spec: "2", value: "2" };
     try {
-      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.None);
-      assert.isFalse(cctl.isLockHeld({ type: LockType.Db, objectId: "1", level: LockLevel.Shared }));
-      assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.None);
-      cctl.insertLocks([{ type: LockType.Db, objectId: "1", level: LockLevel.Shared }]);
-      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
-      assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.None);
+      assert.equal(cctl.getHeldLock("1"), LockScope.None);
+      assert.isFalse(cctl.isLockHeld({ entityId: "1", scope: LockScope.Shared }));
+      assert.equal(cctl.getHeldLock("2"), LockScope.None);
+      cctl.insertLocks([{ entityId: "1", scope: LockScope.Shared }]);
+      assert.equal(cctl.getHeldLock("1"), LockScope.Shared);
+      assert.equal(cctl.getHeldLock("2"), LockScope.None);
       cctl.clear();
-      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.None);
-      cctl.insertLocks([{ type: LockType.Db, objectId: "1", level: LockLevel.Shared }, { type: LockType.Db, objectId: "2", level: LockLevel.Exclusive }]);
-      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
-      assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.Exclusive);
+      assert.equal(cctl.getHeldLock("1"), LockScope.None);
+      cctl.insertLocks([{ entityId: "1", scope: LockScope.Shared }, { entityId: "2", scope: LockScope.Exclusive }]);
+      assert.equal(cctl.getHeldLock("1"), LockScope.Shared);
+      assert.equal(cctl.getHeldLock("2"), LockScope.Exclusive);
       cctl.clear();
 
       assert.isFalse(cctl.isCodeReserved(code));
       assert.isFalse(cctl.isCodeReserved(code2));
-      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.None);
+      assert.equal(cctl.getHeldLock("1"), LockScope.None);
       cctl.insertCodes([code]);
       assert.isTrue(cctl.isCodeReserved(code));
       assert.isFalse(cctl.isCodeReserved(code2));
@@ -59,11 +58,11 @@ describe("ConcurrencyControl.StateCache", () => {
       assert.isFalse(cctl.isCodeReserved(code2));
 
       cctl.insertCodes([code, code2]);
-      cctl.insertLocks([{ type: LockType.Db, objectId: "1", level: LockLevel.Shared }, { type: LockType.Db, objectId: "2", level: LockLevel.Exclusive }]);
+      cctl.insertLocks([{ entityId: "1", scope: LockScope.Shared }, { entityId: "2", scope: LockScope.Exclusive }]);
       assert.isTrue(cctl.isCodeReserved(code));
       assert.isTrue(cctl.isCodeReserved(code2));
-      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
-      assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.Exclusive);
+      assert.equal(cctl.getHeldLock("1"), LockScope.Shared);
+      assert.equal(cctl.getHeldLock("2"), LockScope.Exclusive);
 
       cctl.saveChanges();
     } finally {
@@ -75,15 +74,15 @@ describe("ConcurrencyControl.StateCache", () => {
     });
 
     assert.throws(() => {
-      cctl.getHeldLock(LockType.Db, "1");
+      cctl.getHeldLock("1");
     });
 
     assert.isTrue(cctl.open());
     try {
       assert.isTrue(cctl.isCodeReserved(code));
       assert.isTrue(cctl.isCodeReserved(code2));
-      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
-      assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.Exclusive);
+      assert.equal(cctl.getHeldLock("1"), LockScope.Shared);
+      assert.equal(cctl.getHeldLock("2"), LockScope.Exclusive);
     } finally {
       cctl.close(false);
     }

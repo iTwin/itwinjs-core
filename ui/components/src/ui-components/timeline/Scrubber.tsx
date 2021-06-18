@@ -51,7 +51,7 @@ interface TooltipRailState {
 }
 
 class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
-
+  private _isMounted = false;
   public static defaultProps = {
     disabled: false,
   };
@@ -63,7 +63,12 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
   }
 
   public componentDidMount() {
-    //  document.addEventListener("mousedown", this._onMouseDown);
+    this._isMounted = true;
+  }
+
+  public componentWillUnmount() {
+    this._isMounted = false;
+    document.removeEventListener("mousemove", this._onMouseMove);
   }
 
   // istanbul ignore next - WIP
@@ -73,18 +78,20 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 
   // istanbul ignore next - WIP
   private _onMouseLeave = () => {
-    this.setState({ value: null, percent: null });
+    if (this._isMounted)
+      this.setState({ value: null, percent: null });
     document.removeEventListener("mousemove", this._onMouseMove);
   };
 
   // istanbul ignore next - WIP
   private _onMouseMove = (e: Event) => {
     const { activeHandleID, getEventData } = this.props;
-
-    if (activeHandleID) {
-      this.setState({ value: null, percent: null });
-    } else {
-      this.setState(getEventData(e));
+    if (this._isMounted) {
+      if (activeHandleID) {
+        this.setState({ value: null, percent: null });
+      } else {
+        this.setState(getEventData(e));
+      }
     }
   };
 

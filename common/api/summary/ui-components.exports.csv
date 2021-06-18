@@ -427,6 +427,8 @@ public;PropertyViewProps
 alpha;QuantityFormatPanel(props: QuantityFormatPanelProps): JSX.Element
 alpha;QuantityFormatPanelProps 
 beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element
+beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null
+beta;QuantityNumberInputProps 
 beta;QuantityProps 
 public;ReactDataGridColumn 
 alpha;RenderedItemsRange
@@ -479,6 +481,7 @@ beta;StandardTypeConverterTypeNames
 deprecated;StandardTypeConverterTypeNames
 beta;StandardTypeNames
 deprecated;StandardTypeNames
+beta;StepFunctionProp = number | ((direction: string) => number | undefined)
 public;StringOperatorProcessor
 public;StringTypeConverter 
 public;StructPropertyValueRenderer 
