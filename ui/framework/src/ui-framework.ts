@@ -387,7 +387,7 @@ export * from "./ui-framework/zones/ZoneDef";
  */
 /**
  * @docs-group-description ToolSettings
- * Classes for working Tool Settings
+ * Classes for working Tool Settings.  See learning documentation [Tool Settings]($docs/learning/ui/framework/toolsettings.md).
  */
 /**
  * @docs-group-description UiProvider
