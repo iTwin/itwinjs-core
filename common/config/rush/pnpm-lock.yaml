@@ -21713,6 +21713,7 @@ packages:
       typescript: 4.1.5
     dev: false
 
+
   /tslint/5.20.1_typescript@4.1.5:
     resolution: {integrity: sha512-EcMxhzCFt8k+/UP5r8waCf/lzmeSyVlqxqMEDQE7rWYiQky8KpIBz1JAoYXfROHrPZ1XXd43q8yQnULOLiBRQg==}
     engines: {node: '>=4.8.0'}
