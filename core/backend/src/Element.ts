@@ -6,18 +6,16 @@
  * @module Elements
  */
 
-import {
-  assert, CompressedId64Set, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array,
-} from "@bentley/bentleyjs-core";
+import { assert, CompressedId64Set, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
-import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
-  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps,
+  SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
+import { LockScope } from "./BackendHubAccess";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
@@ -156,12 +154,12 @@ export class Element extends Entity implements ElementProps {
       case DbOpcode.Insert: {
         if (Code.isValid(props.code) && !Code.isEmpty(props.code))
           req.addCodes([props.code]);
-        req.addLocks([ConcurrencyControl.Request.getModelLock(props.model, LockLevel.Shared)]);
+        req.addLocks([ConcurrencyControl.Request.getModelLock(props.model, LockScope.Shared)]);
         break;
       }
       case DbOpcode.Delete: {
         assert(props.id !== undefined);
-        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockLevel.Exclusive)]);
+        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockScope.Exclusive)]);
 
         // Elements.deleteElement will automatically delete children, so we must automatically request the necessary resources for the children.
         iModel.elements.queryChildren(props.id).forEach((childId) => {
@@ -171,7 +169,7 @@ export class Element extends Entity implements ElementProps {
       }
       case DbOpcode.Update: {
         assert(props.id !== undefined);
-        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockLevel.Exclusive)]);
+        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockScope.Exclusive)]);
 
         assert(original !== undefined && original.id === props.id);
         if (original !== undefined) {
@@ -180,7 +178,7 @@ export class Element extends Entity implements ElementProps {
             req.addCodes([props.code]);
 
           if (props.model !== original.model)
-            req.addLocks([ConcurrencyControl.Request.getModelLock(original.model, LockLevel.Shared)]);
+            req.addLocks([ConcurrencyControl.Request.getModelLock(original.model, LockScope.Shared)]);
         }
         break;
       }
