@@ -626,6 +626,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return (
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
@@ -639,6 +640,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
                 </AppFrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>
