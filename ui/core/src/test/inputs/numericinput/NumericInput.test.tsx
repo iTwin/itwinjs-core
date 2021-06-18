@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
