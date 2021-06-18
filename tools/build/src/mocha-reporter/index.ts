@@ -21,7 +21,7 @@ function withStdErr(callback: () => void) {
   console.log = originalConsoleLog;
 }
 
-declare var mocha: any;
+declare const mocha: any;
 const isCI = process.env.CI || process.env.TF_BUILD;
 
 // Force rush test to fail CI builds if describe.only or it.only is used.
