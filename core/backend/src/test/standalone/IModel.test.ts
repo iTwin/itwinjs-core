@@ -2018,7 +2018,7 @@ describe("iModel", () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
-    await imodel1.reattachDaemon(ctx)
+    await imodel1.reattachDaemon(ctx);
     assert.isTrue(attachMock.notCalled);
   });
 
