@@ -6,35 +6,39 @@
 import { assert, expect } from "chai";
 import { join } from "path";
 import { Guid } from "@bentley/bentleyjs-core";
-import { ChangesType } from "@bentley/imodelhub-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { ChangesetFileProps, ChangesetType, LockProps, LockScope } from "../../BackendHubAccess";
+import { BriefcaseManager } from "../../BriefcaseManager";
+import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { HubMock } from "../HubMock";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { BriefcaseManager } from "../../BriefcaseManager";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangesetFileProps } from "../../BackendHubAccess";
-import { IModelHost } from "../../IModelHost";
+import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
+  const contextId = Guid.createValue();
+  const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
+  let requestContext: AuthorizedClientRequestContext;
 
-  before(() => HubMock.startup("HubMockTest"));
-  after(() => HubMock.shutdown());
+  before(async () => {
+    HubMock.startup("HubMockTest");
+    requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
+  });
+  after(() => {
+    HubMock.shutdown();
+  });
 
   it("should be able to create HubMock", async () => {
-    const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
-    const iModelId = Guid.createValue();
-
-    HubMock.create({ contextId: Guid.createValue(), iModelId, iModelName: "test imodel", revision0 });
-
+    const iModelId = await IModelHost.hubAccess.createIModel({ contextId, iModelName: "test imodel", revision0 });
     const localHub = HubMock.findLocalHub(iModelId);
     let checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 1);
     assert.equal(checkpoints[0], 0);
 
     const cp1 = join(tmpDir, "cp-1.bim");
-    localHub.downloadCheckpoint({ changesetId: "", targetFile: cp1 });
+    localHub.downloadCheckpoint({ changeset: { index: 0 }, targetFile: cp1 });
     const stat1 = IModelJsFs.lstatSync(cp1);
     const statRev0 = IModelJsFs.lstatSync(revision0);
     assert.equal(stat1?.size, statRev0?.size);
@@ -67,11 +71,11 @@ describe("HubMock", () => {
     assert.deepEqual(briefcases[1], { id: 5, user: "user4" });
 
     const cs1: ChangesetFileProps = {
-      id: "changeset0", description: "first changeset", changesType: ChangesType.Regular, parentId: "", briefcaseId: 100, pushDate: "",
+      id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId: 100, pushDate: "", index: 0,
       userCreated: "user1", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
     };
-    localHub.addChangeset(cs1);
-    const changesets1 = localHub.getChangesets();
+    cs1.index = localHub.addChangeset(cs1);
+    const changesets1 = localHub.queryChangesets();
     assert.equal(changesets1.length, 1);
     assert.equal(changesets1[0].id, cs1.id);
     assert.equal(changesets1[0].description, cs1.description);
@@ -81,14 +85,14 @@ describe("HubMock", () => {
     assert.isAtLeast(changesets1[0].size!, 1);
     assert.equal(changesets1[0].parentId, "");
     assert.isDefined(changesets1[0].pushDate);
-    assert.equal(cs1.id, localHub.getLatestChangesetId());
+    assert.equal(cs1.id, localHub.getLatestChangeset().id);
 
     const cs2: ChangesetFileProps = {
-      id: "changeset1", parentId: "changeset0", description: "second changeset", changesType: ChangesType.Schema, briefcaseId: 200, pushDate: "",
+      id: "changeset1", parentId: "changeset0", description: "second changeset", changesType: ChangesetType.Schema, briefcaseId: 200, pushDate: "", index: 0,
       userCreated: "user2", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
     };
-    localHub.addChangeset(cs2);
-    const changesets2 = localHub.getChangesets();
+    cs2.index = localHub.addChangeset(cs2);
+    const changesets2 = localHub.queryChangesets();
     assert.equal(changesets2.length, 2);
     assert.deepEqual(changesets1[0], changesets2[0]);
     assert.equal(changesets2[1].id, cs2.id);
@@ -99,39 +103,39 @@ describe("HubMock", () => {
     assert.equal(changesets2[1].briefcaseId, 200);
     assert.isAtLeast(changesets2[1].size!, 1);
     assert.isDefined(changesets2[1].pushDate);
-    assert.equal(cs2.id, localHub.getLatestChangesetId());
+    assert.equal(cs2.id, localHub.getLatestChangeset().id);
 
-    localHub.uploadCheckpoint({ changesetId: cs2.id, localFile: revision0 });
+    localHub.uploadCheckpoint({ changesetIndex: cs2.index, localFile: revision0 });
     checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 2);
     assert.equal(checkpoints[1], 2);
 
     const version1 = "release 1";
     const version2 = "release 2";
-    localHub.addNamedVersion({ versionName: version1, id: cs1.id });
-    localHub.addNamedVersion({ versionName: version2, id: cs2.id });
-    assert.equal(localHub.findNamedVersion(version1), cs1.id);
+    localHub.addNamedVersion({ versionName: version1, csIndex: cs1.index });
+    localHub.addNamedVersion({ versionName: version2, csIndex: cs2.index });
+    assert.equal(localHub.findNamedVersion(version1).index, cs1.index);
     expect(() => localHub.findNamedVersion("not there")).throws("not found");
-    expect(() => localHub.addNamedVersion({ versionName: version2, id: cs2.id })).throws("insert");
+    expect(() => localHub.addNamedVersion({ versionName: version2, csIndex: cs2.index })).throws("insert");
     localHub.deleteNamedVersion(version1);
     expect(() => localHub.findNamedVersion(version1)).throws("not found");
 
     // test for duplicate changeset id
-    const cs3 = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesType.Regular, pathname: cs1.pathname, briefcaseId: 100, userCreated: "", pushDate: "" };
+    const cs3: ChangesetFileProps = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesetType.Regular, pathname: cs1.pathname, briefcaseId: 100, userCreated: "", pushDate: "", index: 0 };
     expect(() => localHub.addChangeset(cs3)).throws("can't insert");
     // now test for valid changeset id, but bad parentId
     const cs4 = { ...cs3, id: "changeset4", parentId: "bad", description: "fourth changeset" };
-    expect(() => localHub.addChangeset(cs4)).throws("can't insert");
+    expect(() => localHub.addChangeset(cs4)).throws("bad not found");
 
     cs3.id = "changeset3";
     cs3.parentId = cs2.id;
-    localHub.addChangeset(cs3);
-    assert.equal("", localHub.queryPreviousCheckpoint(""));
-    assert.equal("", localHub.queryPreviousCheckpoint(cs1.id));
-    assert.equal(cs2.id, localHub.queryPreviousCheckpoint(cs2.id));
-    assert.equal(cs2.id, localHub.queryPreviousCheckpoint(cs3.id));
+    cs3.index = localHub.addChangeset(cs3);
+    assert.equal(0, localHub.queryPreviousCheckpoint(0));
+    assert.equal(0, localHub.queryPreviousCheckpoint(cs1.index));
+    assert.equal(cs2.index, localHub.queryPreviousCheckpoint(cs2.index));
+    assert.equal(cs2.index, localHub.queryPreviousCheckpoint(cs3.index));
 
-    const cSets = localHub.downloadChangesets({ range: { first: cs1.id, end: cs2.id }, targetDir: tmpDir });
+    const cSets = localHub.downloadChangesets({ range: { first: cs1.index, end: cs2.index }, targetDir: tmpDir });
     assert.equal(cSets.length, 2);
     assert.equal(cSets[0].id, cs1.id);
     assert.equal(cSets[0].changesType, cs1.changesType);
@@ -153,19 +157,77 @@ describe("HubMock", () => {
     const downloaded2 = IModelJsFs.readFileSync(cSets[1].pathname);
     assert.deepEqual(orig2, downloaded2);
     assert.notDeepEqual(orig1, orig2);
+
+    const lock1: LockProps = {
+      scope: LockScope.Shared,
+      entityId: "0x12",
+    };
+    localHub.requestLock(lock1, { briefcaseId: 1, changeSetId: cs1.id });
+    let lockStat = localHub.queryLockStatus(lock1.entityId);
+    assert.equal(lockStat.scope, LockScope.Shared);
+    assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
+    assert.isTrue((lockStat as LockStatusShared).sharedBy.has(1));
+
+    assert.isUndefined(lockStat.lastCsIndex);
+    localHub.requestLock(lock1, { briefcaseId: 10, changeSetId: cs1.id });
+    lockStat = localHub.queryLockStatus(lock1.entityId);
+    assert.equal((lockStat as LockStatusShared).sharedBy.size, 2);
+    assert.isTrue((lockStat as LockStatusShared).sharedBy.has(1));
+    assert.isTrue((lockStat as LockStatusShared).sharedBy.has(10));
+
+    expect(() => localHub.requestLock({ ...lock1, scope: LockScope.Exclusive }, { briefcaseId: 2, changeSetId: "cs1" })).to.throw("cannot obtain exclusive");
+    expect(() => localHub.releaseLock({ props: lock1, briefcaseId: 9, csIndex: cs1.index })).to.throw("shared lock not held");
+
+    localHub.releaseLock({ props: lock1, briefcaseId: 1, csIndex: cs1.index });
+    lockStat = localHub.queryLockStatus(lock1.entityId);
+    assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
+
+    localHub.releaseLock({ props: lock1, briefcaseId: 10, csIndex: cs1.index });
+    lockStat = localHub.queryLockStatus(lock1.entityId);
+    assert.equal(lockStat.scope, LockScope.None);
+
+    lock1.scope = LockScope.Exclusive;
+    localHub.requestLock(lock1, { briefcaseId: 4, changeSetId: cs1.id });
+    lockStat = localHub.queryLockStatus(lock1.entityId);
+    assert.equal(lockStat.scope, LockScope.Exclusive);
+    localHub.requestLock(lock1, { briefcaseId: 4, changeSetId: cs1.id });
+    expect(() => localHub.requestLock(lock1, { briefcaseId: 5, changeSetId: cs1.id })).to.throw("already owned");
+    expect(() => localHub.requestLock({ ...lock1, scope: LockScope.Shared }, { briefcaseId: 5, changeSetId: cs1.id })).to.throw("already owned");
+    localHub.releaseLock({ props: lock1, briefcaseId: 4, csIndex: cs2.index });
+    lockStat = localHub.queryLockStatus(lock1.entityId);
+    assert.equal(lockStat.scope, LockScope.None);
+    assert.equal(lockStat.lastCsIndex, cs2.index);
+
+    expect(() => localHub.requestLock(lock1, { briefcaseId: 5, changeSetId: cs1.id })).to.throw("Pull is required");
+    localHub.requestLock(lock1, { briefcaseId: 5, changeSetId: cs2.id });
+    lockStat = localHub.queryLockStatus(lock1.entityId);
+    assert.equal(lockStat.scope, LockScope.Exclusive);
+    assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
+    assert.equal(lockStat.lastCsIndex, cs2.index);
+
+    localHub.requestLock({ scope: LockScope.Exclusive, entityId: "0x22" }, { briefcaseId: 5, changeSetId: cs1.id });
+    lockStat = localHub.queryLockStatus("0x22");
+    assert.equal(lockStat.scope, LockScope.Exclusive);
+    assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
+    assert.isUndefined(lockStat.lastCsIndex);
+
+    localHub.requestLock({ scope: LockScope.Exclusive, entityId: "0x23" }, { briefcaseId: 6, changeSetId: cs1.id });
+    localHub.requestLock({ scope: LockScope.Shared, entityId: "0x24" }, { briefcaseId: 6, changeSetId: cs1.id });
+    localHub.requestLock({ scope: LockScope.Shared, entityId: "0x24" }, { briefcaseId: 5, changeSetId: cs1.id });
+
+    const locks = localHub.queryAllLocks(5);
+    assert.equal(locks.length, 3);
+
+    await IModelHost.hubAccess.deleteIModel({ contextId, iModelId });
   });
 
   it("use HubMock with BriefcaseManager", async () => {
-    const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
-    const contextId = Guid.createValue();
-    const fakeAccess = AccessToken.fromJson({ tokenString: "bogus", userInfo: { id: "bu1", profile: { firstName: "bogus", lastName: "user", name: "bogus user" } } });
-    const requestContext = new AuthorizedClientRequestContext(fakeAccess);
-
     const iModelId = await IModelHost.hubAccess.createIModel({ contextId, iModelName: "test imodel", revision0 });
     const briefcase = await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId });
     assert.equal(briefcase.briefcaseId, 2);
     assert.equal(briefcase.changeSetId, "");
     assert.equal(briefcase.iModelId, iModelId);
     assert.equal(briefcase.contextId, contextId);
+    await IModelHost.hubAccess.deleteIModel({ contextId, iModelId });
   });
 });

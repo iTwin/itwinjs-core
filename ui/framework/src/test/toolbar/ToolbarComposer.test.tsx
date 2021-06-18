@@ -16,6 +16,7 @@ import {
 } from "../../ui-framework";
 import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
 import TestUtils from "../TestUtils";
+import { UiFramework } from "../../ui-framework/UiFramework";
 
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "ToolbarComposer-TestUiProvider";
@@ -166,6 +167,20 @@ describe("<ToolbarComposer  />", async () => {
           items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
       </FrameworkVersion>);
     expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.container.querySelector("div.components-toolbar-overflow-sizer.components-horizontal")).to.not.be.null;
+    expect(UiFramework.uiVersion).to.eql("2");
+  });
+
+  it("should render with specified items", async () => {
+    const renderedComponent = render(
+      <FrameworkVersion version="1">
+        <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+          orientation={ToolbarOrientation.Horizontal}
+          items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
+      </FrameworkVersion>);
+    expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.container.querySelector("div.nz-toolbar-toolbar.nz-direction-bottom.nz-horizontal.nz-panel-alignment-start")).to.not.be.null;
+    expect(UiFramework.uiVersion).to.eql("1");
   });
 
   it("should render with specified items", async () => {
