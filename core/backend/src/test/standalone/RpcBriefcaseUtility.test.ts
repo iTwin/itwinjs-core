@@ -10,12 +10,12 @@ import * as sinon from "sinon";
 import { IModelDb } from "../../IModelDb";
 import { RpcBriefcaseUtility } from "../../rpc-impl/RpcBriefcaseUtility";
 
-describe.only("RpcBriefcaseUtility.findOrOpen", () => {
+describe("RpcBriefcaseUtility.findOrOpen", () => {
   afterEach(() => {
     sinon.restore();
   });
 
-  it.only("should return open SnapshotDb and call reattachDaemon", async () => {
+  it("should return open SnapshotDb and call reattachDaemon", async () => {
     const reattachStub = sinon.stub<[AuthorizedClientRequestContext], Promise<void>>();
     const fakeIModel: IModelDb = { reattachDaemon: reattachStub } as any;
     sinon.stub(IModelDb, "tryFindByKey").returns(fakeIModel);
